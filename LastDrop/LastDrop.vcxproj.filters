@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GameLib">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Base">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567891}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\FileIO">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567892}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Graphics">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567893}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Input">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567894}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Math">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567895}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\PseudoXml">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567896}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Scene">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567897}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Sound">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567898}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\Threading">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567899}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\WindowCreator">
+      <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- ゲームコード -->
+    <ClCompile Include="Framework.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLibMath.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+
+    <!-- Base -->
+    <ClCompile Include="GameLib\src\Base\Compressor.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\Conversion.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\DebugStream.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\Halt.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\IBinaryStream.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\MemoryManager.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\OStringStream.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\PrimeNumber.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Base\RefString.cpp">
+      <Filter>GameLib\Base</Filter>
+    </ClCompile>
+
+    <!-- FileIO -->
+    <ClCompile Include="GameLib\src\FileIO\InFile.cpp">
+      <Filter>GameLib\FileIO</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\FileIO\Manager.cpp">
+      <Filter>GameLib\FileIO</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\FileIO\OutFile.cpp">
+      <Filter>GameLib\FileIO</Filter>
+    </ClCompile>
+
+    <!-- Graphics -->
+    <ClCompile Include="GameLib\src\Graphics\IndexBuffer.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\Manager.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\Texture.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+
+    <!-- Input -->
+    <ClCompile Include="GameLib\src\Input\Joystick.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\Keyboard.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\Manager.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\Mouse.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+
+    <!-- Math -->
+    <ClCompile Include="GameLib\src\Math\Functions.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix22.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix23.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix33.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix34.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix44.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Random.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\vector2.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Vector3.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Vector4.cpp">
+      <Filter>GameLib\Math</Filter>
+    </ClCompile>
+
+    <!-- PseudoXml -->
+    <ClCompile Include="GameLib\src\PseudoXml\Attribute.cpp">
+      <Filter>GameLib\PseudoXml</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\PseudoXml\Document.cpp">
+      <Filter>GameLib\PseudoXml</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\PseudoXml\DocumentImpl.cpp">
+      <Filter>GameLib\PseudoXml</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\PseudoXml\Element.cpp">
+      <Filter>GameLib\PseudoXml</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\PseudoXml\Tag.cpp">
+      <Filter>GameLib\PseudoXml</Filter>
+    </ClCompile>
+
+    <!-- Scene -->
+    <ClCompile Include="GameLib\src\Scene\Animation.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\AnimationNode.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\Batch.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\CollisionDetector.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\CollisionMesh.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\Container.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\Font.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\Model.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\PrimitiveRenderer.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\StringRenderer.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\Tree.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Scene\TreeTemplate.cpp">
+      <Filter>GameLib\Scene</Filter>
+    </ClCompile>
+
+    <!-- Sound -->
+    <ClCompile Include="GameLib\src\Sound\Manager.cpp">
+      <Filter>GameLib\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Sound\Player.cpp">
+      <Filter>GameLib\Sound</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Sound\Wave.cpp">
+      <Filter>GameLib\Sound</Filter>
+    </ClCompile>
+
+    <!-- Threading -->
+    <ClCompile Include="GameLib\src\Threading\Event.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Functions.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Manager.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Mutex.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Semaphore.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Thread.cpp">
+      <Filter>GameLib\Threading</Filter>
+    </ClCompile>
+
+    <!-- WindowCreator -->
+    <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
+      <Filter>GameLib\WindowCreator</Filter>
+    </ClCompile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ClInclude Include="Framework.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLibMath.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ManagerImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\TextureImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\IndexBufferImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\NoLightingVsHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\NoLightingPsHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\VertexLightingVsHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\PixelLightingVsHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\PixelLightingPsHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="font.tga">
+      <Filter>リソース ファイル</Filter>
+    </None>
+  </ItemGroup>
+</Project>

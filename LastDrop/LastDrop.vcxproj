@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{dde0c6e6-a92c-4413-80fe-316b023e4595}</ProjectGuid>
+    <RootNamespace>LastDrop</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+
+  <PropertyGroup Label="UserMacros" />
+
+  <!-- ==================== Debug|Win32 ==================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ==================== Release|Win32 ==================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ==================== Debug|x64 ==================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ==================== Release|x64 ==================== -->
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- ==================== ソースファイル ==================== -->
+  <ItemGroup>
+    <!-- ゲームコード -->
+    <ClCompile Include="Framework.cpp" />
+    <ClCompile Include="GameLibMath.cpp" />
+    <ClCompile Include="Main.cpp" />
+
+    <!-- Base -->
+    <ClCompile Include="GameLib\src\Base\Compressor.cpp" />
+    <ClCompile Include="GameLib\src\Base\Conversion.cpp" />
+    <ClCompile Include="GameLib\src\Base\DebugStream.cpp" />
+    <ClCompile Include="GameLib\src\Base\Halt.cpp" />
+    <ClCompile Include="GameLib\src\Base\IBinaryStream.cpp" />
+    <ClCompile Include="GameLib\src\Base\MemoryManager.cpp" />
+    <ClCompile Include="GameLib\src\Base\OStringStream.cpp" />
+    <ClCompile Include="GameLib\src\Base\PrimeNumber.cpp" />
+    <ClCompile Include="GameLib\src\Base\RefString.cpp" />
+
+    <!-- FileIO -->
+    <ClCompile Include="GameLib\src\FileIO\InFile.cpp" />
+    <ClCompile Include="GameLib\src\FileIO\Manager.cpp">
+      <ObjectFileName>$(IntDir)GameLib\FileIO\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\FileIO\OutFile.cpp" />
+
+    <!-- Graphics (DX11) -->
+    <ClCompile Include="GameLib\src\Graphics\IndexBuffer.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\Manager.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Graphics\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\Texture.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp" />
+
+    <!-- Input -->
+    <ClCompile Include="GameLib\src\Input\Joystick.cpp" />
+    <ClCompile Include="GameLib\src\Input\Keyboard.cpp" />
+    <ClCompile Include="GameLib\src\Input\Manager.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Input\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\Mouse.cpp" />
+
+    <!-- Math -->
+    <ClCompile Include="GameLib\src\Math\Functions.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Math\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Math\Matrix22.cpp" />
+    <ClCompile Include="GameLib\src\Math\Matrix23.cpp" />
+    <ClCompile Include="GameLib\src\Math\Matrix33.cpp" />
+    <ClCompile Include="GameLib\src\Math\Matrix34.cpp" />
+    <ClCompile Include="GameLib\src\Math\Matrix44.cpp" />
+    <ClCompile Include="GameLib\src\Math\Random.cpp" />
+    <ClCompile Include="GameLib\src\Math\vector2.cpp" />
+    <ClCompile Include="GameLib\src\Math\Vector3.cpp" />
+    <ClCompile Include="GameLib\src\Math\Vector4.cpp" />
+
+    <!-- PseudoXml -->
+    <ClCompile Include="GameLib\src\PseudoXml\Attribute.cpp" />
+    <ClCompile Include="GameLib\src\PseudoXml\Document.cpp" />
+    <ClCompile Include="GameLib\src\PseudoXml\DocumentImpl.cpp" />
+    <ClCompile Include="GameLib\src\PseudoXml\Element.cpp" />
+    <ClCompile Include="GameLib\src\PseudoXml\Tag.cpp" />
+
+    <!-- Scene -->
+    <ClCompile Include="GameLib\src\Scene\Animation.cpp" />
+    <ClCompile Include="GameLib\src\Scene\AnimationNode.cpp" />
+    <ClCompile Include="GameLib\src\Scene\Batch.cpp" />
+    <ClCompile Include="GameLib\src\Scene\CollisionDetector.cpp" />
+    <ClCompile Include="GameLib\src\Scene\CollisionMesh.cpp" />
+    <ClCompile Include="GameLib\src\Scene\Container.cpp" />
+    <ClCompile Include="GameLib\src\Scene\Font.cpp" />
+    <ClCompile Include="GameLib\src\Scene\Model.cpp" />
+    <ClCompile Include="GameLib\src\Scene\PrimitiveRenderer.cpp" />
+    <ClCompile Include="GameLib\src\Scene\StringRenderer.cpp" />
+    <ClCompile Include="GameLib\src\Scene\Tree.cpp" />
+    <ClCompile Include="GameLib\src\Scene\TreeTemplate.cpp" />
+
+    <!-- Sound -->
+    <ClCompile Include="GameLib\src\Sound\Manager.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Sound\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Sound\Player.cpp" />
+    <ClCompile Include="GameLib\src\Sound\Wave.cpp" />
+
+    <!-- Threading -->
+    <ClCompile Include="GameLib\src\Threading\Event.cpp" />
+    <ClCompile Include="GameLib\src\Threading\Functions.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Threading\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Manager.cpp">
+      <ObjectFileName>$(IntDir)GameLib\Threading\</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Threading\Mutex.cpp" />
+    <ClCompile Include="GameLib\src\Threading\Semaphore.cpp" />
+    <ClCompile Include="GameLib\src\Threading\Thread.cpp" />
+
+    <!-- WindowCreator (contains WinMain) -->
+    <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp" />
+  </ItemGroup>
+
+  <!-- ==================== ヘッダファイル ==================== -->
+  <ItemGroup>
+    <ClInclude Include="Framework.h" />
+    <ClInclude Include="GameLibMath.h" />
+    <ClInclude Include="GameLib\include\GameLib\GameLib.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Manager.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Texture.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\VertexBuffer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\IndexBuffer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Enum.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Vertex.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\Manager.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\Keyboard.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\Mouse.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\Joystick.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix44.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix34.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix33.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix22.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix23.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector4.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector3.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector2.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Functions.h" />
+    <ClInclude Include="GameLib\include\GameLib\Math\Random.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\Model.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\Batch.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\Animation.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\PrimitiveRenderer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\Font.h" />
+    <ClInclude Include="GameLib\include\GameLib\Scene\StringRenderer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Sound\Manager.h" />
+    <ClInclude Include="GameLib\include\GameLib\Sound\Player.h" />
+    <ClInclude Include="GameLib\include\GameLib\WindowCreator\WindowCreator.h" />
+    <ClInclude Include="GameLib\src\Graphics\ManagerImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\TextureImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\IndexBufferImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\NoLightingVsHlsl.h" />
+    <ClInclude Include="GameLib\src\Graphics\NoLightingPsHlsl.h" />
+    <ClInclude Include="GameLib\src\Graphics\VertexLightingVsHlsl.h" />
+    <ClInclude Include="GameLib\src\Graphics\PixelLightingVsHlsl.h" />
+    <ClInclude Include="GameLib\src\Graphics\PixelLightingPsHlsl.h" />
+  </ItemGroup>
+
+  <!-- ==================== リソース ==================== -->
+  <ItemGroup>
+    <None Include="font.tga" />
+  </ItemGroup>
+
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

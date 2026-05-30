@@ -1,0 +1,7 @@
+<Solution>
+  <Configurations>
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="LastDrop/LastDrop.vcxproj" Id="dde0c6e6-a92c-4413-80fe-316b023e4595" />
+</Solution>
