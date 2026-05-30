@@ -34,7 +34,7 @@ public:
 	mHeight( 480 ),
 	mFullScreen( false ),
 	mFullScreenForbidden( true ),
-	mVSync( false ),
+	mVSync( true ),
 	mAntiAlias( false ),
 	mTitle( "DirectX11 Turn Command Battle" ),
 	mArchiveNames( 0 ),

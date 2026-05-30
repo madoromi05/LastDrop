@@ -1,0 +1,5 @@
+root = true
+
+# C++のソースとヘッダーファイルをUTF-8に指定
+[*.{cpp,h}]
+charset = utf-8

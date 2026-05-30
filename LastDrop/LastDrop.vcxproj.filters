@@ -46,8 +46,13 @@
     <Filter Include="GameLib\WindowCreator">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Library">
+      <UniqueIdentifier>{B1C2D3E4-F5A6-7890-BCDE-F01234567890}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{C1D2E3F4-A5B6-7890-CDEF-012345678901}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
-
   <ItemGroup>
     <!-- ゲームコード -->
     <ClCompile Include="Framework.cpp">
@@ -57,9 +62,42 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>Game</Filter>
     </ClCompile>
-
+    <ClCompile Include="Bullet.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Pad.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Robo.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Stage.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <!-- Library -->
+    <ClCompile Include="Library\src\Batch.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\Camera.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\GraphicsDatabase.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\IndexBuffer.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\Model.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\Texture.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Library\src\VertexBuffer.cpp">
+      <Filter>Library</Filter>
+    </ClCompile>
     <!-- Base -->
     <ClCompile Include="GameLib\src\Base\Compressor.cpp">
       <Filter>GameLib\Base</Filter>
@@ -88,7 +126,6 @@
     <ClCompile Include="GameLib\src\Base\RefString.cpp">
       <Filter>GameLib\Base</Filter>
     </ClCompile>
-
     <!-- FileIO -->
     <ClCompile Include="GameLib\src\FileIO\InFile.cpp">
       <Filter>GameLib\FileIO</Filter>
@@ -99,7 +136,6 @@
     <ClCompile Include="GameLib\src\FileIO\OutFile.cpp">
       <Filter>GameLib\FileIO</Filter>
     </ClCompile>
-
     <!-- Graphics -->
     <ClCompile Include="GameLib\src\Graphics\IndexBuffer.cpp">
       <Filter>GameLib\Graphics</Filter>
@@ -113,7 +149,6 @@
     <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp">
       <Filter>GameLib\Graphics</Filter>
     </ClCompile>
-
     <!-- Input -->
     <ClCompile Include="GameLib\src\Input\Joystick.cpp">
       <Filter>GameLib\Input</Filter>
@@ -127,7 +162,6 @@
     <ClCompile Include="GameLib\src\Input\Mouse.cpp">
       <Filter>GameLib\Input</Filter>
     </ClCompile>
-
     <!-- Math -->
     <ClCompile Include="GameLib\src\Math\Functions.cpp">
       <Filter>GameLib\Math</Filter>
@@ -159,7 +193,6 @@
     <ClCompile Include="GameLib\src\Math\Vector4.cpp">
       <Filter>GameLib\Math</Filter>
     </ClCompile>
-
     <!-- PseudoXml -->
     <ClCompile Include="GameLib\src\PseudoXml\Attribute.cpp">
       <Filter>GameLib\PseudoXml</Filter>
@@ -176,7 +209,6 @@
     <ClCompile Include="GameLib\src\PseudoXml\Tag.cpp">
       <Filter>GameLib\PseudoXml</Filter>
     </ClCompile>
-
     <!-- Scene -->
     <ClCompile Include="GameLib\src\Scene\Animation.cpp">
       <Filter>GameLib\Scene</Filter>
@@ -214,7 +246,6 @@
     <ClCompile Include="GameLib\src\Scene\TreeTemplate.cpp">
       <Filter>GameLib\Scene</Filter>
     </ClCompile>
-
     <!-- Sound -->
     <ClCompile Include="GameLib\src\Sound\Manager.cpp">
       <Filter>GameLib\Sound</Filter>
@@ -225,7 +256,6 @@
     <ClCompile Include="GameLib\src\Sound\Wave.cpp">
       <Filter>GameLib\Sound</Filter>
     </ClCompile>
-
     <!-- Threading -->
     <ClCompile Include="GameLib\src\Threading\Event.cpp">
       <Filter>GameLib\Threading</Filter>
@@ -245,18 +275,55 @@
     <ClCompile Include="GameLib\src\Threading\Thread.cpp">
       <Filter>GameLib\Threading</Filter>
     </ClCompile>
-
     <!-- WindowCreator -->
     <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
       <Filter>GameLib\WindowCreator</Filter>
     </ClCompile>
   </ItemGroup>
-
   <ItemGroup>
     <ClInclude Include="Framework.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLibMath.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Pad.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Robo.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Stage.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\Batch.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\Camera.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\GraphicsDatabase.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\IndexBuffer.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\Model.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\Texture.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="Library\include\Library\VertexBuffer.h">
+      <Filter>Library</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Framework.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\DebugScreen.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\ManagerImpl.h">
@@ -286,10 +353,282 @@
     <ClInclude Include="GameLib\src\Graphics\PixelLightingPsHlsl.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\GameLib.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Manager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Texture.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\VertexBuffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\IndexBuffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Enum.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Vertex.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\Manager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\Keyboard.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\Mouse.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\Joystick.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix44.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix34.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix33.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix22.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Matrix23.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector4.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector3.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Vector2.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Functions.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Math\Random.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Model.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Batch.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Animation.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\PrimitiveRenderer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Font.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\StringRenderer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Sound\Manager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Sound\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\WindowCreator\WindowCreator.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Event.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Functions.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Manager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Mutex.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Threading\Semaphore.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Sound\Wave.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionDetector.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionMesh.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Container.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Scene\Tree.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\PseudoXml\Attribute.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\PseudoXml\Document.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\PseudoXml\Element.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\FileIO\InFile.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\FileIO\OutFile.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Vector.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Array.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\AutoPtr.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Compressor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Conversion.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\DebugStream.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Hash.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\HashMap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\HashMultiMap.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\HashSet.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\IBinaryStream.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\List.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\MemoryManager.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\OStringStream.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Pool.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\PrimeNumber.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Queue.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\RefString.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\SharedPtr.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Stack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Tank.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\Array2dImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ArrayImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\AutoPtrImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ConstantTypeTemplate.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashMapImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashMultiMapImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashSetImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ListImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\OStringStreamImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\PoolImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\QueueImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ReferenceType.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ReferenceTypeTemplate.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\SharedPtrImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\StackImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\TankImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
   </ItemGroup>
-
   <ItemGroup>
     <None Include="font.tga">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="robo.tga">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="stage.tga">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="robo.txt">
+      <Filter>リソース ファイル</Filter>
+    </None>
+    <None Include="stage.txt">
       <Filter>リソース ファイル</Filter>
     </None>
   </ItemGroup>
