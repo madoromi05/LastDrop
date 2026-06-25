@@ -31,7 +31,7 @@ const int TIME_LIMIT = 90; //90秒
 Vector3 gAmbient( 0.2f, 0.3f, 0.4f );
 GameLib::Scene::PrimitiveRenderer gPrimitiveRenderer;
 
-void drawRect( Vector2* p, unsigned c1, unsigned c2 ){
+void drawRect( Scene::PrimitiveRenderer& pr, Vector2* p, unsigned c1, unsigned c2 ){
 	Vector4 p4[ 4 ];
 	for ( int i = 0; i < 4; ++i ){
 		p4[ i ].x = p[ i ].x;
@@ -39,8 +39,8 @@ void drawRect( Vector2* p, unsigned c1, unsigned c2 ){
 		p4[ i ].z = 0.0;
 		p4[ i ].w = 1.0;
 	}
-	gPrimitiveRenderer.addTransformedTriangle( p4[ 0 ], p4[ 1 ], p4[ 2 ], c1, c1, c2 );
-	gPrimitiveRenderer.addTransformedTriangle( p4[ 3 ], p4[ 1 ], p4[ 2 ], c2, c1, c2 );
+	pr.addTransformedTriangle( p4[ 0 ], p4[ 1 ], p4[ 2 ], c1, c1, c2 );
+	pr.addTransformedTriangle( p4[ 3 ], p4[ 1 ], p4[ 2 ], c2, c1, c2 );
 }
 
 namespace GameLib{
@@ -93,7 +93,7 @@ void Framework::update(){
 		nearestIndex[ i ] = -1;
 	}
 	for ( int i = 0; i < 2; ++i ){
-		for ( int j = 0; j < 100; ++j ){
+		for ( int j = 0; j < gRobo[ i ]->getBulletNumber(); ++j ){
 			const Vector3* p = gRobo[ i ]->getBulletPosition( j );
 			if ( p ){
 				Vector3 t;
@@ -160,39 +160,39 @@ void Framework::update(){
 	// 体力バー背景
 	p[ 0 ].set( -0.9f, 0.95f ); p[ 1 ].set( -0.9f, 0.87f );
 	p[ 2 ].set(  0.1f, 0.95f ); p[ 3 ].set(  0.1f, 0.87f );
-	c1 = c2 = 0xff406080; drawRect( p, c1, c2 );
+	c1 = c2 = 0xff406080; drawRect( gPrimitiveRenderer, p, c1, c2 );
 	p[ 0 ].set( -0.9f, 0.85f ); p[ 1 ].set( -0.9f, 0.82f );
 	p[ 2 ].set(  0.1f, 0.85f ); p[ 3 ].set(  0.1f, 0.82f );
-	c1 = c2 = 0xff806040; drawRect( p, c1, c2 );
+	c1 = c2 = 0xff806040; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// 体力バー本体 (1P)
 	float length = static_cast< float >( hp0 ) / static_cast< float >( Robo::mMaxHitPoint );
 	p[ 0 ].set( -0.9f, 0.95f ); p[ 1 ].set( -0.9f, 0.87f );
 	p[ 2 ].set( -0.9f + length, 0.95f ); p[ 3 ].set( -0.9f + length, 0.87f );
-	c1 = 0xff882244; c2 = 0xff88ccff; drawRect( p, c1, c2 );
+	c1 = 0xff882244; c2 = 0xff88ccff; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// 体力バー本体 (2P)
 	length = static_cast< float >( hp1 ) / static_cast< float >( Robo::mMaxHitPoint );
 	p[ 0 ].set( -0.9f, 0.85f ); p[ 1 ].set( -0.9f, 0.82f );
 	p[ 2 ].set( -0.9f + length, 0.85f ); p[ 3 ].set( -0.9f + length, 0.82f );
-	c1 = 0xffff4422; c2 = 0xffffcc88; drawRect( p, c1, c2 );
+	c1 = 0xffff4422; c2 = 0xffffcc88; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// 武器エネルギー背景
 	p[ 0 ].set( -0.1f, -0.7f ); p[ 1 ].set( -0.1f, -0.8f );
 	p[ 2 ].set(  0.1f, -0.7f ); p[ 3 ].set(  0.1f, -0.8f );
-	c1 = c2 = 0x80404040; drawRect( p, c1, c2 );
+	c1 = c2 = 0x80404040; drawRect( gPrimitiveRenderer, p, c1, c2 );
 	// 武器エネルギー本体
 	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_ADDITIVE );
 	length = 0.2f * static_cast< float >( e0 ) / static_cast< float >( Robo::mMaxEnergy );
 	p[ 0 ].set( -0.1f, -0.7f ); p[ 1 ].set( -0.1f, -0.8f );
 	p[ 2 ].set( -0.1f + length, -0.7f ); p[ 3 ].set( -0.1f + length, -0.8f );
-	c1 = 0x80ff0000; c2 = 0x80ffff00; drawRect( p, c1, c2 );
+	c1 = 0x80ff0000; c2 = 0x80ffff00; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// レーダー背景
 	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_LINEAR );
 	p[ 0 ].set( 0.7f, 0.7f ); p[ 1 ].set( 0.7f, 0.9f );
 	p[ 2 ].set( 0.9f, 0.7f ); p[ 3 ].set( 0.9f, 0.9f );
-	c1 = c2 = 0x80404040; drawRect( p, c1, c2 );
+	c1 = c2 = 0x80404040; drawRect( gPrimitiveRenderer, p, c1, c2 );
 	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_ADDITIVE );
 	// 自機
 	Vector2 t;
@@ -200,13 +200,13 @@ void Framework::update(){
 	t *= 0.002f; t += Vector2( 0.8f, 0.8f );
 	p[ 0 ].set( t.x - 0.005f, t.y - 0.005f ); p[ 1 ].set( t.x - 0.005f, t.y + 0.005f );
 	p[ 2 ].set( t.x + 0.005f, t.y - 0.005f ); p[ 3 ].set( t.x + 0.005f, t.y + 0.005f );
-	c1 = c2 = 0xcc0080ff; drawRect( p, c1, c2 );
+	c1 = c2 = 0xcc0080ff; drawRect( gPrimitiveRenderer, p, c1, c2 );
 	// 敵機
 	t.set( gRobo[ 1 ]->getPosition()->x, gRobo[ 1 ]->getPosition()->z );
 	t *= 0.002f; t += Vector2( 0.8f, 0.8f );
 	p[ 0 ].set( t.x - 0.005f, t.y - 0.005f ); p[ 1 ].set( t.x - 0.005f, t.y + 0.005f );
 	p[ 2 ].set( t.x + 0.005f, t.y - 0.005f ); p[ 3 ].set( t.x + 0.005f, t.y + 0.005f );
-	c1 = c2 = 0xccff8000; drawRect( p, c1, c2 );
+	c1 = c2 = 0xccff8000; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// ロックオンマーク
 	if ( lockOn ){
@@ -219,16 +219,16 @@ void Framework::update(){
 		c1 = c2 = 0x80ff0000;
 		p[ 0 ].set( x - 0.01f, y + 0.2f ); p[ 1 ].set( x - 0.01f, y + 0.1f );
 		p[ 2 ].set( x + 0.01f, y + 0.2f ); p[ 3 ].set( x + 0.01f, y + 0.1f );
-		drawRect( p, c1, c2 );
+		drawRect( gPrimitiveRenderer, p, c1, c2 );
 		p[ 0 ].set( x - 0.01f, y - 0.2f ); p[ 1 ].set( x - 0.01f, y - 0.1f );
 		p[ 2 ].set( x + 0.01f, y - 0.2f ); p[ 3 ].set( x + 0.01f, y - 0.1f );
-		drawRect( p, c1, c2 );
+		drawRect( gPrimitiveRenderer, p, c1, c2 );
 		p[ 0 ].set( x - 0.2f, y - 0.01f ); p[ 1 ].set( x - 0.2f, y + 0.01f );
 		p[ 2 ].set( x - 0.1f, y - 0.01f ); p[ 3 ].set( x - 0.1f, y + 0.01f );
-		drawRect( p, c1, c2 );
+		drawRect( gPrimitiveRenderer, p, c1, c2 );
 		p[ 0 ].set( x + 0.2f, y - 0.01f ); p[ 1 ].set( x + 0.2f, y + 0.01f );
 		p[ 2 ].set( x + 0.1f, y - 0.01f ); p[ 3 ].set( x + 0.1f, y + 0.01f );
-		drawRect( p, c1, c2 );
+		drawRect( gPrimitiveRenderer, p, c1, c2 );
 	}
 
 	// 残り時間バー
@@ -236,11 +236,11 @@ void Framework::update(){
 	length = 1.9f * static_cast< float >( 60 * TIME_LIMIT - gTime ) / static_cast< float >( 60 * TIME_LIMIT );
 	p[ 0 ].set( -0.95f, -0.95f ); p[ 1 ].set( -0.95f, -0.9f );
 	p[ 2 ].set(  0.95f, -0.95f ); p[ 3 ].set(  0.95f, -0.9f );
-	c1 = c2 = 0x80404040; drawRect( p, c1, c2 );
+	c1 = c2 = 0x80404040; drawRect( gPrimitiveRenderer, p, c1, c2 );
 	p[ 0 ].set( -0.95f, -0.95f );          p[ 1 ].set( -0.95f, -0.9f );
 	p[ 2 ].set( -0.95f + length, -0.95f ); p[ 3 ].set( -0.95f + length, -0.9f );
 	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_ADDITIVE );
-	c1 = 0x80ff8888; c2 = 0x8088ffff; drawRect( p, c1, c2 );
+	c1 = 0x80ff8888; c2 = 0x8088ffff; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// スペースでポーズ
 	if ( Input::Manager().keyboard().isTriggered( ' ' ) ){
@@ -278,5 +278,4 @@ void Framework::update(){
 		}
 	}
 }
-
-} //namespace GameLib
+}

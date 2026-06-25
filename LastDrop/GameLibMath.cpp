@@ -16,4 +16,4 @@ double atan( double a )  { return std::atan( a ) * r2d; }
 double atan2( double y, double x ){ return std::atan2( y, x ) * r2d; }
 double sqrt( double a )  { return std::sqrt( a ); }
 
-} //namespace GameLib
+}

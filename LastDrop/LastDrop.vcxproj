@@ -147,12 +147,12 @@
     <!-- ゲームコード -->
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameLibMath.cpp" />
-    <ClCompile Include="Main.cpp" />
-    <ClCompile Include="Bullet.cpp" />
-    <ClCompile Include="Pad.cpp" />
-    <ClCompile Include="Robo.cpp" />
-    <ClCompile Include="Stage.cpp" />
     <!-- Library (3D graphics abstraction) -->
+    <ClCompile Include="GameSrc\Bullet.cpp" />
+    <ClCompile Include="GameSrc\Main.cpp" />
+    <ClCompile Include="GameSrc\Pad.cpp" />
+    <ClCompile Include="GameSrc\Robo.cpp" />
+    <ClCompile Include="GameSrc\Stage.cpp" />
     <ClCompile Include="Library\src\Batch.cpp">
       <ObjectFileName>$(IntDir)Library\</ObjectFileName>
     </ClCompile>
@@ -260,7 +260,6 @@
   <ItemGroup>
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GameLibMath.h" />
-    <ClInclude Include="Bullet.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\AutoPtr.h" />
@@ -318,9 +317,10 @@
     <ClInclude Include="GameLib\include\GameLib\Threading\Mutex.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Semaphore.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h" />
-    <ClInclude Include="Pad.h" />
-    <ClInclude Include="Robo.h" />
-    <ClInclude Include="Stage.h" />
+    <ClInclude Include="GameSrc\Bullet.h" />
+    <ClInclude Include="GameSrc\Pad.h" />
+    <ClInclude Include="GameSrc\Robo.h" />
+    <ClInclude Include="GameSrc\Stage.h" />
     <ClInclude Include="Library\include\Library\Batch.h" />
     <ClInclude Include="Library\include\Library\Camera.h" />
     <ClInclude Include="Library\include\Library\GraphicsDatabase.h" />
@@ -372,11 +372,13 @@
   </ItemGroup>
   <!-- ==================== リソース ==================== -->
   <ItemGroup>
-    <None Include="font.tga" />
-    <None Include="robo.tga" />
-    <None Include="stage.tga" />
-    <None Include="robo.txt" />
-    <None Include="stage.txt" />
+    <Image Include="Resource\font.tga" />
+    <Image Include="Resource\robo.tga" />
+    <Image Include="Resource\stage.tga" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resource\robo.txt" />
+    <Text Include="Resource\stage.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

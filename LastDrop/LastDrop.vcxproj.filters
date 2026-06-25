@@ -615,21 +615,4 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="font.tga">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="robo.tga">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="stage.tga">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="robo.txt">
-      <Filter>リソース ファイル</Filter>
-    </None>
-    <None Include="stage.txt">
-      <Filter>リソース ファイル</Filter>
-    </None>
-  </ItemGroup>
 </Project>

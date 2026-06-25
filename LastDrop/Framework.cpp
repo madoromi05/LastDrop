@@ -24,7 +24,6 @@
 using namespace std;
 
 namespace GameLib{
-
 namespace {
 
 class Impl{
@@ -70,6 +69,7 @@ public:
 		Threading::Manager::destroy();
 		cout.end();
 	}
+
 	void start( void* windowHandle ){
 		Threading::Manager::create( 0 );
 		if ( mArchiveNumber > 0 ){
@@ -87,7 +87,6 @@ public:
 		Input::Manager::create( windowHandle );
 		Graphics::Manager::create( windowHandle, mWidth, mHeight, mFullScreen, mVSync, mAntiAlias );
 
-		// setup debug font (95 ASCII + 63 half-width katakana = 158 chars)
 		Scene::Font::BitmapChar chars[158];
 		int pos = 0;
 		for ( int i = 0x20; i <= 0x7E; ++i ){
@@ -112,11 +111,10 @@ public:
 		}
 		ASSERT( pos == 158 );
 
-		// load font.tga from the working directory
 		{
 			FILE* fp = nullptr;
-			fopen_s( &fp, "font.tga", "rb" );
-			ASSERT( fp && "font.tga not found. Place it in the working directory." );
+			fopen_s( &fp, "Resource/font.tga", "rb" );
+			ASSERT( fp && "Resource/font.tga not found." );
 			if ( fp ){
 				fseek( fp, 0, SEEK_END );
 				int textureSize = static_cast< int >( ftell( fp ) );
@@ -278,7 +276,7 @@ public:
 
 Impl* gImpl = 0;
 
-} // anonymous namespace
+}
 
 Framework::Framework(){
 	ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );
@@ -381,7 +379,7 @@ void Framework::createTexture( Texture** tex, const char* filename ){
 	*tex = NEW Texture();
 	( *tex )->mTexture = Graphics::Texture::create( filename );
 	while ( !( *tex )->mTexture.isReady() ){
-		; // wait for load
+		;
 	}
 }
 
@@ -456,5 +454,4 @@ void WindowCreator::update(){
 void WindowCreator::start( void* windowHandle ){
 	Framework().start( windowHandle );
 }
-
-} //namespace GameLib
+}

@@ -10,7 +10,7 @@
 using namespace std;
 
 Stage::Stage() : mDatabase( 0 ), mModel( 0 ){
-	mDatabase = NEW GraphicsDatabase( "stage.txt" );
+	mDatabase = NEW GraphicsDatabase( "Resource/stage.txt" );
 	mModel = mDatabase->createModel( "draw" );
 }
 

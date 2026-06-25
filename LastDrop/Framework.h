@@ -8,7 +8,7 @@ class Texture;
 class Framework{
 public:
 	Framework();
-	void update(); // user-defined per-frame logic
+	void update();
 	static Framework instance();
 	int width() const;
 	int height() const;
@@ -38,15 +38,13 @@ public:
 	void enableDepthTest( bool );
 	void enableDepthWrite( bool );
 
-	// internal
 	void start( void* windowHandle );
 	void preUpdate();
 	void postUpdate();
 	static void create();
 	static void destroy();
 };
-
-} //namespace GameLib
+}
 
 #include "GameLib/GameLib.h"
 

@@ -30,6 +30,7 @@ public:
 	int getEnergy() const;
 	bool getLockOn() const;
 	const Vector3* getBulletPosition( int i ) const;
+	int getBulletNumber() const;
 
 	static const int mJumpUpTime; //上昇していく時間
 	static const int mJumpStayTime; //上昇後下降までの時間
@@ -50,9 +51,8 @@ public:
 	static const float mLockOnAngleOut; //ロックオンする角度
 private:
 	void move( bool left, bool right, bool up, bool down );
-	void turn( bool left, bool right );
 	//思考ルーチン。ボタン入力を返す。プレイヤー操作キャラならただ入力を取るだけ
-	void think( bool* jump, bool* fire, bool* turn, bool* left, bool* right, bool* up, bool* down ) const;
+	void think( bool* jump, bool* fire, bool* left, bool* right, bool* up, bool* down ) const;
 
 	Vector3 mPosition;
 	float mAngleY;

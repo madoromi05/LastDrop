@@ -1,6 +1,5 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector2.h"
-#include "GameLib/Math/Vector2.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Math/Functions.h"
@@ -60,7 +59,7 @@ void Bullet::update( const Vector3& enemyPos ){
 	Vector3 p = *mModel->getPosition();
 	Vector3 a = *mModel->getAngle();
 	if ( mHoming ){
-		dir.setSub( enemyPos, *mModel->getPosition() ); //自分から敵へ
+		dir.setSub( enemyPos, p ); //自分から敵へ
 		//Y軸角度はatan2( x, z )。
 		float ty = Math::atan2( dir.x, dir.z );
 		//180度以上差があれば+-360度して逆回し

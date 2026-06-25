@@ -10,7 +10,6 @@ public:
 		RIGHT,
 		JUMP,
 		FIRE,
-		TURN,
 	};
 	static Pad* instance();
 	static void create();
@@ -18,6 +17,7 @@ public:
 	bool isOn( Button, int id ) const;
 	bool isTriggered( Button, int id ) const;
 private:
+	bool getButtonState( Button b, int id, bool triggered ) const;
 	Pad();
 	~Pad();
 	static Pad* mInstance;

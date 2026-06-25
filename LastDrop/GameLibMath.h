@@ -13,7 +13,7 @@ double atan( double );
 double atan2( double y, double x );
 double sqrt( double );
 
-} //namespace GameLib
+}
 
 #include "GameLib/GameLib.h"
 
