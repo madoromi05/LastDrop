@@ -30,7 +30,7 @@ public:
 private:
 	ConstSharedPtr< VertexBuffer > mVertexBuffer;
 	ConstSharedPtr< IndexBuffer > mIndexBuffer;
-	ConstSharedPtr< Texture > mTexture;
+	ConstSharedPtr< ::Texture > mTexture;
 
 	GameLib::Graphics::BlendMode mBlendMode;
 	string mName;

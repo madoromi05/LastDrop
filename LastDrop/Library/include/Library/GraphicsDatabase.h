@@ -8,7 +8,9 @@ namespace GameLib{
 		class Element;
 	}
 }
-using namespace GameLib; //�ʓ|�Ȃ̂�using�B���܂�悭�Ȃ��B
+using GameLib::Array;
+using GameLib::SharedPtr;
+using GameLib::ConstSharedPtr;
 
 class VertexBuffer;
 class IndexBuffer;
@@ -24,7 +26,7 @@ public:
 
 	ConstSharedPtr< VertexBuffer > getVertexBuffer( const char* name ) const;
 	ConstSharedPtr< IndexBuffer > getIndexBuffer( const char* name ) const;
-	ConstSharedPtr< Texture > getTexture( const char* name ) const;
+	ConstSharedPtr< ::Texture > getTexture( const char* name ) const;
 	ConstSharedPtr< Batch > getBatch( const char* name ) const;
 
 	Model* createModel( const char* batchName ) const;
@@ -33,7 +35,7 @@ private:
 
 	Array< SharedPtr< VertexBuffer > > mVertexBuffers;
 	Array< SharedPtr< IndexBuffer > > mIndexBuffers;
-	Array< SharedPtr< Texture > > mTextures;
+	Array< SharedPtr< ::Texture > > mTextures;
 	Array< SharedPtr< Batch > > mBatches;
 };
 

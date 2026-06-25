@@ -8,7 +8,7 @@ namespace GameLib{
 		class Matrix44;
 	}
 }
-using namespace GameLib;
+using GameLib::ConstSharedPtr;
 using namespace GameLib::Math;
 class Batch;
 
