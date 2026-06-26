@@ -43,9 +43,8 @@ public:
 	bool isOn( int i ) const;
 	bool isTriggered( int i ) const;
 };
-
-} //namespace Input
-} //namespace GameLib
+}
+}
 
 
 #endif

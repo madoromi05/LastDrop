@@ -61,21 +61,6 @@
     <ClCompile Include="GameLibMath.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Bullet.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Pad.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Robo.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Stage.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <!-- Library -->
     <ClCompile Include="Library\src\Batch.cpp">
       <Filter>Library</Filter>
@@ -279,6 +264,21 @@
     <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
       <Filter>GameLib\WindowCreator</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\Bullet.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\Main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\Pad.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\Robo.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\Stage.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framework.h">
@@ -286,18 +286,6 @@
     </ClInclude>
     <ClInclude Include="GameLibMath.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Bullet.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Pad.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Robo.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Stage.h">
-      <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Library\include\Library\Batch.h">
       <Filter>Library</Filter>
@@ -614,5 +602,53 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\Bullet.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\Pad.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\Robo.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\Stage.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputFormatBase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceCentor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputCollector.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\Input.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\KeyboardDevice.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\MouseDevice.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\JoystickDevice.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Resource\font.tga" />
+    <Image Include="Resource\robo.tga" />
+    <Image Include="Resource\stage.tga" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Resource\robo.txt" />
+    <Text Include="Resource\stage.txt" />
   </ItemGroup>
 </Project>

@@ -20,8 +20,7 @@ public:
 	bool isOn( Button ) const;
 	bool isTriggered( Button ) const;
 };
-
-} //namespace Input
-} //namespace GameLib
+}
+}
 
 #endif

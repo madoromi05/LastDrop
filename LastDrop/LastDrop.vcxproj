@@ -303,6 +303,15 @@
     <ClInclude Include="GameLib\include\GameLib\FileIO\InFile.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\OutFile.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\Input.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputCollector.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceCentor.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputFormatBase.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\JoystickDevice.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\KeyboardDevice.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\MouseDevice.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Attribute.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Document.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Element.h" />

@@ -25,8 +25,7 @@ public:
 	static void destroy();
 	void update( float pointerScale, const Math::Vector2& pointerOffset );
 };
-
-} //namespace Input
-} //namespace GameLib
+}
+}
 
 #endif
