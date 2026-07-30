@@ -1,6 +1,5 @@
 #include "Pad.h"
 #include "GameLib/GameLib.h"
-#include "GameLib/Input/Mouse.h"
 using namespace GameLib::Input;
 
 Pad* Pad::mInstance = nullptr;
@@ -10,10 +9,14 @@ void Pad::destroy() { ASSERT(mInstance);  SAFE_DELETE(mInstance); }
 Pad* Pad::instance() { return mInstance; }
 
 // ────────────────────────────────────────────────
-// コンストラクタ：デバイスとデフォルト割り当てを構築する
+// コンストラクタ：builder を生成し、設定を読み込んで Input に反映する
 // ────────────────────────────────────────────────
 Pad::Pad()
 {
+    for (int i = 0; i < MAX_PLAYERS; ++i)
+    {
+        m_builders[i] = std::make_unique<InputBuilder>(m_inputs[i]);
+    }
     setupDevicesAndBindings();
 }
 
@@ -21,87 +24,33 @@ Pad::~Pad() {}
 
 void Pad::setupDevicesAndBindings()
 {
-    // ── Player 0 ──────────────────────────────
+    for (int i = 0; i < MAX_PLAYERS; ++i)
+    {
+        loadOrDefault(i);
+    }
+}
 
-    // デバイスを登録
-    auto kb0 = m_inputs[0].AddDevice<KeyboardDevice>("Keyboard");
-    auto mo0 = m_inputs[0].AddDevice<MouseDevice>("Mouse");
-    auto joy0 = m_inputs[0].AddDevice<JoystickDevice>("Joystick");
+void Pad::loadOrDefault(int playerId)
+{
+    // 保存済み設定があればそれを、無ければ GameLib 側のデフォルト表を採用する。
+    // デフォルト割当（どのキーを何に）は GameLib が持つので Pad は番号で引くだけ。
+    if (!m_configs[playerId].load(InputConfigFilePath(playerId)))
+    {
+        int count = 0;
+        const BindingRecord* defaults = DefaultBindings(playerId, &count);
+        m_configs[playerId].loadDefaults(defaults, count);
+    }
+    applyConfig(playerId);
+}
 
-    // キーボードのボタンフォーマットを登録
-    auto kbFmt0 = kb0->AddInputButtonFormat<KeyboardButtonFormat>("Keys");
-    kbFmt0->AddButton("W", 'w');
-    kbFmt0->AddButton("S", 's');
-    kbFmt0->AddButton("A", 'a');
-    kbFmt0->AddButton("D", 'd');
-    kbFmt0->AddButton("Space", ' ');
-
-    // マウスのボタンフォーマットを登録
-    auto moFmt0 = mo0->AddInputButtonFormat<MouseButtonFormatInt>("Buttons");
-    moFmt0->AddButton("Left", static_cast<int>(Mouse::BUTTON_LEFT));
-    moFmt0->AddButton("Right", static_cast<int>(Mouse::BUTTON_RIGHT));
-
-    // マウスの軸フォーマットを登録
-    auto moAxis0 = mo0->AddInputAxisFormat<MouseAxisFormat>("Axes");
-    moAxis0->AddAxis("Move", 0);
-    moAxis0->AddAxis("Wheel", 1);
-
-    // ジョイスティックのフォーマットを登録（プレイヤー 0）
-    auto joyFmt0 = joy0->AddInputButtonFormat<JoystickButtonFormat>("Buttons");
-    joyFmt0->AddButton("Up", Joystick::BUTTON_UP);
-    joyFmt0->AddButton("Down", Joystick::BUTTON_DOWN);
-    joyFmt0->AddButton("Left", Joystick::BUTTON_LEFT);
-    joyFmt0->AddButton("Right", Joystick::BUTTON_RIGHT);
-    joyFmt0->AddButton("A", 0);
-    joyFmt0->AddButton("B", 1);
-
-    // ジョイスティック軸
-    auto joyAxis0 = joy0->AddInputAxisFormat<JoystickAxisFormat>("Axes");
-    joyAxis0->AddAxis("LeftStick", 0);
-
-    // コレクター（ゲーム中の割り当て）
-    auto col0 = m_inputs[0].AddCollector("InGame");
-    col0->AddButtonToButtonWork(WORK_UP, "Keyboard", "W");
-    col0->AddButtonToButtonWork(WORK_UP, "Joystick", "Up");
-    col0->AddButtonToButtonWork(WORK_DOWN, "Keyboard", "S");
-    col0->AddButtonToButtonWork(WORK_DOWN, "Joystick", "Down");
-    col0->AddButtonToButtonWork(WORK_LEFT, "Keyboard", "A");
-    col0->AddButtonToButtonWork(WORK_LEFT, "Joystick", "Left");
-    col0->AddButtonToButtonWork(WORK_RIGHT, "Keyboard", "D");
-    col0->AddButtonToButtonWork(WORK_RIGHT, "Joystick", "Right");
-    col0->AddButtonToButtonWork(WORK_JUMP, "Keyboard", "Space");
-    col0->AddButtonToButtonWork(WORK_JUMP, "Joystick", "A");
-    col0->AddButtonToButtonWork(WORK_FIRE, "Mouse", "Left");
-    col0->AddButtonToButtonWork(WORK_FIRE, "Joystick", "B");
-
-    // ── Player 1 ──────────────────────────────
-
-    auto kb1 = m_inputs[1].AddDevice<KeyboardDevice>("Keyboard");
-    auto joy1 = m_inputs[1].AddDevice<JoystickDevice>("Joystick");
-
-    auto kbFmt1 = kb1->AddInputButtonFormat<KeyboardButtonFormat>("Keys");
-    kbFmt1->AddButton("I", 'i');
-    kbFmt1->AddButton("M", 'm');
-    kbFmt1->AddButton("J", 'j');
-    kbFmt1->AddButton("K", 'k');
-    kbFmt1->AddButton("L", 'l');
-    kbFmt1->AddButton("Comma", ',');
-
-    // ジョイスティック（プレイヤー 1 = インデックス 1）
-    auto joyFmt1 = joy1->AddInputButtonFormat<JoystickButtonFormat>("Buttons");
-    // JoystickButtonFormat のデフォルト引数は 0 なので、1 を渡す必要がある
-    // → AddInputButtonFormat は引数なしで make_shared するため、別途 playerId を設定できるよう
-    //    下記のように直接 shared_ptr を差し替える（または JoystickDevice に id を持たせる）
-    // ※ シンプルにするため Player1 の Joystick は省略し、キーボードのみとする
-    //    （JoystickButtonFormat にプレイヤー ID を渡す設計改善は拡張ポイント）
-
-    auto col1 = m_inputs[1].AddCollector("InGame");
-    col1->AddButtonToButtonWork(WORK_UP, "Keyboard", "I");
-    col1->AddButtonToButtonWork(WORK_DOWN, "Keyboard", "M");
-    col1->AddButtonToButtonWork(WORK_LEFT, "Keyboard", "J");
-    col1->AddButtonToButtonWork(WORK_RIGHT, "Keyboard", "K");
-    col1->AddButtonToButtonWork(WORK_JUMP, "Keyboard", "L");
-    col1->AddButtonToButtonWork(WORK_FIRE, "Keyboard", "Comma");
+void Pad::applyConfig(int playerId)
+{
+    // 設定（唯一の正）を実際の Input に反映する。
+    // Bind がデバイス生成・物理キー登録・割当まで自己完結する。
+    for (const auto& record : m_configs[playerId].records())
+    {
+        m_builders[playerId]->Bind(record);
+    }
 }
 
 // ────────────────────────────────────────────────
@@ -116,19 +65,21 @@ void Pad::update()
 }
 
 // ────────────────────────────────────────────────
-// Button 列挙 → ワーク名への変換
+// Button 列挙 → WorkId への変換
 // ────────────────────────────────────────────────
-const char* Pad::buttonToWorkName(Button b)
+WorkId Pad::buttonToWorkId(Button b)
 {
     switch (b)
     {
-    case UP:    return WORK_UP;
-    case DOWN:  return WORK_DOWN;
-    case LEFT:  return WORK_LEFT;
-    case RIGHT: return WORK_RIGHT;
-    case JUMP:  return WORK_JUMP;
-    case FIRE:  return WORK_FIRE;
-    default:    return "";
+    case UP:    return WorkId::Up;
+    case DOWN:  return WorkId::Down;
+    case LEFT:  return WorkId::Left;
+    case RIGHT: return WorkId::Right;
+    case JUMP:  return WorkId::Jump;
+    case FIRE:  return WorkId::Fire;
+    case WIRE:  return WorkId::Wire;
+    case DODGE: return WorkId::Dodge;
+    default:    return WorkId::Up;
     }
 }
 
@@ -137,50 +88,83 @@ const char* Pad::buttonToWorkName(Button b)
 // ────────────────────────────────────────────────
 bool Pad::isOn(Button b, int playerId) const
 {
-    const char* work = buttonToWorkName(b);
-    short s = m_inputs[playerId].GetButtonWorkState(work);
-    return (s & KeyStatus::Press) || (s & KeyStatus::Hold);
+    WorkId work = buttonToWorkId(b);
+    return IsWorkPress(m_inputs[playerId], work) || IsWorkHold(m_inputs[playerId], work);
 }
 
 bool Pad::isTriggered(Button b, int playerId) const
 {
-    return m_inputs[playerId].GetButtonWorkState(buttonToWorkName(b)) & KeyStatus::Press;
+    return IsWorkPress(m_inputs[playerId], buttonToWorkId(b));
 }
 
 // ────────────────────────────────────────────────
 // 新 API
 // ────────────────────────────────────────────────
-short Pad::getWorkState(const char* workName) const
-{
-    return m_inputs[0].GetButtonWorkState(workName);
-}
-
-bool Pad::isWorkFree(const char* w) const { return m_inputs[0].IsButtonWorkFree(w); }
-bool Pad::isWorkPress(const char* w) const { return m_inputs[0].IsButtonWorkPress(w); }
-bool Pad::isWorkHold(const char* w) const { return m_inputs[0].IsButtonWorkHold(w); }
-bool Pad::isWorkRelease(const char* w) const { return m_inputs[0].IsButtonWorkRelease(w); }
+short Pad::getWorkState(WorkId work, int playerId) const { return GetWorkState(m_inputs[playerId], work); }
+bool  Pad::isWorkFree(WorkId work, int playerId) const { return IsWorkFree(m_inputs[playerId], work); }
+bool  Pad::isWorkPress(WorkId work, int playerId) const { return IsWorkPress(m_inputs[playerId], work); }
+bool  Pad::isWorkHold(WorkId work, int playerId) const { return IsWorkHold(m_inputs[playerId], work); }
+bool  Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
 
 // ────────────────────────────────────────────────
 // キーコンフィグ
+//
+// 設定（m_configs）を書き換え → Input へ反映 → ファイルへ保存、を1か所に集約。
+// UI 側は「どの操作にどのキー」を渡すだけでよく、保存や反映は意識しなくてよい。
 // ────────────────────────────────────────────────
-void Pad::addButtonToWork(const char* work, const char* device, const char* button, int playerId)
+void Pad::addKeyboardBindingToWork(WorkId work, char asciiKey, int playerId)
 {
-    auto col = m_inputs[playerId].GetCollector("InGame");
-    if (col) col->AddButtonToButtonWork(work, device, button);
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Keyboard, asciiKey };
+    m_configs[playerId].addBinding(record);
+    m_builders[playerId]->Bind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
 }
 
-void Pad::removeButtonFromWork(const char* work, const char* device, const char* button, int playerId)
+void Pad::addMouseBindingToWork(WorkId work, Mouse::Button button, int playerId)
 {
-    auto col = m_inputs[playerId].GetCollector("InGame");
-    if (col) col->RemoveButtonFromButtonWork(work, device, button);
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Mouse, static_cast<int>(button) };
+    m_configs[playerId].addBinding(record);
+    m_builders[playerId]->Bind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
 }
 
-void Pad::setCollectorActive(const char* collectorName, bool active)
+void Pad::addJoystickBindingToWork(WorkId work, int buttonCode, int playerId)
+{
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Joystick, buttonCode };
+    m_configs[playerId].addBinding(record);
+    m_builders[playerId]->Bind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
+}
+
+void Pad::removeKeyboardBindingFromWork(WorkId work, char asciiKey, int playerId)
+{
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Keyboard, asciiKey };
+    m_configs[playerId].removeBinding(record);
+    m_builders[playerId]->Unbind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
+}
+
+void Pad::removeMouseBindingFromWork(WorkId work, Mouse::Button button, int playerId)
+{
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Mouse, static_cast<int>(button) };
+    m_configs[playerId].removeBinding(record);
+    m_builders[playerId]->Unbind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
+}
+
+void Pad::removeJoystickBindingFromWork(WorkId work, int buttonCode, int playerId)
+{
+    BindingRecord record{ CollectorId::InGame, work, DeviceKind::Joystick, buttonCode };
+    m_configs[playerId].removeBinding(record);
+    m_builders[playerId]->Unbind(record);
+    m_configs[playerId].save(InputConfigFilePath(playerId));
+}
+
+void Pad::setCollectorActive(CollectorId collector, bool active)
 {
     for (int i = 0; i < MAX_PLAYERS; ++i)
     {
-        auto col = m_inputs[i].GetCollector(collectorName);
-        if (col) col->SetActive(active);
+        m_builders[i]->SetCollectorActive(collector, active);
     }
 }
 
@@ -188,3 +172,16 @@ Input& Pad::getInput(int playerId)
 {
     return m_inputs[playerId];
 }
+
+// ────────────────────────────────────────────────
+// ゲームコード向けショートカット（アクション名＝関数名）
+//   移動系は「押されている間」、Fire は「押した瞬間」を返す。
+// ────────────────────────────────────────────────
+bool InputUp   (int playerId) { return Pad::instance()->isOn(Pad::UP,    playerId); }
+bool InputDown (int playerId) { return Pad::instance()->isOn(Pad::DOWN,  playerId); }
+bool InputLeft (int playerId) { return Pad::instance()->isOn(Pad::LEFT,  playerId); }
+bool InputRight(int playerId) { return Pad::instance()->isOn(Pad::RIGHT, playerId); }
+bool InputJump (int playerId) { return Pad::instance()->isOn(Pad::JUMP,  playerId); }
+bool InputFire (int playerId) { return Pad::instance()->isTriggered(Pad::FIRE, playerId); }
+bool InputWire (int playerId) { return Pad::instance()->isTriggered(Pad::WIRE, playerId); }
+bool InputDodge(int playerId) { return Pad::instance()->isTriggered(Pad::DODGE, playerId); }

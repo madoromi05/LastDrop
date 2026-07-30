@@ -3,7 +3,7 @@
 
 #include "Input/ManagerImpl.h"
 
-//ƒL[ƒ{[ƒh‚ÌŽÀ‘Ì‚Íƒ}ƒl[ƒWƒƒ‚Å‚ ‚éB
+//ã‚­ãƒ¼ãƒœãƒ¼ãƒ‰ã®å®Ÿä½“ã¯ãƒžãƒãƒ¼ã‚¸ãƒ£ã§ã‚ã‚‹ã€‚
 namespace GameLib{
 namespace Input{
 
@@ -15,5 +15,5 @@ bool Keyboard::isTriggered( int i ) const {
 	return gManagerImpl->isKeyTriggered( i );
 }
 
-} //namespace Input
-} //namespace GameLib
+}
+}

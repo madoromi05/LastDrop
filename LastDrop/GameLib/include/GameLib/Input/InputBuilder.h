@@ -1,0 +1,118 @@
+#pragma once
+#include <memory>
+#include "Input.h"
+#include "InputEnums.h"
+#include "KeyboardDevice.h"
+#include "MouseDevice.h"
+#include "JoystickDevice.h"
+#include "Mouse.h"
+
+// ────────────────────────────────────────────────
+// InputBuilder：Input を組み立てるためのゲーム側向け API
+//
+// デバイス名・フォーマット名・ボタン名・ワーク名などの
+// 文字列は InputBuilder.cpp の中だけで管理する。
+// 呼び出し側（Pad.cpp 等）は列挙型・キーコードだけで
+// 入力を組み立てられる。
+//
+// 使い方：
+//   InputBuilder builder(input);
+//   builder.AddKeyboardDevice();
+//   builder.AddKeyboardKey('w');
+//   builder.AddCollector(CollectorId::InGame);
+//   builder.BindKeyboard(CollectorId::InGame, WorkId::Up, 'w');
+// ────────────────────────────────────────────────
+class InputBuilder
+{
+public:
+    explicit InputBuilder(::Input& a_input);
+
+    // ─────────────────────────────────────────
+    // デバイス登録
+    // ─────────────────────────────────────────
+    std::shared_ptr<KeyboardDevice> AddKeyboardDevice();
+    std::shared_ptr<MouseDevice>    AddMouseDevice();
+    std::shared_ptr<JoystickDevice> AddJoystickDevice(int a_joystickIndex = 0);
+
+    // ─────────────────────────────────────────
+    // 物理ボタン／軸の登録（名前は内部で自動生成される）
+    // ─────────────────────────────────────────
+    void AddKeyboardKey(char a_asciiKey);
+    void AddMouseButton(GameLib::Input::Mouse::Button a_button);
+    void AddMouseAxis(GameLib::Input::MouseAxisKind a_axis);
+    void AddJoystickButton(int a_buttonCode);
+    void AddJoystickAxis(GameLib::Input::JoystickAxisKind a_axis);
+
+    // ─────────────────────────────────────────
+    // コレクター
+    // ─────────────────────────────────────────
+    std::shared_ptr<InputCollector> AddCollector(GameLib::Input::CollectorId a_id);
+    void SetCollectorActive(GameLib::Input::CollectorId a_id, bool a_active);
+
+    // ─────────────────────────────────────────
+    // ワークへのバインド／解除
+    //
+    // Bind 系はデバイス未登録なら自動生成し、物理キーも自動登録する。
+    // ゲーム側は AddXxxDevice / AddXxxKey を先に呼ばなくてよい。
+    // ─────────────────────────────────────────
+    void BindKeyboard(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, char a_asciiKey);
+    void BindMouse(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::Mouse::Button a_button);
+    void BindJoystickButton(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, int a_buttonCode);
+
+    void UnbindKeyboard(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, char a_asciiKey);
+    void UnbindMouse(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::Mouse::Button a_button);
+    void UnbindJoystickButton(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, int a_buttonCode);
+
+    // ─────────────────────────────────────────
+    // レコード単位の適用（InputConfig から使う）
+    // デバイス種別で上の Bind/Unbind へ振り分ける。
+    // ─────────────────────────────────────────
+    void Bind(const GameLib::Input::BindingRecord& a_record);
+    void Unbind(const GameLib::Input::BindingRecord& a_record);
+
+private:
+    // 各デバイス／フォーマット／コレクターを「無ければ生成、あれば取得」する。
+    // これにより Bind だけで入力系一式が組み上がる。
+    std::shared_ptr<KeyboardButtonFormat> ensureKeyboardFormat();
+    std::shared_ptr<MouseButtonFormatInt> ensureMouseButtonFormat();
+    std::shared_ptr<JoystickButtonFormat> ensureJoystickButtonFormat();
+    std::shared_ptr<InputCollector>       ensureCollector(GameLib::Input::CollectorId a_collector);
+
+    ::Input& m_input;
+
+    // AddXxxDevice() で作られたフォーマットを保持しておき、
+    // AddXxxKey/Button/Axis() から参照する。
+    std::shared_ptr<KeyboardButtonFormat> m_keyboardKeys;
+    std::shared_ptr<MouseButtonFormatInt> m_mouseButtons;
+    std::shared_ptr<MouseAxisFormat>      m_mouseAxes;
+    std::shared_ptr<JoystickButtonFormat> m_joystickButtons;
+    std::shared_ptr<JoystickAxisFormat>   m_joystickAxes;
+};
+
+// ────────────────────────────────────────────────
+// ワーク状態の問い合わせ（読み取り専用なのでフリー関数にしている）
+//
+// WorkId → ワーク名文字列の変換は InputBuilder.cpp が管理する。
+// ────────────────────────────────────────────────
+namespace GameLib {
+namespace Input {
+
+// プレイヤー番号 → 入力設定ファイルのパス。
+// ファイル名という「文字列」も InputBuilder.cpp 側で一元管理し、
+// ゲーム側（Pad.cpp 等）は番号だけを渡す。
+const char* InputConfigFilePath(int a_playerId);
+
+// プレイヤー番号 → デフォルト割当表（先頭ポインタ）。要素数は a_outCount に返す。
+// 「どのキーを何に割り当てるか」という入力データも GameLib 側が持ち、
+// ゲーム側（Pad.cpp）はキーコードも char も一切書かず番号で呼ぶだけにする。
+// 該当プレイヤーの表が無ければ nullptr / 0 を返す。
+const BindingRecord* DefaultBindings(int a_playerId, int* a_outCount);
+
+short GetWorkState(const ::Input& a_input, WorkId a_work);
+bool  IsWorkFree(const ::Input& a_input, WorkId a_work);
+bool  IsWorkPress(const ::Input& a_input, WorkId a_work);
+bool  IsWorkHold(const ::Input& a_input, WorkId a_work);
+bool  IsWorkRelease(const ::Input& a_input, WorkId a_work);
+
+}
+}

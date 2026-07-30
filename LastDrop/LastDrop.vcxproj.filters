@@ -135,6 +135,12 @@
       <Filter>GameLib\Graphics</Filter>
     </ClCompile>
     <!-- Input -->
+    <ClCompile Include="GameLib\src\Input\InputBuilder.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\InputConfig.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
     <ClCompile Include="GameLib\src\Input\Joystick.cpp">
       <Filter>GameLib\Input</Filter>
     </ClCompile>
@@ -264,6 +270,9 @@
     <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
       <Filter>GameLib\WindowCreator</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\Arena.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\Bullet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -273,10 +282,16 @@
     <ClCompile Include="GameSrc\Pad.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\Player.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\Robo.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\Stage.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\Target.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -602,16 +617,25 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\Arena.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\Bullet.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\Pad.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\Player.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\Robo.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\Stage.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\Target.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h">
@@ -629,6 +653,15 @@
     <ClInclude Include="GameLib\include\GameLib\Input\Input.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputBuilder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputEnums.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\InputConfig.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\KeyboardDevice.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -639,6 +672,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\WindowCreator\Resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

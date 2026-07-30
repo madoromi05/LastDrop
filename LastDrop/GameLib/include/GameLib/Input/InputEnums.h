@@ -1,0 +1,75 @@
+#pragma once
+
+// ────────────────────────────────────────────────
+// 入力ビルダー層：ゲーム側が文字列を書かずに済むように
+// するための列挙型。
+//
+// 実際のデバイス名／ボタン名／ワーク名の文字列は
+// InputBuilder.cpp が一元管理し、ゲーム側（Pad.cpp 等）は
+// ここに定義された列挙型だけを扱えばよい。
+// ────────────────────────────────────────────────
+namespace GameLib {
+namespace Input {
+
+// デバイス種別
+enum class DeviceKind
+{
+    Keyboard,
+    Mouse,
+    Joystick,
+};
+
+// 入力ワーク（ゲームのアクション）種別
+enum class WorkId
+{
+    Up,
+    Down,
+    Left,
+    Right,
+    Jump,
+    Fire,
+    Wire,   // 拘束ワイヤー（アンカーへ引き寄せ移動）
+    Dodge,  // 回避ステップ
+};
+
+// コレクター（シーン別の入力割り当てグループ）種別
+enum class CollectorId
+{
+    InGame,
+};
+
+// マウス軸種別
+enum class MouseAxisKind
+{
+    Move = 0,
+    Wheel = 1,
+};
+
+// ジョイスティック軸種別
+enum class JoystickAxisKind
+{
+    LeftStick = 0,
+};
+
+// ────────────────────────────────────────────────
+// バインド1件を表すデータ（保存/読込・デフォルト表の最小単位）
+//
+// 「どのコレクターの・どのワークを・どのデバイスの・どのコードで」発動するか。
+// code は物理コードの生値：
+//   Keyboard … ASCII（'w' など）
+//   Mouse    … Mouse::Button の整数値
+//   Joystick … ボタンコード（Joystick::BUTTON_UP など。A/B は 0,1）
+//
+// enum とコードだけで表現でき、そのまま整数として保存できるので
+// InputConfig がファイルへ書き出す最小単位になる。
+// ────────────────────────────────────────────────
+struct BindingRecord
+{
+    CollectorId collector;
+    WorkId      work;
+    DeviceKind  device;
+    int         code;
+};
+
+}
+}

@@ -35,7 +35,7 @@ void VertexBuffer::unlock( Vertex** p ){
 	*p = 0;
 }
 
-//NULL�|�C���^����̕ϊ�
+//NULLポインタからの変換
 VertexBuffer::VertexBuffer( const Impl* ) : mImpl( 0 ){
 }
 

@@ -28,7 +28,7 @@ unsigned short* IndexBuffer::lock(){
 }
 
 void IndexBuffer::unlock( unsigned short** p ){
-	//TODO:�f�o�O���̓��b�N�ŕԂ����|�C���^���o���Ă����Ă����ŏƍ����ׂ��B
+	//TODO:デバッグ時はロックで返したポインタを保存しておいて、ここで照合すべき。
 	ASSERT( *p && "Graphics::IndexBuffer : give LOCKED pointer." );
 	ASSERT( mImpl && "Graphics::IndexBuffer : This is empty object." );
 	mImpl->unlock();

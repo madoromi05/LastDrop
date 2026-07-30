@@ -148,11 +148,17 @@
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameLibMath.cpp" />
     <!-- Library (3D graphics abstraction) -->
+    <ClCompile Include="GameSrc\Arena.cpp" />
     <ClCompile Include="GameSrc\Bullet.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
+    <ClCompile Include="GameSrc\Player.cpp">
+      <!-- GameLib\src\Sound\Player.cpp と obj 名が衝突するため、出力名を分ける（MSB8027対策）。 -->
+      <ObjectFileName>$(IntDir)GameSrc_Player.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="GameSrc\Robo.cpp" />
     <ClCompile Include="GameSrc\Stage.cpp" />
+    <ClCompile Include="GameSrc\Target.cpp" />
     <ClCompile Include="Library\src\Batch.cpp">
       <ObjectFileName>$(IntDir)Library\</ObjectFileName>
     </ClCompile>
@@ -198,6 +204,8 @@
     <ClCompile Include="GameLib\src\Graphics\Texture.cpp" />
     <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp" />
     <!-- Input -->
+    <ClCompile Include="GameLib\src\Input\InputBuilder.cpp" />
+    <ClCompile Include="GameLib\src\Input\InputConfig.cpp" />
     <ClCompile Include="GameLib\src\Input\Joystick.cpp" />
     <ClCompile Include="GameLib\src\Input\Keyboard.cpp" />
     <ClCompile Include="GameLib\src\Input\Manager.cpp">
@@ -304,10 +312,13 @@
     <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\OutFile.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\Input.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputBuilder.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputCollector.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceCentor.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputEnums.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\InputConfig.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputFormatBase.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\JoystickDevice.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\KeyboardDevice.h" />
@@ -326,10 +337,14 @@
     <ClInclude Include="GameLib\include\GameLib\Threading\Mutex.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Semaphore.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h" />
+    <ClInclude Include="GameLib\src\WindowCreator\Resource.h" />
+    <ClInclude Include="GameSrc\Arena.h" />
     <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\Pad.h" />
+    <ClInclude Include="GameSrc\Player.h" />
     <ClInclude Include="GameSrc\Robo.h" />
     <ClInclude Include="GameSrc\Stage.h" />
+    <ClInclude Include="GameSrc\Target.h" />
     <ClInclude Include="Library\include\Library\Batch.h" />
     <ClInclude Include="Library\include\Library\Camera.h" />
     <ClInclude Include="Library\include\Library\GraphicsDatabase.h" />

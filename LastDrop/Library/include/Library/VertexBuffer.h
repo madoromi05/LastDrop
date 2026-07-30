@@ -16,13 +16,15 @@ namespace GameLib{
 }
 using namespace GameLib::Math;
 
+// 頂点バッファ(GameLib::Graphics::VertexBuffer)をラップし、
+// 名前や頂点数の管理と、デバイスへのセット処理を行うクラス
 class VertexBuffer{
 public:
-	VertexBuffer( GameLib::PseudoXml::Element& );
+	VertexBuffer( GameLib::PseudoXml::Element& );	// XMLのElementから頂点データを読み込んで構築する
 	~VertexBuffer();
-	int size() const;
-	const string* name() const;
-	void set() const;
+	int size() const;				// 頂点数を取得する
+	const string* name() const;			// このVertexBufferの名前を取得する
+	void set() const;				// この頂点バッファを描画デバイスにセットする
 private:
 	GameLib::Graphics::VertexBuffer mVertexBuffer;
 	int mSize;

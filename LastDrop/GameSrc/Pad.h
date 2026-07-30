@@ -1,30 +1,30 @@
 #pragma once
 #include <memory>
 #include "GameLib/Input/Input.h"
+#include "GameLib/Input/InputEnums.h"
+#include "GameLib/Input/InputBuilder.h"
+#include "GameLib/Input/InputConfig.h"
 #include "GameLib/Input/KeyboardDevice.h"
 #include "GameLib/Input/MouseDevice.h"
 #include "GameLib/Input/JoystickDevice.h"
+#include "GameLib/Input/Mouse.h"
 
 // ────────────────────────────────────────────────
-// Pad：記事の Input システムをこのゲーム用に組み立てるクラス
+// Pad：GameLib の Input システムをこのゲーム用に組み立てるクラス
 //
 // Robo.cpp などのゲームコードは従来通り
 //   Pad::instance()->isOn( Pad::JUMP, 0 )
-// で呼べる。内部では Input クラスを使っている。
+// で呼べる。内部では Input クラスと InputBuilder を使っている。
+//
+// デバイス名・ボタン名・ワーク名などの文字列は GameLib::Input::InputBuilder
+// （GameLib/src/Input/InputBuilder.cpp）が一元管理しており、
+// Pad はキーコードと列挙型（WorkId / DeviceKind 等）だけを扱う。
 // ────────────────────────────────────────────────
 class Pad
 {
 public:
-    // ワーク名（文字列で管理。変えたければここを書き換えるだけ）
-    static constexpr const char* WORK_UP = "Up";
-    static constexpr const char* WORK_DOWN = "Down";
-    static constexpr const char* WORK_LEFT = "Left";
-    static constexpr const char* WORK_RIGHT = "Right";
-    static constexpr const char* WORK_JUMP = "Jump";
-    static constexpr const char* WORK_FIRE = "Fire";
-
     // 従来互換の列挙型（Robo.cpp などを無変更にするため残す）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE };
+    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, DODGE };
 
     static Pad* instance();
     static void create();
@@ -42,21 +42,26 @@ public:
     // ─────────────────────────────────────────
     // 新 API：4状態を直接取得したい場合
     // ─────────────────────────────────────────
-    short getWorkState(const char* workName) const;
-    bool  isWorkFree(const char* workName) const;
-    bool  isWorkPress(const char* workName) const;
-    bool  isWorkHold(const char* workName) const;
-    bool  isWorkRelease(const char* workName) const;
+    short getWorkState(GameLib::Input::WorkId work, int playerId) const;
+    bool  isWorkFree(GameLib::Input::WorkId work, int playerId) const;
+    bool  isWorkPress(GameLib::Input::WorkId work, int playerId) const;
+    bool  isWorkHold(GameLib::Input::WorkId work, int playerId) const;
+    bool  isWorkRelease(GameLib::Input::WorkId work, int playerId) const;
 
     // ─────────────────────────────────────────
     // キーコンフィグ：ワークへのボタン追加・削除
-    // 例: addButtonToWork("Jump", "Keyboard", "Space", 0)
+    // 例: addKeyboardBindingToWork(WorkId::Jump, ' ', 0)
     // ─────────────────────────────────────────
-    void addButtonToWork(const char* work, const char* device, const char* button, int playerId);
-    void removeButtonFromWork(const char* work, const char* device, const char* button, int playerId);
+    void addKeyboardBindingToWork(GameLib::Input::WorkId work, char asciiKey, int playerId);
+    void addMouseBindingToWork(GameLib::Input::WorkId work, GameLib::Input::Mouse::Button button, int playerId);
+    void addJoystickBindingToWork(GameLib::Input::WorkId work, int buttonCode, int playerId);
+
+    void removeKeyboardBindingFromWork(GameLib::Input::WorkId work, char asciiKey, int playerId);
+    void removeMouseBindingFromWork(GameLib::Input::WorkId work, GameLib::Input::Mouse::Button button, int playerId);
+    void removeJoystickBindingFromWork(GameLib::Input::WorkId work, int buttonCode, int playerId);
 
     // コレクター（シーン別マップ）の有効/無効切替
-    void setCollectorActive(const char* collectorName, bool active);
+    void setCollectorActive(GameLib::Input::CollectorId collector, bool active);
 
     // Input インスタンスへの直接アクセス（上級者向け）
     ::Input& getInput(int playerId);
@@ -69,11 +74,46 @@ private:
 
     void setupDevicesAndBindings();
 
+    // 設定を読み込む（ファイルが無ければ GameLib のデフォルト表）→ Input へ反映
+    void loadOrDefault(int playerId);
+    // 現在の設定（m_configs）を builder 経由で Input に一括反映する
+    void applyConfig(int playerId);
+
     // プレイヤーごとに独立した Input インスタンスを持つ
     ::Input m_inputs[MAX_PLAYERS];
 
-    // ワーク名 → Button 列挙（従来 API の変換用）
-    static const char* buttonToWorkName(Button b);
+    // プレイヤーごとの組み立て役（デバイス生成・キー登録・割当を自己完結）。
+    // Input への参照を握るので生成後は破棄しない。
+    std::unique_ptr<InputBuilder> m_builders[MAX_PLAYERS];
+
+    // プレイヤーごとの割当設定（唯一の正。保存/読込・キーコンフィグの対象）
+    GameLib::Input::InputConfig m_configs[MAX_PLAYERS];
+
+    // Button 列挙 → WorkId への変換（従来 API の互換用）
+    static GameLib::Input::WorkId buttonToWorkId(Button b);
 
     static Pad* mInstance;
 };
+
+// ────────────────────────────────────────────────
+// ゲームコード向けショートカット（アクション名＝関数名）
+//
+// 文字列も enum も書かずに InputJump() のように入力を問い合わせる。
+// ゲームロジック側は「何の操作か」だけを書けばよく、
+// デバイス・ワーク名・状態種別は一切意識しなくてよい。
+//
+// 状態の意味は操作の性質に合わせて固定している：
+//   移動系（Up/Down/Left/Right/Jump） … 押されている間ずっと true
+//   Fire                              … 押した瞬間だけ true（トリガー）
+//
+// 内部では Pad::instance() の従来 API に委譲しているだけなので、
+// 割り当て変更やデバイス追加の影響はここには波及しない。
+// ────────────────────────────────────────────────
+bool InputUp   (int playerId = 0);
+bool InputDown (int playerId = 0);
+bool InputLeft (int playerId = 0);
+bool InputRight(int playerId = 0);
+bool InputJump (int playerId = 0);
+bool InputFire (int playerId = 0);
+bool InputWire (int playerId = 0);   // 拘束ワイヤー射出（押した瞬間）
+bool InputDodge(int playerId = 0);   // 回避ステップ（押した瞬間）

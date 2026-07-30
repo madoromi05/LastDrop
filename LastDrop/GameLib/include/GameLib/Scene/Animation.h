@@ -23,7 +23,7 @@ private:
 	Impl* mImpl;
 };
 
-} //namespace Scene
-} //namespace GameLib
+}
+}
 
 #endif

@@ -46,8 +46,7 @@ private:
 	explicit CollisionMesh( Impl* );
 	Impl* mImpl;
 };
-
-} //namespace Scene
-} //namespace GameLib
+}
+}
 
 #endif

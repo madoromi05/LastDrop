@@ -21,12 +21,14 @@ class IndexBuffer;
 class Texture;
 class GraphicsDatabase;
 
+// 頂点バッファ・インデックスバッファ・テクスチャと、マテリアル情報(色や質感)を
+// まとめて保持し、描画を行う単位となるクラス
 class Batch{
 public:
-	Batch( GameLib::PseudoXml::Element&, const GraphicsDatabase& );
+	Batch( GameLib::PseudoXml::Element&, const GraphicsDatabase& );	// XMLのElementとGraphicsDatabaseから、参照するバッファ・テクスチャを解決して構築する
 	~Batch();
-	void draw() const;
-	const string* name() const;
+	void draw() const;						// このBatchが持つ頂点・インデックス・テクスチャを使って描画する
+	const string* name() const;					// このBatchの名前を取得する
 private:
 	ConstSharedPtr< VertexBuffer > mVertexBuffer;
 	ConstSharedPtr< IndexBuffer > mIndexBuffer;

@@ -256,14 +256,13 @@ void Robo::think(
 	bool* right,
 	bool* up,
 	bool* down ) const {
-	Pad* pad = Pad::instance();
 	if (mId == 0) { // プレイヤー操作。
-		*jump = pad->isOn( Pad::JUMP, mId );
-		*fire = pad->isTriggered( Pad::FIRE, mId );
-		*left = pad->isOn( Pad::LEFT, mId );
-		*right = pad->isOn( Pad::RIGHT, mId );
-		*up = pad->isOn( Pad::UP, mId );
-		*down = pad->isOn( Pad::DOWN, mId );
+		*jump  = InputJump( mId );
+		*fire  = InputFire( mId );
+		*left  = InputLeft( mId );
+		*right = InputRight( mId );
+		*up    = InputUp( mId );
+		*down  = InputDown( mId );
 	}
 	else { // AI操作。
 		// ジャンプ：

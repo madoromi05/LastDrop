@@ -17,10 +17,10 @@
 using namespace std;
 using namespace GameLib;
 
-//WindowCreator�����o�֐�
+//WindowCreatorのメンバ関数
 namespace GameLib{
 
-namespace{ //����
+namespace{
 
 class Impl{
 public:
@@ -38,13 +38,16 @@ public:
 	mFullScreenForbidden( false ),
 	mDragAndDropEnabled( false ),
 	mMouseWheel( 0 ),
-	mTimeBias( 0 ){
-		//getTime()�p�o�C�A�X�l�v�Z
+	mTimeBias( 0 ),
+	mThreadId( 0 ),
+	mWindowHandle( NULL ),
+	mWindowRect(){
+		//getTime()用バイアス値計算
 		unsigned time = timeGetTime();
 		mTimeBias = 0xffffffff - time;
-		mTimeBias -= 60000; //60�b�����B
+		mTimeBias -= 60000; //60秒の余裕を持たせる。
 
-		//�X���b�hID�擾
+		//スレッドID取得
 		mThreadId = GetCurrentThreadId();
 	}
 	~Impl(){
@@ -55,10 +58,10 @@ public:
 				LONG style;
 				if ( f ){
 					style = WS_POPUP | WS_VISIBLE;
-					//�ő剻����Ƃ��ɂ͍��̏ꏊ���o���Ă���
+					//最大化するときは元の場所を覚えておく
 					GetWindowRect( mWindowHandle, &mWindowRect );
 					SetWindowLong( mWindowHandle, GWL_STYLE, style );
-					//�ʒu��0,0
+					//位置は0,0
 					SetWindowPos( mWindowHandle, NULL, 
 						0, 0,
 						mWidth, mHeight,
@@ -66,7 +69,7 @@ public:
 				}else{
 					style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE;
 					SetWindowLong( mWindowHandle, GWL_STYLE, style );
-					//���ɖ߂����ɂ͈ʒu��߂�
+					//元に戻すときは位置も戻す
 					SetWindowPos( mWindowHandle, NULL, 
 						mWindowRect.left, mWindowRect.top,
 						mWindowRect.right - mWindowRect.left,
@@ -107,19 +110,19 @@ public:
 	bool mFullScreenForbidden;
 	bool mDragAndDropEnabled;
 	int mMouseWheel;
-	unsigned mTimeBias; //timeGetTime�ɂ͂�����Q�^
+	unsigned mTimeBias; //timeGetTime()にはこれを加算
 	unsigned mThreadId;
 	Array< string > mDroppedItems;
 	HWND mWindowHandle;
 	RECT mWindowRect;
 };
 
-Impl* gImpl = 0; //�B��C���X�^���X
+Impl* gImpl = 0; //唯一のインスタンス
 
 } //namespace{}
 
 WindowCreator::WindowCreator(){
-	//�ʃX���b�h����̌Ăяo���͋����Ȃ�
+	//別スレッドからの呼び出しは許されない
 	ASSERT( isMainThread() && "you must call from MAIN thread" );
 }
 
@@ -148,7 +151,7 @@ bool WindowCreator::isFullScreen() const {
 }
 
 WindowCreator WindowCreator::instance(){
-	return WindowCreator(); //���͂��̊֐�����Ȃ�
+	return WindowCreator(); //中身はない関数だけのクラス
 }
 
 bool WindowCreator::isEndRequested() const {
@@ -234,35 +237,39 @@ void WindowCreator::Configuration::enableDragAndDrop( bool f ){
 
 #define MAX_LOADSTRING 100
 
-// �O���[�o���ϐ�:
-HINSTANCE hInst;								// ���݂̃C���^�[�t�F�C�X
-TCHAR szTitle[MAX_LOADSTRING];					// �^�C�g�� �o�[�̃e�L�X�g
-TCHAR szWindowClass[MAX_LOADSTRING];			// ���C�� �E�B���h�E �N���X��
+// グローバル変数:
+HINSTANCE hInst;								// 現在のインターフェイス
+TCHAR szTitle[MAX_LOADSTRING];					// タイトル バーのテキスト
+TCHAR szWindowClass[MAX_LOADSTRING];			// メイン ウィンドウ クラス名
 
-// ���̃R�[�h ���W���[���Ɋ܂܂��֐��̐錾��]�����܂�:
+// このコード モジュールに含まれる関数の宣言を転送します:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 
 
-int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
+                     _In_opt_ HINSTANCE hPrevInstance,
+                     _In_ LPTSTR    lpCmdLine,
+                     _In_ int       nCmdShow)
 {
-	CoInitializeEx( NULL, COINIT_MULTITHREADED );
+	HRESULT hrCoInit = CoInitializeEx( NULL, COINIT_MULTITHREADED );
+	if ( FAILED( hrCoInit ) ){
+		MessageBoxA( NULL, "COMの初期化に失敗しました。", "致命的なエラー", MB_OK | MB_ICONERROR );
+		return 0;
+	}
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: �����ɃR�[�h��}�����Ă��������B
+ 	// TODO: ここにコードを挿入してください。
 	MSG msg;
 	HACCEL hAccelTable;
 
-	//�E�B���h�E��ԕێ��N���X����
+	//ウィンドウ状態保持クラス生成
 	gImpl = NEW Impl();
 	gImpl->mCommandLine = lpCmdLine;
 	WindowCreator wc;
-	//���[�U�ݒ�֐��Ăяo��
+	//ユーザ設定関数呼び出し
 	WindowCreator::Configuration config;
 	wc.configure( &config );
 
@@ -274,7 +281,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	MyRegisterClass( hInstance );
 
-	// �A�v���P�[�V�����̏����������s���܂�:
+	// アプリケーションの初期化を実行します:
 	if ( !InitInstance ( hInstance, nCmdShow ) ){
 		return FALSE;
 	}
@@ -283,34 +290,34 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	timeBeginPeriod( 1 );
 	HWND windowHandle = gImpl->mWindowHandle;
-	///�N���O�̗�O�͌p���s�\�Ȃ̂ŁA���b�Z�[�W�{�b�N�X���o���ďI��点��
+	///起動時の例外は継続不可能なので、メッセージボックスを出して終了させる
 	try{
 		wc.start( windowHandle );
 	}
-	catch ( ... ){ //�N�����̗�O�͖����ł��Ȃ��B
+	catch ( ... ){ //起動時の例外は無視できない。
 		MessageBoxA( 
 			windowHandle, 
-			"�v���I�Ȗ�肪����A�N���ł��܂���B�\���󂠂�܂��񂪏I���������܂�", 
-			"�v���I�G���[", 
+			"致命的な問題が発生したため、起動できません。ご迷惑をおかけしますが終了させていただきます",
+			"致命的なエラー",
 			MB_OK | MB_ICONERROR );
-		wc.requestEnd(); //�I���B
-		wc.update(); //���ŏI������
+		wc.requestEnd(); //終了。
+		wc.update(); //ここで終了処理
 		SAFE_DELETE( gImpl );
 		timeEndPeriod( 1 );
 		return 0;
 	}
 
-	//�t���X�N���[���Ȃ�߂��E�B���h�E�ʒu�𐶐�
+	//フルスクリーンなら戻すウィンドウ位置を生成
 	if ( gImpl->mFullScreen ){
 		gImpl->createDefaultWindowPos();
 	}
-	//�h���b�O�A���h�h���b�v�L����
+	//ドラッグアンドドロップ有効化
 	if ( gImpl->mDragAndDropEnabled ){
 		DragAcceptFiles( windowHandle, TRUE );
 	}
-	gImpl->mStarted = true; //���[�v�J�n�M��
+	gImpl->mStarted = true; //ループ開始合図
 	while ( true ){
-		//���b�Z�[�W������Ȃ珈��
+		//メッセージがあるなら処理
 		if ( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) ){
 			if ( GetMessage( &msg, NULL, 0, 0 ) ){
 				if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ){
@@ -318,25 +325,25 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 					DispatchMessage( &msg );
 				}
 			}else{
-				break; //WM_QUIT���܂����B���[�v�����܂��B
+				break; //WM_QUITが来ました。ループを抜けます。
 			}
 		}
-		//�I����Ă��window�j��
-		if ( gImpl->mEnded ){ //�I����ĂȂ���΍X�V���[�v
-			if ( windowHandle ){ //�����������2�񗈂邩������Ȃ��̂ŔO�̂���
+		//終了していたらwindow破棄
+		if ( gImpl->mEnded ){ //終了していなければ更新ループ
+			if ( windowHandle ){ //ここに2回来るかもしれないので念のため
 				DestroyWindow( windowHandle );
 				windowHandle = 0;
 			}
-		}else{	//���s�{��
+		}else{	//実行本体
 			try{
 				wc.update();
 			}
 			catch ( Exception e ){
-				if ( e == EXCEPTION_EXIT ){ //�I���v����O�̏ꍇ�̂ݏI��
+				if ( e == EXCEPTION_EXIT ){ //終了要求の例外の場合のみ終了
 					MessageBoxA( 
 						windowHandle, 
-						"�v���I�Ȗ�肪����A�p���ł��܂���B�\���󂠂�܂��񂪏I���������܂�", 
-						"�v���I�G���[", 
+						"致命的な問題が発生したため、続行できません。ご迷惑をおかけしますが終了させていただきます",
+						"致命的なエラー",
 						MB_OK | MB_ICONERROR );
 				}
 			}
@@ -352,17 +359,17 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 
 //
-//  �֐�: MyRegisterClass()
+//  関数: MyRegisterClass()
 //
-//  �ړI: �E�B���h�E �N���X��o�^���܂��B
+//  目的: ウィンドウ クラスを登録します。
 //
-//  �R�����g:
+//  コメント:
 //
-//    ���̊֐�����юg�����́A'RegisterClassEx' �֐����ǉ����ꂽ
-//    Windows 95 ���O�� Win32 �V�X�e���ƌ݊�������ꍇ�ɂ̂ݕK�v�ł��B
-//    �A�v���P�[�V�������A�֘A�t����ꂽ
-//    �������`���̏������A�C�R�����擾�ł���悤�ɂ���ɂ́A
-//    ���̊֐����Ăяo���Ă��������B
+//    この関数およびその使用方法は、'RegisterClassEx' 関数が追加された
+//    Windows 95 より前の Win32 システムと互換性を保つ場合にのみ必要です。
+//    アプリケーションに、関連付けられた
+//    正しい形式のウィンドウ クラスとアイコンを取得できるようにするには、
+//    この関数を呼び出してください。
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -386,20 +393,20 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 }
 
 //
-//   �֐�: InitInstance(HINSTANCE, int)
+//   関数: InitInstance(HINSTANCE, int)
 //
-//   �ړI: �C���X�^���X �n���h����ۑ����āA���C�� �E�B���h�E���쐬���܂��B
+//   目的: インスタンス ハンドルを保存して、メイン ウィンドウを作成します。
 //
-//   �R�����g:
+//   コメント:
 //
-//        ���̊֐��ŁA�O���[�o���ϐ��ŃC���X�^���X �n���h����ۑ����A
-//        ���C�� �v���O���� �E�B���h�E���쐬����ѕ\�����܂��B
+//        この関数で、グローバル変数にインスタンス ハンドルを保存し、
+//        メイン プログラム ウィンドウを作成および表示します。
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	HWND hWnd;
 
-	hInst = hInstance; // �O���[�o���ϐ��ɃC���X�^���X�������i�[���܂��B
+	hInst = hInstance; // グローバル変数にインスタンスを格納します。
 //----
 	DWORD style = 0;
 	if ( gImpl->mFullScreen ){
@@ -414,7 +421,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	rect.bottom = gImpl->mHeight;
 	AdjustWindowRect(&rect, style, FALSE);
 	rect.right -= rect.left;
-	rect.bottom -= rect.top; //�����v�Z
+	rect.bottom -= rect.top; //高さ計算
 	rect.left = 0;
 	rect.top = 0;
 //----
@@ -438,13 +445,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 }
 
 //
-//  �֐�: WndProc(HWND, UINT, WPARAM, LPARAM)
+//  関数: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
-//  �ړI:  ���C�� �E�B���h�E�̃��b�Z�[�W���������܂��B
+//  目的:  メイン ウィンドウのメッセージを処理します。
 //
-//  WM_COMMAND	- �A�v���P�[�V���� ���j���[�̏���
-//  WM_PAINT	- ���C�� �E�B���h�E�̕`��
-//  WM_DESTROY	- ���~���b�Z�[�W��\�����Ė߂�
+//  WM_COMMAND	- アプリケーション メニューの処理
+//  WM_PAINT	- メイン ウィンドウの描画
+//  WM_DESTROY	- 終了メッセージを表示して戻る
 //
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -452,13 +459,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 		break;
-	case WM_CLOSE: //�I���v��
+	case WM_CLOSE: //終了要求
 		gImpl->mEndRequested = true;
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-	case WM_SYSKEYDOWN: //alt+enter�F��
+	case WM_SYSKEYDOWN: //alt+enter対応
 		if ( !gImpl->mFullScreenForbidden ){
 			if ( wParam == VK_RETURN ){
 				if ( gImpl->mFullScreen ){
@@ -471,7 +478,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		DefWindowProc(hWnd, message, wParam, lParam);
 		break;
 	case WM_ACTIVATE:
-		if ( wParam & 0xffff0000 ){ //�ŏ�������Ă����false
+		if ( wParam & 0xffff0000 ){ //最小化されていればfalse
 			gImpl->mActive = false;
 		}else{
 			gImpl->mActive = ( ( wParam & 0xffff ) != 0 );
@@ -480,7 +487,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SYSCOMMAND:
 		if ( wParam == SC_MAXIMIZE ){
 			if ( !gImpl->mFullScreenForbidden ){
-				WindowCreator().enableFullScreen( true ); //�ő剻�̎���DefWindowProc�͌Ă΂Ȃ�
+				WindowCreator().enableFullScreen( true ); //最大化の時はDefWindowProcは呼ばない
 			}
 		}else if ( wParam == SC_MINIMIZE ){
 			gImpl->mMinimized = true;

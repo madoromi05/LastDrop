@@ -97,7 +97,7 @@ void Texture::write( const char* filename ){
 	mImpl->write( filename );
 }
 
-Texture::Texture( const Impl* ) : mImpl( 0 ){ //�k���|����̎�������
+Texture::Texture( const Impl* ) : mImpl( 0 ){ //中身はない。NULLポインタからの変換用
 }
 
 bool Texture::operator<( const Texture& o ) const {

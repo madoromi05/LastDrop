@@ -8,7 +8,7 @@
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/PseudoXml/Attribute.h"
 #include "GameLib/PseudoXml/Document.h"
-using namespace GameLib::PseudoXml; //���Ԃ��ĂȂ���using�����Ⴆ
+using namespace GameLib::PseudoXml;
 
 GraphicsDatabase::GraphicsDatabase( Element& e ){
 	createFromElement( e );
@@ -17,15 +17,13 @@ GraphicsDatabase::GraphicsDatabase( Element& e ){
 GraphicsDatabase::GraphicsDatabase( const char* filename ){
 	Document document = Document::create( filename );
 	while ( !document.isReady() ){
-		; //���[�h�҂�
+		;	// 読み込みが完了するまでビジーウェイトする
 	}
 	Element root = document.root();
 	createFromElement( root );
 }
 
-GraphicsDatabase::~GraphicsDatabase(){
-	//��������Ȃ��B
-}
+GraphicsDatabase::~GraphicsDatabase(){}
 
 Model* GraphicsDatabase::createModel( const char* name ) const {
 	for ( int i = 0; i < mBatches.size(); ++i ){
@@ -74,7 +72,6 @@ ConstSharedPtr< Batch > GraphicsDatabase::getBatch( const char* name ) const {
 
 void GraphicsDatabase::createFromElement( Element& e ){
 	int n = e.childNumber();
-	//�܂����𐔂���
 	int vertexBufferNumber = 0;
 	int indexBufferNumber = 0;
 	int textureNumber = 0;
@@ -92,18 +89,16 @@ void GraphicsDatabase::createFromElement( Element& e ){
 			++batchNumber;
 		}
 	}
-	//�z��m��
 	mVertexBuffers.setSize( vertexBufferNumber );
 	mIndexBuffers.setSize( indexBufferNumber );
 	mTextures.setSize( textureNumber );
 	mBatches.setSize( batchNumber );
-	//�����ڂɏ�������ł��邩
 	int vertexBufferPos = 0;
 	int indexBufferPos = 0;
 	int texturePos = 0;
 	int batchPos = 0;
 
-	//���ɂ��ˑ����Ă��Ȃ��O�����
+	// Batchが名前で参照するVertexBuffer・IndexBuffer・Textureを先に生成しておく
 	for ( int i = 0; i < n; ++i ){
 		Element child = e.child( i );
 		string name = child.name();
@@ -118,7 +113,8 @@ void GraphicsDatabase::createFromElement( Element& e ){
 			++texturePos;
 		}
 	}
-	//Batch�͑��Ɉˑ����Ă���̂Ō�ł��
+
+	// Batchは上記で生成したリソースに依存するため、後から生成する
 	for ( int i = 0; i < n; ++i ){
 		Element child = e.child( i );
 		string name = child.name();

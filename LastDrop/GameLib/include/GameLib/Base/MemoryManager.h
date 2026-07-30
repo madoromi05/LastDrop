@@ -13,8 +13,7 @@ public:
 	///全確保容量(内部予約容量を含む)
 	int totalSize() const;
 };
-
-} //namespaace GameLib
+}
 
 void* operator new( size_t size, const char* filename, int line );
 void* operator new[]( size_t size, const char* filename, int line );
