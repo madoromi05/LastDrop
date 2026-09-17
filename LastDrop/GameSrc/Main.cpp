@@ -11,6 +11,7 @@
 using namespace GameLib;
 
 #include <limits>
+#include <cmath>
 using namespace std;
 
 #include "Pad.h"
@@ -18,6 +19,7 @@ using namespace std;
 #include "Target.h"
 #include "Arena.h"
 #include "Stage.h"
+#include "GameConfig.h"
 
 // ────────────────────────────────────────────────
 // 企画書 v4「ワイヤーを使ったアクション部分」の検証シーン。
@@ -33,6 +35,11 @@ Arena   gArena;
 int  gTime;
 bool gInitialized = false;
 const int TIME_LIMIT = 90; // 90秒。
+
+// シーン（設定画面 → プレイ）。設定画面は起動時に一度通る。
+enum GameScene { SCENE_SETTINGS, SCENE_PLAYING };
+GameScene  gScene = SCENE_SETTINGS;
+GameConfig gConfig; // ゲームプレイ設定（接地時の挙動など）。永続化対象。
 
 Vector3 gAmbient( 0.2f, 0.3f, 0.4f );
 GameLib::Scene::PrimitiveRenderer gPrimitiveRenderer;
@@ -58,7 +65,43 @@ void resetScene(){
 	SAFE_DELETE( gTarget );
 	gPlayer = NEW Player( kPlayerStart );
 	gTarget = NEW Target( kTargetStart );
+	gPlayer->setLandOnContact( gConfig.landOnContact() ); // 現在の設定を反映する。
 	gTime = 0;
+}
+
+// 設定画面（2Dのみ）。左右で「接地時：継続／着地」を切り替え、FIRE で開始する。
+// 入力ポーリング（Pad::update）は呼び出し側で1フレーム1回行う前提。
+void updateSettingsScene(){
+	// 左右トリガーで2択をトグル、FIRE で確定してプレイへ。
+	if ( Pad::instance()->isTriggered( Pad::LEFT, 0 ) ||
+		 Pad::instance()->isTriggered( Pad::RIGHT, 0 ) ){
+		gConfig.setLandOnContact( !gConfig.landOnContact() );
+	}
+	if ( Pad::instance()->isTriggered( Pad::FIRE, 0 ) ){
+		gConfig.save();                                       // 選択を永続化。
+		gPlayer->setLandOnContact( gConfig.landOnContact() ); // プレイヤーへ反映。
+		gScene = SCENE_PLAYING;
+	}
+
+	// 背景パネル（正射・2D）。
+	gPrimitiveRenderer.enableDepthTest( false );
+	gPrimitiveRenderer.enableDepthWrite( false );
+	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_LINEAR );
+	Vector2 p[ 4 ];
+	p[ 0 ].set( -0.7f, 0.5f ); p[ 1 ].set( -0.7f, -0.5f );
+	p[ 2 ].set(  0.7f, 0.5f ); p[ 3 ].set(  0.7f, -0.5f );
+	drawRect( gPrimitiveRenderer, p, 0xcc182028, 0xcc182028 );
+	gPrimitiveRenderer.draw();
+
+	// 文言（DebugScreen はフレームワークが後段でまとめて描画する）。
+	DebugScreen::instance().draw( 34, 6,  "== SETTINGS ==" );
+	DebugScreen::instance().draw( 26, 9,  "On ground contact while swinging:" );
+	if ( gConfig.landOnContact() ){
+		DebugScreen::instance().draw( 30, 11, "  CONTINUE      > LAND <" );
+	}else{
+		DebugScreen::instance().draw( 30, 11, "> CONTINUE <      LAND  " );
+	}
+	DebugScreen::instance().draw( 26, 14, "Left/Right: change    FIRE: start" );
 }
 
 namespace GameLib{
@@ -70,16 +113,24 @@ void Framework::update(){
 		gStage = NEW Stage();
 		gPlayer = 0;
 		gTarget = 0;
-		resetScene();
+		gConfig.load();          // 先にゲームプレイ設定を読む。
+		resetScene();            // 生成時に設定を反映する。
+		gScene = SCENE_SETTINGS; // 起動直後は設定画面から。
 		gInitialized = true;
 	}
+
+	Pad::instance()->update(); // 入力ポーリング（設定／プレイ共通で1フレーム1回）。
+
+	if ( gScene == SCENE_SETTINGS ){
+		updateSettingsScene();
+	}
+	else { // ── ここから下はプレイシーン ──
 
 	int hp        = gPlayer->getHitPoint();
 	int targetHp  = gTarget->getHitPoint();
 	bool gameOver = ( hp <= 0 ) || gTarget->isDown() || ( gTime >= 60 * TIME_LIMIT );
 
 	if ( !gameOver ){
-		Pad::instance()->update();
 		gPlayer->update( gArena, gTarget );
 		++gTime;
 	}
@@ -147,15 +198,17 @@ void Framework::update(){
 	gPlayer->draw();
 	gTarget->draw();
 
-	// ── ワイヤーを3D空間に太いビームで描く（発射〜引き寄せ〜残像の間）──
+	// ── ワイヤーを3D空間に太いビームで描く（発射〜スイング〜残像の間）──
 	// 1pxの線だと視認できないため、視線に正対する幅を持たせた帯（三角形2枚）で描く。
+	// 正面へ1本張る（kWireCount=1）。将来複数化しても崩れないよう本ごとにループして描く。
 	gm.setDiffuseColor( Vector3( 1.f, 1.f, 1.f ) );
 	gPrimitiveRenderer.setTransform( pvm );
 	gPrimitiveRenderer.enableDepthTest( true );
 	gPrimitiveRenderer.enableDepthWrite( false );
 	gPrimitiveRenderer.setBlendMode( Graphics::BLEND_ADDITIVE );
-	Vector3 wireFrom, wireTo;
-	if ( gPlayer->getWireEndpoints( &wireFrom, &wireTo ) ){
+	for ( int wi = 0; wi < Player::kWireCount; ++wi ){
+		Vector3 wireFrom, wireTo;
+		if ( !gPlayer->getWireEndpoint( wi, &wireFrom, &wireTo ) ){ continue; }
 		const float wireHalfWidth = 0.2f; // ワイヤーの半幅（メートル）。
 		Vector3 seg;  seg.setSub( wireTo, wireFrom );
 		Vector3 mid;  mid.setAdd( wireFrom, wireTo ); mid *= 0.5f;
@@ -172,8 +225,14 @@ void Framework::update(){
 			Vector3 a0, a1, b0, b1;
 			a0.setSub( wireFrom, side ); a1.setAdd( wireFrom, side );
 			b0.setSub( wireTo,   side ); b1.setAdd( wireTo,   side );
-			const unsigned cHand   = 0xff33ff88; // 手元側の色。
-			const unsigned cAnchor = 0xffccffee; // アンカー側の色。
+			// 張り具合で白（たるみ）→赤（張り）へ色を変える（記事の ApplyStringColor と同式）。
+			// gb = exp(-stretch * falloff)、color = (1, gb, gb)。始点・終点とも同色。
+			const float stringTensionColorFalloff = 1.0f; // 色変化の鋭さ（記事準拠。要実機調整）。
+			float stretch = gPlayer->getWireStretch( wi ); // 自然長超過（m）。
+			float gbValue = std::exp( -stretch * stringTensionColorFalloff );
+			unsigned char gb = static_cast< unsigned char >( 255.0f * gbValue );
+			const unsigned cHand   = 0xff000000 | ( 255u << 16 ) | ( gb << 8 ) | gb; // 手元側の色。
+			const unsigned cAnchor = cHand;                                          // アンカー側の色（同色）。
 			gPrimitiveRenderer.addTriangle( a0, a1, b0, cHand, cHand, cAnchor );
 			gPrimitiveRenderer.addTriangle( b0, a1, b1, cAnchor, cHand, cAnchor );
 		}
@@ -226,7 +285,7 @@ void Framework::update(){
 	c1 = 0x80ff8888; c2 = 0x8088ffff; drawRect( gPrimitiveRenderer, p, c1, c2 );
 
 	// 操作ガイド。
-	DebugScreen::instance().draw( 1, 1, "WASD:move  Q/RightClick:wire  Space:dodge  LeftClick:fire" );
+	DebugScreen::instance().draw( 1, 1, "WASD:move  Q/RightClick:wire(hold)  E:reel-in  A/D:steer  Space:dodge  LeftClick:fire" );
 
 	// ゲームオーバー／クリア判定。
 	if ( gameOver ){
@@ -240,8 +299,9 @@ void Framework::update(){
 		}
 	}
 	gPrimitiveRenderer.draw();
+	} // ── プレイシーンここまで（gScene == SCENE_PLAYING）──
 
-	// 終了処理。
+	// 終了処理（設定／プレイ共通）。
 	if ( isEndRequested() ){
 		if ( gStage ){
 			Pad::destroy();

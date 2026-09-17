@@ -35,8 +35,9 @@ namespace
         case WorkId::Right: return "Right";
         case WorkId::Jump:  return "Jump";
         case WorkId::Fire:  return "Fire";
-        case WorkId::Wire:  return "Wire";
-        case WorkId::Dodge: return "Dodge";
+        case WorkId::Wire:     return "Wire";
+        case WorkId::WireReel: return "WireReel";
+        case WorkId::Dodge:    return "Dodge";
         default:            return "";
         }
     }
@@ -135,6 +136,8 @@ namespace
         { CollectorId::InGame, WorkId::Wire,  DeviceKind::Keyboard, 'q' },
         { CollectorId::InGame, WorkId::Wire,  DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
         { CollectorId::InGame, WorkId::Wire,  DeviceKind::Joystick, 5 },              // RB
+        { CollectorId::InGame, WorkId::WireReel, DeviceKind::Keyboard, 'e' },
+        { CollectorId::InGame, WorkId::WireReel, DeviceKind::Joystick, 3 },           // Y
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Joystick, 4 },              // LB
     };

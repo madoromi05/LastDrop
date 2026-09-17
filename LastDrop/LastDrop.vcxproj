@@ -150,6 +150,7 @@
     <!-- Library (3D graphics abstraction) -->
     <ClCompile Include="GameSrc\Arena.cpp" />
     <ClCompile Include="GameSrc\Bullet.cpp" />
+    <ClCompile Include="GameSrc\GameConfig.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
     <ClCompile Include="GameSrc\Player.cpp">
@@ -339,6 +340,7 @@
     <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h" />
     <ClInclude Include="GameLib\src\WindowCreator\Resource.h" />
     <ClInclude Include="GameSrc\Arena.h" />
+    <ClInclude Include="GameSrc\GameConfig.h" />
     <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\Pad.h" />
     <ClInclude Include="GameSrc\Player.h" />

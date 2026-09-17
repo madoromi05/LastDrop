@@ -77,8 +77,9 @@ WorkId Pad::buttonToWorkId(Button b)
     case RIGHT: return WorkId::Right;
     case JUMP:  return WorkId::Jump;
     case FIRE:  return WorkId::Fire;
-    case WIRE:  return WorkId::Wire;
-    case DODGE: return WorkId::Dodge;
+    case WIRE:     return WorkId::Wire;
+    case WIREREEL: return WorkId::WireReel;
+    case DODGE:    return WorkId::Dodge;
     default:    return WorkId::Up;
     }
 }
@@ -183,5 +184,7 @@ bool InputLeft (int playerId) { return Pad::instance()->isOn(Pad::LEFT,  playerI
 bool InputRight(int playerId) { return Pad::instance()->isOn(Pad::RIGHT, playerId); }
 bool InputJump (int playerId) { return Pad::instance()->isOn(Pad::JUMP,  playerId); }
 bool InputFire (int playerId) { return Pad::instance()->isTriggered(Pad::FIRE, playerId); }
-bool InputWire (int playerId) { return Pad::instance()->isTriggered(Pad::WIRE, playerId); }
-bool InputDodge(int playerId) { return Pad::instance()->isTriggered(Pad::DODGE, playerId); }
+bool InputWire       (int playerId) { return Pad::instance()->isTriggered(Pad::WIRE, playerId); }
+bool InputWireRelease(int playerId) { return Pad::instance()->isWorkRelease(WorkId::Wire, playerId); }
+bool InputWireReel   (int playerId) { return Pad::instance()->isOn(Pad::WIREREEL, playerId); }
+bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(Pad::DODGE, playerId); }

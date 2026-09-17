@@ -24,7 +24,7 @@ class Pad
 {
 public:
     // 従来互換の列挙型（Robo.cpp などを無変更にするため残す）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, DODGE };
+    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE };
 
     static Pad* instance();
     static void create();
@@ -115,5 +115,7 @@ bool InputLeft (int playerId = 0);
 bool InputRight(int playerId = 0);
 bool InputJump (int playerId = 0);
 bool InputFire (int playerId = 0);
-bool InputWire (int playerId = 0);   // 拘束ワイヤー射出（押した瞬間）
-bool InputDodge(int playerId = 0);   // 回避ステップ（押した瞬間）
+bool InputWire       (int playerId = 0);   // ワイヤーのグラップル開始（押した瞬間）
+bool InputWireRelease(int playerId = 0);   // ワイヤー離脱（Wireボタンを離した瞬間）
+bool InputWireReel   (int playerId = 0);   // 引き寄せ（押されている間・自然長を縮める）
+bool InputDodge      (int playerId = 0);   // 回避ステップ（押した瞬間）
