@@ -30,25 +30,32 @@ public:
 		mChildren = children;
 		mChildNumber = childNumber;
 	}
-	void draw( const Matrix34& parentMatrix, const Vector3& color, float transparency ) const {
-		//ワールド行列を作る
-		Matrix34 w = parentMatrix;
-		w.setMul( parentMatrix, mTemplate->mTransform ); //デフォルトをかけて、
-		w.translate( mTranslation );
-		w.rotateY( mRotation.y );
-		w.rotateX( mRotation.x );
-		w.rotateZ( mRotation.z );
-		w.scale( mScale );
-
+	//現在のポーズから自分と子孫のワールド行列を計算して保持する（描画はしない）。
+	//スキニング等でボーン行列を外から読むため、行列計算を draw() から分離した。
+	void updateWorldMatrix( const Matrix34& parentMatrix ){
+		mWorldMatrix.setMul( parentMatrix, mTemplate->mTransform ); //デフォルト変換をかけて、
+		mWorldMatrix.translate( mTranslation );
+		mWorldMatrix.rotateY( mRotation.y );
+		mWorldMatrix.rotateX( mRotation.x );
+		mWorldMatrix.rotateZ( mRotation.z );
+		mWorldMatrix.scale( mScale );
+		for ( int i = 0; i < mChildNumber; ++i ){
+			mChildren[ i ]->updateWorldMatrix( mWorldMatrix );
+		}
+	}
+	//updateWorldMatrix() で計算済みのワールド行列を使って描画する。
+	void draw( const Vector3& color, float transparency ) const {
 		if ( mTemplate->mBatch ){
-			//セット
-			Graphics::Manager().setWorldMatrix( w );
-			//描画
+			Graphics::Manager().setWorldMatrix( mWorldMatrix );
 			mTemplate->mBatch->draw( color, transparency );
 		}
 		for ( int i = 0; i < mChildNumber; ++i ){
-			mChildren[ i ]->draw( w, color, transparency );
+			mChildren[ i ]->draw( color, transparency );
 		}
+	}
+	//直近の updateWorldMatrix() で計算したワールド行列を返す。
+	const Matrix34& worldMatrix() const {
+		return mWorldMatrix;
 	}
 	void setAnimation( const AnimationNode* a ){
 		mAnimation = a;
@@ -75,6 +82,7 @@ private:
 	Vector3 mTranslation;
 	Vector3 mRotation;
 	Vector3 mScale;
+	Matrix34 mWorldMatrix; //updateWorldMatrix() で計算し、draw()/worldMatrix() が参照する
 	Node** mChildren;
 	int mChildNumber;
 	const NodeTemplate* mTemplate;

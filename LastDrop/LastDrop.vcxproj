@@ -151,6 +151,11 @@
     <ClCompile Include="GameSrc\Arena.cpp" />
     <ClCompile Include="GameSrc\Bullet.cpp" />
     <ClCompile Include="GameSrc\GameConfig.cpp" />
+    <ClCompile Include="GameSrc\Animator.cpp" />
+    <ClCompile Include="GameSrc\SkinnedMesh.cpp" />
+    <ClCompile Include="GameSrc\SkinnedMeshLoader.cpp" />
+    <ClCompile Include="GameSrc\SceneManager.cpp" />
+    <ClCompile Include="GameSrc\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
     <ClCompile Include="GameSrc\Player.cpp">
@@ -343,6 +348,12 @@
     <ClInclude Include="GameSrc\GameConfig.h" />
     <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\Pad.h" />
+    <ClInclude Include="GameSrc\Animator.h" />
+    <ClInclude Include="GameSrc\SkinnedMesh.h" />
+    <ClInclude Include="GameSrc\SkinnedMeshLoader.h" />
+    <ClInclude Include="GameSrc\IScene.h" />
+    <ClInclude Include="GameSrc\SceneManager.h" />
+    <ClInclude Include="GameSrc\SkinTestScene.h" />
     <ClInclude Include="GameSrc\Player.h" />
     <ClInclude Include="GameSrc\Robo.h" />
     <ClInclude Include="GameSrc\Stage.h" />

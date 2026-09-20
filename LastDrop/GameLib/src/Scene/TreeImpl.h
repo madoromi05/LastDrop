@@ -2,6 +2,7 @@
 #define INCLUDED_GAMELIB_SCENE_TREEIMPL_H
 
 #include "GameLib/Base/Impl/ReferenceType.h"
+#include "GameLib/Base/RefString.h"
 #include "GameLib/Scene/Batch.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix34.h"
@@ -81,15 +82,28 @@ public:
 		mTemplate = 0;
 	}
 	void draw(){
-		//ワールド行列を作る
+		updateWorldMatrix();
+		mNodes[ 0 ].draw( mColor, mTransparency );
+	}
+	//描画せずに各ノードのワールド行列だけ更新する（スキニングでボーン行列を読む用）。
+	void updateWorldMatrix(){
+		//ルートのワールド行列を作る
 		Matrix34 w;
 		w.setTranslation( mPosition );
 		w.rotateY( mAngle.y );
 		w.rotateX( mAngle.x );
 		w.rotateZ( mAngle.z );
 		w.scale( mScale );
-		//描画
-		mNodes[ 0 ].draw( w, mColor, mTransparency );
+		mNodes[ 0 ].updateWorldMatrix( w );
+	}
+	//名前でノードを探し、その現在ワールド行列を返す。無ければ0。
+	const Matrix34* nodeMatrix( const char* name ) const {
+		for ( int i = 0; i < mNodeNumber; ++i ){
+			if ( RefString( name ) == mNodes[ i ].name() ){
+				return &mNodes[ i ].worldMatrix();
+			}
+		}
+		return 0;
 	}
 	void setAnimation( Animation::Impl* a ){
 		if ( a ){ //モノがあれば

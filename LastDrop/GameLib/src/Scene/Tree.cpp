@@ -37,6 +37,14 @@ void Tree::setAnimationSpeed( float s ){
 	mImpl->setAnimationSpeed( s );
 }
 
+void Tree::updateWorldMatrix(){
+	mImpl->updateWorldMatrix();
+}
+
+const Matrix34* Tree::nodeMatrix( const char* name ) const {
+	return mImpl->nodeMatrix( name );
+}
+
 const Vector3* Tree::position() const {
 	return &mImpl->mPosition;
 }

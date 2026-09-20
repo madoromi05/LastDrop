@@ -4,6 +4,7 @@
 namespace GameLib{
 
 namespace Math{
+	class Matrix34;
 	class Matrix44;
 	class Vector3;
 	class Vector4;
@@ -24,6 +25,10 @@ public:
 	void updateAnimation( float time = -1.f );
 	///アニメ速度設定
 	void setAnimationSpeed( float );
+	///描画せずにボーン(ノード)のワールド行列だけ更新する。スキニング用。
+	void updateWorldMatrix();
+	///名前で指定したノード(ボーン)の現在ワールド行列を返す。無ければ0。
+	const Matrix34* nodeMatrix( const char* name ) const;
 
 	const Vector3* position() const;
 	const Vector3* angle() const; //単位は度

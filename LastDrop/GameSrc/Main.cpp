@@ -20,6 +20,7 @@ using namespace std;
 #include "Arena.h"
 #include "Stage.h"
 #include "GameConfig.h"
+#include "SceneManager.h"
 
 // ────────────────────────────────────────────────
 // 企画書 v4「ワイヤーを使ったアクション部分」の検証シーン。
@@ -40,6 +41,10 @@ const int TIME_LIMIT = 90; // 90秒。
 enum GameScene { SCENE_SETTINGS, SCENE_PLAYING };
 GameScene  gScene = SCENE_SETTINGS;
 GameConfig gConfig; // ゲームプレイ設定（接地時の挙動など）。永続化対象。
+
+// 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照。
+// 通常ゲームで始めるなら SceneManager::SCENE_GAME に変える。
+const SceneManager::SceneId kStartScene = SceneManager::SCENE_SKIN_TEST;
 
 Vector3 gAmbient( 0.2f, 0.3f, 0.4f );
 GameLib::Scene::PrimitiveRenderer gPrimitiveRenderer;
@@ -116,9 +121,14 @@ void Framework::update(){
 		gConfig.load();          // 先にゲームプレイ設定を読む。
 		resetScene();            // 生成時に設定を反映する。
 		gScene = SCENE_SETTINGS; // 起動直後は設定画面から。
+		SceneManager::instance().change( kStartScene ); // 起動シーンを設定（SCENE_GAMEなら従来ゲーム）。
 		gInitialized = true;
 	}
 
+	// シーン切り替えは SceneManager が担当。選択中のシーンがあればそれを実行する。
+	if ( SceneManager::instance().current() ){
+		SceneManager::instance().update();
+	}else{ // 未選択なら従来のゲーム（設定／プレイ）を実行する。
 	Pad::instance()->update(); // 入力ポーリング（設定／プレイ共通で1フレーム1回）。
 
 	if ( gScene == SCENE_SETTINGS ){
@@ -300,6 +310,7 @@ void Framework::update(){
 	}
 	gPrimitiveRenderer.draw();
 	} // ── プレイシーンここまで（gScene == SCENE_PLAYING）──
+	} // ── 従来ゲームここまで（SceneManager 未選択時）──
 
 	// 終了処理（設定／プレイ共通）。
 	if ( isEndRequested() ){
@@ -310,6 +321,7 @@ void Framework::update(){
 			SAFE_DELETE( gStage );
 			gPrimitiveRenderer.release();
 		}
+		SceneManager::instance().destroy();
 	}
 }
 }
