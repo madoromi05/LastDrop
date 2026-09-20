@@ -14,14 +14,20 @@
 using namespace GameLib;
 
 namespace{
-	// カメラの注視高さ。帯の中央あたり（skintest.txt の帯は y=0〜4）。
-	const float kViewHeight = 2.0f;
+	// ── 検証対象の設定。本物モデルを見るときはここだけ書き換える ──
+	const char* kDataFile     = "Resource/character.txt"; // ゾンビFBXを変換したデータ
+	const char* kTreeName     = "skel";                   // <Tree name>（コンバータ既定は "skel"）
+	const char* kAnimName     = "walk"; // コンバータの anim_name。無ければレスト姿勢
+	// ── カメラ。モデルの大きさに合わせて調整する（このモデルは身長約1.82・Y=0立ち）──
+	const float kViewHeight   = 0.9f;   // 注視点の高さ（体の中央あたり）
+	const float kViewDistance = 4.0f;   // 視点までの距離
+	const float kModelYaw     = 0.0f;   // モデルをY回転させて見る角度(度)。背中が見えたら180
 }
 
 SkinTestScene::SkinTestScene() :
 	mTime( 0.f ),
 	mReady( false ) {
-	mDocument = PseudoXml::Document::create( "Resource/skintest.txt" );
+	mDocument = PseudoXml::Document::create( kDataFile );
 }
 
 SkinTestScene::~SkinTestScene() {
@@ -36,10 +42,10 @@ void SkinTestScene::buildOnce() {
 	}
 	// 同じ要素から Container(骨格/アニメ) と SkinnedMesh(頂点/重み) を構築する。
 	mContainer = Scene::Container::create( root );
-	mSkeleton = mContainer.createTree( "skel" );
-	SkinnedMeshLoader::load( &mMesh, root );                   // 手書き <SkinnedMesh> を読む
-	mMesh.bindPose( mSkeleton );                               // レスト姿勢で bindInverse を確定
-	mSkeleton.setAnimation( mContainer.animation( "bend" ) );  // 実行アニメを設定
+	mSkeleton = mContainer.createTree( kTreeName );
+	SkinnedMeshLoader::load( &mMesh, root );                       // <SkinnedMesh> を読む
+	mMesh.bindPose( mSkeleton );                                   // レスト姿勢で bindInverse を確定
+	mSkeleton.setAnimation( mContainer.animation( kAnimName ) );   // 実行アニメ（無ければレスト姿勢）
 	mDocument.release();                                       // 構築済みなので文書は解放
 }
 
@@ -61,14 +67,27 @@ void SkinTestScene::update() {
 		1.f, 1000.f );
 	Matrix34 view;
 	view.setViewTransform(
-		Vector3( 0.f, kViewHeight, 12.f ), // 視点
-		Vector3( 0.f, kViewHeight, 0.f ),  // 注視点
-		Vector3( 0.f, 1.f, 0.f ) );        // 上方向
+		Vector3( 0.f, kViewHeight, kViewDistance ), // 視点
+		Vector3( 0.f, kViewHeight, 0.f ),           // 注視点
+		Vector3( 0.f, 1.f, 0.f ) );                 // 上方向
 	projectionView *= view;
 	gm.setProjectionViewMatrix( projectionView );
 	gm.enableDepthTest( true );
 	gm.enableDepthWrite( true );
 	gm.setCullMode( Graphics::CULL_NONE ); // 裏返っても見えるように両面描画
+
+	// ライティング（環境光＋1灯）。無テクスチャでも陰影で立体が見える。
+	gm.setEyePosition( Vector3( 0.f, kViewHeight, kViewDistance ) );
+	gm.setAmbientColor( Vector3( 0.30f, 0.30f, 0.35f ) );
+	gm.setLightColor( 0, Vector3( 1.f, 1.f, 1.f ) );
+	gm.setLightPosition( 0, Vector3( 3.f, 5.f, 5.f ) );
+	gm.setLightIntensity( 0, 12.f ); // 明るさ ≒ 強度/距離
+	for ( int i = 1; i < 4; ++i ) {
+		gm.setLightIntensity( i, 0.f ); // 他のライトは消す
+	}
+
+	// モデルの向き（正面確認用にY回転できる）。
+	mSkeleton.setAngle( Vector3( 0.f, kModelYaw, 0.f ) );
 
 	// アニメ更新 → CPUスキニング → 描画。
 	mSkeleton.updateAnimation();

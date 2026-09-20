@@ -112,8 +112,13 @@ void SkinnedMesh::update( Scene::Tree& skeleton ) {
 void SkinnedMesh::draw() const {
 	Graphics::Manager m = Graphics::Manager();
 	m.setTexture( mTexture );
-	m.setLightingMode( Graphics::LIGHTING_NONE );
-	m.setDiffuseColor( Vector3( 1.f, 1.f, 1.f ) );
+	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
+	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。
+	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL );
+	m.setDiffuseColor( Vector3( 0.65f, 0.70f, 0.60f ) ); // 無テクスチャ時の下地色
+	m.setSpecularColor( Vector3( 0.1f, 0.1f, 0.1f ) );
+	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
+	m.setSpecularSharpness( 20.f );
 	m.setTransparency( 1.f );
 	Matrix34 world;
 	world.setIdentity(); //頂点は既にワールド空間へ変換済み
