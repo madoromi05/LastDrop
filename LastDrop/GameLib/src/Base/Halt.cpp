@@ -1,4 +1,4 @@
-﻿#include "GameLib/GameLib.h"
+#include "GameLib/GameLib.h"
 #include <windows.h>
 #include <cstdio>
 
@@ -23,5 +23,5 @@ void halt( const char* filename, int line, const char* message ){
 	}
 }
 
-} //namespace GameLib
+}
 

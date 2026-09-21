@@ -7,7 +7,8 @@
 #include "GameLib/Graphics/Vertex.h"
 #include "GameLib/Math/Vector4.h"
 
-SkinnedMesh::Vertex::Vertex() {
+SkinnedMesh::Vertex::Vertex() :
+	mColor( 0xff59996bu ) { // 色未設定時のフォールバック（灰緑, BGR並び）。data に color があれば上書き
 	// 未使用スロットの重みは0にしておく(update() の合成で無視されるように)。
 	for ( int i = 0; i < MAX_INFLUENCE; ++i ) {
 		mBoneIndex[ i ] = 0;
@@ -47,6 +48,15 @@ void SkinnedMesh::setInfluence( int vertexIndex, int slot, int boneIndex, float 
 	mVertices[ vertexIndex ].mWeight[ slot ] = weight;
 }
 
+void SkinnedMesh::setColor( int i, float r, float g, float b ) {
+	// 0..1 を 0..255 にして 0xAARRGGBB へ詰める（シェーダ側の .zyxw で RGB に戻る）。
+	unsigned rr = static_cast< unsigned >( ( r < 0.f ? 0.f : ( r > 1.f ? 1.f : r ) ) * 255.f );
+	unsigned gg = static_cast< unsigned >( ( g < 0.f ? 0.f : ( g > 1.f ? 1.f : g ) ) * 255.f );
+	unsigned bb = static_cast< unsigned >( ( b < 0.f ? 0.f : ( b > 1.f ? 1.f : b ) ) * 255.f );
+	// このエンジンは R と B が入れ替わる並びなので、B<<16 | G<<8 | R で詰める。
+	mVertices[ i ].mColor = 0xff000000u | ( bb << 16 ) | ( gg << 8 ) | rr;
+}
+
 void SkinnedMesh::setIndex( int i, unsigned short value ) {
 	mIndices[ i ] = value;
 }
@@ -70,6 +80,9 @@ void SkinnedMesh::bindPose( Scene::Tree& skeleton ) {
 
 void SkinnedMesh::update( Scene::Tree& skeleton ) {
 	uploadIndices();
+	if ( mTexture ) {
+		mTexture.isReady(); // 非同期テクスチャの読み込みを毎フレーム進める（完了時にデコード＆GPU転送）
+	}
 	skeleton.updateWorldMatrix();
 	//各ボーンの skin[b] = 現在ワールド行列 * bindInverse を作る
 	for ( int b = 0; b < mBones.size(); ++b ) {
@@ -104,7 +117,7 @@ void SkinnedMesh::update( Scene::Tree& skeleton ) {
 		out[ i ].mPosition.set( position.x, position.y, position.z, 1.f );
 		out[ i ].mNormal = normal;
 		out[ i ].mUv = src.mUv;
-		out[ i ].mColor = 0xffffffffu;
+		out[ i ].mColor = src.mColor; //部位ごとの頂点カラー
 	}
 	mVertexBuffer.unlock( &out );
 }
@@ -115,7 +128,7 @@ void SkinnedMesh::draw() const {
 	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
 	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。
 	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL );
-	m.setDiffuseColor( Vector3( 0.65f, 0.70f, 0.60f ) ); // 無テクスチャ時の下地色
+	m.setDiffuseColor( Vector3( 1.0f, 1.0f, 1.0f ) ); // 暗めアルベドを少し持ち上げる（頂点色は白のまま）
 	m.setSpecularColor( Vector3( 0.1f, 0.1f, 0.1f ) );
 	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
 	m.setSpecularSharpness( 20.f );

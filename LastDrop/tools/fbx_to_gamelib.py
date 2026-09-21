@@ -30,6 +30,15 @@ CONFIG = {
     "translate_root_only": True,  # True: 根ボーンだけ移動カーブを出す(関節は回転のみ)
     "flip_winding": True,       # 左右手変換で面が裏返る場合に三角形の巻き順を反転
     "anim_name": "",            # 空でない場合、出力アニメ名をこれに固定する(Take 001対策)
+    # マテリアル名 → 頂点カラー(RGB, 0..1)。テクスチャ無しでも部位ごとに色を出す。
+    # ここを書き換えれば色を自由に変えられる。未登録のマテリアルは default_color。
+    "material_colors": {
+        "lambert2": (0.42, 0.60, 0.35),  # 本体(肌)＝ゾンビ緑
+        "phong1":   (0.45, 0.28, 0.20),  # 服など＝茶
+        "phong2":   (0.12, 0.10, 0.12),  # 暗部＝ほぼ黒
+        "phong3":   (0.82, 0.20, 0.18),  # 明部＝赤(血/口など)
+    },
+    "default_color": (0.6, 0.6, 0.6),
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 左手)。
@@ -90,6 +99,14 @@ def find_armature():
 def find_meshes():
     # 全メッシュを返す（このモデルは7分割なので複数対応が必須）。
     return [o for o in bpy.data.objects if o.type == "MESH"]
+
+
+def obj_color(obj):
+    # メッシュのマテリアル名から頂点カラー(RGB)を決める。
+    name = ""
+    if obj.material_slots and obj.material_slots[0].material:
+        name = obj.material_slots[0].material.name
+    return CONFIG["material_colors"].get(name, CONFIG["default_color"])
 
 
 # 骨行列は全てワールド空間で統一する（メッシュのワールド座標と噛み合わせるため）。
@@ -237,6 +254,8 @@ def emit_skinned_mesh(mesh_objs, armature):
         mesh.calc_loop_triangles()
         matw = obj.matrix_world
         nmat = matw.to_3x3()
+        # テクスチャを貼る場合は頂点カラーを白にして素の色を出す。無い時だけパーツ色。
+        col = (1.0, 1.0, 1.0) if CONFIG["mesh_texture"] else obj_color(obj)
 
         # このメッシュの vertex_group index -> グローバル bone index。
         local_bone = {}
@@ -274,8 +293,9 @@ def emit_skinned_mesh(mesh_objs, armature):
             bones = ", ".join(str(bi) for bi, _ in infl)
             weights = ", ".join(f(w / total) for _, w in infl)
 
-            lines.append('\t\t<Vertex position="%s, %s, %s" normal="%s, %s, %s" uv="%s, %s" bones="%s" weights="%s"/>' % (
-                f(co.x), f(co.y), f(co.z), f(no.x), f(no.y), f(no.z), f(uv[0]), f(uv[1]), bones, weights))
+            lines.append('\t\t<Vertex position="%s, %s, %s" normal="%s, %s, %s" uv="%s, %s" color="%s, %s, %s" bones="%s" weights="%s"/>' % (
+                f(co.x), f(co.y), f(co.z), f(no.x), f(no.y), f(no.z), f(uv[0]), f(uv[1]),
+                f(col[0]), f(col[1]), f(col[2]), bones, weights))
 
         for lt in mesh.loop_triangles:
             a = lt.vertices[0] + vertex_base

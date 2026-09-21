@@ -39,6 +39,12 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 		return false; // <SkinnedMesh> が無い
 	}
 
+	// テクスチャ（<SkinnedMesh texture="...">）。あればロードして設定する。
+	ConstAttribute texAttr = findAttribute( skin, "texture" );
+	if ( texAttr && texAttr.value() && texAttr.value()[ 0 ] != '\0' ) {
+		mesh->setTexture( Graphics::Texture::create( texAttr.value() ) );
+	}
+
 	// まず Bone/Vertex/Index の数を数える。
 	int boneNumber = 0;
 	int vertexNumber = 0;
@@ -80,6 +86,13 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 				Vector3( position[ 0 ], position[ 1 ], position[ 2 ] ),
 				Vector3( normal[ 0 ], normal[ 1 ], normal[ 2 ] ),
 				Vector2( uv[ 0 ], uv[ 1 ] ) );
+
+			// 頂点カラー（部位ごとの色。無ければ既定の白のまま）。
+			if ( ( a = findAttribute( child, "color" ) ) ) {
+				float color[ 3 ] = { 1.f, 1.f, 1.f };
+				a.getFloatValues( color, 3 );
+				mesh->setColor( vertexIndex, color[ 0 ], color[ 1 ], color[ 2 ] );
+			}
 
 			// 影響ボーンと重み（最大 MAX_INFLUENCE 本、少ない分は書かない＝重み0のまま）。
 			int bones[ SkinnedMesh::MAX_INFLUENCE ] = { 0 };

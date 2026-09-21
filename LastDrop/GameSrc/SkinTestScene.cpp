@@ -21,7 +21,7 @@ namespace{
 	// ── カメラ。モデルの大きさに合わせて調整する（このモデルは身長約1.82・Y=0立ち）──
 	const float kViewHeight   = 0.9f;   // 注視点の高さ（体の中央あたり）
 	const float kViewDistance = 4.0f;   // 視点までの距離
-	const float kModelYaw     = 0.0f;   // モデルをY回転させて見る角度(度)。背中が見えたら180
+	const float kModelYaw     = 180.0f; // モデルをY回転させて見る角度(度)。カメラに正面を向ける
 }
 
 SkinTestScene::SkinTestScene() :
@@ -76,18 +76,21 @@ void SkinTestScene::update() {
 	gm.enableDepthWrite( true );
 	gm.setCullMode( Graphics::CULL_NONE ); // 裏返っても見えるように両面描画
 
-	// ライティング（環境光＋1灯）。無テクスチャでも陰影で立体が見える。
+	// ライティング（環境光＋2灯）。暗い肌テクスチャでも見えるよう明るめにする。
 	gm.setEyePosition( Vector3( 0.f, kViewHeight, kViewDistance ) );
-	gm.setAmbientColor( Vector3( 0.30f, 0.30f, 0.35f ) );
+	gm.setAmbientColor( Vector3( 0.45f, 0.45f, 0.45f ) ); // 環境光
 	gm.setLightColor( 0, Vector3( 1.f, 1.f, 1.f ) );
-	gm.setLightPosition( 0, Vector3( 3.f, 5.f, 5.f ) );
-	gm.setLightIntensity( 0, 12.f ); // 明るさ ≒ 強度/距離
-	for ( int i = 1; i < 4; ++i ) {
-		gm.setLightIntensity( i, 0.f ); // 他のライトは消す
-	}
+	gm.setLightPosition( 0, Vector3( 2.f, 4.f, 6.f ) );   // カメラ側（正面）から
+	gm.setLightIntensity( 0, 18.f );
+	gm.setLightColor( 1, Vector3( 0.5f, 0.5f, 0.6f ) );
+	gm.setLightPosition( 1, Vector3( -3.f, 3.f, -3.f ) ); // 反対側からのフィル
+	gm.setLightIntensity( 1, 10.f );
+	gm.setLightIntensity( 2, 0.f );
+	gm.setLightIntensity( 3, 0.f );
 
-	// モデルの向き（正面確認用にY回転できる）。
-	mSkeleton.setAngle( Vector3( 0.f, kModelYaw, 0.f ) );
+	// モデルを自動回転させて全周を見せる（回転が効いているかの確認も兼ねる）。
+	// kModelYaw を基準に、時間で回す。
+	mSkeleton.setAngle( Vector3( 0.f, kModelYaw + mTime, 0.f ) );
 
 	// アニメ更新 → CPUスキニング → 描画。
 	mSkeleton.updateAnimation();

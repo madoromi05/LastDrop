@@ -37,6 +37,8 @@ public:
 	void setVertex( int i, const Vector3& position, const Vector3& normal, const Vector2& uv );
 	// 頂点の影響ボーンと重みを設定する(slot: 0..MAX_INFLUENCE-1)。
 	void setInfluence( int vertexIndex, int slot, int boneIndex, float weight );
+	// 頂点カラーを設定する(0..1)。テクスチャ無しでも部位ごとに色を付けられる。
+	void setColor( int i, float r, float g, float b );
 	// 三角形インデックスを設定する。
 	void setIndex( int i, unsigned short value );
 	// テクスチャを設定する(省略時は無地)。
@@ -57,6 +59,7 @@ private:
 		Vector3 mPosition;
 		Vector3 mNormal;
 		Vector2 mUv;
+		unsigned mColor; //頂点カラー(既定 白)
 		int mBoneIndex[ MAX_INFLUENCE ];
 		float mWeight[ MAX_INFLUENCE ];
 	};
