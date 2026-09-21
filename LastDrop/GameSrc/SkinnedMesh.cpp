@@ -65,6 +65,10 @@ void SkinnedMesh::setTexture( Graphics::Texture texture ) {
 	mTexture = texture;
 }
 
+void SkinnedMesh::setNormalMap( Graphics::Texture texture ) {
+	mNormalMap = texture;
+}
+
 void SkinnedMesh::bindPose( Scene::Tree& skeleton ) {
 	skeleton.setAnimation( Scene::Animation() ); //レスト姿勢へ戻す
 	skeleton.updateWorldMatrix();
@@ -82,6 +86,9 @@ void SkinnedMesh::update( Scene::Tree& skeleton ) {
 	uploadIndices();
 	if ( mTexture ) {
 		mTexture.isReady(); // 非同期テクスチャの読み込みを毎フレーム進める（完了時にデコード＆GPU転送）
+	}
+	if ( mNormalMap ) {
+		mNormalMap.isReady(); // 法線マップも同様に読み込みを進める
 	}
 	skeleton.updateWorldMatrix();
 	//各ボーンの skin[b] = 現在ワールド行列 * bindInverse を作る
@@ -125,6 +132,9 @@ void SkinnedMesh::update( Scene::Tree& skeleton ) {
 void SkinnedMesh::draw() const {
 	Graphics::Manager m = Graphics::Manager();
 	m.setTexture( mTexture );
+	if ( mNormalMap ) {
+		m.setNormalMap( mNormalMap ); // setTexture の後に呼ぶ（setTexture が一旦解除するため）
+	}
 	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
 	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。
 	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL );

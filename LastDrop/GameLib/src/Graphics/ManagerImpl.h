@@ -6,6 +6,7 @@
 #include "Graphics/VertexLightingVsHlsl.h"
 #include "Graphics/PixelLightingVsHlsl.h"
 #include "Graphics/PixelLightingPsHlsl.h"
+#include "Graphics/PixelLightingNormalMapPsHlsl.h"
 
 #include "GameLib/Math/Functions.h"
 #include "GameLib/Math/Matrix44.h"
@@ -67,6 +68,7 @@ public:
 	mPixelLightingVS( 0 ),
 	mNoLightingPS( 0 ),
 	mPixelLightingPS( 0 ),
+	mNormalMapPS( 0 ),
 	mInputLayout( 0 ),
 	mVSCB( 0 ),
 	mPSCB( 0 ),
@@ -90,6 +92,7 @@ public:
 	mFullScreenQuadVB( 0 ),
 	mWhiteTexture( 0 ),
 	mCurrentTexture( 0 ),
+	mCurrentNormalMap( 0 ),
 	mCurrentVB( 0 ),
 	mCurrentIB( 0 ),
 	mLightChanged( true ),
@@ -220,6 +223,11 @@ public:
 
 		psBlob = compileShader( gPixelLightingPsHlsl, "main", "ps_4_0" );
 		hr = mDevice->CreatePixelShader( psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &mPixelLightingPS );
+		STRONG_ASSERT( SUCCEEDED( hr ) );
+		psBlob->Release(); psBlob = nullptr;
+
+		psBlob = compileShader( gPixelLightingNormalMapPsHlsl, "main", "ps_4_0" );
+		hr = mDevice->CreatePixelShader( psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &mNormalMapPS );
 		STRONG_ASSERT( SUCCEEDED( hr ) );
 		psBlob->Release(); psBlob = nullptr;
 
@@ -362,6 +370,7 @@ public:
 		if ( mPixelLightingVS )   { mPixelLightingVS->Release();   mPixelLightingVS = 0; }
 		if ( mNoLightingPS )      { mNoLightingPS->Release();      mNoLightingPS = 0; }
 		if ( mPixelLightingPS )   { mPixelLightingPS->Release();   mPixelLightingPS = 0; }
+		if ( mNormalMapPS )       { mNormalMapPS->Release();       mNormalMapPS = 0; }
 		if ( mVSCB )              { mVSCB->Release();              mVSCB = 0; }
 		if ( mPSCB )              { mPSCB->Release();              mPSCB = 0; }
 
@@ -462,7 +471,8 @@ public:
 			mContext->PSSetShader( mNoLightingPS, nullptr, 0 );
 		}else{
 			mContext->VSSetShader( mPixelLightingVS, nullptr, 0 );
-			mContext->PSSetShader( mPixelLightingPS, nullptr, 0 );
+			// 法線マップが設定されていればノーマルマップ用PSを使う。
+			mContext->PSSetShader( mCurrentNormalMap ? mNormalMapPS : mPixelLightingPS, nullptr, 0 );
 		}
 	}
 	void applyRasterizerState(){
@@ -586,7 +596,37 @@ public:
 		cout << "Graphics::restore() : succeeded" << endl;
 	}
 
+	// 法線マップを解除して通常PSへ戻す（設定されていなければ何もしない）。
+	void clearNormalMap(){
+		if ( !mCurrentNormalMap ) return;
+		mCurrentNormalMap->release();
+		if ( mCurrentNormalMap->referenceCount() == 0 ) SAFE_DELETE( mCurrentNormalMap );
+		mCurrentNormalMap = 0;
+		ID3D11ShaderResourceView* nullSRV = nullptr;
+		mContext->PSSetShaderResources( 1, 1, &nullSRV );
+		applyShader();
+	}
+	// スロット t1 に法線マップをバインドし、ノーマルマップ用PSへ切り替える。
+	void setNormalMap( Texture::Impl* o ){
+		if ( mCurrentNormalMap == o ) return;
+		if ( mCurrentNormalMap ){
+			mCurrentNormalMap->release();
+			if ( mCurrentNormalMap->referenceCount() == 0 ) SAFE_DELETE( mCurrentNormalMap );
+		}
+		mCurrentNormalMap = o;
+		if ( o ){
+			o->refer();
+			o->ensureGpuUploaded();
+			mContext->PSSetShaderResources( 1, 1, &o->mSRV );
+		}else{
+			ID3D11ShaderResourceView* nullSRV = nullptr;
+			mContext->PSSetShaderResources( 1, 1, &nullSRV );
+		}
+		applyShader();
+	}
+
 	void setTexture( Texture::Impl* o ){
+		clearNormalMap(); // 既定で法線マップを解除。必要なら直後に setNormalMap する
 		if ( mCurrentTexture == o ) return;
 		if ( mCurrentTexture ){
 			mCurrentTexture->release();
@@ -961,6 +1001,7 @@ public:
 	ID3D11VertexShader* mPixelLightingVS;
 	ID3D11PixelShader*  mNoLightingPS;
 	ID3D11PixelShader*  mPixelLightingPS;
+	ID3D11PixelShader*  mNormalMapPS;
 	ID3D11InputLayout*  mInputLayout;
 
 	ID3D11RasterizerState*   mRSStates[3];
@@ -995,6 +1036,7 @@ public:
 	VertexBuffer::Impl* mFullScreenQuadVB;
 	Texture::Impl*      mWhiteTexture;
 	Texture::Impl*      mCurrentTexture;
+	Texture::Impl*      mCurrentNormalMap;
 	VertexBuffer::Impl* mCurrentVB;
 	IndexBuffer::Impl*  mCurrentIB;
 

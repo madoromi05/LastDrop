@@ -61,6 +61,10 @@ void Manager::setTexture( Texture o ){
 	gManagerImpl->setTexture( o.mImpl );
 }
 
+void Manager::setNormalMap( Texture o ){
+	gManagerImpl->setNormalMap( o.mImpl );
+}
+
 void Manager::setVertexBuffer( VertexBuffer o ){
 	gManagerImpl->setVertexBuffer( o.mImpl );
 }

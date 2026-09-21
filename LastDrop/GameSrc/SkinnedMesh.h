@@ -43,6 +43,8 @@ public:
 	void setIndex( int i, unsigned short value );
 	// テクスチャを設定する(省略時は無地)。
 	void setTexture( Graphics::Texture );
+	// 法線マップを設定する(省略可)。凹凸の陰影が出る。
+	void setNormalMap( Graphics::Texture );
 
 	// レスト姿勢(無アニメ)の Tree から bindInverse を計算する。
 	// 注意: skeleton のアニメをレストに戻す。呼び出し後に実行用アニメを設定すること。
@@ -79,6 +81,7 @@ private:
 	Graphics::VertexBuffer mVertexBuffer; //動的。毎フレーム書き換える
 	Graphics::IndexBuffer mIndexBuffer;
 	Graphics::Texture mTexture;
+	Graphics::Texture mNormalMap;
 
 	bool mIndicesUploaded;
 };

@@ -26,6 +26,7 @@ CONFIG = {
     "out_path": "C:/Users/mador/source/repos/LastDrop/LastDrop/Resource/character.txt",
     "tree_name": "skel",       # <Tree name>。ゲーム側 createTree(この名前)
     "mesh_texture": "",         # <SkinnedMesh texture>。空なら無地
+    "mesh_normalmap": "",       # <SkinnedMesh normalmap>。空なら法線マップ無し
     "frame_step": 1,            # アニメを何フレームおきにサンプリングするか
     "translate_root_only": True,  # True: 根ボーンだけ移動カーブを出す(関節は回転のみ)
     "flip_winding": True,       # 左右手変換で面が裏返る場合に三角形の巻き順を反転
@@ -242,7 +243,12 @@ def emit_skinned_mesh(mesh_objs, armature):
                 bone_order.append(vg.name)
 
     lines = []
-    lines.append('\t<SkinnedMesh%s>' % (' texture="%s"' % CONFIG["mesh_texture"] if CONFIG["mesh_texture"] else ''))
+    attrs = ''
+    if CONFIG["mesh_texture"]:
+        attrs += ' texture="%s"' % CONFIG["mesh_texture"]
+    if CONFIG["mesh_normalmap"]:
+        attrs += ' normalmap="%s"' % CONFIG["mesh_normalmap"]
+    lines.append('\t<SkinnedMesh%s>' % attrs)
     for name in bone_order:
         lines.append('\t\t<Bone name="%s"/>' % name)
 

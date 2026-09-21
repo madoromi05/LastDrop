@@ -44,6 +44,11 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 	if ( texAttr && texAttr.value() && texAttr.value()[ 0 ] != '\0' ) {
 		mesh->setTexture( Graphics::Texture::create( texAttr.value() ) );
 	}
+	// 法線マップ（<SkinnedMesh normalmap="...">）。あればロードして設定する。
+	ConstAttribute normalAttr = findAttribute( skin, "normalmap" );
+	if ( normalAttr && normalAttr.value() && normalAttr.value()[ 0 ] != '\0' ) {
+		mesh->setNormalMap( Graphics::Texture::create( normalAttr.value() ) );
+	}
 
 	// まず Bone/Vertex/Index の数を数える。
 	int boneNumber = 0;

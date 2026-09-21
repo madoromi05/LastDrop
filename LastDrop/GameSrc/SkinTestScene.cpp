@@ -82,7 +82,7 @@ void SkinTestScene::update() {
 	gm.setLightColor( 0, Vector3( 1.f, 1.f, 1.f ) );
 	gm.setLightPosition( 0, Vector3( 2.f, 4.f, 6.f ) );   // カメラ側（正面）から
 	gm.setLightIntensity( 0, 18.f );
-	gm.setLightColor( 1, Vector3( 0.5f, 0.5f, 0.6f ) );
+	gm.setLightColor( 1, Vector3( 0.5f, 0.5f, 0.5f ) ); // 無彩色フィル（青被り防止）
 	gm.setLightPosition( 1, Vector3( -3.f, 3.f, -3.f ) ); // 反対側からのフィル
 	gm.setLightIntensity( 1, 10.f );
 	gm.setLightIntensity( 2, 0.f );

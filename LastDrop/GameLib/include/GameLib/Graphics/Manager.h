@@ -27,6 +27,8 @@ public:
 	void setVertexBuffer( VertexBuffer );
 	void setIndexBuffer( IndexBuffer );
 	void setTexture( Texture );
+	///法線マップをセット（スロットt1）。セットするとノーマルマップ用シェーダで描く。
+	void setNormalMap( Texture );
 
 	void enableDepthTest( bool );
 	void enableDepthWrite( bool );
