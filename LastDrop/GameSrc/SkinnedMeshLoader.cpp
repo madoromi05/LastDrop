@@ -86,7 +86,7 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 			ConstAttribute a;
 			if ( ( a = findAttribute( child, "position" ) ) ) { a.getFloatValues( position, 3 ); }
 			if ( ( a = findAttribute( child, "normal" ) ) )   { a.getFloatValues( normal, 3 ); }
-			if ( ( a = findAttribute( child, "uv" ) ) )       { a.getFloatValues( uv, 2 ); }
+			if ( ( a = findAttribute( child, "uv" ) ) )       { a.getFloatValues( uv, 2 ); uv[ 1 ] = 1.0f - uv[ 1 ]; } // V反転：TGAは上原点／BlenderのVは下原点なので合わせる
 			mesh->setVertex( vertexIndex,
 				Vector3( position[ 0 ], position[ 1 ], position[ 2 ] ),
 				Vector3( normal[ 0 ], normal[ 1 ], normal[ 2 ] ),
