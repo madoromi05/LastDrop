@@ -39,7 +39,7 @@ float3 perturbNormal( float3 N, float3 wpos, float2 uv )
     T *= invmax; B *= invmax;
     // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）。
     // 末尾の係数が凹凸の強さ。0で無効、1で標準。
-    float2 nxy = ( gNormalMap.Sample( gSampler, uv ).xy * 2.0f - 1.0f ) * 0.5f;
+    float2 nxy = ( gNormalMap.Sample( gSampler, uv ).xy * 2.0f - 1.0f ) * 0.3f;
     // nxy.y = -nxy.y; // 凹凸が反転して見える場合はこの行を有効化（OpenGL式対策）
     float nz = sqrt( saturate( 1.0f - dot( nxy, nxy ) ) );
     float3 mapN = float3( nxy, nz );

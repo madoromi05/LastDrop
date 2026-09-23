@@ -139,9 +139,9 @@ void SkinnedMesh::draw() const {
 	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。
 	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL );
 	m.setDiffuseColor( Vector3( 1.0f, 1.0f, 1.0f ) ); // 暗めアルベドを少し持ち上げる（頂点色は白のまま）
-	m.setSpecularColor( Vector3( 0.1f, 0.1f, 0.1f ) );
+	m.setSpecularColor( Vector3( 0.01f, 0.01f, 0.01f ) );
 	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
-	m.setSpecularSharpness( 20.f );
+	m.setSpecularSharpness( 8.f );
 	m.setTransparency( 1.f );
 	Matrix34 world;
 	world.setIdentity(); //頂点は既にワールド空間へ変換済み
