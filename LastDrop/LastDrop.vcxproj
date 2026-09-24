@@ -152,7 +152,9 @@
     <ClCompile Include="GameSrc\Bullet.cpp" />
     <ClCompile Include="GameSrc\GameConfig.cpp" />
     <ClCompile Include="GameSrc\Animator.cpp" />
-    <ClCompile Include="GameSrc\SkinnedMesh.cpp" />
+    <ClCompile Include="GameSrc\SkinnedMeshData.cpp" />
+    <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp" />
+    <ClCompile Include="GameSrc\MeshCache.cpp" />
     <ClCompile Include="GameSrc\SkinnedMeshLoader.cpp" />
     <ClCompile Include="GameSrc\MeshMaterial.cpp" />
     <ClCompile Include="GameSrc\MeshLoaderUtil.cpp" />
@@ -355,7 +357,9 @@
     <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\Pad.h" />
     <ClInclude Include="GameSrc\Animator.h" />
-    <ClInclude Include="GameSrc\SkinnedMesh.h" />
+    <ClInclude Include="GameSrc\SkinnedMeshData.h" />
+    <ClInclude Include="GameSrc\SkinnedMeshInstance.h" />
+    <ClInclude Include="GameSrc\MeshCache.h" />
     <ClInclude Include="GameSrc\SkinnedMeshLoader.h" />
     <ClInclude Include="GameSrc\MeshMaterial.h" />
     <ClInclude Include="GameSrc\MeshLoaderUtil.h" />

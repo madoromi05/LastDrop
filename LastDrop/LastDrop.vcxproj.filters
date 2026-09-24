@@ -288,7 +288,13 @@
     <ClCompile Include="GameSrc\Animator.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinnedMesh.cpp">
+    <ClCompile Include="GameSrc\SkinnedMeshData.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\MeshCache.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\SkinnedMeshLoader.cpp">
@@ -668,7 +674,13 @@
     <ClInclude Include="GameSrc\Animator.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinnedMesh.h">
+    <ClInclude Include="GameSrc\SkinnedMeshData.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\SkinnedMeshInstance.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\MeshCache.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\SkinnedMeshLoader.h">

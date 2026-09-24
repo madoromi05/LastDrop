@@ -3,16 +3,17 @@
 
 #include "GameLib/PseudoXml/Element.h"
 
-class SkinnedMesh;
+class SkinnedMeshData;
 
-// ニセxmlの <SkinnedMesh> 要素を読み、SkinnedMesh を構築するローダ。
-// SkinnedMesh 本体をファイル形式に依存させないため、読み込み処理はここに分離する。
-// 骨格・アニメは Container が別途 <Tree>/<Animation> から読む（この責務の外）。
+// ニセxmlの <Container> を読み、SkinnedMeshData を使える状態（finish 済み）まで構築するローダ。
+// <SkinnedMesh>（頂点/重み/見た目）はここで読み、<Tree>/<Animation> は GameLib の Container に読ませて
+// データに持たせる。SkinnedMeshData 本体をファイル形式に依存させないため、読み込み処理はここに分離する。
 class SkinnedMeshLoader{
 public:
-	// container(<Container>要素)の子から <SkinnedMesh> を探して mesh を構築する。
-	// 見つかって構築できたら true、無ければ false。
-	static bool load( SkinnedMesh* mesh, GameLib::PseudoXml::ConstElement container );
+	// container(<Container>要素)から data を構築する。
+	// data: 出力先。nullptr 不可。所有権は受け取らない。
+	// 構築できたら true。<SkinnedMesh>/<Tree> が無い・頂点数が上限超えなら false（理由はデバッグ出力）。
+	static bool load( SkinnedMeshData* data, GameLib::PseudoXml::ConstElement container );
 };
 
 #endif

@@ -1,0 +1,101 @@
+#ifndef INCLUDED_SKINNED_MESH_DATA_H
+#define INCLUDED_SKINNED_MESH_DATA_H
+
+#include "GameLib/Base/Array.h"
+#include "GameLib/Math/Vector2.h"
+#include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix34.h"
+#include "GameLib/Graphics/VertexBuffer.h"
+#include "GameLib/Graphics/IndexBuffer.h"
+#include "GameLib/Scene/Container.h"
+#include "GameLib/Scene/Tree.h"
+#include "GameLib/Scene/Animation.h"
+#include "MeshMaterial.h"
+#include <string>
+#include <vector>
+
+using namespace GameLib;
+using namespace GameLib::Math;
+
+// CPU線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。1体ぶんの状態は持たず、同じキャラ全員で共有する。
+// 持つもの: レスト姿勢の頂点＋ボーン重み＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
+// 1体ごとのポーズ・変形後の頂点・位置は SkinnedMeshInstance が持ち、deform() / draw() にこのデータを使う。
+// ゾンビを何体出しても、頂点・重み・テクスチャ・アニメは1つで済む。
+//
+// 使い方: create → set 系 → setContainer → finish（ここまでローダが行う）→ インスタンスから deform / draw
+class SkinnedMeshData{
+public:
+	static const int MAX_INFLUENCE = 4; //1頂点が影響を受けるボーン数の上限
+
+	SkinnedMeshData();
+	~SkinnedMeshData();
+
+	// ── 構築（ローダが使う）──
+	// 頂点数・インデックス数・ボーン数を確保する。
+	void create( int vertexNumber, int indexNumber, int boneNumber );
+	// ボーンに対応する Tree のノード名を設定する。
+	void setBone( int boneIndex, const char* nodeName );
+	// 頂点のレスト姿勢(モデル空間)を設定する。
+	void setVertex( int i, const Vector3& position, const Vector3& normal, const Vector2& uv );
+	// 頂点の影響ボーンと重みを設定する(slot: 0..MAX_INFLUENCE-1)。
+	void setInfluence( int vertexIndex, int slot, int boneIndex, float weight );
+	// 頂点カラーを設定する(0..1)。テクスチャ無しでも部位ごとに色を付けられる。
+	void setColor( int i, float r, float g, float b );
+	// 三角形インデックスを設定する。
+	void setIndex( int i, unsigned short value );
+	// 表面の見た目(テクスチャ・法線マップ・材質値)。返す参照の寿命はこのデータと同じ。所有権は移らない。
+	MeshMaterial& material();
+	// 骨格(<Tree>)とアニメ(<Animation>)の入れ物。インスタンスはここから自分の骨格を作る。
+	void setContainer( Scene::Container );
+	// 設定し終えたら呼ぶ。インデックスをGPUへ送り、レスト姿勢から bindInverse を確定する。
+	// 骨格が無ければ false（理由はデバッグ出力）。
+	bool finish();
+
+	// ── 利用（インスタンスが使う）──
+	// finish 済みで使える状態か。
+	bool isReady() const;
+	int vertexNumber() const;
+	int boneNumber() const;
+	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）。
+	Scene::Tree createSkeleton() const;
+	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。
+	Scene::Animation animation( const char* name ) const;
+	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。
+	void updateLoading();
+
+	// pose の現在ポーズでCPUスキニングし、変形後の頂点を out へ書く（ワールド空間）。
+	// skinWork: ボーン数ぶんの作業領域。呼び出し側(インスタンス)が持つ。nullptr 不可。
+	// out: vertexNumber() 頂点ぶんの頂点バッファ。呼び出し側が持つ。
+	// 頂点数ぶんの行列演算をするので、キャラの数だけ CPU 負荷が増える（GPUスキニング化の候補）。
+	void deform( Scene::Tree& pose, std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const;
+	// deform 済みの頂点バッファを、このデータのインデックスと見た目で描く。
+	void draw( Graphics::VertexBuffer deformed ) const;
+
+private:
+	// 1頂点分のレストデータと影響ボーン。
+	struct Vertex{
+		Vertex();
+		Vector3 mPosition;
+		Vector3 mNormal;
+		Vector2 mUv;
+		unsigned mColor; //頂点カラー(既定 白。テクスチャに乗算される)
+		int mBoneIndex[ MAX_INFLUENCE ];
+		float mWeight[ MAX_INFLUENCE ];
+	};
+	// 1ボーン分。名前で Tree のノードと対応し、bindInverse を持つ。
+	struct Bone{
+		std::string mNodeName;
+		Matrix34 mBindInverse;
+	};
+
+	Array< Vertex > mVertices;
+	Array< Bone > mBones;
+	Array< unsigned short > mStagingIndices; // 構築中だけ使う。finish 後は空
+	Graphics::IndexBuffer mIndexBuffer; // 全インスタンスで共有（形のつながりは変形しても同じ）
+	int mTriangleNumber;
+	MeshMaterial mMaterial;
+	Scene::Container mContainer;
+	bool mReady;
+};
+
+#endif

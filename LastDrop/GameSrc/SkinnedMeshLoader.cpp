@@ -1,5 +1,5 @@
 #include "SkinnedMeshLoader.h"
-#include "SkinnedMesh.h"
+#include "SkinnedMeshData.h"
 #include "MeshLoaderUtil.h"
 
 #include "GameLib/PseudoXml/Element.h"
@@ -17,7 +17,7 @@ namespace{
 	const char* kElementName = "SkinnedMesh";
 }
 
-bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
+bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
 	ConstElement skin = MeshLoaderUtil::findChild( container, kElementName );
 	if ( !skin ) {
 		GameLib::cout << "SkinnedMeshLoader: <" << kElementName << "> not found." << GameLib::endl;
@@ -75,12 +75,12 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 			}
 
 			// 影響ボーンと重み（最大 MAX_INFLUENCE 本、少ない分は書かない＝重み0のまま）。
-			int bones[ SkinnedMesh::MAX_INFLUENCE ] = { 0 };
-			float weights[ SkinnedMesh::MAX_INFLUENCE ] = { 0.f };
+			int bones[ SkinnedMeshData::MAX_INFLUENCE ] = { 0 };
+			float weights[ SkinnedMeshData::MAX_INFLUENCE ] = { 0.f };
 			int boneCount = 0;
 			int weightCount = 0;
-			if ( ( a = MeshLoaderUtil::findAttribute( child, "bones" ) ) )   { boneCount = a.getIntValues( bones, SkinnedMesh::MAX_INFLUENCE ); }
-			if ( ( a = MeshLoaderUtil::findAttribute( child, "weights" ) ) ) { weightCount = a.getFloatValues( weights, SkinnedMesh::MAX_INFLUENCE ); }
+			if ( ( a = MeshLoaderUtil::findAttribute( child, "bones" ) ) )   { boneCount = a.getIntValues( bones, SkinnedMeshData::MAX_INFLUENCE ); }
+			if ( ( a = MeshLoaderUtil::findAttribute( child, "weights" ) ) ) { weightCount = a.getFloatValues( weights, SkinnedMeshData::MAX_INFLUENCE ); }
 			int influenceCount = ( boneCount < weightCount ) ? boneCount : weightCount;
 			for ( int slot = 0; slot < influenceCount; ++slot ) {
 				mesh->setInfluence( vertexIndex, slot, bones[ slot ], weights[ slot ] );
@@ -95,5 +95,7 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 			++indexIndex;
 		}
 	}
-	return true;
+	// 骨格とアニメは同じ <Container> 要素から GameLib に読ませる。
+	mesh->setContainer( Scene::Container::create( container ) );
+	return mesh->finish();
 }
