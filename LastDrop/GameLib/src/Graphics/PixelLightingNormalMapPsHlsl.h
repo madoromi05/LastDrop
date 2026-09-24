@@ -12,6 +12,7 @@ cbuffer PSConstants : register(b0)
     float4 gSpecularColor;
     float4 gLightColor[4];
     float4 gEmissionColor;
+    float4 gMaterialParams; // x: 法線マップの強さ（Manager::setNormalMapStrength）
 };
 Texture2D    gTexture   : register(t0);
 Texture2D    gNormalMap : register(t1);
@@ -38,8 +39,8 @@ float3 perturbNormal( float3 N, float3 wpos, float2 uv )
     float invmax = rsqrt( max( dot( T, T ), dot( B, B ) ) );
     T *= invmax; B *= invmax;
     // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）。
-    // 末尾の係数が凹凸の強さ。0で無効、1で標準。
-    float2 nxy = ( gNormalMap.Sample( gSampler, uv ).xy * 2.0f - 1.0f ) * 0.3f;
+    // 末尾の係数が凹凸の強さ。0で無効、1で標準。モデルごとに MeshMaterial から渡る。
+    float2 nxy = ( gNormalMap.Sample( gSampler, uv ).xy * 2.0f - 1.0f ) * gMaterialParams.x;
     // nxy.y = -nxy.y; // 凹凸が反転して見える場合はこの行を有効化（OpenGL式対策）
     float nz = sqrt( saturate( 1.0f - dot( nxy, nxy ) ) );
     float3 mapN = float3( nxy, nz );

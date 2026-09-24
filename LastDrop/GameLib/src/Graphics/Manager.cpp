@@ -209,6 +209,10 @@ void Manager::setSpecularSharpness( float e ){
 	gManagerImpl->setSpecularSharpness( e );
 }
 
+void Manager::setNormalMapStrength( float s ){
+	gManagerImpl->setNormalMapStrength( s );
+}
+
 
 } //namespace Graphics
 } //namespace GameLib

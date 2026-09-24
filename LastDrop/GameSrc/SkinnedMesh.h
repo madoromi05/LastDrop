@@ -7,7 +7,7 @@
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Graphics/IndexBuffer.h"
-#include "GameLib/Graphics/Texture.h"
+#include "MeshMaterial.h"
 #include <string>
 
 namespace GameLib{
@@ -41,10 +41,9 @@ public:
 	void setColor( int i, float r, float g, float b );
 	// 三角形インデックスを設定する。
 	void setIndex( int i, unsigned short value );
-	// テクスチャを設定する(省略時は無地)。
-	void setTexture( Graphics::Texture );
-	// 法線マップを設定する(省略可)。凹凸の陰影が出る。
-	void setNormalMap( Graphics::Texture );
+	// 表面の見た目(テクスチャ・法線マップ・材質値)。ローダが構築時に設定する。
+	// 返す参照の寿命はこの SkinnedMesh と同じ。所有権は移らない。
+	MeshMaterial& material();
 
 	// レスト姿勢(無アニメ)の Tree から bindInverse を計算する。
 	// 注意: skeleton のアニメをレストに戻す。呼び出し後に実行用アニメを設定すること。
@@ -80,8 +79,7 @@ private:
 
 	Graphics::VertexBuffer mVertexBuffer; //動的。毎フレーム書き換える
 	Graphics::IndexBuffer mIndexBuffer;
-	Graphics::Texture mTexture;
-	Graphics::Texture mNormalMap;
+	MeshMaterial mMaterial;
 
 	bool mIndicesUploaded;
 };

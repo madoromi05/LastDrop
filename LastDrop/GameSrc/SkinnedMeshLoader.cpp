@@ -1,9 +1,11 @@
 #include "SkinnedMeshLoader.h"
 #include "SkinnedMesh.h"
+#include "MeshLoaderUtil.h"
 
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/PseudoXml/Attribute.h"
 #include "GameLib/Base/RefString.h"
+#include "GameLib/Base/DebugStream.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Vector2.h"
 
@@ -12,43 +14,18 @@ using namespace GameLib::PseudoXml;
 using namespace GameLib::Math;
 
 namespace{
-	// Element には名前引きの属性APIが無いので、名前で線形探索する小ヘルパ。
-	// 見つからなければ空の ConstAttribute（if( a ) で判定できる）を返す。
-	ConstAttribute findAttribute( const ConstElement& e, const char* name ) {
-		for ( int i = 0; i < e.attributeNumber(); ++i ) {
-			ConstAttribute a = e.attribute( i );
-			if ( RefString( name ) == a.name() ) {
-				return a;
-			}
-		}
-		return ConstAttribute();
-	}
+	const char* kElementName = "SkinnedMesh";
 }
 
 bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
-	// <Container> の子から <SkinnedMesh> を探す。
-	ConstElement skin;
-	for ( int i = 0; i < container.childNumber(); ++i ) {
-		ConstElement child = container.child( i );
-		if ( RefString( "SkinnedMesh" ) == child.name() ) {
-			skin = child;
-			break;
-		}
-	}
+	ConstElement skin = MeshLoaderUtil::findChild( container, kElementName );
 	if ( !skin ) {
-		return false; // <SkinnedMesh> が無い
+		GameLib::cout << "SkinnedMeshLoader: <" << kElementName << "> not found." << GameLib::endl;
+		return false;
 	}
 
-	// テクスチャ（<SkinnedMesh texture="...">）。あればロードして設定する。
-	ConstAttribute texAttr = findAttribute( skin, "texture" );
-	if ( texAttr && texAttr.value() && texAttr.value()[ 0 ] != '\0' ) {
-		mesh->setTexture( Graphics::Texture::create( texAttr.value() ) );
-	}
-	// 法線マップ（<SkinnedMesh normalmap="...">）。あればロードして設定する。
-	ConstAttribute normalAttr = findAttribute( skin, "normalmap" );
-	if ( normalAttr && normalAttr.value() && normalAttr.value()[ 0 ] != '\0' ) {
-		mesh->setNormalMap( Graphics::Texture::create( normalAttr.value() ) );
-	}
+	// テクスチャ・法線マップ・材質値（<SkinnedMesh texture="..." normalmap="..." ...>）。
+	MeshLoaderUtil::loadMaterial( &mesh->material(), skin );
 
 	// まず Bone/Vertex/Index の数を数える。
 	int boneNumber = 0;
@@ -64,6 +41,9 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 			++indexNumber;
 		}
 	}
+	if ( !MeshLoaderUtil::checkVertexNumber( vertexNumber, kElementName ) ) {
+		return false;
+	}
 	mesh->create( vertexNumber, indexNumber, boneNumber );
 
 	// 各要素を出現順に流し込む（Bone/Vertex/Index はそれぞれ出現順が添え字になる）。
@@ -74,26 +54,21 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 		ConstElement child = skin.child( i );
 		RefString name( child.name() );
 		if ( name == "Bone" ) {
-			ConstAttribute nameAttr = findAttribute( child, "name" );
+			ConstAttribute nameAttr = MeshLoaderUtil::findAttribute( child, "name" );
 			if ( nameAttr ) {
 				mesh->setBone( boneIndex, nameAttr.value() );
 			}
 			++boneIndex;
 		} else if ( name == "Vertex" ) {
-			float position[ 3 ] = { 0.f, 0.f, 0.f };
-			float normal[ 3 ] = { 0.f, 0.f, 1.f };
-			float uv[ 2 ] = { 0.f, 0.f };
-			ConstAttribute a;
-			if ( ( a = findAttribute( child, "position" ) ) ) { a.getFloatValues( position, 3 ); }
-			if ( ( a = findAttribute( child, "normal" ) ) )   { a.getFloatValues( normal, 3 ); }
-			if ( ( a = findAttribute( child, "uv" ) ) )       { a.getFloatValues( uv, 2 ); uv[ 1 ] = 1.0f - uv[ 1 ]; } // V反転：TGAは上原点／BlenderのVは下原点なので合わせる
-			mesh->setVertex( vertexIndex,
-				Vector3( position[ 0 ], position[ 1 ], position[ 2 ] ),
-				Vector3( normal[ 0 ], normal[ 1 ], normal[ 2 ] ),
-				Vector2( uv[ 0 ], uv[ 1 ] ) );
+			Vector3 position;
+			Vector3 normal;
+			Vector2 uv;
+			MeshLoaderUtil::readVertex( child, &position, &normal, &uv );
+			mesh->setVertex( vertexIndex, position, normal, uv );
 
 			// 頂点カラー（部位ごとの色。無ければ既定の白のまま）。
-			if ( ( a = findAttribute( child, "color" ) ) ) {
+			ConstAttribute a;
+			if ( ( a = MeshLoaderUtil::findAttribute( child, "color" ) ) ) {
 				float color[ 3 ] = { 1.f, 1.f, 1.f };
 				a.getFloatValues( color, 3 );
 				mesh->setColor( vertexIndex, color[ 0 ], color[ 1 ], color[ 2 ] );
@@ -104,16 +79,17 @@ bool SkinnedMeshLoader::load( SkinnedMesh* mesh, ConstElement container ) {
 			float weights[ SkinnedMesh::MAX_INFLUENCE ] = { 0.f };
 			int boneCount = 0;
 			int weightCount = 0;
-			if ( ( a = findAttribute( child, "bones" ) ) )   { boneCount = a.getIntValues( bones, SkinnedMesh::MAX_INFLUENCE ); }
-			if ( ( a = findAttribute( child, "weights" ) ) ) { weightCount = a.getFloatValues( weights, SkinnedMesh::MAX_INFLUENCE ); }
+			if ( ( a = MeshLoaderUtil::findAttribute( child, "bones" ) ) )   { boneCount = a.getIntValues( bones, SkinnedMesh::MAX_INFLUENCE ); }
+			if ( ( a = MeshLoaderUtil::findAttribute( child, "weights" ) ) ) { weightCount = a.getFloatValues( weights, SkinnedMesh::MAX_INFLUENCE ); }
 			int influenceCount = ( boneCount < weightCount ) ? boneCount : weightCount;
 			for ( int slot = 0; slot < influenceCount; ++slot ) {
 				mesh->setInfluence( vertexIndex, slot, bones[ slot ], weights[ slot ] );
 			}
 			++vertexIndex;
 		} else if ( name == "Index" ) {
-			ConstAttribute valueAttr = findAttribute( child, "value" );
+			ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( child, "value" );
 			if ( valueAttr ) {
+				// 頂点数は checkVertexNumber 済みなので 16bit に収まる。
 				mesh->setIndex( indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
 			}
 			++indexIndex;

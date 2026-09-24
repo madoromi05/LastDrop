@@ -3,6 +3,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/RefString.h"
+#include "GameLib/Base/DebugStream.h"
 #include "GameLib/Scene/Animation.h"
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/Graphics/Manager.h"
@@ -45,7 +46,12 @@ void SkinTestScene::buildOnce() {
 	mSkeleton = mContainer.createTree( kTreeName );
 	SkinnedMeshLoader::load( &mMesh, root );                       // <SkinnedMesh> を読む
 	mMesh.bindPose( mSkeleton );                                   // レスト姿勢で bindInverse を確定
-	mSkeleton.setAnimation( mContainer.animation( kAnimName ) );   // 実行アニメ（無ければレスト姿勢）
+	Scene::Animation animation = mContainer.animation( kAnimName );
+	if ( !animation ) {
+		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる。
+		GameLib::cout << "SkinTestScene: animation not found: " << kAnimName << GameLib::endl;
+	}
+	mSkeleton.setAnimation( animation );                           // 実行アニメ（無ければレスト姿勢）
 	mDocument.release();                                       // 構築済みなので文書は解放
 }
 

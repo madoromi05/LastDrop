@@ -6,9 +6,15 @@
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Graphics/Vertex.h"
 #include "GameLib/Math/Vector4.h"
+#include "GameLib/Base/DebugStream.h"
+
+namespace{
+	// 頂点カラーの既定値。汎用の部品なので特定モデルの色（旧:ゾンビの灰緑）にはしない。
+	const unsigned kWhite = 0xffffffffu;
+}
 
 SkinnedMesh::Vertex::Vertex() :
-	mColor( 0xff59996bu ) { // 色未設定時のフォールバック（灰緑, BGR並び）。data に color があれば上書き
+	mColor( kWhite ) { // data に color があれば上書き
 	// 未使用スロットの重みは0にしておく(update() の合成で無視されるように)。
 	for ( int i = 0; i < MAX_INFLUENCE; ++i ) {
 		mBoneIndex[ i ] = 0;
@@ -61,12 +67,8 @@ void SkinnedMesh::setIndex( int i, unsigned short value ) {
 	mIndices[ i ] = value;
 }
 
-void SkinnedMesh::setTexture( Graphics::Texture texture ) {
-	mTexture = texture;
-}
-
-void SkinnedMesh::setNormalMap( Graphics::Texture texture ) {
-	mNormalMap = texture;
+MeshMaterial& SkinnedMesh::material() {
+	return mMaterial;
 }
 
 void SkinnedMesh::bindPose( Scene::Tree& skeleton ) {
@@ -77,6 +79,8 @@ void SkinnedMesh::bindPose( Scene::Tree& skeleton ) {
 		if ( rest ) {
 			mBones[ i ].mBindInverse.setInverse( *rest );
 		} else {
+			// 骨名の不一致はエラーにならず「その骨だけ動かない」見た目になるので、ここで知らせる。
+			GameLib::cout << "SkinnedMesh: bone node not found in Tree: " << mBones[ i ].mNodeName.c_str() << GameLib::endl;
 			mBones[ i ].mBindInverse.setIdentity();
 		}
 	}
@@ -84,12 +88,7 @@ void SkinnedMesh::bindPose( Scene::Tree& skeleton ) {
 
 void SkinnedMesh::update( Scene::Tree& skeleton ) {
 	uploadIndices();
-	if ( mTexture ) {
-		mTexture.isReady(); // 非同期テクスチャの読み込みを毎フレーム進める（完了時にデコード＆GPU転送）
-	}
-	if ( mNormalMap ) {
-		mNormalMap.isReady(); // 法線マップも同様に読み込みを進める
-	}
+	mMaterial.updateLoading();
 	skeleton.updateWorldMatrix();
 	//各ボーンの skin[b] = 現在ワールド行列 * bindInverse を作る
 	for ( int b = 0; b < mBones.size(); ++b ) {
@@ -130,19 +129,8 @@ void SkinnedMesh::update( Scene::Tree& skeleton ) {
 }
 
 void SkinnedMesh::draw() const {
-	Graphics::Manager m = Graphics::Manager();
-	m.setTexture( mTexture );
-	if ( mNormalMap ) {
-		m.setNormalMap( mNormalMap ); // setTexture の後に呼ぶ（setTexture が一旦解除するため）
-	}
-	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
-	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。
-	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL );
-	m.setDiffuseColor( Vector3( 1.0f, 1.0f, 1.0f ) ); // 暗めアルベドを少し持ち上げる（頂点色は白のまま）
-	m.setSpecularColor( Vector3( 0.01f, 0.01f, 0.01f ) );
-	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
-	m.setSpecularSharpness( 8.f );
-	m.setTransparency( 1.f );
+	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
+	Graphics::Manager m = Graphics::Manager::instance();
 	Matrix34 world;
 	world.setIdentity(); //頂点は既にワールド空間へ変換済み
 	m.setWorldMatrix( world );

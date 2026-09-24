@@ -27,6 +27,9 @@ CONFIG = {
     "tree_name": "skel",       # <Tree name>。ゲーム側 createTree(この名前)
     "mesh_texture": "",         # <SkinnedMesh texture>。空なら無地
     "mesh_normalmap": "",       # <SkinnedMesh normalmap>。空なら法線マップ無し
+    # 材質値（任意）。書いたものだけ出力し、無ければゲーム側 MeshMaterial の既定値になる。
+    # 例: {"specular": (0.01, 0.01, 0.01), "sharpness": 8.0, "normalstrength": 0.3, "diffuse": (1, 1, 1)}
+    "material_params": {},
     "frame_step": 1,            # アニメを何フレームおきにサンプリングするか
     "translate_root_only": True,  # True: 根ボーンだけ移動カーブを出す(関節は回転のみ)
     "flip_winding": True,       # 左右手変換で面が裏返る場合に三角形の巻き順を反転
@@ -56,6 +59,7 @@ AXIS_CONVERT = mathutils.Matrix((
 ROT_ORDER = "YXZ"
 
 MAX_INFLUENCE = 4  # SkinnedMesh::MAX_INFLUENCE と一致させること
+MAX_VERTEX_NUMBER = 65536  # MeshLoaderUtil::MAX_VERTEX_NUMBER と一致させること（16bitインデックス）
 # ----------------------------------------------------------
 
 
@@ -228,30 +232,30 @@ def emit_animation(armature, action):
     return out
 
 
-# ------------------- <SkinnedMesh> 出力 -------------------
+# ------------------- メッシュ共通出力 -------------------
+# SkinnedMesh / StaticMesh の両方が使う部分。座標変換・巻き順・材質属性・頂点数チェックは
+# ここにだけ書き、メッシュ形式ごとの違いは「頂点に足す属性」だけにする。
 
-def emit_skinned_mesh(mesh_objs, armature):
-    bone_names = set(b.name for b in armature.data.bones)
-
-    # 全メッシュ横断で使うボーンの並び（出現順にグローバル index を確定）。
-    bone_order = []
-    bone_index = {}
-    for obj in mesh_objs:
-        for vg in obj.vertex_groups:
-            if vg.name in bone_names and vg.name not in bone_index:
-                bone_index[vg.name] = len(bone_order)
-                bone_order.append(vg.name)
-
-    lines = []
+def mesh_element_attrs():
+    # メッシュ要素に付ける材質属性（ゲーム側 MeshLoaderUtil::loadMaterial が読む）。
     attrs = ''
     if CONFIG["mesh_texture"]:
         attrs += ' texture="%s"' % CONFIG["mesh_texture"]
     if CONFIG["mesh_normalmap"]:
         attrs += ' normalmap="%s"' % CONFIG["mesh_normalmap"]
-    lines.append('\t<SkinnedMesh%s>' % attrs)
-    for name in bone_order:
-        lines.append('\t\t<Bone name="%s"/>' % name)
+    # 材質値は書いたものだけ出す（無ければゲーム側 MeshMaterial の既定値）。
+    for name, value in CONFIG["material_params"].items():
+        if isinstance(value, (tuple, list)):
+            value = ", ".join(f(x) for x in value)
+        elif isinstance(value, float):
+            value = f(value)
+        attrs += ' %s="%s"' % (name, value)
+    return attrs
 
+
+def emit_geometry(mesh_objs, lines, make_extra_attrs):
+    # 全メッシュの <Vertex>/<Index> を lines へ追記する（メッシュは頂点番号をずらして連結）。
+    # make_extra_attrs(obj) は「頂点 v → 追加属性文字列」の関数を返す（スキンなら bones/weights）。
     bmin = [1e30, 1e30, 1e30]
     bmax = [-1e30, -1e30, -1e30]
     vertex_base = 0  # メッシュを連結するための頂点番号オフセット
@@ -262,12 +266,7 @@ def emit_skinned_mesh(mesh_objs, armature):
         nmat = matw.to_3x3()
         # テクスチャを貼る場合は頂点カラーを白にして素の色を出す。無い時だけパーツ色。
         col = (1.0, 1.0, 1.0) if CONFIG["mesh_texture"] else obj_color(obj)
-
-        # このメッシュの vertex_group index -> グローバル bone index。
-        local_bone = {}
-        for vg in obj.vertex_groups:
-            if vg.name in bone_index:
-                local_bone[vg.index] = bone_index[vg.name]
+        extra_attrs = make_extra_attrs(obj)
 
         # 頂点ごとの UV（ループから拾う。共有頂点なので近似）。
         uv_of_vertex = {}
@@ -285,6 +284,51 @@ def emit_skinned_mesh(mesh_objs, armature):
                 bmin[i] = min(bmin[i], co[i])
                 bmax[i] = max(bmax[i], co[i])
 
+            lines.append('\t\t<Vertex position="%s, %s, %s" normal="%s, %s, %s" uv="%s, %s" color="%s, %s, %s"%s/>' % (
+                f(co.x), f(co.y), f(co.z), f(no.x), f(no.y), f(no.z), f(uv[0]), f(uv[1]),
+                f(col[0]), f(col[1]), f(col[2]), extra_attrs(v)))
+
+        for lt in mesh.loop_triangles:
+            a = lt.vertices[0] + vertex_base
+            b = lt.vertices[1] + vertex_base
+            c = lt.vertices[2] + vertex_base
+            if CONFIG["flip_winding"]:
+                b, c = c, b  # 左右手変換で裏返る分を戻す
+            for idx in (a, b, c):
+                lines.append('\t\t<Index value="%d"/>' % idx)
+
+        vertex_base += len(mesh.vertices)
+
+    # 超えたまま出力するとゲーム側で番号が一周してポリゴンが崩れるので、ここで止める。
+    if vertex_base > MAX_VERTEX_NUMBER:
+        raise RuntimeError("頂点数 %d が上限 %d を超えています。メッシュを分割してください。" % (vertex_base, MAX_VERTEX_NUMBER))
+    print("VERTICES", vertex_base)
+    print("BBOX_MIN", f(bmin[0]), f(bmin[1]), f(bmin[2]))
+    print("BBOX_MAX", f(bmax[0]), f(bmax[1]), f(bmax[2]))
+
+
+# ------------------- <SkinnedMesh> 出力 -------------------
+
+def emit_skinned_mesh(mesh_objs, armature):
+    bone_names = set(b.name for b in armature.data.bones)
+
+    # 全メッシュ横断で使うボーンの並び（出現順にグローバル index を確定）。
+    bone_order = []
+    bone_index = {}
+    for obj in mesh_objs:
+        for vg in obj.vertex_groups:
+            if vg.name in bone_names and vg.name not in bone_index:
+                bone_index[vg.name] = len(bone_order)
+                bone_order.append(vg.name)
+
+    def make_weight_attrs(obj):
+        # このメッシュの vertex_group index -> グローバル bone index。
+        local_bone = {}
+        for vg in obj.vertex_groups:
+            if vg.name in bone_index:
+                local_bone[vg.index] = bone_index[vg.name]
+
+        def weight_attrs(v):
             # 重み上位 MAX_INFLUENCE 本を取り、合計1へ正規化。
             infl = []
             for g in v.groups:
@@ -298,25 +342,15 @@ def emit_skinned_mesh(mesh_objs, armature):
                 total = 1.0
             bones = ", ".join(str(bi) for bi, _ in infl)
             weights = ", ".join(f(w / total) for _, w in infl)
+            return ' bones="%s" weights="%s"' % (bones, weights)
+        return weight_attrs
 
-            lines.append('\t\t<Vertex position="%s, %s, %s" normal="%s, %s, %s" uv="%s, %s" color="%s, %s, %s" bones="%s" weights="%s"/>' % (
-                f(co.x), f(co.y), f(co.z), f(no.x), f(no.y), f(no.z), f(uv[0]), f(uv[1]),
-                f(col[0]), f(col[1]), f(col[2]), bones, weights))
-
-        for lt in mesh.loop_triangles:
-            a = lt.vertices[0] + vertex_base
-            b = lt.vertices[1] + vertex_base
-            c = lt.vertices[2] + vertex_base
-            if CONFIG["flip_winding"]:
-                b, c = c, b  # 左右手変換で裏返る分を戻す
-            for idx in (a, b, c):
-                lines.append('\t\t<Index value="%d"/>' % idx)
-
-        vertex_base += len(mesh.vertices)
-
+    lines = []
+    lines.append('\t<SkinnedMesh%s>' % mesh_element_attrs())
+    for name in bone_order:
+        lines.append('\t\t<Bone name="%s"/>' % name)
+    emit_geometry(mesh_objs, lines, make_weight_attrs)
     lines.append('\t</SkinnedMesh>')
-    print("BBOX_MIN", f(bmin[0]), f(bmin[1]), f(bmin[2]))
-    print("BBOX_MAX", f(bmax[0]), f(bmax[1]), f(bmax[2]))
     return "\n".join(lines) + "\n"
 
 

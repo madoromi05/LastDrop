@@ -94,6 +94,8 @@ public:
 	void setTransparency( float );
 	///スペキュラの鋭さ(大きいほど鋭い。数字の意味は別の本を読もう)
 	void setSpecularSharpness( float );
+	///法線マップの凹凸の強さ(0で無効、1で標準)。setNormalMap していない時は影響しない
+	void setNormalMapStrength( float );
 
 	//以下知らなくていい何か
 	static void create( 

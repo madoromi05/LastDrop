@@ -50,7 +50,8 @@ struct PSCBufferData {
 	float specularColor[4];   // c5
 	float lightColor[4][4];   // c6-c9
 	float emissionColor[4];   // c10
-	// Total: 176 bytes
+	float materialParams[4];  // c11 (x: 法線マップの強さ yzw: 未使用)
+	// Total: 192 bytes
 };
 
 class ManagerImpl{
@@ -110,6 +111,7 @@ public:
 		mSpecularColor.set( 1.f, 1.f, 1.f, 1.f );
 		mEmissionColor.set( 0.f, 0.f, 0.f, 0.f );
 		mAmbientColor.set( 1.f, 1.f, 1.f, 1.f );
+		mNormalMapStrength = 1.f; // 標準の凹凸。モデルごとの値は MeshMaterial 側から渡す
 		ZeroMemory( &mViewport, sizeof( mViewport ) );
 		ZeroMemory( mRSStates,   sizeof( mRSStates ) );
 		ZeroMemory( mDSSStates,  sizeof( mDSSStates ) );
@@ -784,6 +786,7 @@ public:
 		}
 		for ( int i = 0; i < 4; ++i ) memcpy( mPSCBData.lightColor[ i ], &lc[ i ].x, 16 );
 		memcpy( mPSCBData.emissionColor, &mEmissionColor.x, 16 );
+		mPSCBData.materialParams[ 0 ] = mNormalMapStrength;
 		mPSCBDirty = true;
 
 		mLightChanged = false;
@@ -975,6 +978,10 @@ public:
 		mSpecularColor.w = e;
 		mLightChanged = true;
 	}
+	void setNormalMapStrength( float s ){
+		mNormalMapStrength = s;
+		mLightChanged = true; // PS定数バッファは sendLightingParameters でまとめて詰める
+	}
 	void setLightingMode( LightingMode lm ){
 		if ( lm != mLightingMode ){
 			mLightingMode  = lm;
@@ -1060,6 +1067,7 @@ public:
 	Vector4  mSpecularColor;
 	Vector4  mEmissionColor;
 	Vector4  mAmbientColor;
+	float    mNormalMapStrength; // 法線マップの凹凸の強さ(0で無効、1で標準)
 };
 
 extern ManagerImpl* gManagerImpl;
