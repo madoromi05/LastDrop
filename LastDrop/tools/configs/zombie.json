@@ -1,0 +1,15 @@
+{
+    "mode": "skinned",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビ/Zombie+animation/animation fbx/zombie@walk.fbx",
+    "out_path": "../../Resource/character.txt",
+    "tree_name": "skel",
+    "anim_name": "walk",
+    "mesh_texture": "Resource/zombie_albedo.tga",
+    "mesh_normalmap": "Resource/zombie_normal.tga",
+    "material_colors": {
+        "lambert2": [0.42, 0.60, 0.35],
+        "phong1":   [0.45, 0.28, 0.20],
+        "phong2":   [0.12, 0.10, 0.12],
+        "phong3":   [0.82, 0.20, 0.18]
+    }
+}

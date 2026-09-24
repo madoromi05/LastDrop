@@ -7,14 +7,10 @@
 #include "GameLib/Graphics/Vertex.h"
 #include "GameLib/Math/Vector4.h"
 #include "GameLib/Base/DebugStream.h"
-
-namespace{
-	// 頂点カラーの既定値。汎用の部品なので特定モデルの色（旧:ゾンビの灰緑）にはしない。
-	const unsigned kWhite = 0xffffffffu;
-}
+#include "VertexColor.h"
 
 SkinnedMesh::Vertex::Vertex() :
-	mColor( kWhite ) { // data に color があれば上書き
+	mColor( VertexColor::WHITE ) { // data に color があれば上書き
 	// 未使用スロットの重みは0にしておく(update() の合成で無視されるように)。
 	for ( int i = 0; i < MAX_INFLUENCE; ++i ) {
 		mBoneIndex[ i ] = 0;
@@ -55,12 +51,7 @@ void SkinnedMesh::setInfluence( int vertexIndex, int slot, int boneIndex, float 
 }
 
 void SkinnedMesh::setColor( int i, float r, float g, float b ) {
-	// 0..1 を 0..255 にして 0xAARRGGBB へ詰める（シェーダ側の .zyxw で RGB に戻る）。
-	unsigned rr = static_cast< unsigned >( ( r < 0.f ? 0.f : ( r > 1.f ? 1.f : r ) ) * 255.f );
-	unsigned gg = static_cast< unsigned >( ( g < 0.f ? 0.f : ( g > 1.f ? 1.f : g ) ) * 255.f );
-	unsigned bb = static_cast< unsigned >( ( b < 0.f ? 0.f : ( b > 1.f ? 1.f : b ) ) * 255.f );
-	// このエンジンは R と B が入れ替わる並びなので、B<<16 | G<<8 | R で詰める。
-	mVertices[ i ].mColor = 0xff000000u | ( bb << 16 ) | ( gg << 8 ) | rr;
+	mVertices[ i ].mColor = VertexColor::pack( r, g, b );
 }
 
 void SkinnedMesh::setIndex( int i, unsigned short value ) {

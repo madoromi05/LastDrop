@@ -51,6 +51,13 @@ ConstElement MeshLoaderUtil::findChild( const ConstElement& e, const char* name 
 	return ConstElement();
 }
 
+ConstElement MeshLoaderUtil::containerRoot( const ConstElement& documentRoot ) {
+	if ( documentRoot.childNumber() == 1 && RefString( "Container" ) != documentRoot.name() ) {
+		return documentRoot.child( 0 );
+	}
+	return documentRoot;
+}
+
 void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& meshElement ) {
 	ConstAttribute a;
 	if ( hasValue( a = findAttribute( meshElement, "texture" ) ) ) {

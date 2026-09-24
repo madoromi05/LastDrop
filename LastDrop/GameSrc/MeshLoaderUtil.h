@@ -19,6 +19,9 @@ public:
 	static GameLib::PseudoXml::ConstAttribute findAttribute( const GameLib::PseudoXml::ConstElement&, const char* name );
 	// 子要素を名前で探す（最初に見つかったもの）。無ければ空の ConstElement。
 	static GameLib::PseudoXml::ConstElement findChild( const GameLib::PseudoXml::ConstElement&, const char* name );
+	// Document::root() から <Container> 要素まで降りる。root() は <Container> を包む文書ルートのことがあるため、
+	// GameLib の Container ローダと同じ規則（子が1つで自分が Container でなければ1段降りる）で揃える。
+	static GameLib::PseudoXml::ConstElement containerRoot( const GameLib::PseudoXml::ConstElement& documentRoot );
 
 	// メッシュ要素の属性から材質を読む。
 	//   texture / normalmap : 画像ファイルのパス（空・無しなら設定しない）
