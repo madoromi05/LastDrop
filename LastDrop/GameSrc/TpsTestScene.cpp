@@ -1,0 +1,200 @@
+#include "TpsTestScene.h"
+#include "PlayerCharacter.h"
+#include "Pad.h"
+
+#include "GameLib/GameLib.h"
+#include "Framework.h" // DebugScreen.h が使う Framework の宣言
+#include "GameLib/DebugScreen.h"
+#include "GameLib/Graphics/Manager.h"
+#include "GameLib/Graphics/Enum.h"
+#include "GameLib/Input/Manager.h"
+#include "GameLib/Math/Vector3.h"
+
+using namespace GameLib;
+using namespace GameLib::Math;
+
+namespace{
+	// 置き場所（地面 Y=0 の上）と向き。
+	struct Placement{
+		float x;
+		float z;
+		float yawDegree; // 0 で +Z を向く
+	};
+
+	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
+	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
+	// 通りの手前に、建物（-Z 側）を向いて立たせる。カメラも同じ向きから始め、背中越しに通りを見る。
+	const Placement kPlayerStart = { 0.f, 8.f, 180.f };
+
+	// ── 背景。配置は SkinTestScene と同じ（見比べられるように）──
+	const char* kZombieFile = "Resource/character.txt";
+	const char* kZombieAnimation = "walk";
+	const Placement kZombiePlacements[] = {
+		{  0.0f,  0.0f,   0.f },
+		{ -2.5f, -2.0f,  25.f },
+		{  2.8f, -3.0f, -30.f },
+	};
+	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
+	const char* kBuildingFile = "Resource/building.txt";
+	const float kBuildingYaw = -90.f;       // 正面(+X)を +Z へ向ける
+	const Placement kBuildingPlacements[] = {
+		{ -20.5f, -13.f, kBuildingYaw },
+		{   0.0f, -13.f, kBuildingYaw },
+		{  20.5f, -13.f, kBuildingYaw },
+	};
+
+	// ── 視点操作 ──
+	// マウス1画素あたりの回転（度）。横に動かすと左右、縦に動かすと上下に回る。
+	const float kLookDegreesPerPixel = 0.15f;
+
+	// ── ライティング ──
+	// キャラが歩き回っても明るさが変わらないよう、太陽のような遠い光源にする。
+	// 強さに距離を入れると、距離による減衰が打ち消されて一定の明るさになる（Main の従来ゲームと同じ方法）。
+	const Vector3 kSunPosition( 300.f, 500.f, 400.f );
+	const Vector3 kSunColor( 1.f, 0.95f, 0.9f );
+	const Vector3 kFillPosition( -300.f, 200.f, -400.f ); // 影側を真っ黒にしない補助光
+	const Vector3 kFillColor( 0.35f, 0.35f, 0.4f );
+	const Vector3 kAmbientColor( 0.4f, 0.4f, 0.4f );
+	const int kSunLight = 0;
+	const int kFillLight = 1;
+	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
+
+	// ── 操作説明（DebugScreen の文字位置）──
+	const int kHelpColumn = 1;
+	const int kHelpRow = 1;
+}
+
+TpsTestScene::TpsTestScene() :
+	mPlayerData( 0 ),
+	mZombieData( 0 ),
+	mBuildingData( 0 ),
+	mReady( false ) {
+	// 読み込みを頼むだけ（非同期）。構築が終わったら placeObjects で並べる。
+	mPlayerData = mCache.skinnedMesh( kPlayerFile );
+	mZombieData = mCache.skinnedMesh( kZombieFile );
+	mBuildingData = mCache.staticMesh( kBuildingFile );
+	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの背中側から見始める
+}
+
+TpsTestScene::~TpsTestScene() {
+	// シーンを抜けたらカーソルを返す（隠れたまま・閉じ込められたままにしない）。
+	GameLib::Input::Manager::instance().setCursorLocked( false );
+}
+
+void TpsTestScene::placeObjects() {
+	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）は置かない。
+	if ( mPlayerData->isReady() ) {
+		mPlayer = std::make_unique< PlayerCharacter >(
+			mPlayerData, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
+	}
+	int zombieIndex = 0;
+	for ( const Placement& p : kZombiePlacements ) {
+		if ( !mZombieData->isReady() ) {
+			break;
+		}
+		auto zombie = std::make_unique< SkinnedMeshInstance >( mZombieData );
+		zombie->setPosition( Vector3( p.x, 0.f, p.z ) );
+		zombie->setAngleY( p.yawDegree );
+		zombie->setAnimation( kZombieAnimation, kAnimationStartStep * zombieIndex );
+		mZombies.push_back( std::move( zombie ) );
+		++zombieIndex;
+	}
+	for ( const Placement& p : kBuildingPlacements ) {
+		StaticMeshInstance building( mBuildingData );
+		building.setPosition( Vector3( p.x, 0.f, p.z ) );
+		building.setAngleY( p.yawDegree );
+		mBuildings.push_back( building );
+	}
+	// 始めから視点を回せるようにロックしておく。
+	GameLib::Input::Manager::instance().setCursorLocked( true );
+}
+
+void TpsTestScene::updateCursorLock() {
+	GameLib::Input::Manager input = GameLib::Input::Manager::instance();
+	if ( InputMenu() ) {
+		input.setCursorLocked( false );
+	} else if ( InputFire() && !input.isCursorLocked() ) {
+		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
+		input.setCursorLocked( true );
+	}
+}
+
+void TpsTestScene::rotateCamera() {
+	if ( !GameLib::Input::Manager::instance().isCursorLocked() ) {
+		return;
+	}
+	AxisStatus look = InputLook();
+	// マウスを右へ動かすと右を向く＝ヨーは減る（ヨーは上から見て反時計回りが正）。
+	// マウスを下へ動かすと下を向く＝ピッチ（見下ろしが正）は増える。
+	mCamera.rotate( -look.m_width * kLookDegreesPerPixel, look.m_height * kLookDegreesPerPixel );
+}
+
+void TpsTestScene::followCamera() {
+	if ( mPlayer ) {
+		mCamera.follow( mPlayer->position() );
+	}
+	mCamera.apply();
+}
+
+void TpsTestScene::setupLights() const {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.enableDepthTest( true );
+	gm.enableDepthWrite( true );
+	gm.setCullMode( Graphics::CULL_NONE ); // 裏返っても見えるように両面描画（SkinTestScene と同じ）
+	gm.setAmbientColor( kAmbientColor );
+	gm.setLightColor( kSunLight, kSunColor );
+	gm.setLightPosition( kSunLight, kSunPosition );
+	gm.setLightIntensity( kSunLight, kSunPosition.length() );
+	gm.setLightColor( kFillLight, kFillColor );
+	gm.setLightPosition( kFillLight, kFillPosition );
+	gm.setLightIntensity( kFillLight, kFillPosition.length() );
+	for ( int i = kFillLight + 1; i < kLightNumber; ++i ) {
+		gm.setLightIntensity( i, 0.f );
+	}
+}
+
+void TpsTestScene::draw() const {
+	if ( mPlayer ) {
+		mPlayer->draw();
+	}
+	for ( const auto& zombie : mZombies ) {
+		zombie->draw();
+	}
+	for ( const StaticMeshInstance& building : mBuildings ) {
+		building.draw();
+	}
+}
+
+void TpsTestScene::update() {
+	// 入力は1フレームに1回だけ読む（従来ゲームは Main が読むが、SceneManager のシーンは自分で読む）。
+	Pad::instance()->update();
+
+	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎フレーム呼ぶ）。
+	bool allBuilt = mCache.update();
+	if ( !mReady ) {
+		if ( !allBuilt ) {
+			return; // ロード完了待ち
+		}
+		placeObjects();
+		mReady = true;
+	}
+
+	updateCursorLock();
+	// 順番に意味がある: 向きを決める → その向き基準でキャラを動かす → 動いた後の位置へカメラを追従させる。
+	// 逆にすると W が1フレーム前の向きへの前進になり、カメラもキャラに1フレーム遅れて付いてくる。
+	rotateCamera();
+	if ( mPlayer ) {
+		mPlayer->update( mCamera.yaw() );
+	}
+	for ( auto& zombie : mZombies ) {
+		zombie->update();
+	}
+	followCamera();
+	setupLights();
+	draw();
+
+	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
+		GameLib::Input::Manager::instance().isCursorLocked()
+			? "WASD: move  Shift: run  Mouse: look  Esc: release cursor"
+			: "Click: lock cursor (mouse look)" );
+}

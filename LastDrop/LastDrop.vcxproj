@@ -164,6 +164,9 @@
     <ClCompile Include="GameSrc\StaticMeshLoader.cpp" />
     <ClCompile Include="GameSrc\SceneManager.cpp" />
     <ClCompile Include="GameSrc\SkinTestScene.cpp" />
+    <ClCompile Include="GameSrc\TpsTestScene.cpp" />
+    <ClCompile Include="GameSrc\ThirdPersonCamera.cpp" />
+    <ClCompile Include="GameSrc\PlayerCharacter.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
     <ClCompile Include="GameSrc\Player.cpp">
@@ -371,6 +374,9 @@
     <ClInclude Include="GameSrc\IScene.h" />
     <ClInclude Include="GameSrc\SceneManager.h" />
     <ClInclude Include="GameSrc\SkinTestScene.h" />
+    <ClInclude Include="GameSrc\TpsTestScene.h" />
+    <ClInclude Include="GameSrc\ThirdPersonCamera.h" />
+    <ClInclude Include="GameSrc\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\Player.h" />
     <ClInclude Include="GameSrc\Robo.h" />
     <ClInclude Include="GameSrc\Stage.h" />

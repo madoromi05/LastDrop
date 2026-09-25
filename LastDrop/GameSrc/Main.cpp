@@ -44,7 +44,7 @@ GameConfig gConfig; // ゲームプレイ設定（接地時の挙動など）。
 
 // 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照。
 // 通常ゲームで始めるなら SceneManager::SCENE_GAME に変える。
-const SceneManager::SceneId kStartScene = SceneManager::SCENE_SKIN_TEST;
+const SceneManager::SceneId kStartScene = SceneManager::SCENE_TPS_TEST;
 
 Vector3 gAmbient( 0.2f, 0.3f, 0.4f );
 GameLib::Scene::PrimitiveRenderer gPrimitiveRenderer;

@@ -5,6 +5,7 @@
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Scene/Tree.h"
+#include "GameLib/Scene/Animation.h"
 #include <vector>
 
 class SkinnedMeshData;
@@ -28,6 +29,9 @@ public:
 	// 再生するアニメを名前で設定する。見つからなければデバッグ出力してレスト姿勢のまま。
 	// startTime: 再生開始時刻（フレーム）。同じアニメの複数体をずらして、動きが揃わないようにする。
 	void setAnimation( const char* name, float startTime );
+	// 取得済みのアニメで切り替える（Animator など、状態ごとにアニメを持っている側が使う）。
+	// 空の Animation ならレスト姿勢になる。
+	void setAnimation( GameLib::Scene::Animation, float startTime );
 
 	// アニメを1フレーム進めて、ポーズどおりに頂点を変形する。描画前に毎フレーム1回呼ぶ。
 	void update();

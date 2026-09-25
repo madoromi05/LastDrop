@@ -58,6 +58,9 @@ public:
     void BindKeyboard(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, char a_asciiKey);
     void BindMouse(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::Mouse::Button a_button);
     void BindJoystickButton(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, int a_buttonCode);
+    // 軸ワーク（視点操作など、押下ではなく量を読む操作）へマウスの軸を割り当てる。
+    void BindMouseAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::MouseAxisKind a_axis);
+    void UnbindMouseAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::MouseAxisKind a_axis);
 
     void UnbindKeyboard(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, char a_asciiKey);
     void UnbindMouse(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::Mouse::Button a_button);
@@ -75,6 +78,7 @@ private:
     // これにより Bind だけで入力系一式が組み上がる。
     std::shared_ptr<KeyboardButtonFormat> ensureKeyboardFormat();
     std::shared_ptr<MouseButtonFormatInt> ensureMouseButtonFormat();
+    std::shared_ptr<MouseAxisFormat>      ensureMouseAxisFormat();
     std::shared_ptr<JoystickButtonFormat> ensureJoystickButtonFormat();
     std::shared_ptr<InputCollector>       ensureCollector(GameLib::Input::CollectorId a_collector);
 
@@ -113,6 +117,8 @@ bool  IsWorkFree(const ::Input& a_input, WorkId a_work);
 bool  IsWorkPress(const ::Input& a_input, WorkId a_work);
 bool  IsWorkHold(const ::Input& a_input, WorkId a_work);
 bool  IsWorkRelease(const ::Input& a_input, WorkId a_work);
+// 軸ワークの今フレームの量（横・縦。マウスなら移動した画素数）。割り当てが無ければ 0。
+AxisStatus GetAxisWorkState(const ::Input& a_input, WorkId a_work);
 
 }
 }

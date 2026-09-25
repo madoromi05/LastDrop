@@ -1,6 +1,7 @@
 #include "SceneManager.h"
 #include "IScene.h"
 #include "SkinTestScene.h"
+#include "TpsTestScene.h"
 #include "GameLib/GameLib.h"
 
 SceneManager::SceneManager() :
@@ -22,6 +23,9 @@ void SceneManager::change( SceneId id ) {
 	switch ( id ) {
 	case SCENE_SKIN_TEST:
 		change( static_cast< IScene* >( NEW SkinTestScene() ) );
+		break;
+	case SCENE_TPS_TEST:
+		change( static_cast< IScene* >( NEW TpsTestScene() ) );
 		break;
 	case SCENE_GAME:
 	default:

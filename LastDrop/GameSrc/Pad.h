@@ -24,7 +24,7 @@ class Pad
 {
 public:
     // 従来互換の列挙型（Robo.cpp などを無変更にするため残す）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE };
+    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU };
 
     static Pad* instance();
     static void create();
@@ -47,6 +47,7 @@ public:
     bool  isWorkPress(GameLib::Input::WorkId work, int playerId) const;
     bool  isWorkHold(GameLib::Input::WorkId work, int playerId) const;
     bool  isWorkRelease(GameLib::Input::WorkId work, int playerId) const;
+    AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const; // 軸ワークの今フレームの量
 
     // ─────────────────────────────────────────
     // キーコンフィグ：ワークへのボタン追加・削除
@@ -119,3 +120,6 @@ bool InputWire       (int playerId = 0);   // ワイヤーのグラップル開�
 bool InputWireRelease(int playerId = 0);   // ワイヤー離脱（Wireボタンを離した瞬間）
 bool InputWireReel   (int playerId = 0);   // 引き寄せ（押されている間・自然長を縮める）
 bool InputDodge      (int playerId = 0);   // 回避ステップ（押した瞬間）
+bool InputRun        (int playerId = 0);   // 走る（押されている間）
+AxisStatus InputLook (int playerId = 0);   // 視点操作の量（横=右が正、縦=下が正。マウスなら画素数）
+bool InputMenu       (int playerId = 0);   // メニュー／中断（押した瞬間）

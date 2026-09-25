@@ -316,17 +316,23 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		DragAcceptFiles( windowHandle, TRUE );
 	}
 	gImpl->mStarted = true; //ループ開始合図
+	bool quitRequested = false;
 	while ( true ){
-		//メッセージがあるなら処理
-		if ( PeekMessage( &msg, NULL, 0, 0, PM_NOREMOVE ) ){
-			if ( GetMessage( &msg, NULL, 0, 0 ) ){
-				if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ){
-					TranslateMessage( &msg );
-					DispatchMessage( &msg );
-				}
-			}else{
-				break; //WM_QUITが来ました。ループを抜けます。
+		//溜まっているメッセージは、更新の前に全部処理する。
+		//1フレームに1件だけだと、キーの自動リピート(WM_KEYDOWN/WM_CHAR)やマウス移動のメッセージが溜まり続け、
+		//後から押したキー(押している間だけ走る Shift など)の反映が大きく遅れる。
+		while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ){
+			if ( msg.message == WM_QUIT ){
+				quitRequested = true; //WM_QUITが来ました。ループを抜けます。
+				break;
 			}
+			if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ){
+				TranslateMessage( &msg );
+				DispatchMessage( &msg );
+			}
+		}
+		if ( quitRequested ){
+			break;
 		}
 		//終了していたらwindow破棄
 		if ( gImpl->mEnded ){ //終了していなければ更新ループ

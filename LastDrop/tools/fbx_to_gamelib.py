@@ -20,6 +20,8 @@
 #   (B) ROT_ORDER    … アニメ回転を分解するオイラー順。エンジンは rotateY→X→Z。
 #   検証手順: まず1関節だけ Z 回転するモデルで出力し、skintest の曲げ(rotationZ)と
 #   符号・向きが一致するか確認 → 合わなければ (A)(B) を調整、の順で詰める。
+#   ※1軸だけの回転では (B) の順序の誤りは現れない。順序は、複数軸が同時に回る関節を持つモデルで
+#     「出力したデータをエンジンと同じ式で組んだ頂点」と「Blender の変形後の頂点」を比べて確かめる。
 # =====================================================================
 
 import bpy
@@ -39,7 +41,9 @@ CONFIG = {
     "mode": "skinned",          # "skinned"(骨+アニメ) / "static"(動かないモデル)
     "fbx_path": "",             # 使い方A で読み込む FBX
     "out_path": "",             # 書き出す .txt
-    "split_vertices": False,    # True: (頂点, UV, 法線) の組ごとに頂点を分ける。UVの継ぎ目・角が正しくなる
+    # True: (頂点, UV, 法線, 色) の組ごとに頂点を分ける。UVの継ぎ目・角が正しくなり、面に使われない頂点も出力しない。
+    # False は旧来の近似（1頂点=1UV。継ぎ目でテクスチャがずれる）。比較・切り分け用に残している。
+    "split_vertices": True,
     "mesh_names": [],           # 書き出すメッシュのオブジェクト名。空なら全メッシュ
     "tree_name": "skel",       # <Tree name>。ゲーム側 createTree(この名前)
     "mesh_texture": "",         # <SkinnedMesh texture>。空なら無地
@@ -55,6 +59,24 @@ CONFIG = {
     # 未登録のマテリアルは default_color。テクスチャを貼る場合は使われない（白になる）。
     "material_colors": {},
     "default_color": (0.6, 0.6, 0.6),
+    # マテリアル名 → そのパーツの見た目。書くと <SkinnedMesh> の中をマテリアルごとの <Part> に分け、
+    # パーツごとに別のテクスチャで描く（マテリアルごとに別のテクスチャ組を持つモデル用。Mixamo の体/髪など）。
+    # 空なら従来どおり mesh_texture の1組で全体を描く。
+    # 値に書けるもの: texture / normalmap（ゲームの作業フォルダ基準のパス）と material_params と同じ材質値。
+    # 例: {"Ch15_body": {"texture": "Resource/a.tga", "normalmap": "Resource/a_n.tga", "sharpness": 16.0}}
+    "parts": {},
+    # >0 なら、parts のテクスチャを FBX 内の画像（Base Color / Normal Map に繋がった画像）から
+    # この一辺の画素数へ縮小して TGA で書き出す。0 なら書き出さない（手作業で用意する）。
+    "texture_export_size": 0,
+    # parts のテクスチャパスの基準フォルダ（＝ゲームの作業フォルダ）。設定ファイルからの相対パス。
+    "resource_root": "",
+    # 同じ骨格のアニメだけの FBX（Mixamo の Without Skin）を追加で読み、<Animation> を足す。
+    # 例: [{"fbx_path": "Walking.fbx", "name": "walk"}]
+    "extra_animations": [],
+    # >0 なら、アニメのキー時刻を「ゲームのフレーム数」へ直す（FBX の fps とゲームの fps の比を掛ける）。
+    # ゲーム側はアニメ時刻を1フレームに1進めるので、30fps のアニメを 60fps のゲームで等速にするのに使う。
+    # 0 なら Blender のフレーム番号のまま（従来の出力）。
+    "game_fps": 0,
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -69,8 +91,12 @@ AXIS_CONVERT = mathutils.Matrix((
     (0.0, 0.0, 0.0, 1.0),
 ))
 
-# (B) アニメ回転を分解するオイラー順。エンジンは rotateY→rotateX→rotateZ 適用。
-ROT_ORDER = "YXZ"
+# (B) 回転を分解するオイラー順。
+#     エンジン(Scene::Node / TreeTemplate)は M = T * Ry * Rx * Rz * S（rotateY→X→Z を右から掛ける）で、
+#     頂点には Z→X→Y の順に回転が掛かる。Blender の順序名は「先に掛かる軸から」書くので、これは "ZXY"。
+#     ※以前は "YXZ"（行列 Rz*Rx*Ry）で、複数軸が同時に回る関節（Mixamo の肩・腕など）が大きくずれていた。
+#       1軸ずつしか回らない関節は順序に関係なく一致するので、ゾンビの歩きでは目立たなかった。
+ROT_ORDER = "ZXY"
 
 MAX_INFLUENCE = 4  # SkinnedMesh::MAX_INFLUENCE と一致させること
 MAX_VERTEX_NUMBER = 65536  # MeshLoaderUtil::MAX_VERTEX_NUMBER と一致させること（16bitインデックス）
@@ -202,13 +228,25 @@ def emit_curve(indent, ctype, times, values):
     return out
 
 
-def emit_animation(armature, action):
+def key_time_scale():
+    # Blender のフレーム番号 → 出力するキー時刻 の倍率。
+    if CONFIG["game_fps"] > 0:
+        return float(CONFIG["game_fps"]) / bpy.context.scene.render.fps
+    return 1.0
+
+
+def emit_animation(armature, action, anim_name):
     scene = bpy.context.scene
     if armature.animation_data is None:
         armature.animation_data_create()
     armature.animation_data.action = action
+    # Blender 4.4+ のアクションは「スロット」単位で ID に結び付く。別の骨格（extra_animations の FBX）から
+    # 持ってきたアクションはスロットが自動で選ばれず、何も動かない（全キーがレスト姿勢の値になる）ので、明示する。
+    if getattr(armature.animation_data, "action_slot", 1) is None and action.slots:
+        armature.animation_data.action_slot = action.slots[0]
     start = int(action.frame_range[0])
     end = int(action.frame_range[1])
+    time_scale = key_time_scale()
 
     # レスト親相対（エンジン空間）を先に取っておく。
     rest = {}
@@ -222,7 +260,7 @@ def emit_animation(armature, action):
     frame = start
     while frame <= end:
         scene.frame_set(frame)
-        times.append(frame - start)  # 0 起点
+        times.append((frame - start) * time_scale)  # 0 起点
         for pb in armature.pose.bones:
             animated = to_engine(pose_local(pb, armature))
             # エンジンは world = parent * rest * delta。delta = rest^-1 * animated。
@@ -234,7 +272,6 @@ def emit_animation(armature, action):
         frame += CONFIG["frame_step"]
 
     roots = set(b.name for b in armature.data.bones if b.parent is None)
-    anim_name = CONFIG["anim_name"] if CONFIG["anim_name"] else sanitize(action.name)
     out = '\t<Animation name="%s">\n' % anim_name
     for pb in armature.pose.bones:
         s = samples[pb.name]
@@ -258,22 +295,39 @@ def emit_animation(armature, action):
 # SkinnedMesh / StaticMesh の両方が使う部分。座標変換・巻き順・材質属性・頂点数チェックは
 # ここにだけ書き、メッシュ形式ごとの違いは「頂点に足す属性」だけにする。
 
-def mesh_element_attrs(textured):
-    # メッシュ要素に付ける材質属性（ゲーム側 MeshLoaderUtil::loadMaterial が読む）。
-    # textured=False のパーツ（UVの無い単色部品）にはテクスチャを付けない。
+PART_PATH_KEYS = ("texture", "normalmap")  # parts の値のうち、材質値ではなく画像パスの項目
+
+
+def material_attrs(texture, normalmap, params):
+    # 見た目1つ分の属性文字列（ゲーム側 MeshLoaderUtil::loadMaterial が読む）。
     attrs = ''
-    if textured and CONFIG["mesh_texture"]:
-        attrs += ' texture="%s"' % CONFIG["mesh_texture"]
-    if textured and CONFIG["mesh_normalmap"]:
-        attrs += ' normalmap="%s"' % CONFIG["mesh_normalmap"]
+    if texture:
+        attrs += ' texture="%s"' % texture
+    if normalmap:
+        attrs += ' normalmap="%s"' % normalmap
     # 材質値は書いたものだけ出す（無ければゲーム側 MeshMaterial の既定値）。
-    for name, value in CONFIG["material_params"].items():
+    for name, value in params.items():
         if isinstance(value, (tuple, list)):
             value = ", ".join(f(x) for x in value)
         elif isinstance(value, float):
             value = f(value)
         attrs += ' %s="%s"' % (name, value)
     return attrs
+
+
+def mesh_element_attrs(textured):
+    # メッシュ要素に付ける材質属性。
+    # textured=False のパーツ（UVの無い単色部品）にはテクスチャを付けない。
+    return material_attrs(CONFIG["mesh_texture"] if textured else "",
+                          CONFIG["mesh_normalmap"] if textured else "",
+                          CONFIG["material_params"])
+
+
+def part_element_attrs(part):
+    # <Part> に付ける材質属性。材質値は material_params を土台に、パーツに書いたもので上書きする。
+    params = dict(CONFIG["material_params"])
+    params.update({k: v for k, v in part.items() if k not in PART_PATH_KEYS})
+    return material_attrs(part.get("texture", ""), part.get("normalmap", ""), params)
 
 
 SPLIT_KEY_DIGITS = 5  # 頂点分割で「同じUV・法線」とみなす小数桁（浮動小数の誤差で分かれすぎないように丸める）
@@ -303,11 +357,20 @@ def material_color(mat):
     return tuple(linear_to_srgb(base[i]) for i in range(3))
 
 
+def face_material(obj, poly):
+    # 面に割り当てられたマテリアル（無ければ None）。
+    slots = obj.material_slots
+    return slots[poly.material_index].material if poly.material_index < len(slots) else None
+
+
+def face_material_name(obj, poly):
+    mat = face_material(obj, poly)
+    return mat.name if mat else ""
+
+
 def face_color(obj, poly):
     # 面ごとのマテリアル色（1オブジェクトに複数マテリアルがあっても正しく塗り分ける）。
-    slots = obj.material_slots
-    mat = slots[poly.material_index].material if poly.material_index < len(slots) else None
-    return material_color(mat)
+    return material_color(face_material(obj, poly))
 
 
 def shared_corners(obj, textured):
@@ -357,11 +420,13 @@ def split_corners(obj, textured):
     return corners, triangles
 
 
-def emit_geometry(mesh_objs, lines, make_extra_attrs, textured):
+def emit_geometry(mesh_objs, lines, make_extra_attrs, textured, part_indices=None):
     # 全メッシュの <Vertex>/<Index> を lines へ追記する（メッシュは頂点番号をずらして連結）。
     # make_extra_attrs(obj) は「メッシュ頂点 v → 追加属性文字列」の関数を返す（スキンなら bones/weights）。
     # 頂点を分割しても元のメッシュ頂点を渡すので、重みなど頂点単位の情報はそのまま使える。
     # textured: テクスチャを貼るパーツか。True なら頂点カラーは白、False ならマテリアル色。
+    # part_indices: dict を渡すと、インデックスを lines へ書かずに「マテリアル名 → [頂点番号...]」へ振り分ける
+    #   （呼び出し側がマテリアルごとの <Part> にまとめて書く）。頂点は全パーツで共有する。
     bmin = [1e30, 1e30, 1e30]
     bmax = [-1e30, -1e30, -1e30]
     vertex_base = 0  # メッシュを連結するための頂点番号オフセット
@@ -388,12 +453,17 @@ def emit_geometry(mesh_objs, lines, make_extra_attrs, textured):
                 f(co.x), f(co.y), f(co.z), f(no.x), f(no.y), f(no.z), f(uv[0]), f(uv[1]),
                 f(col[0]), f(col[1]), f(col[2]), extra_attrs(v)))
 
-        for tri in triangles:
+        # shared_corners / split_corners はどちらも loop_triangles の順で三角形を返すので、同じ順でマテリアルを引ける。
+        tri_materials = [face_material_name(obj, mesh.polygons[lt.polygon_index]) for lt in mesh.loop_triangles]
+        for tri, mat_name in zip(triangles, tri_materials):
             a = tri[0] + vertex_base
             b = tri[1] + vertex_base
             c = tri[2] + vertex_base
             if CONFIG["flip_winding"]:
                 b, c = c, b  # 鏡像変換で裏返る分を戻す
+            if part_indices is not None:
+                part_indices.setdefault(mat_name, []).extend((a, b, c))
+                continue
             for idx in (a, b, c):
                 lines.append('\t\t<Index value="%d"/>' % idx)
 
@@ -445,12 +515,38 @@ def emit_skinned_mesh(mesh_objs, armature):
             return ' bones="%s" weights="%s"' % (bones, weights)
         return weight_attrs
 
-    textured = bool(CONFIG["mesh_texture"])
+    parts = CONFIG["parts"]
     lines = []
-    lines.append('\t<SkinnedMesh%s>' % mesh_element_attrs(textured))
+    if not parts:
+        # 1組の見た目で全体を描く（従来の形式。<Index> は <SkinnedMesh> の直下）。
+        textured = bool(CONFIG["mesh_texture"])
+        lines.append('\t<SkinnedMesh%s>' % mesh_element_attrs(textured))
+        for name in bone_order:
+            lines.append('\t\t<Bone name="%s"/>' % name)
+        emit_geometry(mesh_objs, lines, make_weight_attrs, textured)
+        lines.append('\t</SkinnedMesh>')
+        return "\n".join(lines) + "\n"
+
+    # マテリアルごとの <Part>（見た目＋インデックス）。頂点とボーンは全パーツ共通なので <SkinnedMesh> 直下に置く。
+    lines.append('\t<SkinnedMesh>')
     for name in bone_order:
         lines.append('\t\t<Bone name="%s"/>' % name)
-    emit_geometry(mesh_objs, lines, make_weight_attrs, textured)
+    part_indices = {}
+    emit_geometry(mesh_objs, lines, make_weight_attrs, True, part_indices)
+    # parts に書き忘れたマテリアルの面は描かれなくなるので、黙って捨てずに止める。
+    missing = [m for m in part_indices if m not in parts]
+    if missing:
+        raise RuntimeError("parts に無いマテリアルがあります: %s（parts: %s）" % (missing, list(parts.keys())))
+    for mat_name, part in parts.items():
+        indices = part_indices.get(mat_name, [])
+        if not indices:
+            print("WARNING: parts のマテリアル '%s' を使う面がありません。" % mat_name)
+            continue
+        lines.append('\t\t<Part%s>' % part_element_attrs(part))
+        for idx in indices:
+            lines.append('\t\t\t<Index value="%d"/>' % idx)
+        lines.append('\t\t</Part>')
+        print("PART", mat_name, "triangles", len(indices) // 3)
     lines.append('\t</SkinnedMesh>')
     return "\n".join(lines) + "\n"
 
@@ -499,9 +595,14 @@ def load_config(path):
     with open(path, encoding="utf-8") as fp:
         CONFIG.update(json.load(fp))
     base = os.path.dirname(os.path.abspath(path))
-    for key in ("fbx_path", "out_path"):
-        if CONFIG[key] and not os.path.isabs(CONFIG[key]):
-            CONFIG[key] = os.path.normpath(os.path.join(base, CONFIG[key]))
+
+    def resolve(p):
+        return os.path.normpath(os.path.join(base, p)) if p and not os.path.isabs(p) else p
+
+    for key in ("fbx_path", "out_path", "resource_root"):
+        CONFIG[key] = resolve(CONFIG[key])
+    for extra in CONFIG["extra_animations"]:
+        extra["fbx_path"] = resolve(extra["fbx_path"])
 
 
 def import_fbx():
@@ -513,18 +614,93 @@ def import_fbx():
     bpy.ops.import_scene.fbx(filepath=CONFIG["fbx_path"])
 
 
+def emit_extra_animations(armature):
+    # アニメだけの FBX を読み、そのアクションを本体の骨格に当てて <Animation> を出す。
+    # 骨名が同じなら、アクション（ボーンごとのカーブ）は本体の骨格にそのまま使える。
+    # 読み込んだ骨格は出力に混ざらないよう、書き出し後に消す。
+    out = ""
+    for extra in CONFIG["extra_animations"]:
+        before = set(bpy.data.objects)
+        bpy.ops.import_scene.fbx(filepath=extra["fbx_path"])
+        imported = [o for o in bpy.data.objects if o not in before]
+        source = next((o for o in imported if o.type == "ARMATURE"), None)
+        if source is None or source.animation_data is None or source.animation_data.action is None:
+            raise RuntimeError("アニメが見つかりません: %s" % extra["fbx_path"])
+        missing = [b.name for b in armature.data.bones if b.name not in source.data.bones]
+        if missing:
+            raise RuntimeError("骨格が違います（本体にある骨が無い）: %s %s" % (extra["fbx_path"], missing[:5]))
+        out += emit_animation(armature, source.animation_data.action, extra["name"])
+        print("ANIM", extra["name"], "from", extra["fbx_path"])
+        bpy.data.batch_remove(imported)
+    return out
+
+
+def export_part_textures():
+    # parts の texture / normalmap を、FBX 内の画像から縮小して TGA で書き出す。
+    # マテリアルのノードから「Base Color に繋がった画像」「Normal Map ノードに繋がった画像」を探す。
+    size = CONFIG["texture_export_size"]
+    if size <= 0:
+        return
+    for mat_name, part in CONFIG["parts"].items():
+        mat = bpy.data.materials.get(mat_name)
+        if mat is None or not mat.node_tree:
+            raise RuntimeError("マテリアルが見つかりません: %s" % mat_name)
+        images = {"texture": linked_image(mat, "Base Color", via_normal_map=False),
+                  "normalmap": linked_image(mat, "Normal", via_normal_map=True)}
+        for key, image in images.items():
+            if not part.get(key):
+                continue
+            if image is None:
+                raise RuntimeError("マテリアル '%s' に %s の画像がありません。" % (mat_name, key))
+            save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], part[key]))
+
+
+def linked_image(mat, bsdf_input, via_normal_map):
+    # Principled BSDF の入力 bsdf_input に（Normal Map ノード経由で）繋がった画像を返す。無ければ None。
+    bsdf = next((n for n in mat.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+    if bsdf is None or not bsdf.inputs[bsdf_input].is_linked:
+        return None
+    node = bsdf.inputs[bsdf_input].links[0].from_node
+    if via_normal_map:
+        if node.type != "NORMAL_MAP" or not node.inputs["Color"].is_linked:
+            return None
+        node = node.inputs["Color"].links[0].from_node
+    return node.image if node.type == "TEX_IMAGE" else None
+
+
+def save_scaled_tga(image, size, path):
+    # 元画像を壊さないよう複製を縮小し、画素をそのまま（色変換なしで）新しい画像へ移して保存する。
+    # save_render は表示用の色管理(AgX 等)が掛かり色が変わるので使わない。
+    scaled = image.copy()
+    scaled.scale(size, size)
+    pixels = [0.0] * (size * size * 4)
+    scaled.pixels.foreach_get(pixels)
+    out = bpy.data.images.new(os.path.basename(path), size, size, alpha=False)
+    out.colorspace_settings.name = image.colorspace_settings.name
+    out.pixels.foreach_set(pixels)
+    out.filepath_raw = path
+    out.file_format = "TARGA_RAW"  # ゲーム側のローダは RLE 圧縮も読めるが、無圧縮の方が読み込みが速い
+    out.save()
+    bpy.data.images.remove(scaled)
+    bpy.data.images.remove(out)
+    print("TEXTURE", image.name, "->", path)
+
+
 def build_skinned(mesh_objs):
     armature = find_armature()
     if armature is None:
         raise RuntimeError("Armature が見つかりません。動かないモデルなら mode を \"static\" にしてください。")
     out = emit_tree(armature)
     # pose.bones を実際に動かすアクションだけ出力する（Mayaのコントロール系静止アクションを除外）。
-    for action in bpy.data.actions:
+    for action in list(bpy.data.actions):
         if not any(fc.data_path.startswith("pose.bones") for fc in action.fcurves):
             continue
-        out += emit_animation(armature, action)
-        print("ANIM", CONFIG["anim_name"] if CONFIG["anim_name"] else sanitize(action.name))
+        anim_name = CONFIG["anim_name"] if CONFIG["anim_name"] else sanitize(action.name)
+        out += emit_animation(armature, action, anim_name)
+        print("ANIM", anim_name)
+    out += emit_extra_animations(armature)
     out += emit_skinned_mesh(mesh_objs, armature)
+    export_part_textures()
     return out
 
 

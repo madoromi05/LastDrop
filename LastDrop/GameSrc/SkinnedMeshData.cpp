@@ -20,20 +20,25 @@ SkinnedMeshData::Vertex::Vertex() :
 	}
 }
 
+SkinnedMeshData::Part::Part() :
+	mFirstTriangle( 0 ),
+	mTriangleNumber( 0 ) {
+}
+
 SkinnedMeshData::SkinnedMeshData() :
-	mTriangleNumber( 0 ),
 	mReady( false ) {
 }
 
 SkinnedMeshData::~SkinnedMeshData() {
 }
 
-void SkinnedMeshData::create( int vertexNumber, int indexNumber, int boneNumber ) {
+void SkinnedMeshData::create( int vertexNumber, int indexNumber, int boneNumber, int partNumber ) {
+	ASSERT( partNumber >= 1 && "SkinnedMeshData::create : partNumber must be 1 or more." );
 	mVertices.setSize( vertexNumber );
 	mBones.setSize( boneNumber );
 	mStagingIndices.setSize( indexNumber );
 	mIndexBuffer = Graphics::IndexBuffer::create( indexNumber );
-	mTriangleNumber = indexNumber / kVerticesPerTriangle;
+	mParts.setSize( partNumber );
 	mReady = false;
 }
 
@@ -60,8 +65,14 @@ void SkinnedMeshData::setIndex( int i, unsigned short value ) {
 	mStagingIndices[ i ] = value; // finish でまとめて IB へ送る（1個ずつ lock すると遅く、書き方次第で前の内容が消える）
 }
 
-MeshMaterial& SkinnedMeshData::material() {
-	return mMaterial;
+void SkinnedMeshData::setPart( int partIndex, int firstIndex, int indexNumber ) {
+	// 描画 API は三角形単位で範囲を受け取るので、ここで換算して持つ。
+	mParts[ partIndex ].mFirstTriangle = firstIndex / kVerticesPerTriangle;
+	mParts[ partIndex ].mTriangleNumber = indexNumber / kVerticesPerTriangle;
+}
+
+MeshMaterial& SkinnedMeshData::material( int partIndex ) {
+	return mParts[ partIndex ].mMaterial;
 }
 
 void SkinnedMeshData::setContainer( Scene::Container container ) {
@@ -120,7 +131,9 @@ Scene::Animation SkinnedMeshData::animation( const char* name ) const {
 }
 
 void SkinnedMeshData::updateLoading() {
-	mMaterial.updateLoading();
+	for ( int i = 0; i < mParts.size(); ++i ) {
+		mParts[ i ].mMaterial.updateLoading();
+	}
 }
 
 void SkinnedMeshData::deform( Scene::Tree& pose, std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const {
@@ -168,12 +181,16 @@ void SkinnedMeshData::draw( Graphics::VertexBuffer deformed ) const {
 	if ( !mReady ) {
 		return;
 	}
-	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
 	Graphics::Manager m = Graphics::Manager::instance();
 	Matrix34 world;
 	world.setIdentity(); //頂点は deform で既にワールド空間へ変換済み
 	m.setWorldMatrix( world );
 	m.setVertexBuffer( deformed );
 	m.setIndexBuffer( mIndexBuffer );
-	m.drawIndexed( 0, mTriangleNumber );
+	// 頂点・インデックスは全パーツ共通。見た目だけ差し替えて、パーツの範囲を描く。
+	for ( int i = 0; i < mParts.size(); ++i ) {
+		const Part& part = mParts[ i ];
+		part.mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
+		m.drawIndexed( part.mFirstTriangle, part.mTriangleNumber );
+	}
 }

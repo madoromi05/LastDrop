@@ -12,6 +12,7 @@ public:
 	enum SceneId{
 		SCENE_GAME,      // 従来ゲーム（設定＋プレイ）。current を空にしてフォールバック実行する。
 		SCENE_SKIN_TEST, // スキニング検証シーン。
+		SCENE_TPS_TEST,  // 自キャラを TPS 視点で動かす検証シーン。
 	};
 
 	static SceneManager& instance();

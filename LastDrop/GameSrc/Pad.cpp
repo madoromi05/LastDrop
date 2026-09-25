@@ -80,6 +80,8 @@ WorkId Pad::buttonToWorkId(Button b)
     case WIRE:     return WorkId::Wire;
     case WIREREEL: return WorkId::WireReel;
     case DODGE:    return WorkId::Dodge;
+    case RUN:      return WorkId::Run;
+    case MENU:     return WorkId::Menu;
     default:    return WorkId::Up;
     }
 }
@@ -106,6 +108,7 @@ bool  Pad::isWorkFree(WorkId work, int playerId) const { return IsWorkFree(m_inp
 bool  Pad::isWorkPress(WorkId work, int playerId) const { return IsWorkPress(m_inputs[playerId], work); }
 bool  Pad::isWorkHold(WorkId work, int playerId) const { return IsWorkHold(m_inputs[playerId], work); }
 bool  Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
+AxisStatus Pad::getAxisWorkState(WorkId work, int playerId) const { return GetAxisWorkState(m_inputs[playerId], work); }
 
 // ────────────────────────────────────────────────
 // キーコンフィグ
@@ -188,3 +191,6 @@ bool InputWire       (int playerId) { return Pad::instance()->isTriggered(Pad::W
 bool InputWireRelease(int playerId) { return Pad::instance()->isWorkRelease(WorkId::Wire, playerId); }
 bool InputWireReel   (int playerId) { return Pad::instance()->isOn(Pad::WIREREEL, playerId); }
 bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(Pad::DODGE, playerId); }
+bool InputRun        (int playerId) { return Pad::instance()->isOn(Pad::RUN, playerId); }
+AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Look, playerId); }
+bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(Pad::MENU, playerId); }

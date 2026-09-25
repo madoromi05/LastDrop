@@ -2,6 +2,7 @@
     "mode": "skinned",
     "fbx_path": "C:/Users/mador/Downloads/ゾンビ/Zombie+animation/animation fbx/zombie@walk.fbx",
     "out_path": "../../Resource/character.txt",
+    "split_vertices": true,
     "tree_name": "skel",
     "anim_name": "walk",
     "mesh_texture": "Resource/zombie_albedo.tga",

@@ -45,6 +45,14 @@ namespace GameLib{
 			return gManagerImpl->mJoystickNumber;
 		}
 
+		void Manager::setCursorLocked( bool locked ){
+			gManagerImpl->setCursorLocked( locked );
+		}
+
+		bool Manager::isCursorLocked() const {
+			return gManagerImpl->mCursorLocked;
+		}
+
 		Keyboard Manager::keyboard() const {
 			return Keyboard();
 		}

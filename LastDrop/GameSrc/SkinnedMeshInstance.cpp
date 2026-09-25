@@ -32,6 +32,10 @@ void SkinnedMeshInstance::setAnimation( const char* name, float startTime ) {
 		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる。
 		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;
 	}
+	setAnimation( animation, startTime );
+}
+
+void SkinnedMeshInstance::setAnimation( Scene::Animation animation, float startTime ) {
 	mSkeleton.setAnimation( animation );
 	// 開始時刻を設定する（以降の update は、ここから1フレームずつ進む）。
 	mSkeleton.updateAnimation( startTime );

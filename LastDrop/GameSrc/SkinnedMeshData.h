@@ -19,6 +19,8 @@ using namespace GameLib::Math;
 
 // CPU線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。1体ぶんの状態は持たず、同じキャラ全員で共有する。
 // 持つもの: レスト姿勢の頂点＋ボーン重み＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
+// 見た目は「パーツ」（インデックスの範囲＋MeshMaterial）単位で持つ。体と髪でテクスチャが別のモデルは複数パーツになる。
+// 頂点・スキニングは全パーツ共通なので、パーツが増えても変形の負荷は増えない（描画呼び出しが増えるだけ）。
 // 1体ごとのポーズ・変形後の頂点・位置は SkinnedMeshInstance が持ち、deform() / draw() にこのデータを使う。
 // ゾンビを何体出しても、頂点・重み・テクスチャ・アニメは1つで済む。
 //
@@ -31,8 +33,8 @@ public:
 	~SkinnedMeshData();
 
 	// ── 構築（ローダが使う）──
-	// 頂点数・インデックス数・ボーン数を確保する。
-	void create( int vertexNumber, int indexNumber, int boneNumber );
+	// 頂点数・インデックス数・ボーン数・パーツ数を確保する。partNumber は1以上。
+	void create( int vertexNumber, int indexNumber, int boneNumber, int partNumber );
 	// ボーンに対応する Tree のノード名を設定する。
 	void setBone( int boneIndex, const char* nodeName );
 	// 頂点のレスト姿勢(モデル空間)を設定する。
@@ -43,8 +45,10 @@ public:
 	void setColor( int i, float r, float g, float b );
 	// 三角形インデックスを設定する。
 	void setIndex( int i, unsigned short value );
-	// 表面の見た目(テクスチャ・法線マップ・材質値)。返す参照の寿命はこのデータと同じ。所有権は移らない。
-	MeshMaterial& material();
+	// パーツが使うインデックスの範囲を設定する。firstIndex / indexNumber は3の倍数（三角形単位）。
+	void setPart( int partIndex, int firstIndex, int indexNumber );
+	// パーツの見た目(テクスチャ・法線マップ・材質値)。返す参照の寿命はこのデータと同じ。所有権は移らない。
+	MeshMaterial& material( int partIndex );
 	// 骨格(<Tree>)とアニメ(<Animation>)の入れ物。インスタンスはここから自分の骨格を作る。
 	void setContainer( Scene::Container );
 	// 設定し終えたら呼ぶ。インデックスをGPUへ送り、レスト姿勢から bindInverse を確定する。
@@ -68,7 +72,7 @@ public:
 	// out: vertexNumber() 頂点ぶんの頂点バッファ。呼び出し側が持つ。
 	// 頂点数ぶんの行列演算をするので、キャラの数だけ CPU 負荷が増える（GPUスキニング化の候補）。
 	void deform( Scene::Tree& pose, std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const;
-	// deform 済みの頂点バッファを、このデータのインデックスと見た目で描く。
+	// deform 済みの頂点バッファを、このデータのインデックスと見た目で描く（パーツごとに1回ずつ描画する）。
 	void draw( Graphics::VertexBuffer deformed ) const;
 
 private:
@@ -88,12 +92,19 @@ private:
 		Matrix34 mBindInverse;
 	};
 
+	// 見た目1つ分。インデックスバッファのうち、この範囲の三角形をこの見た目で描く。
+	struct Part{
+		Part();
+		int mFirstTriangle;
+		int mTriangleNumber;
+		MeshMaterial mMaterial;
+	};
+
 	Array< Vertex > mVertices;
 	Array< Bone > mBones;
 	Array< unsigned short > mStagingIndices; // 構築中だけ使う。finish 後は空
-	Graphics::IndexBuffer mIndexBuffer; // 全インスタンスで共有（形のつながりは変形しても同じ）
-	int mTriangleNumber;
-	MeshMaterial mMaterial;
+	Graphics::IndexBuffer mIndexBuffer; // 全インスタンス・全パーツで共有（形のつながりは変形しても同じ）
+	Array< Part > mParts;
 	Scene::Container mContainer;
 	bool mReady;
 };

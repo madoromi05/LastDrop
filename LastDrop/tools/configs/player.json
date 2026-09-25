@@ -1,0 +1,25 @@
+{
+    "mode": "skinned",
+    "fbx_path": "C:/Users/mador/Downloads/Idle.fbx",
+    "out_path": "../../Resource/player.txt",
+    "split_vertices": true,
+    "mesh_names": ["Ch15"],
+    "tree_name": "skel",
+    "anim_name": "idle",
+    "extra_animations": [
+        { "fbx_path": "C:/Users/mador/Downloads/Walking.fbx",  "name": "walk" },
+        { "fbx_path": "C:/Users/mador/Downloads/Slow Run.fbx", "name": "run" }
+    ],
+    "game_fps": 60,
+    "resource_root": "../..",
+    "texture_export_size": 2048,
+    "material_params": {
+        "specular": [0.04, 0.04, 0.04],
+        "sharpness": 16.0,
+        "normalstrength": 0.6
+    },
+    "parts": {
+        "Ch15_body":  { "texture": "Resource/player_body_albedo.tga",  "normalmap": "Resource/player_body_normal.tga" },
+        "Ch15_body1": { "texture": "Resource/player_body1_albedo.tga", "normalmap": "Resource/player_body1_normal.tga" }
+    }
+}

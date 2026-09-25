@@ -26,7 +26,10 @@ public:
 	mVelocityX( 0 ),
 	mVelocityY( 0 ),
 	mWheel( 0 ),
+	mCursorLocked( false ),
 
+	mCursorHidden( false ),
+	mDiscardLockedDelta( false ),
 	mEnumeratedJoystick( 0 ),
 	mDirectInput( 0 ),
 	mWindowHandle( hwnd ),
@@ -56,6 +59,7 @@ public:
 		}
 	}
 	~ManagerImpl(){
+		applyCursorCapture( false ); //隠したカーソル・閉じ込めを戻してから終わる
 		for ( int i = 0; i < mJoystickNumber; ++i ){
 			mJoysticks[ i ].~Impl();
 		}
@@ -82,6 +86,7 @@ public:
 		mVelocityY = y - mY;
 		mX = x;
 		mY = y;
+		updateCursorLock( pos, pointerScale, pointerOffset );
 
 		if ( WindowCreator().isActive() ){
 			//キーボード
@@ -133,6 +138,12 @@ public:
 		int k = convertKeyID( i );
 		return mKeys[ idx ][ k ] & ( !mKeys[ 1 - idx ][ k ] ); 
 	}
+	void setCursorLocked( bool locked ){
+		if ( locked && !mCursorLocked ){
+			mDiscardLockedDelta = true; //ロック前のカーソル位置と中央との差を、視点の移動として拾わない
+		}
+		mCursorLocked = locked;
+	}
 	int mJoystickNumber;
 	Joystick::Impl* mJoysticks;
 
@@ -142,7 +153,66 @@ public:
 	int mVelocityX;
 	int mVelocityY;
 	int mWheel;
+	bool mCursorLocked; //ゲームが要求したロック状態（非アクティブ中も保持し、復帰したら再びロックする）
 private:
+	//カーソルロック中なら、中央からのずれを移動量にしてカーソルを中央へ戻す。
+	//clientPos: 今フレームのカーソル位置（クライアント座標・変換前）。
+	void updateCursorLock( const POINT& clientPos, float pointerScale, const Vector2& pointerOffset ){
+		bool capture = mCursorLocked && WindowCreator().isActive();
+		applyCursorCapture( capture );
+		if ( !capture ){
+			//非アクティブ中に動いたカーソル位置から戻ってくるので、復帰した最初の1フレームは捨てる。
+			mDiscardLockedDelta = true;
+			return;
+		}
+		RECT rect;
+		GetClientRect( mWindowHandle, &rect );
+		POINT center;
+		center.x = ( rect.right - rect.left ) / 2;
+		center.y = ( rect.bottom - rect.top ) / 2;
+		if ( mDiscardLockedDelta ){
+			mVelocityX = 0;
+			mVelocityY = 0;
+			mDiscardLockedDelta = false;
+		}else{
+			//位置と同じ変換（スケール）を掛けて、ロックしていないときと同じ単位にする。
+			mVelocityX = static_cast< int >( static_cast< float >( clientPos.x - center.x ) * pointerScale );
+			mVelocityY = static_cast< int >( static_cast< float >( clientPos.y - center.y ) * pointerScale );
+		}
+		Vector2 c( static_cast< float >( center.x ), static_cast< float >( center.y ) );
+		c += pointerOffset;
+		c *= pointerScale;
+		mX = static_cast< int >( c.x + 0.5f );
+		mY = static_cast< int >( c.y + 0.5f );
+
+		ClientToScreen( mWindowHandle, &center );
+		SetCursorPos( center.x, center.y );
+	}
+	//カーソルの非表示とウィンドウ内への閉じ込めを、capture に合わせて切り替える。
+	void applyCursorCapture( bool capture ){
+		if ( capture ){
+			//1フレームで大きく動かしてもウィンドウの外をクリックしないよう、クライアント領域に閉じ込める。
+			//ウィンドウは動かせるので毎フレーム設定し直す。
+			RECT rect;
+			GetClientRect( mWindowHandle, &rect );
+			POINT topLeft = { rect.left, rect.top };
+			POINT bottomRight = { rect.right, rect.bottom };
+			ClientToScreen( mWindowHandle, &topLeft );
+			ClientToScreen( mWindowHandle, &bottomRight );
+			RECT screenRect = { topLeft.x, topLeft.y, bottomRight.x, bottomRight.y };
+			ClipCursor( &screenRect );
+		}else if ( mCursorHidden ){
+			ClipCursor( 0 );
+		}
+		//ShowCursor は呼んだ回数を数える仕組みなので、状態が変わったときだけ1回呼ぶ。
+		if ( capture != mCursorHidden ){
+			ShowCursor( capture ? FALSE : TRUE );
+			mCursorHidden = capture;
+		}
+	}
+
+	bool mCursorHidden; //ShowCursor( FALSE ) 済みか（ClipCursor もこの間だけ掛けている）
+	bool mDiscardLockedDelta; //次のロック中フレームの移動量を捨てるか（ロック開始直後・アクティブ復帰直後）
 	static BOOL CALLBACK countCallback( const DIDEVICEINSTANCE* instance, VOID* arg ){
 		int type = instance->dwDevType & 0xff; //下位バイトがタイプ
 		ManagerImpl* self = static_cast< ManagerImpl* >( arg );

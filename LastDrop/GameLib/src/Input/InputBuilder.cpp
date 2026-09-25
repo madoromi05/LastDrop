@@ -1,5 +1,6 @@
 #include "GameLib/Input/InputBuilder.h"
 #include "GameLib/Input/Joystick.h"
+#include "GameLib/Input/Keyboard.h"
 #include <cctype>
 
 using namespace GameLib::Input;
@@ -38,6 +39,9 @@ namespace
         case WorkId::Wire:     return "Wire";
         case WorkId::WireReel: return "WireReel";
         case WorkId::Dodge:    return "Dodge";
+        case WorkId::Run:      return "Run";
+        case WorkId::Look:     return "Look";
+        case WorkId::Menu:     return "Menu";
         default:            return "";
         }
     }
@@ -51,14 +55,24 @@ namespace
         }
     }
 
-    // 'w' -> "W" のように大文字化する。空白やカンマなど印字しにくい文字は個別に名前をつける。
+    // キーコードを GameLib のキーボードへ渡す値にする。
+    // Keyboard::Key の特殊キー（0x80 以降）は char だと負になるので、符号なしで読み直す。
+    int KeyboardKeyCode(char a_asciiKey)
+    {
+        return static_cast<unsigned char>(a_asciiKey);
+    }
+
+    // 'w' -> "W" のように大文字化する。空白やカンマなど印字しにくい文字・特殊キーは個別に名前をつける。
     std::string KeyboardKeyName(char a_asciiKey)
     {
-        switch (a_asciiKey)
+        switch (KeyboardKeyCode(a_asciiKey))
         {
         case ' ': return "Space";
         case ',': return "Comma";
         case '.': return "Period";
+        case Keyboard::KEY_SHIFT:   return "Shift";
+        case Keyboard::KEY_CONTROL: return "Control";
+        case Keyboard::KEY_ESC:     return "Esc";
         default:  return std::string(1, static_cast<char>(std::toupper(static_cast<unsigned char>(a_asciiKey))));
         }
     }
@@ -140,6 +154,11 @@ namespace
         { CollectorId::InGame, WorkId::WireReel, DeviceKind::Joystick, 3 },           // Y
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Joystick, 4 },              // LB
+        { CollectorId::InGame, WorkId::Run,   DeviceKind::Keyboard, Keyboard::KEY_SHIFT },
+        { CollectorId::InGame, WorkId::Run,   DeviceKind::Joystick, 2 },              // X
+        { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
+        { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
+        { CollectorId::InGame, WorkId::Menu,  DeviceKind::Joystick, 7 },              // Start
     };
 
     // Player 1：キーボードのみ
@@ -255,6 +274,12 @@ std::shared_ptr<MouseButtonFormatInt> InputBuilder::ensureMouseButtonFormat()
     return m_mouseButtons;
 }
 
+std::shared_ptr<MouseAxisFormat> InputBuilder::ensureMouseAxisFormat()
+{
+    if (!m_mouseAxes) AddMouseDevice();
+    return m_mouseAxes;
+}
+
 std::shared_ptr<JoystickButtonFormat> InputBuilder::ensureJoystickButtonFormat()
 {
     if (!m_joystickButtons) AddJoystickDevice();
@@ -271,7 +296,7 @@ std::shared_ptr<InputCollector> InputBuilder::ensureCollector(CollectorId a_coll
 void InputBuilder::BindKeyboard(CollectorId a_collector, WorkId a_work, char a_asciiKey)
 {
     // ① デバイス生成と物理キー登録をこの中で完結させる（二重宣言を撤廃）
-    ensureKeyboardFormat()->AddButton(KeyboardKeyName(a_asciiKey), a_asciiKey);
+    ensureKeyboardFormat()->AddButton(KeyboardKeyName(a_asciiKey), KeyboardKeyCode(a_asciiKey));
     ensureCollector(a_collector)->AddButtonToButtonWork(
         WorkName(a_work), DeviceKindName(DeviceKind::Keyboard), KeyboardKeyName(a_asciiKey));
 }
@@ -288,6 +313,20 @@ void InputBuilder::BindJoystickButton(CollectorId a_collector, WorkId a_work, in
     ensureJoystickButtonFormat()->AddButton(JoystickButtonName(a_buttonCode), a_buttonCode);
     ensureCollector(a_collector)->AddButtonToButtonWork(
         WorkName(a_work), DeviceKindName(DeviceKind::Joystick), JoystickButtonName(a_buttonCode));
+}
+
+void InputBuilder::BindMouseAxis(CollectorId a_collector, WorkId a_work, MouseAxisKind a_axis)
+{
+    // 軸はボタンと別の「軸ワーク」に登録する（値は押下状態ではなく移動量）。
+    ensureMouseAxisFormat()->AddAxis(MouseAxisName(a_axis), static_cast<int>(a_axis));
+    ensureCollector(a_collector)->AddAxisToAxisWork(
+        WorkName(a_work), DeviceKindName(DeviceKind::Mouse), MouseAxisName(a_axis));
+}
+
+void InputBuilder::UnbindMouseAxis(CollectorId a_collector, WorkId a_work, MouseAxisKind a_axis)
+{
+    auto col = m_input.GetCollector(CollectorName(a_collector));
+    if (col) col->RemoveAxisFromAxisWork(WorkName(a_work), DeviceKindName(DeviceKind::Mouse), MouseAxisName(a_axis));
 }
 
 void InputBuilder::UnbindKeyboard(CollectorId a_collector, WorkId a_work, char a_asciiKey)
@@ -324,6 +363,9 @@ void InputBuilder::Bind(const BindingRecord& a_record)
     case DeviceKind::Joystick:
         BindJoystickButton(a_record.collector, a_record.work, a_record.code);
         break;
+    case DeviceKind::MouseAxis:
+        BindMouseAxis(a_record.collector, a_record.work, static_cast<MouseAxisKind>(a_record.code));
+        break;
     }
 }
 
@@ -340,6 +382,9 @@ void InputBuilder::Unbind(const BindingRecord& a_record)
     case DeviceKind::Joystick:
         UnbindJoystickButton(a_record.collector, a_record.work, a_record.code);
         break;
+    case DeviceKind::MouseAxis:
+        UnbindMouseAxis(a_record.collector, a_record.work, static_cast<MouseAxisKind>(a_record.code));
+        break;
     }
 }
 
@@ -352,3 +397,8 @@ bool GameLib::Input::IsWorkFree(const ::Input& a_input, WorkId a_work) { return 
 bool GameLib::Input::IsWorkPress(const ::Input& a_input, WorkId a_work) { return a_input.IsButtonWorkPress(WorkName(a_work)); }
 bool GameLib::Input::IsWorkHold(const ::Input& a_input, WorkId a_work) { return a_input.IsButtonWorkHold(WorkName(a_work)); }
 bool GameLib::Input::IsWorkRelease(const ::Input& a_input, WorkId a_work) { return a_input.IsButtonWorkRelease(WorkName(a_work)); }
+
+AxisStatus GameLib::Input::GetAxisWorkState(const ::Input& a_input, WorkId a_work)
+{
+    return a_input.GetAxisWorkStatus(WorkName(a_work));
+}

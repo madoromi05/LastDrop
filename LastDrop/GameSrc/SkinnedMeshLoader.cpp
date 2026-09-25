@@ -15,6 +15,30 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kElementName = "SkinnedMesh";
+	const char* kPartElementName = "Part";
+	const char* kIndexElementName = "Index";
+	const int kSinglePart = 1; // <Part> が無い形式は、全体を1パーツとして扱う
+
+	// <Index> 要素を1つ読んで data の indexIndex 番目へ書き、indexIndex を進める。
+	void readIndex( SkinnedMeshData* mesh, ConstElement indexElement, int* indexIndex ) {
+		ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( indexElement, "value" );
+		if ( valueAttr ) {
+			// 頂点数は checkVertexNumber 済みなので 16bit に収まる。
+			mesh->setIndex( *indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
+		}
+		++( *indexIndex );
+	}
+
+	// element 直下の <Index> の数。
+	int countIndices( ConstElement element ) {
+		int count = 0;
+		for ( int i = 0; i < element.childNumber(); ++i ) {
+			if ( RefString( kIndexElementName ) == element.child( i ).name() ) {
+				++count;
+			}
+		}
+		return count;
+	}
 }
 
 bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
@@ -24,32 +48,43 @@ bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
 		return false;
 	}
 
-	// テクスチャ・法線マップ・材質値（<SkinnedMesh texture="..." normalmap="..." ...>）。
-	MeshLoaderUtil::loadMaterial( &mesh->material(), skin );
-
-	// まず Bone/Vertex/Index の数を数える。
+	// まず Bone/Vertex/Index/Part の数を数える（<Part> の中の <Index> も数に入れる）。
 	int boneNumber = 0;
 	int vertexNumber = 0;
 	int indexNumber = 0;
+	int partNumber = 0;
 	for ( int i = 0; i < skin.childNumber(); ++i ) {
-		RefString name( skin.child( i ).name() );
+		ConstElement child = skin.child( i );
+		RefString name( child.name() );
 		if ( name == "Bone" ) {
 			++boneNumber;
 		} else if ( name == "Vertex" ) {
 			++vertexNumber;
-		} else if ( name == "Index" ) {
+		} else if ( name == kIndexElementName ) {
 			++indexNumber;
+		} else if ( name == kPartElementName ) {
+			++partNumber;
+			indexNumber += countIndices( child );
 		}
 	}
 	if ( !MeshLoaderUtil::checkVertexNumber( vertexNumber, kElementName ) ) {
 		return false;
 	}
-	mesh->create( vertexNumber, indexNumber, boneNumber );
+	// 見た目の持ち方は2通り。
+	//   <Part> あり: パーツごとに <Part texture=... > の見た目と、その中の <Index> の範囲を持つ。
+	//   <Part> なし: <SkinnedMesh texture=... > の見た目1つで、直下の <Index> 全部を描く（従来の形式）。
+	bool hasParts = ( partNumber > 0 );
+	mesh->create( vertexNumber, indexNumber, boneNumber, hasParts ? partNumber : kSinglePart );
+	if ( !hasParts ) {
+		MeshLoaderUtil::loadMaterial( &mesh->material( 0 ), skin );
+		mesh->setPart( 0, 0, indexNumber );
+	}
 
-	// 各要素を出現順に流し込む（Bone/Vertex/Index はそれぞれ出現順が添え字になる）。
+	// 各要素を出現順に流し込む（Bone/Vertex/Index/Part はそれぞれ出現順が添え字になる）。
 	int boneIndex = 0;
 	int vertexIndex = 0;
 	int indexIndex = 0;
+	int partIndex = 0;
 	for ( int i = 0; i < skin.childNumber(); ++i ) {
 		ConstElement child = skin.child( i );
 		RefString name( child.name() );
@@ -86,13 +121,20 @@ bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
 				mesh->setInfluence( vertexIndex, slot, bones[ slot ], weights[ slot ] );
 			}
 			++vertexIndex;
-		} else if ( name == "Index" ) {
-			ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( child, "value" );
-			if ( valueAttr ) {
-				// 頂点数は checkVertexNumber 済みなので 16bit に収まる。
-				mesh->setIndex( indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
+		} else if ( name == kIndexElementName ) {
+			readIndex( mesh, child, &indexIndex );
+		} else if ( name == kPartElementName ) {
+			// パーツの見た目（<Part texture="..." normalmap="..." ...>）と、中の <Index> が占める範囲。
+			MeshLoaderUtil::loadMaterial( &mesh->material( partIndex ), child );
+			int firstIndex = indexIndex;
+			for ( int j = 0; j < child.childNumber(); ++j ) {
+				ConstElement indexElement = child.child( j );
+				if ( RefString( kIndexElementName ) == indexElement.name() ) {
+					readIndex( mesh, indexElement, &indexIndex );
+				}
 			}
-			++indexIndex;
+			mesh->setPart( partIndex, firstIndex, indexIndex - firstIndex );
+			++partIndex;
 		}
 	}
 	// 骨格とアニメは同じ <Container> 要素から GameLib に読ませる。

@@ -17,6 +17,8 @@ enum class DeviceKind
     Keyboard,
     Mouse,
     Joystick,
+    MouseAxis, // マウスの軸（移動量・ホイール）。code は MouseAxisKind。ボタンと code が重なるので種別を分ける
+               // （保存ファイルは番号で持つので、途中に挿さず末尾へ足すこと）
 };
 
 // 入力ワーク（ゲームのアクション）種別
@@ -31,6 +33,9 @@ enum class WorkId
     Wire,     // 立体機動ワイヤー（押下保持でグラップル、離すと離脱）
     WireReel, // ワイヤー引き寄せ（保持中は自然長を縮めて手前へ引かれる）
     Dodge,    // 回避ステップ
+    Run,      // 走る（押している間）
+    Look,     // 視点操作（軸ワーク。GetAxisWorkState で横・縦の移動量を読む）
+    Menu,     // メニュー／中断（カーソルロックの解除にも使う）
 };
 
 // コレクター（シーン別の入力割り当てグループ）種別
