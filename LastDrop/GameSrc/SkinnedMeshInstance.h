@@ -14,6 +14,9 @@ class SkinnedMeshData;
 // 頂点・重み・テクスチャ・アニメは SkinnedMeshData を借りる（所有しない）。
 // 同じキャラを何体出すときも、データは1つでインスタンスだけ増やせばよい。
 //
+// アニメの切り替えは2通り。setAnimation は即座に切り替え、crossFadeTo は切り替え直前に見えていたポーズから
+// 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。混ぜるのはボーンごとの姿勢行列（MatrixBlend）。
+//
 // 1体ごとに頂点バッファ（頂点数×約48バイト）と CPU スキニングの負荷がかかる。
 // コピーすると骨格と頂点バッファを2体で共有してしまうので、コピーは禁止（std::unique_ptr 等で持つ）。
 class SkinnedMeshInstance{
@@ -29,9 +32,14 @@ public:
 	// 再生するアニメを名前で設定する。見つからなければデバッグ出力してレスト姿勢のまま。
 	// startTime: 再生開始時刻（フレーム）。同じアニメの複数体をずらして、動きが揃わないようにする。
 	void setAnimation( const char* name, float startTime );
-	// 取得済みのアニメで切り替える（Animator など、状態ごとにアニメを持っている側が使う）。
-	// 空の Animation ならレスト姿勢になる。
+	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる。
 	void setAnimation( GameLib::Scene::Animation, float startTime );
+	// 今見えているポーズから、animation へ fadeFrames フレームかけて滑らかに切り替える。
+	// フェード中に呼び直してもよい（その時点で見えている混ざったポーズから、改めて混ぜ始める）。
+	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う。
+	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames );
+	// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0。
+	float animationPhase() const;
 
 	// アニメを1フレーム進めて、ポーズどおりに頂点を変形する。描画前に毎フレーム1回呼ぶ。
 	void update();
@@ -39,8 +47,22 @@ public:
 	void draw() const;
 
 private:
+	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。
+	void blendFadingPose();
+
 	const SkinnedMeshData* mData;
-	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ
+	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は deform で掛ける）
+	GameLib::Scene::Animation mAnimation;				// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
+	float mTime;										// 次の update で使うアニメ時刻（フレーム）
+
+	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）。
+	// クロスフェード中にキャラが移動・旋回しても、切り替え前のポーズが元の場所に取り残されないようにするため。
+	std::vector< GameLib::Math::Matrix34 > mBonePose;		// 今フレームに見せるポーズ（フェード中は混ぜた後）
+	std::vector< GameLib::Math::Matrix34 > mFadeFromPose;	// 切り替え直前に見えていたポーズ（フェード中だけ使う）
+	float mFadeFrames;									// フェードの長さ（フレーム）。0 ならフェードしていない
+	float mFadeElapsed;									// フェード開始からの経過（フレーム）
+	bool mHasPose;										// mBonePose を一度でも計算したか（まだ何も見せていないならフェードしない）
+
 	std::vector< GameLib::Math::Matrix34 > mSkinMatrices;	// deform の作業領域（ボーン数ぶん）
 	GameLib::Graphics::VertexBuffer mVertexBuffer;		// 変形後の頂点。毎フレーム書き換える
 	GameLib::Math::Vector3 mPosition;

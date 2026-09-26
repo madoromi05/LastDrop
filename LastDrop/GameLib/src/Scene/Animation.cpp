@@ -77,6 +77,10 @@ bool Animation::operator!=( const Animation& o ) const {
 	return ( mImpl != o.mImpl );
 }
 
+float Animation::period() const {
+	return ( mImpl ) ? mImpl->period() : 0.f;
+}
+
 Animation::operator void*() const {
 	return ( mImpl == 0 ) ? 0 : reinterpret_cast< void* >( ~0 );
 }

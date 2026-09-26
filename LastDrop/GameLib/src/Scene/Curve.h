@@ -192,6 +192,10 @@ public:
 	Type type() const {
 		return mType;
 	}
+	//ループの周期（最後のキーの時刻）。operator() はこの時刻で折り返す。
+	float period() const {
+		return ( mKeyNumber > 0 ) ? mKeys[ mKeyNumber - 1 ].mTime : 0.f;
+	}
 private:
 	enum Interporation{
 		INTERPORATION_NONE, //補間なし

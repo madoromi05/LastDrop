@@ -36,13 +36,17 @@ private:
 	bool readMoveDirection( float cameraYaw, GameLib::Math::Vector3* direction ) const;
 	// 向きを direction へ、1フレームの旋回上限まで近づける。
 	void turnToward( const GameLib::Math::Vector3& direction );
-	// アニメの状態を切り替える（同じ状態なら何もしない）。
+	// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける。
+	void approachSpeed( float targetSpeed );
+	// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ。
 	void changeState( Animator::State );
 
 	std::unique_ptr< SkinnedMeshInstance > mMesh;
 	Animator mAnimator;
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY; // 向き（度）。setAngleY と同じ約束で、0 は +Z
+	GameLib::Math::Vector3 mMoveDirection; // 最後に進んだ向き（水平・長さ1）。入力を離した後の減速中もこの向きへ進む
+	float mSpeed;                          // 今の移動の速さ（m/フレーム）。目標の速さへ加速・減速して近づく
 };
 
 #endif

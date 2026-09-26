@@ -30,6 +30,17 @@ public:
 	int curveNumber() const {
 		return mCurveNumber;
 	}
+	//このノードのカーブのうち最も長い周期。
+	float period() const {
+		float r = 0.f;
+		for ( int i = 0; i < mCurveNumber; ++i ){
+			float p = mCurves[ i ].period();
+			if ( p > r ){
+				r = p;
+			}
+		}
+		return r;
+	}
 	void update(
 	Vector3* translation,
 	Vector3* rotation,

@@ -40,6 +40,17 @@ public:
 	Container::Impl* container(){
 		return mContainer;
 	}
+	//全ノードのうち最も長い周期。
+	float period() const {
+		float r = 0.f;
+		for ( int i = 0; i < mNodeNumber; ++i ){
+			float p = mNodes[ i ].period();
+			if ( p > r ){
+				r = p;
+			}
+		}
+		return r;
+	}
 private:
 	HashMap< const char*, int > mNodeMap;
 	AnimationNode* mNodes;

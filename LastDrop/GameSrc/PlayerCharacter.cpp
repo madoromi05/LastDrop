@@ -16,6 +16,12 @@ namespace{
 	const float kWalkSpeed = 1.4f / kFramesPerSecond;  // 歩き（m/フレーム）。人の歩く速さ約1.4m/s
 	const float kRunSpeed  = 3.2f / kFramesPerSecond;  // 走り（m/フレーム）。Slow Run の足運びに合わせた値
 	const float kTurnSpeed = 720.f / kFramesPerSecond; // 振り向きの速さ（度/フレーム）。真後ろへ約0.25秒
+	// 加速・減速（m/フレーム²）。毎秒²の値をフレーム²に直す。
+	// 止まる→走るは約0.4秒、走る→止まるは約0.27秒。減速を強めにしているのは、止まりたいときに滑り続けると操作が重く感じるため。
+	const float kAcceleration = 8.f / ( kFramesPerSecond * kFramesPerSecond );
+	const float kDeceleration = 12.f / ( kFramesPerSecond * kFramesPerSecond );
+	// アニメを切り替えるときに前後のポーズを混ぜる長さ（フレーム）。0.2秒。
+	const float kCrossFadeFrames = 0.2f * kFramesPerSecond;
 
 	const float kHalfTurn = 180.f;
 	const float kFullTurn = 360.f;
@@ -47,12 +53,21 @@ namespace{
 	float axisValue( bool on ) {
 		return on ? 1.f : 0.f;
 	}
+
+	// 足を交互に出す繰り返しのアニメか。この同士の切り替え（歩き⇔走り）だけ足の位相を合わせる。
+	// 歩きと走りは、どちらも1周の前半で左足・後半で右足が前に出る（player.txt で確認済み）ので、
+	// 「1周の何割まで進んだか」を引き継げば足の出方が揃う。
+	bool isGaitCycle( Animator::State state ) {
+		return state == Animator::STATE_WALK || state == Animator::STATE_RUN;
+	}
 }
 
 PlayerCharacter::PlayerCharacter( const SkinnedMeshData* data, const Vector3& position, float angleY ) :
 	mMesh( std::make_unique< SkinnedMeshInstance >( data ) ),
 	mPosition( position ),
-	mAngleY( wrapSignedAngle( angleY ) ) {
+	mAngleY( wrapSignedAngle( angleY ) ),
+	mMoveDirection( 0.f, 0.f, 0.f ),
+	mSpeed( 0.f ) {
 	// 状態にアニメを登録する。見つからないアニメは静止のアニメで代用する
 	// （レスト姿勢＝Tポーズのまま滑るより目立たない。変換し忘れはデバッグ出力で知らせる）。
 	Scene::Animation idle = data->animation( kStateAnimations[ 0 ].name );
@@ -78,8 +93,12 @@ void PlayerCharacter::update( float cameraYaw ) {
 	if ( moving ) {
 		turnToward( direction );
 		// 向きが追いつく前から入力方向へ進める（振り向き待ちで操作が重く感じないように）。
-		mPosition.madd( direction, running ? kRunSpeed : kWalkSpeed );
+		mMoveDirection = direction;
 	}
+	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
+	approachSpeed( moving ? ( running ? kRunSpeed : kWalkSpeed ) : 0.f );
+	mPosition.madd( mMoveDirection, mSpeed );
+
 	if ( !moving ) {
 		changeState( Animator::STATE_IDLE );
 	} else if ( running ) {
@@ -125,9 +144,25 @@ void PlayerCharacter::turnToward( const Vector3& direction ) {
 	mAngleY = wrapSignedAngle( mAngleY + step );
 }
 
-void PlayerCharacter::changeState( Animator::State next ) {
-	if ( mAnimator.request( next ) ) {
-		// 切り替えたアニメは頭から再生する（歩き→走りで足の位相を合わせる処理はまだ無い）。
-		mMesh->setAnimation( mAnimator.animation(), 0.f );
+void PlayerCharacter::approachSpeed( float targetSpeed ) {
+	if ( mSpeed < targetSpeed ) {
+		mSpeed = Math::min( targetSpeed, mSpeed + kAcceleration );
+	} else {
+		mSpeed = Math::max( targetSpeed, mSpeed - kDeceleration );
 	}
+}
+
+void PlayerCharacter::changeState( Animator::State next ) {
+	Animator::State previous = mAnimator.state();
+	if ( !mAnimator.request( next ) ) {
+		return;
+	}
+	Scene::Animation animation = mAnimator.animation();
+	// 歩き⇔走りは、前のアニメが1周の何割まで進んでいたかを引き継いで、同じ足の位置から始める。
+	// それ以外（止まる⇔動く）は頭から。止まっている姿勢には「どちらの足が前か」が無いため。
+	float startTime = 0.f;
+	if ( isGaitCycle( previous ) && isGaitCycle( next ) ) {
+		startTime = mMesh->animationPhase() * animation.period();
+	}
+	mMesh->crossFadeTo( animation, startTime, kCrossFadeFrames );
 }

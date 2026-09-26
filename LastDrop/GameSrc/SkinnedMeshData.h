@@ -67,11 +67,17 @@ public:
 	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。
 	void updateLoading();
 
-	// pose の現在ポーズでCPUスキニングし、変形後の頂点を out へ書く（ワールド空間）。
+	// pose の現在ポーズから、各ボーンの行列（骨格の根から見た姿勢）を bonePose へ書く。
+	// ボーンの並びは setBone の番号。Tree に無いボーンは単位行列。
+	// ポーズを行列で取り出すのは、2つのポーズを混ぜて（クロスフェード）から変形できるようにするため。
+	// bonePose: boneNumber() 個ぶん。呼び出し側が持つ。nullptr 不可。
+	void computeBonePose( Scene::Tree& pose, std::vector< Matrix34 >* bonePose ) const;
+	// ボーンの姿勢 bonePose を root（置き場所と向き）へ置いて CPU スキニングし、変形後の頂点を out へ書く（ワールド空間）。
 	// skinWork: ボーン数ぶんの作業領域。呼び出し側(インスタンス)が持つ。nullptr 不可。
 	// out: vertexNumber() 頂点ぶんの頂点バッファ。呼び出し側が持つ。
 	// 頂点数ぶんの行列演算をするので、キャラの数だけ CPU 負荷が増える（GPUスキニング化の候補）。
-	void deform( Scene::Tree& pose, std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const;
+	void deform( const Matrix34& root, const std::vector< Matrix34 >& bonePose,
+		std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const;
 	// deform 済みの頂点バッファを、このデータのインデックスと見た目で描く（パーツごとに1回ずつ描画する）。
 	void draw( Graphics::VertexBuffer deformed ) const;
 

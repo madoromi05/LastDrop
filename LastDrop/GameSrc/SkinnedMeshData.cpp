@@ -136,17 +136,25 @@ void SkinnedMeshData::updateLoading() {
 	}
 }
 
-void SkinnedMeshData::deform( Scene::Tree& pose, std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const {
-	std::vector< Matrix34 >& skinMatrices = *skinWork;
+void SkinnedMeshData::computeBonePose( Scene::Tree& pose, std::vector< Matrix34 >* bonePose ) const {
 	pose.updateWorldMatrix();
-	//各ボーンの skin[b] = 現在ワールド行列 * bindInverse を作る
 	for ( int b = 0; b < mBones.size(); ++b ) {
 		const Matrix34* now = pose.nodeMatrix( mBones[ b ].mNodeName.c_str() );
 		if ( now ) {
-			skinMatrices[ b ].setMul( *now, mBones[ b ].mBindInverse );
+			( *bonePose )[ b ] = *now;
 		} else {
-			skinMatrices[ b ].setIdentity();
+			( *bonePose )[ b ].setIdentity();
 		}
+	}
+}
+
+void SkinnedMeshData::deform( const Matrix34& root, const std::vector< Matrix34 >& bonePose,
+std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const {
+	std::vector< Matrix34 >& skinMatrices = *skinWork;
+	//各ボーンの skin[b] = 置き場所 * ボーンの姿勢 * bindInverse を作る
+	for ( int b = 0; b < mBones.size(); ++b ) {
+		skinMatrices[ b ].setMul( root, bonePose[ b ] );
+		skinMatrices[ b ] *= mBones[ b ].mBindInverse;
 	}
 	//頂点を重み付きで合成して動的VBへ書く
 	Graphics::Vertex* dst = out.lock();
