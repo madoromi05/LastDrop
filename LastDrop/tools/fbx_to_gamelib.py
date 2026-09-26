@@ -72,7 +72,11 @@ CONFIG = {
     "resource_root": "",
     # 同じ骨格のアニメだけの FBX（Mixamo の Without Skin）を追加で読み、<Animation> を足す。
     # 例: [{"fbx_path": "Walking.fbx", "name": "walk"}]
+    # "in_place": true を書くと、根ボーンの水平移動（X/Z）をレスト姿勢の位置に固定する。
+    #   前へ進む動き（ルートモーション）入りのアニメを、移動をゲーム側で行うキャラに使うため。上下の揺れは残す。
     "extra_animations": [],
+    # False なら、fbx_path の FBX 自体に入っているアニメは出力しない（メッシュだけ使い、アニメは extra_animations で揃える）。
+    "fbx_animations": True,
     # >0 なら、アニメのキー時刻を「ゲームのフレーム数」へ直す（FBX の fps とゲームの fps の比を掛ける）。
     # ゲーム側はアニメ時刻を1フレームに1進めるので、30fps のアニメを 60fps のゲームで等速にするのに使う。
     # 0 なら Blender のフレーム番号のまま（従来の出力）。
@@ -235,7 +239,7 @@ def key_time_scale():
     return 1.0
 
 
-def emit_animation(armature, action, anim_name):
+def emit_animation(armature, action, anim_name, in_place=False):
     scene = bpy.context.scene
     if armature.animation_data is None:
         armature.animation_data_create()
@@ -256,6 +260,7 @@ def emit_animation(armature, action, anim_name):
     # 各ボーンのカーブ用サンプルを貯める。
     times = []
     samples = {b.name: {"t": [], "r": []} for b in armature.data.bones}
+    roots = set(b.name for b in armature.data.bones if b.parent is None)
 
     frame = start
     while frame <= end:
@@ -263,6 +268,10 @@ def emit_animation(armature, action, anim_name):
         times.append((frame - start) * time_scale)  # 0 起点
         for pb in armature.pose.bones:
             animated = to_engine(pose_local(pb, armature))
+            if in_place and pb.name in roots:
+                # 根の親相対＝ワールド（エンジン空間, Y-up）なので、水平は X/Z。
+                animated.translation.x = rest[pb.name].translation.x
+                animated.translation.z = rest[pb.name].translation.z
             # エンジンは world = parent * rest * delta。delta = rest^-1 * animated。
             delta = rest[pb.name].inverted() @ animated
             t, q, s = delta.decompose()
@@ -271,8 +280,7 @@ def emit_animation(armature, action, anim_name):
             samples[pb.name]["r"].append(e)
         frame += CONFIG["frame_step"]
 
-    roots = set(b.name for b in armature.data.bones if b.parent is None)
-    out = '\t<Animation name="%s">\n' % anim_name
+    out ='\t<Animation name="%s">\n' % anim_name
     for pb in armature.pose.bones:
         s = samples[pb.name]
         node = '\t\t<Node name="%s">\n' % pb.name
@@ -629,8 +637,9 @@ def emit_extra_animations(armature):
         missing = [b.name for b in armature.data.bones if b.name not in source.data.bones]
         if missing:
             raise RuntimeError("骨格が違います（本体にある骨が無い）: %s %s" % (extra["fbx_path"], missing[:5]))
-        out += emit_animation(armature, source.animation_data.action, extra["name"])
-        print("ANIM", extra["name"], "from", extra["fbx_path"])
+        in_place = extra.get("in_place", False)
+        out += emit_animation(armature, source.animation_data.action, extra["name"], in_place)
+        print("ANIM", extra["name"], "from", extra["fbx_path"], "(in place)" if in_place else "")
         bpy.data.batch_remove(imported)
     return out
 
@@ -653,6 +662,26 @@ def export_part_textures():
             if image is None:
                 raise RuntimeError("マテリアル '%s' に %s の画像がありません。" % (mat_name, key))
             save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], part[key]))
+
+
+def export_mesh_textures(mesh_objs):
+    # static モード用。mesh_texture / mesh_normalmap を、テクスチャを貼るメッシュの最初のマテリアルの画像から書き出す。
+    # static は1組の見た目で描く（parts を使わない）ので、画像も1組だけ。
+    size = CONFIG["texture_export_size"]
+    if size <= 0:
+        return
+    mat = next((o.material_slots[0].material for o in mesh_objs
+                if o.data.uv_layers.active and o.material_slots and o.material_slots[0].material), None)
+    if mat is None or not mat.node_tree:
+        raise RuntimeError("テクスチャを書き出すマテリアルが見つかりません。")
+    targets = (("mesh_texture", linked_image(mat, "Base Color", via_normal_map=False)),
+               ("mesh_normalmap", linked_image(mat, "Normal", via_normal_map=True)))
+    for key, image in targets:
+        if not CONFIG[key]:
+            continue
+        if image is None:
+            raise RuntimeError("マテリアル '%s' に %s の画像がありません。" % (mat.name, key))
+        save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]))
 
 
 def linked_image(mat, bsdf_input, via_normal_map):
@@ -692,7 +721,7 @@ def build_skinned(mesh_objs):
         raise RuntimeError("Armature が見つかりません。動かないモデルなら mode を \"static\" にしてください。")
     out = emit_tree(armature)
     # pose.bones を実際に動かすアクションだけ出力する（Mayaのコントロール系静止アクションを除外）。
-    for action in list(bpy.data.actions):
+    for action in (list(bpy.data.actions) if CONFIG["fbx_animations"] else []):
         if not any(fc.data_path.startswith("pose.bones") for fc in action.fcurves):
             continue
         anim_name = CONFIG["anim_name"] if CONFIG["anim_name"] else sanitize(action.name)
@@ -719,6 +748,7 @@ def main():
     out = "<Container>\n"
     if CONFIG["mode"] == "static":
         out += emit_static_mesh(mesh_objs)
+        export_mesh_textures(mesh_objs)
     else:
         out += build_skinned(mesh_objs)
     out += "</Container>\n"

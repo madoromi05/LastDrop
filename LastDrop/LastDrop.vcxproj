@@ -160,6 +160,7 @@
     <ClCompile Include="GameSrc\MeshLoaderUtil.cpp" />
     <ClCompile Include="GameSrc\StaticMeshData.cpp" />
     <ClCompile Include="GameSrc\StaticMeshPart.cpp" />
+    <ClCompile Include="GameSrc\HeldItem.cpp" />
     <ClCompile Include="GameSrc\StaticMeshInstance.cpp" />
     <ClCompile Include="GameSrc\StaticMeshLoader.cpp" />
     <ClCompile Include="GameSrc\SceneManager.cpp" />
@@ -369,6 +370,7 @@
     <ClInclude Include="GameSrc\MeshLoaderUtil.h" />
     <ClInclude Include="GameSrc\StaticMeshData.h" />
     <ClInclude Include="GameSrc\StaticMeshPart.h" />
+    <ClInclude Include="GameSrc\HeldItem.h" />
     <ClInclude Include="GameSrc\StaticMeshInstance.h" />
     <ClInclude Include="GameSrc\StaticMeshLoader.h" />
     <ClInclude Include="GameSrc\VertexColor.h" />

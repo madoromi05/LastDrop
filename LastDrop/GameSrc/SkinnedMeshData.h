@@ -60,6 +60,9 @@ public:
 	bool isReady() const;
 	int vertexNumber() const;
 	int boneNumber() const;
+	// Tree のノード名からボーン番号（setBone の番号）を探す。無ければ -1。
+	// 武器を手に持たせるときなど、特定の骨の姿勢を読みたい側が使う（毎フレームではなく最初に1回引く）。
+	int findBone( const char* nodeName ) const;
 	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）。
 	Scene::Tree createSkeleton() const;
 	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。

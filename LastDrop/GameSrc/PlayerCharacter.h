@@ -7,19 +7,25 @@
 
 class SkinnedMeshData;
 class SkinnedMeshInstance;
+class StaticMeshData;
+class HeldItem;
 
 // TPS で操作する自キャラ。WASD をカメラの向き基準の移動方向に直して地面(Y=0)を歩かせ、
 // 進む方向へ滑らかに振り向かせ、静止／歩き／走り のアニメを切り替える。
 // カメラは持たない（向きを update の引数で受け取る）ので、カメラの種類を変えてもこのクラスは変わらない。
-// 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator に任せる（委譲）。
+// 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem に任せる（委譲）。
+// 普段は銃を下げて持ち、構える入力（右クリック）の間だけ構えのアニメにする。銃は右手の骨に付けて一緒に動かす。
 //
-// v4 アクション用の Player（ワイヤー・射撃）とは別物。当たり判定・ジャンプはまだ持たない。
+// v4 アクション用の Player（ワイヤー・射撃）とは別物。当たり判定・ジャンプ・射撃はまだ持たない。
 class PlayerCharacter{
 public:
 	// data: 形・見た目・アニメ（"idle" / "walk" / "run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このキャラより長く生きていること（MeshCache が持つ）。
+	// weapon: 右手に持たせる銃（Resource/rifle.txt）。所有権は受け取らない。nullptr なら素手で描く。
+	//         data と同じく、このキャラより長く生きていること。
 	// position / angleY: 最初の足元の位置と向き（度。0 は +Z）。
-	PlayerCharacter( const SkinnedMeshData* data, const GameLib::Math::Vector3& position, float angleY );
+	PlayerCharacter( const SkinnedMeshData* data, const StaticMeshData* weapon,
+		const GameLib::Math::Vector3& position, float angleY );
 	~PlayerCharacter();
 	PlayerCharacter( const PlayerCharacter& ) = delete;
 	PlayerCharacter& operator=( const PlayerCharacter& ) = delete;
@@ -42,6 +48,7 @@ private:
 	void changeState( Animator::State );
 
 	std::unique_ptr< SkinnedMeshInstance > mMesh;
+	std::unique_ptr< HeldItem > mWeapon; // 持っていなければ空
 	Animator mAnimator;
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY; // 向き（度）。setAngleY と同じ約束で、0 は +Z

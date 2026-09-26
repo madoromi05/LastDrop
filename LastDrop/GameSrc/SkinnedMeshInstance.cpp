@@ -95,10 +95,23 @@ void SkinnedMeshInstance::update() {
 	mHasPose = true;
 
 	// 置き場所と向きは、混ぜた後のポーズにまとめて掛ける。
+	mData->deform( rootMatrix(), mBonePose, &mSkinMatrices, mVertexBuffer );
+}
+
+Matrix34 SkinnedMeshInstance::rootMatrix() const {
 	Matrix34 root;
 	root.setTranslation( mPosition );
 	root.rotateY( mAngleY );
-	mData->deform( root, mBonePose, &mSkinMatrices, mVertexBuffer );
+	return root;
+}
+
+bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
+	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mBonePose.size() ) ) {
+		return false;
+	}
+	// deform と同じ「置き場所 * ボーンの姿勢」。頂点と同じ式なので、付けた物が手からずれない。
+	out->setMul( rootMatrix(), mBonePose[ boneIndex ] );
+	return true;
 }
 
 void SkinnedMeshInstance::blendFadingPose() {

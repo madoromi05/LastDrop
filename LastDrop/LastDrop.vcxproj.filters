@@ -312,6 +312,9 @@
     <ClCompile Include="GameSrc\StaticMeshPart.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\HeldItem.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\StaticMeshInstance.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -708,6 +711,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\StaticMeshPart.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\HeldItem.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\StaticMeshInstance.h">

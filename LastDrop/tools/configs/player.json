@@ -1,14 +1,18 @@
 {
     "mode": "skinned",
-    "fbx_path": "C:/Users/mador/Downloads/Idle.fbx",
+    "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Idle.fbx",
     "out_path": "../../Resource/player.txt",
     "split_vertices": true,
     "mesh_names": ["Ch15"],
     "tree_name": "skel",
-    "anim_name": "idle",
+    "fbx_animations": false,
     "extra_animations": [
-        { "fbx_path": "C:/Users/mador/Downloads/Walking.fbx",  "name": "walk" },
-        { "fbx_path": "C:/Users/mador/Downloads/Slow Run.fbx", "name": "run" }
+        { "fbx_path": "C:/Users/mador/Downloads/Rifle Idle (1).fbx", "name": "idle" },
+        { "fbx_path": "C:/Users/mador/Downloads/Rifle Walk.fbx",     "name": "walk", "in_place": true },
+        { "fbx_path": "C:/Users/mador/Downloads/Rifle Run.fbx",      "name": "run",  "in_place": true },
+        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/rifle aiming idle.fbx", "name": "aim_idle" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/walking.fbx",           "name": "aim_walk", "in_place": true },
+        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/rifle run.fbx",         "name": "aim_run",  "in_place": true }
     ],
     "game_fps": 60,
     "resource_root": "../..",

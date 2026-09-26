@@ -32,6 +32,7 @@ private:
 	// 設計図の倉庫。インスタンスより先に宣言する（＝インスタンスより後に破棄される）。
 	MeshCache mCache;
 	const SkinnedMeshData* mPlayerData;   // mCache から借りる
+	const StaticMeshData* mWeaponData;    // mCache から借りる（自キャラが右手に持つ銃）
 	const SkinnedMeshData* mZombieData;   // mCache から借りる
 	const StaticMeshData* mBuildingData;  // mCache から借りる
 

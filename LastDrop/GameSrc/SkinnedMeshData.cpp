@@ -122,6 +122,15 @@ int SkinnedMeshData::boneNumber() const {
 	return mBones.size();
 }
 
+int SkinnedMeshData::findBone( const char* nodeName ) const {
+	for ( int b = 0; b < mBones.size(); ++b ) {
+		if ( mBones[ b ].mNodeName == nodeName ) {
+			return b;
+		}
+	}
+	return -1;
+}
+
 Scene::Tree SkinnedMeshData::createSkeleton() const {
 	return mContainer.createTree( kSkeletonTreeIndex );
 }

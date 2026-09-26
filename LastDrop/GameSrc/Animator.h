@@ -13,6 +13,9 @@ public:
 		STATE_IDLE,		// 静止
 		STATE_WALK,		// 歩き
 		STATE_RUN,		// 走り
+		STATE_AIM_IDLE,	// 構えて静止
+		STATE_AIM_WALK,	// 構えて歩き
+		STATE_AIM_RUN,	// 構えて走り
 		STATE_JUMP,		// ジャンプ
 		STATE_DEATH,	// 死亡（終端）
 		STATE_NUM,		// 状態数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）

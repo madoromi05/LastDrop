@@ -42,6 +42,7 @@ namespace
         case WorkId::Run:      return "Run";
         case WorkId::Look:     return "Look";
         case WorkId::Menu:     return "Menu";
+        case WorkId::Aim:      return "Aim";
         default:            return "";
         }
     }
@@ -159,6 +160,8 @@ namespace
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Joystick, 7 },              // Start
+        // 右クリックは Wire（v4 アクション）と共有する。両方を使うシーンが無いため（Space の Jump/Dodge と同じ扱い）。
+        { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
     };
 
     // Player 1：キーボードのみ

@@ -25,6 +25,7 @@ namespace{
 	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
 	// 通りの手前に、建物（-Z 側）を向いて立たせる。カメラも同じ向きから始め、背中越しに通りを見る。
 	const Placement kPlayerStart = { 0.f, 8.f, 180.f };
+	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM）
 
 	// ── 背景。配置は SkinTestScene と同じ（見比べられるように）──
 	const char* kZombieFile = "Resource/character.txt";
@@ -66,11 +67,13 @@ namespace{
 
 TpsTestScene::TpsTestScene() :
 	mPlayerData( 0 ),
+	mWeaponData( 0 ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
 	mReady( false ) {
 	// 読み込みを頼むだけ（非同期）。構築が終わったら placeObjects で並べる。
 	mPlayerData = mCache.skinnedMesh( kPlayerFile );
+	mWeaponData = mCache.staticMesh( kWeaponFile );
 	mZombieData = mCache.skinnedMesh( kZombieFile );
 	mBuildingData = mCache.staticMesh( kBuildingFile );
 	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの背中側から見始める
@@ -84,8 +87,10 @@ TpsTestScene::~TpsTestScene() {
 void TpsTestScene::placeObjects() {
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）は置かない。
 	if ( mPlayerData->isReady() ) {
+		// 銃の構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
+		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
 		mPlayer = std::make_unique< PlayerCharacter >(
-			mPlayerData, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
+			mPlayerData, weapon, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
 	}
 	int zombieIndex = 0;
 	for ( const Placement& p : kZombiePlacements ) {
@@ -195,6 +200,6 @@ void TpsTestScene::update() {
 
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		GameLib::Input::Manager::instance().isCursorLocked()
-			? "WASD: move  Shift: run  Mouse: look  Esc: release cursor"
+			? "WASD: move  Shift: run  RMB: aim  Mouse: look  Esc: release cursor"
 			: "Click: lock cursor (mouse look)" );
 }

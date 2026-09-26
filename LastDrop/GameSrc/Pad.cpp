@@ -82,6 +82,7 @@ WorkId Pad::buttonToWorkId(Button b)
     case DODGE:    return WorkId::Dodge;
     case RUN:      return WorkId::Run;
     case MENU:     return WorkId::Menu;
+    case AIM:      return WorkId::Aim;
     default:    return WorkId::Up;
     }
 }
@@ -194,3 +195,4 @@ bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(Pad::D
 bool InputRun        (int playerId) { return Pad::instance()->isOn(Pad::RUN, playerId); }
 AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Look, playerId); }
 bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(Pad::MENU, playerId); }
+bool InputAim        (int playerId) { return Pad::instance()->isOn(Pad::AIM, playerId); }

@@ -46,7 +46,15 @@ public:
 	// update で変形した頂点を描く。
 	void draw() const;
 
+	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ）。
+	// 武器など、骨に付けて一緒に動かす物の置き場所に使う。
+	// boneIndex: SkinnedMeshData::findBone の番号。範囲外、またはまだ update していなければ false（out は変えない）。
+	// 骨格の単位のまま返す（Mixamo なら cm の縮尺 0.01 が入っている）ので、付ける物の側で合わせる。
+	bool boneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
+
 private:
+	// 置き場所と向きの行列。ボーンの姿勢（根から見た行列）をワールドへ置くのに掛ける。
+	GameLib::Math::Matrix34 rootMatrix() const;
 	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。
 	void blendFadingPose();
 
