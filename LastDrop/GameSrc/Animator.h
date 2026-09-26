@@ -10,12 +10,12 @@
 class Animator{
 public:
 	enum State{
-		STATE_IDLE,		// 静止
-		STATE_WALK,		// 歩き
-		STATE_RUN,		// 走り
-		STATE_AIM_IDLE,	// 構えて静止
-		STATE_AIM_WALK,	// 構えて歩き
-		STATE_AIM_RUN,	// 構えて走り
+		STATE_IDLE,			// 静止（素手）
+		STATE_WALK,			// 歩き（素手）
+		STATE_RUN,			// 走り（素手）
+		STATE_RIFLE_IDLE,	// 銃を持って静止（覗く間もこのアニメのまま、腕と銃を FirstPersonBody で寄せる）
+		STATE_RIFLE_WALK,	// 銃を持って歩き
+		STATE_RIFLE_RUN,	// 銃を持って走り
 		STATE_JUMP,		// ジャンプ
 		STATE_DEATH,	// 死亡（終端）
 		STATE_NUM,		// 状態数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）

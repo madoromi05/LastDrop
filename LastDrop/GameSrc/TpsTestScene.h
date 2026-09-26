@@ -5,13 +5,15 @@
 #include "MeshCache.h"
 #include "SkinnedMeshInstance.h"
 #include "StaticMeshInstance.h"
-#include "ThirdPersonCamera.h"
+#include "FirstPersonCamera.h"
 #include <memory>
 #include <vector>
 
 class PlayerCharacter;
 
-// 自キャラを TPS 視点で動かす検証シーン。WASD で移動（Shift で走る）、マウスで視点を回す。
+// 自キャラを一人称(FPS)視点で動かす検証シーン。WASD で移動（Shift で走る）、マウスで視点を回す。
+// Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
+// （クラス名・シーン番号は TPS のまま。名前の変更は別作業）
 // 背景は SkinTestScene と同じ建物とゾンビ（動作確認用の目印。当たり判定は無い）。
 //
 // マウスはカーソルロック（GameLib::Input::Manager）で読む。Esc で解除、クリックで再ロック。
@@ -25,7 +27,8 @@ private:
 	void placeObjects();         // 全データの構築後に一度だけ、キャラと背景を作って並べる
 	void updateCursorLock();     // Esc / クリックでカーソルロックを切り替える
 	void rotateCamera();         // ロック中ならマウスの移動量でカメラを回す（キャラの更新より前）
-	void followCamera();         // 自キャラへ追従させて描画ステートへ反映する（キャラの更新より後）
+	void placeCameraAtEye();     // 視点を自キャラの目へ置いて描画ステートへ反映する（キャラの更新より後）
+	float fieldOfView() const;   // 覗き具合に合わせた縦の視野角（度）
 	void setupLights() const;
 	void draw() const;
 
@@ -39,7 +42,7 @@ private:
 	std::unique_ptr< PlayerCharacter > mPlayer;
 	std::vector< std::unique_ptr< SkinnedMeshInstance > > mZombies;
 	std::vector< StaticMeshInstance > mBuildings;
-	ThirdPersonCamera mCamera;
+	FirstPersonCamera mCamera;
 
 	bool mReady; // 配置が済んだか
 };

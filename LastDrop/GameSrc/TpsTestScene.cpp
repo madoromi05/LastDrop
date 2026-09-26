@@ -23,7 +23,7 @@ namespace{
 
 	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
 	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
-	// 通りの手前に、建物（-Z 側）を向いて立たせる。カメラも同じ向きから始め、背中越しに通りを見る。
+	// 通りの手前に、建物（-Z 側）を向いて立たせる。カメラも同じ向きから始め、目線で通りを見る。
 	const Placement kPlayerStart = { 0.f, 8.f, 180.f };
 	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM）
 
@@ -47,6 +47,9 @@ namespace{
 	// ── 視点操作 ──
 	// マウス1画素あたりの回転（度）。横に動かすと左右、縦に動かすと上下に回る。
 	const float kLookDegreesPerPixel = 0.15f;
+	// 縦の視野角（度）。覗いている間は狭めて少しズームする（アイアンサイトなので控えめ）。
+	const float kHipFieldOfView = 60.f;
+	const float kAimFieldOfView = 45.f;
 
 	// ── ライティング ──
 	// キャラが歩き回っても明るさが変わらないよう、太陽のような遠い光源にする。
@@ -76,7 +79,7 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData = mCache.staticMesh( kWeaponFile );
 	mZombieData = mCache.skinnedMesh( kZombieFile );
 	mBuildingData = mCache.staticMesh( kBuildingFile );
-	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの背中側から見始める
+	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの向いている方を見始める
 }
 
 TpsTestScene::~TpsTestScene() {
@@ -129,15 +132,23 @@ void TpsTestScene::rotateCamera() {
 		return;
 	}
 	AxisStatus look = InputLook();
+	// ズーム中は視野角の比で感度を下げる。同じだけマウスを動かしたとき、画面上で動く量を揃えるため。
+	float degreesPerPixel = kLookDegreesPerPixel * fieldOfView() / kHipFieldOfView;
 	// マウスを右へ動かすと右を向く＝ヨーは減る（ヨーは上から見て反時計回りが正）。
 	// マウスを下へ動かすと下を向く＝ピッチ（見下ろしが正）は増える。
-	mCamera.rotate( -look.m_width * kLookDegreesPerPixel, look.m_height * kLookDegreesPerPixel );
+	mCamera.rotate( -look.m_width * degreesPerPixel, look.m_height * degreesPerPixel );
 }
 
-void TpsTestScene::followCamera() {
+float TpsTestScene::fieldOfView() const {
+	float aim = mPlayer ? mPlayer->aimWeight() : 0.f;
+	return kHipFieldOfView + ( kAimFieldOfView - kHipFieldOfView ) * aim;
+}
+
+void TpsTestScene::placeCameraAtEye() {
 	if ( mPlayer ) {
-		mCamera.follow( mPlayer->position() );
+		mCamera.setEyePosition( mPlayer->eyePosition() );
 	}
+	mCamera.setFieldOfView( fieldOfView() );
 	mCamera.apply();
 }
 
@@ -185,21 +196,21 @@ void TpsTestScene::update() {
 	}
 
 	updateCursorLock();
-	// 順番に意味がある: 向きを決める → その向き基準でキャラを動かす → 動いた後の位置へカメラを追従させる。
-	// 逆にすると W が1フレーム前の向きへの前進になり、カメラもキャラに1フレーム遅れて付いてくる。
+	// 順番に意味がある: 向きを決める → その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く。
+	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	rotateCamera();
 	if ( mPlayer ) {
-		mPlayer->update( mCamera.yaw() );
+		mPlayer->update( mCamera.yaw(), mCamera.pitch() );
 	}
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
 	}
-	followCamera();
+	placeCameraAtEye();
 	setupLights();
 	draw();
 
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		GameLib::Input::Manager::instance().isCursorLocked()
-			? "WASD: move  Shift: run  RMB: aim  Mouse: look  Esc: release cursor"
+			? "WASD: move  Shift: run  1: draw/holster  RMB: aim (tap=toggle, hold)  Mouse: look  Esc: release cursor"
 			: "Click: lock cursor (mouse look)" );
 }

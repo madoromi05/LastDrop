@@ -43,6 +43,7 @@ namespace
         case WorkId::Look:     return "Look";
         case WorkId::Menu:     return "Menu";
         case WorkId::Aim:      return "Aim";
+        case WorkId::Holster:  return "Holster";
         default:            return "";
         }
     }
@@ -162,6 +163,8 @@ namespace
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Joystick, 7 },              // Start
         // 右クリックは Wire（v4 アクション）と共有する。両方を使うシーンが無いため（Space の Jump/Dodge と同じ扱い）。
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
+        // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
+        { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
     };
 
     // Player 1：キーボードのみ

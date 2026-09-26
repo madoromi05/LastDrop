@@ -24,7 +24,7 @@ class Pad
 {
 public:
     // 従来互換の列挙型（Robo.cpp などを無変更にするため残す）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM };
+    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM, HOLSTER };
 
     static Pad* instance();
     static void create();
@@ -124,3 +124,4 @@ bool InputRun        (int playerId = 0);   // 走る（押されている間）
 AxisStatus InputLook (int playerId = 0);   // 視点操作の量（横=右が正、縦=下が正。マウスなら画素数）
 bool InputMenu       (int playerId = 0);   // メニュー／中断（押した瞬間）
 bool InputAim        (int playerId = 0);   // 構える（押されている間）
+bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）

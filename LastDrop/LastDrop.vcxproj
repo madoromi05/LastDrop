@@ -166,7 +166,9 @@
     <ClCompile Include="GameSrc\SceneManager.cpp" />
     <ClCompile Include="GameSrc\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\TpsTestScene.cpp" />
-    <ClCompile Include="GameSrc\ThirdPersonCamera.cpp" />
+    <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
+    <ClCompile Include="GameSrc\FirstPersonBody.cpp" />
+    <ClCompile Include="GameSrc\WeaponStance.cpp" />
     <ClCompile Include="GameSrc\PlayerCharacter.cpp" />
     <ClCompile Include="GameSrc\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
@@ -378,7 +380,10 @@
     <ClInclude Include="GameSrc\SceneManager.h" />
     <ClInclude Include="GameSrc\SkinTestScene.h" />
     <ClInclude Include="GameSrc\TpsTestScene.h" />
-    <ClInclude Include="GameSrc\ThirdPersonCamera.h" />
+    <ClInclude Include="GameSrc\FirstPersonCamera.h" />
+    <ClInclude Include="GameSrc\FirstPersonBody.h" />
+    <ClInclude Include="GameSrc\WeaponStance.h" />
+    <ClInclude Include="GameSrc\BonePoseModifier.h" />
     <ClInclude Include="GameSrc\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\MatrixBlend.h" />
     <ClInclude Include="GameSrc\Player.h" />

@@ -1,6 +1,7 @@
 #include "SkinnedMeshInstance.h"
 #include "SkinnedMeshData.h"
 #include "MatrixBlend.h"
+#include "BonePoseModifier.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -24,6 +25,7 @@ namespace{
 SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mData( data ),
 	mTime( 0.f ),
+	mPoseModifier( nullptr ),
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
 	mHasPose( false ),
@@ -32,6 +34,7 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	ASSERT( mData && mData->isReady() && "SkinnedMeshInstance : data is null or not ready." );
 	mSkeleton = mData->createSkeleton();
 	mBonePose.resize( mData->boneNumber() );
+	mShownPose.resize( mData->boneNumber() );
 	mFadeFromPose.resize( mData->boneNumber() );
 	mSkinMatrices.resize( mData->boneNumber() );
 	mVertexBuffer = Graphics::VertexBuffer::create( mData->vertexNumber() );
@@ -87,6 +90,10 @@ float SkinnedMeshInstance::animationPhase() const {
 	return ( phase < 0.f ) ? phase + 1.f : phase;
 }
 
+void SkinnedMeshInstance::setPoseModifier( BonePoseModifier* modifier ) {
+	mPoseModifier = modifier;
+}
+
 void SkinnedMeshInstance::update() {
 	mSkeleton.updateAnimation( mTime );
 	mTime += kTimeStep;
@@ -94,8 +101,12 @@ void SkinnedMeshInstance::update() {
 	blendFadingPose();
 	mHasPose = true;
 
-	// 置き場所と向きは、混ぜた後のポーズにまとめて掛ける。
-	mData->deform( rootMatrix(), mBonePose, &mSkinMatrices, mVertexBuffer );
+	mShownPose = mBonePose;
+	if ( mPoseModifier ) {
+		mPoseModifier->apply( &mShownPose );
+	}
+	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+	mData->deform( rootMatrix(), mShownPose, &mSkinMatrices, mVertexBuffer );
 }
 
 Matrix34 SkinnedMeshInstance::rootMatrix() const {
@@ -106,11 +117,11 @@ Matrix34 SkinnedMeshInstance::rootMatrix() const {
 }
 
 bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
-	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mBonePose.size() ) ) {
+	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mShownPose.size() ) ) {
 		return false;
 	}
 	// deform と同じ「置き場所 * ボーンの姿勢」。頂点と同じ式なので、付けた物が手からずれない。
-	out->setMul( rootMatrix(), mBonePose[ boneIndex ] );
+	out->setMul( rootMatrix(), mShownPose[ boneIndex ] );
 	return true;
 }
 

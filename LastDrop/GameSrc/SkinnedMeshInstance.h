@@ -9,6 +9,7 @@
 #include <vector>
 
 class SkinnedMeshData;
+class BonePoseModifier;
 
 // スキンメッシュを置いた「1体」。自分の骨格（ポーズ）・変形後の頂点・位置と向きを持つ。
 // 頂点・重み・テクスチャ・アニメは SkinnedMeshData を借りる（所有しない）。
@@ -40,21 +41,24 @@ public:
 	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames );
 	// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0。
 	float animationPhase() const;
+	// 描く直前にポーズを書き換える処理（一人称で頭を消す・視点に合わせて上半身を曲げる等）。
+	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること。
+	void setPoseModifier( BonePoseModifier* );
 
 	// アニメを1フレーム進めて、ポーズどおりに頂点を変形する。描画前に毎フレーム1回呼ぶ。
 	void update();
 	// update で変形した頂点を描く。
 	void draw() const;
 
-	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ）。
+	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ。書き換え後）。
 	// 武器など、骨に付けて一緒に動かす物の置き場所に使う。
 	// boneIndex: SkinnedMeshData::findBone の番号。範囲外、またはまだ update していなければ false（out は変えない）。
 	// 骨格の単位のまま返す（Mixamo なら cm の縮尺 0.01 が入っている）ので、付ける物の側で合わせる。
 	bool boneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
+	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける。
+	GameLib::Math::Matrix34 rootMatrix() const;
 
 private:
-	// 置き場所と向きの行列。ボーンの姿勢（根から見た行列）をワールドへ置くのに掛ける。
-	GameLib::Math::Matrix34 rootMatrix() const;
 	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。
 	void blendFadingPose();
 
@@ -66,6 +70,10 @@ private:
 	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）。
 	// クロスフェード中にキャラが移動・旋回しても、切り替え前のポーズが元の場所に取り残されないようにするため。
 	std::vector< GameLib::Math::Matrix34 > mBonePose;		// 今フレームに見せるポーズ（フェード中は混ぜた後）
+	// 実際に見せるポーズ（mBonePose に書き換えを掛けた写し）。書き換えを mBonePose に直接入れると、
+	// クロスフェードの混ぜ元にも入り込み、混ぜた後にもう一度掛かって二重になるため分けて持つ。
+	std::vector< GameLib::Math::Matrix34 > mShownPose;
+	BonePoseModifier* mPoseModifier;				// 無ければ nullptr（アニメのポーズをそのまま見せる）
 	std::vector< GameLib::Math::Matrix34 > mFadeFromPose;	// 切り替え直前に見えていたポーズ（フェード中だけ使う）
 	float mFadeFrames;									// フェードの長さ（フレーム）。0 ならフェードしていない
 	float mFadeElapsed;									// フェード開始からの経過（フレーム）

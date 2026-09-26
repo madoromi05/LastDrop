@@ -3,23 +3,27 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "Animator.h"
+#include "WeaponStance.h"
 #include <memory>
 
 class SkinnedMeshData;
 class SkinnedMeshInstance;
 class StaticMeshData;
 class HeldItem;
+class FirstPersonBody;
 
-// TPS で操作する自キャラ。WASD をカメラの向き基準の移動方向に直して地面(Y=0)を歩かせ、
-// 進む方向へ滑らかに振り向かせ、静止／歩き／走り のアニメを切り替える。
-// カメラは持たない（向きを update の引数で受け取る）ので、カメラの種類を変えてもこのクラスは変わらない。
-// 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem に任せる（委譲）。
-// 普段は銃を下げて持ち、構える入力（右クリック）の間だけ構えのアニメにする。銃は右手の骨に付けて一緒に動かす。
+// 一人称(FPS)で操作する自キャラ。体は常にカメラの水平の向きを向き、WASD はその向き基準の前後・横歩きになる。
+// 地面(Y=0)を歩かせ、静止／歩き／走り のアニメを切り替える。
+// カメラは持たない（向きを update の引数で受け取り、目の位置を eyePosition で返す）。
+// 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem、
+// 武器の構えの段階（しまう／持つ／覗く）は WeaponStance、
+// 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・頭を消す）は FirstPersonBody に任せる（委譲）。
+// 武器は 1 キーで出し入れし、持っている間は右クリックで覗く（短押しで覗いたまま・長押しで押している間）。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。当たり判定・ジャンプ・射撃はまだ持たない。
 class PlayerCharacter{
 public:
-	// data: 形・見た目・アニメ（"idle" / "walk" / "run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
+	// data: 形・見た目・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このキャラより長く生きていること（MeshCache が持つ）。
 	// weapon: 右手に持たせる銃（Resource/rifle.txt）。所有権は受け取らない。nullptr なら素手で描く。
 	//         data と同じく、このキャラより長く生きていること。
@@ -31,29 +35,39 @@ public:
 	PlayerCharacter& operator=( const PlayerCharacter& ) = delete;
 
 	// 入力を読んで1フレーム動かし、アニメを進めて頂点を変形する。
-	// cameraYaw: カメラの水平の向き（度。ThirdPersonCamera::yaw）。W がこの向きへの前進になる。
-	void update( float cameraYaw );
+	// cameraYaw: カメラの水平の向き（度。FirstPersonCamera::yaw）。体はこの向きを向き、W がこの向きへの前進になる。
+	// cameraPitch: カメラの上下の向き（度。FirstPersonCamera::pitch）。背骨をこのぶん曲げ、腕と銃を視線に付いてこさせる。
+	void update( float cameraYaw, float cameraPitch );
 	void draw() const;
 
-	const GameLib::Math::Vector3& position() const;	// 足元の位置（カメラの追従先）
+	const GameLib::Math::Vector3& position() const;	// 足元の位置
+	// 目の位置（ワールド座標。カメラの視点）。頭の骨に付いていくので、歩き・走りの揺れがそのまま出る。
+	// update の後に呼ぶ（その update で見せたポーズの頭の位置を返す）。
+	GameLib::Math::Vector3 eyePosition() const;
+	// 覗き具合（0〜1。WeaponStance::aimWeight）。カメラのズームを合わせるのに使う。
+	float aimWeight() const;
 
 private:
 	// 入力から移動方向（水平・長さ1）を求める。入力が無ければ false。
 	bool readMoveDirection( float cameraYaw, GameLib::Math::Vector3* direction ) const;
-	// 向きを direction へ、1フレームの旋回上限まで近づける。
-	void turnToward( const GameLib::Math::Vector3& direction );
 	// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける。
 	void approachSpeed( float targetSpeed );
+	// 両手持ちの効き具合を、武器を持っていれば 1、しまっていれば 0 へ1フレームぶん近づける。
+	void approachHoldWeight();
 	// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ。
 	void changeState( Animator::State );
 
+	// mMesh が借りる（setPoseModifier）ので、mMesh より先に宣言する（＝後に破棄される）。
+	std::unique_ptr< FirstPersonBody > mBody;
 	std::unique_ptr< SkinnedMeshInstance > mMesh;
 	std::unique_ptr< HeldItem > mWeapon; // 持っていなければ空
 	Animator mAnimator;
+	WeaponStance mStance;
 	GameLib::Math::Vector3 mPosition;
-	float mAngleY; // 向き（度）。setAngleY と同じ約束で、0 は +Z
+	float mAngleY; // 向き（度）。setAngleY と同じ約束で、0 は +Z。一人称なので常にカメラのヨーと同じ
 	GameLib::Math::Vector3 mMoveDirection; // 最後に進んだ向き（水平・長さ1）。入力を離した後の減速中もこの向きへ進む
 	float mSpeed;                          // 今の移動の速さ（m/フレーム）。目標の速さへ加速・減速して近づく
+	float mHoldWeight;                     // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
 };
 
 #endif
