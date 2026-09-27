@@ -4,6 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "Animator.h"
 #include "WeaponStance.h"
+#include "PlayerCommand.h"
 #include <memory>
 
 class SkinnedMeshData;
@@ -18,7 +19,8 @@ class FirstPersonBody;
 // 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem、
 // 武器の構えの段階（しまう／持つ／覗く）は WeaponStance、
 // 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・頭を消す）は FirstPersonBody に任せる（委譲）。
-// 武器は 1 キーで出し入れし、持っている間は右クリックで覗く（短押しで覗いたまま・長押しで押している間）。
+// 武器は出し入れの操作で切り替え、持っている間は覗く操作で覗く（短押しで覗いたまま・長押しで押している間）。
+// 入力デバイスは読まない。操作は PlayerCommand で受け取る（キー割り当てはシーン側）。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。当たり判定・ジャンプ・射撃はまだ持たない。
 class PlayerCharacter{
@@ -34,10 +36,11 @@ public:
 	PlayerCharacter( const PlayerCharacter& ) = delete;
 	PlayerCharacter& operator=( const PlayerCharacter& ) = delete;
 
-	// 入力を読んで1フレーム動かし、アニメを進めて頂点を変形する。
+	// 操作に従って1フレーム動かし、アニメを進めて頂点を変形する。
+	// command: この1フレームの操作。入力デバイスは読まない（作るのは呼び出し側）。
 	// cameraYaw: カメラの水平の向き（度。FirstPersonCamera::yaw）。体はこの向きを向き、W がこの向きへの前進になる。
 	// cameraPitch: カメラの上下の向き（度。FirstPersonCamera::pitch）。背骨をこのぶん曲げ、腕と銃を視線に付いてこさせる。
-	void update( float cameraYaw, float cameraPitch );
+	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch );
 	void draw() const;
 
 	const GameLib::Math::Vector3& position() const;	// 足元の位置
@@ -48,8 +51,8 @@ public:
 	float aimWeight() const;
 
 private:
-	// 入力から移動方向（水平・長さ1）を求める。入力が無ければ false。
-	bool readMoveDirection( float cameraYaw, GameLib::Math::Vector3* direction ) const;
+	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false。
+	bool readMoveDirection( const PlayerCommand& command, float cameraYaw, GameLib::Math::Vector3* direction ) const;
 	// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける。
 	void approachSpeed( float targetSpeed );
 	// 両手持ちの効き具合を、武器を持っていれば 1、しまっていれば 0 へ1フレームぶん近づける。

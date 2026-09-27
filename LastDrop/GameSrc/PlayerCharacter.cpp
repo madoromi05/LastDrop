@@ -3,7 +3,6 @@
 #include "SkinnedMeshInstance.h"
 #include "HeldItem.h"
 #include "FirstPersonBody.h"
-#include "Pad.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -142,11 +141,6 @@ namespace{
 		return degree;
 	}
 
-	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
-	float axisValue( bool on ) {
-		return on ? 1.f : 0.f;
-	}
-
 	// 足を交互に出す繰り返しのアニメか。この同士の切り替え（歩き⇔走り、素手⇔銃）だけ足の位相を合わせる。
 	// 4本の歩き・走りは、どれも1周の前半で左足・後半で右足が前に出る（元の FBX で確認済み）ので、
 	// 「1周の何割まで進んだか」を引き継げば足の出方が揃う。
@@ -208,18 +202,18 @@ const Vector3& position, float angleY ) :
 PlayerCharacter::~PlayerCharacter() {
 }
 
-void PlayerCharacter::update( float cameraYaw, float cameraPitch ) {
+void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, float cameraPitch ) {
 	// 一人称では体の向き＝視線の向き。振り向きを遅らせると、視点と腕・銃の向きがずれて見えるため即座に合わせる。
 	mAngleY = wrapSignedAngle( cameraYaw );
 	mBody->setPitch( cameraPitch );
 
 	Vector3 direction;
-	bool moving = readMoveDirection( cameraYaw, &direction );
-	bool running = moving && InputRun();
+	bool moving = readMoveDirection( command, cameraYaw, &direction );
+	bool running = moving && command.run;
 	if ( moving ) {
 		mMoveDirection = direction;
 	}
-	mStance.update( InputHolster(), InputAim(), running );
+	mStance.update( command.holsterPressed, command.aimHeld, running );
 	approachHoldWeight();
 	mBody->setHoldWeight( mHoldWeight );
 	mBody->setAimWeight( mStance.aimWeight() );
@@ -258,15 +252,13 @@ float PlayerCharacter::aimWeight() const {
 	return mStance.aimWeight();
 }
 
-bool PlayerCharacter::readMoveDirection( float cameraYaw, Vector3* direction ) const {
-	float strafe  = axisValue( InputRight() ) - axisValue( InputLeft() ); // 右が正
-	float forward = axisValue( InputUp() ) - axisValue( InputDown() );    // 前が正
+bool PlayerCharacter::readMoveDirection( const PlayerCommand& command, float cameraYaw, Vector3* direction ) const {
 	// カメラの水平の前方と右（FirstPersonCamera と同じ約束: 前方はヨー0で +Z、右は 前方×上）。
 	Vector3 cameraForward( Math::sin( cameraYaw ), 0.f, Math::cos( cameraYaw ) );
 	Vector3 cameraRight( -Math::cos( cameraYaw ), 0.f, Math::sin( cameraYaw ) );
 	direction->set( 0.f, 0.f, 0.f );
-	direction->madd( cameraForward, forward );
-	direction->madd( cameraRight, strafe );
+	direction->madd( cameraForward, command.forward );
+	direction->madd( cameraRight, command.strafe );
 	if ( direction->length() < kMinInputLength ) {
 		return false;
 	}

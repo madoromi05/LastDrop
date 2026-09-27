@@ -66,6 +66,22 @@ namespace{
 	// ── 操作説明（DebugScreen の文字位置）──
 	const int kHelpColumn = 1;
 	const int kHelpRow = 1;
+
+	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
+	float axisValue( bool on ) {
+		return on ? 1.f : 0.f;
+	}
+
+	// 自キャラへの操作を Pad から読む。キー割り当てとキャラの動きをつなぐのはここだけ。
+	PlayerCommand readPlayerCommand() {
+		PlayerCommand command;
+		command.forward = axisValue( InputUp() ) - axisValue( InputDown() );
+		command.strafe = axisValue( InputRight() ) - axisValue( InputLeft() );
+		command.run = InputRun();
+		command.holsterPressed = InputHolster();
+		command.aimHeld = InputAim();
+		return command;
+	}
 }
 
 TpsTestScene::TpsTestScene() :
@@ -200,7 +216,7 @@ void TpsTestScene::update() {
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	rotateCamera();
 	if ( mPlayer ) {
-		mPlayer->update( mCamera.yaw(), mCamera.pitch() );
+		mPlayer->update( readPlayerCommand(), mCamera.yaw(), mCamera.pitch() );
 	}
 	for ( auto& zombie : mZombies ) {
 		zombie->update();

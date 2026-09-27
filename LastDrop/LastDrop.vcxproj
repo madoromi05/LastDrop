@@ -385,6 +385,7 @@
     <ClInclude Include="GameSrc\WeaponStance.h" />
     <ClInclude Include="GameSrc\BonePoseModifier.h" />
     <ClInclude Include="GameSrc\PlayerCharacter.h" />
+    <ClInclude Include="GameSrc\PlayerCommand.h" />
     <ClInclude Include="GameSrc\MatrixBlend.h" />
     <ClInclude Include="GameSrc\Player.h" />
     <ClInclude Include="GameSrc\Robo.h" />

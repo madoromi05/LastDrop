@@ -758,6 +758,9 @@
     <ClInclude Include="GameSrc\PlayerCharacter.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\PlayerCommand.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\MatrixBlend.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
