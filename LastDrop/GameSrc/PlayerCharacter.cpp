@@ -220,11 +220,13 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 
 	Vector3 direction;
 	bool moving = readMoveDirection( command, cameraYaw, &direction );
-	bool running = moving && command.run;
+	bool wantsRun = moving && command.run;
 	if ( moving ) {
 		mMoveDirection = direction;
 	}
-	mStance.update( command.holsterPressed, command.aimHeld, running );
+	mStance.update( command.holsterPressed, command.aimHeld, wantsRun );
+	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る。
+	bool running = wantsRun && !mStance.isAiming();
 	Animator::State next = chooseState( moving, running, mStance.isDrawn() );
 	approachHoldWeight();
 	approachCarryWeight( next );

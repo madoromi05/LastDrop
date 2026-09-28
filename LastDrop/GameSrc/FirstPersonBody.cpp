@@ -315,9 +315,13 @@ void FirstPersonBody::updateEyePosition( const std::vector< Matrix34 >& pose ) {
 	}
 	// 目の向きは頭の骨の回転ではなくキャラの前方（+Z）で決める。頭の骨はアニメで揺れるので、
 	// 回転まで使うと覗いた銃ごと画面が傾いて酔いやすい。位置の揺れ（歩きの上下）だけを視点に出す。
-	mEyePosition = translationOf( pose[ mHeadBone ] );
-	mEyePosition.y += kEyeAboveHead;
-	mEyePosition.z += kEyeForward;
+	// 頭の骨から目までの出し方は、背骨と同じくピッチぶん傾ける。傾けないと、見上げたときに目が上半身に対して
+	// 下（あご・胸の側）へずれ、腕を下から見上げる形になって、腕が前へ突っ張って見える。
+	Matrix34 view;
+	view.setRotationX( mPitch );
+	Vector3 eyeFromHead;
+	view.mul33( &eyeFromHead, Vector3( 0.f, kEyeAboveHead, kEyeForward ) );
+	mEyePosition.setAdd( translationOf( pose[ mHeadBone ] ), eyeFromHead );
 }
 
 void FirstPersonBody::alignSightToEye( std::vector< Matrix34 >* pose ) const {
