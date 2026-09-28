@@ -57,6 +57,8 @@ private:
 	void approachSpeed( float targetSpeed );
 	// 両手持ちの効き具合を、武器を持っていれば 1、しまっていれば 0 へ1フレームぶん近づける。
 	void approachHoldWeight();
+	// 胸元への寄せ具合を、銃を持って走っていれば 1、それ以外は 0 へ1フレームぶん近づける。
+	void approachCarryWeight( Animator::State next );
 	// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ。
 	void changeState( Animator::State );
 
@@ -71,6 +73,7 @@ private:
 	GameLib::Math::Vector3 mMoveDirection; // 最後に進んだ向き（水平・長さ1）。入力を離した後の減速中もこの向きへ進む
 	float mSpeed;                          // 今の移動の速さ（m/フレーム）。目標の速さへ加速・減速して近づく
 	float mHoldWeight;                     // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
+	float mCarryWeight;                    // 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）
 };
 
 #endif

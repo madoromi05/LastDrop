@@ -52,6 +52,16 @@ namespace{
 
 	const float kCollapsedScale = 0.f; // 骨の原点へ頂点を潰す縮尺
 
+	// ── 走るときの抱え方（胸元へ寄せる）──
+	// 胸の骨から見た、右手首（銃を付けた骨）を置く点（m）。胸の向き（体の前方をピッチぶん傾けたもの）で測る。
+	// 骨格の根の空間では左が +X なので、右へ寄せるのは -X。銃が体から離れて見えるなら z を減らし、腕が詰まって見えるなら増やす。
+	const Vector3 kCarryWristFromChest( -0.12f, -0.12f, 0.28f );
+	// 胸の向きから見た銃の向き（度）。この順（内側へ振る → 下へ向ける → 銃口まわりに傾ける）に掛ける。
+	const float kCarryMuzzleInward = 25.f; // 正で銃口が体の内側（左）を向く
+	const float kCarryMuzzleDown   = 30.f; // 正で銃口が下を向く
+	const float kCarryCant         = 15.f; // 正で銃の上面が右へ倒れる
+	const char* const kChestBone = "mixamorig:Spine2";
+
 	// ── 目の位置（m）──
 	// 頭の骨の原点は頭蓋の付け根（首の上端）にあるので、そこから目の高さ・顔の前面まで出す。
 	// 前へ出すのは、潰した頭の頂点（骨の原点に集まる）や首の内側が視界に入らないようにするため。
@@ -129,10 +139,55 @@ namespace{
 			( *pose )[ b ] = moved;
 		}
 	}
+
+	// 銃の置き場所 gun（手の骨 * 持ち方）を、向きが axes（列が 銃の +X / +Y / +Z(銃口) の行き先）になり、
+	// 銃に付いた点 anchor が goal へ来るよう動かす変換を求める。両腕へ掛ければ、手が銃から離れずに銃ごと動く。
+	Matrix34 alignWeapon( const Matrix34& gun, const Matrix34& axes, const Vector3& anchor, const Vector3& goal ) {
+		// 銃の向き（銃口 = モデルの +Z、上 = +Y）を、長さ1で直交する3軸にする（持ち方の縮尺を取り除く）。
+		Vector3 barrel( gun.m02, gun.m12, gun.m22 );
+		barrel.normalize();
+		Vector3 gunSide;
+		gunSide.setCross( Vector3( gun.m01, gun.m11, gun.m21 ), barrel );
+		gunSide.normalize();
+		Vector3 gunUp;
+		gunUp.setCross( barrel, gunSide );
+
+		// 回転: 銃の3軸を axes の3軸へ重ねる（= axes × 銃の軸の転置）。銃の傾き（カント）も axes に揃う。
+		Matrix34 align;
+		align.setIdentity();
+		const int kAxisNumber = 3;
+		const int kSideAxis = 0;
+		const int kUpAxis = 1;
+		const int kBarrelAxis = 2;
+		for ( int row = 0; row < kAxisNumber; ++row ) {
+			for ( int column = 0; column < kAxisNumber; ++column ) {
+				align( row, column ) = axes( row, kSideAxis ) * gunSide[ column ]
+					+ axes( row, kUpAxis ) * gunUp[ column ]
+					+ axes( row, kBarrelAxis ) * barrel[ column ];
+			}
+		}
+		// 移動: 回した後の anchor が goal へ来るようにする。
+		Vector3 rotatedAnchor;
+		align.mul33( &rotatedAnchor, anchor );
+		align.m03 = goal.x - rotatedAnchor.x;
+		align.m13 = goal.y - rotatedAnchor.y;
+		align.m23 = goal.z - rotatedAnchor.z;
+		return align;
+	}
+
+	// 変換を効き具合の分だけ骨へ掛ける（回転は球面補間なので、途中で腕が縮んだりしない）。
+	void transformBonesPartially( const Matrix34& transform, float weight, const std::vector< int >& bones, std::vector< Matrix34 >* pose ) {
+		Matrix34 none;
+		none.setIdentity();
+		Matrix34 partial;
+		MatrixBlend::blend( none, transform, weight, &partial );
+		transformBones( partial, bones, pose );
+	}
 }
 
 FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mHeadBone( data->findBone( kHeadBone ) ),
+	mChestBone( data->findBone( kChestBone ) ),
 	mPitch( 0.f ),
 	mHandBone( -1 ),
 	mSightEye( 0.f, 0.f, 0.f ),
@@ -140,6 +195,7 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mSupportHandOnWeapon( 0.f, 0.f, 0.f ),
 	mHoldWeight( 0.f ),
 	mAimWeight( 0.f ),
+	mCarryWeight( 0.f ),
 	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ) {
 	mGrip.setIdentity();
 	std::vector< int > lowerBody = findBones( data, kLowerBodyBones );
@@ -184,16 +240,22 @@ void FirstPersonBody::setAimWeight( float weight ) {
 	mAimWeight = weight;
 }
 
+void FirstPersonBody::setCarryWeight( float weight ) {
+	mCarryWeight = weight;
+}
+
 const Vector3& FirstPersonBody::eyePosition() const {
 	return mEyePosition;
 }
 
 void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
-	// 順番に意味がある: 背骨を曲げる → 銃を両手の間に置く → 曲げた後の頭から目を決める → その目へ銃を寄せる → 頭を消す。
+	// 順番に意味がある: 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める → その目へ銃を寄せる → 頭を消す。
 	// 目を曲げる前の頭で決めると、見上げ・見下ろしで目と銃がずれる。
-	// 覗く補正は両腕をまとめて動かすだけなので、先に両手持ちにしておけば覗いても左手は銃に付いたまま。
+	// 胸元へ寄せる・覗く補正は両腕をまとめて動かすだけなので、先に両手持ちにしておけば左手は銃に付いたまま。
+	// 覗く補正は最後に目へ合わせ直すので、走り⇔覗くの切り替え中に両方が効いていても銃は目へ向かう。
 	bendSpine( pose );
 	holdWithBothHands( pose );
+	carryAtChest( pose );
 	updateEyePosition( *pose );
 	alignSightToEye( pose );
 	hideHead( pose );
@@ -265,48 +327,36 @@ void FirstPersonBody::alignSightToEye( std::vector< Matrix34 >* pose ) const {
 	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）。
 	Matrix34 gun;
 	gun.setMul( ( *pose )[ mHandBone ], mGrip );
-
-	// 銃の向き（銃口 = モデルの +Z、上 = +Y）を、長さ1で直交する3軸にする（持ち方の縮尺を取り除く）。
-	Vector3 barrel( gun.m02, gun.m12, gun.m22 );
-	barrel.normalize();
-	Vector3 gunRight;
-	gunRight.setCross( Vector3( gun.m01, gun.m11, gun.m21 ), barrel );
-	gunRight.normalize();
-	Vector3 gunUp;
-	gunUp.setCross( barrel, gunRight );
-
 	// 視線の3軸。前方 +Z をピッチぶん下へ傾けたもの（FirstPersonCamera と同じ向き）。
-	Vector3 viewForward( 0.f, -Math::sin( mPitch ), Math::cos( mPitch ) );
-	Vector3 viewUp( 0.f, Math::cos( mPitch ), Math::sin( mPitch ) );
-	Vector3 viewRight;
-	viewRight.setCross( viewUp, viewForward );
-
-	// 回転: 銃の3軸を視線の3軸へ重ねる（= 視線の軸 × 銃の軸の転置）。銃の傾き（カント）も取れて、サイトがまっすぐ立つ。
-	Matrix34 align;
-	align.setIdentity();
-	const int kAxisNumber = 3;
-	for ( int row = 0; row < kAxisNumber; ++row ) {
-		for ( int column = 0; column < kAxisNumber; ++column ) {
-			align( row, column ) = viewRight[ row ] * gunRight[ column ]
-				+ viewUp[ row ] * gunUp[ column ]
-				+ viewForward[ row ] * barrel[ column ];
-		}
-	}
-	// 移動: 回した後のサイトの目の点が、目の位置へ来るようにする。
+	// 銃をこの向きに揃えると、銃の傾き（カント）も取れてサイトがまっすぐ立つ。
+	Matrix34 view;
+	view.setRotationX( mPitch );
+	// サイトの目の点を目の位置へ置く。
 	Vector3 sight;
 	gun.mul( &sight, mSightEye );
-	Vector3 rotatedSight;
-	align.mul33( &rotatedSight, sight );
-	align.m03 = mEyePosition.x - rotatedSight.x;
-	align.m13 = mEyePosition.y - rotatedSight.y;
-	align.m23 = mEyePosition.z - rotatedSight.z;
+	transformBonesPartially( alignWeapon( gun, view, sight, mEyePosition ), mAimWeight, mArmBones, pose );
+}
 
-	// 覗き具合の分だけ補正する（回転は球面補間なので、途中で腕が縮んだりしない）。
-	Matrix34 none;
-	none.setIdentity();
-	Matrix34 partial;
-	MatrixBlend::blend( none, align, mAimWeight, &partial );
-	transformBones( partial, mArmBones, pose );
+void FirstPersonBody::carryAtChest( std::vector< Matrix34 >* pose ) const {
+	if ( mHandBone < 0 || mChestBone < 0 || mCarryWeight <= 0.f ) {
+		return;
+	}
+	Matrix34 gun;
+	gun.setMul( ( *pose )[ mHandBone ], mGrip );
+	// 胸の向きは、胸の骨の回転ではなく体の前方をピッチぶん傾けたものにする（背骨はピッチぶん曲げてある）。
+	// 胸の骨の回転は走りのアニメで大きく揺れるので、そのまま使うと銃が画面の中で暴れる。位置の揺れ（上下）だけを銃に出す。
+	Matrix34 chest;
+	chest.setRotationX( mPitch );
+	Vector3 wristGoal;
+	chest.mul33( &wristGoal, kCarryWristFromChest );
+	wristGoal += translationOf( ( *pose )[ mChestBone ] );
+	Matrix34 carry = chest;
+	carry.rotateY( kCarryMuzzleInward );
+	carry.rotateX( kCarryMuzzleDown );
+	carry.rotateZ( kCarryCant );
+	// 置き場所を手首で決めるのは、手首の位置と銃の向きを別々の定数で合わせられるようにするため（銃の先は向きだけで決まる）。
+	Vector3 wrist = translationOf( ( *pose )[ mHandBone ] );
+	transformBonesPartially( alignWeapon( gun, carry, wrist, wristGoal ), mCarryWeight, mArmBones, pose );
 }
 
 void FirstPersonBody::hideHead( std::vector< Matrix34 >* pose ) const {

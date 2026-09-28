@@ -13,9 +13,11 @@ class SkinnedMeshData;
 // 2. 右手首を曲げて、銃の先を左手（支える手）へ向ける。銃は右手の骨に付けているので、そのままだと
 //    アニメによっては左手が銃から離れる（走りで約8cm）。Mixamo のアニメは両手の間に銃がある前提なので、
 //    銃を両手の間に置き直すのがアニメの意図に最も近い（走りでは左手が腕の長さより遠く、左腕の IK では届かない）。
-// 3. 覗く（ADS）ときは、銃のサイト線が目と視線に重なるよう、両腕（肩から先）をまとめて動かす（手続き的 ADS）。
+// 3. 走るときは、銃を胸元へ引き寄せ、銃口を下・体の内側へ向ける（Tarkov の走りのような抱え方）。
+//    持っている走りのアニメは肩の高さで前に構えたままなので、覗くときと同じく両腕をまとめて動かす。
+// 4. 覗く（ADS）ときは、銃のサイト線が目と視線に重なるよう、両腕（肩から先）をまとめて動かす（手続き的 ADS）。
 //    覗く専用のアニメが無くても、持っているアニメのまま覗ける。両手ごと動かすので手は銃から離れない。
-// 4. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
+// 5. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
 // 書き換えのついでに目の位置を求めて覚える（カメラの視点に使う）。
 //
 // 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。キャラの置き場所・向きは知らない。
@@ -39,6 +41,8 @@ public:
 	void setHoldWeight( float weight );
 	// 覗き具合（0 = アニメのまま、1 = サイト線が目と視線にぴったり重なる）。
 	void setAimWeight( float weight );
+	// 胸元への寄せ具合（0 = アニメのまま、1 = 銃を胸元に抱える）。走っている間だけ 1 にする。
+	void setCarryWeight( float weight );
 
 	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ。
 	const GameLib::Math::Vector3& eyePosition() const;
@@ -54,6 +58,8 @@ private:
 	void bendSpine( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 右手首を中心に右手（と指）を回し、銃の先を左手へ向ける。
 	void holdWithBothHands( std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	// 胸元へ抱える補正を、寄せ具合の分だけ両腕へ掛ける。
+	void carryAtChest( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 背骨を曲げた後の頭の位置から、目の位置を求めて mEyePosition へ覚える。
 	void updateEyePosition( const std::vector< GameLib::Math::Matrix34 >& pose );
 	// サイト線を目と視線へ重ねる補正を、覗き具合の分だけ両腕へ掛ける。
@@ -65,6 +71,7 @@ private:
 	std::vector< int > mRightHandBones; // 右手と右手の指（手首を曲げるときに一緒に回す）
 	std::vector< int > mHiddenBones;
 	int mHeadBone;
+	int mChestBone;                   // 走るときに銃を寄せる基準の骨。-1 なら寄せない
 	float mPitch;
 
 	int mHandBone;                    // 銃を付けた骨。-1 なら銃なし
@@ -74,6 +81,7 @@ private:
 	GameLib::Math::Vector3 mSupportHandOnWeapon;
 	float mHoldWeight;
 	float mAimWeight;
+	float mCarryWeight;
 
 	GameLib::Math::Vector3 mEyePosition;
 };

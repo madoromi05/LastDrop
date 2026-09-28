@@ -130,6 +130,16 @@ namespace{
 		return true;
 	}
 
+	// 補正の効き具合を target へ1フレームぶん近づける。アニメのクロスフェードと同じ長さで効かせる／外す
+	// （素手⇔銃・歩き⇔走りのポーズの切り替えに、補正が急に入ると腕や手首が跳ねて見えるため）。
+	float approachWeight( float weight, float target ) {
+		float step = kFullWeight / kCrossFadeFrames;
+		if ( weight < target ) {
+			return Math::min( target, weight + step );
+		}
+		return Math::max( target, weight - step );
+	}
+
 	// 角度を [-180, 180) へ折り返す。
 	float wrapSignedAngle( float degree ) {
 		while ( degree >= kHalfTurn ) {
@@ -158,7 +168,8 @@ const Vector3& position, float angleY ) :
 	mAngleY( wrapSignedAngle( angleY ) ),
 	mMoveDirection( 0.f, 0.f, 0.f ),
 	mSpeed( 0.f ),
-	mHoldWeight( 0.f ) {
+	mHoldWeight( 0.f ),
+	mCarryWeight( 0.f ) {
 	mMesh->setPoseModifier( mBody.get() );
 
 	// 状態にアニメを登録する。見つからないアニメは静止のアニメで代用する
@@ -214,10 +225,12 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 		mMoveDirection = direction;
 	}
 	mStance.update( command.holsterPressed, command.aimHeld, running );
-	approachHoldWeight();
-	mBody->setHoldWeight( mHoldWeight );
-	mBody->setAimWeight( mStance.aimWeight() );
 	Animator::State next = chooseState( moving, running, mStance.isDrawn() );
+	approachHoldWeight();
+	approachCarryWeight( next );
+	mBody->setHoldWeight( mHoldWeight );
+	mBody->setCarryWeight( mCarryWeight );
+	mBody->setAimWeight( mStance.aimWeight() );
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
 	approachSpeed( moveSpeed( next ) );
 	mPosition.madd( mMoveDirection, mSpeed );
@@ -275,14 +288,12 @@ void PlayerCharacter::approachSpeed( float targetSpeed ) {
 }
 
 void PlayerCharacter::approachHoldWeight() {
-	// 素手⇔銃のアニメのクロスフェードと同じ長さで効かせる／外す。素手のポーズに右手首の曲げが急に入ると手首が跳ねて見えるため。
-	float target = mStance.isDrawn() ? kFullWeight : kNoWeight;
-	float step = kFullWeight / kCrossFadeFrames;
-	if ( mHoldWeight < target ) {
-		mHoldWeight = Math::min( target, mHoldWeight + step );
-	} else {
-		mHoldWeight = Math::max( target, mHoldWeight - step );
-	}
+	mHoldWeight = approachWeight( mHoldWeight, mStance.isDrawn() ? kFullWeight : kNoWeight );
+}
+
+void PlayerCharacter::approachCarryWeight( Animator::State next ) {
+	// 状態で決めるのは、走りのアニメ（肩の高さで構えたまま）に合わせて抱え方を足すため。素手で走るときは抱える銃が無い。
+	mCarryWeight = approachWeight( mCarryWeight, next == Animator::STATE_RIFLE_RUN ? kFullWeight : kNoWeight );
 }
 
 void PlayerCharacter::changeState( Animator::State next ) {
