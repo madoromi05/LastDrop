@@ -267,6 +267,31 @@ float PlayerCharacter::aimWeight() const {
 	return mStance.aimWeight();
 }
 
+Gait PlayerCharacter::gait() const {
+	switch ( mAnimator.state() ) {
+	case Animator::STATE_WALK:
+	case Animator::STATE_RIFLE_WALK:
+		return GAIT_WALK;
+	case Animator::STATE_RUN:
+	case Animator::STATE_RIFLE_RUN:
+		return GAIT_RUN;
+	default:
+		return GAIT_STILL;
+	}
+}
+
+float PlayerCharacter::gaitPhase() const {
+	return mMesh->animationPhase();
+}
+
+bool PlayerCharacter::isWeaponDrawn() const {
+	return mStance.isDrawn();
+}
+
+bool PlayerCharacter::isAiming() const {
+	return mStance.isAiming();
+}
+
 bool PlayerCharacter::readMoveDirection( const PlayerCommand& command, float cameraYaw, Vector3* direction ) const {
 	// カメラの水平の前方と右（FirstPersonCamera と同じ約束: 前方はヨー0で +Z、右は 前方×上）。
 	Vector3 cameraForward( Math::sin( cameraYaw ), 0.f, Math::cos( cameraYaw ) );

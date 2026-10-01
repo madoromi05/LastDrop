@@ -22,6 +22,14 @@ namespace GameLib{
 
 namespace{
 
+//ウィンドウ表示のときのスタイル。WS_THICKFRAME で端をドラッグして大きさを変えられ、最大化ボタンで画面いっぱいになる。
+const LONG kWindowedStyle = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME;
+//フルスクリーン（ボーダーレス）のときのスタイル。枠なしのウィンドウをモニター全体に広げる。
+//画面モードを切り替える排他フルスクリーンにしないのは、切り替えの暗転が無く、Alt+Tab でも描画が止まらないため。
+const LONG kFullScreenStyle = WS_POPUP;
+//WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット。
+const LPARAM kKeyWasDownBit = 1 << 30;
+
 class Impl{
 public:
 	Impl() :
@@ -41,7 +49,8 @@ public:
 	mTimeBias( 0 ),
 	mThreadId( 0 ),
 	mWindowHandle( NULL ),
-	mWindowRect(){
+	mWindowPlacement(){
+		mWindowPlacement.length = sizeof( mWindowPlacement );
 		//getTime()用バイアス値計算
 		unsigned time = timeGetTime();
 		mTimeBias = 0xffffffff - time;
@@ -55,47 +64,40 @@ public:
 	void enableFullScreen( bool f ){
 		if ( mFullScreen != f ){
 			if ( mStarted ){
-				LONG style;
 				if ( f ){
-					style = WS_POPUP | WS_VISIBLE;
-					//最大化するときは元の場所を覚えておく
-					GetWindowRect( mWindowHandle, &mWindowRect );
-					SetWindowLong( mWindowHandle, GWL_STYLE, style );
-					//位置は0,0
-					SetWindowPos( mWindowHandle, NULL, 
-						0, 0,
-						mWidth, mHeight,
-						SWP_SHOWWINDOW );
+					//戻すときのために、位置・大きさ・最大化していたかをまとめて覚えておく
+					GetWindowPlacement( mWindowHandle, &mWindowPlacement );
+					//ウィンドウが今いるモニターの全体に広げる
+					MONITORINFO monitor = {};
+					monitor.cbSize = sizeof( monitor );
+					GetMonitorInfo( MonitorFromWindow( mWindowHandle, MONITOR_DEFAULTTONEAREST ), &monitor );
+					const RECT& area = monitor.rcMonitor;
+					SetWindowLong( mWindowHandle, GWL_STYLE, kFullScreenStyle | WS_VISIBLE );
+					SetWindowPos( mWindowHandle, HWND_TOP,
+						area.left, area.top,
+						area.right - area.left,
+						area.bottom - area.top,
+						SWP_FRAMECHANGED | SWP_SHOWWINDOW );
 				}else{
-					style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE;
-					SetWindowLong( mWindowHandle, GWL_STYLE, style );
-					//元に戻すときは位置も戻す
-					SetWindowPos( mWindowHandle, NULL, 
-						mWindowRect.left, mWindowRect.top,
-						mWindowRect.right - mWindowRect.left,
-						mWindowRect.bottom - mWindowRect.top,
-						SWP_SHOWWINDOW );
+					SetWindowLong( mWindowHandle, GWL_STYLE, kWindowedStyle | WS_VISIBLE );
+					//覚えておいた位置へ戻す（最大化していたなら最大化へ戻る）
+					SetWindowPlacement( mWindowHandle, &mWindowPlacement );
+					//スタイルの変更（枠の有無）を反映させる
+					SetWindowPos( mWindowHandle, NULL, 0, 0, 0, 0,
+						SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
 				}
 			}
 			mFullScreen = f;
 		}
 	}
+	//フルスクリーンで起動したときの、ウィンドウへ戻す先を作る（左上に、描画サイズの大きさで置く）
 	void createDefaultWindowPos(){
-		mWindowRect.left = 0;
-		mWindowRect.top = 0;
-		mWindowRect.right = mWidth;
-		mWindowRect.bottom = mHeight;
-		LONG style;
-		style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE;
-		int oldLeft = mWindowRect.left;
-		int oldTop = mWindowRect.top;
-		AdjustWindowRect( &mWindowRect, style, FALSE );
-		int diffX = mWindowRect.left - oldLeft;
-		int diffY = mWindowRect.top - oldTop;
-		mWindowRect.left -= diffX;
-		mWindowRect.right -= diffX;
-		mWindowRect.top -= diffY;
-		mWindowRect.bottom -= diffY;
+		RECT rect = { 0, 0, mWidth, mHeight };
+		AdjustWindowRect( &rect, kWindowedStyle, FALSE );
+		OffsetRect( &rect, -rect.left, -rect.top );
+		mWindowPlacement.length = sizeof( mWindowPlacement );
+		mWindowPlacement.showCmd = SW_SHOWNORMAL;
+		mWindowPlacement.rcNormalPosition = rect;
 	}
 	int mWidth;
 	int mHeight;
@@ -114,7 +116,7 @@ public:
 	unsigned mThreadId;
 	Array< string > mDroppedItems;
 	HWND mWindowHandle;
-	RECT mWindowRect;
+	WINDOWPLACEMENT mWindowPlacement; //フルスクリーンからウィンドウへ戻すときの位置・大きさ・最大化の有無
 };
 
 Impl* gImpl = 0; //唯一のインスタンス
@@ -414,12 +416,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	hInst = hInstance; // グローバル変数にインスタンスを格納します。
 //----
-	DWORD style = 0;
-	if ( gImpl->mFullScreen ){
-		style = WS_POPUP;
-	}else{
-		style = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
-	}
+	DWORD style = gImpl->mFullScreen ? kFullScreenStyle : kWindowedStyle;
 	RECT rect;
 	rect.left = 0;
 	rect.top = 0;
@@ -471,15 +468,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-	case WM_SYSKEYDOWN: //alt+enter対応
-		if ( !gImpl->mFullScreenForbidden ){
-			if ( wParam == VK_RETURN ){
-				if ( gImpl->mFullScreen ){
-					WindowCreator().enableFullScreen( false );
-				}else{
-					WindowCreator().enableFullScreen( true );
-				}
+	case WM_SYSKEYDOWN: //alt+enterでフルスクリーン⇔ウィンドウ
+		if ( !gImpl->mFullScreenForbidden && wParam == VK_RETURN ){
+			//押しっぱなしのキーリピートでは切り替えない（押すたびに1回だけ）
+			if ( !( lParam & kKeyWasDownBit ) ){
+				WindowCreator().enableFullScreen( !gImpl->mFullScreen );
 			}
+			break; //DefWindowProcへ渡すとシステムメニューのビープが鳴る
 		}
 		DefWindowProc(hWnd, message, wParam, lParam);
 		break;
@@ -491,11 +486,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_SYSCOMMAND:
-		if ( wParam == SC_MAXIMIZE ){
-			if ( !gImpl->mFullScreenForbidden ){
-				WindowCreator().enableFullScreen( true ); //最大化の時はDefWindowProcは呼ばない
-			}
-		}else if ( wParam == SC_MINIMIZE ){
+		//最大化（SC_MAXIMIZE）は通常のウィンドウの最大化にするので DefWindowProc に任せる。
+		//フルスクリーンは alt+enter で切り替える。
+		if ( wParam == SC_MINIMIZE ){
 			gImpl->mMinimized = true;
 			gImpl->mActive = false;
 			DefWindowProc(hWnd, message, wParam, lParam);

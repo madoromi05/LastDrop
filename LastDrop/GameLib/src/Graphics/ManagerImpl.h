@@ -150,6 +150,16 @@ public:
 
 		createRTVandDSV( w, h );
 
+		// DXGI が alt+enter を横取りして排他フルスクリーンへ切り替えないようにする。
+		// フルスクリーンは WindowCreator がボーダーレス（枠なしウィンドウをモニター全体へ）で行う。
+		{
+			IDXGIFactory* factory = nullptr;
+			if ( SUCCEEDED( mSwapChain->GetParent( __uuidof( IDXGIFactory ), reinterpret_cast< void** >( &factory ) ) ) ){
+				factory->MakeWindowAssociation( hwnd, DXGI_MWA_NO_ALT_ENTER );
+				factory->Release();
+			}
+		}
+
 		// Query fullscreen resolution from DXGI output
 		{
 			IDXGIDevice* dxgiDevice = nullptr;
@@ -492,7 +502,51 @@ public:
 		mContext->PSSetSamplers( 0, 1, &mSamplerStates[ mCurrentSampler ] );
 	}
 
+	// バックバッファをウィンドウの描画領域と同じ大きさに作り直す（最大化・端のドラッグ・フルスクリーンの後）。
+	// ゲームの座標は高さ（mHeight）を固定し、幅（mWidth）だけをウィンドウの縦横比に合わせて変える。
+	// 高さを固定するのは、2D（文字など）の大きさが画面の高さに対して一定になり、横長の画面では左右に広く見えるだけにするため。
+	void fitBackBufferToWindow(){
+		RECT client;
+		GetClientRect( mWindowHandle, &client );
+		int w = client.right - client.left;
+		int h = client.bottom - client.top;
+		if ( w <= 0 || h <= 0 ){
+			return; // 最小化中は大きさが0になる。作り直さず、戻ったときの大きさで作る
+		}
+		if ( w == mBackBufferWidth && h == mBackBufferHeight ){
+			return;
+		}
+		// ResizeBuffers の前に、バックバッファを指しているビューを全部外す
+		mContext->OMSetRenderTargets( 0, nullptr, nullptr );
+		destroyRTVandDSV();
+		HRESULT hr = mSwapChain->ResizeBuffers( 1, static_cast< UINT >( w ), static_cast< UINT >( h ),
+			DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH );
+		if ( FAILED( hr ) ){
+			cout << "Graphics::fitBackBufferToWindow() : ResizeBuffers failed" << endl;
+			// 失敗しても今の大きさのまま作り直して描き続ける
+			DXGI_SWAP_CHAIN_DESC desc;
+			mSwapChain->GetDesc( &desc );
+			w = static_cast< int >( desc.BufferDesc.Width );
+			h = static_cast< int >( desc.BufferDesc.Height );
+		}
+		createRTVandDSV( w, h );
+		setInitialStates();
+		fitLogicalWidthToBackBuffer();
+	}
+
+	// ゲームの座標の幅を、バックバッファと同じ縦横比になるよう求め直す（左右に黒帯が出ないようにする）。
+	// 画面全体の描画範囲（mViewport）も新しい幅に広げる。部分的な描画範囲を設定していても、大きさが変わったら全体に戻る。
+	void fitLogicalWidthToBackBuffer(){
+		float aspect = static_cast< float >( mBackBufferWidth ) / static_cast< float >( mBackBufferHeight );
+		mWidth = static_cast< int >( static_cast< float >( mHeight ) * aspect + 0.5f );
+		mViewport.TopLeftX = 0.f;
+		mViewport.TopLeftY = 0.f;
+		mViewport.Width    = static_cast< float >( mWidth );
+		mViewport.Height   = static_cast< float >( mHeight );
+	}
+
 	void beginDraw(){
+		fitBackBufferToWindow();
 		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
 		mContext->OMSetRenderTargets( 1, &mRTV, mDSV );
 		mContext->ClearRenderTargetView( mRTV, clearColor );

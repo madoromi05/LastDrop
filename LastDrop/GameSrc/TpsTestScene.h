@@ -6,6 +6,10 @@
 #include "SkinnedMeshInstance.h"
 #include "StaticMeshInstance.h"
 #include "FirstPersonCamera.h"
+#include "AudioEngine.h"
+#include "GroundMaterial.h"
+#include "FootstepEmitter.h"
+#include "PlayerFoley.h"
 #include <memory>
 #include <vector>
 
@@ -15,6 +19,8 @@ class PlayerCharacter;
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
 // （クラス名・シーン番号は TPS のまま。名前の変更は別作業）
 // 背景は SkinTestScene と同じ建物とゾンビ（動作確認用の目印。当たり判定は無い）。
+// 音も確かめられる: 足音（床の材質で変わる）・装備の音。
+// 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
 //
 // マウスはカーソルロック（GameLib::Input::Manager）で読む。Esc で解除、クリックで再ロック。
 // 解除中は視点を回さない（カーソルが自由に動く間の移動量を視点に入れると、画面外の操作で回ってしまうため）。
@@ -28,6 +34,7 @@ private:
 	void updateCursorLock();     // Esc / クリックでカーソルロックを切り替える
 	void rotateCamera();         // ロック中ならマウスの移動量でカメラを回す（キャラの更新より前）
 	void placeCameraAtEye();     // 視点を自キャラの目へ置いて描画ステートへ反映する（キャラの更新より後）
+	void updateAudio();          // 聞き手をカメラに合わせ、足音・装備の音を鳴らす（視点を置いた後）
 	float fieldOfView() const;   // 覗き具合に合わせた縦の視野角（度）
 	void setupLights() const;
 	void draw() const;
@@ -43,6 +50,12 @@ private:
 	std::vector< std::unique_ptr< SkinnedMeshInstance > > mZombies;
 	std::vector< StaticMeshInstance > mBuildings;
 	FirstPersonCamera mCamera;
+
+	// 音。鳴らす係はどれも mAudio を借りるので、mAudio を先に宣言する（＝係より後に破棄される）。
+	AudioEngine mAudio;
+	GroundMaterialMap mGround;	// 足元の床の材質（検証用に地面へ長方形を並べたもの）
+	FootstepEmitter mFootsteps;
+	PlayerFoley mFoley;
 
 	bool mReady; // 配置が済んだか
 };

@@ -10,6 +10,7 @@
 #include "GameLib/Input/Manager.h"
 #include "GameLib/Math/Vector3.h"
 
+#include <cstdio>
 using namespace GameLib;
 using namespace GameLib::Math;
 
@@ -63,9 +64,31 @@ namespace{
 	const int kFillLight = 1;
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
 
+	// ── 床の材質（足音の確認用）──
+	// 自キャラの少し前（建物側）に、幅 3m の長方形を横一列に並べる。真ん中はコンクリートのまま。
+	// 始めの向き（建物の方）から見て、左へ横歩きすると 水たまり → 砂利 → 草、右へ行くと 木 → 金属 → ガラス。
+	// 見た目の目印はまだ無いので、足元の材質は画面左上に出す。
+	const float kZoneNearZ = 7.f;
+	const float kZoneFarZ = 3.f;
+	const GroundZone kGroundZones[] = {
+		{ -10.5f, kZoneFarZ, -7.5f, kZoneNearZ, GROUND_GRASS  },
+		{  -7.5f, kZoneFarZ, -4.5f, kZoneNearZ, GROUND_GRAVEL },
+		{  -4.5f, kZoneFarZ, -1.5f, kZoneNearZ, GROUND_WATER  },
+		{   1.5f, kZoneFarZ,  4.5f, kZoneNearZ, GROUND_WOOD   },
+		{   4.5f, kZoneFarZ,  7.5f, kZoneNearZ, GROUND_METAL  },
+		{   7.5f, kZoneFarZ, 10.5f, kZoneNearZ, GROUND_GLASS  },
+	};
+	const int kGroundZoneCount = sizeof( kGroundZones ) / sizeof( kGroundZones[ 0 ] );
+	const GroundMaterial kDefaultGround = GROUND_CONCRETE; // 通り
+
+	// 装備の音を鳴らす高さ（足元から。胸のあたり）。足音は足元、装備は体から鳴らして聞こえる高さを分ける。
+	const float kBodySoundHeight = 1.3f;
+
 	// ── 操作説明（DebugScreen の文字位置）──
 	const int kHelpColumn = 1;
 	const int kHelpRow = 1;
+	const int kGroundRow = 2;
+	const int kDebugTextSize = 64;
 
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
@@ -89,6 +112,9 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData( 0 ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
+	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
+	mFootsteps( &mAudio ),
+	mFoley( &mAudio ),
 	mReady( false ) {
 	// 読み込みを頼むだけ（非同期）。構築が終わったら placeObjects で並べる。
 	mPlayerData = mCache.skinnedMesh( kPlayerFile );
@@ -168,6 +194,22 @@ void TpsTestScene::placeCameraAtEye() {
 	mCamera.apply();
 }
 
+void TpsTestScene::updateAudio() {
+	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる。
+	mAudio.setListener( mCamera.eyePosition(), mCamera.viewDirection() );
+	if ( mPlayer ) {
+		const Vector3& feet = mPlayer->position();
+		bool stepped = mFootsteps.update( mPlayer->gait(), mPlayer->gaitPhase(), feet, mGround.materialAt( feet ) );
+		PlayerFoley::FoleyState foley;
+		foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
+		foley.gait = mPlayer->gait();
+		foley.weaponDrawn = mPlayer->isWeaponDrawn();
+		foley.aiming = mPlayer->isAiming();
+		mFoley.update( foley, stepped );
+	}
+	mAudio.update();
+}
+
 void TpsTestScene::setupLights() const {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.enableDepthTest( true );
@@ -222,6 +264,7 @@ void TpsTestScene::update() {
 		zombie->update();
 	}
 	placeCameraAtEye();
+	updateAudio();
 	setupLights();
 	draw();
 
@@ -229,4 +272,9 @@ void TpsTestScene::update() {
 		GameLib::Input::Manager::instance().isCursorLocked()
 			? "WASD: move  Shift: run  1: draw/holster  RMB: aim (tap=toggle, hold)  Mouse: look  Esc: release cursor"
 			: "Click: lock cursor (mouse look)" );
+	if ( mPlayer ) {
+		char ground[ kDebugTextSize ];
+		std::snprintf( ground, sizeof( ground ), "Floor: %s", groundMaterialName( mGround.materialAt( mPlayer->position() ) ) );
+		DebugScreen::instance().draw( kHelpColumn, kGroundRow, ground );
+	}
 }

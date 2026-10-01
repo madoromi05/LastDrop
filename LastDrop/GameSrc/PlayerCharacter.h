@@ -5,6 +5,7 @@
 #include "Animator.h"
 #include "WeaponStance.h"
 #include "PlayerCommand.h"
+#include "Gait.h"
 #include <memory>
 
 class SkinnedMeshData;
@@ -49,6 +50,13 @@ public:
 	GameLib::Math::Vector3 eyePosition() const;
 	// 覗き具合（0〜1。WeaponStance::aimWeight）。カメラのズームを合わせるのに使う。
 	float aimWeight() const;
+
+	// ── 音など、見た目以外の係が読む状態（このクラスは音を知らない。読む側が鳴らし方を決める）──
+	Gait gait() const;			// 今の歩き方（アニメの状態から。素手か銃かは含まない）
+	// 歩き・走りのアニメが1周の何割まで進んだか（0〜1。update で見せたポーズの位相）。足音を足の動きに合わせるのに使う。
+	float gaitPhase() const;
+	bool isWeaponDrawn() const;	// 武器を持っているか
+	bool isAiming() const;		// 覗いているか（覗き始め・終わりの途中も true）
 
 private:
 	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false。

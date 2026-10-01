@@ -191,8 +191,10 @@ public:
 		if ( t0 ){ t[ 0 ].x = static_cast< float >( t0[ 0 ] ); t[ 0 ].y = static_cast< float >( t0[ 1 ] ); }
 		if ( t1 ){ t[ 1 ].x = static_cast< float >( t1[ 0 ] ); t[ 1 ].y = static_cast< float >( t1[ 1 ] ); }
 		if ( t2 ){ t[ 2 ].x = static_cast< float >( t2[ 0 ] ); t[ 2 ].y = static_cast< float >( t2[ 1 ] ); }
-		float sx = 2.f / static_cast< float >( mWidth );
-		float sy = -2.f / static_cast< float >( mHeight );
+		//幅はウィンドウの縦横比で変わるので、描画側（Graphics）の今の大きさを使う
+		Graphics::Manager gm;
+		float sx = 2.f / static_cast< float >( gm.width() );
+		float sy = -2.f / static_cast< float >( gm.height() );
 		for ( int i = 0; i < 3; ++i ){
 			p[ i ].x = p[ i ].x * sx - 1.f;
 			p[ i ].y = p[ i ].y * sy + 1.f;
@@ -307,12 +309,14 @@ void Framework::postUpdate(){
 	gImpl->postUpdate();
 }
 
+//起動後は、ウィンドウの縦横比に合わせて変わる描画側（Graphics）の大きさを返す。
+//起動前（WindowCreator::configure でウィンドウの大きさを決めるとき）は設定値を返す。
 int Framework::width() const {
-	return gImpl->mWidth;
+	return gImpl->mStarted ? Graphics::Manager().width() : gImpl->mWidth;
 }
 
 int Framework::height() const {
-	return gImpl->mHeight;
+	return gImpl->mStarted ? Graphics::Manager().height() : gImpl->mHeight;
 }
 
 void Framework::requestEnd(){
@@ -426,7 +430,7 @@ void WindowCreator::configure( Configuration* config ){
 	config->setHeight( f.height() );
 	config->setTitle( "DirectX11 Turn Command Battle" );
 	config->enableFullScreen( false );
-	config->forbidFullScreen( true );
+	config->forbidFullScreen( false ); //alt+enterでボーダーレスのフルスクリーンへ切り替えられる
 }
 
 void WindowCreator::update(){

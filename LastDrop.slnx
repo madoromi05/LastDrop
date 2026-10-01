@@ -4,4 +4,5 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="LastDrop/LastDrop.vcxproj" Id="dde0c6e6-a92c-4413-80fe-316b023e4595" />
+  <Project Path="LastDrop/tools/SoundGen/SoundGen.vcxproj" Id="40ca5987-d15b-4505-b705-9ccae335bafd" />
 </Solution>

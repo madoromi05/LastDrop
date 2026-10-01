@@ -27,6 +27,9 @@ public:
 
 	float yaw() const;		// 水平の向き（度）。キャラの向きと移動方向の基準
 	float pitch() const;	// 上下の向き（度）。キャラの背骨の曲げに使う
+	// 視線の向き（長さ1）。音の聞き手の向きにも使う。
+	GameLib::Math::Vector3 viewDirection() const;
+	const GameLib::Math::Vector3& eyePosition() const;	// 視点（setEyePosition で渡したもの）
 
 private:
 	float mYaw;

@@ -169,6 +169,14 @@
     <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
     <ClCompile Include="GameSrc\FirstPersonBody.cpp" />
     <ClCompile Include="GameSrc\WeaponStance.cpp" />
+    <ClCompile Include="GameSrc\AudioEngine.cpp" />
+    <ClCompile Include="GameSrc\SoundCatalog.cpp" />
+    <ClCompile Include="GameSrc\GroundMaterial.cpp" />
+    <ClCompile Include="GameSrc\FootstepEmitter.cpp" />
+    <ClCompile Include="GameSrc\PlayerFoley.cpp" />
+    <ClCompile Include="GameSrc\AmbienceSystem.cpp" />
+    <!-- miniaudio（同梱の単一ヘッダ。実装はこの1ファイルでだけコンパイルする） -->
+    <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp" />
     <ClCompile Include="GameSrc\PlayerCharacter.cpp" />
     <ClCompile Include="GameSrc\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
@@ -383,6 +391,14 @@
     <ClInclude Include="GameSrc\FirstPersonCamera.h" />
     <ClInclude Include="GameSrc\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\WeaponStance.h" />
+    <ClInclude Include="GameSrc\AudioEngine.h" />
+    <ClInclude Include="GameSrc\SoundCatalog.h" />
+    <ClInclude Include="GameSrc\GroundMaterial.h" />
+    <ClInclude Include="GameSrc\FootstepEmitter.h" />
+    <ClInclude Include="GameSrc\PlayerFoley.h" />
+    <ClInclude Include="GameSrc\AmbienceSystem.h" />
+    <ClInclude Include="GameSrc\Gait.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\miniaudio\miniaudio.h" />
     <ClInclude Include="GameSrc\BonePoseModifier.h" />
     <ClInclude Include="GameSrc\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\PlayerCommand.h" />

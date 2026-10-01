@@ -52,13 +52,8 @@ void FirstPersonCamera::setFieldOfView( float degree ) {
 }
 
 void FirstPersonCamera::apply() const {
-	// 視線: 水平の前方（ヨー0で +Z）をピッチぶん下へ傾ける。
-	Vector3 viewDirection(
-		Math::sin( mYaw ) * Math::cos( mPitch ),
-		-Math::sin( mPitch ),
-		Math::cos( mYaw ) * Math::cos( mPitch ) );
 	Vector3 lookAt;
-	lookAt.setAdd( mEyePosition, viewDirection );
+	lookAt.setAdd( mEyePosition, viewDirection() );
 
 	Graphics::Manager gm = Graphics::Manager::instance();
 	Matrix44 projectionView;
@@ -79,4 +74,16 @@ float FirstPersonCamera::yaw() const {
 
 float FirstPersonCamera::pitch() const {
 	return mPitch;
+}
+
+Vector3 FirstPersonCamera::viewDirection() const {
+	// 水平の前方（ヨー0で +Z）をピッチぶん下へ傾ける。
+	return Vector3(
+		Math::sin( mYaw ) * Math::cos( mPitch ),
+		-Math::sin( mPitch ),
+		Math::cos( mYaw ) * Math::cos( mPitch ) );
+}
+
+const Vector3& FirstPersonCamera::eyePosition() const {
+	return mEyePosition;
 }
