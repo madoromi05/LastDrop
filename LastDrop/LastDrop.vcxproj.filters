@@ -46,9 +46,6 @@
     <Filter Include="GameLib\WindowCreator">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Library">
-      <UniqueIdentifier>{B1C2D3E4-F5A6-7890-BCDE-F01234567890}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Game">
       <UniqueIdentifier>{C1D2E3F4-A5B6-7890-CDEF-012345678901}</UniqueIdentifier>
     </Filter>
@@ -60,28 +57,6 @@
     </ClCompile>
     <ClCompile Include="GameLibMath.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <!-- Library -->
-    <ClCompile Include="Library\src\Batch.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\Camera.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\GraphicsDatabase.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\IndexBuffer.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\Model.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\Texture.cpp">
-      <Filter>Library</Filter>
-    </ClCompile>
-    <ClCompile Include="Library\src\VertexBuffer.cpp">
-      <Filter>Library</Filter>
     </ClCompile>
     <!-- Base -->
     <ClCompile Include="GameLib\src\Base\Compressor.cpp">
@@ -270,15 +245,6 @@
     <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
       <Filter>GameLib\WindowCreator</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Arena.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\GameConfig.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\Bullet.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="GameSrc\Main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -399,18 +365,6 @@
     <ClCompile Include="GameSrc\MatrixBlend.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Player.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\Robo.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\Stage.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\Target.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framework.h">
@@ -418,27 +372,6 @@
     </ClInclude>
     <ClInclude Include="GameLibMath.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\Batch.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\Camera.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\GraphicsDatabase.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\IndexBuffer.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\Model.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\Texture.h">
-      <Filter>Library</Filter>
-    </ClInclude>
-    <ClInclude Include="Library\include\Library\VertexBuffer.h">
-      <Filter>Library</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Framework.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -734,15 +667,6 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Arena.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\GameConfig.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\Bullet.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\Pad.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -887,18 +811,6 @@
     <ClInclude Include="GameSrc\MatrixBlend.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Player.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\Robo.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\Stage.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\Target.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -941,11 +853,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resource\font.tga" />
-    <Image Include="Resource\robo.tga" />
-    <Image Include="Resource\stage.tga" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Resource\robo.txt" />
-    <Text Include="Resource\stage.txt" />
   </ItemGroup>
 </Project>

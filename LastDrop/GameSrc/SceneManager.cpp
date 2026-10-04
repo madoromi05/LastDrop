@@ -27,10 +27,8 @@ void SceneManager::change( SceneId id ) {
 	case SCENE_TPS_TEST:
 		change( static_cast< IScene* >( NEW TpsTestScene() ) );
 		break;
-	case SCENE_GAME:
 	default:
-		// 実体を持たせず current を空にする。Main 側で従来ゲームがフォールバック実行される。
-		change( static_cast< IScene* >( 0 ) );
+		ASSERT( false && "SceneManager::change : unknown SceneId." );
 		break;
 	}
 }

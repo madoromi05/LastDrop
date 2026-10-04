@@ -12,7 +12,7 @@
 // ────────────────────────────────────────────────
 // Pad：GameLib の Input システムをこのゲーム用に組み立てるクラス
 //
-// Robo.cpp などのゲームコードは従来通り
+// ゲームコードは
 //   Pad::instance()->isOn( Pad::JUMP, 0 )
 // で呼べる。内部では Input クラスと InputBuilder を使っている。
 //
@@ -23,7 +23,7 @@
 class Pad
 {
 public:
-    // 従来互換の列挙型（Robo.cpp などを無変更にするため残す）
+    // ボタンの列挙型（ゲームコードはこの番号で入力を問い合わせる）
     enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM, HOLSTER, DEBUG_COLLISION };
 
     static Pad* instance();
@@ -34,7 +34,7 @@ public:
     void update();
 
     // ─────────────────────────────────────────
-    // 従来互換 API（Robo.cpp 等を変更せずに使える）
+    // ボタン単位の API
     // ─────────────────────────────────────────
     bool isOn(Button b, int playerId) const;
     bool isTriggered(Button b, int playerId) const;

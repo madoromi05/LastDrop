@@ -10,7 +10,6 @@ public:
 	// シーンの種類の一覧。ここを見れば全シーンが分かる。増やすときはここに1行足し、
 	// SceneManager::change( SceneId ) の生成分岐（SceneManager.cpp）にも1行足す。
 	enum SceneId{
-		SCENE_GAME,      // 従来ゲーム（設定＋プレイ）。current を空にしてフォールバック実行する。
 		SCENE_SKIN_TEST, // スキニング検証シーン。
 		SCENE_TPS_TEST,  // 自キャラを TPS 視点で動かす検証シーン。
 	};
@@ -24,7 +23,7 @@ public:
 	void update();
 	// 現在のシーンを破棄する（終了時）。
 	void destroy();
-	// 現在のシーンを返す（無ければ0）。呼び出し側の分岐判定に使う。
+	// 現在のシーンを返す（無ければ0）。
 	IScene* current() const;
 private:
 	SceneManager();

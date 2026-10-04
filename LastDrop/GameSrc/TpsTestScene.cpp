@@ -57,7 +57,7 @@ namespace{
 
 	// ── ライティング ──
 	// キャラが歩き回っても明るさが変わらないよう、太陽のような遠い光源にする。
-	// 強さに距離を入れると、距離による減衰が打ち消されて一定の明るさになる（Main の従来ゲームと同じ方法）。
+	// 強さに距離を入れると、距離による減衰が打ち消されて一定の明るさになる。
 	const Vector3 kSunPosition( 300.f, 500.f, 400.f );
 	const Vector3 kSunColor( 1.f, 0.95f, 0.9f );
 	const Vector3 kFillPosition( -300.f, 200.f, -400.f ); // 影側を真っ黒にしない補助光
@@ -269,7 +269,7 @@ void TpsTestScene::updateCollisionDebug() {
 #endif
 
 void TpsTestScene::update() {
-	// 入力は1フレームに1回だけ読む（従来ゲームは Main が読むが、SceneManager のシーンは自分で読む）。
+	// 入力は1フレームに1回だけ読む（Main は読まないので、シーンが自分で読む）。
 	Pad::instance()->update();
 
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎フレーム呼ぶ）。

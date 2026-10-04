@@ -78,7 +78,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;$(ProjectDir)Library\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -97,7 +97,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;$(ProjectDir)Library\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;$(ProjectDir)Library\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -133,7 +133,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;$(ProjectDir)Library\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -147,10 +147,6 @@
     <!-- ゲームコード -->
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameLibMath.cpp" />
-    <!-- Library (3D graphics abstraction) -->
-    <ClCompile Include="GameSrc\Arena.cpp" />
-    <ClCompile Include="GameSrc\Bullet.cpp" />
-    <ClCompile Include="GameSrc\GameConfig.cpp" />
     <ClCompile Include="GameSrc\Animator.cpp" />
     <ClCompile Include="GameSrc\SkinnedMeshData.cpp" />
     <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp" />
@@ -192,34 +188,6 @@
     <ClCompile Include="GameSrc\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
-    <ClCompile Include="GameSrc\Player.cpp">
-      <!-- GameLib\src\Sound\Player.cpp と obj 名が衝突するため、出力名を分ける（MSB8027対策）。 -->
-      <ObjectFileName>$(IntDir)GameSrc_Player.obj</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="GameSrc\Robo.cpp" />
-    <ClCompile Include="GameSrc\Stage.cpp" />
-    <ClCompile Include="GameSrc\Target.cpp" />
-    <ClCompile Include="Library\src\Batch.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\Camera.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\GraphicsDatabase.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\IndexBuffer.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\Model.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\Texture.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
-    <ClCompile Include="Library\src\VertexBuffer.cpp">
-      <ObjectFileName>$(IntDir)Library\</ObjectFileName>
-    </ClCompile>
     <!-- Base -->
     <ClCompile Include="GameLib\src\Base\Compressor.cpp" />
     <ClCompile Include="GameLib\src\Base\Conversion.cpp" />
@@ -378,9 +346,6 @@
     <ClInclude Include="GameLib\include\GameLib\Threading\Semaphore.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h" />
     <ClInclude Include="GameLib\src\WindowCreator\Resource.h" />
-    <ClInclude Include="GameSrc\Arena.h" />
-    <ClInclude Include="GameSrc\GameConfig.h" />
-    <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\Pad.h" />
     <ClInclude Include="GameSrc\Animator.h" />
     <ClInclude Include="GameSrc\SkinnedMeshData.h" />
@@ -429,17 +394,6 @@
     <ClInclude Include="GameSrc\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\PlayerCommand.h" />
     <ClInclude Include="GameSrc\MatrixBlend.h" />
-    <ClInclude Include="GameSrc\Player.h" />
-    <ClInclude Include="GameSrc\Robo.h" />
-    <ClInclude Include="GameSrc\Stage.h" />
-    <ClInclude Include="GameSrc\Target.h" />
-    <ClInclude Include="Library\include\Library\Batch.h" />
-    <ClInclude Include="Library\include\Library\Camera.h" />
-    <ClInclude Include="Library\include\Library\GraphicsDatabase.h" />
-    <ClInclude Include="Library\include\Library\IndexBuffer.h" />
-    <ClInclude Include="Library\include\Library\Model.h" />
-    <ClInclude Include="Library\include\Library\Texture.h" />
-    <ClInclude Include="Library\include\Library\VertexBuffer.h" />
     <ClInclude Include="GameLib\include\GameLib\Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\DebugScreen.h" />
     <ClInclude Include="GameLib\include\GameLib\GameLib.h" />
@@ -485,12 +439,8 @@
   <!-- ==================== リソース ==================== -->
   <ItemGroup>
     <Image Include="Resource\font.tga" />
-    <Image Include="Resource\robo.tga" />
-    <Image Include="Resource\stage.tga" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Resource\robo.txt" />
-    <Text Include="Resource\stage.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
