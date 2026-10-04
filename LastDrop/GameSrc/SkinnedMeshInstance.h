@@ -55,6 +55,9 @@ public:
 	// boneIndex: SkinnedMeshData::findBone の番号。範囲外、またはまだ update していなければ false（out は変えない）。
 	// 骨格の単位のまま返す（Mixamo なら cm の縮尺 0.01 が入っている）ので、付ける物の側で合わせる。
 	bool boneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
+	// boneMatrix と同じだが、書き換え（BonePoseModifier）を掛ける前の、アニメどおりのポーズで返す。
+	// 部位の当たり判定に使う（一人称で頭を潰した・視点に合わせて曲げた見た目ではなく、体の本来の位置で判定するため）。
+	bool animatedBoneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
 	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける。
 	GameLib::Math::Matrix34 rootMatrix() const;
 

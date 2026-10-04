@@ -125,6 +125,14 @@ bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
 	return true;
 }
 
+bool SkinnedMeshInstance::animatedBoneMatrix( int boneIndex, Matrix34* out ) const {
+	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mBonePose.size() ) ) {
+		return false;
+	}
+	out->setMul( rootMatrix(), mBonePose[ boneIndex ] );
+	return true;
+}
+
 void SkinnedMeshInstance::blendFadingPose() {
 	if ( mFadeFrames <= 0.f ) {
 		return;

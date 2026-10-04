@@ -37,6 +37,9 @@ namespace{
 		{  2.8f, -3.0f, -30.f },
 	};
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
+	// 当たり判定の確認用に、アニメを付けず T ポーズで立たせる1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
+	// 自キャラの始めの位置から 5m 前・少し右（始めの視界に収まる所）に、自キャラの方（+Z）を向けて置く。
+	const Placement kTPoseZombiePlacement = { 1.8f, 3.0f, 0.f };
 	const char* kBuildingFile = "Resource/building.txt";
 	const float kBuildingYaw = -90.f;       // 正面(+X)を +Z へ向ける
 	const Placement kBuildingPlacements[] = {
@@ -88,6 +91,7 @@ namespace{
 	const int kHelpColumn = 1;
 	const int kHelpRow = 1;
 	const int kGroundRow = 2;
+	const int kCollisionRow = 3; // 当たり判定の表示の ON/OFF（Debug ビルドだけ）
 	const int kDebugTextSize = 64;
 
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
@@ -115,7 +119,11 @@ TpsTestScene::TpsTestScene() :
 	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
 	mFootsteps( &mAudio ),
 	mFoley( &mAudio ),
-	mReady( false ) {
+	mReady( false )
+#ifdef _DEBUG
+	, mShowCollision( false )
+#endif
+	{
 	// 読み込みを頼むだけ（非同期）。構築が終わったら placeObjects で並べる。
 	mPlayerData = mCache.skinnedMesh( kPlayerFile );
 	mWeaponData = mCache.staticMesh( kWeaponFile );
@@ -135,24 +143,32 @@ void TpsTestScene::placeObjects() {
 		// 銃の構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
 		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
 		mPlayer = std::make_unique< PlayerCharacter >(
-			mPlayerData, weapon, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
+			mPlayerData, weapon, &mWorld, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
+		mWorld.addBody( mPlayer.get() );
+		mHitWorld.addTarget( mPlayer.get() );
 	}
-	int zombieIndex = 0;
-	for ( const Placement& p : kZombiePlacements ) {
-		if ( !mZombieData->isReady() ) {
-			break;
+	if ( mZombieData->isReady() ) {
+		// 置いて、移動・命中の両方の当たり判定に登録する。animation が nullptr なら T ポーズ。
+		auto addZombie = [ this ]( const Placement& p, const char* animation, float startTime ) {
+			auto zombie = std::make_unique< Zombie >( mZombieData, Vector3( p.x, 0.f, p.z ), p.yawDegree, animation, startTime );
+			mWorld.addBody( zombie.get() );
+			mHitWorld.addTarget( zombie.get() );
+			mZombies.push_back( std::move( zombie ) );
+		};
+		int zombieIndex = 0;
+		for ( const Placement& p : kZombiePlacements ) {
+			addZombie( p, kZombieAnimation, kAnimationStartStep * zombieIndex );
+			++zombieIndex;
 		}
-		auto zombie = std::make_unique< SkinnedMeshInstance >( mZombieData );
-		zombie->setPosition( Vector3( p.x, 0.f, p.z ) );
-		zombie->setAngleY( p.yawDegree );
-		zombie->setAnimation( kZombieAnimation, kAnimationStartStep * zombieIndex );
-		mZombies.push_back( std::move( zombie ) );
-		++zombieIndex;
+		addZombie( kTPoseZombiePlacement, nullptr, 0.f );
 	}
 	for ( const Placement& p : kBuildingPlacements ) {
-		StaticMeshInstance building( mBuildingData );
-		building.setPosition( Vector3( p.x, 0.f, p.z ) );
-		building.setAngleY( p.yawDegree );
+		// 箱の大きさを頂点から求めるので、構築に失敗した建物は置かない。
+		if ( !mBuildingData->isReady() ) {
+			break;
+		}
+		Building building( mBuildingData, Vector3( p.x, 0.f, p.z ), p.yawDegree );
+		building.addCollidersTo( &mWorld );
 		mBuildings.push_back( building );
 	}
 	// 始めから視点を回せるようにロックしておく。
@@ -234,10 +250,23 @@ void TpsTestScene::draw() const {
 	for ( const auto& zombie : mZombies ) {
 		zombie->draw();
 	}
-	for ( const StaticMeshInstance& building : mBuildings ) {
+	for ( const Building& building : mBuildings ) {
 		building.draw();
 	}
 }
+
+#ifdef _DEBUG
+void TpsTestScene::updateCollisionDebug() {
+	if ( InputDebugCollision() ) {
+		mShowCollision = !mShowCollision;
+	}
+	if ( mShowCollision ) {
+		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）。
+		mCollisionDrawer.draw( mWorld, mHitWorld, mCamera.projectionViewMatrix(), mPlayer.get(), mPlayer.get() );
+	}
+	DebugScreen::instance().draw( kHelpColumn, kCollisionRow, mShowCollision ? "Collision: ON  (F1)" : "Collision: OFF (F1)" );
+}
+#endif
 
 void TpsTestScene::update() {
 	// 入力は1フレームに1回だけ読む（従来ゲームは Main が読むが、SceneManager のシーンは自分で読む）。
@@ -267,6 +296,9 @@ void TpsTestScene::update() {
 	updateAudio();
 	setupLights();
 	draw();
+#ifdef _DEBUG
+	updateCollisionDebug();
+#endif
 
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		GameLib::Input::Manager::instance().isCursorLocked()

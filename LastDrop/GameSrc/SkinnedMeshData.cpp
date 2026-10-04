@@ -138,6 +138,57 @@ const char* SkinnedMeshData::boneName( int boneIndex ) const {
 	return mBones[ boneIndex ].mNodeName.c_str();
 }
 
+void SkinnedMeshData::collectBoneSpaceVertices( const std::vector< bool >& boneMask, int anchorBone, std::vector< Vector3 >* out ) const {
+	collectVertices( boneMask, mBones[ anchorBone ].mBindInverse, out );
+}
+
+Vector3 SkinnedMeshData::boneSpaceJointPosition( int anchorBone, int bone ) const {
+	// bindInverse の逆＝レスト姿勢での骨の姿勢。その移動成分が関節の位置（モデルの空間）。
+	Matrix34 restPose;
+	restPose.setInverse( mBones[ bone ].mBindInverse );
+	Vector3 joint( restPose.m03, restPose.m13, restPose.m23 );
+	Vector3 local;
+	mBones[ anchorBone ].mBindInverse.mul( &local, joint );
+	return local;
+}
+
+bool SkinnedMeshData::computeRestBounds( const std::vector< bool >& boneMask, Vector3* boundsMin, Vector3* boundsMax ) const {
+	Matrix34 identity;
+	identity.setIdentity();
+	std::vector< Vector3 > points;
+	collectVertices( boneMask, identity, &points );
+	if ( points.empty() ) {
+		return false;
+	}
+	*boundsMin = points[ 0 ];
+	*boundsMax = points[ 0 ];
+	for ( const Vector3& p : points ) {
+		boundsMin->min( p );
+		boundsMax->max( p );
+	}
+	return true;
+}
+
+void SkinnedMeshData::collectVertices( const std::vector< bool >& boneMask, const Matrix34& transform, std::vector< Vector3 >* out ) const {
+	out->clear();
+	for ( int i = 0; i < mVertices.size(); ++i ) {
+		const Vertex& v = mVertices[ i ];
+		// 一番重みの大きい骨（重みは大きい順とは限らないので全部見る）。
+		int strongestSlot = 0;
+		for ( int slot = 1; slot < MAX_INFLUENCE; ++slot ) {
+			if ( v.mWeight[ slot ] > v.mWeight[ strongestSlot ] ) {
+				strongestSlot = slot;
+			}
+		}
+		if ( !boneMask[ v.mBoneIndex[ strongestSlot ] ] ) {
+			continue;
+		}
+		Vector3 local;
+		transform.mul( &local, v.mPosition );
+		out->push_back( local );
+	}
+}
+
 Scene::Tree SkinnedMeshData::createSkeleton() const {
 	return mContainer.createTree( kSkeletonTreeIndex );
 }

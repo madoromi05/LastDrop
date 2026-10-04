@@ -17,7 +17,8 @@ namespace{
 	const char* kElementName = "StaticMesh";
 
 	// <StaticMesh> 要素1つ（=パーツ1つ）を読み、GPUへ送るまでを行う。
-	bool loadPart( StaticMeshPart* part, const ConstElement& mesh ) {
+	// 読んだ頂点で data の囲む箱を広げる（パーツは GPU へ送った後に頂点を捨てるので、読むときに測る）。
+	bool loadPart( StaticMeshPart* part, StaticMeshData* data, const ConstElement& mesh ) {
 		// テクスチャ・法線マップ・材質値（<StaticMesh texture="..." normalmap="..." ...>）。
 		MeshLoaderUtil::loadMaterial( &part->material(), mesh );
 
@@ -49,6 +50,7 @@ namespace{
 				Vector2 uv;
 				MeshLoaderUtil::readVertex( child, &position, &normal, &uv );
 				part->setVertex( vertexIndex, position, normal, uv );
+				data->extendBounds( position );
 
 				// 頂点カラー（テクスチャ無しのパーツはマテリアル色で塗る。無ければ白）。
 				ConstAttribute a = MeshLoaderUtil::findAttribute( child, "color" );
@@ -92,7 +94,7 @@ bool StaticMeshLoader::load( StaticMeshData* data, ConstElement container ) {
 		if ( RefString( kElementName ) != child.name() ) {
 			continue;
 		}
-		if ( !loadPart( &data->part( partIndex ), child ) ) {
+		if ( !loadPart( &data->part( partIndex ), data, child ) ) {
 			return false;
 		}
 		++partIndex;

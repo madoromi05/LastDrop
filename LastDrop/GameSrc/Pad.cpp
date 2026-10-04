@@ -84,6 +84,7 @@ WorkId Pad::buttonToWorkId(Button b)
     case MENU:     return WorkId::Menu;
     case AIM:      return WorkId::Aim;
     case HOLSTER:  return WorkId::Holster;
+    case DEBUG_COLLISION: return WorkId::DebugCollision;
     default:    return WorkId::Up;
     }
 }
@@ -198,3 +199,4 @@ AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(W
 bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(Pad::MENU, playerId); }
 bool InputAim        (int playerId) { return Pad::instance()->isOn(Pad::AIM, playerId); }
 bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(Pad::HOLSTER, playerId); }
+bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(Pad::DEBUG_COLLISION, playerId); }

@@ -26,8 +26,16 @@ public:
 	// world の位置・向き・大きさで全パーツを描く。
 	void draw( const GameLib::Math::Matrix34& world ) const;
 
+	// 全パーツの頂点を囲む箱（モデルのローカル座標）。当たり判定の箱の大きさに使う。
+	// ローダが頂点を読むたびに extendBounds で広げる。頂点が1つも無いうちは min > max のまま。
+	void extendBounds( const GameLib::Math::Vector3& position );
+	const GameLib::Math::Vector3& boundsMin() const;
+	const GameLib::Math::Vector3& boundsMax() const;
+
 private:
 	GameLib::Array< StaticMeshPart > mParts;
+	GameLib::Math::Vector3 mBoundsMin;
+	GameLib::Math::Vector3 mBoundsMax;
 };
 
 #endif

@@ -7,13 +7,21 @@
 namespace VertexColor{
 	const unsigned WHITE = 0xffffffffu; // 既定値。テクスチャに乗算しても色を変えない
 
+	// 0..1 の値を 0..255 の1バイトにする。範囲外は丸める。
+	inline unsigned toByte( float value ) {
+		const float kMax = 255.f;
+		return static_cast< unsigned >( ( value < 0.f ? 0.f : ( value > 1.f ? 1.f : value ) ) * kMax );
+	}
+
+	// r, g, b, a は 0..1。範囲外は丸める。a は不透明度（1 で不透明。半透明に描くときは描く側で混ぜ方を BLEND_LINEAR にする）。
+	inline unsigned pack( float r, float g, float b, float a ) {
+		return ( toByte( a ) << 24 ) | ( toByte( b ) << 16 ) | ( toByte( g ) << 8 ) | toByte( r );
+	}
+
 	// r, g, b は 0..1。範囲外は丸める。アルファは常に不透明。
 	inline unsigned pack( float r, float g, float b ) {
-		const float kMax = 255.f;
-		unsigned rr = static_cast< unsigned >( ( r < 0.f ? 0.f : ( r > 1.f ? 1.f : r ) ) * kMax );
-		unsigned gg = static_cast< unsigned >( ( g < 0.f ? 0.f : ( g > 1.f ? 1.f : g ) ) * kMax );
-		unsigned bb = static_cast< unsigned >( ( b < 0.f ? 0.f : ( b > 1.f ? 1.f : b ) ) * kMax );
-		return 0xff000000u | ( bb << 16 ) | ( gg << 8 ) | rr;
+		const float kOpaque = 1.f;
+		return pack( r, g, b, kOpaque );
 	}
 }
 

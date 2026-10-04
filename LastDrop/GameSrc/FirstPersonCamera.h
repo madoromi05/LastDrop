@@ -2,6 +2,7 @@
 #define INCLUDED_FIRST_PERSON_CAMERA_H
 
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix44.h"
 
 // キャラの目の位置から見る一人称(FPS)カメラ。
 // 向き（ヨー・ピッチ）を持ち、渡された目の位置から視線を決めて描画ステートへ反映するだけを担う。
@@ -24,6 +25,8 @@ public:
 	void setFieldOfView( float degree );
 	// 射影・ビュー行列と視点位置を Graphics::Manager へ設定する。
 	void apply() const;
+	// 射影×ビュー行列（apply で設定するものと同じ）。メッシュ以外のもの（デバッグ表示など）を同じ視点で描くのに使う。
+	GameLib::Math::Matrix44 projectionViewMatrix() const;
 
 	float yaw() const;		// 水平の向き（度）。キャラの向きと移動方向の基準
 	float pitch() const;	// 上下の向き（度）。キャラの背骨の曲げに使う

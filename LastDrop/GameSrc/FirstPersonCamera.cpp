@@ -52,6 +52,12 @@ void FirstPersonCamera::setFieldOfView( float degree ) {
 }
 
 void FirstPersonCamera::apply() const {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setProjectionViewMatrix( projectionViewMatrix() );
+	gm.setEyePosition( mEyePosition );
+}
+
+Matrix44 FirstPersonCamera::projectionViewMatrix() const {
 	Vector3 lookAt;
 	lookAt.setAdd( mEyePosition, viewDirection() );
 
@@ -64,8 +70,7 @@ void FirstPersonCamera::apply() const {
 	Matrix34 view;
 	view.setViewTransform( mEyePosition, lookAt, kUp );
 	projectionView *= view;
-	gm.setProjectionViewMatrix( projectionView );
-	gm.setEyePosition( mEyePosition );
+	return projectionView;
 }
 
 float FirstPersonCamera::yaw() const {

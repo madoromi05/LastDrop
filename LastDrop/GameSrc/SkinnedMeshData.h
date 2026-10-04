@@ -65,6 +65,16 @@ public:
 	int findBone( const char* nodeName ) const;
 	// ボーン番号から Tree のノード名。範囲外なら空文字列。腕の骨を名前の頭でまとめて探すときなどに使う。
 	const char* boneName( int boneIndex ) const;
+	// 一番強く付いている骨が boneMask で true の頂点を集め、anchorBone の空間（レスト姿勢で bindInverse を掛けた所）へ移して out に入れる。
+	// 部位ごとの当たり判定の箱を、モデルの形に沿わせて作るのに使う。
+	// boneMask: boneNumber() 個ぶん。対象の骨なら true。anchorBone: 箱を置く骨の番号。out: 出力先（前の中身は捨てる）。nullptr 不可。
+	void collectBoneSpaceVertices( const std::vector< bool >& boneMask, int anchorBone, std::vector< Vector3 >* out ) const;
+	// bone の関節の位置（レスト姿勢）を、anchorBone の空間で返す。部位の箱の長い辺を、関節を結ぶ向きに合わせるのに使う。
+	Vector3 boneSpaceJointPosition( int anchorBone, int bone ) const;
+	// 一番強く付いている骨が boneMask で true の頂点を、レスト姿勢のモデルの空間（置き場所・向きを掛ける前。単位は表示と同じ m）で囲む。
+	// 移動の当たり判定の大きさ（体を真上から囲む長方形）を、モデルの形から決めるのに使う。
+	// boundsMin / boundsMax: 出力先。nullptr 不可。対象の頂点が1つも無ければ false（出力は変えない）。
+	bool computeRestBounds( const std::vector< bool >& boneMask, Vector3* boundsMin, Vector3* boundsMax ) const;
 	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）。
 	Scene::Tree createSkeleton() const;
 	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。
@@ -87,6 +97,9 @@ public:
 	void draw( Graphics::VertexBuffer deformed ) const;
 
 private:
+	// collectBoneSpaceVertices / computeRestBounds の中身。対象の頂点を transform で移して out に入れる。
+	void collectVertices( const std::vector< bool >& boneMask, const Matrix34& transform, std::vector< Vector3 >* out ) const;
+
 	// 1頂点分のレストデータと影響ボーン。
 	struct Vertex{
 		Vertex();

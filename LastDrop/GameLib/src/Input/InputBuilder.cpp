@@ -44,6 +44,7 @@ namespace
         case WorkId::Menu:     return "Menu";
         case WorkId::Aim:      return "Aim";
         case WorkId::Holster:  return "Holster";
+        case WorkId::DebugCollision: return "DebugCollision";
         default:            return "";
         }
     }
@@ -75,6 +76,7 @@ namespace
         case Keyboard::KEY_SHIFT:   return "Shift";
         case Keyboard::KEY_CONTROL: return "Control";
         case Keyboard::KEY_ESC:     return "Esc";
+        case Keyboard::KEY_F1:      return "F1";
         default:  return std::string(1, static_cast<char>(std::toupper(static_cast<unsigned char>(a_asciiKey))));
         }
     }
@@ -165,6 +167,8 @@ namespace
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
         // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
+        // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
+        { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
     };
 
     // Player 1：キーボードのみ
