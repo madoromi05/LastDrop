@@ -16,7 +16,9 @@ class SkinTestScene : public IScene{
 public:
 	SkinTestScene();
 	virtual ~SkinTestScene();
+	virtual void beginFrame();
 	virtual void update();
+	virtual void draw();
 private:
 	void placeObjects();         // 全データの構築後に一度だけ、インスタンスを作って並べる
 	void setupCameraAndLights();

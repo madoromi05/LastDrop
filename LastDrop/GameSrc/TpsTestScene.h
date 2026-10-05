@@ -15,6 +15,8 @@
 #include "GroundMaterial.h"
 #include "FootstepEmitter.h"
 #include "PlayerFoley.h"
+#include "PlayerCommand.h"
+#include "PostProcess.h"
 #include <memory>
 #include <vector>
 
@@ -35,18 +37,22 @@ class TpsTestScene : public IScene{
 public:
 	TpsTestScene();
 	virtual ~TpsTestScene();
+	virtual void beginFrame();
 	virtual void update();
+	virtual void draw();
 private:
 	void placeObjects();         // 全データの構築後に一度だけ、キャラと背景を作って並べる
 	void updateCursorLock();     // Esc / クリックでカーソルロックを切り替える
 	void rotateCamera();         // ロック中ならマウスの移動量でカメラを回す（キャラの更新より前）
 	void placeCameraAtEye();     // 視点を自キャラの目へ置いて描画ステートへ反映する（キャラの更新より後）
-	void updateAudio();          // 聞き手をカメラに合わせ、足音・装備の音を鳴らす（視点を置いた後）
+	void updateBodySounds();     // 足音・装備の音を鳴らす（1ティックに1回。キャラの更新の後）
+	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
 	float fieldOfView() const;   // 覗き具合に合わせた縦の視野角（度）
 	void setupLights() const;
-	void draw() const;
+	void drawWorld() const;      // キャラと背景を描くだけ（何回呼んでも同じ絵になる）
 #ifdef _DEBUG
-	void updateCollisionDebug(); // 切り替えの入力を読み、表示中なら当たり判定を描く（他を全部描いた後）
+	void toggleCollisionDebug(); // 表示の切り替えの入力を読む（1回の描画につき1回）
+	void drawCollisionDebug();   // 表示中なら当たり判定を描く（他を全部描いた後）
 #endif
 
 	// 設計図の倉庫。インスタンスより先に宣言する（＝インスタンスより後に破棄される）。
@@ -63,6 +69,7 @@ private:
 	std::vector< std::unique_ptr< Zombie > > mZombies; // mWorld が指すので、並べ替えても動かないよう unique_ptr で持つ
 	std::vector< Building > mBuildings;
 	FirstPersonCamera mCamera;
+	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 
 	// 音。鳴らす係はどれも mAudio を借りるので、mAudio を先に宣言する（＝係より後に破棄される）。
 	AudioEngine mAudio;
@@ -70,6 +77,9 @@ private:
 	FootstepEmitter mFootsteps;
 	PlayerFoley mFoley;
 
+	// 自キャラへの操作。押した瞬間の入力（holsterPressed）は、次の update で使うまで貯めておく。
+	// 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため。
+	PlayerCommand mCommand;
 	bool mReady; // 配置が済んだか
 #ifdef _DEBUG
 	CollisionDebugDrawer mCollisionDrawer;

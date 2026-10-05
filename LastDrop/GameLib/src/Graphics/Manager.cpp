@@ -9,6 +9,11 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
+#include "GameLib/Graphics/RenderTarget.h"
+#include "GameLib/Graphics/DepthTarget.h"
+#include "GameLib/Graphics/Shader.h"
+#include "GameLib/Graphics/ConstantBuffer.h"
+#include "GameLib/Math/Vector4.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
 
 #include "Graphics/ManagerImpl.h"
@@ -211,6 +216,51 @@ void Manager::setSpecularSharpness( float e ){
 
 void Manager::setNormalMapStrength( float s ){
 	gManagerImpl->setNormalMapStrength( s );
+}
+
+void Manager::setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth ){
+	ASSERT( count >= 0 && count <= MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
+	RenderTarget::Impl* impls[ MAX_RENDER_TARGET ] = {};
+	for ( int i = 0; i < count; ++i ){
+		impls[ i ] = colors[ i ].mImpl;
+	}
+	gManagerImpl->setRenderTargets( impls, count, depth.mImpl );
+}
+
+void Manager::resetRenderTargets(){
+	gManagerImpl->resetRenderTargets();
+}
+
+void Manager::clear( RenderTarget t, const Vector4& color ){
+	gManagerImpl->clear( t.mImpl, color );
+}
+
+void Manager::clear( DepthTarget t ){
+	gManagerImpl->clear( t.mImpl );
+}
+
+void Manager::setShader( Shader s ){
+	gManagerImpl->setShader( s.mImpl );
+}
+
+void Manager::setConstantBuffer( int slot, ConstantBuffer b ){
+	gManagerImpl->setConstantBuffer( slot, b.mImpl );
+}
+
+void Manager::setShaderResource( int slot, RenderTarget t ){
+	gManagerImpl->setShaderResource( slot, t.mImpl );
+}
+
+void Manager::setShaderResource( int slot, DepthTarget t ){
+	gManagerImpl->setShaderResource( slot, t.mImpl );
+}
+
+void Manager::setShaderResource( int slot, Texture t ){
+	gManagerImpl->setShaderResource( slot, t.mImpl );
+}
+
+void Manager::drawFullScreen(){
+	gManagerImpl->drawFullScreen();
 }
 
 

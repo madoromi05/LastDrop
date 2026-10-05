@@ -45,9 +45,10 @@ public:
 	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること。
 	void setPoseModifier( BonePoseModifier* );
 
-	// アニメを1フレーム進めて、ポーズどおりに頂点を変形する。描画前に毎フレーム1回呼ぶ。
+	// アニメを1フレーム（1ティック）進めて、ポーズを求める。頂点の変形はまだしない（draw で行う）。
 	void update();
-	// update で変形した頂点を描く。
+	// 最後の update のポーズで描く。そのポーズでまだ頂点を変形していなければ、ここで1回だけ変形する。
+	// update が1回の描画の間に何回呼ばれても、変形は描くときの1回で済む（見えない途中のポーズは変形しない）。
 	void draw() const;
 
 	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ。書き換え後）。
@@ -82,8 +83,10 @@ private:
 	float mFadeElapsed;									// フェード開始からの経過（フレーム）
 	bool mHasPose;										// mBonePose を一度でも計算したか（まだ何も見せていないならフェードしない）
 
-	std::vector< GameLib::Math::Matrix34 > mSkinMatrices;	// deform の作業領域（ボーン数ぶん）
-	GameLib::Graphics::VertexBuffer mVertexBuffer;		// 変形後の頂点。毎フレーム書き換える
+	// 変形後の頂点は「今のポーズの見た目」の写しなので、const の draw から作り直せるよう mutable にする。
+	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;	// deform の作業領域（ボーン数ぶん）
+	GameLib::Graphics::VertexBuffer mVertexBuffer;		// 変形後の頂点。ポーズが変わった後の draw で書き換える
+	mutable bool mSkinDirty;							// mVertexBuffer が今のポーズより古いか
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY;
 };

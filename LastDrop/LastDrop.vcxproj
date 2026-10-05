@@ -171,6 +171,8 @@
     <ClCompile Include="GameSrc\BoxFitter.cpp" />
     <ClCompile Include="GameSrc\StaticMeshLoader.cpp" />
     <ClCompile Include="GameSrc\SceneManager.cpp" />
+    <ClCompile Include="GameSrc\PostProcess.cpp" />
+    <ClCompile Include="GameSrc\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\TpsTestScene.cpp" />
     <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
@@ -211,6 +213,11 @@
     </ClCompile>
     <ClCompile Include="GameLib\src\Graphics\Texture.cpp" />
     <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\RenderTarget.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\DepthTarget.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\Shader.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\ConstantBuffer.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\VertexFormat.cpp" />
     <!-- Input -->
     <ClCompile Include="GameLib\src\Input\InputBuilder.cpp" />
     <ClCompile Include="GameLib\src\Input\InputConfig.cpp" />
@@ -377,6 +384,9 @@
     <ClInclude Include="GameSrc\VertexColor.h" />
     <ClInclude Include="GameSrc\IScene.h" />
     <ClInclude Include="GameSrc\SceneManager.h" />
+    <ClInclude Include="GameSrc\PostProcess.h" />
+    <ClInclude Include="GameSrc\FixedStepClock.h" />
+    <ClInclude Include="GameSrc\GameTime.h" />
     <ClInclude Include="GameSrc\SkinTestScene.h" />
     <ClInclude Include="GameSrc\TpsTestScene.h" />
     <ClInclude Include="GameSrc\FirstPersonCamera.h" />
@@ -400,6 +410,11 @@
     <ClInclude Include="GameLib\include\GameLib\Graphics\Manager.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\Texture.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\VertexBuffer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\RenderTarget.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\DepthTarget.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Shader.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\ConstantBuffer.h" />
+    <ClInclude Include="GameLib\include\GameLib\Graphics\VertexFormat.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\IndexBuffer.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\Enum.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\Vertex.h" />
@@ -429,6 +444,10 @@
     <ClInclude Include="GameLib\src\Graphics\ManagerImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\TextureImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\RenderTargetImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\DepthTargetImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\ShaderImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\ConstantBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\IndexBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\NoLightingVsHlsl.h" />
     <ClInclude Include="GameLib\src\Graphics\NoLightingPsHlsl.h" />
@@ -439,6 +458,8 @@
   <!-- ==================== リソース ==================== -->
   <ItemGroup>
     <Image Include="Resource\font.tga" />
+    <None Include="Resource\Shader\Common.hlsli" />
+    <None Include="Resource\Shader\Present.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

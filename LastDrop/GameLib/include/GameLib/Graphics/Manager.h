@@ -10,17 +10,33 @@ namespace Math{
 	class Matrix34;
 	class Vector2;
 	class Vector3;
+	class Vector4;
 }
 using namespace Math;
-	
+
 namespace Graphics{
 
 class Texture;
 class VertexBuffer;
 class IndexBuffer;
+class RenderTarget;
+class DepthTarget;
+class Shader;
+class ConstantBuffer;
 
 class Manager{
 public:
+	///自作シェーダから使う番号の決まり
+	enum{
+		FIRST_USER_CONSTANT_SLOT = 1, ///setConstantBuffer の最初の番号（b0 は固定パイプラインの定数。自作シェーダからも読める）
+		MAX_CONSTANT_SLOT        = 14,///定数バッファの番号の上限（この値は使えない）
+		FIRST_USER_TEXTURE_SLOT  = 2, ///setShaderResource の最初の番号（t0 は setTexture、t1 は setNormalMap）
+		MAX_TEXTURE_SLOT         = 16,///テクスチャの番号の上限（この値は使えない）
+		CLAMP_SAMPLER_SLOT       = 1, ///s1: 端で止める線形補間（s0 は setTextureFilter で決まる繰り返し）
+		SHADOW_SAMPLER_SLOT      = 2, ///s2: 影の比較（SampleCmp。深度 <= マップの値なら1）
+		MAX_RENDER_TARGET        = 4, ///setRenderTargets で同時に描ける色の数
+	};
+
 	Manager();
 	static Manager instance();
 
@@ -96,6 +112,28 @@ public:
 	void setSpecularSharpness( float );
 	///法線マップの凹凸の強さ(0で無効、1で標準)。setNormalMap していない時は影響しない
 	void setNormalMapStrength( float );
+
+	//描画先・自作シェーダ
+	///colors（count 枚。0枚なら深度だけ）と depth（空なら深度なし）へ描く。描画範囲は描画先の全体になる。
+	///大きさはすべて揃っていること。t2 以降のテクスチャはここで外れる（描画先を読みながら書かないように）
+	void setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth );
+	///画面（バックバッファ）へ描く状態に戻す。描画範囲は setViewport で決めた範囲に戻る
+	void resetRenderTargets();
+	///描画先を色で塗りつぶす
+	void clear( RenderTarget, const Vector4& color );
+	///深度を一番奥（1）で埋める
+	void clear( DepthTarget );
+	///自作シェーダを付ける。空の Shader を渡すと固定パイプライン（setLightingMode 等）に戻る
+	void setShader( Shader );
+	///定数を b slot に付ける（頂点・ピクセルの両方）。slot は FIRST_USER_CONSTANT_SLOT 以上。空なら外す
+	void setConstantBuffer( int slot, ConstantBuffer );
+	///ピクセルシェーダの t slot から読めるようにする。slot は FIRST_USER_TEXTURE_SLOT 以上。空なら外す
+	void setShaderResource( int slot, RenderTarget );
+	void setShaderResource( int slot, DepthTarget );
+	void setShaderResource( int slot, Texture );
+	///頂点バッファを使わず、描画範囲の全体を今の自作シェーダで描く（ポストプロセス用）。
+	///VSMain は SV_VertexID（0,1,2）だけから位置を作ること（Resource/Shader/Common.hlsli の fullScreenVertex）
+	void drawFullScreen();
 
 	//以下知らなくていい何か
 	static void create( 

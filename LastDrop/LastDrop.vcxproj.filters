@@ -109,6 +109,21 @@
     <ClCompile Include="GameLib\src\Graphics\VertexBuffer.cpp">
       <Filter>GameLib\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\RenderTarget.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\DepthTarget.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\Shader.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\ConstantBuffer.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\VertexFormat.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
     <!-- Input -->
     <ClCompile Include="GameLib\src\Input\InputBuilder.cpp">
       <Filter>GameLib\Input</Filter>
@@ -323,6 +338,12 @@
     <ClCompile Include="GameSrc\SceneManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\PostProcess.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\FixedStepClock.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\SkinTestScene.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -388,6 +409,18 @@
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\RenderTargetImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\DepthTargetImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ShaderImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ConstantBufferImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\IndexBufferImpl.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
@@ -416,6 +449,21 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Graphics\VertexBuffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\RenderTarget.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\DepthTarget.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\Shader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\ConstantBuffer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Graphics\VertexFormat.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Graphics\IndexBuffer.h">
@@ -760,6 +808,15 @@
     <ClInclude Include="GameSrc\SceneManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\PostProcess.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\FixedStepClock.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\GameTime.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\SkinTestScene.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -853,6 +910,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resource\font.tga" />
+    <None Include="Resource\Shader\Common.hlsli" />
+    <None Include="Resource\Shader\Present.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

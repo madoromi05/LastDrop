@@ -48,7 +48,7 @@ public:
 	PlayerCharacter( const PlayerCharacter& ) = delete;
 	PlayerCharacter& operator=( const PlayerCharacter& ) = delete;
 
-	// 操作に従って1フレーム動かし、アニメを進めて頂点を変形する。
+	// 操作に従って1フレーム（1ティック）動かし、アニメを進める。頂点の変形は draw で行う。
 	// command: この1フレームの操作。入力デバイスは読まない（作るのは呼び出し側）。
 	// cameraYaw: カメラの水平の向き（度。FirstPersonCamera::yaw）。体はこの向きを向き、W がこの向きへの前進になる。
 	// cameraPitch: カメラの上下の向き（度。FirstPersonCamera::pitch）。背骨をこのぶん曲げ、腕と銃を視線に付いてこさせる。

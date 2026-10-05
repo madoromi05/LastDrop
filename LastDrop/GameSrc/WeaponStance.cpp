@@ -1,15 +1,15 @@
 #include "WeaponStance.h"
+#include "GameTime.h"
 
 #include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 
 namespace{
-	const float kFramesPerSecond = 60.f;
 	// これより短く押して離したら「覗いたまま」にする（フレーム）。0.2秒。Tarkov の短押し判定に合わせた体感値。
-	const int kTapFrames = static_cast< int >( 0.2f * kFramesPerSecond );
+	const int kTapFrames = static_cast< int >( 0.2f * GameTime::kTicksPerSecond );
 	// 覗き始めてからサイトが目の前に来るまで（フレーム）。0.25秒。短すぎると銃が瞬間移動して見え、長いと操作が重い。
-	const float kAimFrames = 0.25f * kFramesPerSecond;
+	const float kAimFrames = 0.25f * GameTime::kTicksPerSecond;
 	const float kAimStep = 1.f / kAimFrames;
 
 	// 始めと終わりがゆっくりになる曲線（smoothstep）。直線だと銃が急に動き出し・急に止まって見えるため。

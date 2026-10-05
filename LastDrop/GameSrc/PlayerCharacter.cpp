@@ -1,4 +1,5 @@
 #include "PlayerCharacter.h"
+#include "GameTime.h"
 #include "SkinnedMeshData.h"
 #include "SkinnedMeshInstance.h"
 #include "HeldItem.h"
@@ -12,21 +13,20 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 速さは「毎秒」で決め、1フレームぶんに直して使う（update は1フレームに1回）。
-	const float kFramesPerSecond = 60.f;
+	// 速さは「毎秒」で決め、1フレーム（1ティック。GameTime.h）ぶんに直して使う（update は1ティックに1回）。
 	// 歩き・走りの速さ（m/フレーム）は、アニメの足運びに合わせる（合わないと足が地面を滑って見える）。
 	// 値は元アニメ（In Place にする前）が1周で進む距離から測った。
-	const float kWalkSpeed      = 1.4f / kFramesPerSecond; // Walking（素手）
-	const float kRunSpeed       = 3.2f / kFramesPerSecond; // Slow Run（素手）
-	const float kRifleWalkSpeed = 1.0f / kFramesPerSecond; // walking（Shooter Pack）: 1.36m / 1.37秒
-	const float kRifleRunSpeed  = 3.1f / kFramesPerSecond; // rifle run（Shooter Pack）: 2.30m / 0.73秒
+	const float kWalkSpeed      = 1.4f / GameTime::kTicksPerSecond; // Walking（素手）
+	const float kRunSpeed       = 3.2f / GameTime::kTicksPerSecond; // Slow Run（素手）
+	const float kRifleWalkSpeed = 1.0f / GameTime::kTicksPerSecond; // walking（Shooter Pack）: 1.36m / 1.37秒
+	const float kRifleRunSpeed  = 3.1f / GameTime::kTicksPerSecond; // rifle run（Shooter Pack）: 2.30m / 0.73秒
 	const float kStopSpeed      = 0.f;
 	// 加速・減速（m/フレーム²）。毎秒²の値をフレーム²に直す。
 	// 止まる→走るは約0.4秒、走る→止まるは約0.27秒。減速を強めにしているのは、止まりたいときに滑り続けると操作が重く感じるため。
-	const float kAcceleration = 8.f / ( kFramesPerSecond * kFramesPerSecond );
-	const float kDeceleration = 12.f / ( kFramesPerSecond * kFramesPerSecond );
+	const float kAcceleration = 8.f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
+	const float kDeceleration = 12.f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
 	// アニメを切り替えるときに前後のポーズを混ぜる長さ（フレーム）。0.2秒。
-	const float kCrossFadeFrames = 0.2f * kFramesPerSecond;
+	const float kCrossFadeFrames = 0.2f * GameTime::kTicksPerSecond;
 	const float kNoWeight   = 0.f; // 補正の効き具合（両手持ち）
 	const float kFullWeight = 1.f;
 

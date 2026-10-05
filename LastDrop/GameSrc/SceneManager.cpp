@@ -37,13 +37,20 @@ void SceneManager::change( IScene* next ) {
 	if ( mCurrent != next ) {
 		SAFE_DELETE( mCurrent );
 		mCurrent = next;
+		mClock.reset(); // 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
 	}
 }
 
 void SceneManager::update() {
-	if ( mCurrent ) {
+	if ( !mCurrent ) {
+		return;
+	}
+	mCurrent->beginFrame();
+	int ticks = mClock.ticksToRun();
+	for ( int i = 0; i < ticks; ++i ) {
 		mCurrent->update();
 	}
+	mCurrent->draw();
 }
 
 void SceneManager::destroy() {

@@ -1,6 +1,8 @@
 #ifndef INCLUDED_SCENE_MANAGER_H
 #define INCLUDED_SCENE_MANAGER_H
 
+#include "FixedStepClock.h"
+
 class IScene;
 
 // 現在のシーンを保持し、切り替え・更新・破棄を一手に担う。
@@ -19,7 +21,8 @@ public:
 	void change( SceneId id );
 	// 実体を直接渡して切り替える。next の所有権を受け取り、現シーンは破棄する。
 	void change( IScene* next );
-	// 現在のシーンを1フレーム更新する（無ければ何もしない）。
+	// 1回の描画ぶん、現在のシーンを動かす（無ければ何もしない）。
+	// beginFrame → 経った時間ぶんの update（0回以上） → draw の順に呼ぶ（IScene.h）。
 	void update();
 	// 現在のシーンを破棄する（終了時）。
 	void destroy();
@@ -31,6 +34,7 @@ private:
 	SceneManager( const SceneManager& );
 	void operator=( const SceneManager& );
 	IScene* mCurrent;
+	FixedStepClock mClock; // 1回の描画で update を何回呼ぶか
 };
 
 #endif

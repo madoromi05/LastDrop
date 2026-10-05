@@ -12,6 +12,7 @@
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Graphics/Enum.h"
+#include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Texture.h"
 #include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Graphics/IndexBuffer.h"
@@ -19,6 +20,10 @@
 #include "Graphics/TextureImpl.h"
 #include "Graphics/VertexBufferImpl.h"
 #include "Graphics/IndexBufferImpl.h"
+#include "Graphics/RenderTargetImpl.h"
+#include "Graphics/DepthTargetImpl.h"
+#include "Graphics/ShaderImpl.h"
+#include "Graphics/ConstantBufferImpl.h"
 
 #include <d3dcompiler.h>
 #include <string>
@@ -96,6 +101,11 @@ public:
 	mCurrentNormalMap( 0 ),
 	mCurrentVB( 0 ),
 	mCurrentIB( 0 ),
+	mCurrentShader( 0 ),
+	mTargetWidth( w ),
+	mTargetHeight( h ),
+	mClampSampler( 0 ),
+	mShadowSampler( 0 ),
 	mLightChanged( true ),
 	mMatricesChanged( true ),
 	mPixelShaderReady( true ),
@@ -317,6 +327,32 @@ public:
 		sampDesc.MaxAnisotropy = 16;
 		mDevice->CreateSamplerState( &sampDesc, &mSamplerStates[1] );
 
+		// 自作シェーダ用（s1: 端で止める線形。画面の写しを読むとき、端で反対側の色が混ざらないように）
+		D3D11_SAMPLER_DESC clampDesc = {};
+		clampDesc.Filter         = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+		clampDesc.AddressU       = D3D11_TEXTURE_ADDRESS_CLAMP;
+		clampDesc.AddressV       = D3D11_TEXTURE_ADDRESS_CLAMP;
+		clampDesc.AddressW       = D3D11_TEXTURE_ADDRESS_CLAMP;
+		clampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+		clampDesc.MaxLOD         = D3D11_FLOAT32_MAX;
+		hr = mDevice->CreateSamplerState( &clampDesc, &mClampSampler );
+		STRONG_ASSERT( SUCCEEDED( hr ) );
+		// 自作シェーダ用（s2: 影の比較。SampleCmp で「比べる深度 <= マップの深度」の割合を4画素の線形補間で返す）
+		// マップの外は深度1（一番奥）として扱い、影にならないようにする。
+		D3D11_SAMPLER_DESC shadowDesc = {};
+		shadowDesc.Filter         = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+		shadowDesc.AddressU       = D3D11_TEXTURE_ADDRESS_BORDER;
+		shadowDesc.AddressV       = D3D11_TEXTURE_ADDRESS_BORDER;
+		shadowDesc.AddressW       = D3D11_TEXTURE_ADDRESS_BORDER;
+		shadowDesc.BorderColor[0] = 1.f;
+		shadowDesc.BorderColor[1] = 1.f;
+		shadowDesc.BorderColor[2] = 1.f;
+		shadowDesc.BorderColor[3] = 1.f;
+		shadowDesc.ComparisonFunc = D3D11_COMPARISON_LESS_EQUAL;
+		shadowDesc.MaxLOD         = D3D11_FLOAT32_MAX;
+		hr = mDevice->CreateSamplerState( &shadowDesc, &mShadowSampler );
+		STRONG_ASSERT( SUCCEEDED( hr ) );
+
 		// --- Full-screen quad VB (3 verts that cover the screen) ---
 		mFullScreenQuadVB = NEW VertexBuffer::Impl( 3, mDevice, mContext );
 		Vertex* v = mFullScreenQuadVB->lock();
@@ -360,6 +396,9 @@ public:
 		setTexture( 0 );
 		setVertexBuffer( 0 );
 		setIndexBuffer( 0 );
+		setShader( 0 );
+		if ( mClampSampler )  { mClampSampler->Release();  mClampSampler = 0; }
+		if ( mShadowSampler ) { mShadowSampler->Release(); mShadowSampler = 0; }
 
 		// Return to windowed before releasing
 		if ( mSwapChain ){
@@ -456,8 +495,10 @@ public:
 		applyDepthStencilState();
 		applyBlendState();
 		applySamplerState();
+		mContext->PSSetSamplers( Manager::CLAMP_SAMPLER_SLOT, 1, &mClampSampler );
+		mContext->PSSetSamplers( Manager::SHADOW_SAMPLER_SLOT, 1, &mShadowSampler );
 
-		mContext->OMSetRenderTargets( 1, &mRTV, mDSV );
+		bindBackBuffer();
 
 		// Set both constant buffers
 		mContext->VSSetConstantBuffers( 0, 1, &mVSCB );
@@ -475,6 +516,14 @@ public:
 	}
 
 	void applyShader(){
+		// 自作シェーダが付いていればそれを使う（ライティングの種類・法線マップの有無より優先）。
+		if ( mCurrentShader && mCurrentShader->isValid() ){
+			mContext->IASetInputLayout( mCurrentShader->mLayout );
+			mContext->VSSetShader( mCurrentShader->mVS, nullptr, 0 );
+			mContext->PSSetShader( mCurrentShader->mPS, nullptr, 0 );
+			return;
+		}
+		mContext->IASetInputLayout( mInputLayout );
 		if ( mLightingMode == LIGHTING_NONE ){
 			mContext->VSSetShader( mNoLightingVS, nullptr, 0 );
 			mContext->PSSetShader( mNoLightingPS, nullptr, 0 );
@@ -548,7 +597,7 @@ public:
 	void beginDraw(){
 		fitBackBufferToWindow();
 		float clearColor[4] = { 0.f, 0.f, 0.f, 1.f };
-		mContext->OMSetRenderTargets( 1, &mRTV, mDSV );
+		bindBackBuffer();
 		mContext->ClearRenderTargetView( mRTV, clearColor );
 		mContext->ClearDepthStencilView( mDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0 );
 		setViewport(
@@ -913,9 +962,10 @@ public:
 		mViewport.MinDepth = 0.f;
 		mViewport.MaxDepth = 1.f;
 
-		// Scale viewport to back buffer (letterbox / pillarbox)
-		float dw = static_cast< float >( mBackBufferWidth );
-		float dh = static_cast< float >( mBackBufferHeight );
+		// Scale viewport to the current target (letterbox / pillarbox)
+		// 今の描画先（普段はバックバッファ、setRenderTargets 中はその描画先）の大きさへ写す。
+		float dw = static_cast< float >( mTargetWidth );
+		float dh = static_cast< float >( mTargetHeight );
 		float rw = static_cast< float >( mWidth );
 		float rh = static_cast< float >( mHeight );
 		float wRatio = dw / rw;
@@ -1044,6 +1094,174 @@ public:
 		}
 	}
 
+	// ---- 描画先・自作シェーダ（A-1 で追加）----
+
+	// バックバッファへ描く状態に戻す（描画範囲の写し先もバックバッファの大きさにする）。
+	void bindBackBuffer(){
+		mContext->OMSetRenderTargets( 1, &mRTV, mDSV );
+		mTargetWidth  = mBackBufferWidth;
+		mTargetHeight = mBackBufferHeight;
+	}
+
+	// 自作のテクスチャ番号（t2〜）を全部外す。描画先を切り替える前に呼ぶ。
+	// 外さずに、読み込み中の物を描画先にすると、GPU が読み込み側を勝手に外して警告を出すため。
+	void unbindUserShaderResources(){
+		ID3D11ShaderResourceView* nulls[ Manager::MAX_TEXTURE_SLOT ] = {};
+		int n = Manager::MAX_TEXTURE_SLOT - Manager::FIRST_USER_TEXTURE_SLOT;
+		mContext->PSSetShaderResources( Manager::FIRST_USER_TEXTURE_SLOT, static_cast< UINT >( n ), nulls );
+	}
+
+	// colors（count 枚、0枚可）と depth（nullptr 可）へ描く。描画範囲は描画先の全体にする。
+	void setRenderTargets( RenderTarget::Impl* const* colors, int count, DepthTarget::Impl* depth ){
+		ASSERT( count >= 0 && count <= Manager::MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
+		ASSERT( ( count > 0 || depth ) && "Graphics::Manager : no render target." );
+		unbindUserShaderResources();
+		ID3D11RenderTargetView* rtvs[ Manager::MAX_RENDER_TARGET ] = {};
+		int w = 0;
+		int h = 0;
+		for ( int i = 0; i < count; ++i ){
+			ASSERT( colors[ i ] && "Graphics::Manager : empty RenderTarget." );
+			colors[ i ]->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+			rtvs[ i ] = colors[ i ]->mRTV;
+			if ( i == 0 ){
+				w = colors[ i ]->mWidth;
+				h = colors[ i ]->mHeight;
+			}
+			ASSERT( colors[ i ]->mWidth == w && colors[ i ]->mHeight == h && "Graphics::Manager : render targets differ in size." );
+		}
+		ID3D11DepthStencilView* dsv = 0;
+		if ( depth ){
+			depth->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+			dsv = depth->mDSV;
+			if ( count == 0 ){
+				w = depth->mWidth;
+				h = depth->mHeight;
+			}
+			ASSERT( depth->mWidth == w && depth->mHeight == h && "Graphics::Manager : depth target differs in size." );
+		}
+		mContext->OMSetRenderTargets( static_cast< UINT >( count ), rtvs, dsv );
+		mTargetWidth  = w;
+		mTargetHeight = h;
+		D3D11_VIEWPORT vp = {};
+		vp.Width    = static_cast< float >( w );
+		vp.Height   = static_cast< float >( h );
+		vp.MaxDepth = 1.f;
+		mContext->RSSetViewports( 1, &vp );
+	}
+
+	// バックバッファへ戻し、描画範囲を setViewport で決めた範囲（論理座標）に戻す。
+	void resetRenderTargets(){
+		bindBackBuffer();
+		setViewport(
+			static_cast< int >( mViewport.TopLeftX ),
+			static_cast< int >( mViewport.TopLeftY ),
+			static_cast< int >( mViewport.Width ),
+			static_cast< int >( mViewport.Height ) );
+	}
+
+	void clear( RenderTarget::Impl* t, const Vector4& color ){
+		ASSERT( t && "Graphics::Manager : empty RenderTarget." );
+		t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		const float c[ 4 ] = { color.x, color.y, color.z, color.w };
+		mContext->ClearRenderTargetView( t->mRTV, c );
+	}
+	void clear( DepthTarget::Impl* t ){
+		ASSERT( t && "Graphics::Manager : empty DepthTarget." );
+		t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		const float kFarthestDepth = 1.f;
+		mContext->ClearDepthStencilView( t->mDSV, D3D11_CLEAR_DEPTH, kFarthestDepth, 0 );
+	}
+
+	void setShaderResource( int slot, ID3D11ShaderResourceView* srv ){
+		ASSERT( slot >= Manager::FIRST_USER_TEXTURE_SLOT && slot < Manager::MAX_TEXTURE_SLOT && "Graphics::Manager : texture slot out of range." );
+		mContext->PSSetShaderResources( static_cast< UINT >( slot ), 1, &srv );
+	}
+	void setShaderResource( int slot, RenderTarget::Impl* t ){
+		if ( t ){
+			t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		}
+		setShaderResource( slot, t ? t->mSRV : 0 );
+	}
+	void setShaderResource( int slot, DepthTarget::Impl* t ){
+		if ( t ){
+			t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		}
+		setShaderResource( slot, t ? t->mSRV : 0 );
+	}
+	void setShaderResource( int slot, Texture::Impl* t ){
+		if ( t ){
+			t->ensureGpuUploaded();
+		}
+		setShaderResource( slot, t ? t->mSRV : 0 );
+	}
+
+	void setConstantBuffer( int slot, ConstantBuffer::Impl* b ){
+		ASSERT( slot >= Manager::FIRST_USER_CONSTANT_SLOT && slot < Manager::MAX_CONSTANT_SLOT && "Graphics::Manager : constant buffer slot out of range." );
+		ID3D11Buffer* buffer = b ? b->mBuffer : 0;
+		mContext->VSSetConstantBuffers( static_cast< UINT >( slot ), 1, &buffer );
+		mContext->PSSetConstantBuffers( static_cast< UINT >( slot ), 1, &buffer );
+	}
+
+	// 自作シェーダを付ける（0 で固定パイプラインへ戻る）。Debug ビルドでは、ここでファイルの変更を見て作り直す。
+	void setShader( Shader::Impl* o ){
+#ifdef _DEBUG
+		if ( o ){
+			reloadIfSourceChanged( o );
+		}
+#endif
+		if ( mCurrentShader != o ){
+			if ( mCurrentShader ){
+				mCurrentShader->release();
+				if ( mCurrentShader->referenceCount() == 0 ) SAFE_DELETE( mCurrentShader );
+			}
+			mCurrentShader = o;
+			if ( o ){
+				o->refer();
+			}
+		}
+		applyShader();
+	}
+	// Shader::reload の後に呼ばれる。今付いているシェーダなら、作り直した物を付け直す。
+	void onShaderRebuilt( Shader::Impl* o ){
+		if ( mCurrentShader == o ){
+			applyShader();
+		}
+	}
+	void reloadIfSourceChanged( Shader::Impl* o ){
+		// ファイルの時刻を見るのは数フレームに1回にする（毎回 OS に問い合わせると、描画1回に何度も呼ぶとき重い）。
+		const unsigned kCheckIntervalFrames = 30;
+		if ( mFrameId - o->mLastCheckFrame < kCheckIntervalFrames ){
+			return;
+		}
+		o->mLastCheckFrame = mFrameId;
+		if ( o->isSourceChanged() ){
+			o->compile();
+		}
+	}
+
+	// 頂点バッファを使わず、画面（今の描画範囲）全体を三角形1枚で描く。今付いている自作シェーダで描く。
+	// VSMain は SV_VertexID（0,1,2）から位置を作ること。深度テスト・書き込みと裏面カリングはこの描画の間だけ切る。
+	void drawFullScreen(){
+		ASSERT( mCurrentShader && "Graphics::Manager : drawFullScreen needs a Shader." );
+		if ( !mCurrentShader || !mCurrentShader->isValid() ){
+			return; // 一度もコンパイルに成功していない。固定パイプラインでは全画面を描けないので描かない
+		}
+		if ( mLightChanged )    sendLightingParameters();
+		if ( mMatricesChanged ) sendMatrices();
+		flushConstantBuffers();
+		const int kFullScreenVertexNumber = 3;
+		const int kNoDepthIndex = 3; // mDSSStates の「テストしない・書かない」
+		const int kNoCullIndex = 0;  // mRSStates の CULL_NONE
+		mContext->IASetInputLayout( nullptr );
+		mContext->IASetPrimitiveTopology( D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST );
+		mContext->OMSetDepthStencilState( mDSSStates[ kNoDepthIndex ], 0 );
+		mContext->RSSetState( mRSStates[ kNoCullIndex ] );
+		mContext->Draw( kFullScreenVertexNumber, 0 );
+		applyDepthStencilState();
+		applyRasterizerState();
+		applyShader(); // InputLayout を戻す
+	}
+
 	// Device / context accessors (used by Vertex/Index/Texture Impl constructors)
 	ID3D11Device*        dxDevice()  { return mDevice; }
 	ID3D11DeviceContext* dxContext() { return mContext; }
@@ -1100,6 +1318,11 @@ public:
 	Texture::Impl*      mCurrentNormalMap;
 	VertexBuffer::Impl* mCurrentVB;
 	IndexBuffer::Impl*  mCurrentIB;
+	Shader::Impl*       mCurrentShader; // 自作シェーダ。0 なら固定パイプライン
+	int mTargetWidth;  // 今の描画先の大きさ（画素）。setViewport の写し先
+	int mTargetHeight;
+	ID3D11SamplerState* mClampSampler;  // s1
+	ID3D11SamplerState* mShadowSampler; // s2
 
 	D3D11_VIEWPORT mViewport;
 

@@ -1,12 +1,12 @@
 #include "AmbienceSystem.h"
+#include "GameTime.h"
 
 using namespace GameLib::Math;
 
 namespace{
-	// 時間は「秒」で決め、フレームに直して使う（update は1フレームに1回）。
-	const float kFramesPerSecond = 60.f;
+	// 時間は「秒」で決め、フレーム（1ティック。GameTime.h）に直して使う（update は1ティックに1回）。
 	int toFrames( float seconds ) {
-		return static_cast< int >( seconds * kFramesPerSecond );
+		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
 	}
 
 	// ── ベース（2D）──
@@ -91,7 +91,7 @@ void AmbienceSystem::moveAirplane() {
 	Vector3 route;
 	route.setSub( kAirplaneEnd, kAirplaneStart );
 	float routeLength = route.length();
-	float travelled = kAirplaneSpeed * mAirplaneFrames / kFramesPerSecond;
+	float travelled = kAirplaneSpeed * mAirplaneFrames / GameTime::kTicksPerSecond;
 	if ( travelled >= routeLength ) {
 		mAudio->stopLoop( mAirplane );
 		mAirplane = AudioEngine::kInvalidLoop;

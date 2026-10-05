@@ -29,6 +29,7 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
 	mHasPose( false ),
+	mSkinDirty( false ),
 	mPosition( 0.f, 0.f, 0.f ),
 	mAngleY( 0.f ) {
 	ASSERT( mData && mData->isReady() && "SkinnedMeshInstance : data is null or not ready." );
@@ -105,8 +106,7 @@ void SkinnedMeshInstance::update() {
 	if ( mPoseModifier ) {
 		mPoseModifier->apply( &mShownPose );
 	}
-	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
-	mData->deform( rootMatrix(), mShownPose, &mSkinMatrices, mVertexBuffer );
+	mSkinDirty = true;
 }
 
 Matrix34 SkinnedMeshInstance::rootMatrix() const {
@@ -150,5 +150,10 @@ void SkinnedMeshInstance::blendFadingPose() {
 }
 
 void SkinnedMeshInstance::draw() const {
+	if ( mSkinDirty ) {
+		// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+		mData->deform( rootMatrix(), mShownPose, &mSkinMatrices, mVertexBuffer );
+		mSkinDirty = false;
+	}
 	mData->draw( mVertexBuffer );
 }

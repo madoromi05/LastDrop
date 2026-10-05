@@ -110,22 +110,28 @@ void SkinTestScene::setupCameraAndLights() {
 	gm.setLightIntensity( 3, 0.f );
 }
 
-void SkinTestScene::update() {
-	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎フレーム呼ぶ）。
+void SkinTestScene::beginFrame() {
+	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
 	bool allBuilt = mCache.update();
-	if ( !mReady ) {
-		if ( !allBuilt ) {
-			return; // ロード完了待ち
-		}
+	if ( !mReady && allBuilt ) {
 		placeObjects();
 		mReady = true;
 	}
+}
 
-	setupCameraAndLights();
-
-	// ゾンビ: 1体ずつアニメを進めて CPU スキニング → 描画。
+void SkinTestScene::update() {
+	// ゾンビ: 1体ずつアニメを進める（頂点の変形は描くときに1回だけ行われる）。
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
+	}
+}
+
+void SkinTestScene::draw() {
+	if ( !mReady ) {
+		return; // ロード完了待ち
+	}
+	setupCameraAndLights();
+	for ( const auto& zombie : mZombies ) {
 		zombie->draw();
 	}
 	// 建物: 動かないので描くだけ。

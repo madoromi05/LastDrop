@@ -92,7 +92,35 @@ namespace{
 	const int kHelpRow = 1;
 	const int kGroundRow = 2;
 	const int kCollisionRow = 3; // 当たり判定の表示の ON/OFF（Debug ビルドだけ）
+	const int kShaderErrorRow = 4; // シェーダのコンパイルエラー（あるときだけ）
 	const int kDebugTextSize = 64;
+	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
+
+	// コンパイラのエラー文の1行目を、ファイル名から先だけ画面に出す。
+	// 1行目は「フォルダ\ファイル名(行,列): error ...」の形で、フォルダまで出すと画面の幅が足りず、肝心の行番号と理由が見えないため。
+	// DebugScreen は改行を扱わないので2行目以降は出さない（全文はデバッグ出力にある）。
+	void drawErrorLine( int column, int row, const char* text ) {
+		int lineEnd = 0;
+		while ( text[ lineEnd ] != '\0' && text[ lineEnd ] != '\n' ) {
+			++lineEnd;
+		}
+		// ファイル名の始まり＝行番号の括弧より前にある、最後のフォルダの区切りの次。
+		// 括弧より後（エラーの理由）にある '/' はファイル名と関係ないので見ない。
+		int nameStart = 0;
+		for ( int i = 0; i < lineEnd && text[ i ] != '('; ++i ) {
+			if ( text[ i ] == '\\' || text[ i ] == '/' ) {
+				nameStart = i + 1;
+			}
+		}
+		char line[ kErrorTextSize ];
+		int length = 0;
+		while ( nameStart + length < lineEnd && length < kErrorTextSize - 1 ) {
+			line[ length ] = text[ nameStart + length ];
+			++length;
+		}
+		line[ length ] = '\0';
+		DebugScreen::instance().draw( column, row, line );
+	}
 
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
@@ -100,14 +128,13 @@ namespace{
 	}
 
 	// 自キャラへの操作を Pad から読む。キー割り当てとキャラの動きをつなぐのはここだけ。
-	PlayerCommand readPlayerCommand() {
-		PlayerCommand command;
-		command.forward = axisValue( InputUp() ) - axisValue( InputDown() );
-		command.strafe = axisValue( InputRight() ) - axisValue( InputLeft() );
-		command.run = InputRun();
-		command.holsterPressed = InputHolster();
-		command.aimHeld = InputAim();
-		return command;
+	// 押されている間の入力は今の状態で上書きし、押した瞬間の入力は使われるまで残す（update で消す）。
+	void readPlayerCommand( PlayerCommand* command ) {
+		command->forward = axisValue( InputUp() ) - axisValue( InputDown() );
+		command->strafe = axisValue( InputRight() ) - axisValue( InputLeft() );
+		command->run = InputRun();
+		command->holsterPressed = command->holsterPressed || InputHolster();
+		command->aimHeld = InputAim();
 	}
 }
 
@@ -119,6 +146,7 @@ TpsTestScene::TpsTestScene() :
 	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
 	mFootsteps( &mAudio ),
 	mFoley( &mAudio ),
+	mCommand(),
 	mReady( false )
 #ifdef _DEBUG
 	, mShowCollision( false )
@@ -210,19 +238,23 @@ void TpsTestScene::placeCameraAtEye() {
 	mCamera.apply();
 }
 
-void TpsTestScene::updateAudio() {
+void TpsTestScene::updateBodySounds() {
+	if ( !mPlayer ) {
+		return;
+	}
+	const Vector3& feet = mPlayer->position();
+	bool stepped = mFootsteps.update( mPlayer->gait(), mPlayer->gaitPhase(), feet, mGround.materialAt( feet ) );
+	PlayerFoley::FoleyState foley;
+	foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
+	foley.gait = mPlayer->gait();
+	foley.weaponDrawn = mPlayer->isWeaponDrawn();
+	foley.aiming = mPlayer->isAiming();
+	mFoley.update( foley, stepped );
+}
+
+void TpsTestScene::updateListener() {
 	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる。
 	mAudio.setListener( mCamera.eyePosition(), mCamera.viewDirection() );
-	if ( mPlayer ) {
-		const Vector3& feet = mPlayer->position();
-		bool stepped = mFootsteps.update( mPlayer->gait(), mPlayer->gaitPhase(), feet, mGround.materialAt( feet ) );
-		PlayerFoley::FoleyState foley;
-		foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
-		foley.gait = mPlayer->gait();
-		foley.weaponDrawn = mPlayer->isWeaponDrawn();
-		foley.aiming = mPlayer->isAiming();
-		mFoley.update( foley, stepped );
-	}
 	mAudio.update();
 }
 
@@ -243,7 +275,7 @@ void TpsTestScene::setupLights() const {
 	}
 }
 
-void TpsTestScene::draw() const {
+void TpsTestScene::drawWorld() const {
 	if ( mPlayer ) {
 		mPlayer->draw();
 	}
@@ -256,10 +288,13 @@ void TpsTestScene::draw() const {
 }
 
 #ifdef _DEBUG
-void TpsTestScene::updateCollisionDebug() {
+void TpsTestScene::toggleCollisionDebug() {
 	if ( InputDebugCollision() ) {
 		mShowCollision = !mShowCollision;
 	}
+}
+
+void TpsTestScene::drawCollisionDebug() {
 	if ( mShowCollision ) {
 		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）。
 		mCollisionDrawer.draw( mWorld, mHitWorld, mCamera.projectionViewMatrix(), mPlayer.get(), mPlayer.get() );
@@ -268,11 +303,11 @@ void TpsTestScene::updateCollisionDebug() {
 }
 #endif
 
-void TpsTestScene::update() {
-	// 入力は1フレームに1回だけ読む（Main は読まないので、シーンが自分で読む）。
+void TpsTestScene::beginFrame() {
+	// 入力は1回の描画につき1回だけ読む（Main は読まないので、シーンが自分で読む）。
 	Pad::instance()->update();
 
-	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎フレーム呼ぶ）。
+	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
 	bool allBuilt = mCache.update();
 	if ( !mReady ) {
 		if ( !allBuilt ) {
@@ -283,22 +318,48 @@ void TpsTestScene::update() {
 	}
 
 	updateCursorLock();
-	// 順番に意味がある: 向きを決める → その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く。
-	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
+	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう。
 	rotateCamera();
+	readPlayerCommand( &mCommand );
+#ifdef _DEBUG
+	toggleCollisionDebug();
+#endif
+}
+
+void TpsTestScene::update() {
+	if ( !mReady ) {
+		return;
+	}
+	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
+	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	if ( mPlayer ) {
-		mPlayer->update( readPlayerCommand(), mCamera.yaw(), mCamera.pitch() );
+		mPlayer->update( mCommand, mCamera.yaw(), mCamera.pitch() );
+		mCommand.holsterPressed = false; // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	}
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
 	}
+	updateBodySounds();
+}
+
+void TpsTestScene::draw() {
+	if ( !mReady ) {
+		return;
+	}
 	placeCameraAtEye();
-	updateAudio();
+	updateListener();
+	mPostProcess.beginScene();
 	setupLights();
-	draw();
+	drawWorld();
 #ifdef _DEBUG
-	updateCollisionDebug();
+	drawCollisionDebug();
 #endif
+	mPostProcess.endScene();
+	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく。
+	const char* shaderError = mPostProcess.errorMessage();
+	if ( shaderError[ 0 ] != '\0' ) {
+		drawErrorLine( kHelpColumn, kShaderErrorRow, shaderError );
+	}
 
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		GameLib::Input::Manager::instance().isCursorLocked()

@@ -26,7 +26,7 @@ public:
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;
 
-	// アニメを1フレーム進めて頂点を変形し、部位の当たり判定をそのポーズへ置き直す。描画前に毎フレーム1回呼ぶ。
+	// アニメを1フレーム（1ティック）進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は draw で行う。
 	void update();
 	void draw() const;
 
