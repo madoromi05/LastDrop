@@ -85,6 +85,7 @@ WorkId Pad::buttonToWorkId(Button b)
     case AIM:      return WorkId::Aim;
     case HOLSTER:  return WorkId::Holster;
     case DEBUG_COLLISION: return WorkId::DebugCollision;
+    case DEBUG_DESPAWN:   return WorkId::DebugDespawn;
     default:    return WorkId::Up;
     }
 }
@@ -200,3 +201,4 @@ bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(Pad::M
 bool InputAim        (int playerId) { return Pad::instance()->isOn(Pad::AIM, playerId); }
 bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(Pad::HOLSTER, playerId); }
 bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(Pad::DEBUG_COLLISION, playerId); }
+bool InputDebugDespawn(int playerId) { return Pad::instance()->isTriggered(Pad::DEBUG_DESPAWN, playerId); }

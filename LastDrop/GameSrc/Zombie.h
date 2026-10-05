@@ -5,6 +5,7 @@
 #include "SkinnedMeshInstance.h"
 #include "ICollisionBody.h"
 #include "IHittable.h"
+#include "IWorldMember.h"
 #include "HitboxSet.h"
 #include "BodyFootprint.h"
 
@@ -14,7 +15,7 @@ class SkinnedMeshData;
 // 見た目は SkinnedMeshInstance に任せ、体を真上から囲む長方形（BodyFootprint）を差し出して、他のキャラの移動を止める（ICollisionBody）。
 // 部位ごとの当たり判定（命中判定用）も持ち、弾がどの部位に当たったかを答えられる（IHittable）。
 // 歩かせるとき（AI を足すとき）は、PlayerCharacter と同じく CharacterMover を持たせて移動を任せる。
-class Zombie : public ICollisionBody, public IHittable{
+class Zombie : public ICollisionBody, public IHittable, public IWorldMember{
 public:
 	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このゾンビより長く生きていること（MeshCache が持つ）。
@@ -34,6 +35,9 @@ public:
 	virtual BoxCollider collider() const;
 	// 部位ごとの当たり判定。
 	virtual const HitboxSet& hitboxes() const;
+	// 移動の名簿（体の長方形）と命中の名簿（部位の箱）の両方へ、自分を載せる／外す（IWorldMember）。
+	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
 	SkinnedMeshInstance mMesh;

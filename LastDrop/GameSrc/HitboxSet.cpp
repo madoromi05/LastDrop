@@ -136,7 +136,8 @@ bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult*
 		box.toLocal.mul( &localOrigin, origin );
 		box.toLocal.mul33( &localDelta, delta );
 		float time;
-		if ( !HitMath::segmentUnitCube( localOrigin, localDelta, &time ) ) {
+		Vector3 localNormal;
+		if ( !HitMath::segmentUnitCube( localOrigin, localDelta, &time, &localNormal ) ) {
 			continue;
 		}
 		if ( found && time >= hit->time ) {
@@ -145,6 +146,13 @@ bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult*
 		hit->part = box.part;
 		hit->time = time;
 		hit->point.setMadd( origin, delta, time );
+		if ( localNormal.squareLength() > 0.f ) {
+			HitMath::normalToWorld( box.toLocal, localNormal, &hit->normal );
+		} else {
+			// 始点が箱の中で、入った面が無い。弾が来た向きへ返す。
+			hit->normal.setNeg( delta );
+			hit->normal.normalize();
+		}
 		found = true;
 	}
 	return found;

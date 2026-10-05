@@ -48,7 +48,8 @@ namespace{
 	}
 }
 
-MeshCache::MeshCache() {
+MeshCache::MeshCache() :
+	mSkinning( std::make_unique< SkinningPipeline >() ) {
 }
 
 MeshCache::~MeshCache() {
@@ -59,7 +60,9 @@ const StaticMeshData* MeshCache::staticMesh( const char* filename ) {
 }
 
 const SkinnedMeshData* MeshCache::skinnedMesh( const char* filename ) {
-	return &findOrLoad( &mSkinnedMeshes, filename )->mData;
+	SkinnedEntry* entry = findOrLoad( &mSkinnedMeshes, filename );
+	entry->mData.setSkinning( mSkinning.get() ); // 全スキンメッシュで同じ描き方を共有する
+	return &entry->mData;
 }
 
 bool MeshCache::update() {
@@ -67,4 +70,8 @@ bool MeshCache::update() {
 	bool staticBuilt = buildLoaded( &mStaticMeshes, StaticMeshLoader::load );
 	bool skinnedBuilt = buildLoaded( &mSkinnedMeshes, SkinnedMeshLoader::load );
 	return staticBuilt && skinnedBuilt;
+}
+
+const SkinningPipeline& MeshCache::skinning() const {
+	return *mSkinning;
 }

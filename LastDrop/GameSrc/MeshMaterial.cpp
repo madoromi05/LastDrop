@@ -72,3 +72,7 @@ void MeshMaterial::apply() const {
 	m.setSpecularSharpness( mSpecularSharpness );
 	m.setTransparency( kOpaque );
 }
+
+bool MeshMaterial::hasNormalMap() const {
+	return mNormalMap ? true : false;
+}

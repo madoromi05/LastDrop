@@ -6,6 +6,7 @@
 #include "CollisionWorld.h"
 #include "HitWorld.h"
 #include "Zombie.h"
+#include "ActorList.h"
 #include "Building.h"
 #include "FirstPersonCamera.h"
 #ifdef _DEBUG
@@ -53,6 +54,9 @@ private:
 #ifdef _DEBUG
 	void toggleCollisionDebug(); // 表示の切り替えの入力を読む（1回の描画につき1回）
 	void drawCollisionDebug();   // 表示中なら当たり判定を描く（他を全部描いた後）
+	bool debugRaycast( HitWorld::Hit* hit ) const; // 画面中央（視線）へ確認用の線分を撃つ。自分には当てない
+	void castDebugRay();         // 画面中央から線分を撃ち、当たった所を当たり判定の表示に足す（弾の当たり判定の確認用）
+	void despawnLookedAtZombie(); // 視線の先のゾンビを消す（F2。ActorList で消す仕組みの確認用）
 #endif
 
 	// 設計図の倉庫。インスタンスより先に宣言する（＝インスタンスより後に破棄される）。
@@ -66,7 +70,8 @@ private:
 	CollisionWorld mWorld;
 	HitWorld mHitWorld; // 部位の当たり判定（命中判定用）の名簿。mWorld と同じく、キャラより先に宣言する
 	std::unique_ptr< PlayerCharacter > mPlayer;
-	std::vector< std::unique_ptr< Zombie > > mZombies; // mWorld が指すので、並べ替えても動かないよう unique_ptr で持つ
+	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。名簿より後に宣言する。
+	ActorList< Zombie > mZombies;
 	std::vector< Building > mBuildings;
 	FirstPersonCamera mCamera;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す

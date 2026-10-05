@@ -3,7 +3,6 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix34.h"
-#include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Scene/Tree.h"
 #include "GameLib/Scene/Animation.h"
 #include <vector>
@@ -18,8 +17,8 @@ class BonePoseModifier;
 // アニメの切り替えは2通り。setAnimation は即座に切り替え、crossFadeTo は切り替え直前に見えていたポーズから
 // 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。混ぜるのはボーンごとの姿勢行列（MatrixBlend）。
 //
-// 1体ごとに頂点バッファ（頂点数×約48バイト）と CPU スキニングの負荷がかかる。
-// コピーすると骨格と頂点バッファを2体で共有してしまうので、コピーは禁止（std::unique_ptr 等で持つ）。
+// 頂点の変形は GPU が行う（SkinnedMeshData::draw）。1体ごとに持つのは骨格とポーズだけで、頂点の数には比例しない。
+// コピーすると骨格を2体で共有してしまうので、コピーは禁止（std::unique_ptr 等で持つ）。
 class SkinnedMeshInstance{
 public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
@@ -45,10 +44,9 @@ public:
 	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること。
 	void setPoseModifier( BonePoseModifier* );
 
-	// アニメを1フレーム（1ティック）進めて、ポーズを求める。頂点の変形はまだしない（draw で行う）。
+	// アニメを1フレーム（1ティック）進めて、ポーズを求める。
 	void update();
-	// 最後の update のポーズで描く。そのポーズでまだ頂点を変形していなければ、ここで1回だけ変形する。
-	// update が1回の描画の間に何回呼ばれても、変形は描くときの1回で済む（見えない途中のポーズは変形しない）。
+	// 最後の update のポーズで描く（骨の行列を求めて GPU で変形する）。まだ update していなければ何も描かない。
 	void draw() const;
 
 	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ。書き換え後）。
@@ -67,7 +65,7 @@ private:
 	void blendFadingPose();
 
 	const SkinnedMeshData* mData;
-	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は deform で掛ける）
+	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は骨の行列を求めるとき＝computeSkinMatrices で掛ける）
 	GameLib::Scene::Animation mAnimation;				// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
 	float mTime;										// 次の update で使うアニメ時刻（フレーム）
 
@@ -83,10 +81,8 @@ private:
 	float mFadeElapsed;									// フェード開始からの経過（フレーム）
 	bool mHasPose;										// mBonePose を一度でも計算したか（まだ何も見せていないならフェードしない）
 
-	// 変形後の頂点は「今のポーズの見た目」の写しなので、const の draw から作り直せるよう mutable にする。
-	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;	// deform の作業領域（ボーン数ぶん）
-	GameLib::Graphics::VertexBuffer mVertexBuffer;		// 変形後の頂点。ポーズが変わった後の draw で書き換える
-	mutable bool mSkinDirty;							// mVertexBuffer が今のポーズより古いか
+	// 描くときに求める骨の行列（ボーン数ぶん）。毎回確保し直さないための作業領域なので、const の draw から書けるよう mutable にする。
+	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY;
 };

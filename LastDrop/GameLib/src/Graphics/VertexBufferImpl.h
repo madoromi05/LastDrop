@@ -17,6 +17,7 @@ public:
 	Impl( ConstElement e, ID3D11Device* device, ID3D11DeviceContext* context ) :
 	mDxObject( 0 ),
 	mVertexNumber( 0 ),
+	mStride( sizeof( Vertex ) ),
 	mName( 0 ),
 	mDevice( device ),
 	mContext( context ){
@@ -68,6 +69,17 @@ public:
 	Impl( int vertexNumber, ID3D11Device* device, ID3D11DeviceContext* context ) :
 	mDxObject( 0 ),
 	mVertexNumber( vertexNumber ),
+	mStride( sizeof( Vertex ) ),
+	mName( 0 ),
+	mDevice( device ),
+	mContext( context ){
+		createDxObject();
+	}
+	// 標準の Vertex 以外の形（VertexFormat）の頂点バッファ。stride: 1頂点のバイト数。
+	Impl( int vertexNumber, int stride, ID3D11Device* device, ID3D11DeviceContext* context ) :
+	mDxObject( 0 ),
+	mVertexNumber( vertexNumber ),
+	mStride( stride ),
 	mName( 0 ),
 	mDevice( device ),
 	mContext( context ){
@@ -82,14 +94,22 @@ public:
 	}
 	void createDxObject(){
 		D3D11_BUFFER_DESC desc = {};
-		desc.ByteWidth      = mVertexNumber * sizeof( Vertex );
+		desc.ByteWidth      = static_cast< UINT >( mVertexNumber * mStride );
 		desc.Usage          = D3D11_USAGE_DYNAMIC;
 		desc.BindFlags      = D3D11_BIND_VERTEX_BUFFER;
 		desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 		HRESULT hr = mDevice->CreateBuffer( &desc, nullptr, &mDxObject );
 		ASSERT( SUCCEEDED( hr ) && "VertexBuffer CreateBuffer failed" );
 	}
+	// 頂点の形を問わずに書く（中身の並びは呼び出し側が VertexFormat どおりに詰める）。
+	void* lockData(){
+		D3D11_MAPPED_SUBRESOURCE ms = {};
+		HRESULT hr = mContext->Map( mDxObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms );
+		ASSERT( SUCCEEDED( hr ) && "VertexBuffer Map failed" );
+		return ms.pData;
+	}
 	Vertex* lock(){
+		ASSERT( mStride == sizeof( Vertex ) && "VertexBuffer : not a standard Vertex buffer. use lockData()." );
 		D3D11_MAPPED_SUBRESOURCE ms = {};
 		HRESULT hr = mContext->Map( mDxObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms );
 		ASSERT( SUCCEEDED( hr ) && "VertexBuffer Map failed" );
@@ -101,6 +121,7 @@ public:
 
 	ID3D11Buffer*        mDxObject;
 	int                  mVertexNumber;
+	int                  mStride; // 1頂点のバイト数（標準の Vertex なら sizeof( Vertex )）
 	char*                mName;
 	ID3D11Device*        mDevice;
 	ID3D11DeviceContext* mContext;

@@ -4,6 +4,7 @@
 #include "GameLib/PseudoXml/Document.h"
 #include "StaticMeshData.h"
 #include "SkinnedMeshData.h"
+#include "SkinningPipeline.h"
 #include <map>
 #include <memory>
 #include <string>
@@ -32,6 +33,9 @@ public:
 	// 頼まれた全ファイルの構築が終わっていれば true（構築に失敗したものも「終わった」に含む）。
 	bool update();
 
+	// スキンメッシュを描く道具（シェーダ）。エラー表示などで読むだけ。
+	const SkinningPipeline& skinning() const;
+
 private:
 	// 1ファイルぶん。構築が終わるまで文書を持ち、終われば解放する。
 	template< class TData > struct Entry{
@@ -39,6 +43,8 @@ private:
 		TData mData;
 		bool mBuilt = false;
 	};
+	// スキンメッシュの描き方。データより先に宣言する（＝データより後に破棄される。データが借りて持つため）。
+	std::unique_ptr< SkinningPipeline > mSkinning;
 	using StaticEntry = Entry< StaticMeshData >;
 	using SkinnedEntry = Entry< SkinnedMeshData >;
 

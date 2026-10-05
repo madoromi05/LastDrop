@@ -1,0 +1,70 @@
+#include "SkinningPipeline.h"
+
+#include "GameLib/GameLib.h"
+#include "GameLib/Graphics/Manager.h"
+
+using namespace GameLib;
+using namespace GameLib::Math;
+
+namespace{
+	const char* kShaderFile = "Resource/Shader/SkinnedMesh.hlsl";
+	const int kBonePaletteSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // SkinnedMesh.hlsl の b1
+	const int kRowsPerBone = 3;   // 3x4 行列 = float4 が3行
+	const int kFloatsPerRow = 4;
+	const int kFloatsPerBone = kRowsPerBone * kFloatsPerRow;
+
+	// 頂点の並び。SkinnedMeshData の GPU 頂点（SkinnedGpuVertex）と同じ順にする。
+	const Graphics::VertexElement kElements[] = {
+		Graphics::VERTEX_POSITION4,
+		Graphics::VERTEX_NORMAL3,
+		Graphics::VERTEX_COLOR,
+		Graphics::VERTEX_TEXCOORD2,
+		Graphics::VERTEX_BONE_INDICES4,
+		Graphics::VERTEX_BONE_WEIGHTS4,
+	};
+	const int kElementNumber = sizeof( kElements ) / sizeof( kElements[ 0 ] );
+}
+
+SkinningPipeline::SkinningPipeline() :
+	mBoneRows( kMaxBones * kFloatsPerBone, 0.f ) {
+	mShader = Graphics::Shader::create( kShaderFile, vertexFormat() );
+	mBonePalette = Graphics::ConstantBuffer::create( static_cast< int >( mBoneRows.size() * sizeof( float ) ) );
+}
+
+const Graphics::VertexFormat& SkinningPipeline::vertexFormat() {
+	static const Graphics::VertexFormat format = Graphics::VertexFormat::create( kElements, kElementNumber );
+	return format;
+}
+
+bool SkinningPipeline::isReady() const {
+	return !mShader.isError();
+}
+
+const char* SkinningPipeline::errorMessage() const {
+	return mShader.errorMessage();
+}
+
+void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
+	int boneNumber = static_cast< int >( skinMatrices.size() );
+	ASSERT( boneNumber <= kMaxBones && "SkinningPipeline : too many bones." );
+	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す。
+	for ( int b = 0; b < boneNumber; ++b ) {
+		const Matrix34& m = skinMatrices[ b ];
+		float* row = &mBoneRows[ b * kFloatsPerBone ];
+		row[ 0 ] = m.m00; row[ 1 ] = m.m01; row[ 2 ]  = m.m02; row[ 3 ]  = m.m03;
+		row[ 4 ] = m.m10; row[ 5 ] = m.m11; row[ 6 ]  = m.m12; row[ 7 ]  = m.m13;
+		row[ 8 ] = m.m20; row[ 9 ] = m.m21; row[ 10 ] = m.m22; row[ 11 ] = m.m23;
+	}
+	// 使う骨のぶんだけ送る。残りの中身は不定になるが、頂点は骨の数より大きい番号を指さないので読まれない。
+	mBonePalette.set( mBoneRows.data(), boneNumber * kFloatsPerBone * static_cast< int >( sizeof( float ) ) );
+
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setShader( mShader );
+	gm.setConstantBuffer( kBonePaletteSlot, mBonePalette );
+}
+
+void SkinningPipeline::end() {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setShader( Graphics::Shader() );
+	gm.setConstantBuffer( kBonePaletteSlot, Graphics::ConstantBuffer() );
+}

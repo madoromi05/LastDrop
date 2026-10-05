@@ -23,6 +23,8 @@ public:
 	void updateLoading();
 	// 描画ステートへ反映する。頂点/インデックスバッファの設定と描画は呼び出し側が行う。
 	void apply() const;
+	// 法線マップが設定されているか（自作シェーダで描くとき、無ければ凹凸の強さを0にするのに使う）。
+	bool hasNormalMap() const;
 
 private:
 	GameLib::Graphics::Texture mTexture;

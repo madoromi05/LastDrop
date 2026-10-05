@@ -338,6 +338,12 @@
     <ClCompile Include="GameSrc\SceneManager.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\SkinningPipeline.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\TriangleMesh.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\PostProcess.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -808,6 +814,21 @@
     <ClInclude Include="GameSrc\SceneManager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\SkinningPipeline.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\IWorldMember.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\ActorList.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\TriangleMesh.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\IRayBlocker.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\PostProcess.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -912,6 +933,8 @@
     <Image Include="Resource\font.tga" />
     <None Include="Resource\Shader\Common.hlsli" />
     <None Include="Resource\Shader\Present.hlsl" />
+    <None Include="Resource\Shader\Lighting.hlsli" />
+    <None Include="Resource\Shader\SkinnedMesh.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

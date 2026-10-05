@@ -18,6 +18,8 @@ public:
 	// 動くものを登録する。所有権は受け取らない。nullptr 不可。
 	// この世界に問い合わせる間は生きていること（シーンでは、この世界をキャラより先に宣言する＝キャラより後に破棄される）。
 	void addBody( const ICollisionBody* body );
+	// 登録した動くものを外す（消す前に呼ぶ）。登録されていなければ何もしない。
+	void removeBody( const ICollisionBody* body );
 
 	// box を delta だけ動かしたとき、一番早く当たる相手での結果を hit に書く。何にも当たらなければ false。
 	// ignore: 調べない相手（動かしている本人）。所有権は受け取らない。nullptr なら全員を調べる。

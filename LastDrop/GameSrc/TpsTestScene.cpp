@@ -93,6 +93,8 @@ namespace{
 	const int kGroundRow = 2;
 	const int kCollisionRow = 3; // 当たり判定の表示の ON/OFF（Debug ビルドだけ）
 	const int kShaderErrorRow = 4; // シェーダのコンパイルエラー（あるときだけ）
+	const int kRayRow = 5;         // 画面中央から撃った確認用の線分が何に当たったか（Debug ビルド・当たり判定の表示中だけ）
+	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの端の建物まで届く長さ
 	const int kDebugTextSize = 64;
 	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
 
@@ -143,6 +145,7 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData( 0 ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
+	mZombies( &mWorld, &mHitWorld ),
 	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
 	mFootsteps( &mAudio ),
 	mFoley( &mAudio ),
@@ -172,16 +175,12 @@ void TpsTestScene::placeObjects() {
 		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
 		mPlayer = std::make_unique< PlayerCharacter >(
 			mPlayerData, weapon, &mWorld, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
-		mWorld.addBody( mPlayer.get() );
-		mHitWorld.addTarget( mPlayer.get() );
+		mPlayer->addTo( &mWorld, &mHitWorld );
 	}
 	if ( mZombieData->isReady() ) {
-		// 置いて、移動・命中の両方の当たり判定に登録する。animation が nullptr なら T ポーズ。
+		// 置く（移動・命中の両方の当たり判定への登録は ActorList が行う）。animation が nullptr なら T ポーズ。
 		auto addZombie = [ this ]( const Placement& p, const char* animation, float startTime ) {
-			auto zombie = std::make_unique< Zombie >( mZombieData, Vector3( p.x, 0.f, p.z ), p.yawDegree, animation, startTime );
-			mWorld.addBody( zombie.get() );
-			mHitWorld.addTarget( zombie.get() );
-			mZombies.push_back( std::move( zombie ) );
+			mZombies.spawn( std::make_unique< Zombie >( mZombieData, Vector3( p.x, 0.f, p.z ), p.yawDegree, animation, startTime ) );
 		};
 		int zombieIndex = 0;
 		for ( const Placement& p : kZombiePlacements ) {
@@ -198,6 +197,11 @@ void TpsTestScene::placeObjects() {
 		Building building( mBuildingData, Vector3( p.x, 0.f, p.z ), p.yawDegree );
 		building.addCollidersTo( &mWorld );
 		mBuildings.push_back( building );
+	}
+	// 弾を止める物として登録する。mBuildings を並べ終えてから行う（push_back の途中で登録すると、
+	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）。
+	for ( const Building& building : mBuildings ) {
+		mHitWorld.addBlocker( &building );
 	}
 	// 始めから視点を回せるようにロックしておく。
 	GameLib::Input::Manager::instance().setCursorLocked( true );
@@ -294,12 +298,53 @@ void TpsTestScene::toggleCollisionDebug() {
 	}
 }
 
+bool TpsTestScene::debugRaycast( HitWorld::Hit* hit ) const {
+	// 画面中央（視線）へ撃つ。自分の部位には当てない（目の位置は自分の頭の箱の中にあるため）。
+	Vector3 delta = mCamera.viewDirection();
+	delta *= kDebugRayLength;
+	return mHitWorld.raycast( mCamera.eyePosition(), delta, mPlayer.get(), hit );
+}
+
+void TpsTestScene::despawnLookedAtZombie() {
+	if ( !InputDebugDespawn() ) {
+		return;
+	}
+	HitWorld::Hit hit;
+	if ( !debugRaycast( &hit ) || !hit.target ) {
+		return;
+	}
+	// 当たったのがゾンビなら、印を付けるだけ。実際に消えるのはティックの最後（update の flush）。
+	const Zombie* zombie = mZombies.find( hit.target );
+	if ( zombie ) {
+		mZombies.destroyLater( zombie );
+	}
+}
+
+void TpsTestScene::castDebugRay() {
+	HitWorld::Hit hit;
+	char text[ kDebugTextSize ];
+	if ( debugRaycast( &hit ) ) {
+		mCollisionDrawer.setRayHit( hit.point, hit.normal );
+		float distance = kDebugRayLength * hit.time;
+		if ( hit.target ) {
+			std::snprintf( text, sizeof( text ), "Ray: Character %s  %.1fm", bodyPartName( hit.part ), distance );
+		} else {
+			std::snprintf( text, sizeof( text ), "Ray: World  %.1fm", distance );
+		}
+	} else {
+		std::snprintf( text, sizeof( text ), "Ray: none" );
+	}
+	DebugScreen::instance().draw( kHelpColumn, kRayRow, text );
+}
+
 void TpsTestScene::drawCollisionDebug() {
 	if ( mShowCollision ) {
+		castDebugRay();
 		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）。
 		mCollisionDrawer.draw( mWorld, mHitWorld, mCamera.projectionViewMatrix(), mPlayer.get(), mPlayer.get() );
 	}
-	DebugScreen::instance().draw( kHelpColumn, kCollisionRow, mShowCollision ? "Collision: ON  (F1)" : "Collision: OFF (F1)" );
+	DebugScreen::instance().draw( kHelpColumn, kCollisionRow,
+		mShowCollision ? "Collision: ON  (F1)  Despawn: F2" : "Collision: OFF (F1)  Despawn: F2" );
 }
 #endif
 
@@ -323,6 +368,7 @@ void TpsTestScene::beginFrame() {
 	readPlayerCommand( &mCommand );
 #ifdef _DEBUG
 	toggleCollisionDebug();
+	despawnLookedAtZombie();
 #endif
 }
 
@@ -340,6 +386,8 @@ void TpsTestScene::update() {
 		zombie->update();
 	}
 	updateBodySounds();
+	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
+	mZombies.flush();
 }
 
 void TpsTestScene::draw() {
@@ -356,7 +404,11 @@ void TpsTestScene::draw() {
 #endif
 	mPostProcess.endScene();
 	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく。
+	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）の順に、先に見つかった方を出す。
 	const char* shaderError = mPostProcess.errorMessage();
+	if ( shaderError[ 0 ] == '\0' ) {
+		shaderError = mCache.skinning().errorMessage();
+	}
 	if ( shaderError[ 0 ] != '\0' ) {
 		drawErrorLine( kHelpColumn, kShaderErrorRow, shaderError );
 	}

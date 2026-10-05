@@ -19,4 +19,22 @@ enum class BodyPart{
 	Count,         // 部位の数（部位ではない）
 };
 
+// 部位の名前（デバッグ表示用。英語の短い名前）。Count など部位でないものは "-"。
+inline const char* bodyPartName( BodyPart part ){
+	switch ( part ){
+		case BodyPart::Head:          return "Head";
+		case BodyPart::Torso:         return "Torso";
+		case BodyPart::LeftUpperArm:  return "LeftUpperArm";
+		case BodyPart::RightUpperArm: return "RightUpperArm";
+		case BodyPart::LeftForeArm:   return "LeftForeArm";
+		case BodyPart::RightForeArm:  return "RightForeArm";
+		case BodyPart::LeftThigh:     return "LeftThigh";
+		case BodyPart::RightThigh:    return "RightThigh";
+		case BodyPart::LeftLowerLeg:  return "LeftLowerLeg";
+		case BodyPart::RightLowerLeg: return "RightLowerLeg";
+		case BodyPart::Count:         break;
+	}
+	return "-";
+}
+
 #endif

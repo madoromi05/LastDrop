@@ -1,19 +1,30 @@
 #include "SkinnedMeshData.h"
 
 #include "GameLib/Graphics/Manager.h"
-#include "GameLib/Graphics/Vertex.h"
-#include "GameLib/Math/Vector4.h"
 #include "GameLib/Base/DebugStream.h"
 #include "VertexColor.h"
+#include "SkinningPipeline.h"
 
 namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kSkeletonTreeIndex = 0; // 変換ツールは <Tree> を1つだけ出力する
+
+	// GPU へ送る頂点1つ。並びは SkinningPipeline::vertexFormat() と同じ（位置・法線・色・UV・骨の番号・重み）。
+	struct SkinnedGpuVertex{
+		float position[ 4 ];
+		float normal[ 3 ];
+		unsigned color;
+		float uv[ 2 ];
+		unsigned char bones[ SkinnedMeshData::MAX_INFLUENCE ]; // 骨の番号は kMaxBones（128）未満なので 8bit に収まる
+		float weights[ SkinnedMeshData::MAX_INFLUENCE ];
+	};
+	const float kRestW = 1.f; // 位置の w
+	const float kNoNormalMap = 0.f; // 法線マップの強さ（0 で効かない）
 }
 
 SkinnedMeshData::Vertex::Vertex() :
 	mColor( VertexColor::WHITE ) { // data に color があれば上書き
-	// 未使用スロットの重みは0にしておく(deform() の合成で無視されるように)。
+	// 未使用スロットの重みは0にしておく(GPU での変形の合成で無視されるように)。
 	for ( int i = 0; i < MAX_INFLUENCE; ++i ) {
 		mBoneIndex[ i ] = 0;
 		mWeight[ i ] = 0.f;
@@ -26,6 +37,7 @@ SkinnedMeshData::Part::Part() :
 }
 
 SkinnedMeshData::SkinnedMeshData() :
+	mSkinning( nullptr ),
 	mReady( false ) {
 }
 
@@ -84,6 +96,12 @@ bool SkinnedMeshData::finish() {
 		GameLib::cout << "SkinnedMeshData: <Tree> not found." << GameLib::endl;
 		return false;
 	}
+	if ( mBones.size() > SkinningPipeline::kMaxBones ) {
+		// 骨の行列はシェーダの定数バッファに入る数までしか渡せない。描けないデータは読み込みの時点で止める。
+		GameLib::cout << "SkinnedMeshData: too many bones ( " << mBones.size() << " > " << SkinningPipeline::kMaxBones << " )." << GameLib::endl;
+		return false;
+	}
+	uploadGpuVertices();
 	// インデックスは変形しないので、GPUへ一度だけ送って作業用配列は捨てる。
 	unsigned short* indices = mIndexBuffer.lock();
 	for ( int i = 0; i < mStagingIndices.size(); ++i ) {
@@ -108,6 +126,38 @@ bool SkinnedMeshData::finish() {
 	}
 	mReady = true;
 	return true;
+}
+
+void SkinnedMeshData::uploadGpuVertices() {
+	ASSERT( sizeof( SkinnedGpuVertex ) == static_cast< size_t >( SkinningPipeline::vertexFormat().stride() ) &&
+		"SkinnedMeshData : SkinnedGpuVertex does not match SkinningPipeline::vertexFormat()." );
+	// レスト姿勢のまま送る。体ごとのポーズは描くときに骨の行列で渡し、GPU が変形する（頂点は全インスタンスで共有）。
+	mGpuVertices = Graphics::VertexBuffer::create( mVertices.size(), SkinningPipeline::vertexFormat() );
+	void* locked = mGpuVertices.lockData();
+	SkinnedGpuVertex* dst = static_cast< SkinnedGpuVertex* >( locked );
+	for ( int i = 0; i < mVertices.size(); ++i ) {
+		const Vertex& src = mVertices[ i ];
+		SkinnedGpuVertex& v = dst[ i ];
+		v.position[ 0 ] = src.mPosition.x;
+		v.position[ 1 ] = src.mPosition.y;
+		v.position[ 2 ] = src.mPosition.z;
+		v.position[ 3 ] = kRestW;
+		v.normal[ 0 ] = src.mNormal.x;
+		v.normal[ 1 ] = src.mNormal.y;
+		v.normal[ 2 ] = src.mNormal.z;
+		v.color = src.mColor; // 部位ごとの頂点カラー（固定パイプラインと同じ詰め方）
+		v.uv[ 0 ] = src.mUv.x;
+		v.uv[ 1 ] = src.mUv.y;
+		for ( int slot = 0; slot < MAX_INFLUENCE; ++slot ) {
+			v.bones[ slot ] = static_cast< unsigned char >( src.mBoneIndex[ slot ] );
+			v.weights[ slot ] = src.mWeight[ slot ]; // 未使用スロットは重み0（どの骨を指していても効かない）
+		}
+	}
+	mGpuVertices.unlockData( &locked );
+}
+
+void SkinnedMeshData::setSkinning( SkinningPipeline* skinning ) {
+	mSkinning = skinning;
 }
 
 bool SkinnedMeshData::isReady() const {
@@ -215,57 +265,37 @@ void SkinnedMeshData::computeBonePose( Scene::Tree& pose, std::vector< Matrix34 
 	}
 }
 
-void SkinnedMeshData::deform( const Matrix34& root, const std::vector< Matrix34 >& bonePose,
-std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const {
-	std::vector< Matrix34 >& skinMatrices = *skinWork;
-	//各ボーンの skin[b] = 置き場所 * ボーンの姿勢 * bindInverse を作る
+void SkinnedMeshData::computeSkinMatrices( const Matrix34& root, const std::vector< Matrix34 >& bonePose,
+std::vector< Matrix34 >* out ) const {
+	std::vector< Matrix34 >& skinMatrices = *out;
+	skinMatrices.resize( mBones.size() );
+	// 各ボーンの skin[b] = 置き場所 * ボーンの姿勢 * bindInverse。頂点（レスト姿勢）にこれを掛けるとワールドの位置になる。
 	for ( int b = 0; b < mBones.size(); ++b ) {
 		skinMatrices[ b ].setMul( root, bonePose[ b ] );
 		skinMatrices[ b ] *= mBones[ b ].mBindInverse;
 	}
-	//頂点を重み付きで合成して動的VBへ書く
-	Graphics::Vertex* dst = out.lock();
-	for ( int i = 0; i < mVertices.size(); ++i ) {
-		const Vertex& src = mVertices[ i ];
-		Vector3 position;
-		Vector3 normal;
-		position.set( 0.f, 0.f, 0.f );
-		normal.set( 0.f, 0.f, 0.f );
-		for ( int slot = 0; slot < MAX_INFLUENCE; ++slot ) {
-			float weight = src.mWeight[ slot ];
-			if ( weight == 0.f ) {
-				continue;
-			}
-			const Matrix34& skin = skinMatrices[ src.mBoneIndex[ slot ] ];
-			Vector3 p;
-			Vector3 n;
-			skin.mul( &p, src.mPosition );		//位置は移動込み
-			skin.mul33( &n, src.mNormal );		//法線は移動なし
-			position.madd( p, weight );			//position += p * weight
-			normal.madd( n, weight );
-		}
-		dst[ i ].mPosition.set( position.x, position.y, position.z, 1.f );
-		dst[ i ].mNormal = normal;
-		dst[ i ].mUv = src.mUv;
-		dst[ i ].mColor = src.mColor; //部位ごとの頂点カラー
-	}
-	out.unlock( &dst );
 }
 
-void SkinnedMeshData::draw( Graphics::VertexBuffer deformed ) const {
-	if ( !mReady ) {
+void SkinnedMeshData::draw( const std::vector< Matrix34 >& skinMatrices ) const {
+	if ( !mReady || !mSkinning || !mSkinning->isReady() ) {
 		return;
 	}
 	Graphics::Manager m = Graphics::Manager::instance();
 	Matrix34 world;
-	world.setIdentity(); //頂点は deform で既にワールド空間へ変換済み
+	world.setIdentity(); // 骨の行列に置き場所まで入っているので、ワールド行列は単位行列
 	m.setWorldMatrix( world );
-	m.setVertexBuffer( deformed );
+	m.setVertexBuffer( mGpuVertices );
 	m.setIndexBuffer( mIndexBuffer );
-	// 頂点・インデックスは全パーツ共通。見た目だけ差し替えて、パーツの範囲を描く。
+	mSkinning->begin( skinMatrices );
+	// 頂点・インデックス・骨の行列は全パーツ共通。見た目だけ差し替えて、パーツの範囲を描く。
 	for ( int i = 0; i < mParts.size(); ++i ) {
 		const Part& part = mParts[ i ];
-		part.mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
+		part.mMaterial.apply(); // テクスチャ・法線マップ・材質値（ライトの値は b0 経由でシェーダへ渡る）
+		if ( !part.mMaterial.hasNormalMap() ) {
+			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）。
+			m.setNormalMapStrength( kNoNormalMap );
+		}
 		m.drawIndexed( part.mFirstTriangle, part.mTriangleNumber );
 	}
+	mSkinning->end();
 }

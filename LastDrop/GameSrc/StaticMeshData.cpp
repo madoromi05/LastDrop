@@ -61,3 +61,21 @@ const Vector3& StaticMeshData::boundsMin() const {
 const Vector3& StaticMeshData::boundsMax() const {
 	return mBoundsMax;
 }
+
+bool StaticMeshData::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
+	bool found = false;
+	for ( int i = 0; i < mParts.size(); ++i ) {
+		float t;
+		Vector3 n;
+		if ( !mParts[ i ].raycast( origin, delta, &t, &n ) ) {
+			continue;
+		}
+		if ( found && t >= *time ) {
+			continue;
+		}
+		*time = t;
+		*normal = n;
+		found = true;
+	}
+	return found;
+}

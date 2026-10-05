@@ -2,6 +2,7 @@
 #define INCLUDED_STATIC_MESH_INSTANCE_H
 
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix34.h"
 
 class StaticMeshData;
 
@@ -20,8 +21,14 @@ public:
 
 	// 置き場所・向き・大きさを反映して描く。データの upload 前なら何も描かない。
 	void draw() const;
+	// ワールドの線分 origin〜origin+delta が一番早く当たる所の時刻（0〜1）と法線（ワールド・長さ1）。当たらなければ false。
+	// time / normal: 出力先。nullptr 不可。
+	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal ) const;
 
 private:
+	GameLib::Math::Matrix34 worldMatrix() const; // 置き場所・向き・大きさ（draw と raycast で同じ式を使う）
+
 	const StaticMeshData* mData;
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY;

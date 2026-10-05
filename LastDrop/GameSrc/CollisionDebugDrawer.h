@@ -29,6 +29,9 @@ public:
 	//                            所有権は受け取らない。nullptr なら全部描く。
 	void draw( const CollisionWorld& collisionWorld, const HitWorld& hitWorld, const GameLib::Math::Matrix44& projectionView,
 		const ICollisionBody* hiddenBody, const IHittable* hiddenTarget );
+	// 次の draw で、線分が当たった点（小さな十字）と面の法線（短い線）を赤で一緒に描く。draw の後に消える。
+	// 弾の当たり判定（HitWorld::raycast）が正しい位置・向きを返しているかを目で確かめるため。
+	void setRayHit( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal );
 
 private:
 	// 描く形を、頂点の並び（mPillarRings・mBoxCorners）にする（前のフレームのぶんは捨てる）。hidden は並べない。
@@ -39,11 +42,16 @@ private:
 	void addPillarLines( const std::vector< GameLib::Math::Vector3 >& ring );
 	// 箱1つ（8 隅）の 12 辺を積む。
 	void addBoxLines( const std::vector< GameLib::Math::Vector3 >& corners );
+	// 当たった点の十字と法線の線を積む（setRayHit されていれば）。
+	void addRayHitLines();
 
 	GameLib::Scene::PrimitiveRenderer mRenderer;
 	// 描く形の頂点。毎フレーム作り直す。
 	std::vector< std::vector< GameLib::Math::Vector3 > > mPillarRings; // 柱の下の輪（地面の高さ）
 	std::vector< std::vector< GameLib::Math::Vector3 > > mBoxCorners;  // 部位の箱の 8 隅（ワールド座標）
+	GameLib::Math::Vector3 mRayHitPoint;  // setRayHit で受け取った点と法線
+	GameLib::Math::Vector3 mRayHitNormal;
+	bool mHasRayHit;                      // 次の draw で描くか
 };
 
 #endif

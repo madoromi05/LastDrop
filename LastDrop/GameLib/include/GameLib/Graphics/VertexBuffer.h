@@ -8,13 +8,21 @@ namespace PseudoXml{
 namespace Graphics{
 
 class Vertex;
+class VertexFormat;
 
 class VertexBuffer{
 public:
 	static VertexBuffer create( PseudoXml::ConstElement );
 	static VertexBuffer create( int vertexNumber );
+	///標準の Vertex 以外の形の頂点バッファ。書き込みは lockData で行う（lock は使えない）
+	static VertexBuffer create( int vertexNumber, const VertexFormat& );
 	Vertex* lock();
 	void unlock( Vertex** );
+	///形を問わずに書き込む。中身は VertexFormat の並び（offset / stride）どおりに詰める
+	void* lockData();
+	void unlockData( void** );
+	///1頂点のバイト数
+	int stride() const;
 	const char* name() const;
 	int vertexNumber() const;
 

@@ -41,6 +41,13 @@ namespace{
 	const int kVertexCapacity = 16000;
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
+	// ── 線分が当たった所（setRayHit）──
+	const unsigned kRayHitColor = VertexColor::pack( 1.f, 0.2f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる赤
+	const float kRayHitCrossHalf = 0.05f;  // 十字の腕の長さ（m）
+	const float kRayHitNormalLength = 0.3f; // 法線の線の長さ（m）
+	const int kRayHitAxisNumber = 3;       // 十字は X・Y・Z の3本
+	const int kRayHitVertexCost = ( kRayHitAxisNumber + 1 ) * kVerticesPerLine; // 十字3本＋法線1本
+
 	// 長方形（建物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は Building と同じく Matrix34 の 移動*回転。
 	void rectRing( const BoxCollider& box, std::vector< Vector3 >* ring ) {
 		const float kCornerSignX[ kRectCorners ] = { -1.f, 1.f, 1.f, -1.f };
@@ -76,7 +83,8 @@ namespace{
 }
 
 CollisionDebugDrawer::CollisionDebugDrawer() :
-	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity, kBatchCapacity ) ) {
+	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity, kBatchCapacity ) ),
+	mHasRayHit( false ) {
 }
 
 void CollisionDebugDrawer::draw( const CollisionWorld& collisionWorld, const HitWorld& hitWorld, const Matrix44& projectionView,
@@ -94,6 +102,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	for ( const std::vector< Vector3 >& corners : mBoxCorners ) {
 		addBoxLines( corners );
 	}
+	addRayHitLines();
 	mRenderer.draw();
 }
 
@@ -101,7 +110,7 @@ void CollisionDebugDrawer::collectShapes( const CollisionWorld& collisionWorld, 
 const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	mPillarRings.clear();
 	mBoxCorners.clear();
-	int usedVertices = 0;
+	int usedVertices = kRayHitVertexCost; // 線分の当たった所（addRayHitLines）のぶんを先に取っておく
 	std::vector< Vector3 > shape;
 	for ( const BoxCollider& box : collisionWorld.boxes() ) {
 		usedVertices += pillarVertexCost( kRectCorners );
@@ -163,4 +172,29 @@ void CollisionDebugDrawer::addBoxLines( const std::vector< Vector3 >& corners ) 
 			mRenderer.addLine( corners[ i ], corners[ i | bit ], kLineColor, kLineColor );
 		}
 	}
+}
+
+void CollisionDebugDrawer::setRayHit( const Vector3& point, const Vector3& normal ) {
+	mRayHitPoint = point;
+	mRayHitNormal = normal;
+	mHasRayHit = true;
+}
+
+void CollisionDebugDrawer::addRayHitLines() {
+	if ( !mHasRayHit ) {
+		return;
+	}
+	mHasRayHit = false; // 1回の draw ぶんだけ描く（当たらなくなったら消えるように）
+	for ( int axis = 0; axis < kRayHitAxisNumber; ++axis ) {
+		Vector3 arm( 0.f, 0.f, 0.f );
+		arm[ axis ] = kRayHitCrossHalf;
+		Vector3 from;
+		Vector3 to;
+		from.setSub( mRayHitPoint, arm );
+		to.setAdd( mRayHitPoint, arm );
+		mRenderer.addLine( from, to, kRayHitColor, kRayHitColor );
+	}
+	Vector3 tip;
+	tip.setMadd( mRayHitPoint, mRayHitNormal, kRayHitNormalLength );
+	mRenderer.addLine( mRayHitPoint, tip, kRayHitColor, kRayHitColor );
 }

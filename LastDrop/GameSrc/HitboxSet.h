@@ -14,6 +14,7 @@ struct HitResult{
 	BodyPart part;                // 当たった部位
 	float time;                   // 当たった時刻（0〜1。線分のうち何割進んだところか）
 	GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
+	GameLib::Math::Vector3 normal; // 当たった面の外向きの法線（ワールド・長さ1）。始点が箱の中なら、進む向きの逆
 };
 
 // 1体ぶんの、部位ごとの当たり判定（命中判定用）。部位ごとに骨に付いた箱を1つずつ持ち、アニメの通りに動く。

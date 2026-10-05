@@ -757,7 +757,7 @@ public:
 		mCurrentVB = o;
 		if ( o ){
 			o->refer();
-			UINT stride = sizeof( Vertex );
+			UINT stride = static_cast< UINT >( o->mStride ); // 頂点の形はバッファごとに違う（VertexFormat）
 			UINT offset = 0;
 			mContext->IASetVertexBuffers( 0, 1, &o->mDxObject, &stride, &offset );
 		}else{

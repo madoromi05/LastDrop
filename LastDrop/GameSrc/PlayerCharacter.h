@@ -10,6 +10,7 @@
 #include "CharacterMover.h"
 #include "BodyFootprint.h"
 #include "IHittable.h"
+#include "IWorldMember.h"
 #include "HitboxSet.h"
 #include <memory>
 
@@ -34,7 +35,7 @@ class CollisionWorld;
 // 部位ごとの当たり判定（命中判定用）も持つ（IHittable）。一人称の見た目の書き換え（頭を潰す等）の前のポーズに付く。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプ・射撃はまだ持たない。
-class PlayerCharacter : public ICollisionBody, public IHittable{
+class PlayerCharacter : public ICollisionBody, public IHittable, public IWorldMember{
 public:
 	// data: 形・見た目・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このキャラより長く生きていること（MeshCache が持つ）。
@@ -73,6 +74,9 @@ public:
 	virtual BoxCollider collider() const;
 	// 部位ごとの当たり判定。
 	virtual const HitboxSet& hitboxes() const;
+	// 移動の名簿（体の長方形）と命中の名簿（部位の箱）の両方へ、自分を載せる／外す（IWorldMember）。
+	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
 	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false。

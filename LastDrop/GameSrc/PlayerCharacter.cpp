@@ -4,6 +4,8 @@
 #include "SkinnedMeshInstance.h"
 #include "HeldItem.h"
 #include "FirstPersonBody.h"
+#include "CollisionWorld.h"
+#include "HitWorld.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -353,4 +355,14 @@ void PlayerCharacter::changeState( Animator::State next ) {
 		startTime = mMesh->animationPhase() * animation.period();
 	}
 	mMesh->crossFadeTo( animation, startTime, kCrossFadeFrames );
+}
+
+void PlayerCharacter::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
+	collisionWorld->addBody( this );
+	hitWorld->addTarget( this );
+}
+
+void PlayerCharacter::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
+	collisionWorld->removeBody( this );
+	hitWorld->removeTarget( this );
 }

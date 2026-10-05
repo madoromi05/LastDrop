@@ -4,6 +4,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/VertexBuffer.h"
+#include "GameLib/Graphics/VertexFormat.h"
 #include "Graphics/VertexBufferImpl.h"
 #include "Graphics/ManagerImpl.h"
 
@@ -21,6 +22,29 @@ VertexBuffer VertexBuffer::create( int vertexNumber ){
 	VertexBuffer r;
 	r.mImpl = NEW Impl( vertexNumber, gManagerImpl->dxDevice(), gManagerImpl->dxContext() );
 	return r;
+}
+
+VertexBuffer VertexBuffer::create( int vertexNumber, const VertexFormat& format ){
+	VertexBuffer r;
+	r.mImpl = NEW Impl( vertexNumber, format.stride(), gManagerImpl->dxDevice(), gManagerImpl->dxContext() );
+	return r;
+}
+
+void* VertexBuffer::lockData(){
+	ASSERT( mImpl && "Graphics::VertexBuffer : This is empty object." );
+	return mImpl->lockData();
+}
+
+void VertexBuffer::unlockData( void** p ){
+	ASSERT( *p && "Graphics::VertexBuffer : give LOCKED pointer." );
+	ASSERT( mImpl && "Graphics::VertexBuffer : This is empty object." );
+	mImpl->unlock();
+	*p = 0;
+}
+
+int VertexBuffer::stride() const {
+	ASSERT( mImpl && "Graphics::VertexBuffer : This is empty object." );
+	return mImpl->mStride;
 }
 
 Vertex* VertexBuffer::lock(){

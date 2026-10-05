@@ -60,8 +60,20 @@ void StaticMeshPart::upload() {
 	}
 	mIndexBuffer.unlock( &indices );
 
+	// 弾の当たり判定用に、位置とつながりだけ写して残す（UV・法線・色は要らないので捨てる）。
+	std::vector< Vector3 > positions( mStagingVertices.size() );
+	for ( int i = 0; i < mStagingVertices.size(); ++i ) {
+		const Vector4& p = mStagingVertices[ i ].mPosition;
+		positions[ i ].set( p.x, p.y, p.z );
+	}
+	std::vector< unsigned short > triangleIndices( mStagingIndices.size() );
+	for ( int i = 0; i < mStagingIndices.size(); ++i ) {
+		triangleIndices[ i ] = mStagingIndices[ i ];
+	}
+	mShape.set( positions, triangleIndices );
+
 	mTriangleNumber = mStagingIndices.size() / kVerticesPerTriangle;
-	// GPUへ送ったので作業用配列は不要。建物1つで数百KBあるので持ち続けない。
+	// GPUへ送ったので作業用配列は不要。建物1つで数百KBあるので持ち続けない（当たり判定の分は mShape に写した）。
 	mStagingVertices.clear();
 	mStagingIndices.clear();
 }
@@ -84,4 +96,8 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	m.setVertexBuffer( mVertexBuffer );
 	m.setIndexBuffer( mIndexBuffer );
 	m.drawIndexed( 0, mTriangleNumber );
+}
+
+bool StaticMeshPart::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
+	return mShape.raycast( origin, delta, time, normal );
 }

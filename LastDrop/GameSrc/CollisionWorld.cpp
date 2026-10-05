@@ -3,6 +3,8 @@
 
 #include "GameLib/GameLib.h"
 
+#include <algorithm>
+
 using namespace GameLib::Math;
 
 namespace{
@@ -30,6 +32,10 @@ void CollisionWorld::addBox( const BoxCollider& box ) {
 void CollisionWorld::addBody( const ICollisionBody* body ) {
 	ASSERT( body && "CollisionWorld : body is null." );
 	mBodies.push_back( body );
+}
+
+void CollisionWorld::removeBody( const ICollisionBody* body ) {
+	mBodies.erase( std::remove( mBodies.begin(), mBodies.end(), body ), mBodies.end() );
 }
 
 bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, const ICollisionBody* ignore, SweepHit* hit ) const {

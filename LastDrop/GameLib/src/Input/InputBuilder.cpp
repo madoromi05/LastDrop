@@ -45,6 +45,7 @@ namespace
         case WorkId::Aim:      return "Aim";
         case WorkId::Holster:  return "Holster";
         case WorkId::DebugCollision: return "DebugCollision";
+        case WorkId::DebugDespawn:   return "DebugDespawn";
         default:            return "";
         }
     }
@@ -169,6 +170,7 @@ namespace
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
         // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
         { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
+        { CollectorId::InGame, WorkId::DebugDespawn,   DeviceKind::Keyboard, Keyboard::KEY_F2 },
     };
 
     // Player 1：キーボードのみ

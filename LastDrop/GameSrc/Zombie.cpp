@@ -1,4 +1,6 @@
 #include "Zombie.h"
+#include "CollisionWorld.h"
+#include "HitWorld.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -39,4 +41,14 @@ BoxCollider Zombie::collider() const {
 
 const HitboxSet& Zombie::hitboxes() const {
 	return mHitboxes;
+}
+
+void Zombie::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
+	collisionWorld->addBody( this );
+	hitWorld->addTarget( this );
+}
+
+void Zombie::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
+	collisionWorld->removeBody( this );
+	hitWorld->removeTarget( this );
 }

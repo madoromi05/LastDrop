@@ -45,3 +45,7 @@ void Building::addCollidersTo( CollisionWorld* world ) const {
 void Building::draw() const {
 	mMesh.draw();
 }
+
+bool Building::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
+	return mMesh.raycast( origin, delta, time, normal );
+}

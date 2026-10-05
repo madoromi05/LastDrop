@@ -29,7 +29,6 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
 	mHasPose( false ),
-	mSkinDirty( false ),
 	mPosition( 0.f, 0.f, 0.f ),
 	mAngleY( 0.f ) {
 	ASSERT( mData && mData->isReady() && "SkinnedMeshInstance : data is null or not ready." );
@@ -38,7 +37,6 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mShownPose.resize( mData->boneNumber() );
 	mFadeFromPose.resize( mData->boneNumber() );
 	mSkinMatrices.resize( mData->boneNumber() );
-	mVertexBuffer = Graphics::VertexBuffer::create( mData->vertexNumber() );
 }
 
 void SkinnedMeshInstance::setPosition( const Vector3& position ) {
@@ -106,7 +104,6 @@ void SkinnedMeshInstance::update() {
 	if ( mPoseModifier ) {
 		mPoseModifier->apply( &mShownPose );
 	}
-	mSkinDirty = true;
 }
 
 Matrix34 SkinnedMeshInstance::rootMatrix() const {
@@ -120,7 +117,7 @@ bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
 	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mShownPose.size() ) ) {
 		return false;
 	}
-	// deform と同じ「置き場所 * ボーンの姿勢」。頂点と同じ式なので、付けた物が手からずれない。
+	// 頂点の変形（computeSkinMatrices）と同じ「置き場所 * ボーンの姿勢」。同じ式なので、付けた物が手からずれない。
 	out->setMul( rootMatrix(), mShownPose[ boneIndex ] );
 	return true;
 }
@@ -150,10 +147,10 @@ void SkinnedMeshInstance::blendFadingPose() {
 }
 
 void SkinnedMeshInstance::draw() const {
-	if ( mSkinDirty ) {
-		// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
-		mData->deform( rootMatrix(), mShownPose, &mSkinMatrices, mVertexBuffer );
-		mSkinDirty = false;
+	if ( !mHasPose ) {
+		return; // まだ update していない（見せるポーズが無い）
 	}
-	mData->draw( mVertexBuffer );
+	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+	mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );
+	mData->draw( mSkinMatrices );
 }

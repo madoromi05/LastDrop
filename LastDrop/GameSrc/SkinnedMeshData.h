@@ -11,20 +11,23 @@
 #include "GameLib/Scene/Tree.h"
 #include "GameLib/Scene/Animation.h"
 #include "MeshMaterial.h"
+
+class SkinningPipeline;
 #include <string>
 #include <vector>
 
 using namespace GameLib;
 using namespace GameLib::Math;
 
-// CPU線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。1体ぶんの状態は持たず、同じキャラ全員で共有する。
-// 持つもの: レスト姿勢の頂点＋ボーン重み＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
+// 線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。変形は GPU で行う（SkinningPipeline）。1体ぶんの状態は持たず、同じキャラ全員で共有する。
+// 持つもの: レスト姿勢の頂点＋ボーン重み（CPU 側と、GPU へ送った頂点バッファ）＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
+// CPU 側の頂点は当たり判定の箱づくり（collectBoneSpaceVertices など）に使うので、GPU へ送った後も残す。
 // 見た目は「パーツ」（インデックスの範囲＋MeshMaterial）単位で持つ。体と髪でテクスチャが別のモデルは複数パーツになる。
 // 頂点・スキニングは全パーツ共通なので、パーツが増えても変形の負荷は増えない（描画呼び出しが増えるだけ）。
-// 1体ごとのポーズ・変形後の頂点・位置は SkinnedMeshInstance が持ち、deform() / draw() にこのデータを使う。
-// ゾンビを何体出しても、頂点・重み・テクスチャ・アニメは1つで済む。
+// 1体ごとのポーズ・位置は SkinnedMeshInstance が持ち、computeSkinMatrices() / draw() にこのデータを使う。
+// ゾンビを何体出しても、頂点（GPU の頂点バッファも）・重み・テクスチャ・アニメは1つで済む。
 //
-// 使い方: create → set 系 → setContainer → finish（ここまでローダが行う）→ インスタンスから deform / draw
+// 使い方: create → set 系 → setContainer → finish（ここまでローダが行う）→ setSkinning（MeshCache が行う）→ インスタンスから draw
 class SkinnedMeshData{
 public:
 	static const int MAX_INFLUENCE = 4; //1頂点が影響を受けるボーン数の上限
@@ -51,9 +54,11 @@ public:
 	MeshMaterial& material( int partIndex );
 	// 骨格(<Tree>)とアニメ(<Animation>)の入れ物。インスタンスはここから自分の骨格を作る。
 	void setContainer( Scene::Container );
-	// 設定し終えたら呼ぶ。インデックスをGPUへ送り、レスト姿勢から bindInverse を確定する。
-	// 骨格が無ければ false（理由はデバッグ出力）。
+	// 設定し終えたら呼ぶ。頂点とインデックスをGPUへ送り、レスト姿勢から bindInverse を確定する。
+	// 骨格が無い・骨が多すぎる（SkinningPipeline::kMaxBones を超える）なら false（理由はデバッグ出力）。
 	bool finish();
+	// 描くときに使う GPU スキニングの道具。所有権は受け取らない。このデータより長く生きていること（MeshCache が持つ）。
+	void setSkinning( SkinningPipeline* skinning );
 
 	// ── 利用（インスタンスが使う）──
 	// finish 済みで使える状態か。
@@ -87,16 +92,16 @@ public:
 	// ポーズを行列で取り出すのは、2つのポーズを混ぜて（クロスフェード）から変形できるようにするため。
 	// bonePose: boneNumber() 個ぶん。呼び出し側が持つ。nullptr 不可。
 	void computeBonePose( Scene::Tree& pose, std::vector< Matrix34 >* bonePose ) const;
-	// ボーンの姿勢 bonePose を root（置き場所と向き）へ置いて CPU スキニングし、変形後の頂点を out へ書く（ワールド空間）。
-	// skinWork: ボーン数ぶんの作業領域。呼び出し側(インスタンス)が持つ。nullptr 不可。
-	// out: vertexNumber() 頂点ぶんの頂点バッファ。呼び出し側が持つ。
-	// 頂点数ぶんの行列演算をするので、キャラの数だけ CPU 負荷が増える（GPUスキニング化の候補）。
-	void deform( const Matrix34& root, const std::vector< Matrix34 >& bonePose,
-		std::vector< Matrix34 >* skinWork, Graphics::VertexBuffer out ) const;
-	// deform 済みの頂点バッファを、このデータのインデックスと見た目で描く（パーツごとに1回ずつ描画する）。
-	void draw( Graphics::VertexBuffer deformed ) const;
+	// ボーンの姿勢 bonePose を root（置き場所と向き）へ置いた、ボーンごとの変形の行列（置き場所×ポーズ×bindInverse）を out へ書く。
+	// out: boneNumber() 個ぶん。呼び出し側（インスタンス）が持つ。nullptr 不可。計算はボーンの数だけ（頂点の数には比例しない）。
+	void computeSkinMatrices( const Matrix34& root, const std::vector< Matrix34 >& bonePose, std::vector< Matrix34 >* out ) const;
+	// skinMatrices（computeSkinMatrices の結果）で GPU 変形して、パーツごとに描く。
+	// setSkinning されていない・シェーダが使えない（コンパイル失敗）なら描かない（理由は SkinningPipeline::errorMessage）。
+	void draw( const std::vector< Matrix34 >& skinMatrices ) const;
 
 private:
+	// CPU 側の頂点（レスト姿勢＋骨の番号と重み）を、GPU スキニング用の頂点バッファへ写す。finish で1回だけ呼ぶ。
+	void uploadGpuVertices();
 	// collectBoneSpaceVertices / computeRestBounds の中身。対象の頂点を transform で移して out に入れる。
 	void collectVertices( const std::vector< bool >& boneMask, const Matrix34& transform, std::vector< Vector3 >* out ) const;
 
@@ -127,9 +132,11 @@ private:
 	Array< Vertex > mVertices;
 	Array< Bone > mBones;
 	Array< unsigned short > mStagingIndices; // 構築中だけ使う。finish 後は空
+	Graphics::VertexBuffer mGpuVertices; // レスト姿勢の頂点＋骨の番号と重み。全インスタンスで共有し、変形は GPU が行う
 	Graphics::IndexBuffer mIndexBuffer; // 全インスタンス・全パーツで共有（形のつながりは変形しても同じ）
 	Array< Part > mParts;
 	Scene::Container mContainer;
+	SkinningPipeline* mSkinning; // 借りている（MeshCache が持つ）。nullptr なら描かない
 	bool mReady;
 };
 
