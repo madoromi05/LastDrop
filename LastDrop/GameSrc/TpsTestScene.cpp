@@ -48,13 +48,10 @@ namespace{
 		{  20.5f, -13.f, kBuildingYaw },
 	};
 
-	// ── ゲームループ用アセットの見た目確認（仮置き。当たり判定なし）──
-	// 拡大率は実物の大きさに合わせる目安（UAZ-469 は全長約4m、20L 携行缶は高さ約0.47m）。
-	const char* kVehicleFile = "Resource/uaz.txt";      // tools/configs/uaz_atlas.json → uaz.json で変換
-	const float kVehicleScale = 0.85f;
+	// ── ゲームループ用アセットの仮置き（移動の当たり判定は頂点を囲む箱1つ、弾は見た目の三角形）──
+	const char* kVehicleFile = "Resource/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
 	const Placement kVehiclePlacement = { 5.f, 2.f, 0.f };
-	const char* kFuelCanFile = "Resource/fuelcan.txt";  // tools/configs/fuelcan_atlas.json → fuelcan.json で変換
-	const float kFuelCanScale = 0.41f;
+	const char* kFuelCanFile = "Resource/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
 	const Placement kFuelCanPlacements[] = {
 		{ -1.5f, 4.5f,  0.f },
 		{ -2.2f, 4.5f, 30.f },
@@ -219,20 +216,22 @@ void TpsTestScene::placeObjects() {
 	for ( const Building& building : mBuildings ) {
 		mHitWorld.addBlocker( &building );
 	}
-	// 見た目の確認用に置くだけ（構築に失敗したデータは置かない）。
-	auto addProp = [ this ]( const StaticMeshData* data, const Placement& p, float scale ) {
+	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない。
+	auto addProp = [ this ]( const StaticMeshData* data, const Placement& p ) {
 		if ( !data->isReady() ) {
 			return;
 		}
-		StaticMeshInstance prop( data );
-		prop.setPosition( Vector3( p.x, 0.f, p.z ) );
-		prop.setAngleY( p.yawDegree );
-		prop.setScale( scale );
+		StaticProp prop( data, Vector3( p.x, 0.f, p.z ), p.yawDegree );
+		prop.addColliderTo( &mWorld );
 		mProps.push_back( prop );
 	};
-	addProp( mVehicleData, kVehiclePlacement, kVehicleScale );
+	addProp( mVehicleData, kVehiclePlacement );
 	for ( const Placement& p : kFuelCanPlacements ) {
-		addProp( mFuelCanData, p, kFuelCanScale );
+		addProp( mFuelCanData, p );
+	}
+	// 弾を止める物として登録する（建物と同じく、並べ終えてから）。
+	for ( const StaticProp& prop : mProps ) {
+		mHitWorld.addBlocker( &prop );
 	}
 	// 始めから視点を回せるようにロックしておく。
 	GameLib::Input::Manager::instance().setCursorLocked( true );
@@ -320,7 +319,7 @@ void TpsTestScene::drawWorld() const {
 	for ( const Building& building : mBuildings ) {
 		building.draw();
 	}
-	for ( const StaticMeshInstance& prop : mProps ) {
+	for ( const StaticProp& prop : mProps ) {
 		prop.draw();
 	}
 }

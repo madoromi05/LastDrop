@@ -81,6 +81,10 @@ CONFIG = {
     # ゲーム側はアニメ時刻を1フレームに1進めるので、30fps のアニメを 60fps のゲームで等速にするのに使う。
     # 0 なら Blender のフレーム番号のまま（従来の出力）。
     "game_fps": 0,
+    # static モードのみ。モデルの置き方を変換時に直す（実物大・原点の揃ったデータにして、ゲーム側で拡大率や
+    # ずれを補わずに済ませる。当たり判定の箱は頂点の範囲から作るので、ゲーム側で縮めると見た目とずれる）。
+    "scale": 1.0,               # 頂点に掛ける拡大率（1 で等倍）
+    "center_origin": False,     # True: 原点を「真上から見た中心・一番下」へ移す（地面に置いて、その場で回せるように）
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -143,6 +147,26 @@ def find_armature():
         if o.type == "ARMATURE":
             return o
     return None
+
+
+def adjust_static_transform(mesh_objs):
+    # scale / center_origin を、全メッシュの置き方（ワールド行列）に掛ける。頂点はワールド座標で書き出すので、
+    # ここで動かせば出力に反映される。親子関係があるモデルで子まで二重に動かさないよう、根のオブジェクトだけ動かす。
+    scale = CONFIG["scale"]
+    if scale == 1.0 and not CONFIG["center_origin"]:
+        return
+    offset = mathutils.Vector((0.0, 0.0, 0.0))
+    if CONFIG["center_origin"]:
+        # Blender は Z が上なので、X/Y の中心と Z の一番下を原点へ持ってくる。
+        points = [o.matrix_world @ v.co for o in mesh_objs for v in o.data.vertices]
+        low = [min(p[i] for p in points) for i in range(3)]
+        high = [max(p[i] for p in points) for i in range(3)]
+        offset = mathutils.Vector(((low[0] + high[0]) * 0.5, (low[1] + high[1]) * 0.5, low[2]))
+    adjust = mathutils.Matrix.Scale(scale, 4) @ mathutils.Matrix.Translation(-offset)
+    for obj in [o for o in bpy.data.objects if o.parent is None]:
+        obj.matrix_world = adjust @ obj.matrix_world
+    bpy.context.view_layer.update()  # 子の matrix_world を新しい親の位置で計算し直す
+    print("ADJUST", "scale", f(scale), "offset", f(offset.x), f(offset.y), f(offset.z))
 
 
 def find_meshes():
@@ -772,6 +796,7 @@ def main():
 
     out = "<Container>\n"
     if CONFIG["mode"] == "static":
+        adjust_static_transform(mesh_objs)
         out += emit_static_mesh(mesh_objs)
         export_mesh_textures(mesh_objs)
     else:

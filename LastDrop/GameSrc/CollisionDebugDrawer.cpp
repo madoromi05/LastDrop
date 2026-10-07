@@ -14,7 +14,6 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── 移動の当たり判定（柱）──
-	const float kPillarHeight = 2.f;  // 柱の高さ（m）。人の背丈より少し高くし、ゾンビや自分の体に埋もれないようにする
 	const int kRectCorners = 4;       // 真上から見た長方形の隅の数
 
 	// ── 部位の当たり判定（箱）──
@@ -77,8 +76,8 @@ namespace{
 		}
 	}
 
-	Vector3 raised( const Vector3& ground ) {
-		return Vector3( ground.x, ground.y + kPillarHeight, ground.z );
+	Vector3 raised( const Vector3& ground, float height ) {
+		return Vector3( ground.x, height, ground.z );
 	}
 }
 
@@ -92,12 +91,12 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	collectShapes( collisionWorld, hitWorld, hiddenBody, hiddenTarget );
 
 	mRenderer.setTransform( projectionView );
-	mRenderer.enableDepthTest( false ); // 壁の向こうも見せる
+	mRenderer.enableDepthTest( true ); // 物の向こう側の線は隠す
 	mRenderer.enableDepthWrite( false );
 	mRenderer.setBlendMode( Graphics::BLEND_LINEAR ); // 線のアルファで後ろと混ぜる（kLineOpacity）
 	mRenderer.setCullMode( Graphics::CULL_NONE );
-	for ( const std::vector< Vector3 >& ring : mPillarRings ) {
-		addPillarLines( ring );
+	for ( const Pillar& pillar : mPillars ) {
+		addPillarLines( pillar );
 	}
 	for ( const std::vector< Vector3 >& corners : mBoxCorners ) {
 		addBoxLines( corners );
@@ -108,7 +107,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 
 void CollisionDebugDrawer::collectShapes( const CollisionWorld& collisionWorld, const HitWorld& hitWorld,
 const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
-	mPillarRings.clear();
+	mPillars.clear();
 	mBoxCorners.clear();
 	int usedVertices = kRayHitVertexCost; // 線分の当たった所（addRayHitLines）のぶんを先に取っておく
 	std::vector< Vector3 > shape;
@@ -118,7 +117,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 			return;
 		}
 		rectRing( box, &shape );
-		mPillarRings.push_back( shape );
+		mPillars.push_back( Pillar{ shape, box.height } );
 	}
 	for ( const ICollisionBody* body : collisionWorld.bodies() ) {
 		if ( body == hiddenBody ) {
@@ -128,8 +127,9 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 		if ( usedVertices > kVertexCapacity ) {
 			return;
 		}
-		rectRing( body->collider(), &shape );
-		mPillarRings.push_back( shape );
+		BoxCollider box = body->collider();
+		rectRing( box, &shape );
+		mPillars.push_back( Pillar{ shape, box.height } );
 	}
 	for ( const IHittable* target : hitWorld.targets() ) {
 		if ( target == hiddenTarget ) {
@@ -151,14 +151,15 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	}
 }
 
-void CollisionDebugDrawer::addPillarLines( const std::vector< Vector3 >& ring ) {
+void CollisionDebugDrawer::addPillarLines( const Pillar& pillar ) {
+	const std::vector< Vector3 >& ring = pillar.ring;
 	int size = static_cast< int >( ring.size() );
 	for ( int i = 0; i < size; ++i ) {
 		const Vector3& bottom = ring[ i ];
 		const Vector3& nextBottom = ring[ ( i + 1 ) % size ];
 		mRenderer.addLine( bottom, nextBottom, kLineColor, kLineColor );                   // 下の輪
-		mRenderer.addLine( raised( bottom ), raised( nextBottom ), kLineColor, kLineColor ); // 上の輪
-		mRenderer.addLine( bottom, raised( bottom ), kLineColor, kLineColor );             // 縦
+		mRenderer.addLine( raised( bottom, pillar.height ), raised( nextBottom, pillar.height ), kLineColor, kLineColor ); // 上の輪
+		mRenderer.addLine( bottom, raised( bottom, pillar.height ), kLineColor, kLineColor );             // 縦
 	}
 }
 

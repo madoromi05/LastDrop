@@ -24,6 +24,7 @@ private:
 	GameLib::Math::Vector3 mLocalCenter; // 長方形の中心（モデルの空間。足元から見た位置。y は使わない）
 	float mHalfWidthX;                    // モデルの X 方向（体の横）の幅の半分（m）
 	float mHalfWidthZ;                    // モデルの Z 方向（体の前後）の幅の半分（m）
+	float mHeight;                        // 足元から頭のてっぺんまで（m。レスト姿勢）。当たり判定の表示にだけ使う
 };
 
 #endif

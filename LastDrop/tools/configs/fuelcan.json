@@ -3,6 +3,8 @@
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Model/Oil tank_atlas.fbx",
     "out_path": "../../Resource/fuelcan.txt",
     "split_vertices": true,
+    "scale": 0.41,
+    "center_origin": true,
     "mesh_texture": "Resource/fuelcan_albedo.tga",
     "mesh_normalmap": "Resource/fuelcan_normal.tga",
     "material_params": {

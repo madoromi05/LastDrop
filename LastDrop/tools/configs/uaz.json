@@ -3,6 +3,8 @@
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/Post_Apocalyptic_UAZ_textures/Post_Apocalyptic_UAZ_atlas.fbx",
     "out_path": "../../Resource/uaz.txt",
     "split_vertices": true,
+    "scale": 0.85,
+    "center_origin": true,
     "mesh_texture": "Resource/uaz_albedo.tga",
     "mesh_normalmap": "Resource/uaz_normal.tga",
     "material_params": {

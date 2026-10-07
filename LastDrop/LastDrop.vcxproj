@@ -163,6 +163,8 @@
     <ClCompile Include="GameSrc\CharacterMover.cpp" />
     <ClCompile Include="GameSrc\Zombie.cpp" />
     <ClCompile Include="GameSrc\Building.cpp" />
+    <ClCompile Include="GameSrc\MeshBoundsBox.cpp" />
+    <ClCompile Include="GameSrc\StaticProp.cpp" />
     <ClCompile Include="GameSrc\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\HitMath.cpp" />
     <ClCompile Include="GameSrc\HitboxSet.cpp" />
@@ -374,6 +376,8 @@
     <ClInclude Include="GameSrc\CharacterMover.h" />
     <ClInclude Include="GameSrc\Zombie.h" />
     <ClInclude Include="GameSrc\Building.h" />
+    <ClInclude Include="GameSrc\MeshBoundsBox.h" />
+    <ClInclude Include="GameSrc\StaticProp.h" />
     <ClInclude Include="GameSrc\CollisionDebugDrawer.h" />
     <ClInclude Include="GameSrc\BodyPart.h" />
     <ClInclude Include="GameSrc\HitMath.h" />

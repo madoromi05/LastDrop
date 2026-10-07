@@ -11,6 +11,9 @@ struct BoxCollider{
 	float halfWidthX;              // 箱のローカル X 方向の幅の半分（m）
 	float halfWidthZ;              // 箱のローカル Z 方向の幅の半分（m）
 	float angleY;                  // 向き（度）。StaticMeshInstance::setAngleY と同じ約束
+	// 地面（Y=0）からの高さ（m）。移動の判定には使わない（上の説明のとおり 2D で解く）。
+	// 当たり判定の表示（CollisionDebugDrawer）が、柱をこの高さで描いて見た目と比べられるようにするためだけに持つ。
+	float height;
 };
 
 #endif

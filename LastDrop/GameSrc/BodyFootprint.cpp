@@ -15,6 +15,7 @@ namespace{
 	// 対象の頂点が見つからないときの大きさ（m）。人の肩幅・胸の厚みの半分ほど。
 	const float kFallbackHalfWidthX = 0.25f;
 	const float kFallbackHalfWidthZ = 0.15f;
+	const float kFallbackHeight = 1.8f; // 人の背丈
 
 	// 囲む頂点の骨（頭の共通部分を除いた名前）。腰・胴・脚。腕・手・頭は含めない。
 	// 鎖骨（Shoulder）は胴の一部として入れる（部位の当たり判定の「胴」と同じ範囲）。
@@ -28,7 +29,8 @@ namespace{
 BodyFootprint::BodyFootprint( const SkinnedMeshData* data, const char* boneNamePrefix ) :
 	mLocalCenter( 0.f, 0.f, 0.f ),
 	mHalfWidthX( kFallbackHalfWidthX ),
-	mHalfWidthZ( kFallbackHalfWidthZ ) {
+	mHalfWidthZ( kFallbackHalfWidthZ ),
+	mHeight( kFallbackHeight ) {
 	ASSERT( data && boneNamePrefix && "BodyFootprint : argument is null." );
 	std::vector< bool > mask( data->boneNumber(), false );
 	for ( const char* name : kFootprintBones ) {
@@ -37,8 +39,12 @@ BodyFootprint::BodyFootprint( const SkinnedMeshData* data, const char* boneNameP
 			mask[ bone ] = true;
 		}
 	}
+	// 高さ（表示用）は全身で測る。幅と違い、腕・頭も含めた見た目の背丈に合わせたいので、全部の骨の頂点で囲む。
 	Vector3 low;
 	Vector3 high;
+	if ( data->computeRestBounds( std::vector< bool >( data->boneNumber(), true ), &low, &high ) ) {
+		mHeight = high.y;
+	}
 	if ( !data->computeRestBounds( mask, &low, &high ) ) {
 		GameLib::cout << "BodyFootprint: no vertex for footprint: " << boneNamePrefix << GameLib::endl;
 		return;
@@ -58,5 +64,6 @@ BoxCollider BodyFootprint::place( const Vector3& position, float angleY ) const 
 	box.halfWidthX = mHalfWidthX;
 	box.halfWidthZ = mHalfWidthZ;
 	box.angleY = angleY;
+	box.height = position.y + mHeight;
 	return box;
 }

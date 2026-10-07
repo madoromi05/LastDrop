@@ -8,7 +8,7 @@
 #include "Zombie.h"
 #include "ActorList.h"
 #include "Building.h"
-#include "StaticMeshInstance.h"
+#include "StaticProp.h"
 #include "FirstPersonCamera.h"
 #ifdef _DEBUG
 #include "CollisionDebugDrawer.h"
@@ -76,7 +76,7 @@ private:
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。名簿より後に宣言する。
 	ActorList< Zombie > mZombies;
 	std::vector< Building > mBuildings;
-	std::vector< StaticMeshInstance > mProps; // ゲームループ用アセットの見た目確認（仮。当たり判定なし）
+	std::vector< StaticProp > mProps; // ゲームループ用アセット（車・ガソリン缶）の仮置き。移動の箱1つと弾の判定あり
 	FirstPersonCamera mCamera;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 
