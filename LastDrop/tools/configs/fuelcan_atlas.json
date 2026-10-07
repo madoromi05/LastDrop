@@ -1,0 +1,13 @@
+{
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Model/Oil tank.fbx",
+    "out_fbx": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Model/Oil tank_atlas.fbx",
+    "texture_dir": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Textures",
+    "albedo_path": "../../Resource/fuelcan_albedo.tga",
+    "normal_path": "../../Resource/fuelcan_normal.tga",
+    "atlas_size": 1024,
+    "grid": 1,
+    "padding": 0,
+    "cells": {
+        "Material.004": { "cell": [0, 0], "albedo": "DefaultMaterial_BaseColor.png", "normal": "DefaultMaterial_Normal.png" }
+    }
+}

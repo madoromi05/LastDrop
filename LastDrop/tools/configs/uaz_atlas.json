@@ -1,0 +1,16 @@
+{
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/Post_Apocalyptic_UAZ_textures/Post_Apocalyptic_UAZ.fbx",
+    "out_fbx": "C:/Users/mador/Downloads/ゾンビゲーム/Post_Apocalyptic_UAZ_textures/Post_Apocalyptic_UAZ_atlas.fbx",
+    "texture_dir": "C:/Users/mador/Downloads/ゾンビゲーム/Post_Apocalyptic_UAZ_textures/textures",
+    "albedo_path": "../../Resource/uaz_albedo.tga",
+    "normal_path": "../../Resource/uaz_normal.tga",
+    "atlas_size": 2048,
+    "grid": 2,
+    "padding": 4,
+    "cells": {
+        "_body_source":  { "cell": [0, 0], "albedo": "body_uaz_BaseColor.png",   "normal": "body_uaz_Normal.png" },
+        "_other_source": { "cell": [1, 0], "albedo": "other_uaz_Base_color.png", "normal": "other_uaz_Normal.png", "ao": "other_uaz_Mixed_AO.png" },
+        "_rama_source":  { "cell": [0, 1], "albedo": "rama_uaz_BaseColor.png",   "normal": "rama_uaz_Normal.png" },
+        "_whels":        { "cell": [1, 1], "albedo": "whels_uaz_BaseColor.png",  "normal": "whels_uaz_Normal.png" }
+    }
+}

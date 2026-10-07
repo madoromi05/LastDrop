@@ -580,11 +580,36 @@ def emit_static_mesh(mesh_objs):
         textured = []
     plain = [o for o in mesh_objs if o not in textured]
     out = ""
-    if textured:
-        out += emit_static_part(textured, True)
-    if plain:
-        out += emit_static_part(plain, False)
+    for group in split_by_vertex_limit(textured, True):
+        out += emit_static_part(group, True)
+    for group in split_by_vertex_limit(plain, False):
+        out += emit_static_part(group, False)
     return out
+
+
+def split_by_vertex_limit(mesh_objs, textured):
+    # 1パーツの頂点数が MAX_VERTEX_NUMBER（ゲーム側の16bitインデックスの上限）以内になるよう、メッシュを順にまとめる。
+    # ゲーム側は <StaticMesh> を何個でも読んで全部描くので、上限を超えるモデルはパーツを分ければ出せる。
+    # 上限以内のモデルは今までどおり1パーツになる。1つのメッシュだけで上限を超える場合は分けられないので止める。
+    groups = []
+    group = []
+    group_vertices = 0
+    for obj in mesh_objs:
+        obj.data.calc_loop_triangles()
+        corners, _ = split_corners(obj, textured) if CONFIG["split_vertices"] else shared_corners(obj, textured)
+        count = len(corners)
+        if count > MAX_VERTEX_NUMBER:
+            raise RuntimeError("メッシュ '%s' だけで頂点数 %d が上限 %d を超えています。メッシュを分割してください。" % (
+                obj.name, count, MAX_VERTEX_NUMBER))
+        if group and group_vertices + count > MAX_VERTEX_NUMBER:
+            groups.append(group)
+            group = []
+            group_vertices = 0
+        group.append(obj)
+        group_vertices += count
+    if group:
+        groups.append(group)
+    return groups
 
 
 # ------------------------- main -------------------------

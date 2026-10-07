@@ -8,6 +8,7 @@
 #include "Zombie.h"
 #include "ActorList.h"
 #include "Building.h"
+#include "StaticMeshInstance.h"
 #include "FirstPersonCamera.h"
 #ifdef _DEBUG
 #include "CollisionDebugDrawer.h"
@@ -65,6 +66,8 @@ private:
 	const StaticMeshData* mWeaponData;    // mCache から借りる（自キャラが右手に持つ銃）
 	const SkinnedMeshData* mZombieData;   // mCache から借りる
 	const StaticMeshData* mBuildingData;  // mCache から借りる
+	const StaticMeshData* mVehicleData;   // mCache から借りる（見た目確認用の仮置き）
+	const StaticMeshData* mFuelCanData;   // mCache から借りる（見た目確認用の仮置き）
 
 	// 当たり判定の名簿。キャラを借りて持つので、キャラより先に宣言する（＝キャラより後に破棄される）。
 	CollisionWorld mWorld;
@@ -73,6 +76,7 @@ private:
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。名簿より後に宣言する。
 	ActorList< Zombie > mZombies;
 	std::vector< Building > mBuildings;
+	std::vector< StaticMeshInstance > mProps; // ゲームループ用アセットの見た目確認（仮。当たり判定なし）
 	FirstPersonCamera mCamera;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 

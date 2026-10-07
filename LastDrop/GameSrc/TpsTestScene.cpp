@@ -48,6 +48,18 @@ namespace{
 		{  20.5f, -13.f, kBuildingYaw },
 	};
 
+	// ── ゲームループ用アセットの見た目確認（仮置き。当たり判定なし）──
+	// 拡大率は実物の大きさに合わせる目安（UAZ-469 は全長約4m、20L 携行缶は高さ約0.47m）。
+	const char* kVehicleFile = "Resource/uaz.txt";      // tools/configs/uaz_atlas.json → uaz.json で変換
+	const float kVehicleScale = 0.85f;
+	const Placement kVehiclePlacement = { 5.f, 2.f, 0.f };
+	const char* kFuelCanFile = "Resource/fuelcan.txt";  // tools/configs/fuelcan_atlas.json → fuelcan.json で変換
+	const float kFuelCanScale = 0.41f;
+	const Placement kFuelCanPlacements[] = {
+		{ -1.5f, 4.5f,  0.f },
+		{ -2.2f, 4.5f, 30.f },
+	};
+
 	// ── 視点操作 ──
 	// マウス1画素あたりの回転（度）。横に動かすと左右、縦に動かすと上下に回る。
 	const float kLookDegreesPerPixel = 0.15f;
@@ -145,6 +157,8 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData( 0 ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
+	mVehicleData( 0 ),
+	mFuelCanData( 0 ),
 	mZombies( &mWorld, &mHitWorld ),
 	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
 	mFootsteps( &mAudio ),
@@ -160,6 +174,8 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData = mCache.staticMesh( kWeaponFile );
 	mZombieData = mCache.skinnedMesh( kZombieFile );
 	mBuildingData = mCache.staticMesh( kBuildingFile );
+	mVehicleData = mCache.staticMesh( kVehicleFile );
+	mFuelCanData = mCache.staticMesh( kFuelCanFile );
 	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの向いている方を見始める
 }
 
@@ -202,6 +218,21 @@ void TpsTestScene::placeObjects() {
 	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）。
 	for ( const Building& building : mBuildings ) {
 		mHitWorld.addBlocker( &building );
+	}
+	// 見た目の確認用に置くだけ（構築に失敗したデータは置かない）。
+	auto addProp = [ this ]( const StaticMeshData* data, const Placement& p, float scale ) {
+		if ( !data->isReady() ) {
+			return;
+		}
+		StaticMeshInstance prop( data );
+		prop.setPosition( Vector3( p.x, 0.f, p.z ) );
+		prop.setAngleY( p.yawDegree );
+		prop.setScale( scale );
+		mProps.push_back( prop );
+	};
+	addProp( mVehicleData, kVehiclePlacement, kVehicleScale );
+	for ( const Placement& p : kFuelCanPlacements ) {
+		addProp( mFuelCanData, p, kFuelCanScale );
 	}
 	// 始めから視点を回せるようにロックしておく。
 	GameLib::Input::Manager::instance().setCursorLocked( true );
@@ -288,6 +319,9 @@ void TpsTestScene::drawWorld() const {
 	}
 	for ( const Building& building : mBuildings ) {
 		building.draw();
+	}
+	for ( const StaticMeshInstance& prop : mProps ) {
+		prop.draw();
 	}
 }
 
