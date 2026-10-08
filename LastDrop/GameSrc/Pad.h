@@ -24,7 +24,7 @@ class Pad
 {
 public:
     // ボタンの列挙型（ゲームコードはこの番号で入力を問い合わせる）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM, HOLSTER, DEBUG_COLLISION, DEBUG_DESPAWN };
+    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM, HOLSTER, DEBUG_COLLISION, DEBUG_DESPAWN, UI_UP, UI_DOWN, UI_DECIDE };
 
     static Pad* instance();
     static void create();
@@ -127,3 +127,6 @@ bool InputAim        (int playerId = 0);   // 構える（押されている間�
 bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）
 bool InputDebugCollision(int playerId = 0); // 当たり判定の表示を切り替える（押した瞬間）
 bool InputDebugDespawn(int playerId = 0);   // 視線の先のキャラを消す（押した瞬間）
+bool InputUiUp       (int playerId = 0);   // 画面の部品の選択を上へ（押した瞬間）
+bool InputUiDown     (int playerId = 0);   // 画面の部品の選択を下へ（押した瞬間）
+bool InputUiDecide   (int playerId = 0);   // 選んでいる部品を決定する（押した瞬間）

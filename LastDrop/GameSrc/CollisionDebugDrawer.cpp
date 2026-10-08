@@ -83,6 +83,7 @@ namespace{
 
 CollisionDebugDrawer::CollisionDebugDrawer() :
 	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity, kBatchCapacity ) ),
+	mSeeThroughRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity, kBatchCapacity ) ),
 	mHasRayHit( false ) {
 }
 
@@ -95,6 +96,11 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	mRenderer.enableDepthWrite( false );
 	mRenderer.setBlendMode( Graphics::BLEND_LINEAR ); // 線のアルファで後ろと混ぜる（kLineOpacity）
 	mRenderer.setCullMode( Graphics::CULL_NONE );
+	mSeeThroughRenderer.setTransform( projectionView );
+	mSeeThroughRenderer.enableDepthTest( false ); // 体の中に立つキャラの柱も見せる
+	mSeeThroughRenderer.enableDepthWrite( false );
+	mSeeThroughRenderer.setBlendMode( Graphics::BLEND_LINEAR );
+	mSeeThroughRenderer.setCullMode( Graphics::CULL_NONE );
 	for ( const Pillar& pillar : mPillars ) {
 		addPillarLines( pillar );
 	}
@@ -103,6 +109,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	}
 	addRayHitLines();
 	mRenderer.draw();
+	mSeeThroughRenderer.draw();
 }
 
 void CollisionDebugDrawer::collectShapes( const CollisionWorld& collisionWorld, const HitWorld& hitWorld,
@@ -117,7 +124,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 			return;
 		}
 		rectRing( box, &shape );
-		mPillars.push_back( Pillar{ shape, box.height } );
+		mPillars.push_back( Pillar{ shape, box.height, false } );
 	}
 	for ( const ICollisionBody* body : collisionWorld.bodies() ) {
 		if ( body == hiddenBody ) {
@@ -129,7 +136,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 		}
 		BoxCollider box = body->collider();
 		rectRing( box, &shape );
-		mPillars.push_back( Pillar{ shape, box.height } );
+		mPillars.push_back( Pillar{ shape, box.height, true } );
 	}
 	for ( const IHittable* target : hitWorld.targets() ) {
 		if ( target == hiddenTarget ) {
@@ -153,13 +160,14 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 
 void CollisionDebugDrawer::addPillarLines( const Pillar& pillar ) {
 	const std::vector< Vector3 >& ring = pillar.ring;
+	Scene::PrimitiveRenderer& renderer = pillar.seeThrough ? mSeeThroughRenderer : mRenderer;
 	int size = static_cast< int >( ring.size() );
 	for ( int i = 0; i < size; ++i ) {
 		const Vector3& bottom = ring[ i ];
 		const Vector3& nextBottom = ring[ ( i + 1 ) % size ];
-		mRenderer.addLine( bottom, nextBottom, kLineColor, kLineColor );                   // 下の輪
-		mRenderer.addLine( raised( bottom, pillar.height ), raised( nextBottom, pillar.height ), kLineColor, kLineColor ); // 上の輪
-		mRenderer.addLine( bottom, raised( bottom, pillar.height ), kLineColor, kLineColor );             // 縦
+		renderer.addLine( bottom, nextBottom, kLineColor, kLineColor );                   // 下の輪
+		renderer.addLine( raised( bottom, pillar.height ), raised( nextBottom, pillar.height ), kLineColor, kLineColor ); // 上の輪
+		renderer.addLine( bottom, raised( bottom, pillar.height ), kLineColor, kLineColor );             // 縦
 	}
 }
 

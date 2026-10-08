@@ -37,6 +37,7 @@ namespace{
 	const float kMinInputLength = 0.001f; // これより短い入力（逆方向キーの同時押しなど）は静止とみなす
 	// 骨の名前の頭の共通部分（移動の当たり判定・部位ごとの当たり判定で骨を引くのに使う）。
 	const char* kBoneNamePrefix = "mixamorig:";
+	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
 
 	// 状態ごとのアニメ名（tools/configs/player.json の extra_animations の name）と移動の速さ。
 	// 武器をしまっている間は素手のアニメ、持っている間は銃を肩の高さに持つアニメ（Basic Shooter Pack）。
@@ -169,7 +170,7 @@ const Vector3& position, float angleY ) :
 	mBody( std::make_unique< FirstPersonBody >( data ) ),
 	mMesh( std::make_unique< SkinnedMeshInstance >( data ) ),
 	mMover( world, this ), // this は覚えるだけ（位置を読むのは move のとき＝構築の後）
-	mFootprint( data, kBoneNamePrefix ),
+	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
 	mHitboxes( data, kBoneNamePrefix ),
 	mPosition( position ),
 	mAngleY( wrapSignedAngle( angleY ) ),

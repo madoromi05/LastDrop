@@ -2,10 +2,15 @@
 #include "IScene.h"
 #include "SkinTestScene.h"
 #include "TpsTestScene.h"
+#include "TitleScene.h"
+#include "GameScene.h"
+#include "ClearScene.h"
 #include "GameLib/GameLib.h"
 
 SceneManager::SceneManager() :
-	mCurrent( 0 ) {
+	mCurrent( 0 ),
+	mHasRequest( false ),
+	mRequestedId( SCENE_TITLE ) {
 }
 
 SceneManager::~SceneManager() {
@@ -24,13 +29,27 @@ void SceneManager::change( SceneId id ) {
 	case SCENE_SKIN_TEST:
 		change( static_cast< IScene* >( NEW SkinTestScene() ) );
 		break;
-	case SCENE_TPS_TEST:
+	case SCENE_FPS_TEST:
 		change( static_cast< IScene* >( NEW TpsTestScene() ) );
+		break;
+	case SCENE_TITLE:
+		change( static_cast< IScene* >( NEW TitleScene() ) );
+		break;
+	case SCENE_GAME:
+		change( static_cast< IScene* >( NEW GameScene() ) );
+		break;
+	case SCENE_CLEAR:
+		change( static_cast< IScene* >( NEW ClearScene() ) );
 		break;
 	default:
 		ASSERT( false && "SceneManager::change : unknown SceneId." );
 		break;
 	}
+}
+
+void SceneManager::requestChange( SceneId id ) {
+	mHasRequest = true;
+	mRequestedId = id;
 }
 
 void SceneManager::change( IScene* next ) {
@@ -51,6 +70,11 @@ void SceneManager::update() {
 		mCurrent->update();
 	}
 	mCurrent->draw();
+	// 予約された切り替えは、今のシーンの処理が全部終わってから行う（シーンの途中で自分自身を消さないように）。
+	if ( mHasRequest ) {
+		mHasRequest = false;
+		change( mRequestedId );
+	}
 }
 
 void SceneManager::destroy() {

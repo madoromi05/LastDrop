@@ -14,8 +14,9 @@ class BodyFootprint{
 public:
 	// data: 形と骨。所有権は受け取らない。nullptr 不可、isReady() 済み。大きさを求めるのに構築中だけ使う。
 	// boneNamePrefix: 骨の名前の頭の共通部分。nullptr 不可。
-	// 対象の頂点が見つからなければ、デバッグ出力して既定の大きさにする（キャラが出せなくならないように）。
-	BodyFootprint( const SkinnedMeshData* data, const char* boneNamePrefix );
+	// padding: 体を囲んだ長方形の四辺を、それぞれ外へ広げる幅（m。0 で体ぴったり）。体と体が触れるより手前で止めたいときに使う。
+	// 対象の頂点が見つからなければ、デバッグ出力して既定の大きさにする（キャラが出せなくならないように）。既定の大きさにも padding を足す。
+	BodyFootprint( const SkinnedMeshData* data, const char* boneNamePrefix, float padding );
 
 	// 足元の位置 position・向き angleY（度。SkinnedMeshInstance::setAngleY と同じ約束）に置いた長方形。
 	BoxCollider place( const GameLib::Math::Vector3& position, float angleY ) const;
@@ -24,7 +25,6 @@ private:
 	GameLib::Math::Vector3 mLocalCenter; // 長方形の中心（モデルの空間。足元から見た位置。y は使わない）
 	float mHalfWidthX;                    // モデルの X 方向（体の横）の幅の半分（m）
 	float mHalfWidthZ;                    // モデルの Z 方向（体の前後）の幅の半分（m）
-	float mHeight;                        // 足元から頭のてっぺんまで（m。レスト姿勢）。当たり判定の表示にだけ使う
 };
 
 #endif

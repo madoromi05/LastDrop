@@ -46,6 +46,9 @@ namespace
         case WorkId::Holster:  return "Holster";
         case WorkId::DebugCollision: return "DebugCollision";
         case WorkId::DebugDespawn:   return "DebugDespawn";
+        case WorkId::UiUp:     return "UiUp";
+        case WorkId::UiDown:   return "UiDown";
+        case WorkId::UiDecide: return "UiDecide";
         default:            return "";
         }
     }
@@ -171,6 +174,15 @@ namespace
         // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
         { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
         { CollectorId::InGame, WorkId::DebugDespawn,   DeviceKind::Keyboard, Keyboard::KEY_F2 },
+        // 画面の部品（タイトル・クリア画面のボタン）の操作。矢印キーと WASD の両方で選べるようにする
+        // （W/S は移動の Up/Down と共有。ボタンの画面ではキャラを動かさないので重ならない）。
+        { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, Keyboard::KEY_UP },
+        { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, 'w' },
+        { CollectorId::InGame, WorkId::UiDown,   DeviceKind::Keyboard, Keyboard::KEY_DOWN },
+        { CollectorId::InGame, WorkId::UiDown,   DeviceKind::Keyboard, 's' },
+        { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
+        { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
+        { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
     };
 
     // Player 1：キーボードのみ

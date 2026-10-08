@@ -5,7 +5,7 @@ using namespace GameLib;
 #include "SceneManager.h"
 
 // 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照。
-const SceneManager::SceneId kStartScene = SceneManager::SCENE_TPS_TEST;
+const SceneManager::SceneId kStartScene = SceneManager::SCENE_FPS_TEST;
 
 bool gInitialized = false;
 
