@@ -30,12 +30,14 @@ public:
 
 	// 塗りつぶした長方形を積む。color: VertexColor::pack の並び。
 	void addRect( const UiRect& rect, unsigned color );
-	// 文字を積む（英数字のみ。日本語のフォントはまだ無い）。color: VertexColor::pack の並び。
+	// 文字を積む（ASCII の英数字・記号のみ。それ以外の文字は、途中で絵を作れないので使えない）。color: VertexColor::pack の並び。
 	void addText( const char* text, const GameLib::Math::Vector2& position, UiTextSize size, UiAlign align, unsigned color );
 	// 積んだものを描いて空にする。1回の描画につき1回。
 	void draw();
 
 private:
+	// font の英数字・記号の絵を、最初の描画より前にすべて作っておく（理由は UiRenderer.cpp）。
+	static void prepareGlyphs( GameLib::Scene::Font& font );
 	// text を size の文字で書いたときの幅（画素）。中央に揃えるのに使う。
 	float textWidth( const char* text, UiTextSize size );
 

@@ -14,6 +14,10 @@ namespace{
 	const float kMenuButtonHeight = 44.f;
 	const float kMenuButtonSpacing = 14.f;  // ボタンとボタンの間
 	const float kMenuTopOffset = 20.f;      // 画面の縦の中央から、最初のボタンの上端まで
+	// 本編の HUD（画素）。
+	const float kPromptOffsetY = 40.f;     // 照準から案内までの下向きの距離
+	const float kStatusMargin = 16.f;      // 画面の左端・下端からの余白
+	const float kStatusLineHeight = 26.f;  // 状態表示1行の高さ（UI_TEXT_NORMAL の文字より少し広く）
 }
 
 UiScreen::UiScreen() :
@@ -44,4 +48,20 @@ UiRect UiScreen::menuButtonRect( int index ) {
 	rect.left = framework.width() * kHalf - kMenuButtonWidth * kHalf;
 	rect.top = framework.height() * kHalf + kMenuTopOffset + index * ( kMenuButtonHeight + kMenuButtonSpacing );
 	return rect;
+}
+
+Vector2 UiScreen::screenCenter() {
+	Framework framework = Framework::instance();
+	return Vector2( framework.width() * kHalf, framework.height() * kHalf );
+}
+
+Vector2 UiScreen::promptPosition() {
+	Vector2 position = screenCenter();
+	position.y += kPromptOffsetY;
+	return position;
+}
+
+Vector2 UiScreen::statusLinePosition( int index ) {
+	Framework framework = Framework::instance();
+	return Vector2( kStatusMargin, framework.height() - kStatusMargin - ( index + 1 ) * kStatusLineHeight );
 }

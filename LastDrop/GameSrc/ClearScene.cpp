@@ -25,7 +25,7 @@ ClearScene::ClearScene() {
 	UiCanvas& canvas = mScreen.canvas();
 	canvas.add( std::make_unique< UiLabel >( kHeading, UiScreen::headingPosition(), UI_TEXT_LARGE, UI_ALIGN_CENTER, kHeadingColor ) );
 	canvas.add( std::make_unique< UiButton >( UiScreen::menuButtonRect( kRetryButtonIndex ), "Retry", []() {
-		SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+		SceneManager::instance().requestChange( SceneManager::kPlayScene );
 	} ) );
 	canvas.add( std::make_unique< UiButton >( UiScreen::menuButtonRect( kTitleButtonIndex ), "Title", []() {
 		SceneManager::instance().requestChange( SceneManager::SCENE_TITLE );

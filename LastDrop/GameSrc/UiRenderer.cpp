@@ -28,6 +28,9 @@ namespace{
 	const int kTextCapacity = 64;
 
 	const float kHalf = 0.5f;
+	// 最初に文字の絵を作っておく範囲（ASCII の表示できる文字すべて。空白〜チルダ）。
+	const int kFirstPrintableChar = 0x20;
+	const int kLastPrintableChar = 0x7e;
 }
 
 UiRenderer::UiRenderer() :
@@ -36,6 +39,7 @@ UiRenderer::UiRenderer() :
 		mFonts[ i ] = Scene::Font::create( kFontName, kCharHeights[ i ], kBold, kItalic, kProportional, kAntialias );
 		mStrings[ i ] = Scene::StringRenderer::create( kCharCapacity, kTextCapacity );
 		mStrings[ i ].setFont( mFonts[ i ] );
+		prepareGlyphs( mFonts[ i ] );
 	}
 }
 
@@ -61,6 +65,18 @@ void UiRenderer::draw() {
 	mPrimitives.draw();
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
 		mStrings[ i ].draw();
+	}
+}
+
+void UiRenderer::prepareGlyphs( Scene::Font& font ) {
+	// OS のフォントは、文字を初めて使うときにその文字の絵をテクスチャへ描き足す。ところが GameLib の DX11 版のテクスチャは、
+	// 一度 GPU へ送ると CPU 側の画素を捨てるので、その後に新しい文字を描き足そうとすると止まる（TextureImpl::lock の ASSERT）。
+	// HUD の案内のように途中から新しい文字が出る画面があるので、最初の描画より前に、使う文字をすべて作っておく。
+	Graphics::Texture texture;
+	Vector2 uvTopLeft;
+	Vector2 uvBottomRight;
+	for ( int code = kFirstPrintableChar; code <= kLastPrintableChar; ++code ) {
+		font.getChar( &texture, &uvTopLeft, &uvBottomRight, code );
 	}
 }
 
