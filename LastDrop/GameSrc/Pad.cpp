@@ -89,6 +89,7 @@ WorkId Pad::buttonToWorkId(Button b)
     case UI_UP:     return WorkId::UiUp;
     case UI_DOWN:   return WorkId::UiDown;
     case UI_DECIDE: return WorkId::UiDecide;
+    case INTERACT:  return WorkId::Interact;
     default:    return WorkId::Up;
     }
 }
@@ -208,3 +209,4 @@ bool InputDebugDespawn(int playerId) { return Pad::instance()->isTriggered(Pad::
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(Pad::UI_UP, playerId); }
 bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(Pad::UI_DOWN, playerId); }
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(Pad::UI_DECIDE, playerId); }
+bool InputInteract(int playerId) { return Pad::instance()->isTriggered(Pad::INTERACT, playerId); }

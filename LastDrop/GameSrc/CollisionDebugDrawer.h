@@ -16,7 +16,8 @@ class IHittable;
 //   （下の輪・上の輪・それを結ぶ縦の線）。建物もキャラも、Y軸まわりに回した長方形。
 // ・部位の当たり判定（HitWorld）：骨に付いた箱をそのまま描く（12 辺）。
 // 奥行きの判定をして、手前にある物（壁・車・体など）に隠れる所は描かない（物を透かして見えると、どの物の判定か分かりにくいため）。
-// ただしキャラ（ゾンビなど）の移動の柱だけは、前と同じく物を透かして描く（柱は体の中に立つので、隠すとほとんど見えなくなるため）。
+// キャラ（ゾンビなど）の移動の柱も同じ（2026-10-10 ユーザー指定。車や壁の向こうのキャラの柱が透けて見えないように）。
+// 部位の箱は体の中にあるので、体の表面からはみ出した所だけが見える。
 // 線は奥行きを書き込まない（線どうし・後から描く物を隠さない）。
 //
 // 描くだけで、形を変えない。ON/OFF はこのクラスを呼ぶか呼ばないか（シーンが決める）。
@@ -44,7 +45,6 @@ private:
 	struct Pillar{
 		std::vector< GameLib::Math::Vector3 > ring; // 下の輪（地面の高さ）
 		float height;                               // 上の輪の高さ（m）
-		bool seeThrough;                            // true: 物を透かして描く（キャラの柱）。false: 手前の物に隠れる
 	};
 
 	// 柱1本の線を積む。
@@ -54,8 +54,7 @@ private:
 	// 当たった点の十字と法線の線を積む（setRayHit されていれば）。
 	void addRayHitLines();
 
-	GameLib::Scene::PrimitiveRenderer mRenderer;           // 手前の物に隠れる線
-	GameLib::Scene::PrimitiveRenderer mSeeThroughRenderer; // 物を透かして描く線（キャラの柱）。奥行きの設定は描画ごとなので分ける
+	GameLib::Scene::PrimitiveRenderer mRenderer; // すべての線（手前の物に隠れる）
 	// 描く形の頂点。毎フレーム作り直す。
 	std::vector< Pillar > mPillars;                                    // 移動の当たり判定の柱
 	std::vector< std::vector< GameLib::Math::Vector3 > > mBoxCorners;  // 部位の箱の 8 隅（ワールド座標）

@@ -8,7 +8,11 @@
 #include "Zombie.h"
 #include "ActorList.h"
 #include "Building.h"
-#include "StaticProp.h"
+#include "Pickup.h"
+#include "EscapeCar.h"
+#include "Inventory.h"
+#include "Interactor.h"
+#include "UiScreen.h"
 #include "FirstPersonCamera.h"
 #ifdef _DEBUG
 #include "CollisionDebugDrawer.h"
@@ -23,10 +27,14 @@
 #include <vector>
 
 class PlayerCharacter;
+class UiLabel;
+class IInteractable;
 
 // 自キャラを一人称(FPS)視点で動かす検証シーン。WASD で移動（Shift で走る）、マウスで視点を回す。
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
 // （クラス名・シーン番号は TPS のまま。名前の変更は別作業）
+// ゲームループ（とりあえずここで遊ぶ）: 候補点から選んだ場所にガソリンが出る。E で拾い（1缶ずつ）、車まで運んで E で給油する。
+// 決まった数を入れるとクリア画面へ進む。左下に車のガソリンと持ち物、見ている物の案内を照準の下に出す。
 // 背景は SkinTestScene と同じ建物とゾンビ（動作確認用の目印）。どちらも当たり判定があり、自キャラは当たると沿って滑る。
 // 音も確かめられる: 足音（床の材質で変わる）・装備の音。
 // 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
@@ -52,6 +60,11 @@ private:
 	float fieldOfView() const;   // 覗き具合に合わせた縦の視野角（度）
 	void setupLights() const;
 	void drawWorld() const;      // キャラと背景を描くだけ（何回呼んでも同じ絵になる）
+	void placeMissionObjects();  // 脱出用の車と、候補点から選んだ場所にガソリンを置く（placeObjects から）
+	void buildHud();             // HUD の部品を並べる（コンストラクタから一度だけ）
+	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
+	IInteractable* resolveInteractable( const HitWorld::Hit& hit ); // 視線が当たった物のうち使える物（Interactor から呼ばれる）
+	void drawHud();              // HUD の文字を今の状態にして描く（3D の後）
 #ifdef _DEBUG
 	void toggleCollisionDebug(); // 表示の切り替えの入力を読む（1回の描画につき1回）
 	void drawCollisionDebug();   // 表示中なら当たり判定を描く（他を全部描いた後）
@@ -66,8 +79,8 @@ private:
 	const StaticMeshData* mWeaponData;    // mCache から借りる（自キャラが右手に持つ銃）
 	const SkinnedMeshData* mZombieData;   // mCache から借りる
 	const StaticMeshData* mBuildingData;  // mCache から借りる
-	const StaticMeshData* mVehicleData;   // mCache から借りる（見た目確認用の仮置き）
-	const StaticMeshData* mFuelCanData;   // mCache から借りる（見た目確認用の仮置き）
+	const StaticMeshData* mVehicleData;   // mCache から借りる（脱出用の車）
+	const StaticMeshData* mFuelCanData;   // mCache から借りる（ガソリンの携行缶）
 
 	// 当たり判定の名簿。キャラを借りて持つので、キャラより先に宣言する（＝キャラより後に破棄される）。
 	CollisionWorld mWorld;
@@ -76,7 +89,15 @@ private:
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。名簿より後に宣言する。
 	ActorList< Zombie > mZombies;
 	std::vector< Building > mBuildings;
-	std::vector< StaticProp > mProps; // ゲームループ用アセット（車・ガソリン缶）の仮置き。移動の箱1つと弾の判定あり
+	// ゲームループ。どれも名簿（mWorld・mHitWorld）を借りるので、名簿より後に宣言する。
+	ActorList< Pickup > mPickups;          // 落ちているガソリン（拾うと消える）
+	std::unique_ptr< EscapeCar > mEscapeCar; // 名簿が自分の箱を指すので、置いた後は動かさない（unique_ptr で持つ）
+	Inventory mInventory;
+	Interactor mInteractor;
+	UiScreen mHud;
+	UiLabel* mPromptLabel; // mHud が持つ部品を借りる（文字を毎回書き換える）
+	UiLabel* mTankLabel;
+	UiLabel* mCarryLabel;
 	FirstPersonCamera mCamera;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 

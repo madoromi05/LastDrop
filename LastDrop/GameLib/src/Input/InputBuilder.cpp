@@ -49,6 +49,7 @@ namespace
         case WorkId::UiUp:     return "UiUp";
         case WorkId::UiDown:   return "UiDown";
         case WorkId::UiDecide: return "UiDecide";
+        case WorkId::Interact: return "Interact";
         default:            return "";
         }
     }
@@ -183,6 +184,9 @@ namespace
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
+        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。E は旧アクションの WireReel と共有
+        // （WireReel を使うシーンはもう無い）。
+        { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
     };
 
     // Player 1：キーボードのみ

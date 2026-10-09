@@ -26,7 +26,7 @@ TitleScene::TitleScene() {
 	UiCanvas& canvas = mScreen.canvas();
 	canvas.add( std::make_unique< UiLabel >( kGameTitle, UiScreen::headingPosition(), UI_TEXT_LARGE, UI_ALIGN_CENTER, kTitleColor ) );
 	canvas.add( std::make_unique< UiButton >( UiScreen::menuButtonRect( kStartButtonIndex ), "Start", []() {
-		SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+		SceneManager::instance().requestChange( SceneManager::kPlayScene );
 	} ) );
 	canvas.add( std::make_unique< UiButton >( UiScreen::menuButtonRect( kQuitButtonIndex ), "Quit", []() {
 		Framework::instance().requestEnd();

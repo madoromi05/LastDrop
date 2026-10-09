@@ -1,6 +1,10 @@
 #include "TpsTestScene.h"
 #include "PlayerCharacter.h"
 #include "Pad.h"
+#include "SceneManager.h"
+#include "SpawnPicker.h"
+#include "UiLabel.h"
+#include "VertexColor.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h" // DebugScreen.h が使う Framework の宣言
@@ -48,14 +52,36 @@ namespace{
 		{  20.5f, -13.f, kBuildingYaw },
 	};
 
-	// ── ゲームループ用アセットの仮置き（移動の当たり判定は頂点を囲む箱1つ、弾は見た目の三角形）──
+	// ── ゲームループ（ガソリンを集めて車で脱出）──
 	const char* kVehicleFile = "Resource/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
-	const Placement kVehiclePlacement = { 5.f, 2.f, 0.f };
 	const char* kFuelCanFile = "Resource/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
-	const Placement kFuelCanPlacements[] = {
-		{ -1.5f, 4.5f,  0.f },
-		{ -2.2f, 4.5f, 30.f },
+	// 脱出用の車は、始めの位置の真後ろ（建物と反対側）に横向きに置く。振り返ると見える。
+	const Placement kEscapeCarPlacement = { 0.f, 18.f, 90.f };
+	const int kRequiredFuel = 3; // 車に入れるとクリアになるガソリンの数
+	// ガソリンが出るかもしれない場所（10か所）。毎回この中から kRequiredFuel 個を選んで置く（SpawnPicker）。
+	// 建物（z = -2.85 より奥）・ゾンビ・車と重ならない、通りの手前側に散らす。
+	const Placement kFuelSpawnPoints[] = {
+		{ -24.f,  1.f,   0.f },
+		{ -16.f,  0.f,  40.f },
+		{  -8.f,  1.f, -20.f },
+		{   8.f,  0.f,  70.f },
+		{  16.f,  1.f,  10.f },
+		{  24.f,  2.f, -45.f },
+		{ -20.f, 12.f,  90.f },
+		{  -6.f, 16.f,  15.f },
+		{  10.f, 15.f, -60.f },
+		{  22.f, 12.f,  30.f },
 	};
+	const int kFuelSpawnPointCount = sizeof( kFuelSpawnPoints ) / sizeof( kFuelSpawnPoints[ 0 ] );
+	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
+
+	// ── HUD ──
+	const char* kCrosshair = "+";
+	const unsigned kHudColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
+	const unsigned kPromptColor = VertexColor::pack( 1.f, 0.85f, 0.3f ); // 燃料の色（黄）
+	const int kTankLine = 1;  // 左下から数えた行（0 が一番下）
+	const int kCarryLine = 0;
+	const int kHudTextSize = 64;
 
 	// ── 視点操作 ──
 	// マウス1画素あたりの回転（度）。横に動かすと左右、縦に動かすと上下に回る。
@@ -157,6 +183,11 @@ TpsTestScene::TpsTestScene() :
 	mVehicleData( 0 ),
 	mFuelCanData( 0 ),
 	mZombies( &mWorld, &mHitWorld ),
+	mPickups( &mWorld, &mHitWorld ),
+	mInteractor( &mHitWorld, kInteractReach, [ this ]( const HitWorld::Hit& hit ) { return resolveInteractable( hit ); } ),
+	mPromptLabel( 0 ),
+	mTankLabel( 0 ),
+	mCarryLabel( 0 ),
 	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
 	mFootsteps( &mAudio ),
 	mFoley( &mAudio ),
@@ -174,6 +205,7 @@ TpsTestScene::TpsTestScene() :
 	mVehicleData = mCache.staticMesh( kVehicleFile );
 	mFuelCanData = mCache.staticMesh( kFuelCanFile );
 	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの向いている方を見始める
+	buildHud();
 }
 
 TpsTestScene::~TpsTestScene() {
@@ -216,23 +248,7 @@ void TpsTestScene::placeObjects() {
 	for ( const Building& building : mBuildings ) {
 		mHitWorld.addBlocker( &building );
 	}
-	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない。
-	auto addProp = [ this ]( const StaticMeshData* data, const Placement& p ) {
-		if ( !data->isReady() ) {
-			return;
-		}
-		StaticProp prop( data, Vector3( p.x, 0.f, p.z ), p.yawDegree );
-		prop.addColliderTo( &mWorld );
-		mProps.push_back( prop );
-	};
-	addProp( mVehicleData, kVehiclePlacement );
-	for ( const Placement& p : kFuelCanPlacements ) {
-		addProp( mFuelCanData, p );
-	}
-	// 弾を止める物として登録する（建物と同じく、並べ終えてから）。
-	for ( const StaticProp& prop : mProps ) {
-		mHitWorld.addBlocker( &prop );
-	}
+	placeMissionObjects();
 	// 始めから視点を回せるようにロックしておく。
 	GameLib::Input::Manager::instance().setCursorLocked( true );
 }
@@ -319,9 +335,80 @@ void TpsTestScene::drawWorld() const {
 	for ( const Building& building : mBuildings ) {
 		building.draw();
 	}
-	for ( const StaticProp& prop : mProps ) {
-		prop.draw();
+	if ( mEscapeCar ) {
+		mEscapeCar->draw();
 	}
+	for ( const auto& pickup : mPickups ) {
+		pickup->draw();
+	}
+}
+
+void TpsTestScene::placeMissionObjects() {
+	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない（その場合はクリアできないが、他の確認はできる）。
+	if ( mVehicleData->isReady() ) {
+		const Placement& p = kEscapeCarPlacement;
+		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, Vector3( p.x, 0.f, p.z ), p.yawDegree, kRequiredFuel );
+		mEscapeCar->addTo( &mWorld, &mHitWorld );
+	}
+	if ( mFuelCanData->isReady() ) {
+		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
+		unsigned seed = Framework::instance().time();
+		for ( int index : SpawnPicker::pick( kFuelSpawnPointCount, kRequiredFuel, seed ) ) {
+			const Placement& p = kFuelSpawnPoints[ index ];
+			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, Vector3( p.x, 0.f, p.z ), p.yawDegree, ITEM_FUEL ) );
+		}
+	}
+}
+
+void TpsTestScene::buildHud() {
+	UiCanvas& canvas = mHud.canvas();
+	canvas.add( std::make_unique< UiLabel >( kCrosshair, UiScreen::screenCenter(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHudColor ) );
+	mPromptLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::promptPosition(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kPromptColor ) );
+	mTankLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::statusLinePosition( kTankLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
+	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
+}
+
+void TpsTestScene::updateInteraction() {
+	if ( !mPlayer ) {
+		return;
+	}
+	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）。
+	mInteractor.update( mCamera.eyePosition(), mCamera.viewDirection(), mPlayer.get(), &mInventory, InputInteract() );
+	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（update の flush）。
+	for ( const auto& pickup : mPickups ) {
+		if ( pickup->isTaken() ) {
+			mPickups.destroyLater( pickup.get() );
+		}
+	}
+	if ( mEscapeCar && mEscapeCar->isFueled() ) {
+		SceneManager::instance().requestChange( SceneManager::SCENE_CLEAR );
+	}
+}
+
+IInteractable* TpsTestScene::resolveInteractable( const HitWorld::Hit& hit ) {
+	if ( !hit.blocker ) {
+		return nullptr; // キャラ（ゾンビ）は使えない
+	}
+	if ( Pickup* pickup = mPickups.find( hit.blocker ) ) {
+		return pickup;
+	}
+	if ( mEscapeCar && mEscapeCar->isBody( hit.blocker ) ) {
+		return mEscapeCar.get();
+	}
+	return nullptr;
+}
+
+void TpsTestScene::drawHud() {
+	char text[ kHudTextSize ];
+	mPromptLabel->setText( mInteractor.prompt().c_str() );
+	if ( mEscapeCar ) {
+		std::snprintf( text, sizeof( text ), "Car fuel: %d/%d", mEscapeCar->fuelDelivered(), mEscapeCar->fuelRequired() );
+		mTankLabel->setText( text );
+	}
+	int carried = mInventory.count( ITEM_FUEL );
+	std::snprintf( text, sizeof( text ), "Carrying: %s", carried > 0 ? itemSpec( ITEM_FUEL ).name : "-" );
+	mCarryLabel->setText( text );
+	mHud.draw();
 }
 
 #ifdef _DEBUG
@@ -399,6 +486,7 @@ void TpsTestScene::beginFrame() {
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう。
 	rotateCamera();
 	readPlayerCommand( &mCommand );
+	updateInteraction();
 #ifdef _DEBUG
 	toggleCollisionDebug();
 	despawnLookedAtZombie();
@@ -421,6 +509,7 @@ void TpsTestScene::update() {
 	updateBodySounds();
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
 	mZombies.flush();
+	mPickups.flush();
 }
 
 void TpsTestScene::draw() {
@@ -436,6 +525,7 @@ void TpsTestScene::draw() {
 	drawCollisionDebug();
 #endif
 	mPostProcess.endScene();
+	drawHud();
 	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく。
 	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）の順に、先に見つかった方を出す。
 	const char* shaderError = mPostProcess.errorMessage();
@@ -448,7 +538,7 @@ void TpsTestScene::draw() {
 
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		GameLib::Input::Manager::instance().isCursorLocked()
-			? "WASD: move  Shift: run  1: draw/holster  RMB: aim (tap=toggle, hold)  Mouse: look  Esc: release cursor"
+			? "WASD: move  Shift: run  1: draw/holster  RMB: aim (tap=toggle, hold)  Mouse: look  E: use  Esc: release cursor"
 			: "Click: lock cursor (mouse look)" );
 	if ( mPlayer ) {
 		char ground[ kDebugTextSize ];

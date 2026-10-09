@@ -20,6 +20,10 @@ public:
 		SCENE_CLEAR,     // クリア画面。
 	};
 
+	// 遊ぶシーン（タイトルの Start とクリア画面の Retry の行き先）。本編（SCENE_GAME）が出来るまでは FPS 検証シーンで遊ぶ。
+	// 行き先を変えるときはここだけ直す。
+	static const SceneId kPlayScene = SCENE_FPS_TEST;
+
 	static SceneManager& instance();
 	// 種別で切り替える（推奨）。対応する実体を内部で生成する。
 	void change( SceneId id );

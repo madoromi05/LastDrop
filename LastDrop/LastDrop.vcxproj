@@ -165,6 +165,12 @@
     <ClCompile Include="GameSrc\Building.cpp" />
     <ClCompile Include="GameSrc\MeshBoundsBox.cpp" />
     <ClCompile Include="GameSrc\StaticProp.cpp" />
+    <ClCompile Include="GameSrc\ItemCatalog.cpp" />
+    <ClCompile Include="GameSrc\Inventory.cpp" />
+    <ClCompile Include="GameSrc\Pickup.cpp" />
+    <ClCompile Include="GameSrc\EscapeCar.cpp" />
+    <ClCompile Include="GameSrc\Interactor.cpp" />
+    <ClCompile Include="GameSrc\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\UiInput.cpp" />
     <ClCompile Include="GameSrc\UiRenderer.cpp" />
     <ClCompile Include="GameSrc\UiLabel.cpp" />
@@ -387,6 +393,13 @@
     <ClInclude Include="GameSrc\Building.h" />
     <ClInclude Include="GameSrc\MeshBoundsBox.h" />
     <ClInclude Include="GameSrc\StaticProp.h" />
+    <ClInclude Include="GameSrc\ItemCatalog.h" />
+    <ClInclude Include="GameSrc\Inventory.h" />
+    <ClInclude Include="GameSrc\Pickup.h" />
+    <ClInclude Include="GameSrc\EscapeCar.h" />
+    <ClInclude Include="GameSrc\Interactor.h" />
+    <ClInclude Include="GameSrc\SpawnPicker.h" />
+    <ClInclude Include="GameSrc\IInteractable.h" />
     <ClInclude Include="GameSrc\UiRect.h" />
     <ClInclude Include="GameSrc\UiInput.h" />
     <ClInclude Include="GameSrc\IUiElement.h" />
