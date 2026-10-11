@@ -38,6 +38,10 @@ namespace{
 	// 骨の名前の頭の共通部分（移動の当たり判定・部位ごとの当たり判定で骨を引くのに使う）。
 	const char* kBoneNamePrefix = "mixamorig:";
 	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
+	// 目から、移動の当たり判定の前の辺までの余白（m）。これより近くに壁が来ないので、視点が壁を越えて建物の中が見えることが無い。
+	// カメラは目の前 5cm（FirstPersonCamera の kNearClip）より近くを描かず、その面の隅は目から約 7.7cm 離れている
+	// （縦の視野角 60 度・16:9）。斜めに壁を見ても隅が壁に入らないよう、それより少し大きくする。
+	const float kEyeToWallMargin = 0.1f;
 
 	// 状態ごとのアニメ名（tools/configs/player.json の extra_animations の name）と移動の速さ。
 	// 武器をしまっている間は素手のアニメ、持っている間は銃を肩の高さに持つアニメ（Basic Shooter Pack）。
@@ -245,13 +249,15 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 	approachSpeed( moveSpeed( next ) );
 	Vector3 step;
 	step.setMul( mMoveDirection, mSpeed );
-	// 向き（mAngleY）は上で変えてある。変えた向きで壁にめり込んだ分も、ここで外へ出す。
-	mPosition += mMover.move( step );
 	changeState( next );
-
-	mMesh->setPosition( mPosition );
+	// 移動より先に姿勢を進める。移動の当たり判定は今の目の位置まで伸ばす（collider）ので、
+	// このティックの姿勢（見下ろして前へ出た目）で判定しないと、1ティックだけ目が壁を越える。
+	// 姿勢は骨格の根の空間で作るので、置き場所が決まる前に進めてよい。
 	mMesh->setAngleY( mAngleY );
 	mMesh->update();
+	// 向き（mAngleY）は上で変えてある。変えた向き・伸びた当たり判定で壁にめり込んだ分も、ここで外へ出す。
+	mPosition += mMover.move( step );
+	mMesh->setPosition( mPosition );
 	mHitboxes.update( *mMesh );
 }
 
@@ -269,7 +275,9 @@ const Vector3& PlayerCharacter::position() const {
 }
 
 BoxCollider PlayerCharacter::collider() const {
-	return mFootprint.place( mPosition, mAngleY );
+	// 目は体（腰・胴・脚）より前にあり、見下ろすとさらに前へ出る。前の辺を、今の目の先（＋余白）まで伸ばす。
+	// 目は骨格の根の空間（前方が +Z）で持っているので、z がそのまま足元から前への長さになる。
+	return mFootprint.place( mPosition, mAngleY, mBody->eyePosition().z + kEyeToWallMargin );
 }
 
 const HitboxSet& PlayerCharacter::hitboxes() const {

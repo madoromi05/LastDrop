@@ -1,5 +1,6 @@
 #include "CollisionDebugDrawer.h"
 #include "CollisionWorld.h"
+#include "WallMesh.h"
 #include "ICollisionBody.h"
 #include "HitWorld.h"
 #include "IHittable.h"
@@ -36,9 +37,15 @@ namespace{
 	}
 	// 部位の箱1つ：線 12 本。
 	const int kBoxVertexCost = kCubeEdges * kVerticesPerLine;
-	// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋建物 20 軒ぶんに余裕を持たせた。足りなくなったら増やす。
+	// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋置物 20 個ぶんに余裕を持たせた。足りなくなったら増やす。
 	const int kVertexCapacity = 16000;
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
+
+	// ── 建物の面のかけら ──
+	// かけら1つは、隅の数だけ線がある（輪郭）。建物1軒で約 750 個・6000 頂点。7 軒ぶんに余裕を持たせた。足りなくなったら増やす。
+	const int kWallVertexCapacity = 48000;
+	// 線を壁の表面から浮かせる量（m）。表面とぴったり同じ奥行きだと、壁に隠れたり出たりしてちらつくため。
+	const float kWallLineLift = 0.01f;
 
 	// ── 線分が当たった所（setRayHit）──
 	const unsigned kRayHitColor = VertexColor::pack( 1.f, 0.2f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる赤
@@ -47,7 +54,7 @@ namespace{
 	const int kRayHitAxisNumber = 3;       // 十字は X・Y・Z の3本
 	const int kRayHitVertexCost = ( kRayHitAxisNumber + 1 ) * kVerticesPerLine; // 十字3本＋法線1本
 
-	// 長方形（建物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は Building と同じく Matrix34 の 移動*回転。
+	// 長方形（置物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は Building と同じく Matrix34 の 移動*回転。
 	void rectRing( const BoxCollider& box, std::vector< Vector3 >* ring ) {
 		const float kCornerSignX[ kRectCorners ] = { -1.f, 1.f, 1.f, -1.f };
 		const float kCornerSignZ[ kRectCorners ] = { -1.f, -1.f, 1.f, 1.f };
@@ -82,7 +89,7 @@ namespace{
 }
 
 CollisionDebugDrawer::CollisionDebugDrawer() :
-	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity, kBatchCapacity ) ),
+	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity + kWallVertexCapacity, kBatchCapacity ) ),
 	mHasRayHit( false ) {
 }
 
@@ -95,6 +102,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	mRenderer.enableDepthWrite( false );
 	mRenderer.setBlendMode( Graphics::BLEND_LINEAR ); // 線のアルファで後ろと混ぜる（kLineOpacity）
 	mRenderer.setCullMode( Graphics::CULL_NONE );
+	addWallLines( collisionWorld );
 	for ( const Pillar& pillar : mPillars ) {
 		addPillarLines( pillar );
 	}
@@ -147,6 +155,37 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 			}
 			cubeCorners( boxMatrix, &shape );
 			mBoxCorners.push_back( shape );
+		}
+	}
+}
+
+void CollisionDebugDrawer::addWallLines( const CollisionWorld& collisionWorld ) {
+	int usedVertices = 0;
+	for ( const WallMesh& walls : collisionWorld.wallMeshes() ) {
+		for ( const WallPiece& piece : walls.pieces() ) {
+			usedVertices += piece.cornerNumber * kVerticesPerLine;
+			if ( usedVertices > kWallVertexCapacity ) {
+				return;
+			}
+			// 面の表の向き（三角形の回り順から決まる。メッシュの表と同じ）へ少し浮かせる。
+			// 隅が一直線に並ぶかけらは向きが決まらない（長さ 0）ので、浮かせない。
+			Vector3 edge0;
+			Vector3 edge1;
+			edge0.setSub( piece.corner[ 1 ], piece.corner[ 0 ] );
+			edge1.setSub( piece.corner[ piece.cornerNumber - 1 ], piece.corner[ 0 ] );
+			Vector3 lift;
+			lift.setCross( edge0, edge1 );
+			if ( lift.squareLength() > 0.f ) {
+				lift.normalize();
+				lift *= kWallLineLift;
+			}
+			for ( int i = 0; i < piece.cornerNumber; ++i ) {
+				Vector3 from;
+				Vector3 to;
+				from.setAdd( piece.corner[ i ], lift );
+				to.setAdd( piece.corner[ ( i + 1 ) % piece.cornerNumber ], lift );
+				mRenderer.addLine( from, to, kLineColor, kLineColor );
+			}
 		}
 	}
 }

@@ -1,8 +1,9 @@
 {
     "mode": "static",
-    "fbx_path": "C:/Users/mador/Downloads/hqzdkgvom9kw-Red_Brick_Building_Iridesium/Red Brick Building Iridesium/Baked/Simple Building_Baked.fbx",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/hqzdkgvom9kw-Red_Brick_Building_Iridesium/Red Brick Building Iridesium/Baked/Simple Building_Baked.fbx",
     "out_path": "../../Resource/building.txt",
     "split_vertices": true,
+    "scale": 0.55,
     "mesh_texture": "Resource/building_albedo.tga",
     "mesh_normalmap": "Resource/building_normal.tga",
     "material_params": {

@@ -1,4 +1,5 @@
 #include "StaticMeshData.h"
+#include "MoveHeight.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -7,7 +8,9 @@ using namespace GameLib::Math;
 // 最初の頂点で必ず置き換わるよう、空の箱は min を最大・max を最小にしておく。
 StaticMeshData::StaticMeshData() :
 	mBoundsMin( FLOAT_MAX ),
-	mBoundsMax( -FLOAT_MAX ) {
+	mBoundsMax( -FLOAT_MAX ),
+	mBlockingBoundsMin( FLOAT_MAX ),
+	mBlockingBoundsMax( -FLOAT_MAX ) {
 }
 
 StaticMeshData::~StaticMeshData() {
@@ -49,9 +52,19 @@ void StaticMeshData::draw( const Matrix34& world ) const {
 	}
 }
 
+void StaticMeshData::appendTriangles( std::vector< Vector3 >* corners ) const {
+	for ( int i = 0; i < mParts.size(); ++i ) {
+		mParts[ i ].appendTriangles( corners );
+	}
+}
+
 void StaticMeshData::extendBounds( const Vector3& position ) {
 	mBoundsMin.min( position );
 	mBoundsMax.max( position );
+	if ( position.y > MoveHeight::kStepOver ) {
+		mBlockingBoundsMin.min( position );
+		mBlockingBoundsMax.max( position );
+	}
 }
 
 const Vector3& StaticMeshData::boundsMin() const {
@@ -60,6 +73,18 @@ const Vector3& StaticMeshData::boundsMin() const {
 
 const Vector3& StaticMeshData::boundsMax() const {
 	return mBoundsMax;
+}
+
+const Vector3& StaticMeshData::blockingBoundsMin() const {
+	return hasBlockingBounds() ? mBlockingBoundsMin : mBoundsMin;
+}
+
+const Vector3& StaticMeshData::blockingBoundsMax() const {
+	return hasBlockingBounds() ? mBlockingBoundsMax : mBoundsMax;
+}
+
+bool StaticMeshData::hasBlockingBounds() const {
+	return mBlockingBoundsMin.y <= mBlockingBoundsMax.y;
 }
 
 bool StaticMeshData::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {

@@ -41,6 +41,8 @@ public:
 	// 弾の当たり判定。座標はモデルの空間（置く前）。意味は TriangleMesh::raycast と同じ。upload 前なら当たらない。
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	// 全部の三角形の隅を、3つずつ corners の後ろへ足す（モデルの空間）。upload 前なら何も足さない。corners: 出力先。nullptr 不可。
+	void appendTriangles( std::vector< GameLib::Math::Vector3 >* corners ) const;
 
 private:
 	// 構築中だけ使う作業用配列。upload 後は空になる。

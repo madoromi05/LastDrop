@@ -22,7 +22,7 @@ namespace{
 
 	// ── 置き物（3D）──
 	// 発電機は右の建物の前（通りの奥）に置く。歩いて近づくと大きくなり、向きを変えると左右が入れ替わる。
-	const Vector3 kGeneratorPosition( 10.f, 0.5f, -9.f );
+	const Vector3 kGeneratorPosition( 10.f, 0.5f, -3.7f ); // 建物の正面の壁（z = -4.56）の手前、歩道の上
 	const float kGeneratorVolume = 0.35f;
 
 	// ── エアドロップの飛行機 ──

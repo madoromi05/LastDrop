@@ -20,6 +20,10 @@ public:
 
 	// 足元の位置 position・向き angleY（度。SkinnedMeshInstance::setAngleY と同じ約束）に置いた長方形。
 	BoxCollider place( const GameLib::Math::Vector3& position, float angleY ) const;
+	// 上と同じだが、長方形の前の辺を、少なくとも forwardReach の所まで伸ばす（後ろ・横の辺は変えない）。
+	// forwardReach: 足元から体の前方へ測った長さ（m。モデルの空間の +Z）。体の前の辺より手前なら、上と同じ長方形になる。
+	// 一人称の目は体（腰・胴・脚）より前にあるので、目が壁を越えないよう、目の先まで当たり判定を伸ばすために使う。
+	BoxCollider place( const GameLib::Math::Vector3& position, float angleY, float forwardReach ) const;
 
 private:
 	GameLib::Math::Vector3 mLocalCenter; // 長方形の中心（モデルの空間。足元から見た位置。y は使わない）

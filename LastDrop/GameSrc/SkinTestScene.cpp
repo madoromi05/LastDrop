@@ -29,15 +29,20 @@ namespace{
 	// 体ごとに歩き出しの時刻をずらす（フレーム）。揃って歩くと同じモデルの使い回しが目立つため。
 	const float kAnimationStartStep = 11.f;
 
-	// ── 建物（幅約14.3・奥行き約14.2・高さ約25.4。足元の歩道は幅約20.3。底がY=0）──
+	// ── 建物（幅約7.9・奥行き約7.8・屋根の高さ約10.8。足元の歩道は幅約11.2。底がY=0）──
 	const char* kBuildingFile = "Resource/building.txt"; // tools/configs/building.json で変換
 	// 正面(窓と店の入口)は +X 向きなので、rotateY(-90) で +Z（カメラ側）へ向ける。
 	const float kBuildingYaw = -90.f;
-	// 歩道の板（幅約20.3）同士が重なると同じ高さの面がちらつくので、それより広い間隔で並べる。
+	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
+	// 足元の歩道の板は 11.16m 四方。板どうしが重なると同じ高さの面がちらつくので、それより少し広い 11.3m おきに並べる。
+	// 奥行きは、歩道の手前の端が z = -2.85 に来る所（板の半分 5.58m ぶん奥）。
+	const float kBuildingRowZ = -8.43f;
 	const Placement kBuildingPlacements[] = {
-		{ -20.5f, -13.f, kBuildingYaw },
-		{   0.0f, -13.f, kBuildingYaw },
-		{  20.5f, -13.f, kBuildingYaw },
+		{  -22.6f, kBuildingRowZ, kBuildingYaw },
+		{  -11.3f, kBuildingRowZ, kBuildingYaw },
+		{    0.0f, kBuildingRowZ, kBuildingYaw },
+		{   11.3f, kBuildingRowZ, kBuildingYaw },
+		{   22.6f, kBuildingRowZ, kBuildingYaw },
 	};
 
 	// ── カメラ。手前にゾンビ、奥に建物の並んだ通りを見る ──

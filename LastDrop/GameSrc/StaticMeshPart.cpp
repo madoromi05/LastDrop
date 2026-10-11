@@ -101,3 +101,7 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 bool StaticMeshPart::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	return mShape.raycast( origin, delta, time, normal );
 }
+
+void StaticMeshPart::appendTriangles( std::vector< Vector3 >* corners ) const {
+	mShape.appendTriangles( corners );
+}

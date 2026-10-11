@@ -164,6 +164,8 @@
     <ClCompile Include="GameSrc\Zombie.cpp" />
     <ClCompile Include="GameSrc\Building.cpp" />
     <ClCompile Include="GameSrc\MeshBoundsBox.cpp" />
+    <ClCompile Include="GameSrc\MeshWallBuilder.cpp" />
+    <ClCompile Include="GameSrc\WallMesh.cpp" />
     <ClCompile Include="GameSrc\StaticProp.cpp" />
     <ClCompile Include="GameSrc\ItemCatalog.cpp" />
     <ClCompile Include="GameSrc\Inventory.cpp" />
@@ -392,6 +394,10 @@
     <ClInclude Include="GameSrc\Zombie.h" />
     <ClInclude Include="GameSrc\Building.h" />
     <ClInclude Include="GameSrc\MeshBoundsBox.h" />
+    <ClInclude Include="GameSrc\MeshWallBuilder.h" />
+    <ClInclude Include="GameSrc\WallMesh.h" />
+    <ClInclude Include="GameSrc\WallPiece.h" />
+    <ClInclude Include="GameSrc\MoveHeight.h" />
     <ClInclude Include="GameSrc\StaticProp.h" />
     <ClInclude Include="GameSrc\ItemCatalog.h" />
     <ClInclude Include="GameSrc\Inventory.h" />

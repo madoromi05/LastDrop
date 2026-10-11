@@ -3,6 +3,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
+#include "GameLib/Math/Functions.h"
 #include "GameLib/Math/Matrix34.h"
 #include <string>
 #include <vector>
@@ -53,14 +54,20 @@ BodyFootprint::BodyFootprint( const SkinnedMeshData* data, const char* boneNameP
 }
 
 BoxCollider BodyFootprint::place( const Vector3& position, float angleY ) const {
+	return place( position, angleY, mLocalCenter.z + mHalfWidthZ ); // 体の前の辺のまま
+}
+
+BoxCollider BodyFootprint::place( const Vector3& position, float angleY, float forwardReach ) const {
+	float back = mLocalCenter.z - mHalfWidthZ;
+	float front = Math::max( mLocalCenter.z + mHalfWidthZ, forwardReach );
 	// 見た目（SkinnedMeshInstance::rootMatrix）と同じ 移動 * 回転 で置く。
 	Matrix34 root;
 	root.setTranslation( position );
 	root.rotateY( angleY );
 	BoxCollider box;
-	root.mul( &box.center, mLocalCenter );
+	root.mul( &box.center, Vector3( mLocalCenter.x, 0.f, ( back + front ) * kHalf ) );
 	box.halfWidthX = mHalfWidthX;
-	box.halfWidthZ = mHalfWidthZ;
+	box.halfWidthZ = ( front - back ) * kHalf;
 	box.angleY = angleY;
 	box.height = position.y + kDisplayHeight;
 	return box;

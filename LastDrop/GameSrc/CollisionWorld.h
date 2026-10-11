@@ -4,6 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "BoxCollider.h"
 #include "SweepMath.h"
+#include "WallMesh.h"
 #include <vector>
 
 class ICollisionBody;
@@ -11,10 +12,13 @@ class ICollisionBody;
 // 移動の当たり判定の相手の名簿と、それへの問い合わせ（「この長方形をこう動かしたら最初に何に当たるか」）。
 // 位置を動かしたり押し戻したりはしない（それは CharacterMover の仕事）。問い合わせるだけ。
 // 相手は総当たりで調べる。ゾンビが数百体を超えて重くなったら、この中だけを空間分割に変えればよい（外の呼び方は変わらない）。
+// 建物の面のかけら（WallMesh）だけは数が多い（1軒で数百）ので、届かない範囲のものを先に捨ててから調べる。
 class CollisionWorld{
 public:
 	// 動かない形を登録する。値をコピーして持つ（動かないので、登録した後に元の持ち主が消えても困らない）。
 	void addBox( const BoxCollider& box );
+	// 動かない、メッシュの形に沿った当たり判定（建物）を登録する。値をコピーして持つ（addBox と同じ理由）。
+	void addWallMesh( const WallMesh& walls );
 	// 動くもの（キャラ）や、途中で消える物（拾える物）を登録する。形は問い合わせのたびに collider() で読む。所有権は受け取らない。nullptr 不可。
 	// この世界に問い合わせる間は生きていること（シーンでは、この世界をキャラより先に宣言する＝キャラより後に破棄される）。
 	void addBody( const ICollisionBody* body );
@@ -31,10 +35,12 @@ public:
 
 	// 登録された形を読む（当たり判定の表示など、問い合わせ以外で中身を見る係のため）。読むだけで、変えられない。
 	const std::vector< BoxCollider >& boxes() const;
+	const std::vector< WallMesh >& wallMeshes() const;
 	const std::vector< const ICollisionBody* >& bodies() const;
 
 private:
 	std::vector< BoxCollider > mBoxes;
+	std::vector< WallMesh > mWallMeshes;
 	std::vector< const ICollisionBody* > mBodies; // 借りているだけ
 };
 

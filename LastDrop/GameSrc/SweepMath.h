@@ -3,6 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "BoxCollider.h"
+#include "WallPiece.h"
 
 // 掃引で当たったときの結果。
 struct SweepHit{
@@ -13,8 +14,9 @@ struct SweepHit{
 // 掃引判定（動かした長方形が最初にどこで当たるか）と、めり込みを外へ出す量の計算だけを持つ。状態は持たない。
 // どれも真上から見た 2D（XZ 平面）で解き、入力の y は無視する（返すベクトルの y は 0）。
 //
-// 回転した長方形どうしは、分離軸判定（SAT）で解く。調べる軸は、2つの長方形の辺の向き（それぞれ2本、計4本）。
-// ・重なり：4本どの軸に影を落としても重なっていれば重なっている。一番浅い軸の向きへ押し出すのが最短。
+// 回転した長方形どうしも、長方形と面のかけら（WallPiece。真上から見た凸な多角形）も、分離軸判定（SAT）で解く。
+// 調べる軸は、2つの形の辺の向き（長方形は2本ずつ。かけらは辺の法線）。
+// ・重なり：どの軸に影を落としても重なっていれば重なっている。一番浅い軸の向きへ押し出すのが最短。
 // ・掃引：軸ごとに「影が重なり始める時刻・離れる時刻」を求める。全部の軸で重なっている一番早い時刻が当たった時刻で、
 //   最後に重なり始めた軸がぶつかった面の向きになる。
 class SweepMath{
@@ -27,6 +29,10 @@ public:
 	// box が other にめり込んでいれば、外へ出す最短の移動量を push に書いて true。ちょうど接しているだけなら false。
 	// push: 出力先。nullptr 不可。
 	static bool penetrateBox( const BoxCollider& box, const BoxCollider& other, GameLib::Math::Vector3* push );
+
+	// 相手が面のかけら（建物のメッシュの三角形を体の高さで切り取った形）のときの、sweepBox / penetrateBox と同じ問い合わせ。
+	static bool sweepPiece( const BoxCollider& box, const GameLib::Math::Vector3& delta, const WallPiece& piece, SweepHit* hit );
+	static bool penetratePiece( const BoxCollider& box, const WallPiece& piece, GameLib::Math::Vector3* push );
 };
 
 #endif

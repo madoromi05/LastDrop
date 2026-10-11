@@ -11,7 +11,7 @@ class CollisionWorld;
 
 // 動かない置物1つ（車・ガソリン缶など）。見た目（StaticMeshInstance）と、頂点を囲む当たり判定の箱1つを、同じ置き場所・向きから作って持つ。
 // 弾は見た目の三角形そのもので止める（IRayBlocker）。
-// Building と作りは同じだが分けている: 建物は将来、中に入れるよう壁ごとの箱へ差し替える予定で、置物はその変更を受けないため。
+// Building と分けている: 建物の移動の当たり判定はメッシュの形に沿わせる（MeshWallBuilder）が、置物は箱1つで足りるため。
 class StaticProp : public IRayBlocker{
 public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること（箱の大きさを頂点から求めるため）。

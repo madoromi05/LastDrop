@@ -13,8 +13,9 @@ namespace{
 BoxCollider MeshBoundsBox::make( const StaticMeshData* data, const Vector3& position, float angleY ) {
 	ASSERT( data && data->isReady() && "MeshBoundsBox : data is not ready." );
 	// 頂点を囲む箱（モデルのローカル）を、見た目と同じ置き場所・向きでワールドへ置く。
-	const Vector3& low = data->boundsMin();
-	const Vector3& high = data->boundsMax();
+	// 広さは、歩いて越えられない高さの頂点だけで決める（足元の歩道の板まで囲むと、建物の手前を歩けなくなる）。
+	const Vector3& low = data->blockingBoundsMin();
+	const Vector3& high = data->blockingBoundsMax();
 	Vector3 localCenter;
 	localCenter.setAdd( low, high );
 	localCenter *= kHalf;

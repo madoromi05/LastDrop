@@ -1,5 +1,5 @@
 #include "Building.h"
-#include "MeshBoundsBox.h"
+#include "MeshWallBuilder.h"
 #include "CollisionWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -7,18 +7,15 @@
 using namespace GameLib::Math;
 
 Building::Building( const StaticMeshData* data, const Vector3& position, float angleY ) :
-	mMesh( data ) {
+	mMesh( data ),
+	mWalls( MeshWallBuilder::make( data, position, angleY ) ) {
 	mMesh.setPosition( position );
 	mMesh.setAngleY( angleY );
-
-	mColliders.push_back( MeshBoundsBox::make( data, position, angleY ) );
 }
 
 void Building::addCollidersTo( CollisionWorld* world ) const {
 	ASSERT( world && "Building : world is null." );
-	for ( const BoxCollider& box : mColliders ) {
-		world->addBox( box );
-	}
+	world->addWallMesh( mWalls );
 }
 
 void Building::draw() const {

@@ -32,6 +32,12 @@ bool TriangleMesh::isEmpty() const {
 	return mIndices.empty();
 }
 
+void TriangleMesh::appendTriangles( std::vector< Vector3 >* corners ) const {
+	for ( unsigned short index : mIndices ) {
+		corners->push_back( mPositions[ index ] );
+	}
+}
+
 bool TriangleMesh::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	if ( isEmpty() || !HitMath::segmentTouchesBox( origin, delta, mBoundsMin, mBoundsMax ) ) {
 		return false;

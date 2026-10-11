@@ -4,7 +4,8 @@
 #include "GameLib/Math/Vector3.h"
 
 // 移動の当たり判定の形。真上から見た、Y軸まわりに回した長方形（XZ 平面）。
-// 建物（動かない。1軒で複数持てる）にも、キャラ（体の向きに合わせて回る。BodyFootprint が作る）にも使う。
+// 置物（動かない。StaticProp・Pickup）にも、キャラ（体の向きに合わせて回る。BodyFootprint が作る）にも使う。
+// 建物は箱ではなく、メッシュの形に沿った面のかけら（WallMesh）で判定する。
 // 高さは持たない（地面は Y=0 で、ジャンプが無いので上を越えることが無い）。
 struct BoxCollider{
 	GameLib::Math::Vector3 center; // 中心（ワールド座標。y は判定に使わない）

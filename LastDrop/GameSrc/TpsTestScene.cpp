@@ -46,10 +46,16 @@ namespace{
 	const Placement kTPoseZombiePlacement = { 1.8f, 3.0f, 0.f };
 	const char* kBuildingFile = "Resource/building.txt";
 	const float kBuildingYaw = -90.f;       // 正面(+X)を +Z へ向ける
+	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
+	// 足元の歩道の板は 11.16m 四方。板どうしが重なると同じ高さの面がちらつくので、それより少し広い 11.3m おきに並べる。
+	// 奥行きは、歩道の手前の端が z = -2.85 に来る所（板の半分 5.58m ぶん奥）。
+	const float kBuildingRowZ = -8.43f;
 	const Placement kBuildingPlacements[] = {
-		{ -20.5f, -13.f, kBuildingYaw },
-		{   0.0f, -13.f, kBuildingYaw },
-		{  20.5f, -13.f, kBuildingYaw },
+		{  -22.6f, kBuildingRowZ, kBuildingYaw },
+		{  -11.3f, kBuildingRowZ, kBuildingYaw },
+		{    0.0f, kBuildingRowZ, kBuildingYaw },
+		{   11.3f, kBuildingRowZ, kBuildingYaw },
+		{   22.6f, kBuildingRowZ, kBuildingYaw },
 	};
 
 	// ── ゲームループ（ガソリンを集めて車で脱出）──
@@ -235,7 +241,7 @@ void TpsTestScene::placeObjects() {
 		addZombie( kTPoseZombiePlacement, nullptr, 0.f );
 	}
 	for ( const Placement& p : kBuildingPlacements ) {
-		// 箱の大きさを頂点から求めるので、構築に失敗した建物は置かない。
+		// 当たり判定を三角形から作るので、構築に失敗した建物は置かない。
 		if ( !mBuildingData->isReady() ) {
 			break;
 		}
