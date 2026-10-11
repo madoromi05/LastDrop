@@ -42,10 +42,18 @@ namespace{
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
 	// ── 建物の面のかけら ──
-	// かけら1つは、隅の数だけ線がある（輪郭）。建物1軒で約 750 個・6000 頂点。7 軒ぶんに余裕を持たせた。足りなくなったら増やす。
-	const int kWallVertexCapacity = 48000;
 	// 線を壁の表面から浮かせる量（m）。表面とぴったり同じ奥行きだと、壁に隠れたり出たりしてちらつくため。
 	const float kWallLineLift = 0.01f;
+	// 名簿にある建物ぜんぶの、かけらの輪郭に要る頂点の数（かけら1つは、隅の数だけ線がある。建物1軒で約 750 個・6000 頂点）。
+	int wallVertexCost( const CollisionWorld& collisionWorld ) {
+		int cost = 0;
+		for ( const WallMesh& walls : collisionWorld.wallMeshes() ) {
+			for ( const WallPiece& piece : walls.pieces() ) {
+				cost += piece.cornerNumber * kVerticesPerLine;
+			}
+		}
+		return cost;
+	}
 
 	// ── 線分が当たった所（setRayHit）──
 	const unsigned kRayHitColor = VertexColor::pack( 1.f, 0.2f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる赤
@@ -89,12 +97,23 @@ namespace{
 }
 
 CollisionDebugDrawer::CollisionDebugDrawer() :
-	mRenderer( Scene::PrimitiveRenderer::create( kVertexCapacity + kWallVertexCapacity, kBatchCapacity ) ),
+	mWallVertexCapacity( 0 ),
 	mHasRayHit( false ) {
+}
+
+void CollisionDebugDrawer::reserveWallVertices( const CollisionWorld& collisionWorld ) {
+	int needed = wallVertexCost( collisionWorld );
+	if ( mRenderer && needed <= mWallVertexCapacity ) {
+		return;
+	}
+	// 建物は置いた後に増えないので、作り直すのはふつう最初の1回だけ。
+	mWallVertexCapacity = needed;
+	mRenderer = Scene::PrimitiveRenderer::create( kVertexCapacity + mWallVertexCapacity, kBatchCapacity );
 }
 
 void CollisionDebugDrawer::draw( const CollisionWorld& collisionWorld, const HitWorld& hitWorld, const Matrix44& projectionView,
 const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
+	reserveWallVertices( collisionWorld );
 	collectShapes( collisionWorld, hitWorld, hiddenBody, hiddenTarget );
 
 	mRenderer.setTransform( projectionView );
@@ -160,13 +179,9 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 }
 
 void CollisionDebugDrawer::addWallLines( const CollisionWorld& collisionWorld ) {
-	int usedVertices = 0;
+	// 容量は reserveWallVertices が名簿から数えて確保済みなので、ここでは数えない。
 	for ( const WallMesh& walls : collisionWorld.wallMeshes() ) {
 		for ( const WallPiece& piece : walls.pieces() ) {
-			usedVertices += piece.cornerNumber * kVerticesPerLine;
-			if ( usedVertices > kWallVertexCapacity ) {
-				return;
-			}
 			// 面の表の向き（三角形の回り順から決まる。メッシュの表と同じ）へ少し浮かせる。
 			// 隅が一直線に並ぶかけらは向きが決まらない（長さ 0）ので、浮かせない。
 			Vector3 edge0;

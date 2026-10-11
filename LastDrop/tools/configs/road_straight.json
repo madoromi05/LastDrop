@@ -1,0 +1,18 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/道路/source/modular kit city build v2/FORMATS/modular kit city build v2.fbx",
+    "out_path": "../../Resource/road_straight.txt",
+    "mesh_names": ["modular kit03"],
+    "split_vertices": true,
+    "center_origin": true,
+    "resource_root": "../..",
+    "texture_export_size": 4096,
+    "texture_sources": {
+        "mesh_texture": "C:/Users/mador/Downloads/ゾンビゲーム/道路/textures/modularkit.png"
+    },
+    "mesh_texture": "Resource/road_albedo.tga",
+    "material_params": {
+        "specular": [0.02, 0.02, 0.02],
+        "sharpness": 8.0
+    }
+}

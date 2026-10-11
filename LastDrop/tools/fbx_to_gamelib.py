@@ -26,6 +26,7 @@
 
 import bpy
 import mathutils
+import numpy
 import math
 import json
 import os
@@ -83,8 +84,15 @@ CONFIG = {
     "game_fps": 0,
     # static モードのみ。モデルの置き方を変換時に直す（実物大・原点の揃ったデータにして、ゲーム側で拡大率や
     # ずれを補わずに済ませる。当たり判定の箱は頂点の範囲から作るので、ゲーム側で縮めると見た目とずれる）。
-    "scale": 1.0,               # 頂点に掛ける拡大率（1 で等倍）
+    # 頂点に掛ける拡大率（1 で等倍）。[x, y, z] と書くと軸ごとに変えられる（Blender に読み込んだ向きの軸。Z が上）。
+    # 軸ごとの拡大は、部品を決まった長さへ伸び縮みさせるためのもの（歩道の帯を交差点の幅に合わせる、など）。
+    "scale": 1.0,
     "center_origin": False,     # True: 原点を「真上から見た中心・一番下」へ移す（地面に置いて、その場で回せるように）
+    # static モードのみ。mesh_texture / mesh_normalmap の元にする画像ファイル（設定ファイルからの相対パスで書ける）。
+    # 書いた項目は、マテリアルに繋がった画像ではなくこのファイルから書き出す。
+    # FBX の中の画像の参照が切れているモデル用（作者の PC のパスが入っていて、読み込んでも画像が空になる）。
+    # 例: {"mesh_texture": "textures/a.png", "mesh_normalmap": "textures/a_n.png"}
+    "texture_sources": {},
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -153,7 +161,8 @@ def adjust_static_transform(mesh_objs):
     # scale / center_origin を、全メッシュの置き方（ワールド行列）に掛ける。頂点はワールド座標で書き出すので、
     # ここで動かせば出力に反映される。親子関係があるモデルで子まで二重に動かさないよう、根のオブジェクトだけ動かす。
     scale = CONFIG["scale"]
-    if scale == 1.0 and not CONFIG["center_origin"]:
+    factors = tuple(scale) if isinstance(scale, (list, tuple)) else (scale, scale, scale)
+    if factors == (1.0, 1.0, 1.0) and not CONFIG["center_origin"]:
         return
     offset = mathutils.Vector((0.0, 0.0, 0.0))
     if CONFIG["center_origin"]:
@@ -162,11 +171,11 @@ def adjust_static_transform(mesh_objs):
         low = [min(p[i] for p in points) for i in range(3)]
         high = [max(p[i] for p in points) for i in range(3)]
         offset = mathutils.Vector(((low[0] + high[0]) * 0.5, (low[1] + high[1]) * 0.5, low[2]))
-    adjust = mathutils.Matrix.Scale(scale, 4) @ mathutils.Matrix.Translation(-offset)
+    adjust = mathutils.Matrix.Diagonal((factors[0], factors[1], factors[2], 1.0)) @ mathutils.Matrix.Translation(-offset)
     for obj in [o for o in bpy.data.objects if o.parent is None]:
         obj.matrix_world = adjust @ obj.matrix_world
     bpy.context.view_layer.update()  # 子の matrix_world を新しい親の位置で計算し直す
-    print("ADJUST", "scale", f(scale), "offset", f(offset.x), f(offset.y), f(offset.z))
+    print("ADJUST", "scale", " ".join(f(x) for x in factors), "offset", f(offset.x), f(offset.y), f(offset.z))
 
 
 def find_meshes():
@@ -660,6 +669,7 @@ def load_config(path):
         CONFIG[key] = resolve(CONFIG[key])
     for extra in CONFIG["extra_animations"]:
         extra["fbx_path"] = resolve(extra["fbx_path"])
+    CONFIG["texture_sources"] = {key: resolve(p) for key, p in CONFIG["texture_sources"].items()}
 
 
 def import_fbx():
@@ -719,18 +729,24 @@ def export_mesh_textures(mesh_objs):
     size = CONFIG["texture_export_size"]
     if size <= 0:
         return
+    for key, bsdf_input, via_normal_map in (("mesh_texture", "Base Color", False), ("mesh_normalmap", "Normal", True)):
+        if not CONFIG[key]:
+            continue
+        source = CONFIG["texture_sources"].get(key)
+        image = bpy.data.images.load(source) if source else material_image(mesh_objs, key, bsdf_input, via_normal_map)
+        save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]))
+
+
+def material_image(mesh_objs, key, bsdf_input, via_normal_map):
+    # テクスチャを貼るメッシュの最初のマテリアルから、bsdf_input に繋がった画像を返す。無ければ止める（key はエラー文用）。
     mat = next((o.material_slots[0].material for o in mesh_objs
                 if o.data.uv_layers.active and o.material_slots and o.material_slots[0].material), None)
     if mat is None or not mat.node_tree:
         raise RuntimeError("テクスチャを書き出すマテリアルが見つかりません。")
-    targets = (("mesh_texture", linked_image(mat, "Base Color", via_normal_map=False)),
-               ("mesh_normalmap", linked_image(mat, "Normal", via_normal_map=True)))
-    for key, image in targets:
-        if not CONFIG[key]:
-            continue
-        if image is None:
-            raise RuntimeError("マテリアル '%s' に %s の画像がありません。" % (mat.name, key))
-        save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]))
+    image = linked_image(mat, bsdf_input, via_normal_map)
+    if image is None:
+        raise RuntimeError("マテリアル '%s' に %s の画像がありません。" % (mat.name, key))
+    return image
 
 
 def linked_image(mat, bsdf_input, via_normal_map):
@@ -751,7 +767,8 @@ def save_scaled_tga(image, size, path):
     # save_render は表示用の色管理(AgX 等)が掛かり色が変わるので使わない。
     scaled = image.copy()
     scaled.scale(size, size)
-    pixels = [0.0] * (size * size * 4)
+    # Python のリストだと 4096px で 2GB を超えるので、numpy の配列で受け渡す（値は同じ）。
+    pixels = numpy.empty(size * size * 4, dtype=numpy.float32)
     scaled.pixels.foreach_get(pixels)
     out = bpy.data.images.new(os.path.basename(path), size, size, alpha=False)
     out.colorspace_settings.name = image.colorspace_settings.name

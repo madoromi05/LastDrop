@@ -1,0 +1,16 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/hqzdkgvom9kw-Red_Brick_Building_Iridesium/Red Brick Building Iridesium/Baked/Simple Building_Baked.fbx",
+    "out_path": "../../Resource/building_noground.txt",
+    "mesh_names": ["Plane", "Plane.001", "Plane.002", "Plane.003", "Plane.005", "Plane.006", "Plane.007"],
+    "split_vertices": true,
+    "scale": 0.55,
+    "mesh_texture": "Resource/building_albedo.tga",
+    "mesh_normalmap": "Resource/building_normal.tga",
+    "material_params": {
+        "diffuse": [0.55, 0.55, 0.55],
+        "specular": [0.02, 0.02, 0.02],
+        "sharpness": 8.0,
+        "normalstrength": 0.6
+    }
+}

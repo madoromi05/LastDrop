@@ -1,0 +1,14 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/道路/source/modular kit city build v2/FORMATS/modular kit city build v2.fbx",
+    "out_path": "../../Resource/road_curb_stub.txt",
+    "mesh_names": ["modular kit17"],
+    "split_vertices": true,
+    "center_origin": true,
+    "scale": [1.0, 0.25086, 1.0],
+    "mesh_texture": "Resource/road_albedo.tga",
+    "material_params": {
+        "specular": [0.02, 0.02, 0.02],
+        "sharpness": 8.0
+    }
+}

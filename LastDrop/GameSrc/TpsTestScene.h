@@ -3,6 +3,8 @@
 
 #include "IScene.h"
 #include "MeshCache.h"
+#include "TownMap.h"
+#include "TownGround.h"
 #include "CollisionWorld.h"
 #include "HitWorld.h"
 #include "Zombie.h"
@@ -35,7 +37,8 @@ class IInteractable;
 // （クラス名・シーン番号は TPS のまま。名前の変更は別作業）
 // ゲームループ（とりあえずここで遊ぶ）: 候補点から選んだ場所にガソリンが出る。E で拾い（1缶ずつ）、車まで運んで E で給油する。
 // 決まった数を入れるとクリア画面へ進む。左下に車のガソリンと持ち物、見ている物の案内を照準の下に出す。
-// 背景は SkinTestScene と同じ建物とゾンビ（動作確認用の目印）。どちらも当たり判定があり、自キャラは当たると沿って滑る。
+// 舞台は碁盤の目の町（道路・歩道・建物）とゾンビ。置き場所はどれも TownMap が決める。町の周りは建物で囲んであり、外へは出られない。
+// 建物とゾンビは当たり判定があり、自キャラは当たると沿って滑る。道路と歩道は見た目だけ（TownGround）。
 // 音も確かめられる: 足音（床の材質で変わる）・装備の音。
 // 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
 //
@@ -52,6 +55,8 @@ public:
 	virtual void draw();
 private:
 	void placeObjects();         // 全データの構築後に一度だけ、キャラと背景を作って並べる
+	// data の建物を placements の場所へ建て、移動の当たり判定を登録する（placeObjects から）。data: mCache から借りた物。nullptr 不可。
+	void placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements );
 	void updateCursorLock();     // Esc / クリックでカーソルロックを切り替える
 	void rotateCamera();         // ロック中ならマウスの移動量でカメラを回す（キャラの更新より前）
 	void placeCameraAtEye();     // 視点を自キャラの目へ置いて描画ステートへ反映する（キャラの更新より後）
@@ -73,14 +78,18 @@ private:
 	void despawnLookedAtZombie(); // 視線の先のゾンビを消す（F2。ActorList で消す仕組みの確認用）
 #endif
 
+	// 町のどこに何を置くか。コンストラクタで他のメンバ（mGround）の初期化に使うので、それより先に宣言する。
+	TownMap mMap;
 	// 設計図の倉庫。インスタンスより先に宣言する（＝インスタンスより後に破棄される）。
 	MeshCache mCache;
 	const SkinnedMeshData* mPlayerData;   // mCache から借りる
 	const StaticMeshData* mWeaponData;    // mCache から借りる（自キャラが右手に持つ銃）
 	const SkinnedMeshData* mZombieData;   // mCache から借りる
 	const StaticMeshData* mBuildingData;  // mCache から借りる
+	const StaticMeshData* mPerimeterBuildingData; // mCache から借りる（町を囲む、足元の板の無い建物）
 	const StaticMeshData* mVehicleData;   // mCache から借りる（脱出用の車）
 	const StaticMeshData* mFuelCanData;   // mCache から借りる（ガソリンの携行缶）
+	TownGround mTownGround;               // 道路と歩道の見た目（部品を mCache から借りる）
 
 	// 当たり判定の名簿。キャラを借りて持つので、キャラより先に宣言する（＝キャラより後に破棄される）。
 	CollisionWorld mWorld;
@@ -103,7 +112,7 @@ private:
 
 	// 音。鳴らす係はどれも mAudio を借りるので、mAudio を先に宣言する（＝係より後に破棄される）。
 	AudioEngine mAudio;
-	GroundMaterialMap mGround;	// 足元の床の材質（検証用に地面へ長方形を並べたもの）
+	GroundMaterialMap mGround;	// 足元の床の材質（検証用に、始めの通りへ長方形を並べたもの）
 	FootstepEmitter mFootsteps;
 	PlayerFoley mFoley;
 

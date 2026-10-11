@@ -173,6 +173,8 @@
     <ClCompile Include="GameSrc\EscapeCar.cpp" />
     <ClCompile Include="GameSrc\Interactor.cpp" />
     <ClCompile Include="GameSrc\SpawnPicker.cpp" />
+    <ClCompile Include="GameSrc\TownMap.cpp" />
+    <ClCompile Include="GameSrc\TownGround.cpp" />
     <ClCompile Include="GameSrc\UiInput.cpp" />
     <ClCompile Include="GameSrc\UiRenderer.cpp" />
     <ClCompile Include="GameSrc\UiLabel.cpp" />
@@ -405,6 +407,8 @@
     <ClInclude Include="GameSrc\EscapeCar.h" />
     <ClInclude Include="GameSrc\Interactor.h" />
     <ClInclude Include="GameSrc\SpawnPicker.h" />
+    <ClInclude Include="GameSrc\TownMap.h" />
+    <ClInclude Include="GameSrc\TownGround.h" />
     <ClInclude Include="GameSrc\IInteractable.h" />
     <ClInclude Include="GameSrc\UiRect.h" />
     <ClInclude Include="GameSrc\UiInput.h" />

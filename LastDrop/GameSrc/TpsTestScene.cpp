@@ -19,66 +19,27 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 置き場所（地面 Y=0 の上）と向き。
-	struct Placement{
-		float x;
-		float z;
-		float yawDegree; // 0 で +Z を向く
-	};
+	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ。
 
 	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
 	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
-	// 通りの手前に、建物（-Z 側）を向いて立たせる。カメラも同じ向きから始め、目線で通りを見る。
-	const Placement kPlayerStart = { 0.f, 8.f, 180.f };
 	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM）
 
-	// ── 背景。配置は SkinTestScene と同じ（見比べられるように）──
+	// ── 背景 ──
 	const char* kZombieFile = "Resource/character.txt";
 	const char* kZombieAnimation = "walk";
-	const Placement kZombiePlacements[] = {
-		{  0.0f,  0.0f,   0.f },
-		{ -2.5f, -2.0f,  25.f },
-		{  2.8f, -3.0f, -30.f },
-	};
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
-	// 当たり判定の確認用に、アニメを付けず T ポーズで立たせる1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
-	// 自キャラの始めの位置から 5m 前・少し右（始めの視界に収まる所）に、自キャラの方（+Z）を向けて置く。
-	const Placement kTPoseZombiePlacement = { 1.8f, 3.0f, 0.f };
-	const char* kBuildingFile = "Resource/building.txt";
-	const float kBuildingYaw = -90.f;       // 正面(+X)を +Z へ向ける
 	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
-	// 足元の歩道の板は 11.16m 四方。板どうしが重なると同じ高さの面がちらつくので、それより少し広い 11.3m おきに並べる。
-	// 奥行きは、歩道の手前の端が z = -2.85 に来る所（板の半分 5.58m ぶん奥）。
-	const float kBuildingRowZ = -8.43f;
-	const Placement kBuildingPlacements[] = {
-		{  -22.6f, kBuildingRowZ, kBuildingYaw },
-		{  -11.3f, kBuildingRowZ, kBuildingYaw },
-		{    0.0f, kBuildingRowZ, kBuildingYaw },
-		{   11.3f, kBuildingRowZ, kBuildingYaw },
-		{   22.6f, kBuildingRowZ, kBuildingYaw },
-	};
+	const char* kBuildingFile = "Resource/building.txt";
+	// 町を囲む建物。同じ建物から足元の歩道の板を除いた形（tools/configs/building_noground.json）。
+	// 板があると、壁どうしを付けて並べたときに隣の板と重なって面がちらつくため。
+	const char* kPerimeterBuildingFile = "Resource/building_noground.txt";
 
 	// ── ゲームループ（ガソリンを集めて車で脱出）──
 	const char* kVehicleFile = "Resource/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
 	const char* kFuelCanFile = "Resource/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
-	// 脱出用の車は、始めの位置の真後ろ（建物と反対側）に横向きに置く。振り返ると見える。
-	const Placement kEscapeCarPlacement = { 0.f, 18.f, 90.f };
-	const int kRequiredFuel = 3; // 車に入れるとクリアになるガソリンの数
-	// ガソリンが出るかもしれない場所（10か所）。毎回この中から kRequiredFuel 個を選んで置く（SpawnPicker）。
-	// 建物（z = -2.85 より奥）・ゾンビ・車と重ならない、通りの手前側に散らす。
-	const Placement kFuelSpawnPoints[] = {
-		{ -24.f,  1.f,   0.f },
-		{ -16.f,  0.f,  40.f },
-		{  -8.f,  1.f, -20.f },
-		{   8.f,  0.f,  70.f },
-		{  16.f,  1.f,  10.f },
-		{  24.f,  2.f, -45.f },
-		{ -20.f, 12.f,  90.f },
-		{  -6.f, 16.f,  15.f },
-		{  10.f, 15.f, -60.f },
-		{  22.f, 12.f,  30.f },
-	};
-	const int kFuelSpawnPointCount = sizeof( kFuelSpawnPoints ) / sizeof( kFuelSpawnPoints[ 0 ] );
+	// 車に入れるとクリアになるガソリンの数。候補の場所（TownMap）から、毎回この数だけ選んで置く（SpawnPicker）。
+	const int kRequiredFuel = 3;
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
 
 	// ── HUD ──
@@ -108,22 +69,9 @@ namespace{
 	const int kFillLight = 1;
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
 
-	// ── 床の材質（足音の確認用）──
-	// 自キャラの少し前（建物側）に、幅 3m の長方形を横一列に並べる。真ん中はコンクリートのまま。
-	// 始めの向き（建物の方）から見て、左へ横歩きすると 水たまり → 砂利 → 草、右へ行くと 木 → 金属 → ガラス。
-	// 見た目の目印はまだ無いので、足元の材質は画面左上に出す。
-	const float kZoneNearZ = 7.f;
-	const float kZoneFarZ = 3.f;
-	const GroundZone kGroundZones[] = {
-		{ -10.5f, kZoneFarZ, -7.5f, kZoneNearZ, GROUND_GRASS  },
-		{  -7.5f, kZoneFarZ, -4.5f, kZoneNearZ, GROUND_GRAVEL },
-		{  -4.5f, kZoneFarZ, -1.5f, kZoneNearZ, GROUND_WATER  },
-		{   1.5f, kZoneFarZ,  4.5f, kZoneNearZ, GROUND_WOOD   },
-		{   4.5f, kZoneFarZ,  7.5f, kZoneNearZ, GROUND_METAL  },
-		{   7.5f, kZoneFarZ, 10.5f, kZoneNearZ, GROUND_GLASS  },
-	};
-	const int kGroundZoneCount = sizeof( kGroundZones ) / sizeof( kGroundZones[ 0 ] );
-	const GroundMaterial kDefaultGround = GROUND_CONCRETE; // 通り
+	// ── 床の材質 ──
+	// 周りと違う材質の場所（足音の確認用）は TownMap が決める。それ以外の、道路と歩道の材質がこれ。
+	const GroundMaterial kDefaultGround = GROUND_CONCRETE;
 
 	// 装備の音を鳴らす高さ（足元から。胸のあたり）。足音は足元、装備は体から鳴らして聞こえる高さを分ける。
 	const float kBodySoundHeight = 1.3f;
@@ -135,7 +83,7 @@ namespace{
 	const int kCollisionRow = 3; // 当たり判定の表示の ON/OFF（Debug ビルドだけ）
 	const int kShaderErrorRow = 4; // シェーダのコンパイルエラー（あるときだけ）
 	const int kRayRow = 5;         // 画面中央から撃った確認用の線分が何に当たったか（Debug ビルド・当たり判定の表示中だけ）
-	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの端の建物まで届く長さ
+	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 	const int kDebugTextSize = 64;
 	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
 
@@ -165,6 +113,10 @@ namespace{
 		DebugScreen::instance().draw( column, row, line );
 	}
 
+	Vector3 toPosition( const TownPlacement& placement ) {
+		return Vector3( placement.x, placement.y, placement.z );
+	}
+
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
 		return on ? 1.f : 0.f;
@@ -186,15 +138,17 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData( 0 ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
+	mPerimeterBuildingData( 0 ),
 	mVehicleData( 0 ),
 	mFuelCanData( 0 ),
+	mTownGround( &mCache ),
 	mZombies( &mWorld, &mHitWorld ),
 	mPickups( &mWorld, &mHitWorld ),
 	mInteractor( &mHitWorld, kInteractReach, [ this ]( const HitWorld::Hit& hit ) { return resolveInteractable( hit ); } ),
 	mPromptLabel( 0 ),
 	mTankLabel( 0 ),
 	mCarryLabel( 0 ),
-	mGround( kGroundZones, kGroundZoneCount, kDefaultGround ),
+	mGround( mMap.groundZones().data(), static_cast< int >( mMap.groundZones().size() ), kDefaultGround ),
 	mFootsteps( &mAudio ),
 	mFoley( &mAudio ),
 	mCommand(),
@@ -208,9 +162,10 @@ TpsTestScene::TpsTestScene() :
 	mWeaponData = mCache.staticMesh( kWeaponFile );
 	mZombieData = mCache.skinnedMesh( kZombieFile );
 	mBuildingData = mCache.staticMesh( kBuildingFile );
+	mPerimeterBuildingData = mCache.staticMesh( kPerimeterBuildingFile );
 	mVehicleData = mCache.staticMesh( kVehicleFile );
 	mFuelCanData = mCache.staticMesh( kFuelCanFile );
-	mCamera.rotate( kPlayerStart.yawDegree, 0.f ); // キャラの向いている方を見始める
+	mCamera.rotate( mMap.playerStart().yawDegree, 0.f ); // キャラの向いている方を見始める
 	buildHud();
 }
 
@@ -224,31 +179,26 @@ void TpsTestScene::placeObjects() {
 	if ( mPlayerData->isReady() ) {
 		// 銃の構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
 		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
-		mPlayer = std::make_unique< PlayerCharacter >(
-			mPlayerData, weapon, &mWorld, Vector3( kPlayerStart.x, 0.f, kPlayerStart.z ), kPlayerStart.yawDegree );
+		const TownPlacement& start = mMap.playerStart();
+		mPlayer = std::make_unique< PlayerCharacter >( mPlayerData, weapon, &mWorld, toPosition( start ), start.yawDegree );
 		mPlayer->addTo( &mWorld, &mHitWorld );
 	}
 	if ( mZombieData->isReady() ) {
 		// 置く（移動・命中の両方の当たり判定への登録は ActorList が行う）。animation が nullptr なら T ポーズ。
-		auto addZombie = [ this ]( const Placement& p, const char* animation, float startTime ) {
-			mZombies.spawn( std::make_unique< Zombie >( mZombieData, Vector3( p.x, 0.f, p.z ), p.yawDegree, animation, startTime ) );
+		auto addZombie = [ this ]( const TownPlacement& p, const char* animation, float startTime ) {
+			mZombies.spawn( std::make_unique< Zombie >( mZombieData, toPosition( p ), p.yawDegree, animation, startTime ) );
 		};
 		int zombieIndex = 0;
-		for ( const Placement& p : kZombiePlacements ) {
+		for ( const TownPlacement& p : mMap.walkingZombies() ) {
 			addZombie( p, kZombieAnimation, kAnimationStartStep * zombieIndex );
 			++zombieIndex;
 		}
-		addZombie( kTPoseZombiePlacement, nullptr, 0.f );
+		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
+		addZombie( mMap.tPoseZombie(), nullptr, 0.f );
 	}
-	for ( const Placement& p : kBuildingPlacements ) {
-		// 当たり判定を三角形から作るので、構築に失敗した建物は置かない。
-		if ( !mBuildingData->isReady() ) {
-			break;
-		}
-		Building building( mBuildingData, Vector3( p.x, 0.f, p.z ), p.yawDegree );
-		building.addCollidersTo( &mWorld );
-		mBuildings.push_back( building );
-	}
+	mTownGround.place( mMap );
+	placeBuildings( mBuildingData, mMap.buildings() );
+	placeBuildings( mPerimeterBuildingData, mMap.perimeterBuildings() );
 	// 弾を止める物として登録する。mBuildings を並べ終えてから行う（push_back の途中で登録すると、
 	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）。
 	for ( const Building& building : mBuildings ) {
@@ -257,6 +207,18 @@ void TpsTestScene::placeObjects() {
 	placeMissionObjects();
 	// 始めから視点を回せるようにロックしておく。
 	GameLib::Input::Manager::instance().setCursorLocked( true );
+}
+
+void TpsTestScene::placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements ) {
+	// 当たり判定を三角形から作るので、構築に失敗した建物は置かない。
+	if ( !data->isReady() ) {
+		return;
+	}
+	for ( const TownPlacement& p : placements ) {
+		Building building( data, toPosition( p ), p.yawDegree );
+		building.addCollidersTo( &mWorld );
+		mBuildings.push_back( building );
+	}
 }
 
 void TpsTestScene::updateCursorLock() {
@@ -332,6 +294,7 @@ void TpsTestScene::setupLights() const {
 }
 
 void TpsTestScene::drawWorld() const {
+	mTownGround.draw();
 	if ( mPlayer ) {
 		mPlayer->draw();
 	}
@@ -352,16 +315,17 @@ void TpsTestScene::drawWorld() const {
 void TpsTestScene::placeMissionObjects() {
 	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない（その場合はクリアできないが、他の確認はできる）。
 	if ( mVehicleData->isReady() ) {
-		const Placement& p = kEscapeCarPlacement;
-		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, Vector3( p.x, 0.f, p.z ), p.yawDegree, kRequiredFuel );
+		const TownPlacement& p = mMap.escapeCar();
+		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, toPosition( p ), p.yawDegree, kRequiredFuel );
 		mEscapeCar->addTo( &mWorld, &mHitWorld );
 	}
 	if ( mFuelCanData->isReady() ) {
 		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
 		unsigned seed = Framework::instance().time();
-		for ( int index : SpawnPicker::pick( kFuelSpawnPointCount, kRequiredFuel, seed ) ) {
-			const Placement& p = kFuelSpawnPoints[ index ];
-			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, Vector3( p.x, 0.f, p.z ), p.yawDegree, ITEM_FUEL ) );
+		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
+		for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kRequiredFuel, seed ) ) {
+			const TownPlacement& p = spawnPoints[ index ];
+			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL ) );
 		}
 	}
 }

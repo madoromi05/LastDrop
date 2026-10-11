@@ -48,8 +48,11 @@ private:
 		float height;                               // 上の輪の高さ（m）
 	};
 
+	// 建物の線に要る頂点の数を名簿から数え、今の容量で足りなければ mRenderer を作り直す（draw の最初に呼ぶ）。
+	// 容量を決まった数にしないのは、建物の数は町の作りで大きく変わり（1軒で約 6000 頂点）、
+	// 足りないぶんを黙って描かないと「表示が出ない」ように見えるため（町を 96 軒にしたときに起きた）。
+	void reserveWallVertices( const CollisionWorld& collisionWorld );
 	// 建物の面のかけらの輪郭を積む（毎フレーム名簿から直接読む。数が多いので、頂点の並びを作り直さない）。
-	// 容量（kWallVertexCapacity）に収まらないぶんは描かない。
 	void addWallLines( const CollisionWorld& collisionWorld );
 	// 柱1本の線を積む。
 	void addPillarLines( const Pillar& pillar );
@@ -58,7 +61,8 @@ private:
 	// 当たった点の十字と法線の線を積む（setRayHit されていれば）。
 	void addRayHitLines();
 
-	GameLib::Scene::PrimitiveRenderer mRenderer; // すべての線（手前の物に隠れる）
+	GameLib::Scene::PrimitiveRenderer mRenderer; // すべての線（手前の物に隠れる）。最初の draw で作る（それまでは空）
+	int mWallVertexCapacity;                     // mRenderer が建物の線のために持っている頂点の数
 	// 描く形の頂点。毎フレーム作り直す。
 	std::vector< Pillar > mPillars;                                    // 移動の当たり判定の柱
 	std::vector< std::vector< GameLib::Math::Vector3 > > mBoxCorners;  // 部位の箱の 8 隅（ワールド座標）
