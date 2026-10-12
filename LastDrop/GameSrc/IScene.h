@@ -4,12 +4,12 @@
 // シーン共通インターフェース。
 // ゲームの更新（update）は 1/60 秒（1ティック。GameTime.h）ずつ、描画（draw）はモニターの速さで呼ばれるので、
 // 1回の描画の間に update が 0 回のことも、複数回のこともある。SceneManager が次の順に呼ぶ。
-//   beginFrame() → update() を 0 回以上 → draw()
+//   （入力を読む: Pad::update） → beginFrame() → update() を 0 回以上 → draw()
 // 注意: GameLib::Scene 名前空間と名前衝突しないよう、あえて IScene とする。
 class IScene{
 public:
 	virtual ~IScene(){}
-	// 1回の描画につき1回、update より前に呼ばれる。入力の読み取り・マウスで視点を回すなど、
+	// 1回の描画につき1回、update より前に呼ばれる（入力は SceneManager が読み終えている）。押した瞬間の入力を拾う・マウスで視点を回すなど、
 	// update の回数に左右されてはいけないもの（2回進めたら2倍回る、0回なら入力が消える等）をここで行う。
 	virtual void beginFrame() = 0;
 	// ゲームを1ティック進める。移動・アニメ・当たり判定など、時間で進むものはすべてここで行う。

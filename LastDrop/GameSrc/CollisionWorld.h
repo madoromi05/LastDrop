@@ -17,8 +17,9 @@ class CollisionWorld{
 public:
 	// 動かない形を登録する。値をコピーして持つ（動かないので、登録した後に元の持ち主が消えても困らない）。
 	void addBox( const BoxCollider& box );
-	// 動かない、メッシュの形に沿った当たり判定（建物）を登録する。値をコピーして持つ（addBox と同じ理由）。
-	void addWallMesh( const WallMesh& walls );
+	// 動かない、メッシュの形に沿った当たり判定（建物）を登録する。受け取って持つ（addBox と同じ理由）。
+	// かけらの数が多いので、作った物をそのまま渡せば写しを作らずに済む（一時オブジェクトか std::move で渡す）。
+	void addWallMesh( WallMesh walls );
 	// 動くもの（キャラ）や、途中で消える物（拾える物）を登録する。形は問い合わせのたびに collider() で読む。所有権は受け取らない。nullptr 不可。
 	// この世界に問い合わせる間は生きていること（シーンでは、この世界をキャラより先に宣言する＝キャラより後に破棄される）。
 	void addBody( const ICollisionBody* body );

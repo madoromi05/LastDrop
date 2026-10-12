@@ -27,13 +27,13 @@ namespace{
 	// 読み終えた文書からデータを構築する。構築済み・読み込み中なら何もしない。
 	// 全部終わっていれば true（失敗も終わりに含める。ずっと待ち続けないように）。
 	template< class TEntry, class TLoad >
-	bool buildLoaded( std::map< std::string, std::unique_ptr< TEntry > >* entries, TLoad load ) {
+	bool buildLoaded( std::map< std::string, std::unique_ptr< TEntry > >* entries, TLoad load, TextureCache* textures ) {
 		bool allBuilt = true;
 		for ( auto& pair : *entries ) {
 			TEntry& entry = *pair.second;
 			if ( !entry.mBuilt ) {
 				if ( entry.mDocument.isReady() ) {
-					if ( !load( &entry.mData, MeshLoaderUtil::containerRoot( entry.mDocument.root() ) ) ) {
+					if ( !load( &entry.mData, MeshLoaderUtil::containerRoot( entry.mDocument.root() ), textures ) ) {
 						GameLib::cout << "MeshCache: failed to build " << pair.first.c_str() << GameLib::endl;
 					}
 					entry.mDocument.release(); // 構築済みなので文書は解放
@@ -59,6 +59,15 @@ const StaticMeshData* MeshCache::staticMesh( const char* filename ) {
 	return &findOrLoad( &mStaticMeshes, filename )->mData;
 }
 
+const StaticMeshData* MeshCache::staticMeshForMerging( const char* filename ) {
+	StaticEntry* entry = findOrLoad( &mStaticMeshes, filename );
+	if ( !entry->mBuilt ) {
+		entry->mData.keepSourceVertices();
+	}
+	ASSERT( entry->mData.keepsSourceVertices() && "MeshCache : already built without source vertices. call staticMeshForMerging first." );
+	return &entry->mData;
+}
+
 const SkinnedMeshData* MeshCache::skinnedMesh( const char* filename ) {
 	SkinnedEntry* entry = findOrLoad( &mSkinnedMeshes, filename );
 	entry->mData.setSkinning( mSkinning.get() ); // 全スキンメッシュで同じ描き方を共有する
@@ -67,8 +76,8 @@ const SkinnedMeshData* MeshCache::skinnedMesh( const char* filename ) {
 
 bool MeshCache::update() {
 	// 両方を必ず呼ぶ（&& の短絡で片方のロードが止まらないように）。
-	bool staticBuilt = buildLoaded( &mStaticMeshes, StaticMeshLoader::load );
-	bool skinnedBuilt = buildLoaded( &mSkinnedMeshes, SkinnedMeshLoader::load );
+	bool staticBuilt = buildLoaded( &mStaticMeshes, StaticMeshLoader::load, &mTextures );
+	bool skinnedBuilt = buildLoaded( &mSkinnedMeshes, SkinnedMeshLoader::load, &mTextures );
 	return staticBuilt && skinnedBuilt;
 }
 

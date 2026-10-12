@@ -146,7 +146,6 @@
   <ItemGroup>
     <!-- ゲームコード -->
     <ClCompile Include="Framework.cpp" />
-    <ClCompile Include="GameLibMath.cpp" />
     <ClCompile Include="GameSrc\Animator.cpp" />
     <ClCompile Include="GameSrc\SkinnedMeshData.cpp" />
     <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp" />
@@ -171,6 +170,7 @@
     <ClCompile Include="GameSrc\Inventory.cpp" />
     <ClCompile Include="GameSrc\Pickup.cpp" />
     <ClCompile Include="GameSrc\EscapeCar.cpp" />
+    <ClCompile Include="GameSrc\ItemSource.cpp" />
     <ClCompile Include="GameSrc\Interactor.cpp" />
     <ClCompile Include="GameSrc\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\TownMap.cpp" />
@@ -181,9 +181,6 @@
     <ClCompile Include="GameSrc\UiButton.cpp" />
     <ClCompile Include="GameSrc\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\UiScreen.cpp" />
-    <ClCompile Include="GameSrc\TitleScene.cpp" />
-    <ClCompile Include="GameSrc\ClearScene.cpp" />
-    <ClCompile Include="GameSrc\GameScene.cpp" />
     <ClCompile Include="GameSrc\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\HitMath.cpp" />
     <ClCompile Include="GameSrc\HitboxSet.cpp" />
@@ -197,7 +194,6 @@
     <ClCompile Include="GameSrc\PostProcess.cpp" />
     <ClCompile Include="GameSrc\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\SkinTestScene.cpp" />
-    <ClCompile Include="GameSrc\TpsTestScene.cpp" />
     <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
     <ClCompile Include="GameSrc\FirstPersonBody.cpp" />
     <ClCompile Include="GameSrc\WeaponStance.cpp" />
@@ -213,6 +209,21 @@
     <ClCompile Include="GameSrc\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\Main.cpp" />
     <ClCompile Include="GameSrc\Pad.cpp" />
+    <ClCompile Include="GameSrc\TextureCache.cpp" />
+    <ClCompile Include="GameSrc\PlacementMatrix.cpp" />
+    <ClCompile Include="GameSrc\GameScene.cpp" />
+    <ClCompile Include="GameSrc\GameWorld.cpp" />
+    <ClCompile Include="GameSrc\FirstPersonControl.cpp" />
+    <ClCompile Include="GameSrc\PlayerBodySounds.cpp" />
+    <ClCompile Include="GameSrc\GameHud.cpp" />
+    <ClCompile Include="GameSrc\GameDebugOverlay.cpp" />
+    <ClCompile Include="GameSrc\GameResources.cpp" />
+    <ClCompile Include="GameSrc\HitboxLayout.cpp" />
+    <ClCompile Include="GameSrc\ZombieModel.cpp" />
+    <ClCompile Include="GameSrc\ViewFrustum.cpp" />
+    <ClCompile Include="GameSrc\MenuScene.cpp" />
+    <ClCompile Include="GameSrc\MenuCatalog.cpp" />
+    <ClCompile Include="GameSrc\StaticMeshMerger.cpp" />
     <!-- Base -->
     <ClCompile Include="GameLib\src\Base\Compressor.cpp" />
     <ClCompile Include="GameLib\src\Base\Conversion.cpp" />
@@ -305,7 +316,6 @@
   <!-- ==================== ヘッダファイル ==================== -->
   <ItemGroup>
     <ClInclude Include="Framework.h" />
-    <ClInclude Include="GameLibMath.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\AutoPtr.h" />
@@ -405,6 +415,7 @@
     <ClInclude Include="GameSrc\Inventory.h" />
     <ClInclude Include="GameSrc\Pickup.h" />
     <ClInclude Include="GameSrc\EscapeCar.h" />
+    <ClInclude Include="GameSrc\ItemSource.h" />
     <ClInclude Include="GameSrc\Interactor.h" />
     <ClInclude Include="GameSrc\SpawnPicker.h" />
     <ClInclude Include="GameSrc\TownMap.h" />
@@ -419,9 +430,6 @@
     <ClInclude Include="GameSrc\UiButton.h" />
     <ClInclude Include="GameSrc\UiCanvas.h" />
     <ClInclude Include="GameSrc\UiScreen.h" />
-    <ClInclude Include="GameSrc\TitleScene.h" />
-    <ClInclude Include="GameSrc\ClearScene.h" />
-    <ClInclude Include="GameSrc\GameScene.h" />
     <ClInclude Include="GameSrc\CollisionDebugDrawer.h" />
     <ClInclude Include="GameSrc\BodyPart.h" />
     <ClInclude Include="GameSrc\HitMath.h" />
@@ -443,13 +451,13 @@
     <ClInclude Include="GameSrc\FixedStepClock.h" />
     <ClInclude Include="GameSrc\GameTime.h" />
     <ClInclude Include="GameSrc\SkinTestScene.h" />
-    <ClInclude Include="GameSrc\TpsTestScene.h" />
     <ClInclude Include="GameSrc\FirstPersonCamera.h" />
     <ClInclude Include="GameSrc\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\WeaponStance.h" />
     <ClInclude Include="GameSrc\AudioEngine.h" />
     <ClInclude Include="GameSrc\SoundCatalog.h" />
     <ClInclude Include="GameSrc\GroundMaterial.h" />
+    <ClInclude Include="GameSrc\IGroundSurface.h" />
     <ClInclude Include="GameSrc\FootstepEmitter.h" />
     <ClInclude Include="GameSrc\PlayerFoley.h" />
     <ClInclude Include="GameSrc\AmbienceSystem.h" />
@@ -459,6 +467,21 @@
     <ClInclude Include="GameSrc\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\PlayerCommand.h" />
     <ClInclude Include="GameSrc\MatrixBlend.h" />
+    <ClInclude Include="GameSrc\TextureCache.h" />
+    <ClInclude Include="GameSrc\PlacementMatrix.h" />
+    <ClInclude Include="GameSrc\GameScene.h" />
+    <ClInclude Include="GameSrc\GameWorld.h" />
+    <ClInclude Include="GameSrc\FirstPersonControl.h" />
+    <ClInclude Include="GameSrc\PlayerBodySounds.h" />
+    <ClInclude Include="GameSrc\GameHud.h" />
+    <ClInclude Include="GameSrc\GameDebugOverlay.h" />
+    <ClInclude Include="GameSrc\GameResources.h" />
+    <ClInclude Include="GameSrc\HitboxLayout.h" />
+    <ClInclude Include="GameSrc\ZombieModel.h" />
+    <ClInclude Include="GameSrc\ViewFrustum.h" />
+    <ClInclude Include="GameSrc\MenuScene.h" />
+    <ClInclude Include="GameSrc\MenuCatalog.h" />
+    <ClInclude Include="GameSrc\StaticMeshMerger.h" />
     <ClInclude Include="GameLib\include\GameLib\Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\DebugScreen.h" />
     <ClInclude Include="GameLib\include\GameLib\GameLib.h" />

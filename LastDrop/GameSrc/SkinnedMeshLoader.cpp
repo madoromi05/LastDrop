@@ -41,7 +41,7 @@ namespace{
 	}
 }
 
-bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
+bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container, TextureCache* textures ) {
 	ConstElement skin = MeshLoaderUtil::findChild( container, kElementName );
 	if ( !skin ) {
 		GameLib::cout << "SkinnedMeshLoader: <" << kElementName << "> not found." << GameLib::endl;
@@ -76,7 +76,7 @@ bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
 	bool hasParts = ( partNumber > 0 );
 	mesh->create( vertexNumber, indexNumber, boneNumber, hasParts ? partNumber : kSinglePart );
 	if ( !hasParts ) {
-		MeshLoaderUtil::loadMaterial( &mesh->material( 0 ), skin );
+		MeshLoaderUtil::loadMaterial( &mesh->material( 0 ), skin, textures );
 		mesh->setPart( 0, 0, indexNumber );
 	}
 
@@ -125,7 +125,7 @@ bool SkinnedMeshLoader::load( SkinnedMeshData* mesh, ConstElement container ) {
 			readIndex( mesh, child, &indexIndex );
 		} else if ( name == kPartElementName ) {
 			// パーツの見た目（<Part texture="..." normalmap="..." ...>）と、中の <Index> が占める範囲。
-			MeshLoaderUtil::loadMaterial( &mesh->material( partIndex ), child );
+			MeshLoaderUtil::loadMaterial( &mesh->material( partIndex ), child, textures );
 			int firstIndex = indexIndex;
 			for ( int j = 0; j < child.childNumber(); ++j ) {
 				ConstElement indexElement = child.child( j );

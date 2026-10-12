@@ -5,6 +5,9 @@
 #include "VertexColor.h"
 #include "SkinningPipeline.h"
 
+using namespace GameLib;
+using namespace GameLib::Math;
+
 namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kSkeletonTreeIndex = 0; // 変換ツールは <Tree> を1つだけ出力する
@@ -29,6 +32,10 @@ SkinnedMeshData::Vertex::Vertex() :
 		mBoneIndex[ i ] = 0;
 		mWeight[ i ] = 0.f;
 	}
+}
+
+SkinnedMeshData::Bone::Bone() :
+	mNodeIndex( -1 ) {
 }
 
 SkinnedMeshData::Part::Part() :
@@ -115,9 +122,10 @@ bool SkinnedMeshData::finish() {
 	Scene::Tree rest = createSkeleton();
 	rest.updateWorldMatrix();
 	for ( int i = 0; i < mBones.size(); ++i ) {
-		const Matrix34* restMatrix = rest.nodeMatrix( mBones[ i ].mNodeName.c_str() );
-		if ( restMatrix ) {
-			mBones[ i ].mBindInverse.setInverse( *restMatrix );
+		// ノードは名前で探すと骨の数ぶんの文字列比較になるので、ここで番号にしておく（毎フレームの computeBonePose が番号で読む）。
+		mBones[ i ].mNodeIndex = rest.nodeIndex( mBones[ i ].mNodeName.c_str() );
+		if ( mBones[ i ].mNodeIndex >= 0 ) {
+			mBones[ i ].mBindInverse.setInverse( *rest.nodeMatrix( mBones[ i ].mNodeIndex ) );
 		} else {
 			// 骨名の不一致はエラーにならず「その骨だけ動かない」見た目になるので、ここで知らせる。
 			GameLib::cout << "SkinnedMeshData: bone node not found in Tree: " << mBones[ i ].mNodeName.c_str() << GameLib::endl;
@@ -162,10 +170,6 @@ void SkinnedMeshData::setSkinning( SkinningPipeline* skinning ) {
 
 bool SkinnedMeshData::isReady() const {
 	return mReady;
-}
-
-int SkinnedMeshData::vertexNumber() const {
-	return mVertices.size();
 }
 
 int SkinnedMeshData::boneNumber() const {
@@ -256,9 +260,9 @@ void SkinnedMeshData::updateLoading() {
 void SkinnedMeshData::computeBonePose( Scene::Tree& pose, std::vector< Matrix34 >* bonePose ) const {
 	pose.updateWorldMatrix();
 	for ( int b = 0; b < mBones.size(); ++b ) {
-		const Matrix34* now = pose.nodeMatrix( mBones[ b ].mNodeName.c_str() );
-		if ( now ) {
-			( *bonePose )[ b ] = *now;
+		int node = mBones[ b ].mNodeIndex;
+		if ( node >= 0 ) {
+			( *bonePose )[ b ] = *pose.nodeMatrix( node );
 		} else {
 			( *bonePose )[ b ].setIdentity();
 		}

@@ -65,57 +65,19 @@ void Pad::update()
 }
 
 // ────────────────────────────────────────────────
-// Button 列挙 → WorkId への変換
+// 操作（WorkId）の読み方
 // ────────────────────────────────────────────────
-WorkId Pad::buttonToWorkId(Button b)
+bool Pad::isOn(WorkId work, int playerId) const
 {
-    switch (b)
-    {
-    case UP:    return WorkId::Up;
-    case DOWN:  return WorkId::Down;
-    case LEFT:  return WorkId::Left;
-    case RIGHT: return WorkId::Right;
-    case JUMP:  return WorkId::Jump;
-    case FIRE:  return WorkId::Fire;
-    case WIRE:     return WorkId::Wire;
-    case WIREREEL: return WorkId::WireReel;
-    case DODGE:    return WorkId::Dodge;
-    case RUN:      return WorkId::Run;
-    case MENU:     return WorkId::Menu;
-    case AIM:      return WorkId::Aim;
-    case HOLSTER:  return WorkId::Holster;
-    case DEBUG_COLLISION: return WorkId::DebugCollision;
-    case DEBUG_DESPAWN:   return WorkId::DebugDespawn;
-    case UI_UP:     return WorkId::UiUp;
-    case UI_DOWN:   return WorkId::UiDown;
-    case UI_DECIDE: return WorkId::UiDecide;
-    case INTERACT:  return WorkId::Interact;
-    default:    return WorkId::Up;
-    }
-}
-
-// ────────────────────────────────────────────────
-// 従来互換 API
-// ────────────────────────────────────────────────
-bool Pad::isOn(Button b, int playerId) const
-{
-    WorkId work = buttonToWorkId(b);
     return IsWorkPress(m_inputs[playerId], work) || IsWorkHold(m_inputs[playerId], work);
 }
 
-bool Pad::isTriggered(Button b, int playerId) const
+bool Pad::isTriggered(WorkId work, int playerId) const
 {
-    return IsWorkPress(m_inputs[playerId], buttonToWorkId(b));
+    return IsWorkPress(m_inputs[playerId], work);
 }
 
-// ────────────────────────────────────────────────
-// 新 API
-// ────────────────────────────────────────────────
-short Pad::getWorkState(WorkId work, int playerId) const { return GetWorkState(m_inputs[playerId], work); }
-bool  Pad::isWorkFree(WorkId work, int playerId) const { return IsWorkFree(m_inputs[playerId], work); }
-bool  Pad::isWorkPress(WorkId work, int playerId) const { return IsWorkPress(m_inputs[playerId], work); }
-bool  Pad::isWorkHold(WorkId work, int playerId) const { return IsWorkHold(m_inputs[playerId], work); }
-bool  Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
+bool Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
 AxisStatus Pad::getAxisWorkState(WorkId work, int playerId) const { return GetAxisWorkState(m_inputs[playerId], work); }
 
 // ────────────────────────────────────────────────
@@ -172,41 +134,28 @@ void Pad::removeJoystickBindingFromWork(WorkId work, int buttonCode, int playerI
     m_configs[playerId].save(InputConfigFilePath(playerId));
 }
 
-void Pad::setCollectorActive(CollectorId collector, bool active)
-{
-    for (int i = 0; i < MAX_PLAYERS; ++i)
-    {
-        m_builders[i]->SetCollectorActive(collector, active);
-    }
-}
-
-Input& Pad::getInput(int playerId)
-{
-    return m_inputs[playerId];
-}
-
 // ────────────────────────────────────────────────
 // ゲームコード向けショートカット（アクション名＝関数名）
 //   移動系は「押されている間」、Fire は「押した瞬間」を返す。
 // ────────────────────────────────────────────────
-bool InputUp   (int playerId) { return Pad::instance()->isOn(Pad::UP,    playerId); }
-bool InputDown (int playerId) { return Pad::instance()->isOn(Pad::DOWN,  playerId); }
-bool InputLeft (int playerId) { return Pad::instance()->isOn(Pad::LEFT,  playerId); }
-bool InputRight(int playerId) { return Pad::instance()->isOn(Pad::RIGHT, playerId); }
-bool InputJump (int playerId) { return Pad::instance()->isOn(Pad::JUMP,  playerId); }
-bool InputFire (int playerId) { return Pad::instance()->isTriggered(Pad::FIRE, playerId); }
-bool InputWire       (int playerId) { return Pad::instance()->isTriggered(Pad::WIRE, playerId); }
+bool InputUp   (int playerId) { return Pad::instance()->isOn(WorkId::Up, playerId); }
+bool InputDown (int playerId) { return Pad::instance()->isOn(WorkId::Down, playerId); }
+bool InputLeft (int playerId) { return Pad::instance()->isOn(WorkId::Left, playerId); }
+bool InputRight(int playerId) { return Pad::instance()->isOn(WorkId::Right, playerId); }
+bool InputJump (int playerId) { return Pad::instance()->isOn(WorkId::Jump, playerId); }
+bool InputFire (int playerId) { return Pad::instance()->isTriggered(WorkId::Fire, playerId); }
+bool InputWire       (int playerId) { return Pad::instance()->isTriggered(WorkId::Wire, playerId); }
 bool InputWireRelease(int playerId) { return Pad::instance()->isWorkRelease(WorkId::Wire, playerId); }
-bool InputWireReel   (int playerId) { return Pad::instance()->isOn(Pad::WIREREEL, playerId); }
-bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(Pad::DODGE, playerId); }
-bool InputRun        (int playerId) { return Pad::instance()->isOn(Pad::RUN, playerId); }
+bool InputWireReel   (int playerId) { return Pad::instance()->isOn(WorkId::WireReel, playerId); }
+bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(WorkId::Dodge, playerId); }
+bool InputRun        (int playerId) { return Pad::instance()->isOn(WorkId::Run, playerId); }
 AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Look, playerId); }
-bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(Pad::MENU, playerId); }
-bool InputAim        (int playerId) { return Pad::instance()->isOn(Pad::AIM, playerId); }
-bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(Pad::HOLSTER, playerId); }
-bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(Pad::DEBUG_COLLISION, playerId); }
-bool InputDebugDespawn(int playerId) { return Pad::instance()->isTriggered(Pad::DEBUG_DESPAWN, playerId); }
-bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(Pad::UI_UP, playerId); }
-bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(Pad::UI_DOWN, playerId); }
-bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(Pad::UI_DECIDE, playerId); }
-bool InputInteract(int playerId) { return Pad::instance()->isTriggered(Pad::INTERACT, playerId); }
+bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(WorkId::Menu, playerId); }
+bool InputAim        (int playerId) { return Pad::instance()->isOn(WorkId::Aim, playerId); }
+bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(WorkId::Holster, playerId); }
+bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugCollision, playerId); }
+bool InputDebugPickupCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugPickupCollision, playerId); }
+bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }
+bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiDown, playerId); }
+bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }
+bool InputInteract(int playerId) { return Pad::instance()->isTriggered(WorkId::Interact, playerId); }

@@ -48,15 +48,16 @@ class TownMap{
 public:
 	TownMap();
 
-	const std::vector< TownTile >& groundTiles() const;				// 道路・歩道・床・土（どれも当たり判定は無い）
+	const std::vector< TownTile >& groundTiles() const;				// 道路・歩道・床・土（どれも移動は止めない。弾は TownGround が止める）
 	const std::vector< TownPlacement >& buildings() const;			// ブロックの中の建物（向きは、正面がどちらを向くか）
 	const std::vector< TownPlacement >& perimeterBuildings() const;	// 町を囲む建物（足元の板の無い形を置く。向きは同上）
 	const TownPlacement& playerStart() const;						// 自キャラの始めの位置と向き
 	const std::vector< TownPlacement >& walkingZombies() const;		// その場で歩くゾンビ
 	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
 	const TownPlacement& escapeCar() const;							// 脱出用の車
+	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
 	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
-	const std::vector< GroundZone >& groundZones() const;			// 床の材質が周りと違う所（足音の確認用）
+	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 
 private:
 	std::vector< TownTile > mGroundTiles;
@@ -66,6 +67,7 @@ private:
 	std::vector< TownPlacement > mWalkingZombies;
 	TownPlacement mTPoseZombie;
 	TownPlacement mEscapeCar;
+	TownPlacement mEndlessFuel;
 	std::vector< TownPlacement > mFuelSpawnPoints;
 	std::vector< GroundZone > mGroundZones;
 };

@@ -109,21 +109,25 @@ namespace{
 		float yawDegree; // キャラ・車の向き。0 で +Z（南）、90 で +X（東）を向く
 	};
 
-	// ── 自キャラとゾンビ。町の中央の南側の通り（東西の道 2 番）の真ん中から、東を向いて始める ──
-	const StreetSpot kPlayerStart = { 1.5f, 2.f, 0.f, 0.f, 90.f };
+	// ── 自キャラとゾンビ。町の中央の北側の通り（東西の道 1 番）の真ん中から、東を向いて始める ──
+	// 脱出用の車と同じ通りから始める（ユーザー指定: 車と始めの位置は近くに）。
+	const StreetSpot kPlayerStart = { 1.5f, 1.f, 0.f, 0.f, 90.f };
 	// その場で歩くゾンビ。始めの視界の奥（東の交差点の手前）に、こちら向きに置く。
 	const StreetSpot kWalkingZombies[] = {
-		{ 1.5f, 2.f, 11.0f, -1.2f,  -90.f },
-		{ 1.5f, 2.f, 13.5f,  1.3f, -115.f },
-		{ 1.5f, 2.f, 16.0f, -1.7f,  -70.f },
+		{ 1.5f, 1.f, 11.0f, -1.2f,  -90.f },
+		{ 1.5f, 1.f, 13.5f,  1.3f, -115.f },
+		{ 1.5f, 1.f, 16.0f, -1.7f,  -70.f },
 	};
 	// T ポーズの1体は、始めの位置から 5m 前・少し右（始めの視界に収まる所）に、こちら向きに置く。
-	const StreetSpot kTPoseZombie = { 1.5f, 2.f, 5.f, 1.8f, -90.f };
+	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
 	// ── ゲームループ（ガソリンを集めて車で脱出）──
-	// 脱出用の車は、中央のブロックをはさんだ北側の通り（東西の道 1 番）の真ん中に、道に沿って南側の車線へ寄せて停める。
+	// 脱出用の車は、始めの位置の左前に、道に沿って北側の車線へ寄せて停める（南側の車線には T ポーズのゾンビが居るため）。
+	// 前後の位置は、始めの位置にも奥の歩くゾンビにも車体が掛からない所。
 	const float kLaneOffset = 0.25f * kRoadWidth; // 道の中心から車線の中心まで
-	const StreetSpot kEscapeCar = { 1.5f, 1.f, 0.f, kLaneOffset, 90.f };
+	const StreetSpot kEscapeCar = { 1.5f, 1.f, 4.5f, -kLaneOffset, 90.f };
+	// 何度でも拾えるガソリン（ユーザー指定）。車の後ろ（始めの位置の側）の同じ車線に、車体から少し離して置く。
+	const StreetSpot kEndlessFuel = { 1.5f, 1.f, 1.6f, -kLaneOffset, 20.f };
 	// ガソリンが出るかもしれない場所（10か所）。町じゅうを歩かせるよう、外周の四隅と各辺の真ん中、内側の通りに散らす。
 	// どれも車道の上（建物・ゾンビ・車・始めの位置と重ならない所）。ずれは、道の真ん中ではなく端に寄せるため。
 	const StreetSpot kFuelSpawnPoints[] = {
@@ -138,18 +142,6 @@ namespace{
 		{ 0.5f, 1.0f,  0.0f, -2.0f, -60.f }, // 内側（北西）
 		{ 2.5f, 2.0f,  0.0f,  2.0f,  30.f }, // 内側（南東）
 	};
-
-	// ── 床の材質（足音の確認用）──
-	// 始めの通りに、長さ 3m の帯を車道の幅いっぱいに並べる。始めの位置の前後 1.5m はコンクリートのまま。
-	// 始めの向き（東）へ進むと 水たまり → 砂利 → 草、後ろへ下がると 木 → 金属 → ガラス。
-	// 見た目の目印は無いので、足元の材質は画面左上に出る。
-	const float kZoneLength = 3.f;
-	const float kZoneStartGap = 1.5f;
-	const GroundMaterial kZonesAhead[] = { GROUND_WATER, GROUND_GRAVEL, GROUND_GRASS };
-	const GroundMaterial kZonesBehind[] = { GROUND_WOOD, GROUND_METAL, GROUND_GLASS };
-	// 帯を並べていく向き（addGroundZones の direction）。始めの向きが東（+X）なので、前が +X。
-	const float kAhead = 1.f;
-	const float kBehind = -1.f;
 
 	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。
 	float roadX( float column ) {
@@ -313,25 +305,13 @@ namespace{
 			addTile( tiles, TOWN_PIECE_PAVEMENT, centerLineX, kSidewalkHeight, halfZ - offset, kAsBuilt, kPerimeterFloorScale ); // 東の辺。南の角から北へ
 		}
 	}
-
-	// 始めの通りに沿って、床の材質の帯を並べる。direction は kAhead / kBehind。
-	void addGroundZones( std::vector< GroundZone >* zones, const TownPlacement& start,
-		const GroundMaterial* materials, int materialNumber, float direction ) {
-		for ( int i = 0; i < materialNumber; ++i ) {
-			float nearX = start.x + direction * ( kZoneStartGap + i * kZoneLength );
-			float farX = nearX + direction * kZoneLength;
-			zones->push_back( {
-				nearX < farX ? nearX : farX, start.z - 0.5f * kRoadWidth,
-				nearX < farX ? farX : nearX, start.z + 0.5f * kRoadWidth,
-				materials[ i ] } );
-		}
-	}
 }
 
 TownMap::TownMap() :
 	mPlayerStart( toPlacement( kPlayerStart ) ),
 	mTPoseZombie( toPlacement( kTPoseZombie ) ),
-	mEscapeCar( toPlacement( kEscapeCar ) ) {
+	mEscapeCar( toPlacement( kEscapeCar ) ),
+	mEndlessFuel( toPlacement( kEndlessFuel ) ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
 	addStraights( &mGroundTiles );
@@ -345,8 +325,6 @@ TownMap::TownMap() :
 	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
 		mFuelSpawnPoints.push_back( toPlacement( spot ) );
 	}
-	addGroundZones( &mGroundZones, mPlayerStart, kZonesAhead, sizeof( kZonesAhead ) / sizeof( kZonesAhead[ 0 ] ), kAhead );
-	addGroundZones( &mGroundZones, mPlayerStart, kZonesBehind, sizeof( kZonesBehind ) / sizeof( kZonesBehind[ 0 ] ), kBehind );
 }
 
 const std::vector< TownTile >& TownMap::groundTiles() const {
@@ -375,6 +353,10 @@ const TownPlacement& TownMap::tPoseZombie() const {
 
 const TownPlacement& TownMap::escapeCar() const {
 	return mEscapeCar;
+}
+
+const TownPlacement& TownMap::endlessFuel() const {
+	return mEndlessFuel;
 }
 
 const std::vector< TownPlacement >& TownMap::fuelSpawnPoints() const {

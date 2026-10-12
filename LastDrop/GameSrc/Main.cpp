@@ -5,7 +5,7 @@ using namespace GameLib;
 #include "SceneManager.h"
 
 // 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照。
-const SceneManager::SceneId kStartScene = SceneManager::SCENE_FPS_TEST;
+const SceneManager::SceneId kStartScene = SceneManager::SCENE_GAME;
 
 bool gInitialized = false;
 
@@ -14,11 +14,11 @@ namespace GameLib{
 void Framework::update(){
 	if ( !gInitialized ){
 		Pad::create();
-		SceneManager::instance().change( kStartScene );
+		SceneManager::instance().start( kStartScene );
 		gInitialized = true;
 	}
 
-	// 入力の読み取り・更新・描画は各シーンが行う。
+	// 入力を読み、今のシーンを更新して描く。
 	SceneManager::instance().update();
 
 	if ( isEndRequested() ){

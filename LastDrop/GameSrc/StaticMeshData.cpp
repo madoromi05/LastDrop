@@ -10,14 +10,28 @@ StaticMeshData::StaticMeshData() :
 	mBoundsMin( FLOAT_MAX ),
 	mBoundsMax( -FLOAT_MAX ),
 	mBlockingBoundsMin( FLOAT_MAX ),
-	mBlockingBoundsMax( -FLOAT_MAX ) {
+	mBlockingBoundsMax( -FLOAT_MAX ),
+	mKeepsSourceVertices( false ) {
 }
 
 StaticMeshData::~StaticMeshData() {
 }
 
+void StaticMeshData::keepSourceVertices() {
+	mKeepsSourceVertices = true;
+}
+
+bool StaticMeshData::keepsSourceVertices() const {
+	return mKeepsSourceVertices;
+}
+
 void StaticMeshData::create( int partNumber ) {
 	mParts.setSize( partNumber );
+	if ( mKeepsSourceVertices ) {
+		for ( int i = 0; i < mParts.size(); ++i ) {
+			mParts[ i ].keepSourceVertices();
+		}
+	}
 }
 
 int StaticMeshData::partNumber() const {
@@ -25,6 +39,10 @@ int StaticMeshData::partNumber() const {
 }
 
 StaticMeshPart& StaticMeshData::part( int index ) {
+	return mParts[ index ];
+}
+
+const StaticMeshPart& StaticMeshData::part( int index ) const {
 	return mParts[ index ];
 }
 

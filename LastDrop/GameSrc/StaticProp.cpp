@@ -7,10 +7,8 @@
 using namespace GameLib::Math;
 
 StaticProp::StaticProp( const StaticMeshData* data, const Vector3& position, float angleY ) :
-	mMesh( data ),
-	mCollider( MeshBoundsBox::make( data, position, angleY ) ) {
-	mMesh.setPosition( position );
-	mMesh.setAngleY( angleY );
+	mMesh( data, position, angleY ),
+	mCollider( MeshBoundsBox::make( mMesh ) ) { // mMesh を先に置いてから作る（メンバの宣言順）
 }
 
 void StaticProp::addColliderTo( CollisionWorld* world ) const {
@@ -18,8 +16,12 @@ void StaticProp::addColliderTo( CollisionWorld* world ) const {
 	world->addBox( mCollider );
 }
 
-void StaticProp::draw() const {
-	mMesh.draw();
+const BoxCollider& StaticProp::collider() const {
+	return mCollider;
+}
+
+void StaticProp::draw( const ViewFrustum& frustum ) const {
+	mMesh.draw( frustum );
 }
 
 bool StaticProp::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {

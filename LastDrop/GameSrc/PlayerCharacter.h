@@ -11,6 +11,7 @@
 #include "BodyFootprint.h"
 #include "IHittable.h"
 #include "IWorldMember.h"
+#include "HitboxLayout.h"
 #include "HitboxSet.h"
 #include <memory>
 
@@ -99,6 +100,7 @@ private:
 	WeaponStance mStance;
 	CharacterMover mMover;     // 当たりながら滑って進む移動
 	BodyFootprint mFootprint;  // 移動の当たり判定の大きさ
+	HitboxLayout mHitboxLayout; // 部位の箱の設計図（自キャラは1人なので自分で持つ）。mHitboxes が借りるので先に宣言する
 	HitboxSet mHitboxes;       // 部位ごとの当たり判定
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY; // 向き（度）。setAngleY と同じ約束で、0 は +Z。一人称なので常にカメラのヨーと同じ

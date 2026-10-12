@@ -77,7 +77,6 @@ public:
 		return nullptr;
 	}
 
-	int size() const { return static_cast< int >( mActors.size() ); }
 	// 全員をたどる（for ( auto& actor : list ) で使う）。たどっている間に spawn しないこと（並びが動く）。
 	typename Container::iterator begin(){ return mActors.begin(); }
 	typename Container::iterator end(){ return mActors.end(); }

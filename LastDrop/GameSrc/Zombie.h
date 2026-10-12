@@ -7,22 +7,22 @@
 #include "IHittable.h"
 #include "IWorldMember.h"
 #include "HitboxSet.h"
-#include "BodyFootprint.h"
 
-class SkinnedMeshData;
+class ZombieModel;
 
 // ゾンビ1体。今は AI が無いので、置いた場所でアニメを再生するだけ。
+// 形と、当たり判定の大きさ・部位の箱の設計図は ZombieModel を借りる（同じ種類の全員で共有。1体ごとには求めない）。
 // 見た目は SkinnedMeshInstance に任せ、体を真上から囲む長方形（BodyFootprint）を差し出して、他のキャラの移動を止める（ICollisionBody）。
 // 部位ごとの当たり判定（命中判定用）も持ち、弾がどの部位に当たったかを答えられる（IHittable）。
 // 歩かせるとき（AI を足すとき）は、PlayerCharacter と同じく CharacterMover を持たせて移動を任せる。
 class Zombie : public ICollisionBody, public IHittable, public IWorldMember{
 public:
-	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
-	//       このゾンビより長く生きていること（MeshCache が持つ）。
+	// model: 形・見た目・アニメと、当たり判定の設計図。所有権は受け取らない。nullptr 不可。
+	//        このゾンビより長く生きていること（持ち主の GameWorld が、ゾンビより後に破棄する）。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
 	// animation / startTime: 再生するアニメ名と開始時刻（フレーム。体ごとにずらして動きを揃えない）。
 	//                        animation が nullptr ならアニメを付けず、レスト姿勢（T ポーズ）のまま立たせる（当たり判定の確認用）。
-	Zombie( const SkinnedMeshData* data, const GameLib::Math::Vector3& position, float angleY,
+	Zombie( const ZombieModel* model, const GameLib::Math::Vector3& position, float angleY,
 		const char* animation, float startTime );
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;
@@ -40,8 +40,8 @@ public:
 	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
+	const ZombieModel* mModel; // 借りているだけ
 	SkinnedMeshInstance mMesh;
-	BodyFootprint mFootprint;
 	HitboxSet mHitboxes;
 	GameLib::Math::Vector3 mPosition; // 足元の位置
 	float mAngleY;                    // 向き（度）

@@ -43,43 +43,50 @@ namespace{
 	// （縦の視野角 60 度・16:9）。斜めに壁を見ても隅が壁に入らないよう、それより少し大きくする。
 	const float kEyeToWallMargin = 0.1f;
 
-	// 状態ごとのアニメ名（tools/configs/player.json の extra_animations の name）と移動の速さ。
+	// 状態ごとの決まりごとの表。状態について知りたいこと（アニメ名・速さ・歩き方・武器を持っているか）は、すべてここから引く。
+	// 状態を足すときは、Animator::State に1つ足し、この表に1行足すだけでよい（状態を並べた switch や if は他に無い）。
+	// アニメ名は tools/configs/player.json の extra_animations の name。
 	// 武器をしまっている間は素手のアニメ、持っている間は銃を肩の高さに持つアニメ（Basic Shooter Pack）。
 	// 覗く（ADS）は専用のアニメを持たず、持っているアニメのまま FirstPersonBody が腕と銃を目の前へ寄せる。
-	// 先頭は、アニメが見つからない状態の代わりに使う静止のアニメ。
+	// 先頭は、アニメが見つからない状態・表に無い状態の代わりに使う静止の行。
+	const bool kBareHands = false;
+	const bool kWeaponDrawn = true;
 	struct StateAnimation{
 		Animator::State state;
 		const char* name;
-		float speed; // この状態で進む速さ（m/フレーム）
+		float speed;  // この状態で進む速さ（m/フレーム）
+		Gait gait;    // 歩き方（足音・足の位相の引き継ぎに使う）
+		bool drawn;   // 武器を持っている状態か
 	};
 	const StateAnimation kStateAnimations[] = {
-		{ Animator::STATE_IDLE,       "idle",       kStopSpeed      },
-		{ Animator::STATE_WALK,       "walk",       kWalkSpeed      },
-		{ Animator::STATE_RUN,        "run",        kRunSpeed       },
-		{ Animator::STATE_RIFLE_IDLE, "rifle_idle", kStopSpeed      },
-		{ Animator::STATE_RIFLE_WALK, "rifle_walk", kRifleWalkSpeed },
-		{ Animator::STATE_RIFLE_RUN,  "rifle_run",  kRifleRunSpeed  },
+		{ Animator::STATE_IDLE,       "idle",       kStopSpeed,      GAIT_STILL, kBareHands   },
+		{ Animator::STATE_WALK,       "walk",       kWalkSpeed,      GAIT_WALK,  kBareHands   },
+		{ Animator::STATE_RUN,        "run",        kRunSpeed,       GAIT_RUN,   kBareHands   },
+		{ Animator::STATE_RIFLE_IDLE, "rifle_idle", kStopSpeed,      GAIT_STILL, kWeaponDrawn },
+		{ Animator::STATE_RIFLE_WALK, "rifle_walk", kRifleWalkSpeed, GAIT_WALK,  kWeaponDrawn },
+		{ Animator::STATE_RIFLE_RUN,  "rifle_run",  kRifleRunSpeed,  GAIT_RUN,   kWeaponDrawn },
 	};
 
-	// 状態で進む速さ。表に無い状態は止まる。
-	float moveSpeed( Animator::State state ) {
+	// 状態の行。表に無い状態は、先頭（素手の静止）の行を返す。
+	const StateAnimation& stateAnimation( Animator::State state ) {
 		for ( const StateAnimation& entry : kStateAnimations ) {
 			if ( entry.state == state ) {
-				return entry.speed;
+				return entry;
 			}
 		}
-		return kStopSpeed;
+		return kStateAnimations[ 0 ];
 	}
 
-	// 入力から次の状態を選ぶ。武器を持っているか × 静止／歩き／走り の組み合わせ。
+	// 入力から次の状態を選ぶ。武器を持っているか × 静止／歩き／走り の組み合わせを、表から探す。
 	Animator::State chooseState( bool moving, bool running, bool drawn ) {
-		if ( !moving ) {
-			return drawn ? Animator::STATE_RIFLE_IDLE : Animator::STATE_IDLE;
+		Gait gait = !moving ? GAIT_STILL : ( running ? GAIT_RUN : GAIT_WALK );
+		for ( const StateAnimation& entry : kStateAnimations ) {
+			if ( entry.gait == gait && entry.drawn == drawn ) {
+				return entry.state;
+			}
 		}
-		if ( running ) {
-			return drawn ? Animator::STATE_RIFLE_RUN : Animator::STATE_RUN;
-		}
-		return drawn ? Animator::STATE_RIFLE_WALK : Animator::STATE_WALK;
+		ASSERT( false && "PlayerCharacter : no state for this gait and weapon." );
+		return kStateAnimations[ 0 ].state;
 	}
 
 	// ── 銃の持ち方（右手の骨の空間）──
@@ -164,8 +171,7 @@ namespace{
 	// 4本の歩き・走りは、どれも1周の前半で左足・後半で右足が前に出る（元の FBX で確認済み）ので、
 	// 「1周の何割まで進んだか」を引き継げば足の出方が揃う。
 	bool isGaitCycle( Animator::State state ) {
-		return state == Animator::STATE_WALK || state == Animator::STATE_RUN
-			|| state == Animator::STATE_RIFLE_WALK || state == Animator::STATE_RIFLE_RUN;
+		return stateAnimation( state ).gait != GAIT_STILL;
 	}
 }
 
@@ -175,7 +181,8 @@ const Vector3& position, float angleY ) :
 	mMesh( std::make_unique< SkinnedMeshInstance >( data ) ),
 	mMover( world, this ), // this は覚えるだけ（位置を読むのは move のとき＝構築の後）
 	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
-	mHitboxes( data, kBoneNamePrefix ),
+	mHitboxLayout( data, kBoneNamePrefix ),
+	mHitboxes( &mHitboxLayout ),
 	mPosition( position ),
 	mAngleY( wrapSignedAngle( angleY ) ),
 	mMoveDirection( 0.f, 0.f, 0.f ),
@@ -246,7 +253,7 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 	mBody->setCarryWeight( mCarryWeight );
 	mBody->setAimWeight( mStance.aimWeight() );
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
-	approachSpeed( moveSpeed( next ) );
+	approachSpeed( stateAnimation( next ).speed );
 	Vector3 step;
 	step.setMul( mMoveDirection, mSpeed );
 	changeState( next );
@@ -296,16 +303,7 @@ float PlayerCharacter::aimWeight() const {
 }
 
 Gait PlayerCharacter::gait() const {
-	switch ( mAnimator.state() ) {
-	case Animator::STATE_WALK:
-	case Animator::STATE_RIFLE_WALK:
-		return GAIT_WALK;
-	case Animator::STATE_RUN:
-	case Animator::STATE_RIFLE_RUN:
-		return GAIT_RUN;
-	default:
-		return GAIT_STILL;
-	}
+	return stateAnimation( mAnimator.state() ).gait;
 }
 
 float PlayerCharacter::gaitPhase() const {
@@ -348,7 +346,9 @@ void PlayerCharacter::approachHoldWeight() {
 
 void PlayerCharacter::approachCarryWeight( Animator::State next ) {
 	// 状態で決めるのは、走りのアニメ（肩の高さで構えたまま）に合わせて抱え方を足すため。素手で走るときは抱える銃が無い。
-	mCarryWeight = approachWeight( mCarryWeight, next == Animator::STATE_RIFLE_RUN ? kFullWeight : kNoWeight );
+	const StateAnimation& entry = stateAnimation( next );
+	bool carrying = entry.drawn && entry.gait == GAIT_RUN;
+	mCarryWeight = approachWeight( mCarryWeight, carrying ? kFullWeight : kNoWeight );
 }
 
 void PlayerCharacter::changeState( Animator::State next ) {

@@ -1,4 +1,7 @@
 #include "GroundMaterial.h"
+#include "IGroundSurface.h"
+
+#include "GameLib/GameLib.h"
 
 using namespace GameLib::Math;
 
@@ -14,9 +17,11 @@ const char* groundMaterialName( GroundMaterial material ) {
 	return kMaterialNames[ material ];
 }
 
-GroundMaterialMap::GroundMaterialMap( const GroundZone* zones, int zoneCount, GroundMaterial fallback ) :
+GroundMaterialMap::GroundMaterialMap( const GroundZone* zones, int zoneCount, const IGroundSurface* surface, GroundMaterial fallback ) :
 	mZones( zones, zones + zoneCount ),
+	mSurface( surface ),
 	mFallback( fallback ) {
+	ASSERT( mSurface && "GroundMaterialMap : surface is null." );
 }
 
 GroundMaterial GroundMaterialMap::materialAt( const Vector3& position ) const {
@@ -24,6 +29,10 @@ GroundMaterial GroundMaterialMap::materialAt( const Vector3& position ) const {
 		if ( position.x >= zone.minX && position.x <= zone.maxX && position.z >= zone.minZ && position.z <= zone.maxZ ) {
 			return zone.material;
 		}
+	}
+	GroundMaterial material;
+	if ( mSurface->materialBelow( position, &material ) ) {
+		return material;
 	}
 	return mFallback;
 }

@@ -16,8 +16,6 @@ public:
 		STATE_RIFLE_IDLE,	// 銃を持って静止（覗く間もこのアニメのまま、腕と銃を FirstPersonBody で寄せる）
 		STATE_RIFLE_WALK,	// 銃を持って歩き
 		STATE_RIFLE_RUN,	// 銃を持って走り
-		STATE_JUMP,		// ジャンプ
-		STATE_DEATH,	// 死亡（終端）
 		STATE_NUM,		// 状態数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 	};
 

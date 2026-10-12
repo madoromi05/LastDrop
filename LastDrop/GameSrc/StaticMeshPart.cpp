@@ -11,7 +11,8 @@ namespace{
 }
 
 StaticMeshPart::StaticMeshPart() :
-	mTriangleNumber( 0 ) {
+	mTriangleNumber( 0 ),
+	mKeepsSource( false ) {
 }
 
 StaticMeshPart::~StaticMeshPart() {
@@ -43,8 +44,21 @@ void StaticMeshPart::setIndex( int i, unsigned short value ) {
 	mStagingIndices[ i ] = value;
 }
 
+void StaticMeshPart::setColor( int i, unsigned packedColor ) {
+	mStagingVertices[ i ].mColor = packedColor;
+}
+
 MeshMaterial& StaticMeshPart::material() {
 	return mMaterial;
+}
+
+const MeshMaterial& StaticMeshPart::material() const {
+	return mMaterial;
+}
+
+void StaticMeshPart::keepSourceVertices() {
+	ASSERT( !isReady() && "StaticMeshPart : keepSourceVertices must be called before upload." );
+	mKeepsSource = true;
 }
 
 void StaticMeshPart::upload() {
@@ -74,8 +88,11 @@ void StaticMeshPart::upload() {
 
 	mTriangleNumber = mStagingIndices.size() / kVerticesPerTriangle;
 	// GPUへ送ったので作業用配列は不要。建物1つで数百KBあるので持ち続けない（当たり判定の分は mShape に写した）。
-	mStagingVertices.clear();
-	mStagingIndices.clear();
+	// まとめる元にする部品だけは残す。
+	if ( !mKeepsSource ) {
+		mStagingVertices.clear();
+		mStagingIndices.clear();
+	}
 }
 
 bool StaticMeshPart::isReady() const {
@@ -104,4 +121,20 @@ bool StaticMeshPart::raycast( const Vector3& origin, const Vector3& delta, float
 
 void StaticMeshPart::appendTriangles( std::vector< Vector3 >* corners ) const {
 	mShape.appendTriangles( corners );
+}
+
+int StaticMeshPart::sourceVertexNumber() const {
+	return mStagingVertices.size();
+}
+
+const Graphics::Vertex& StaticMeshPart::sourceVertex( int i ) const {
+	return mStagingVertices[ i ];
+}
+
+int StaticMeshPart::sourceIndexNumber() const {
+	return mStagingIndices.size();
+}
+
+unsigned short StaticMeshPart::sourceIndex( int i ) const {
+	return mStagingIndices[ i ];
 }

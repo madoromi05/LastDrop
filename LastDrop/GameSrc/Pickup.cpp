@@ -2,23 +2,19 @@
 #include "Inventory.h"
 #include "HitWorld.h"
 #include "CollisionWorld.h"
-#include "MeshBoundsBox.h"
 
 #include "GameLib/GameLib.h"
 
 using namespace GameLib::Math;
 
 Pickup::Pickup( const StaticMeshData* data, const Vector3& position, float angleY, ItemId item ) :
-	mMesh( data ),
-	mCollider( MeshBoundsBox::make( data, position, angleY ) ),
+	mBody( data, position, angleY ),
 	mItem( item ),
 	mTaken( false ) {
-	mMesh.setPosition( position );
-	mMesh.setAngleY( angleY );
 }
 
-void Pickup::draw() const {
-	mMesh.draw();
+void Pickup::draw( const ViewFrustum& frustum ) const {
+	mBody.draw( frustum );
 }
 
 bool Pickup::isTaken() const {
@@ -26,7 +22,7 @@ bool Pickup::isTaken() const {
 }
 
 bool Pickup::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
-	return mMesh.raycast( origin, delta, time, normal );
+	return mBody.raycast( origin, delta, time, normal );
 }
 
 bool Pickup::canInteract( const Inventory& inventory ) const {
@@ -48,7 +44,7 @@ void Pickup::interact( Inventory* inventory ) {
 }
 
 BoxCollider Pickup::collider() const {
-	return mCollider;
+	return mBody.collider();
 }
 
 void Pickup::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {

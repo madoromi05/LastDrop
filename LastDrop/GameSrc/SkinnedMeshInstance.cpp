@@ -2,6 +2,7 @@
 #include "SkinnedMeshData.h"
 #include "MatrixBlend.h"
 #include "BonePoseModifier.h"
+#include "PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -107,10 +108,7 @@ void SkinnedMeshInstance::update() {
 }
 
 Matrix34 SkinnedMeshInstance::rootMatrix() const {
-	Matrix34 root;
-	root.setTranslation( mPosition );
-	root.rotateY( mAngleY );
-	return root;
+	return PlacementMatrix::make( mPosition, mAngleY );
 }
 
 bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {

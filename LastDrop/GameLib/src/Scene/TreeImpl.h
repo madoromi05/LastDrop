@@ -105,6 +105,21 @@ public:
 		}
 		return 0;
 	}
+	//名前でノードを探し、その番号を返す。無ければ-1。
+	//番号はノードの並び順で、同じ TreeTemplate から作った Tree すべてで共通（一度引けば、どの Tree にも使える）。
+	int nodeIndex( const char* name ) const {
+		for ( int i = 0; i < mNodeNumber; ++i ){
+			if ( RefString( name ) == mNodes[ i ].name() ){
+				return i;
+			}
+		}
+		return -1;
+	}
+	//番号（nodeIndex の戻り値）で指定したノードの現在ワールド行列を返す。名前で探さないので毎フレーム呼んでよい。
+	const Matrix34* nodeMatrix( int index ) const {
+		ASSERT( index >= 0 && index < mNodeNumber && "Tree::nodeMatrix : index is out of range." );
+		return &mNodes[ index ].worldMatrix();
+	}
 	void setAnimation( Animation::Impl* a ){
 		if ( a ){ //モノがあれば
 			for ( int i = 0; i < mNodeNumber; ++i ){

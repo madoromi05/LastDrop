@@ -6,7 +6,7 @@
 #include "BodyPart.h"
 #include <vector>
 
-class SkinnedMeshData;
+class HitboxLayout;
 class SkinnedMeshInstance;
 
 // 線分（弾の通り道）が部位に当たったときの結果。
@@ -20,16 +20,12 @@ struct HitResult{
 // 1体ぶんの、部位ごとの当たり判定（命中判定用）。部位ごとに骨に付いた箱を1つずつ持ち、アニメの通りに動く。
 // 移動の当たり判定（体を真上から囲む長方形）とは別物。こちらは「弾がどの部位に当たったか」を答えるためのもの。
 //
-// 箱は、その部位の骨に一番強く付いている頂点を、部位の形に沿った向きで囲んで作る（BoxFitter）。
-// 長い辺は関節を結ぶ向き（肩→肘など）、残り2辺は断面の広がりに合わせる。
-// モデルを差し替えても合わせ直さずに済む。骨の名前は「頭の共通部分（"mixamorig:" など）＋部位の骨の名前」で引くので、
-// 骨の並びが Mixamo と同じキャラなら、頭の共通部分を変えるだけで使える。
+// どの骨にどんな箱を付けるか（設計図）は HitboxLayout を借りる。同じ種類のキャラは全員が同じ設計図を指す。
+// ここが持つのは、1体ごとに違うもの（今のポーズで箱がワールドのどこにあるか）だけ。
 class HitboxSet{
 public:
-	// data: 形と骨。所有権は受け取らない。nullptr 不可、isReady() 済み。箱の大きさを求めるのに構築中だけ使う。
-	// boneNamePrefix: 骨の名前の頭の共通部分（"mixamorig:" / "Zombie_"）。nullptr 不可。
-	// 骨が見つからない・頂点が無い部位は箱を作らない（デバッグ出力で知らせる）。
-	HitboxSet( const SkinnedMeshData* data, const char* boneNamePrefix );
+	// layout: 箱の設計図。所有権は受け取らない。nullptr 不可。この当たり判定より長く生きていること。
+	explicit HitboxSet( const HitboxLayout* layout );
 
 	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。
 	// 見た目の書き換え（一人称で頭を潰すなど）を掛ける前の、アニメどおりのポーズに合わせる。
@@ -45,15 +41,14 @@ public:
 	bool boxMatrix( int index, GameLib::Math::Matrix34* out ) const;
 
 private:
-	struct Box{
-		BodyPart part;
-		int anchorBone;                   // 箱が付いている骨
-		GameLib::Math::Matrix34 local;    // -1〜1 の立方体 → 骨の空間の箱
+	// 箱1つの置き場所。並びは HitboxLayout::boxes と同じ。
+	struct Placement{
 		GameLib::Math::Matrix34 world;    // -1〜1 の立方体 → ワールドの箱（update で求める）
 		GameLib::Math::Matrix34 toLocal;  // world の逆。線分を箱の空間へ移すのに使う
 		bool placed;                      // update で置けたか
 	};
-	std::vector< Box > mBoxes;
+	const HitboxLayout* mLayout; // 借りているだけ
+	std::vector< Placement > mPlacements;
 };
 
 #endif

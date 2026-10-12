@@ -31,11 +31,7 @@ bool Animator::canTransit( State from, State to ) const {
 	if ( from == to ) {
 		return false;
 	}
-	// 死亡は終端。一度入ったら他状態へ抜けない（死亡後に歩き出さない）。
-	if ( from == STATE_DEATH ) {
-		return false;
-	}
-	// それ以外の遷移可否（ジャンプ中は歩きに割り込ませない等のゲーム的タイミング）は、
+	// それ以外の遷移可否（割り込ませたくない動作の途中など、ゲーム的なタイミング）は、
 	// 状態を最もよく知る呼び出し側が request() を呼ぶ/呼ばないで判断する。
 	return true;
 }

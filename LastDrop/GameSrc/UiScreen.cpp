@@ -1,5 +1,6 @@
 #include "UiScreen.h"
 #include "UiInput.h"
+#include "UiRenderer.h"
 #include "Framework.h"
 
 using namespace GameLib;
@@ -20,8 +21,10 @@ namespace{
 	const float kStatusLineHeight = 26.f;  // 状態表示1行の高さ（UI_TEXT_NORMAL の文字より少し広く）
 }
 
-UiScreen::UiScreen() :
+UiScreen::UiScreen( UiRenderer* renderer ) :
+	mRenderer( renderer ),
 	mPreviousCursor( 0.f, 0.f ) {
+	ASSERT( mRenderer && "UiScreen : renderer is null." );
 }
 
 void UiScreen::handleInput() {
@@ -31,8 +34,8 @@ void UiScreen::handleInput() {
 }
 
 void UiScreen::draw() {
-	mCanvas.draw( mRenderer );
-	mRenderer.draw();
+	mCanvas.draw( *mRenderer );
+	mRenderer->draw();
 }
 
 Vector2 UiScreen::headingPosition() {

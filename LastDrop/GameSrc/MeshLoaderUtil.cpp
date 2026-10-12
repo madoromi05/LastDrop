@@ -1,9 +1,9 @@
 #include "MeshLoaderUtil.h"
 #include "MeshMaterial.h"
+#include "TextureCache.h"
 
 #include "GameLib/Base/RefString.h"
 #include "GameLib/Base/DebugStream.h"
-#include "GameLib/Graphics/Texture.h"
 
 using namespace GameLib;
 using namespace GameLib::PseudoXml;
@@ -58,13 +58,13 @@ ConstElement MeshLoaderUtil::containerRoot( const ConstElement& documentRoot ) {
 	return documentRoot;
 }
 
-void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& meshElement ) {
+void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& meshElement, TextureCache* textures ) {
 	ConstAttribute a;
 	if ( hasValue( a = findAttribute( meshElement, "texture" ) ) ) {
-		material->setTexture( Graphics::Texture::create( a.value() ) );
+		material->setTexture( textures->load( a.value() ) );
 	}
 	if ( hasValue( a = findAttribute( meshElement, "normalmap" ) ) ) {
-		material->setNormalMap( Graphics::Texture::create( a.value() ) );
+		material->setNormalMap( textures->load( a.value() ) );
 	}
 	// 材質値は書いてあるものだけ上書きする（無ければ MeshMaterial の既定値）。
 	Vector3 color;

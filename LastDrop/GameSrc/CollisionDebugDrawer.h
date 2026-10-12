@@ -4,6 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Scene/PrimitiveRenderer.h"
+#include "BoxCollider.h"
 #include <vector>
 
 class CollisionWorld;
@@ -36,6 +37,11 @@ public:
 	// 次の draw で、線分が当たった点（小さな十字）と面の法線（短い線）を赤で一緒に描く。draw の後に消える。
 	// 弾の当たり判定（HitWorld::raycast）が正しい位置・向きを返しているかを目で確かめるため。
 	void setRayHit( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal );
+	// boxes（移動の当たり判定の箱）を、手前の物に隠れない黄色い線の柱で描く。壁や建物の向こうにある物の場所を探すため
+	// （draw の線は手前の物に隠れるので、遠くの小さい物は見つけられない）。
+	// draw とは別の描画なので、draw を呼ばないフレームでも使える。1フレームに1回まで。呼ぶ場所の決まりは draw と同じ。
+	// 容量（kSeeThroughBoxCapacity 個）を超えた分は描かない。
+	void drawSeeThrough( const std::vector< BoxCollider >& boxes, const GameLib::Math::Matrix44& projectionView );
 
 private:
 	// 描く形を、頂点の並び（mPillars・mBoxCorners）にする（前のフレームのぶんは捨てる）。hidden は並べない。
@@ -54,8 +60,8 @@ private:
 	void reserveWallVertices( const CollisionWorld& collisionWorld );
 	// 建物の面のかけらの輪郭を積む（毎フレーム名簿から直接読む。数が多いので、頂点の並びを作り直さない）。
 	void addWallLines( const CollisionWorld& collisionWorld );
-	// 柱1本の線を積む。
-	void addPillarLines( const Pillar& pillar );
+	// 柱1本の線を renderer へ積む。color: 線の色（VertexColor::pack の並び）。
+	static void addPillarLines( GameLib::Scene::PrimitiveRenderer& renderer, const Pillar& pillar, unsigned color );
 	// 箱1つ（8 隅）の 12 辺を積む。
 	void addBoxLines( const std::vector< GameLib::Math::Vector3 >& corners );
 	// 当たった点の十字と法線の線を積む（setRayHit されていれば）。
@@ -63,6 +69,7 @@ private:
 
 	GameLib::Scene::PrimitiveRenderer mRenderer; // すべての線（手前の物に隠れる）。最初の draw で作る（それまでは空）
 	int mWallVertexCapacity;                     // mRenderer が建物の線のために持っている頂点の数
+	GameLib::Scene::PrimitiveRenderer mSeeThroughRenderer; // drawSeeThrough の線（手前の物に隠れない）。最初の drawSeeThrough で作る
 	// 描く形の頂点。毎フレーム作り直す。
 	std::vector< Pillar > mPillars;                                    // 移動の当たり判定の柱
 	std::vector< std::vector< GameLib::Math::Vector3 > > mBoxCorners;  // 部位の箱の 8 隅（ワールド座標）

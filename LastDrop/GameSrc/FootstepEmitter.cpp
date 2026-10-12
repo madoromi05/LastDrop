@@ -63,7 +63,7 @@ FootstepEmitter::FootstepEmitter( AudioEngine* audio ) :
 	mPreviousPhase( 0.f ) {
 }
 
-bool FootstepEmitter::update( Gait gait, float phase, const Vector3& feet, GroundMaterial material ) {
+bool FootstepEmitter::update( Gait gait, float phase, const Vector3& feet, const GroundMaterialMap& ground ) {
 	// 止まっている間は鳴らさない。動き出した最初のフレームも鳴らさず位相を覚えるだけにする
 	// （止まっていた間の位相は別のアニメのものなので、それと比べると着いていない足の音が鳴ってしまう）。
 	bool wasMoving = ( mPreviousGait != GAIT_STILL );
@@ -81,7 +81,7 @@ bool FootstepEmitter::update( Gait gait, float phase, const Vector3& feet, Groun
 	}
 	if ( stepped ) {
 		const GaitSound& sound = kGaitSounds[ gait ];
-		mAudio->play( kMaterialSounds[ material ], AudioEngine::BUS_EFFECT, feet, sound.volume, sound.pitch );
+		mAudio->play( kMaterialSounds[ ground.materialAt( feet ) ], AudioEngine::BUS_EFFECT, feet, sound.volume, sound.pitch );
 	}
 	return stepped;
 }

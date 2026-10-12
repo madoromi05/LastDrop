@@ -1,14 +1,14 @@
 #include "SceneManager.h"
 #include "IScene.h"
+#include "GameResources.h"
 #include "SkinTestScene.h"
-#include "TpsTestScene.h"
-#include "TitleScene.h"
 #include "GameScene.h"
-#include "ClearScene.h"
+#include "MenuScene.h"
+#include "MenuCatalog.h"
+#include "Pad.h"
 #include "GameLib/GameLib.h"
 
 SceneManager::SceneManager() :
-	mCurrent( 0 ),
 	mHasRequest( false ),
 	mRequestedId( SCENE_TITLE ) {
 }
@@ -22,29 +22,35 @@ SceneManager& SceneManager::instance() {
 	return s;
 }
 
-void SceneManager::change( SceneId id ) {
-	// 種別から実体を生成して切り替える。
+void SceneManager::start( SceneId first ) {
+	ASSERT( !mResources && "SceneManager::start : already started." );
+	mResources = std::make_unique< GameResources >();
+	change( first );
+}
+
+std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 	// シーンを増やすときは SceneId(SceneManager.h) とこの分岐の2箇所だけ直せばよい。
 	switch ( id ) {
 	case SCENE_SKIN_TEST:
-		change( static_cast< IScene* >( NEW SkinTestScene() ) );
-		break;
-	case SCENE_FPS_TEST:
-		change( static_cast< IScene* >( NEW TpsTestScene() ) );
-		break;
+		return std::make_unique< SkinTestScene >( mResources.get() );
 	case SCENE_TITLE:
-		change( static_cast< IScene* >( NEW TitleScene() ) );
-		break;
+		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::title() );
 	case SCENE_GAME:
-		change( static_cast< IScene* >( NEW GameScene() ) );
-		break;
+		return std::make_unique< GameScene >( mResources.get() );
 	case SCENE_CLEAR:
-		change( static_cast< IScene* >( NEW ClearScene() ) );
-		break;
+		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::clear() );
 	default:
-		ASSERT( false && "SceneManager::change : unknown SceneId." );
-		break;
+		ASSERT( false && "SceneManager::createScene : unknown SceneId." );
+		return nullptr;
 	}
+}
+
+void SceneManager::change( SceneId id ) {
+	ASSERT( mResources && "SceneManager::change : call start first." );
+	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）。
+	std::unique_ptr< IScene > next = createScene( id );
+	mCurrent = std::move( next );
+	mClock.reset(); // 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
 }
 
 void SceneManager::requestChange( SceneId id ) {
@@ -52,18 +58,12 @@ void SceneManager::requestChange( SceneId id ) {
 	mRequestedId = id;
 }
 
-void SceneManager::change( IScene* next ) {
-	if ( mCurrent != next ) {
-		SAFE_DELETE( mCurrent );
-		mCurrent = next;
-		mClock.reset(); // 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
-	}
-}
-
 void SceneManager::update() {
 	if ( !mCurrent ) {
 		return;
 	}
+	// 入力は1回の描画につき1回だけ、どのシーンでもここで読む（update の回数に左右されないよう、beginFrame の前）。
+	Pad::instance()->update();
 	mCurrent->beginFrame();
 	int ticks = mClock.ticksToRun();
 	for ( int i = 0; i < ticks; ++i ) {
@@ -78,9 +78,7 @@ void SceneManager::update() {
 }
 
 void SceneManager::destroy() {
-	SAFE_DELETE( mCurrent );
-}
-
-IScene* SceneManager::current() const {
-	return mCurrent;
+	// シーンが借りている物を先に消さないよう、シーン → 使い回す物 の順に消す。
+	mCurrent.reset();
+	mResources.reset();
 }

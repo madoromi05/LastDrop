@@ -20,8 +20,8 @@ void EscapeCar::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) cons
 	hitWorld->addBlocker( &mBody );
 }
 
-void EscapeCar::draw() const {
-	mBody.draw();
+void EscapeCar::draw( const ViewFrustum& frustum ) const {
+	mBody.draw( frustum );
 }
 
 bool EscapeCar::isBody( const IRayBlocker* blocker ) const {

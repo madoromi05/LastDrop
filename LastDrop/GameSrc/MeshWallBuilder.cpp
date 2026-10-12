@@ -1,4 +1,5 @@
 #include "MeshWallBuilder.h"
+#include "StaticMeshInstance.h"
 #include "StaticMeshData.h"
 #include "MoveHeight.h"
 
@@ -92,14 +93,11 @@ namespace{
 	}
 }
 
-WallMesh MeshWallBuilder::make( const StaticMeshData* data, const Vector3& position, float angleY ) {
-	ASSERT( data && data->isReady() && "MeshWallBuilder : data is not ready." );
-	Matrix34 world; // StaticMeshInstance::draw と同じ順（移動 * 回転）
-	world.setTranslation( position );
-	world.rotateY( angleY );
+WallMesh MeshWallBuilder::make( const StaticMeshInstance& mesh ) {
+	const Matrix34& world = mesh.worldMatrix();
 
 	std::vector< Vector3 > localCorners; // 三角形の隅を3つずつ並べたもの（モデルのローカル）
-	data->appendTriangles( &localCorners );
+	mesh.data()->appendTriangles( &localCorners );
 
 	WallMesh walls;
 	for ( size_t i = 0; i + kVerticesPerTriangle <= localCorners.size(); i += kVerticesPerTriangle ) {

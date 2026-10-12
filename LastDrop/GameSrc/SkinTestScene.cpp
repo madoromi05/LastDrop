@@ -1,4 +1,5 @@
 #include "SkinTestScene.h"
+#include "GameResources.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -53,13 +54,14 @@ namespace{
 	const float kFarClip      = 1000.f;
 }
 
-SkinTestScene::SkinTestScene() :
+SkinTestScene::SkinTestScene( GameResources* resources ) :
+	mMeshes( &resources->meshes() ),
 	mZombieData( 0 ),
 	mBuildingData( 0 ),
 	mReady( false ) {
 	// 読み込みを頼むだけ（非同期）。同じファイルを何度頼んでも読み込みは1回。
-	mZombieData = mCache.skinnedMesh( kZombieFile );
-	mBuildingData = mCache.staticMesh( kBuildingFile );
+	mZombieData = mMeshes->skinnedMesh( kZombieFile );
+	mBuildingData = mMeshes->staticMesh( kBuildingFile );
 }
 
 SkinTestScene::~SkinTestScene() {
@@ -80,10 +82,10 @@ void SkinTestScene::placeObjects() {
 		++zombieIndex;
 	}
 	for ( const Placement& p : kBuildingPlacements ) {
-		StaticMeshInstance building( mBuildingData );
-		building.setPosition( Vector3( p.x, 0.f, p.z ) );
-		building.setAngleY( p.yawDegree );
-		mBuildings.push_back( building );
+		if ( !mBuildingData->isReady() ) {
+			break;
+		}
+		mBuildings.push_back( StaticMeshInstance( mBuildingData, Vector3( p.x, 0.f, p.z ), p.yawDegree ) );
 	}
 }
 
@@ -117,7 +119,7 @@ void SkinTestScene::setupCameraAndLights() {
 
 void SkinTestScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
-	bool allBuilt = mCache.update();
+	bool allBuilt = mMeshes->update();
 	if ( !mReady && allBuilt ) {
 		placeObjects();
 		mReady = true;

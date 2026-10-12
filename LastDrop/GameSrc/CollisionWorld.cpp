@@ -5,6 +5,7 @@
 #include "GameLib/Math/Functions.h"
 
 #include <algorithm>
+#include <utility>
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -56,8 +57,8 @@ void CollisionWorld::addBox( const BoxCollider& box ) {
 	mBoxes.push_back( box );
 }
 
-void CollisionWorld::addWallMesh( const WallMesh& walls ) {
-	mWallMeshes.push_back( walls );
+void CollisionWorld::addWallMesh( WallMesh walls ) {
+	mWallMeshes.push_back( std::move( walls ) );
 }
 
 void CollisionWorld::addBody( const ICollisionBody* body ) {

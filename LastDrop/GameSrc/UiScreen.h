@@ -2,16 +2,19 @@
 #define INCLUDED_UI_SCREEN_H
 
 #include "UiCanvas.h"
-#include "UiRenderer.h"
 #include "UiRect.h"
 #include "GameLib/Math/Vector2.h"
 
-// 部品を並べた1画面（タイトル・クリア画面・本編の HUD）。部品の持ち主（UiCanvas）・描く道具（UiRenderer）・
+class UiRenderer;
+
+// 部品を並べた1画面（タイトル・クリア画面・本編の HUD）。部品の持ち主（UiCanvas）・描く道具（UiRenderer。借りる）・
 // 入力の読み取りを1つにまとめ、シーンは「何を並べるか」だけを書けばよいようにする（シーンが持つ部品として使う）。
 // 並べる位置の決まり（見出しの位置・ボタンの縦の並び）もここに置き、画面ごとに数字を書かないようにする。
 class UiScreen{
 public:
-	UiScreen();
+	// renderer: 描く道具（フォントを持つので、全画面で1つを使い回す。GameResources が持つ）。
+	//           所有権は受け取らない。nullptr 不可。この画面より長く生きていること。
+	explicit UiScreen( UiRenderer* renderer );
 
 	UiCanvas& canvas() { return mCanvas; }
 
@@ -34,7 +37,7 @@ public:
 
 private:
 	UiCanvas mCanvas;
-	UiRenderer mRenderer;
+	UiRenderer* mRenderer; // 借りているだけ
 	GameLib::Math::Vector2 mPreviousCursor; // 前回のカーソルの位置（動いたかどうかを決めるため）
 };
 

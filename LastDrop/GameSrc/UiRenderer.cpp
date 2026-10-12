@@ -2,6 +2,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Enum.h"
+#include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Texture.h"
 
 using namespace GameLib;
@@ -62,10 +63,13 @@ void UiRenderer::draw() {
 	mPrimitives.enableDepthTest( false );               // 3D の上に重ねる
 	mPrimitives.enableDepthWrite( false );
 	mPrimitives.setCullMode( Graphics::CULL_NONE );
+	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。描き終えたら 3D 用の読み方へ戻す。
+	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
 	mPrimitives.draw();
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
 		mStrings[ i ].draw();
 	}
+	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 }
 
 void UiRenderer::prepareGlyphs( Scene::Font& font ) {

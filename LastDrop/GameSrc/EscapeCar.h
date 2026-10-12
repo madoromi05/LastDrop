@@ -5,6 +5,7 @@
 #include "StaticProp.h"
 #include "IInteractable.h"
 
+class ViewFrustum;
 class StaticMeshData;
 class CollisionWorld;
 class HitWorld;
@@ -21,7 +22,8 @@ public:
 	// 移動の名簿へ箱を、命中の名簿へ「弾（視線）を止める物」として自分の見た目を載せる。
 	// この車はどちらの名簿よりも先に消えないこと（名簿は借りるだけなので、外す処理を持たない。シーンの最後まで置いておく物）。
 	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) const;
-	void draw() const;
+	// frustum: カメラに映る範囲。映らなければ描かない。
+	void draw( const ViewFrustum& frustum ) const;
 
 	// 視線が当たった物がこの車か（Interactor が、当たった物から使える物を探すため）。
 	bool isBody( const IRayBlocker* blocker ) const;

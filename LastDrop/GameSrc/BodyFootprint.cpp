@@ -1,5 +1,6 @@
 #include "BodyFootprint.h"
 #include "SkinnedMeshData.h"
+#include "PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -60,10 +61,8 @@ BoxCollider BodyFootprint::place( const Vector3& position, float angleY ) const 
 BoxCollider BodyFootprint::place( const Vector3& position, float angleY, float forwardReach ) const {
 	float back = mLocalCenter.z - mHalfWidthZ;
 	float front = Math::max( mLocalCenter.z + mHalfWidthZ, forwardReach );
-	// 見た目（SkinnedMeshInstance::rootMatrix）と同じ 移動 * 回転 で置く。
-	Matrix34 root;
-	root.setTranslation( position );
-	root.rotateY( angleY );
+	// 見た目（SkinnedMeshInstance::rootMatrix）と同じ行列で置く。
+	Matrix34 root = PlacementMatrix::make( position, angleY );
 	BoxCollider box;
 	root.mul( &box.center, Vector3( mLocalCenter.x, 0.f, ( back + front ) * kHalf ) );
 	box.halfWidthX = mHalfWidthX;

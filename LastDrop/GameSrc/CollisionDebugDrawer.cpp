@@ -5,6 +5,7 @@
 #include "HitWorld.h"
 #include "IHittable.h"
 #include "VertexColor.h"
+#include "PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Enum.h"
@@ -62,13 +63,11 @@ namespace{
 	const int kRayHitAxisNumber = 3;       // 十字は X・Y・Z の3本
 	const int kRayHitVertexCost = ( kRayHitAxisNumber + 1 ) * kVerticesPerLine; // 十字3本＋法線1本
 
-	// 長方形（置物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は Building と同じく Matrix34 の 移動*回転。
+	// 長方形（置物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は見た目と同じ行列（PlacementMatrix）。
 	void rectRing( const BoxCollider& box, std::vector< Vector3 >* ring ) {
 		const float kCornerSignX[ kRectCorners ] = { -1.f, 1.f, 1.f, -1.f };
 		const float kCornerSignZ[ kRectCorners ] = { -1.f, -1.f, 1.f, 1.f };
-		Matrix34 world;
-		world.setTranslation( Vector3( box.center.x, 0.f, box.center.z ) );
-		world.rotateY( box.angleY );
+		Matrix34 world = PlacementMatrix::make( Vector3( box.center.x, 0.f, box.center.z ), box.angleY );
 		ring->clear();
 		for ( int i = 0; i < kRectCorners; ++i ) {
 			Vector3 corner;
@@ -90,6 +89,12 @@ namespace{
 			corners->push_back( corner );
 		}
 	}
+
+	// ── 手前の物に隠れない柱（drawSeeThrough）──
+	const unsigned kSeeThroughColor = VertexColor::pack( 1.f, 0.85f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる黄（燃料の色）
+	// 一度に描ける箱の数。落ちている物（ガソリンの候補は 10 か所）に余裕を持たせた数。足りなくなったら増やす。
+	const int kSeeThroughBoxCapacity = 64;
+	const int kSeeThroughBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
 	Vector3 raised( const Vector3& ground, float height ) {
 		return Vector3( ground.x, height, ground.z );
@@ -123,7 +128,7 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 	mRenderer.setCullMode( Graphics::CULL_NONE );
 	addWallLines( collisionWorld );
 	for ( const Pillar& pillar : mPillars ) {
-		addPillarLines( pillar );
+		addPillarLines( mRenderer, pillar, kLineColor );
 	}
 	for ( const std::vector< Vector3 >& corners : mBoxCorners ) {
 		addBoxLines( corners );
@@ -205,15 +210,15 @@ void CollisionDebugDrawer::addWallLines( const CollisionWorld& collisionWorld ) 
 	}
 }
 
-void CollisionDebugDrawer::addPillarLines( const Pillar& pillar ) {
+void CollisionDebugDrawer::addPillarLines( Scene::PrimitiveRenderer& renderer, const Pillar& pillar, unsigned color ) {
 	const std::vector< Vector3 >& ring = pillar.ring;
 	int size = static_cast< int >( ring.size() );
 	for ( int i = 0; i < size; ++i ) {
 		const Vector3& bottom = ring[ i ];
 		const Vector3& nextBottom = ring[ ( i + 1 ) % size ];
-		mRenderer.addLine( bottom, nextBottom, kLineColor, kLineColor );                   // 下の輪
-		mRenderer.addLine( raised( bottom, pillar.height ), raised( nextBottom, pillar.height ), kLineColor, kLineColor ); // 上の輪
-		mRenderer.addLine( bottom, raised( bottom, pillar.height ), kLineColor, kLineColor );             // 縦
+		renderer.addLine( bottom, nextBottom, color, color );                   // 下の輪
+		renderer.addLine( raised( bottom, pillar.height ), raised( nextBottom, pillar.height ), color, color ); // 上の輪
+		renderer.addLine( bottom, raised( bottom, pillar.height ), color, color );             // 縦
 	}
 }
 
@@ -252,4 +257,27 @@ void CollisionDebugDrawer::addRayHitLines() {
 	Vector3 tip;
 	tip.setMadd( mRayHitPoint, mRayHitNormal, kRayHitNormalLength );
 	mRenderer.addLine( mRayHitPoint, tip, kRayHitColor, kRayHitColor );
+}
+
+void CollisionDebugDrawer::drawSeeThrough( const std::vector< BoxCollider >& boxes, const Matrix44& projectionView ) {
+	if ( !mSeeThroughRenderer ) {
+		mSeeThroughRenderer = Scene::PrimitiveRenderer::create( kSeeThroughBoxCapacity * pillarVertexCost( kRectCorners ), kSeeThroughBatchCapacity );
+	}
+	mSeeThroughRenderer.setTransform( projectionView );
+	mSeeThroughRenderer.enableDepthTest( false ); // 手前の壁や建物に隠さない（向こう側にある物の場所を見せるため）
+	mSeeThroughRenderer.enableDepthWrite( false );
+	mSeeThroughRenderer.setBlendMode( Graphics::BLEND_LINEAR );
+	mSeeThroughRenderer.setCullMode( Graphics::CULL_NONE );
+	Pillar pillar;
+	int boxNumber = 0;
+	for ( const BoxCollider& box : boxes ) {
+		if ( boxNumber >= kSeeThroughBoxCapacity ) {
+			break; // 容量を超えると止まるので、描かずに終える
+		}
+		rectRing( box, &pillar.ring );
+		pillar.height = box.height;
+		addPillarLines( mSeeThroughRenderer, pillar, kSeeThroughColor );
+		++boxNumber;
+	}
+	mSeeThroughRenderer.draw();
 }

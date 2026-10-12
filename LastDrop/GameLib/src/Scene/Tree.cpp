@@ -45,6 +45,14 @@ const Matrix34* Tree::nodeMatrix( const char* name ) const {
 	return mImpl->nodeMatrix( name );
 }
 
+int Tree::nodeIndex( const char* name ) const {
+	return mImpl->nodeIndex( name );
+}
+
+const Matrix34* Tree::nodeMatrix( int index ) const {
+	return mImpl->nodeMatrix( index );
+}
+
 const Vector3* Tree::position() const {
 	return &mImpl->mPosition;
 }

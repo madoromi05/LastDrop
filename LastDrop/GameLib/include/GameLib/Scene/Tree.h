@@ -29,6 +29,12 @@ public:
 	void updateWorldMatrix();
 	///名前で指定したノード(ボーン)の現在ワールド行列を返す。無ければ0。
 	const Matrix34* nodeMatrix( const char* name ) const;
+	///名前で指定したノード(ボーン)の番号を返す。無ければ-1。
+	///番号は同じ Container の同じ番目から作った Tree すべてで共通なので、一度引いて覚えておける。
+	int nodeIndex( const char* name ) const;
+	///番号(nodeIndex の戻り値)で指定したノード(ボーン)の現在ワールド行列を返す。
+	///名前で探さないので、毎フレーム・骨の数だけ呼ぶ用途（スキニング）はこちらを使う。範囲外は不可。
+	const Matrix34* nodeMatrix( int index ) const;
 
 	const Vector3* position() const;
 	const Vector3* angle() const; //単位は度

@@ -13,8 +13,8 @@
 // Pad：GameLib の Input システムをこのゲーム用に組み立てるクラス
 //
 // ゲームコードは
-//   Pad::instance()->isOn( Pad::JUMP, 0 )
-// で呼べる。内部では Input クラスと InputBuilder を使っている。
+//   InputRun() / InputFire()
+// のようなショートカット（このファイルの下）で呼べる。内部では Input クラスと InputBuilder を使っている。
 //
 // デバイス名・ボタン名・ワーク名などの文字列は GameLib::Input::InputBuilder
 // （GameLib/src/Input/InputBuilder.cpp）が一元管理しており、
@@ -23,30 +23,19 @@
 class Pad
 {
 public:
-    // ボタンの列挙型（ゲームコードはこの番号で入力を問い合わせる）
-    enum Button { UP, DOWN, LEFT, RIGHT, JUMP, FIRE, WIRE, WIREREEL, DODGE, RUN, MENU, AIM, HOLSTER, DEBUG_COLLISION, DEBUG_DESPAWN, UI_UP, UI_DOWN, UI_DECIDE, INTERACT };
-
     static Pad* instance();
     static void create();
     static void destroy();
 
-    // 毎フレーム Main で呼ぶ
+    // 1回の描画につき1回、入力を読む（SceneManager が、シーンの beginFrame の前に呼ぶ）
     void update();
 
     // ─────────────────────────────────────────
-    // ボタン単位の API
+    // 操作（WorkId）の読み方。ショートカットが使う
     // ─────────────────────────────────────────
-    bool isOn(Button b, int playerId) const;
-    bool isTriggered(Button b, int playerId) const;
-
-    // ─────────────────────────────────────────
-    // 新 API：4状態を直接取得したい場合
-    // ─────────────────────────────────────────
-    short getWorkState(GameLib::Input::WorkId work, int playerId) const;
-    bool  isWorkFree(GameLib::Input::WorkId work, int playerId) const;
-    bool  isWorkPress(GameLib::Input::WorkId work, int playerId) const;
-    bool  isWorkHold(GameLib::Input::WorkId work, int playerId) const;
-    bool  isWorkRelease(GameLib::Input::WorkId work, int playerId) const;
+    bool isOn(GameLib::Input::WorkId work, int playerId) const;         // 押されている間ずっと
+    bool isTriggered(GameLib::Input::WorkId work, int playerId) const;  // 押した瞬間だけ
+    bool isWorkRelease(GameLib::Input::WorkId work, int playerId) const; // 離した瞬間だけ
     AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const; // 軸ワークの今フレームの量
 
     // ─────────────────────────────────────────
@@ -60,12 +49,6 @@ public:
     void removeKeyboardBindingFromWork(GameLib::Input::WorkId work, char asciiKey, int playerId);
     void removeMouseBindingFromWork(GameLib::Input::WorkId work, GameLib::Input::Mouse::Button button, int playerId);
     void removeJoystickBindingFromWork(GameLib::Input::WorkId work, int buttonCode, int playerId);
-
-    // コレクター（シーン別マップ）の有効/無効切替
-    void setCollectorActive(GameLib::Input::CollectorId collector, bool active);
-
-    // Input インスタンスへの直接アクセス（上級者向け）
-    ::Input& getInput(int playerId);
 
 private:
     static const int MAX_PLAYERS = 2;
@@ -90,9 +73,6 @@ private:
     // プレイヤーごとの割当設定（唯一の正。保存/読込・キーコンフィグの対象）
     GameLib::Input::InputConfig m_configs[MAX_PLAYERS];
 
-    // Button 列挙 → WorkId への変換（従来 API の互換用）
-    static GameLib::Input::WorkId buttonToWorkId(Button b);
-
     static Pad* mInstance;
 };
 
@@ -107,7 +87,7 @@ private:
 //   移動系（Up/Down/Left/Right/Jump） … 押されている間ずっと true
 //   Fire                              … 押した瞬間だけ true（トリガー）
 //
-// 内部では Pad::instance() の従来 API に委譲しているだけなので、
+// 内部では Pad::instance() に操作の番号（WorkId）を渡しているだけなので、
 // 割り当て変更やデバイス追加の影響はここには波及しない。
 // ────────────────────────────────────────────────
 bool InputUp   (int playerId = 0);
@@ -126,7 +106,7 @@ bool InputMenu       (int playerId = 0);   // メニュー／中断（押した�
 bool InputAim        (int playerId = 0);   // 構える（押されている間）
 bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）
 bool InputDebugCollision(int playerId = 0); // 当たり判定の表示を切り替える（押した瞬間）
-bool InputDebugDespawn(int playerId = 0);   // 視線の先のキャラを消す（押した瞬間）
+bool InputDebugPickupCollision(int playerId = 0); // 落ちている物の当たり判定を透かして表示する切り替え（押した瞬間）
 bool InputUiUp       (int playerId = 0);   // 画面の部品の選択を上へ（押した瞬間）
 bool InputUiDown     (int playerId = 0);   // 画面の部品の選択を下へ（押した瞬間）
 bool InputUiDecide   (int playerId = 0);   // 選んでいる部品を決定する（押した瞬間）

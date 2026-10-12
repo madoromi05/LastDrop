@@ -2,17 +2,18 @@
 #define INCLUDED_PICKUP_H
 
 #include "GameLib/Math/Vector3.h"
-#include "StaticMeshInstance.h"
+#include "StaticProp.h"
 #include "IRayBlocker.h"
 #include "IInteractable.h"
 #include "IWorldMember.h"
 #include "ICollisionBody.h"
-#include "BoxCollider.h"
 #include "ItemCatalog.h"
 
+class ViewFrustum;
 class StaticMeshData;
 
 // 地面に落ちている、拾える物1つ（ガソリンの携行缶など）。拾うとその種類のアイテムが持ち物に1つ増える。
+// 見た目と当たり判定の箱は StaticProp に任せ（委譲）、ここは「拾う」と「名簿への載り方」だけを受け持つ。
 // 視線で見つけられるよう、命中の名簿（HitWorld）に「弾を止める物」として載る（見た目の三角形で当たる）。
 // 移動の名簿（CollisionWorld）にも、頂点を囲む箱1つで載る（ユーザー指定）。動かない物だが、拾うと消えるので
 // 外せない「動かない箱」（addBox）ではなく、外せる相手（ICollisionBody）として載せる。
@@ -23,7 +24,8 @@ public:
 	// position / angleY: 置き場所（地面の上）と向き（度）。item: 拾うと増えるアイテム。
 	Pickup( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY, ItemId item );
 
-	void draw() const;
+	// frustum: カメラに映る範囲。映らなければ描かない。
+	void draw( const ViewFrustum& frustum ) const;
 	// 拾われたか（拾われた物は、持ち主が消す）。
 	bool isTaken() const;
 
@@ -41,8 +43,7 @@ public:
 	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
-	StaticMeshInstance mMesh;
-	BoxCollider mCollider;
+	StaticProp mBody; // 見た目と、頂点を囲む箱
 	ItemId mItem;
 	bool mTaken;
 };

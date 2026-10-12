@@ -14,11 +14,16 @@ public:
 	StaticMeshData();
 	~StaticMeshData();
 
+	// 全パーツが、GPUへ送った後も CPU 側の頂点を残すようにする（StaticMeshPart::keepSourceVertices）。create より前に呼ぶ。
+	// 何枚も置いて1つのメッシュへまとめる元にするデータだけに使う（MeshCache::staticMeshForMerging が呼ぶ）。
+	void keepSourceVertices();
+	bool keepsSourceVertices() const;
 	// パーツ数を確保する。ローダが最初に1回だけ呼ぶ。
 	void create( int partNumber );
 	int partNumber() const;
 	// パーツを取り出す。返す参照の寿命はこのデータと同じ。所有権は移らない。
 	StaticMeshPart& part( int index );
+	const StaticMeshPart& part( int index ) const;
 
 	// 全パーツが描画できる状態か（upload 済みか）。パーツが無ければ false。
 	bool isReady() const;
@@ -53,6 +58,7 @@ private:
 	GameLib::Math::Vector3 mBoundsMax;
 	GameLib::Math::Vector3 mBlockingBoundsMin;
 	GameLib::Math::Vector3 mBlockingBoundsMax;
+	bool mKeepsSourceVertices; // 作るパーツに CPU 側の頂点を残させるか
 };
 
 #endif
