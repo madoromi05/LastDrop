@@ -199,6 +199,7 @@
     <ClCompile Include="GameSrc\WeaponStance.cpp" />
     <ClCompile Include="GameSrc\FireControl.cpp" />
     <ClCompile Include="GameSrc\WeaponRecoil.cpp" />
+    <ClCompile Include="GameSrc\ViewRecoil.cpp" />
     <ClCompile Include="GameSrc\Bullet.cpp" />
     <ClCompile Include="GameSrc\BulletList.cpp" />
     <ClCompile Include="GameSrc\AudioEngine.cpp" />
@@ -426,6 +427,7 @@
     <ClInclude Include="GameSrc\TownGround.h" />
     <ClInclude Include="GameSrc\IInteractable.h" />
     <ClInclude Include="GameSrc\UiRect.h" />
+    <ClInclude Include="GameSrc\UiAnchor.h" />
     <ClInclude Include="GameSrc\UiInput.h" />
     <ClInclude Include="GameSrc\IUiElement.h" />
     <ClInclude Include="GameSrc\IUiSelectable.h" />
@@ -460,6 +462,7 @@
     <ClInclude Include="GameSrc\WeaponStance.h" />
     <ClInclude Include="GameSrc\FireControl.h" />
     <ClInclude Include="GameSrc\WeaponRecoil.h" />
+    <ClInclude Include="GameSrc\ViewRecoil.h" />
     <ClInclude Include="GameSrc\Bullet.h" />
     <ClInclude Include="GameSrc\BulletList.h" />
     <ClInclude Include="GameSrc\AudioEngine.h" />

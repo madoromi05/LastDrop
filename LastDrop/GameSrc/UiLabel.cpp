@@ -4,9 +4,10 @@
 
 using namespace GameLib::Math;
 
-UiLabel::UiLabel( const char* text, const Vector2& position, UiTextSize size, UiAlign align, unsigned color ) :
+UiLabel::UiLabel( const char* text, UiAnchor anchor, const Vector2& offset, UiTextSize size, UiAlign align, unsigned color ) :
 	mText( text ),
-	mPosition( position ),
+	mAnchor( anchor ),
+	mOffset( offset ),
 	mSize( size ),
 	mAlign( align ),
 	mColor( color ) {
@@ -19,5 +20,7 @@ void UiLabel::setText( const char* text ) {
 }
 
 void UiLabel::draw( UiRenderer& renderer ) const {
-	renderer.addText( mText.c_str(), mPosition, mSize, mAlign, mColor );
+	Vector2 position = mOffset;
+	position.x += UiLayout::anchorX( mAnchor );
+	renderer.addText( mText.c_str(), position, mSize, mAlign, mColor );
 }

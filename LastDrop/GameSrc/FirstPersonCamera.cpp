@@ -28,6 +28,7 @@ namespace{
 FirstPersonCamera::FirstPersonCamera() :
 	mYaw( 0.f ),
 	mPitch( 0.f ),
+	mPitchOffset( 0.f ),
 	mFieldOfView( kDefaultFieldOfView ),
 	mEyePosition( 0.f, 0.f, 0.f ) {
 }
@@ -41,6 +42,10 @@ void FirstPersonCamera::rotate( float yawDelta, float pitchDelta ) {
 		mYaw += kFullTurn;
 	}
 	mPitch = Math::max( kMinPitch, Math::min( kMaxPitch, mPitch + pitchDelta ) );
+}
+
+void FirstPersonCamera::setPitchOffset( float degree ) {
+	mPitchOffset = degree;
 }
 
 void FirstPersonCamera::setEyePosition( const Vector3& eye ) {
@@ -78,15 +83,17 @@ float FirstPersonCamera::yaw() const {
 }
 
 float FirstPersonCamera::pitch() const {
-	return mPitch;
+	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）。
+	return Math::max( kMinPitch, Math::min( kMaxPitch, mPitch + mPitchOffset ) );
 }
 
 Vector3 FirstPersonCamera::viewDirection() const {
 	// 水平の前方（ヨー0で +Z）をピッチぶん下へ傾ける。
+	float shownPitch = pitch(); // 反動などを足した向き
 	return Vector3(
-		Math::sin( mYaw ) * Math::cos( mPitch ),
-		-Math::sin( mPitch ),
-		Math::cos( mYaw ) * Math::cos( mPitch ) );
+		Math::sin( mYaw ) * Math::cos( shownPitch ),
+		-Math::sin( shownPitch ),
+		Math::cos( mYaw ) * Math::cos( shownPitch ) );
 }
 
 const Vector3& FirstPersonCamera::eyePosition() const {

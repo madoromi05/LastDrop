@@ -24,10 +24,10 @@ GameHud::GameHud( UiRenderer* renderer ) :
 	mTankLabel( nullptr ),
 	mCarryLabel( nullptr ) {
 	UiCanvas& canvas = mScreen.canvas();
-	canvas.add( std::make_unique< UiLabel >( kCrosshair, UiScreen::screenCenter(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHudColor ) );
-	mPromptLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::promptPosition(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kPromptColor ) );
-	mTankLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::statusLinePosition( kTankLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
-	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
+	canvas.add( std::make_unique< UiLabel >( kCrosshair, UI_ANCHOR_CENTER, UiScreen::screenCenter(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHudColor ) );
+	mPromptLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_CENTER, UiScreen::promptPosition(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kPromptColor ) );
+	mTankLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kTankLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
+	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
 }
 
 void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory ) {

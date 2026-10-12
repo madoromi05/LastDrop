@@ -14,10 +14,10 @@ MenuScene::MenuScene( GameResources* resources, const MenuDefinition& definition
 	GameLib::Input::Manager::instance().setCursorLocked( false );
 
 	UiCanvas& canvas = mScreen.canvas();
-	canvas.add( std::make_unique< UiLabel >( definition.heading, UiScreen::headingPosition(), UI_TEXT_LARGE, UI_ALIGN_CENTER, definition.headingColor ) );
+	canvas.add( std::make_unique< UiLabel >( definition.heading, UI_ANCHOR_CENTER, UiScreen::headingPosition(), UI_TEXT_LARGE, UI_ALIGN_CENTER, definition.headingColor ) );
 	int buttonIndex = 0; // 上から何番目か（UiScreen::menuButtonRect の番号）
 	for ( const MenuDefinition::Button& button : definition.buttons ) {
-		canvas.add( std::make_unique< UiButton >( UiScreen::menuButtonRect( buttonIndex ), button.label, button.onActivate ) );
+		canvas.add( std::make_unique< UiButton >( UI_ANCHOR_CENTER, UiScreen::menuButtonRect( buttonIndex ), button.label, button.onActivate ) );
 		++buttonIndex;
 	}
 }

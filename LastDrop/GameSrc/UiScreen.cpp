@@ -39,23 +39,20 @@ void UiScreen::draw() {
 }
 
 Vector2 UiScreen::headingPosition() {
-	Framework framework = Framework::instance();
-	return Vector2( framework.width() * kHalf, framework.height() * kHeadingHeightRatio );
+	return Vector2( 0.f, Framework::instance().height() * kHeadingHeightRatio );
 }
 
 UiRect UiScreen::menuButtonRect( int index ) {
-	Framework framework = Framework::instance();
 	UiRect rect;
 	rect.width = kMenuButtonWidth;
 	rect.height = kMenuButtonHeight;
-	rect.left = framework.width() * kHalf - kMenuButtonWidth * kHalf;
-	rect.top = framework.height() * kHalf + kMenuTopOffset + index * ( kMenuButtonHeight + kMenuButtonSpacing );
+	rect.left = -kMenuButtonWidth * kHalf;
+	rect.top = Framework::instance().height() * kHalf + kMenuTopOffset + index * ( kMenuButtonHeight + kMenuButtonSpacing );
 	return rect;
 }
 
 Vector2 UiScreen::screenCenter() {
-	Framework framework = Framework::instance();
-	return Vector2( framework.width() * kHalf, framework.height() * kHalf );
+	return Vector2( 0.f, Framework::instance().height() * kHalf );
 }
 
 Vector2 UiScreen::promptPosition() {
@@ -65,6 +62,5 @@ Vector2 UiScreen::promptPosition() {
 }
 
 Vector2 UiScreen::statusLinePosition( int index ) {
-	Framework framework = Framework::instance();
-	return Vector2( kStatusMargin, framework.height() - kStatusMargin - ( index + 1 ) * kStatusLineHeight );
+	return Vector2( kStatusMargin, Framework::instance().height() - kStatusMargin - ( index + 1 ) * kStatusLineHeight );
 }

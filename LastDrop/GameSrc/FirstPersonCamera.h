@@ -19,6 +19,9 @@ public:
 
 	// 向きを変える（度）。ピッチは真上・真下へ回り込まないよう上下限で止める。
 	void rotate( float yawDelta, float pitchDelta );
+	// rotate で決めた上下の向きへ足す角度（度。負で見上げる側）。撃った反動のように、一時的に視点をずらして後で戻すものに使う。
+	// rotate の向きそのものは変えないので、0 を渡せば元の向きへ戻る。足した結果も上下限で止める。
+	void setPitchOffset( float degree );
 	// 視点（ワールド座標）。キャラの頭の位置から求めたものを渡す。
 	void setEyePosition( const GameLib::Math::Vector3& );
 	// 縦の視野角（度）。覗くときに狭めてズームする。
@@ -29,14 +32,15 @@ public:
 	GameLib::Math::Matrix44 projectionViewMatrix() const;
 
 	float yaw() const;		// 水平の向き（度）。キャラの向きと移動方向の基準
-	float pitch() const;	// 上下の向き（度）。キャラの背骨の曲げに使う
+	float pitch() const;	// 上下の向き（度。setPitchOffset の分を足したもの）。キャラの背骨の曲げに使う
 	// 視線の向き（長さ1）。音の聞き手の向きにも使う。
 	GameLib::Math::Vector3 viewDirection() const;
 	const GameLib::Math::Vector3& eyePosition() const;	// 視点（setEyePosition で渡したもの）
 
 private:
 	float mYaw;
-	float mPitch;
+	float mPitch;       // rotate で決めた上下の向き（mPitchOffset を足す前）
+	float mPitchOffset; // 一時的に足す角度（反動など）
 	float mFieldOfView;
 	GameLib::Math::Vector3 mEyePosition;
 };

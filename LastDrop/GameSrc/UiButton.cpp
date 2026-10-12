@@ -14,7 +14,8 @@ namespace{
 	const unsigned kSelectedLabelColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );
 }
 
-UiButton::UiButton( const UiRect& rect, const char* label, std::function< void() > onActivate ) :
+UiButton::UiButton( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate ) :
+	mAnchor( anchor ),
 	mRect( rect ),
 	mLabel( label ),
 	mOnActivate( onActivate ),
@@ -23,13 +24,20 @@ UiButton::UiButton( const UiRect& rect, const char* label, std::function< void()
 }
 
 void UiButton::draw( UiRenderer& renderer ) const {
-	renderer.addRect( mRect, mSelected ? kSelectedPlateColor : kPlateColor );
-	renderer.addText( mLabel.c_str(), mRect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER,
+	UiRect rect = screenRect();
+	renderer.addRect( rect, mSelected ? kSelectedPlateColor : kPlateColor );
+	renderer.addText( mLabel.c_str(), rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER,
 		mSelected ? kSelectedLabelColor : kLabelColor );
 }
 
 bool UiButton::contains( const Vector2& point ) const {
-	return mRect.contains( point );
+	return screenRect().contains( point );
+}
+
+UiRect UiButton::screenRect() const {
+	UiRect rect = mRect;
+	rect.left += UiLayout::anchorX( mAnchor );
+	return rect;
 }
 
 void UiButton::setSelected( bool selected ) {

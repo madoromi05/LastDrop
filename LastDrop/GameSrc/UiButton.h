@@ -3,6 +3,7 @@
 
 #include "IUiElement.h"
 #include "IUiSelectable.h"
+#include "UiAnchor.h"
 #include "UiRect.h"
 #include <functional>
 #include <string>
@@ -13,8 +14,9 @@
 // どれが選ばれているか・いつ決定されたかは UiCanvas が決める。
 class UiButton : public IUiElement, public IUiSelectable{
 public:
-	// rect: 画面上の範囲（画素）。label: 中央に書く文字。onActivate: 押したときの処理（空は不可）。
-	UiButton( const UiRect& rect, const char* label, std::function< void() > onActivate );
+	// anchor / rect: ボタンの範囲（画素）。rect.left は anchor からのずれ、rect.top は画面の上端から。
+	// label: 中央に書く文字。onActivate: 押したときの処理（空は不可）。
+	UiButton( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate );
 
 	virtual void draw( UiRenderer& renderer ) const;
 	virtual bool contains( const GameLib::Math::Vector2& point ) const;
@@ -22,7 +24,11 @@ public:
 	virtual void activate();
 
 private:
-	UiRect mRect;
+	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う。
+	UiRect screenRect() const;
+
+	UiAnchor mAnchor;
+	UiRect mRect; // left は mAnchor からのずれ。画面上の範囲は screenRect で求める（理由は UiAnchor.h）
 	std::string mLabel;
 	std::function< void() > mOnActivate;
 	bool mSelected;

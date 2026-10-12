@@ -3,6 +3,7 @@
 
 #include "FirstPersonCamera.h"
 #include "PlayerCommand.h"
+#include "ViewRecoil.h"
 #include "GameLib/Math/Vector3.h"
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
@@ -13,7 +14,7 @@
 // 解除中は撃たない。ロックし直すためのクリックも、離すまでは撃つ操作にしない。
 //
 // 呼ぶ順（IScene の beginFrame → update → draw に合わせる）:
-//   readInput（1回の描画につき1回）→ command を使ってキャラを動かす → consumePressed（update のたび）→ placeCamera（描く前）
+//   readInput（1回の描画につき1回）→ command を使ってキャラを動かす → consumePressed・updateRecoil（update のたび）→ placeCamera（描く前）
 class FirstPersonControl{
 public:
 	// startYaw: 始めに見る水平の向き（度。FirstPersonCamera::yaw と同じ約束）。キャラの向いている方を渡す。
@@ -36,6 +37,9 @@ public:
 	const PlayerCommand& command() const;
 	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ。
 	void consumePressed();
+	// 撃った反動で視点を少し跳ね上げ、時間で戻す。1ティックに1回、キャラを動かした後に呼ぶ。
+	// fired: このティックに1発撃ったか（PlayerCharacter::firedThisTick）。
+	void updateRecoil( bool fired );
 
 	// 視点を目へ置き、覗き具合に合わせた視野角にして、描画ステートへ反映する。描く前、キャラを動かした後に呼ぶ。
 	// eye: 目の位置（ワールド座標。PlayerCharacter::eyePosition）。nullptr なら前に置いた位置のまま（キャラがいないとき）。
@@ -46,6 +50,7 @@ public:
 private:
 	FirstPersonCamera mCamera;
 	PlayerCommand mCommand;
+	ViewRecoil mRecoil; // 撃った反動による視点の跳ね上がり（mCamera のピッチへ足す）
 	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
 	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
 	bool mFireSuppressed;

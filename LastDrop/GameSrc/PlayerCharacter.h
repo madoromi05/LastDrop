@@ -30,7 +30,7 @@ class CollisionWorld;
 // 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem、
 // 武器の構えの段階（しまう／持つ／覗く）は WeaponStance、
 // 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・撃った反動で銃を跳ねさせる・頭を消す）は FirstPersonBody に任せる（委譲）。
-// 反動の量（撃つと跳ねて時間で戻る）は WeaponRecoil が決める。反動は銃の見た目だけで、視点と弾の向きは変えない。
+// 反動の量（撃つと跳ねて時間で戻る）は WeaponRecoil が決める。ここの反動は銃の見た目だけ（視点の跳ね上がりは、カメラを持つ FirstPersonControl の ViewRecoil）。
 // 武器は出し入れの操作で切り替え、持っている間は覗く操作で覗く（短押しで覗いたまま・長押しで押している間）。
 // 入力デバイスは読まない。操作は PlayerCommand で受け取る（キー割り当てはシーン側）。
 // 移動は CharacterMover に任せ、建物やゾンビに当たったら面に沿って滑る（Collide-and-Slide）。

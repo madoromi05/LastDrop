@@ -422,6 +422,9 @@
     <ClCompile Include="GameSrc\WeaponRecoil.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\ViewRecoil.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\Bullet.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -934,6 +937,9 @@
     <ClInclude Include="GameSrc\UiRect.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\UiAnchor.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\UiInput.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1034,6 +1040,9 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\WeaponRecoil.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\ViewRecoil.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\Bullet.h">

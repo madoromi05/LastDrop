@@ -24,15 +24,16 @@ public:
 	void draw();
 
 	// ── 並べる位置（画素）──
-	// 画面の見出しの位置（中央揃えで使う）。
+	// x は基準（UiAnchor）からのずれで返す。括弧の中の基準と組にして部品へ渡すこと（理由は UiAnchor.h）。
+	// 画面の見出しの位置（UI_ANCHOR_CENTER。中央揃えで使う）。
 	static GameLib::Math::Vector2 headingPosition();
-	// 画面中央に縦に並べるボタンの index 番目（0 が一番上）の範囲。
+	// 画面中央に縦に並べるボタンの index 番目（0 が一番上）の範囲（UI_ANCHOR_CENTER）。
 	static UiRect menuButtonRect( int index );
-	// 画面の中央（照準）。
+	// 画面の中央（照準。UI_ANCHOR_CENTER）。
 	static GameLib::Math::Vector2 screenCenter();
-	// 見ている物の案内を出す位置（照準の少し下。中央揃えで使う）。
+	// 見ている物の案内を出す位置（照準の少し下。UI_ANCHOR_CENTER。中央揃えで使う）。
 	static GameLib::Math::Vector2 promptPosition();
-	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（左揃えで使う）。
+	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（UI_ANCHOR_LEFT。左揃えで使う）。
 	static GameLib::Math::Vector2 statusLinePosition( int index );
 
 private:

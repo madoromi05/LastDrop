@@ -69,7 +69,10 @@ void GameScene::update() {
 	const FirstPersonCamera& camera = mControl.camera();
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection() );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
-	if ( const PlayerCharacter* player = mWorld.player() ) {
+	const PlayerCharacter* player = mWorld.player();
+	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
+	mControl.updateRecoil( player && player->firedThisTick() );
+	if ( player ) {
 		mBodySounds.update( *player );
 	}
 }

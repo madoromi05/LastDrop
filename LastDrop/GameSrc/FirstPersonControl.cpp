@@ -83,6 +83,11 @@ void FirstPersonControl::consumePressed() {
 	mCommand.holsterPressed = false;
 }
 
+void FirstPersonControl::updateRecoil( bool fired ) {
+	mRecoil.update( fired );
+	mCamera.setPitchOffset( mRecoil.pitchOffset() );
+}
+
 void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {
 	if ( eye ) {
 		mCamera.setEyePosition( *eye );
