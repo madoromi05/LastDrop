@@ -10,6 +10,7 @@
 //
 // マウスはカーソルロック（GameLib::Input::Manager）で読む。Esc で解除、クリックで再ロック。
 // 解除中は視点を回さない（カーソルが自由に動く間の移動量を視点に入れると、画面外の操作で回ってしまうため）。
+// 解除中は撃たない。ロックし直すためのクリックも、離すまでは撃つ操作にしない。
 //
 // 呼ぶ順（IScene の beginFrame → update → draw に合わせる）:
 //   readInput（1回の描画につき1回）→ command を使ってキャラを動かす → consumePressed（update のたび）→ placeCamera（描く前）
@@ -45,6 +46,9 @@ public:
 private:
 	FirstPersonCamera mCamera;
 	PlayerCommand mCommand;
+	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
+	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
+	bool mFireSuppressed;
 };
 
 #endif

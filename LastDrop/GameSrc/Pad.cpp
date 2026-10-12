@@ -144,6 +144,7 @@ bool InputLeft (int playerId) { return Pad::instance()->isOn(WorkId::Left, playe
 bool InputRight(int playerId) { return Pad::instance()->isOn(WorkId::Right, playerId); }
 bool InputJump (int playerId) { return Pad::instance()->isOn(WorkId::Jump, playerId); }
 bool InputFire (int playerId) { return Pad::instance()->isTriggered(WorkId::Fire, playerId); }
+bool InputFireHeld   (int playerId) { return Pad::instance()->isOn(WorkId::Fire, playerId); }
 bool InputWire       (int playerId) { return Pad::instance()->isTriggered(WorkId::Wire, playerId); }
 bool InputWireRelease(int playerId) { return Pad::instance()->isWorkRelease(WorkId::Wire, playerId); }
 bool InputWireReel   (int playerId) { return Pad::instance()->isOn(WorkId::WireReel, playerId); }

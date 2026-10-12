@@ -13,6 +13,8 @@
 #include "EscapeCar.h"
 #include "ItemSource.h"
 #include "PlayerCommand.h"
+#include "BulletList.h"
+#include "GameLib/Math/Vector3.h"
 #include <memory>
 #include <vector>
 
@@ -23,7 +25,7 @@ class PlayerCharacter;
 class IInteractable;
 class ViewFrustum;
 
-// 本編の世界。町（道路・歩道・建物）、自キャラ、ゾンビ、ゲームループの物（脱出用の車・落ちているガソリン）と、
+// 本編の世界。町（道路・歩道・建物）、自キャラ、飛んでいる弾、ゾンビ、ゲームループの物（脱出用の車・落ちているガソリン）と、
 // それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
 // 「何をどこに置くか」は TownMap が決め、ここは物を作って名簿へ載せ、1ティック進め、描く。
 // 名簿へ載せる・外すのはここだけなので、載せ忘れ・外し忘れを探す場所が1つになる。
@@ -44,9 +46,10 @@ public:
 	// 全データの構築後に一度だけ、物を作って並べ、名簿へ載せる。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
-	// 1ティック進める: 自キャラを操作どおりに動かし、ゾンビのアニメを進め、消す印の付いた物を消す。
+	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出し、弾を飛ばし、ゾンビのアニメを進め、消す印の付いた物を消す。
 	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
-	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch );
+	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
+	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection );
 	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
 	void draw( const ViewFrustum& frustum ) const;
@@ -80,6 +83,7 @@ private:
 	TownMap mMap;
 	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
 	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃
+	const StaticMeshData* mBulletData;    // 飛ぶ弾（7.62 NATO の弾頭）
 	const SkinnedMeshData* mZombieData;
 	const StaticMeshData* mBuildingData;
 	const StaticMeshData* mPerimeterBuildingData; // 町を囲む、足元の板の無い建物
@@ -91,6 +95,8 @@ private:
 	CollisionWorld mCollisionWorld;
 	HitWorld mHitWorld;
 	std::unique_ptr< PlayerCharacter > mPlayer;
+	// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）。
+	BulletList mBullets;
 	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。

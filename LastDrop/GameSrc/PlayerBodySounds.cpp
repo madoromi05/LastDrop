@@ -25,6 +25,7 @@ void PlayerBodySounds::update( const PlayerCharacter& player ) {
 	foley.gait = player.gait();
 	foley.weaponDrawn = player.isWeaponDrawn();
 	foley.aiming = player.isAiming();
+	foley.fired = player.firedThisTick();
 	mFoley.update( foley, stepped );
 }
 

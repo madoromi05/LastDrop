@@ -26,6 +26,8 @@ enum SoundId{
 	SOUND_WEAPON_HOLSTER,	// 武器をしまう
 	SOUND_AIM_IN,			// 覗く
 	SOUND_AIM_OUT,			// 覗くのをやめる
+	// ── 銃 ──
+	SOUND_GUNSHOT,			// 銃声（1発ごと）
 	// ── 環境音 ──
 	SOUND_AMBIENCE_WIND,	// 風（ループ）
 	SOUND_AMBIENCE_BIRDS,	// 鳥（ループ）
@@ -45,6 +47,7 @@ struct SoundEntry{
 	float minDistance;		// この距離（m）までは減衰しない
 	float maxDistance;		// この距離（m）より先は減衰しない（この距離の大きさのまま）
 	bool recorded;			// 録音素材か（true なら SoundGen は書き出さない。上書きを防ぐため）
+	float startSeconds;		// 鳴らし始める位置（秒）。頭に無音がある録音素材で、その分を飛ばすのに使う（0 なら頭から）
 };
 
 // 音の種類の性質を返す。id は SOUND_NUM 未満であること。

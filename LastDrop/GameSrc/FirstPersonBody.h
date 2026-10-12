@@ -17,7 +17,9 @@ class SkinnedMeshData;
 //    持っている走りのアニメは肩の高さで前に構えたままなので、覗くときと同じく両腕をまとめて動かす。
 // 4. 覗く（ADS）ときは、銃のサイト線が目と視線に重なるよう、両腕（肩から先）をまとめて動かす（手続き的 ADS）。
 //    覗く専用のアニメが無くても、持っているアニメのまま覗ける。両手ごと動かすので手は銃から離れない。
-// 5. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
+// 5. 撃った反動のぶん、銃を後ろへ引いて銃口を跳ね上げる。両腕をまとめて動かすので手は銃から離れない。
+//    目は動かさない（照準と弾の向きは変わらず、銃の見た目だけが跳ねる）。
+// 6. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
 // 書き換えのついでに目の位置を求めて覚える（カメラの視点に使う）。
 //
 // 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。キャラの置き場所・向きは知らない。
@@ -43,6 +45,8 @@ public:
 	void setAimWeight( float weight );
 	// 胸元への寄せ具合（0 = アニメのまま、1 = 銃を胸元に抱える）。走っている間だけ 1 にする。
 	void setCarryWeight( float weight );
+	// 反動の量（0 = 反動なし、1 = 撃った瞬間。WeaponRecoil::kick）。
+	void setRecoil( float kick );
 
 	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ。
 	const GameLib::Math::Vector3& eyePosition() const;
@@ -64,6 +68,8 @@ private:
 	void updateEyePosition( const std::vector< GameLib::Math::Matrix34 >& pose );
 	// サイト線を目と視線へ重ねる補正を、覗き具合の分だけ両腕へ掛ける。
 	void alignSightToEye( std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	// 反動の量の分だけ、銃を後ろへ引いて銃口を跳ね上げる補正を両腕へ掛ける。
+	void kickWeapon( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	void hideHead( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 
 	std::vector< SpineJoint > mSpine; // 根に近い順
@@ -82,6 +88,7 @@ private:
 	float mHoldWeight;
 	float mAimWeight;
 	float mCarryWeight;
+	float mRecoil;
 
 	GameLib::Math::Vector3 mEyePosition;
 };

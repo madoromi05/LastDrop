@@ -22,6 +22,10 @@ namespace{
 	const float kClothAimInVolume = 0.125f;
 	const float kClothAimOutVolume = 0.1f;
 
+	// ── 銃声の大きさ ──
+	// 元の WAV のまま鳴らす。足音・装備の音（0.5 以下）よりはっきり大きく、連射で重なっても割れにくい大きさ。
+	const float kGunshotVolume = 1.f;
+
 	// ── 一歩ごとの音の大きさ（Gait の順）──
 	// 装備（銃を持っている間だけ）は走ると大きく揺れる。
 	// 服の擦れは足音に被って邪魔だったので一歩ごとには鳴らさない（状態の切り替わりでだけ鳴らす）。
@@ -42,6 +46,9 @@ void PlayerFoley::update( const FoleyState& state, bool stepped ) {
 	}
 	if ( stepped ) {
 		playStep( state );
+	}
+	if ( state.fired ) {
+		mAudio->play( SOUND_GUNSHOT, AudioEngine::BUS_EFFECT, state.bodyPosition, kGunshotVolume );
 	}
 	mHasPrevious = true;
 	mWasWeaponDrawn = state.weaponDrawn;

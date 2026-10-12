@@ -26,7 +26,8 @@ namespace{
 }
 
 FirstPersonControl::FirstPersonControl( float startYaw ) :
-	mCommand() {
+	mCommand(),
+	mFireSuppressed( true ) {
 	mCamera.rotate( startYaw, 0.f );
 }
 
@@ -49,6 +50,7 @@ void FirstPersonControl::readInput( float aimWeight ) {
 	} else if ( InputFire() && !input.isCursorLocked() ) {
 		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
 		input.setCursorLocked( true );
+		mFireSuppressed = true;
 	}
 
 	if ( input.isCursorLocked() ) {
@@ -66,6 +68,11 @@ void FirstPersonControl::readInput( float aimWeight ) {
 	mCommand.run = InputRun();
 	mCommand.holsterPressed = mCommand.holsterPressed || InputHolster();
 	mCommand.aimHeld = InputAim();
+	bool fireHeld = InputFireHeld();
+	if ( !fireHeld ) {
+		mFireSuppressed = false;
+	}
+	mCommand.fireHeld = fireHeld && input.isCursorLocked() && !mFireSuppressed;
 }
 
 const PlayerCommand& FirstPersonControl::command() const {

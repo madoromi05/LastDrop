@@ -179,6 +179,7 @@ PlayerCharacter::PlayerCharacter( const SkinnedMeshData* data, const StaticMeshD
 const Vector3& position, float angleY ) :
 	mBody( std::make_unique< FirstPersonBody >( data ) ),
 	mMesh( std::make_unique< SkinnedMeshInstance >( data ) ),
+	mFiredThisTick( false ),
 	mMover( world, this ), // this は覚えるだけ（位置を読むのは move のとき＝構築の後）
 	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
 	mHitboxLayout( data, kBoneNamePrefix ),
@@ -247,6 +248,12 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る。
 	bool running = wantsRun && !mStance.isAiming();
 	Animator::State next = chooseState( moving, running, mStance.isDrawn() );
+	// 撃てるのは、銃を手に持っていて、走っていない間だけ（走りでは銃口を下げて胸元に抱えている）。
+	// 撃てない間も FireControl は進める（次の1発までの間隔を、撃てない間に止めないため）。
+	bool canFire = mWeapon && mStance.isDrawn() && !running;
+	mFiredThisTick = mFire.update( command.fireHeld && canFire );
+	mRecoil.update( mFiredThisTick );
+	mBody->setRecoil( mRecoil.kick() );
 	approachHoldWeight();
 	approachCarryWeight( next );
 	mBody->setHoldWeight( mHoldWeight );
@@ -316,6 +323,10 @@ bool PlayerCharacter::isWeaponDrawn() const {
 
 bool PlayerCharacter::isAiming() const {
 	return mStance.isAiming();
+}
+
+bool PlayerCharacter::firedThisTick() const {
+	return mFiredThisTick;
 }
 
 bool PlayerCharacter::readMoveDirection( const PlayerCommand& command, float cameraYaw, Vector3* direction ) const {

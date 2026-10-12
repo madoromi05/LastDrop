@@ -4,6 +4,8 @@
 #include "GameLib/Math/Vector3.h"
 #include "Animator.h"
 #include "WeaponStance.h"
+#include "FireControl.h"
+#include "WeaponRecoil.h"
 #include "PlayerCommand.h"
 #include "Gait.h"
 #include "ICollisionBody.h"
@@ -27,7 +29,8 @@ class CollisionWorld;
 // カメラは持たない（向きを update の引数で受け取り、目の位置を eyePosition で返す）。
 // 見た目は SkinnedMeshInstance、アニメの状態遷移は Animator、手に持つ銃は HeldItem、
 // 武器の構えの段階（しまう／持つ／覗く）は WeaponStance、
-// 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・頭を消す）は FirstPersonBody に任せる（委譲）。
+// 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・撃った反動で銃を跳ねさせる・頭を消す）は FirstPersonBody に任せる（委譲）。
+// 反動の量（撃つと跳ねて時間で戻る）は WeaponRecoil が決める。反動は銃の見た目だけで、視点と弾の向きは変えない。
 // 武器は出し入れの操作で切り替え、持っている間は覗く操作で覗く（短押しで覗いたまま・長押しで押している間）。
 // 入力デバイスは読まない。操作は PlayerCommand で受け取る（キー割り当てはシーン側）。
 // 移動は CharacterMover に任せ、建物やゾンビに当たったら面に沿って滑る（Collide-and-Slide）。
@@ -36,7 +39,10 @@ class CollisionWorld;
 // それを差し出し、ゾンビ側の移動も止められるようにしている（ICollisionBody）。
 // 部位ごとの当たり判定（命中判定用）も持つ（IHittable）。一人称の見た目の書き換え（頭を潰す等）の前のポーズに付く。
 //
-// v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプ・射撃はまだ持たない。
+// 撃つ操作からは「このティックに1発撃ったか」だけを決める（連射の間隔は FireControl に任せる）。
+// 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。武器をしまっている間と、走っている間（銃を抱えている）は撃てない。
+//
+// v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプはまだ持たない。
 class PlayerCharacter : public ICollisionBody, public IHittable, public IWorldMember{
 public:
 	// data: 形・見た目・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
@@ -71,6 +77,7 @@ public:
 	float gaitPhase() const;
 	bool isWeaponDrawn() const;	// 武器を持っているか
 	bool isAiming() const;		// 覗いているか（覗き始め・終わりの途中も true）
+	bool firedThisTick() const;	// 直前の update で1発撃ったか（弾を出す・銃声を鳴らす側が読む）
 
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る）。
 	virtual BoxCollider collider() const;
@@ -98,7 +105,10 @@ private:
 	std::unique_ptr< HeldItem > mWeapon; // 持っていなければ空
 	Animator mAnimator;
 	WeaponStance mStance;
-	CharacterMover mMover;     // 当たりながら滑って進む移動
+	FireControl mFire;         // 連射の間隔
+	bool mFiredThisTick;       // 直前の update で1発撃ったか
+	WeaponRecoil mRecoil;      // 撃った反動の量（FirstPersonBody::setRecoil へ渡す）
+	CharacterMover mMover;    // 当たりながら滑って進む移動
 	BodyFootprint mFootprint;  // 移動の当たり判定の大きさ
 	HitboxLayout mHitboxLayout; // 部位の箱の設計図（自キャラは1人なので自分で持つ）。mHitboxes が借りるので先に宣言する
 	HitboxSet mHitboxes;       // 部位ごとの当たり判定

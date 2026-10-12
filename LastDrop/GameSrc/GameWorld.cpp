@@ -16,6 +16,8 @@ namespace{
 	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
 	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
 	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM）
+	// 飛ぶ弾（7.62 NATO の弾頭。実物大・底が原点・先が +Y）。tools/configs/bullet_tip.json で変換
+	const char* kBulletFile = "Resource/bullet_tip.txt";
 
 	// ── 背景 ──
 	const char* kZombieFile = "Resource/character.txt";
@@ -41,12 +43,14 @@ namespace{
 GameWorld::GameWorld( MeshCache* meshes ) :
 	mPlayerData( nullptr ),
 	mWeaponData( nullptr ),
+	mBulletData( meshes->staticMesh( kBulletFile ) ), // mBullets が借りるので、ここで頼む（他は下でまとめて頼む）
 	mZombieData( nullptr ),
 	mBuildingData( nullptr ),
 	mPerimeterBuildingData( nullptr ),
 	mVehicleData( nullptr ),
 	mFuelCanData( nullptr ),
 	mGround( meshes ),
+	mBullets( mBulletData ),
 	mZombies( &mCollisionWorld, &mHitWorld ),
 	mPickups( &mCollisionWorld, &mHitWorld ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
@@ -131,10 +135,16 @@ void GameWorld::placeMissionObjects() {
 	}
 }
 
-void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch ) {
+void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection ) {
 	if ( mPlayer ) {
 		mPlayer->update( command, cameraYaw, cameraPitch );
+		// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
+		if ( mPlayer->firedThisTick() ) {
+			mBullets.fire( mPlayer->eyePosition(), viewDirection );
+		}
 	}
+	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
+	mBullets.update( mHitWorld, mPlayer.get() );
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
 	}
@@ -148,6 +158,7 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 	if ( mPlayer ) {
 		mPlayer->draw();
 	}
+	mBullets.draw();
 	for ( const auto& zombie : mZombies ) {
 		zombie->draw();
 	}

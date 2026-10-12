@@ -150,6 +150,13 @@ bool AudioEngine::Impl::startVoice( Voice* voice, SoundId id, Bus bus, const Vec
 		ma_sound_set_min_distance( &voice->sound, entry.minDistance );
 		ma_sound_set_max_distance( &voice->sound, entry.maxDistance );
 	}
+	if ( entry.startSeconds > 0.f ) {
+		// 位置はサンプルの番号で渡すので、素材のサンプリング周波数で秒から直す。取れなければ頭から鳴らす。
+		ma_uint32 sampleRate = 0;
+		if ( ma_sound_get_data_format( &voice->sound, nullptr, nullptr, &sampleRate, nullptr, 0 ) == MA_SUCCESS ) {
+			ma_sound_seek_to_pcm_frame( &voice->sound, static_cast< ma_uint64 >( entry.startSeconds * sampleRate ) );
+		}
+	}
 	ma_sound_start( &voice->sound );
 	return true;
 }

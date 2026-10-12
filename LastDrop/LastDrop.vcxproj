@@ -197,6 +197,10 @@
     <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
     <ClCompile Include="GameSrc\FirstPersonBody.cpp" />
     <ClCompile Include="GameSrc\WeaponStance.cpp" />
+    <ClCompile Include="GameSrc\FireControl.cpp" />
+    <ClCompile Include="GameSrc\WeaponRecoil.cpp" />
+    <ClCompile Include="GameSrc\Bullet.cpp" />
+    <ClCompile Include="GameSrc\BulletList.cpp" />
     <ClCompile Include="GameSrc\AudioEngine.cpp" />
     <ClCompile Include="GameSrc\SoundCatalog.cpp" />
     <ClCompile Include="GameSrc\GroundMaterial.cpp" />
@@ -454,6 +458,10 @@
     <ClInclude Include="GameSrc\FirstPersonCamera.h" />
     <ClInclude Include="GameSrc\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\WeaponStance.h" />
+    <ClInclude Include="GameSrc\FireControl.h" />
+    <ClInclude Include="GameSrc\WeaponRecoil.h" />
+    <ClInclude Include="GameSrc\Bullet.h" />
+    <ClInclude Include="GameSrc\BulletList.h" />
     <ClInclude Include="GameSrc\AudioEngine.h" />
     <ClInclude Include="GameSrc\SoundCatalog.h" />
     <ClInclude Include="GameSrc\GroundMaterial.h" />

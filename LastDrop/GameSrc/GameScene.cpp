@@ -67,7 +67,7 @@ void GameScene::update() {
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	const FirstPersonCamera& camera = mControl.camera();
-	mWorld.update( mControl.command(), camera.yaw(), camera.pitch() );
+	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection() );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	if ( const PlayerCharacter* player = mWorld.player() ) {
 		mBodySounds.update( *player );
