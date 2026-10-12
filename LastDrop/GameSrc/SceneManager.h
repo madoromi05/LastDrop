@@ -14,11 +14,8 @@ class GameResources;
 class SceneManager{
 public:
 	// シーンの種類の一覧。ここを見れば全シーンが分かる。増やすときはここに1行足し、
-	// SceneManager::createScene（SceneManager.cpp）の生成分岐にも1行足す。
 	enum SceneId{
-		SCENE_SKIN_TEST, // スキニング検証シーン。
-
-		SCENE_TITLE,     // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
+		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
 		SCENE_GAME,      // ゲーム本編（ガソリンを車へ運ぶ）。タイトルの Start とクリア画面の Retry の行き先。
 		SCENE_CLEAR,     // クリア画面（MenuScene に MenuCatalog::clear の中身を載せたもの）。
 	};

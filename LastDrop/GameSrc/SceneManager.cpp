@@ -1,7 +1,6 @@
 #include "SceneManager.h"
 #include "IScene.h"
 #include "GameResources.h"
-#include "SkinTestScene.h"
 #include "GameScene.h"
 #include "MenuScene.h"
 #include "MenuCatalog.h"
@@ -31,8 +30,6 @@ void SceneManager::start( SceneId first ) {
 std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 	// シーンを増やすときは SceneId(SceneManager.h) とこの分岐の2箇所だけ直せばよい。
 	switch ( id ) {
-	case SCENE_SKIN_TEST:
-		return std::make_unique< SkinTestScene >( mResources.get() );
 	case SCENE_TITLE:
 		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::title() );
 	case SCENE_GAME:

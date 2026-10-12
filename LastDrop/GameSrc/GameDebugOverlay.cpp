@@ -70,8 +70,8 @@ void GameDebugOverlay::drawText( const TextState& state ) const {
 	}
 	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
 		state.cursorLocked
-			? "WASD: move  Shift: run  1: draw/holster  RMB: aim (tap=toggle, hold)  Mouse: look  E: use  Esc: release cursor"
-			: "Click: lock cursor (mouse look)" );
+			? "OnCursor"
+			: "Click: lock cursor" );
 	if ( state.floorMaterial ) {
 		char ground[ kDebugTextSize ];
 		std::snprintf( ground, sizeof( ground ), "Floor: %s", state.floorMaterial );
