@@ -2,7 +2,7 @@
 #define INCLUDED_SOUNDGEN_GENERATORS_H
 
 #include "Synth.h"
-#include "SoundCatalog.h"
+#include "GameSrc/Audio/SoundCatalog.h"
 
 // 音の種類ごとの合成レシピ。random は揺らぎ（同じ音の別テイク）ごとに違う種で渡される。
 // 返す音は正規化済み（大きさの釣り合いはゲーム側の音量で取る）。

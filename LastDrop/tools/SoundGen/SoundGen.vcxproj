@@ -52,7 +52,7 @@
       <PreprocessorDefinitions>_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\GameSrc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\..\GameSrc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -76,13 +76,13 @@
     <ClCompile Include="FoleySynth.cpp" />
     <ClCompile Include="AmbienceSynth.cpp" />
     <!-- 音の目録はゲームと共有する（ファイル名の食い違いを防ぐため、同じソースをリンクする）。 -->
-    <ClCompile Include="..\..\GameSrc\SoundCatalog.cpp" />
+    <ClCompile Include="..\..\GameSrc\src\Audio\SoundCatalog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Synth.h" />
     <ClInclude Include="WaveWriter.h" />
     <ClInclude Include="Generators.h" />
-    <ClInclude Include="..\..\GameSrc\SoundCatalog.h" />
+    <ClInclude Include="..\..\GameSrc\include\GameSrc\Audio\SoundCatalog.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 </Project>

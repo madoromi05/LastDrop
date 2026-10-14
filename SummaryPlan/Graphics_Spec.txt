@@ -93,10 +93,10 @@
                  書き換えると自動で作り直す
 
  関係するファイル
-  ・GameSrc/PostProcess.h / .cpp                 中間の描画先。ここを描画全体の入口に育てる
-  ・GameSrc/GameScene.cpp（draw / setupLights）  描く順番とライトの設定
-  ・GameSrc/MeshMaterial.cpp                     材質の値（固定パイプライン用）
-  ・GameSrc/SkinningPipeline.cpp                 キャラの自作シェーダ
+  ・GameSrc/{include/GameSrc,src}/Render/PostProcess.h / .cpp                 中間の描画先。ここを描画全体の入口に育てる
+  ・GameSrc/src/Scene/Game/GameScene.cpp（draw / setupLights）  描く順番とライトの設定
+  ・GameSrc/src/Render/MeshMaterial.cpp                     材質の値（固定パイプライン用）
+  ・GameSrc/src/Render/SkinnedMesh/SkinningPipeline.cpp                 キャラの自作シェーダ
   ・Resource/Shader/Common.hlsli, Lighting.hlsli 定数とライティングの式
   ・GameLib/include/GameLib/Graphics/Manager.h   描画先・自作シェーダの入口
   ・GameLib/src/Graphics/ManagerImpl.h           ステート（深度・ブレンド・ラスタライザ）

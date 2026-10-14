@@ -49,6 +49,69 @@
     <Filter Include="Game">
       <UniqueIdentifier>{C1D2E3F4-A5B6-7890-CDEF-012345678901}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameSrc">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000001}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Audio">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000002}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Collision">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Core">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000004}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\DebugMode">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000005}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Hit">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000006}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Interaction">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000007}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Map">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000008}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Math">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Player">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\SkinnedMesh">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\StaticMesh">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Game">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-00000000000F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Menu">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000010}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Test">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\UI">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000012}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Weapon">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000013}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\World">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000014}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000015}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <!-- ゲームコード -->
@@ -257,251 +320,254 @@
     <ClCompile Include="GameLib\src\WindowCreator\WindowCreator.cpp">
       <Filter>GameLib\WindowCreator</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Main.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Main.cpp">
+      <Filter>GameSrc</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Pad.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Core\Pad.cpp">
+      <Filter>GameSrc\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Animator.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\Animator.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinnedMeshData.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshData.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshInstance.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MeshCache.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\MeshCache.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinnedMeshLoader.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshLoader.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MeshMaterial.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\MeshMaterial.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MeshLoaderUtil.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\MeshLoaderUtil.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticMeshData.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshData.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticMeshPart.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\HeldItem.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\HeldItem.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticMeshInstance.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstance.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SweepMath.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\SweepMath.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\CollisionWorld.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\CollisionWorld.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\CharacterMover.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\CharacterMover.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Zombie.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Zombie.cpp">
+      <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Building.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Map\Building.cpp">
+      <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MeshBoundsBox.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\MeshBoundsBox.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MeshWallBuilder.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\MeshWallBuilder.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\WallMesh.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticProp.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Map\StaticProp.cpp">
+      <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\ItemCatalog.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\ItemCatalog.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Inventory.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Pickup.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Pickup.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\EscapeCar.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\EscapeCar.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\ItemSource.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\ItemSource.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Interactor.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
+      <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SpawnPicker.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp">
+      <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\TownMap.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Map\TownMap.cpp">
+      <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\TownGround.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Map\TownGround.cpp">
+      <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiInput.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiInput.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiRenderer.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiLabel.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiLabel.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiButton.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiButton.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiCanvas.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\UiScreen.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\UI\UiScreen.cpp">
+      <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\CollisionDebugDrawer.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\HitMath.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Hit\HitMath.cpp">
+      <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\HitboxSet.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Hit\HitboxSet.cpp">
+      <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\HitWorld.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Hit\HitWorld.cpp">
+      <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\BodyFootprint.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Collision\BodyFootprint.cpp">
+      <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\BoxFitter.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Math\BoxFitter.cpp">
+      <Filter>GameSrc\Math</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticMeshLoader.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshLoader.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SceneManager.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\SceneManager.cpp">
+      <Filter>GameSrc\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinningPipeline.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinningPipeline.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\TriangleMesh.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp">
+      <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\PostProcess.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FixedStepClock.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp">
+      <Filter>GameSrc\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SkinTestScene.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp">
+      <Filter>GameSrc\Scene\Test</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FirstPersonCamera.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FirstPersonBody.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\FirstPersonBody.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\WeaponStance.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\WeaponStance.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FireControl.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\FireControl.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\WeaponRecoil.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\ViewRecoil.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\Bullet.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Bullet.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\BulletList.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\BulletList.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\AudioEngine.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp">
+      <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\SoundCatalog.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp">
+      <Filter>GameSrc\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GroundMaterial.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Audio\SoundCatalog.cpp">
+      <Filter>GameSrc\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FootstepEmitter.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Audio\GroundMaterial.cpp">
+      <Filter>GameSrc\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\PlayerFoley.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Audio\FootstepEmitter.cpp">
+      <Filter>GameSrc\Audio</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\AmbienceSystem.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Audio\PlayerFoley.cpp">
+      <Filter>GameSrc\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Audio\AmbienceSystem.cpp">
+      <Filter>GameSrc\Audio</Filter>
     </ClCompile>
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\PlayerCharacter.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\PlayerCharacter.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MatrixBlend.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Math\MatrixBlend.cpp">
+      <Filter>GameSrc\Math</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\TextureCache.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\TextureCache.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\PlacementMatrix.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Math\PlacementMatrix.cpp">
+      <Filter>GameSrc\Math</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GameScene.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\GameScene.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GameWorld.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\GameWorld.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\FirstPersonControl.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\FirstPersonControl.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\PlayerBodySounds.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp">
+      <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GameHud.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GameDebugOverlay.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\GameResources.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\GameResources.cpp">
+      <Filter>GameSrc\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\HitboxLayout.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Hit\HitboxLayout.cpp">
+      <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\ZombieModel.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieModel.cpp">
+      <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\ViewFrustum.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MenuScene.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\MenuCatalog.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\StaticMeshMerger.cpp">
-      <Filter>ソース ファイル</Filter>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshMerger.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -829,311 +895,314 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Pad.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Core\Pad.h">
+      <Filter>GameSrc\Core</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Animator.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Animator.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinnedMeshData.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshData.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinnedMeshInstance.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshInstance.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MeshCache.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshCache.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinnedMeshLoader.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshLoader.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MeshMaterial.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshMaterial.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MeshLoaderUtil.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshLoaderUtil.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticMeshData.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshData.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticMeshPart.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\HeldItem.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldItem.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticMeshInstance.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstance.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BoxCollider.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\BoxCollider.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ICollisionBody.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\ICollisionBody.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SweepMath.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\SweepMath.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\CollisionWorld.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\CollisionWorld.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\CharacterMover.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\CharacterMover.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Zombie.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Zombie.h">
+      <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Building.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\Building.h">
+      <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MeshBoundsBox.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshBoundsBox.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MeshWallBuilder.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshWallBuilder.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\WallMesh.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\WallMesh.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\WallPiece.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\WallPiece.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MoveHeight.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MoveHeight.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticProp.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\StaticProp.h">
+      <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ItemCatalog.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Inventory.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Pickup.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Pickup.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\EscapeCar.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCar.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ItemSource.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSource.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Interactor.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SpawnPicker.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h">
+      <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\TownMap.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h">
+      <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\TownGround.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h">
+      <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IInteractable.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractable.h">
+      <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiRect.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiRect.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiAnchor.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiAnchor.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiInput.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiInput.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IUiElement.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiElement.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IUiSelectable.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiSelectable.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiRenderer.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiLabel.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiLabel.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiButton.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiButton.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiCanvas.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\UiScreen.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\CollisionDebugDrawer.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h">
+      <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BodyPart.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\HitMath.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\HitboxSet.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxSet.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IHittable.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\IHittable.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\HitWorld.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitWorld.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BodyFootprint.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\BodyFootprint.h">
+      <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BoxFitter.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\BoxFitter.h">
+      <Filter>GameSrc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticMeshLoader.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshLoader.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\VertexColor.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\VertexColor.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\IScene.h">
+      <Filter>GameSrc\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SceneManager.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\SceneManager.h">
+      <Filter>GameSrc\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinningPipeline.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinningPipeline.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IWorldMember.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\World\IWorldMember.h">
+      <Filter>GameSrc\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ActorList.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\World\ActorList.h">
+      <Filter>GameSrc\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\TriangleMesh.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IRayBlocker.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PostProcess.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FixedStepClock.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h">
+      <Filter>GameSrc\Core</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameTime.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h">
+      <Filter>GameSrc\Core</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SkinTestScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h">
+      <Filter>GameSrc\Scene\Test</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FirstPersonCamera.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonCamera.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FirstPersonBody.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBody.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\WeaponStance.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FireControl.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\WeaponRecoil.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ViewRecoil.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Bullet.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BulletList.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletList.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\AudioEngine.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h">
+      <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\SoundCatalog.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GroundMaterial.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\SoundCatalog.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\IGroundSurface.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\GroundMaterial.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FootstepEmitter.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\IGroundSurface.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PlayerFoley.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\FootstepEmitter.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\AmbienceSystem.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\PlayerFoley.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\Gait.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AmbienceSystem.h">
+      <Filter>GameSrc\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\Gait.h">
+      <Filter>GameSrc\Audio</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\ThirdParty\miniaudio\miniaudio.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\BonePoseModifier.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifier.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PlayerCharacter.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCharacter.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PlayerCommand.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCommand.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MatrixBlend.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\MatrixBlend.h">
+      <Filter>GameSrc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\TextureCache.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TextureCache.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PlacementMatrix.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\PlacementMatrix.h">
+      <Filter>GameSrc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameWorld.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameWorld.h">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\FirstPersonControl.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\PlayerBodySounds.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h">
+      <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameHud.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameDebugOverlay.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\GameResources.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\GameResources.h">
+      <Filter>GameSrc\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\HitboxLayout.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxLayout.h">
+      <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ZombieModel.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModel.h">
+      <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\ViewFrustum.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MenuScene.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\MenuCatalog.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\StaticMeshMerger.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshMerger.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\InputDef.h">
       <Filter>ヘッダー ファイル</Filter>

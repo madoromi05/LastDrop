@@ -78,7 +78,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -97,7 +97,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -114,7 +114,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -133,7 +133,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
@@ -146,89 +146,90 @@
   <ItemGroup>
     <!-- ゲームコード -->
     <ClCompile Include="Framework.cpp" />
-    <ClCompile Include="GameSrc\Animator.cpp" />
-    <ClCompile Include="GameSrc\SkinnedMeshData.cpp" />
-    <ClCompile Include="GameSrc\SkinnedMeshInstance.cpp" />
-    <ClCompile Include="GameSrc\MeshCache.cpp" />
-    <ClCompile Include="GameSrc\SkinnedMeshLoader.cpp" />
-    <ClCompile Include="GameSrc\MeshMaterial.cpp" />
-    <ClCompile Include="GameSrc\MeshLoaderUtil.cpp" />
-    <ClCompile Include="GameSrc\StaticMeshData.cpp" />
-    <ClCompile Include="GameSrc\StaticMeshPart.cpp" />
-    <ClCompile Include="GameSrc\HeldItem.cpp" />
-    <ClCompile Include="GameSrc\StaticMeshInstance.cpp" />
-    <ClCompile Include="GameSrc\SweepMath.cpp" />
-    <ClCompile Include="GameSrc\CollisionWorld.cpp" />
-    <ClCompile Include="GameSrc\CharacterMover.cpp" />
-    <ClCompile Include="GameSrc\Zombie.cpp" />
-    <ClCompile Include="GameSrc\Building.cpp" />
-    <ClCompile Include="GameSrc\MeshBoundsBox.cpp" />
-    <ClCompile Include="GameSrc\MeshWallBuilder.cpp" />
-    <ClCompile Include="GameSrc\WallMesh.cpp" />
-    <ClCompile Include="GameSrc\StaticProp.cpp" />
-    <ClCompile Include="GameSrc\ItemCatalog.cpp" />
-    <ClCompile Include="GameSrc\Inventory.cpp" />
-    <ClCompile Include="GameSrc\Pickup.cpp" />
-    <ClCompile Include="GameSrc\EscapeCar.cpp" />
-    <ClCompile Include="GameSrc\ItemSource.cpp" />
-    <ClCompile Include="GameSrc\Interactor.cpp" />
-    <ClCompile Include="GameSrc\SpawnPicker.cpp" />
-    <ClCompile Include="GameSrc\TownMap.cpp" />
-    <ClCompile Include="GameSrc\TownGround.cpp" />
-    <ClCompile Include="GameSrc\UiInput.cpp" />
-    <ClCompile Include="GameSrc\UiRenderer.cpp" />
-    <ClCompile Include="GameSrc\UiLabel.cpp" />
-    <ClCompile Include="GameSrc\UiButton.cpp" />
-    <ClCompile Include="GameSrc\UiCanvas.cpp" />
-    <ClCompile Include="GameSrc\UiScreen.cpp" />
-    <ClCompile Include="GameSrc\CollisionDebugDrawer.cpp" />
-    <ClCompile Include="GameSrc\HitMath.cpp" />
-    <ClCompile Include="GameSrc\HitboxSet.cpp" />
-    <ClCompile Include="GameSrc\HitWorld.cpp" />
-    <ClCompile Include="GameSrc\BodyFootprint.cpp" />
-    <ClCompile Include="GameSrc\BoxFitter.cpp" />
-    <ClCompile Include="GameSrc\StaticMeshLoader.cpp" />
-    <ClCompile Include="GameSrc\SceneManager.cpp" />
-    <ClCompile Include="GameSrc\SkinningPipeline.cpp" />
-    <ClCompile Include="GameSrc\TriangleMesh.cpp" />
-    <ClCompile Include="GameSrc\PostProcess.cpp" />
-    <ClCompile Include="GameSrc\FixedStepClock.cpp" />
-    <ClCompile Include="GameSrc\SkinTestScene.cpp" />
-    <ClCompile Include="GameSrc\FirstPersonCamera.cpp" />
-    <ClCompile Include="GameSrc\FirstPersonBody.cpp" />
-    <ClCompile Include="GameSrc\WeaponStance.cpp" />
-    <ClCompile Include="GameSrc\FireControl.cpp" />
-    <ClCompile Include="GameSrc\WeaponRecoil.cpp" />
-    <ClCompile Include="GameSrc\ViewRecoil.cpp" />
-    <ClCompile Include="GameSrc\Bullet.cpp" />
-    <ClCompile Include="GameSrc\BulletList.cpp" />
-    <ClCompile Include="GameSrc\AudioEngine.cpp" />
-    <ClCompile Include="GameSrc\SoundCatalog.cpp" />
-    <ClCompile Include="GameSrc\GroundMaterial.cpp" />
-    <ClCompile Include="GameSrc\FootstepEmitter.cpp" />
-    <ClCompile Include="GameSrc\PlayerFoley.cpp" />
-    <ClCompile Include="GameSrc\AmbienceSystem.cpp" />
+    <ClCompile Include="GameSrc\src\Player\Animator.cpp" />
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshData.cpp" />
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshInstance.cpp" />
+    <ClCompile Include="GameSrc\src\Render\MeshCache.cpp" />
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshLoader.cpp" />
+    <ClCompile Include="GameSrc\src\Render\MeshMaterial.cpp" />
+    <ClCompile Include="GameSrc\src\Render\MeshLoaderUtil.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshData.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp" />
+    <ClCompile Include="GameSrc\src\Player\HeldItem.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstance.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\SweepMath.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\CollisionWorld.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\CharacterMover.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\Zombie.cpp" />
+    <ClCompile Include="GameSrc\src\Map\Building.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\MeshBoundsBox.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\MeshWallBuilder.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
+    <ClCompile Include="GameSrc\src\Map\StaticProp.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\ItemCatalog.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\Pickup.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\EscapeCar.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\ItemSource.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
+    <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownGround.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiInput.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiLabel.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiButton.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\HitMath.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\HitboxSet.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\HitWorld.cpp" />
+    <ClCompile Include="GameSrc\src\Collision\BodyFootprint.cpp" />
+    <ClCompile Include="GameSrc\src\Math\BoxFitter.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshLoader.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\SceneManager.cpp" />
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinningPipeline.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp" />
+    <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
+    <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp" />
+    <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp" />
+    <ClCompile Include="GameSrc\src\Player\FirstPersonBody.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\WeaponStance.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\FireControl.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\Bullet.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\BulletList.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\SoundCatalog.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\GroundMaterial.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\FootstepEmitter.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\PlayerFoley.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\AmbienceSystem.cpp" />
     <!-- miniaudio（同梱の単一ヘッダ。実装はこの1ファイルでだけコンパイルする） -->
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp" />
-    <ClCompile Include="GameSrc\PlayerCharacter.cpp" />
-    <ClCompile Include="GameSrc\MatrixBlend.cpp" />
-    <ClCompile Include="GameSrc\Main.cpp" />
-    <ClCompile Include="GameSrc\Pad.cpp" />
-    <ClCompile Include="GameSrc\TextureCache.cpp" />
-    <ClCompile Include="GameSrc\PlacementMatrix.cpp" />
-    <ClCompile Include="GameSrc\GameScene.cpp" />
-    <ClCompile Include="GameSrc\GameWorld.cpp" />
-    <ClCompile Include="GameSrc\FirstPersonControl.cpp" />
-    <ClCompile Include="GameSrc\PlayerBodySounds.cpp" />
-    <ClCompile Include="GameSrc\GameHud.cpp" />
-    <ClCompile Include="GameSrc\GameDebugOverlay.cpp" />
-    <ClCompile Include="GameSrc\GameResources.cpp" />
-    <ClCompile Include="GameSrc\HitboxLayout.cpp" />
-    <ClCompile Include="GameSrc\ZombieModel.cpp" />
-    <ClCompile Include="GameSrc\ViewFrustum.cpp" />
-    <ClCompile Include="GameSrc\MenuScene.cpp" />
-    <ClCompile Include="GameSrc\MenuCatalog.cpp" />
-    <ClCompile Include="GameSrc\StaticMeshMerger.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerCharacter.cpp" />
+    <ClCompile Include="GameSrc\src\Math\MatrixBlend.cpp" />
+    <ClCompile Include="GameSrc\src\Main.cpp" />
+    <ClCompile Include="GameSrc\src\Core\Pad.cpp" />
+    <ClCompile Include="GameSrc\src\Render\TextureCache.cpp" />
+    <ClCompile Include="GameSrc\src\Math\PlacementMatrix.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GameScene.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GameWorld.cpp" />
+    <ClCompile Include="GameSrc\src\Player\FirstPersonControl.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\GameResources.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\HitboxLayout.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieModel.cpp" />
+    <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshMerger.cpp" />
     <!-- Base -->
     <ClCompile Include="GameLib\src\Base\Compressor.cpp" />
     <ClCompile Include="GameLib\src\Base\Conversion.cpp" />
@@ -391,108 +392,109 @@
     <ClInclude Include="GameLib\include\GameLib\Threading\Semaphore.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Thread.h" />
     <ClInclude Include="GameLib\src\WindowCreator\Resource.h" />
-    <ClInclude Include="GameSrc\Pad.h" />
-    <ClInclude Include="GameSrc\Animator.h" />
-    <ClInclude Include="GameSrc\SkinnedMeshData.h" />
-    <ClInclude Include="GameSrc\SkinnedMeshInstance.h" />
-    <ClInclude Include="GameSrc\MeshCache.h" />
-    <ClInclude Include="GameSrc\SkinnedMeshLoader.h" />
-    <ClInclude Include="GameSrc\MeshMaterial.h" />
-    <ClInclude Include="GameSrc\MeshLoaderUtil.h" />
-    <ClInclude Include="GameSrc\StaticMeshData.h" />
-    <ClInclude Include="GameSrc\StaticMeshPart.h" />
-    <ClInclude Include="GameSrc\HeldItem.h" />
-    <ClInclude Include="GameSrc\StaticMeshInstance.h" />
-    <ClInclude Include="GameSrc\BoxCollider.h" />
-    <ClInclude Include="GameSrc\ICollisionBody.h" />
-    <ClInclude Include="GameSrc\SweepMath.h" />
-    <ClInclude Include="GameSrc\CollisionWorld.h" />
-    <ClInclude Include="GameSrc\CharacterMover.h" />
-    <ClInclude Include="GameSrc\Zombie.h" />
-    <ClInclude Include="GameSrc\Building.h" />
-    <ClInclude Include="GameSrc\MeshBoundsBox.h" />
-    <ClInclude Include="GameSrc\MeshWallBuilder.h" />
-    <ClInclude Include="GameSrc\WallMesh.h" />
-    <ClInclude Include="GameSrc\WallPiece.h" />
-    <ClInclude Include="GameSrc\MoveHeight.h" />
-    <ClInclude Include="GameSrc\StaticProp.h" />
-    <ClInclude Include="GameSrc\ItemCatalog.h" />
-    <ClInclude Include="GameSrc\Inventory.h" />
-    <ClInclude Include="GameSrc\Pickup.h" />
-    <ClInclude Include="GameSrc\EscapeCar.h" />
-    <ClInclude Include="GameSrc\ItemSource.h" />
-    <ClInclude Include="GameSrc\Interactor.h" />
-    <ClInclude Include="GameSrc\SpawnPicker.h" />
-    <ClInclude Include="GameSrc\TownMap.h" />
-    <ClInclude Include="GameSrc\TownGround.h" />
-    <ClInclude Include="GameSrc\IInteractable.h" />
-    <ClInclude Include="GameSrc\UiRect.h" />
-    <ClInclude Include="GameSrc\UiAnchor.h" />
-    <ClInclude Include="GameSrc\UiInput.h" />
-    <ClInclude Include="GameSrc\IUiElement.h" />
-    <ClInclude Include="GameSrc\IUiSelectable.h" />
-    <ClInclude Include="GameSrc\UiRenderer.h" />
-    <ClInclude Include="GameSrc\UiLabel.h" />
-    <ClInclude Include="GameSrc\UiButton.h" />
-    <ClInclude Include="GameSrc\UiCanvas.h" />
-    <ClInclude Include="GameSrc\UiScreen.h" />
-    <ClInclude Include="GameSrc\CollisionDebugDrawer.h" />
-    <ClInclude Include="GameSrc\BodyPart.h" />
-    <ClInclude Include="GameSrc\HitMath.h" />
-    <ClInclude Include="GameSrc\HitboxSet.h" />
-    <ClInclude Include="GameSrc\IHittable.h" />
-    <ClInclude Include="GameSrc\HitWorld.h" />
-    <ClInclude Include="GameSrc\BodyFootprint.h" />
-    <ClInclude Include="GameSrc\BoxFitter.h" />
-    <ClInclude Include="GameSrc\StaticMeshLoader.h" />
-    <ClInclude Include="GameSrc\VertexColor.h" />
-    <ClInclude Include="GameSrc\IScene.h" />
-    <ClInclude Include="GameSrc\SceneManager.h" />
-    <ClInclude Include="GameSrc\SkinningPipeline.h" />
-    <ClInclude Include="GameSrc\IWorldMember.h" />
-    <ClInclude Include="GameSrc\ActorList.h" />
-    <ClInclude Include="GameSrc\TriangleMesh.h" />
-    <ClInclude Include="GameSrc\IRayBlocker.h" />
-    <ClInclude Include="GameSrc\PostProcess.h" />
-    <ClInclude Include="GameSrc\FixedStepClock.h" />
-    <ClInclude Include="GameSrc\GameTime.h" />
-    <ClInclude Include="GameSrc\SkinTestScene.h" />
-    <ClInclude Include="GameSrc\FirstPersonCamera.h" />
-    <ClInclude Include="GameSrc\FirstPersonBody.h" />
-    <ClInclude Include="GameSrc\WeaponStance.h" />
-    <ClInclude Include="GameSrc\FireControl.h" />
-    <ClInclude Include="GameSrc\WeaponRecoil.h" />
-    <ClInclude Include="GameSrc\ViewRecoil.h" />
-    <ClInclude Include="GameSrc\Bullet.h" />
-    <ClInclude Include="GameSrc\BulletList.h" />
-    <ClInclude Include="GameSrc\AudioEngine.h" />
-    <ClInclude Include="GameSrc\SoundCatalog.h" />
-    <ClInclude Include="GameSrc\GroundMaterial.h" />
-    <ClInclude Include="GameSrc\IGroundSurface.h" />
-    <ClInclude Include="GameSrc\FootstepEmitter.h" />
-    <ClInclude Include="GameSrc\PlayerFoley.h" />
-    <ClInclude Include="GameSrc\AmbienceSystem.h" />
-    <ClInclude Include="GameSrc\Gait.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Core\Pad.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Animator.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshData.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshInstance.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshCache.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshLoader.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshMaterial.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\MeshLoaderUtil.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshData.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldItem.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstance.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\BoxCollider.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\ICollisionBody.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\SweepMath.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\CollisionWorld.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\CharacterMover.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Zombie.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\Building.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshBoundsBox.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshWallBuilder.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\WallMesh.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\WallPiece.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\MoveHeight.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\StaticProp.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Pickup.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCar.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSource.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractable.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiRect.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiAnchor.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiInput.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiElement.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiSelectable.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiLabel.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiButton.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxSet.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\IHittable.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitWorld.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\BodyFootprint.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\BoxFitter.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshLoader.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\VertexColor.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\IScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\SceneManager.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinningPipeline.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\IWorldMember.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\ActorList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonCamera.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBody.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\SoundCatalog.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\GroundMaterial.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\IGroundSurface.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\FootstepEmitter.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\PlayerFoley.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AmbienceSystem.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\Gait.h" />
     <ClInclude Include="GameLib\src\ThirdParty\miniaudio\miniaudio.h" />
-    <ClInclude Include="GameSrc\BonePoseModifier.h" />
-    <ClInclude Include="GameSrc\PlayerCharacter.h" />
-    <ClInclude Include="GameSrc\PlayerCommand.h" />
-    <ClInclude Include="GameSrc\MatrixBlend.h" />
-    <ClInclude Include="GameSrc\TextureCache.h" />
-    <ClInclude Include="GameSrc\PlacementMatrix.h" />
-    <ClInclude Include="GameSrc\GameScene.h" />
-    <ClInclude Include="GameSrc\GameWorld.h" />
-    <ClInclude Include="GameSrc\FirstPersonControl.h" />
-    <ClInclude Include="GameSrc\PlayerBodySounds.h" />
-    <ClInclude Include="GameSrc\GameHud.h" />
-    <ClInclude Include="GameSrc\GameDebugOverlay.h" />
-    <ClInclude Include="GameSrc\GameResources.h" />
-    <ClInclude Include="GameSrc\HitboxLayout.h" />
-    <ClInclude Include="GameSrc\ZombieModel.h" />
-    <ClInclude Include="GameSrc\ViewFrustum.h" />
-    <ClInclude Include="GameSrc\MenuScene.h" />
-    <ClInclude Include="GameSrc\MenuCatalog.h" />
-    <ClInclude Include="GameSrc\StaticMeshMerger.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifier.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCharacter.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCommand.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\MatrixBlend.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TextureCache.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\PlacementMatrix.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameWorld.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\GameResources.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxLayout.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModel.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshMerger.h" />
     <ClInclude Include="GameLib\include\GameLib\Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\DebugScreen.h" />
     <ClInclude Include="GameLib\include\GameLib\GameLib.h" />

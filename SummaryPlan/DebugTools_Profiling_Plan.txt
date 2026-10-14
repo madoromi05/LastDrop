@@ -80,8 +80,8 @@
   ・GameLib/src/Graphics/ManagerImpl.h                デバイス作成、beginDraw / endDraw（Present）
   ・GameLib/src/WindowCreator/WindowCreator.cpp       メッセージループ、WndProc
   ・GameLib/src/Input/ManagerImpl.h                   入力の読み取り、カーソルロック
-  ・GameSrc/SceneManager.cpp、FixedStepClock.h        ティックの回し方
-  ・GameSrc/GameTime.h                                1ティック＝1/60秒、上限5ティック
+  ・GameSrc/src/Scene/SceneManager.cpp、include/GameSrc/Core/FixedStepClock.h        ティックの回し方
+  ・GameSrc/include/GameSrc/Core/GameTime.h                                1ティック＝1/60秒、上限5ティック
 
 --------------------------------------------------------------------------------
  関係
