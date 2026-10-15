@@ -146,13 +146,15 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
 	std::vector< HitWorld::Hit > hits;
 	mBullets.update( mHitWorld, mPlayer.get(), &hits );
-	// 物（建物・車・地面・拾える物）に当たった所にだけ弾痕を付ける。ゾンビ（target）には付けない（2026-10-11 決定）。
+	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出す。ゾンビ（target）には出さない（血は別の演出にする）。
 	for ( const HitWorld::Hit& hit : hits ) {
 		if ( hit.blocker ) {
 			mBulletHoles.add( hit.point, hit.normal, hit.blocker );
+			mImpactDust.spawn( hit.point, hit.normal );
 		}
 	}
 	mBulletHoles.update();
+	mImpactDust.update();
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
 	}
@@ -186,6 +188,10 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 
 void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
 	mBulletHoles.draw( projectionView );
+}
+
+void GameWorld::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection ) {
+	mImpactDust.draw( projectionView, viewDirection );
 }
 
 void GameWorld::removeTakenPickups() {

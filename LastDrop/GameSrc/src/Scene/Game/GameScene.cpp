@@ -94,6 +94,7 @@ void GameScene::draw() {
 	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない。
 	mWorld.draw( ViewFrustum( mControl.camera().projectionViewMatrix() ) );
 	mWorld.drawBulletHoles( mControl.camera().projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
+	mWorld.drawImpactDust( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 弾痕の上に舞う
 #ifdef _DEBUG
 	mDebug.drawCollision( mWorld, mControl.camera() );
 #endif

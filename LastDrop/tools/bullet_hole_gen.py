@@ -15,8 +15,9 @@
 
 import math
 import random
-import struct
 import sys
+
+from tga_image import over, smooth_step, to_byte, write_tga
 
 DEFAULT_OUTPUT = "Resource/bullet_hole.tga"
 
@@ -37,35 +38,12 @@ CRACK_MAX_LENGTH = 0.95
 CRACK_WIDTH = 0.035      # ヒビの根元の太さの半分
 EDGE_SOFTNESS = 0.06     # ふちをぼかす幅（ギザギザのジャギーを抑える）
 
-# 色（0〜1 の灰色）と不透明度。ライトが当たらない描き方なので、日陰でも浮かない暗い色にする。
+# 色（0〜1 の灰色）と不透明度。壁と同じライトが当たる（日なたで明るく、太陽と反対を向いた面で暗くなる）。
 HOLE_SHADE = 0.04
 CHIP_SHADE = 0.30
 CHIP_OPACITY = 0.85
 CRACK_SHADE = 0.15
 CRACK_OPACITY = 0.7
-
-# TGA の見出し。形式 2 = 色そのまま・圧縮なし。0x28 = アルファ 8 ビット＋上の行から並ぶ。
-TGA_UNCOMPRESSED_TRUE_COLOR = 2
-TGA_BITS_PER_PIXEL = 32
-TGA_DESCRIPTOR = 0x28
-BYTE_MAX = 255
-
-
-def smooth_step(edge0, edge1, x):
-    """edge0 で 0、edge1 で 1 になる、なめらかな切り替え。"""
-    t = min(max((x - edge0) / (edge1 - edge0), 0.0), 1.0)
-    return t * t * (3.0 - 2.0 * t)
-
-
-def over(top, bottom):
-    """(灰色, 不透明度) の top を bottom の上に重ねる。"""
-    top_shade, top_opacity = top
-    bottom_shade, bottom_opacity = bottom
-    opacity = top_opacity + bottom_opacity * (1.0 - top_opacity)
-    if opacity <= 0.0:
-        return 0.0, 0.0
-    shade = (top_shade * top_opacity + bottom_shade * bottom_opacity * (1.0 - top_opacity)) / opacity
-    return shade, opacity
 
 
 def make_chip_edge(rng):
@@ -110,19 +88,6 @@ def shade_pixel(x, y, chip_edge, cracks):
     return over(hole, over(chip, crack))
 
 
-def to_byte(value):
-    return int(round(min(max(value, 0.0), 1.0) * BYTE_MAX))
-
-
-def write_tga(path, body):
-    """32 ビット・圧縮なし・上の行から の TGA を書く。body: 上の行から B,G,R,A の並び。"""
-    header = struct.pack("<BBBHHBHHHHBB", 0, 0, TGA_UNCOMPRESSED_TRUE_COLOR, 0, 0, 0, 0, 0,
-                         SIZE, SIZE, TGA_BITS_PER_PIXEL, TGA_DESCRIPTOR)
-    with open(path, "wb") as f:
-        f.write(header)
-        f.write(body)
-
-
 def main():
     output = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_OUTPUT
     rng = random.Random(SEED)
@@ -138,7 +103,7 @@ def main():
             shade, opacity = shade_pixel(x, y, chip_edge, cracks)
             gray = to_byte(shade)
             body += bytes((gray, gray, gray, to_byte(opacity)))
-    write_tga(output, body)
+    write_tga(output, SIZE, body)
     print("wrote", output)
 
 

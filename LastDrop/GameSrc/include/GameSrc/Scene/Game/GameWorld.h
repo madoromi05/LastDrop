@@ -15,6 +15,7 @@
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Weapon/BulletList.h"
 #include "GameSrc/Weapon/BulletHoleList.h"
+#include "GameSrc/Effect/ImpactDustList.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include <memory>
@@ -48,7 +49,7 @@ public:
 	// 全データの構築後に一度だけ、物を作って並べ、名簿へ載せる。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
-	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出し、弾を飛ばし、物に当たった所に弾痕を付け、
+	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出し、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
 	// ゾンビのアニメを進め、消す印の付いた物を消す。
 	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
@@ -59,6 +60,9 @@ public:
 	// 弾痕を描く。draw の後、同じ描画先で呼ぶ（壁の奥行きで隠すため）。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
+	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。
+	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
+	void drawImpactDust( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
 
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
@@ -105,6 +109,8 @@ private:
 	BulletList mBullets;
 	// 弾が物に当たった跡。付いた物は、消すときの目印として覚えるだけ（中身は読まない）。
 	BulletHoleList mBulletHoles;
+	// 弾が物に当たった瞬間の砂ぼこり（遠くの着弾を見えるようにする）。
+	ImpactDustList mImpactDust;
 	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。

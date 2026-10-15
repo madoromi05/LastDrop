@@ -112,6 +112,9 @@
     <Filter Include="GameSrc\Zombie">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000015}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameSrc\Effect">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000016}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <!-- ゲームコード -->
@@ -496,6 +499,15 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp">
       <Filter>GameSrc\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\ImpactDust.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\ImpactDustList.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\LitQuadBatch.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp">
       <Filter>GameSrc\Audio</Filter>
@@ -1119,6 +1131,15 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h">
       <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDust.h">
+      <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDustList.h">
+      <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LitQuadBatch.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h">
       <Filter>GameSrc\Audio</Filter>
