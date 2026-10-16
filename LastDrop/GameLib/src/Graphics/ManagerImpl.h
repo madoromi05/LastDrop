@@ -26,6 +26,7 @@
 #include "Graphics/ConstantBufferImpl.h"
 
 #include <d3dcompiler.h>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -157,6 +158,7 @@ public:
 			&scDesc, &mSwapChain,
 			&mDevice, &actualLevel, &mContext );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "D3D11CreateDeviceAndSwapChain failed" );
+		logAdapter( actualLevel );
 
 		createRTVandDSV( w, h );
 
@@ -271,13 +273,14 @@ public:
 
 		// --- Create rasterizer states ---
 		// [0]=CULL_NONE, [1]=CULL_BACK, [2]=CULL_FRONT
+		// ステートの作成に失敗すると null が残り、D3D11 の既定値（ブレンドなし等）で黙って描かれてしまうので、すべて結果を確かめる。
 		D3D11_RASTERIZER_DESC rsDesc = {};
 		rsDesc.FillMode              = D3D11_FILL_SOLID;
 		rsDesc.FrontCounterClockwise = TRUE;  // match DX9 CCW = front face
 		rsDesc.DepthClipEnable       = TRUE;
-		rsDesc.CullMode = D3D11_CULL_NONE;  mDevice->CreateRasterizerState( &rsDesc, &mRSStates[0] );
-		rsDesc.CullMode = D3D11_CULL_BACK;  mDevice->CreateRasterizerState( &rsDesc, &mRSStates[1] );
-		rsDesc.CullMode = D3D11_CULL_FRONT; mDevice->CreateRasterizerState( &rsDesc, &mRSStates[2] );
+		rsDesc.CullMode = D3D11_CULL_NONE;  checkCreated( mDevice->CreateRasterizerState( &rsDesc, &mRSStates[0] ), "RasterizerState(CULL_NONE)" );
+		rsDesc.CullMode = D3D11_CULL_BACK;  checkCreated( mDevice->CreateRasterizerState( &rsDesc, &mRSStates[1] ), "RasterizerState(CULL_BACK)" );
+		rsDesc.CullMode = D3D11_CULL_FRONT; checkCreated( mDevice->CreateRasterizerState( &rsDesc, &mRSStates[2] ), "RasterizerState(CULL_FRONT)" );
 
 		// --- Create depth-stencil states ---
 		// index = (depthTest ? 0 : 2) | (depthWrite ? 0 : 1)
@@ -289,28 +292,32 @@ public:
 			dssDesc.DepthEnable    = test  ? TRUE : FALSE;
 			dssDesc.DepthWriteMask = write ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
 			dssDesc.DepthFunc      = test  ? D3D11_COMPARISON_LESS : D3D11_COMPARISON_ALWAYS;
-			mDevice->CreateDepthStencilState( &dssDesc, &mDSSStates[ i ] );
+			checkCreated( mDevice->CreateDepthStencilState( &dssDesc, &mDSSStates[ i ] ), "DepthStencilState" );
 		}
 
 		// --- Create blend states ---
 		// [0]=Opaque, [1]=Linear, [2]=Add
-		D3D11_BLEND_DESC blendDesc = {};
-		blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		// 0 番の設定を 8 枚分すべてに入れる。IndependentBlendEnable が FALSE なら 1〜7 番は使われないはずだが、
+		// 0 埋めのままだと SrcBlend などが不正な値（0）になるので、ドライバーに不正な設定を渡さないようにしておく。
+		D3D11_RENDER_TARGET_BLEND_DESC rtBlend = {};
+		rtBlend.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+		rtBlend.SrcBlend       = D3D11_BLEND_ONE;
+		rtBlend.DestBlend      = D3D11_BLEND_ZERO;
+		rtBlend.BlendOp        = D3D11_BLEND_OP_ADD;
+		rtBlend.SrcBlendAlpha  = D3D11_BLEND_ONE;
+		rtBlend.DestBlendAlpha = D3D11_BLEND_ZERO;
+		rtBlend.BlendOpAlpha   = D3D11_BLEND_OP_ADD;
 		// Opaque (no blending)
-		blendDesc.RenderTarget[0].BlendEnable = FALSE;
-		mDevice->CreateBlendState( &blendDesc, &mBlendStates[0] );
+		rtBlend.BlendEnable = FALSE;
+		createBlendState( rtBlend, &mBlendStates[0], "BlendState(OPAQUE)" );
 		// Linear
-		blendDesc.RenderTarget[0].BlendEnable    = TRUE;
-		blendDesc.RenderTarget[0].SrcBlend       = D3D11_BLEND_SRC_ALPHA;
-		blendDesc.RenderTarget[0].DestBlend      = D3D11_BLEND_INV_SRC_ALPHA;
-		blendDesc.RenderTarget[0].BlendOp        = D3D11_BLEND_OP_ADD;
-		blendDesc.RenderTarget[0].SrcBlendAlpha  = D3D11_BLEND_ONE;
-		blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-		blendDesc.RenderTarget[0].BlendOpAlpha   = D3D11_BLEND_OP_ADD;
-		mDevice->CreateBlendState( &blendDesc, &mBlendStates[1] );
+		rtBlend.BlendEnable = TRUE;
+		rtBlend.SrcBlend    = D3D11_BLEND_SRC_ALPHA;
+		rtBlend.DestBlend   = D3D11_BLEND_INV_SRC_ALPHA;
+		createBlendState( rtBlend, &mBlendStates[1], "BlendState(LINEAR)" );
 		// Additive
-		blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
-		mDevice->CreateBlendState( &blendDesc, &mBlendStates[2] );
+		rtBlend.DestBlend = D3D11_BLEND_ONE;
+		createBlendState( rtBlend, &mBlendStates[2], "BlendState(ADDITIVE)" );
 
 		// --- Create sampler states ---
 		D3D11_SAMPLER_DESC sampDesc = {};
@@ -321,11 +328,11 @@ public:
 		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		// Point
 		sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-		mDevice->CreateSamplerState( &sampDesc, &mSamplerStates[0] );
+		checkCreated( mDevice->CreateSamplerState( &sampDesc, &mSamplerStates[0] ), "SamplerState(POINT)" );
 		// Linear / Anisotropic
 		sampDesc.Filter    = D3D11_FILTER_ANISOTROPIC;
 		sampDesc.MaxAnisotropy = 16;
-		mDevice->CreateSamplerState( &sampDesc, &mSamplerStates[1] );
+		checkCreated( mDevice->CreateSamplerState( &sampDesc, &mSamplerStates[1] ), "SamplerState(ANISOTROPIC)" );
 
 		// 自作シェーダ用（s1: 端で止める線形。画面の写しを読むとき、端で反対側の色が混ざらないように）
 		D3D11_SAMPLER_DESC clampDesc = {};
@@ -429,6 +436,47 @@ public:
 		if ( mSwapChain ) { mSwapChain->Release(); mSwapChain = 0; }
 		if ( mContext )   { mContext->Release();   mContext = 0; }
 		if ( mDevice )    { mDevice->Release();    mDevice = 0; }
+	}
+
+	// ---- State creation helpers ----
+	// 作成に失敗したら、何が失敗したかを出力ウィンドウへ出してから止める（Release でも止まる）。
+	static void checkCreated( HRESULT hr, const char* what ){
+		if ( FAILED( hr ) ){
+			char code[ 16 ];
+			sprintf_s( code, "0x%08X", static_cast< unsigned >( hr ) ); // cout の hex は元に戻せないので文字列にして出す
+			cout << "Graphics::Manager : failed to create " << what << " hr=" << code << endl;
+		}
+		STRONG_ASSERT( SUCCEEDED( hr ) && "Graphics::Manager : failed to create a pipeline state. See the output window." );
+	}
+	// 1 枚分のブレンド設定を 8 枚すべてに入れて作る。
+	void createBlendState( const D3D11_RENDER_TARGET_BLEND_DESC& rtBlend, ID3D11BlendState** state, const char* what ){
+		D3D11_BLEND_DESC desc = {};
+		desc.AlphaToCoverageEnable  = FALSE;
+		desc.IndependentBlendEnable = FALSE;
+		for ( int i = 0; i < D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT; ++i ){
+			desc.RenderTarget[ i ] = rtBlend;
+		}
+		checkCreated( mDevice->CreateBlendState( &desc, state ), what );
+	}
+	// 実際に使われている GPU と機能レベルを出す（GPU が2つあるノートPCでは内蔵 GPU が選ばれることがある）。
+	void logAdapter( D3D_FEATURE_LEVEL level ){
+		IDXGIDevice* dxgiDevice = nullptr;
+		IDXGIAdapter* adapter = nullptr;
+		if ( SUCCEEDED( mDevice->QueryInterface( __uuidof( IDXGIDevice ), reinterpret_cast< void** >( &dxgiDevice ) ) ) ){
+			if ( SUCCEEDED( dxgiDevice->GetAdapter( &adapter ) ) ){
+				DXGI_ADAPTER_DESC desc = {};
+				if ( SUCCEEDED( adapter->GetDesc( &desc ) ) ){
+					char name[ 256 ] = {};
+					WideCharToMultiByte( CP_ACP, 0, desc.Description, -1, name, sizeof( name ) - 1, nullptr, nullptr );
+					cout << "Graphics::Manager : adapter = " << name << endl;
+				}
+				adapter->Release();
+			}
+			dxgiDevice->Release();
+		}
+		char levelText[ 16 ];
+		sprintf_s( levelText, "0x%X", static_cast< unsigned >( level ) ); // 0xb000 = 11_0, 0xa100 = 10_1, 0xa000 = 10_0
+		cout << "Graphics::Manager : feature level = " << levelText << endl;
 	}
 
 	// ---- Shader compilation helper ----

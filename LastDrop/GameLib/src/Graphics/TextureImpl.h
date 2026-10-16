@@ -169,8 +169,14 @@ public:
 		desc.Usage          = D3D11_USAGE_DEFAULT;
 		desc.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
 
-		HRESULT hr = mDevice->CreateTexture2D( &desc, initData.data(), &mGpuTexture );
+		// 中身は CreateTexture2D の初期データで渡さず、空で作ってから UpdateSubresource で書き込む。
+		// Intel Iris Xe（内蔵 GPU）では、初期データ付きで作ったテクスチャをシェーダーで読むと、何かでコピー元に使われるまで
+		// 全画素が白・不透明に見えた（フォントの文字が四角く塗りつぶされた）。WARP では起きない。ドライバー側の問題とみて回避する。
+		HRESULT hr = mDevice->CreateTexture2D( &desc, nullptr, &mGpuTexture );
 		ASSERT( SUCCEEDED( hr ) && "CreateTexture2D failed" );
+		for ( int i = 0; i < mipLevels; ++i ){
+			mContext->UpdateSubresource( mGpuTexture, static_cast< UINT >( i ), nullptr, initData[ i ].pSysMem, initData[ i ].SysMemPitch, 0 );
+		}
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format                    = desc.Format;

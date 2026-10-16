@@ -59,13 +59,21 @@ BoxCollider BodyFootprint::place( const Vector3& position, float angleY ) const 
 }
 
 BoxCollider BodyFootprint::place( const Vector3& position, float angleY, float forwardReach ) const {
-	float back = mLocalCenter.z - mHalfWidthZ;
-	float front = Math::max( mLocalCenter.z + mHalfWidthZ, forwardReach );
+	// 前の辺だけを伸ばす点を囲む。中心より手前なら体の中なので、長方形は変わらない（後ろの辺を伸ばさない）。
+	Vector3 reach( mLocalCenter.x, 0.f, Math::max( mLocalCenter.z, forwardReach ) );
+	return place( position, angleY, reach, reach );
+}
+
+BoxCollider BodyFootprint::place( const Vector3& position, float angleY, const Vector3& low, const Vector3& high ) const {
+	float right = Math::min( mLocalCenter.x - mHalfWidthX, low.x ); // 骨格の根の空間では右が -X
+	float left = Math::max( mLocalCenter.x + mHalfWidthX, high.x );
+	float back = Math::min( mLocalCenter.z - mHalfWidthZ, low.z );
+	float front = Math::max( mLocalCenter.z + mHalfWidthZ, high.z );
 	// 見た目（SkinnedMeshInstance::rootMatrix）と同じ行列で置く。
 	Matrix34 root = PlacementMatrix::make( position, angleY );
 	BoxCollider box;
-	root.mul( &box.center, Vector3( mLocalCenter.x, 0.f, ( back + front ) * kHalf ) );
-	box.halfWidthX = mHalfWidthX;
+	root.mul( &box.center, Vector3( ( right + left ) * kHalf, 0.f, ( back + front ) * kHalf ) );
+	box.halfWidthX = ( left - right ) * kHalf;
 	box.halfWidthZ = ( front - back ) * kHalf;
 	box.angleY = angleY;
 	box.height = position.y + kDisplayHeight;

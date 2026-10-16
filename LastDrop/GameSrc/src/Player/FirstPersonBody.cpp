@@ -201,11 +201,16 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mSightEye( 0.f, 0.f, 0.f ),
 	mSupportHandBone( -1 ),
 	mSupportHandOnWeapon( 0.f, 0.f, 0.f ),
+	mWeaponMin( 0.f, 0.f, 0.f ),
+	mWeaponMax( 0.f, 0.f, 0.f ),
 	mHoldWeight( 0.f ),
 	mAimWeight( 0.f ),
 	mCarryWeight( 0.f ),
 	mRecoil( 0.f ),
-	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ) {
+	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ),
+	mHasWeaponBounds( false ),
+	mWeaponLow( 0.f, 0.f, 0.f ),
+	mWeaponHigh( 0.f, 0.f, 0.f ) {
 	mGrip.setIdentity();
 	std::vector< int > lowerBody = findBones( data, kLowerBodyBones );
 	std::vector< int > spine = findBones( data, kSpineBones );
@@ -233,12 +238,15 @@ void FirstPersonBody::setPitch( float degree ) {
 }
 
 void FirstPersonBody::setWeapon( int handBone, const Matrix34& grip, const Vector3& sightEye,
-int supportHandBone, const Vector3& supportHandOnWeapon ) {
+int supportHandBone, const Vector3& supportHandOnWeapon, const Vector3& weaponMin, const Vector3& weaponMax ) {
 	mHandBone = handBone;
 	mGrip = grip;
 	mSightEye = sightEye;
 	mSupportHandBone = supportHandBone;
 	mSupportHandOnWeapon = supportHandOnWeapon;
+	mWeaponMin = weaponMin;
+	mWeaponMax = weaponMax;
+	mHasWeaponBounds = false; // 次の apply で、この銃の範囲を求め直す
 }
 
 void FirstPersonBody::setHoldWeight( float weight ) {
@@ -261,9 +269,20 @@ const Vector3& FirstPersonBody::eyePosition() const {
 	return mEyePosition;
 }
 
+bool FirstPersonBody::weaponBounds( Vector3* low, Vector3* high ) const {
+	if ( !mHasWeaponBounds ) {
+		return false;
+	}
+	*low = mWeaponLow;
+	*high = mWeaponHigh;
+	return true;
+}
+
 void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
-	// 順番に意味がある: 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める → その目へ銃を寄せる → 反動で銃を跳ねさせる → 頭を消す。
+	// 順番に意味がある: 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める → その目へ銃を寄せる → 反動で銃を跳ねさせる
+	// → 跳ねた銃を囲む → 頭を消す。
 	// 反動は、置き終えた銃（覗いていればサイトが目に合った銃）から跳ねさせる。覗く補正より前に掛けると、合わせ直されて反動が消える。
+	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）。
 	// 目を曲げる前の頭で決めると、見上げ・見下ろしで目と銃がずれる。
 	// 胸元へ寄せる・覗く補正は両腕をまとめて動かすだけなので、先に両手持ちにしておけば左手は銃に付いたまま。
 	// 覗く補正は最後に目へ合わせ直すので、走り⇔覗くの切り替え中に両方が効いていても銃は目へ向かう。
@@ -273,6 +292,7 @@ void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
 	updateEyePosition( *pose );
 	alignSightToEye( pose );
 	kickWeapon( pose );
+	updateWeaponBounds( *pose );
 	hideHead( pose );
 }
 
@@ -402,6 +422,33 @@ void FirstPersonBody::kickWeapon( std::vector< Matrix34 >* pose ) const {
 	kick.m13 -= barrel.y * back;
 	kick.m23 -= barrel.z * back;
 	transformBones( kick, mArmBones, pose );
+}
+
+void FirstPersonBody::updateWeaponBounds( const std::vector< Matrix34 >& pose ) {
+	if ( mHandBone < 0 ) {
+		return;
+	}
+	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）で、頂点の範囲の8隅を移して囲む。
+	Matrix34 gun;
+	gun.setMul( pose[ mHandBone ], mGrip );
+	const int kCornerNumber = 8;
+	for ( int i = 0; i < kCornerNumber; ++i ) {
+		// i の各ビットで、その軸を最小・最大のどちらにするかを選ぶ（8通りで8隅）。
+		Vector3 corner(
+			( i & 1 ) ? mWeaponMax.x : mWeaponMin.x,
+			( i & 2 ) ? mWeaponMax.y : mWeaponMin.y,
+			( i & 4 ) ? mWeaponMax.z : mWeaponMin.z );
+		Vector3 placed;
+		gun.mul( &placed, corner );
+		if ( i == 0 ) {
+			mWeaponLow = placed;
+			mWeaponHigh = placed;
+			continue;
+		}
+		mWeaponLow.set( Math::min( mWeaponLow.x, placed.x ), Math::min( mWeaponLow.y, placed.y ), Math::min( mWeaponLow.z, placed.z ) );
+		mWeaponHigh.set( Math::max( mWeaponHigh.x, placed.x ), Math::max( mWeaponHigh.y, placed.y ), Math::max( mWeaponHigh.z, placed.z ) );
+	}
+	mHasWeaponBounds = true;
 }
 
 void FirstPersonBody::hideHead( std::vector< Matrix34 >* pose ) const {

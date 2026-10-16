@@ -24,6 +24,11 @@ public:
 	// forwardReach: 足元から体の前方へ測った長さ（m。モデルの空間の +Z）。体の前の辺より手前なら、上と同じ長方形になる。
 	// 一人称の目は体（腰・胴・脚）より前にあるので、目が壁を越えないよう、目の先まで当たり判定を伸ばすために使う。
 	BoxCollider place( const GameLib::Math::Vector3& position, float angleY, float forwardReach ) const;
+	// 上と同じだが、体の長方形と、範囲 low〜high（モデルの空間。x と z だけ使う）の両方を囲む長方形にする。
+	// 体の外にはみ出した物（一人称で手に持った銃）にも、移動の当たり判定を持たせるために使う。
+	// 長方形は体の向きに合わせて回るので、範囲もモデルの空間（体の向き基準）で渡す。
+	BoxCollider place( const GameLib::Math::Vector3& position, float angleY,
+		const GameLib::Math::Vector3& low, const GameLib::Math::Vector3& high ) const;
 
 private:
 	GameLib::Math::Vector3 mLocalCenter; // 長方形の中心（モデルの空間。足元から見た位置。y は使わない）

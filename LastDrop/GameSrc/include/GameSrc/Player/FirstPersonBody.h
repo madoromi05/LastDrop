@@ -20,7 +20,7 @@ class SkinnedMeshData;
 // 5. 撃った反動のぶん、銃を後ろへ引いて銃口を跳ね上げる。両腕をまとめて動かすので手は銃から離れない。
 //    目は動かさない（照準と弾の向きは変わらず、銃の見た目だけが跳ねる）。
 // 6. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
-// 書き換えのついでに目の位置を求めて覚える（カメラの視点に使う）。
+// 書き換えのついでに目の位置（カメラの視点に使う）と、銃を囲む範囲（移動の当たり判定に使う）を求めて覚える。
 //
 // 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。キャラの置き場所・向きは知らない。
 // ボーンは Mixamo の名前で探す。見つからない骨は飛ばす（その部分が動かない・消えないだけで落ちない）。
@@ -37,8 +37,10 @@ public:
 	//           サイト線は銃のモデルの +Z（銃口の向き）と平行であること。
 	// supportHandBone: 銃を支える手（左手）の骨。-1 なら右手首を曲げない。
 	// supportHandOnWeapon: 支える手の骨が来るべき点（銃のモデル座標）。持ち方を合わせたアニメから求めたもの。
+	// weaponMin / weaponMax: 銃の頂点の範囲（銃のモデル座標。StaticMeshData::boundsMin / boundsMax）。weaponBounds で使う。
 	void setWeapon( int handBone, const GameLib::Math::Matrix34& grip, const GameLib::Math::Vector3& sightEye,
-		int supportHandBone, const GameLib::Math::Vector3& supportHandOnWeapon );
+		int supportHandBone, const GameLib::Math::Vector3& supportHandOnWeapon,
+		const GameLib::Math::Vector3& weaponMin, const GameLib::Math::Vector3& weaponMax );
 	// 両手持ちの効き具合（0 = 右手首を曲げない、1 = 銃の先が左手を向く）。武器をしまっている間は 0 にする。
 	void setHoldWeight( float weight );
 	// 覗き具合（0 = アニメのまま、1 = サイト線が目と視線にぴったり重なる）。
@@ -50,6 +52,10 @@ public:
 
 	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ。
 	const GameLib::Math::Vector3& eyePosition() const;
+	// 最後に apply したポーズ（反動で跳ねた後）での銃の頂点の範囲を囲む箱（骨格の根の空間）を low / high へ書く。
+	// 銃の8隅を移してから囲むので、銃が斜めを向いていても銃全体が入る。銃が無い・まだ apply していなければ false。
+	// 武器をしまっているかは知らない（銃の箱を使うかは持ち主が決める）。
+	bool weaponBounds( GameLib::Math::Vector3* low, GameLib::Math::Vector3* high ) const;
 
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
@@ -70,6 +76,8 @@ private:
 	void alignSightToEye( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 反動の量の分だけ、銃を後ろへ引いて銃口を跳ね上げる補正を両腕へ掛ける。
 	void kickWeapon( std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	// 置き終えた銃の8隅から、銃を囲む箱を求めて mWeaponLow / mWeaponHigh へ覚える。
+	void updateWeaponBounds( const std::vector< GameLib::Math::Matrix34 >& pose );
 	void hideHead( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 
 	std::vector< SpineJoint > mSpine; // 根に近い順
@@ -85,12 +93,17 @@ private:
 	GameLib::Math::Vector3 mSightEye;
 	int mSupportHandBone;             // 銃を支える手。-1 なら両手持ちの補正をしない
 	GameLib::Math::Vector3 mSupportHandOnWeapon;
+	GameLib::Math::Vector3 mWeaponMin;    // 銃の頂点の範囲（銃のモデル座標）
+	GameLib::Math::Vector3 mWeaponMax;
 	float mHoldWeight;
 	float mAimWeight;
 	float mCarryWeight;
 	float mRecoil;
 
 	GameLib::Math::Vector3 mEyePosition;
+	bool mHasWeaponBounds;                // mWeaponLow / mWeaponHigh を一度でも求めたか
+	GameLib::Math::Vector3 mWeaponLow;    // 最後に apply したポーズでの銃を囲む箱（骨格の根の空間）
+	GameLib::Math::Vector3 mWeaponHigh;
 };
 
 #endif

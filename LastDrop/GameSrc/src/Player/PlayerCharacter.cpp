@@ -2,6 +2,7 @@
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Player/HeldItem.h"
 #include "GameSrc/Player/FirstPersonBody.h"
 #include "GameSrc/Collision/CollisionWorld.h"
@@ -42,6 +43,9 @@ namespace{
 	// カメラは目の前 5cm（FirstPersonCamera の kNearClip）より近くを描かず、その面の隅は目から約 7.7cm 離れている
 	// （縦の視野角 60 度・16:9）。斜めに壁を見ても隅が壁に入らないよう、それより少し大きくする。
 	const float kEyeToWallMargin = 0.1f;
+	// 手に持った銃を囲む箱から、移動の当たり判定の辺までの余白（m）。銃口を壁に入れないため（銃口の光やフラッシュが壁の向こうへ出ないように）。
+	// 銃口の少し前に置くもの（マズルフラッシュの光）まで壁の手前に収まるよう、目の余白と同じだけ取る。
+	const float kWeaponToWallMargin = 0.1f;
 
 	// 状態ごとの決まりごとの表。状態について知りたいこと（アニメ名・速さ・歩き方・武器を持っているか）は、すべてここから引く。
 	// 状態を足すときは、Animator::State に1つ足し、この表に1行足すだけでよい（状態を並べた switch や if は他に無い）。
@@ -224,7 +228,7 @@ const Vector3& position, float angleY ) :
 			} else if ( !findSupportHandOnWeapon( data, hand, supportHand, grip, &supportOnWeapon ) ) {
 				supportHand = -1;
 			}
-			mBody->setWeapon( hand, grip, kSightEyeOnWeapon, supportHand, supportOnWeapon );
+			mBody->setWeapon( hand, grip, kSightEyeOnWeapon, supportHand, supportOnWeapon, weapon->boundsMin(), weapon->boundsMax() );
 		}
 	}
 	mHoldWeight = mStance.isDrawn() ? kFullWeight : kNoWeight;
@@ -291,7 +295,19 @@ const Vector3& PlayerCharacter::position() const {
 BoxCollider PlayerCharacter::collider() const {
 	// 目は体（腰・胴・脚）より前にあり、見下ろすとさらに前へ出る。前の辺を、今の目の先（＋余白）まで伸ばす。
 	// 目は骨格の根の空間（前方が +Z）で持っているので、z がそのまま足元から前への長さになる。
-	return mFootprint.place( mPosition, mAngleY, mBody->eyePosition().z + kEyeToWallMargin );
+	float eyeReach = mBody->eyePosition().z + kEyeToWallMargin;
+	// 持っている銃は体より前へ突き出ているので、銃を囲む箱（＋余白）も長方形に含める。銃口が壁に入らなくなる。
+	// 銃の箱は今のポーズ（覗く・抱える・反動）から求めたものなので、構えを変えると長方形の大きさも変わる。
+	Vector3 low;
+	Vector3 high;
+	if ( !mWeapon || !mStance.isDrawn() || !mBody->weaponBounds( &low, &high ) ) {
+		return mFootprint.place( mPosition, mAngleY, eyeReach );
+	}
+	low.x -= kWeaponToWallMargin;
+	low.z -= kWeaponToWallMargin;
+	high.x += kWeaponToWallMargin;
+	high.z = Math::max( high.z + kWeaponToWallMargin, eyeReach );
+	return mFootprint.place( mPosition, mAngleY, low, high );
 }
 
 const HitboxSet& PlayerCharacter::hitboxes() const {
