@@ -55,6 +55,12 @@ namespace{
 	// 先頭は、アニメが見つからない状態・表に無い状態の代わりに使う静止の行。
 	const bool kBareHands = false;
 	const bool kWeaponDrawn = true;
+
+	// 銃口の先端（銃のモデル座標。m）。rifle.txt の一番前の頂点（z = 0.471）での銃身の中心。
+	const Vector3 kMuzzlePoint( 0.f, 1.541f, 0.471f );
+	// 銃のモデルの銃口の向き（+Z）。
+	const Vector3 kMuzzleAxis( 0.f, 0.f, 1.f );
+
 	struct StateAnimation{
 		Animator::State state;
 		const char* name;
@@ -283,9 +289,24 @@ void PlayerCharacter::draw() const {
 	mMesh->draw();
 	// しまった武器は描かない（背中に背負った見た目は、一人称では見えないので持たない）。
 	// 出し入れのアニメが無いので、切り替えた瞬間に手へ現れる・消える。
-	if ( mWeapon && mStance.isDrawn() ) {
+	if ( mWeapon && mStance.isDrawn() ){
 		mWeapon->draw( *mMesh );
 	}
+}
+
+// 銃口の今の位置（ワールド）と向き（長さ1）。銃を持っていない・しまっている・まだポーズが無ければ false。
+bool PlayerCharacter::muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const {
+	if (!mWeapon || !mStance.isDrawn()) {
+		return false;
+	}
+	Matrix34 gun;
+	if (!mWeapon->placement( *mMesh, &gun )) {
+		return false; // まだポーズが無い
+	}
+	gun.mul( position, kMuzzlePoint );     // 点なので、移動も掛ける
+	gun.mul33( direction, kMuzzleAxis );   // 向きなので、移動は掛けない
+	direction->normalize();                // 持ち方・骨の縮尺を取り除いて長さ1に
+	return true;
 }
 
 const Vector3& PlayerCharacter::position() const {

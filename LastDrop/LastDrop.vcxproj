@@ -192,6 +192,7 @@
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinningPipeline.cpp" />
     <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp" />
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
+    <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp" />
@@ -205,6 +206,7 @@
     <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp" />
     <ClCompile Include="GameSrc\src\Effect\ImpactDust.cpp" />
     <ClCompile Include="GameSrc\src\Effect\ImpactDustList.cpp" />
+    <ClCompile Include="GameSrc\src\Effect\MuzzleFlash.cpp" />
     <ClCompile Include="GameSrc\src\Render\LitQuadBatch.cpp" />
     <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp" />
     <ClCompile Include="GameSrc\src\Audio\SoundCatalog.cpp" />
@@ -458,6 +460,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h" />
@@ -472,6 +475,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDust.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDustList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlash.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\LitQuadBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\SoundCatalog.h" />
@@ -557,6 +561,9 @@
     <Image Include="Resource\font.tga" />
     <None Include="Resource\Shader\Common.hlsli" />
     <None Include="Resource\Shader\Present.hlsl" />
+    <None Include="Resource\Shader\BloomExtract.hlsl" />
+    <None Include="Resource\Shader\BloomDown.hlsl" />
+    <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
   </ItemGroup>

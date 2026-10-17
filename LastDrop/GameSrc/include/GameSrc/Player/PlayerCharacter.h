@@ -79,6 +79,9 @@ public:
 	bool isWeaponDrawn() const;	// 武器を持っているか
 	bool isAiming() const;		// 覗いているか（覗き始め・終わりの途中も true）
 	bool firedThisTick() const;	// 直前の update で1発撃ったか（弾を出す・銃声を鳴らす側が読む）
+	// 銃口の今の位置（ワールド）と向き（長さ1）。マズルフラッシュを描く側が描くたびに読む。
+	// 銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）。
+	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
 
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る）。
 	virtual BoxCollider collider() const;

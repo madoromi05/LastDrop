@@ -16,6 +16,7 @@
 #include "GameSrc/Weapon/BulletList.h"
 #include "GameSrc/Weapon/BulletHoleList.h"
 #include "GameSrc/Effect/ImpactDustList.h"
+#include "GameSrc/Effect/MuzzleFlash.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include <memory>
@@ -49,7 +50,7 @@ public:
 	// 全データの構築後に一度だけ、物を作って並べ、名簿へ載せる。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
-	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出し、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
+	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
 	// ゾンビのアニメを進め、消す印の付いた物を消す。
 	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
@@ -63,6 +64,12 @@ public:
 	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
 	void drawImpactDust( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
+	// 撃った瞬間に銃口が光る板を描く。呼ぶ場所の決まりは drawBulletHoles と同じ（砂ぼこりの後に呼ぶ）。
+	// 銃口の位置は、描くたびに自キャラの今の銃から取り直す。引数は drawImpactDust と同じ。
+	void drawMuzzleFlash( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
+	// 撃った瞬間に銃口の前に灯す点光源。光っていない・自キャラが銃を構えていなければ false（out は変えない）。
+	// シーンがライトを設定するときに読む。out: nullptr 不可。
+	bool muzzleLight( MuzzleFlash::Light* out ) const;
 
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
@@ -111,6 +118,8 @@ private:
 	BulletHoleList mBulletHoles;
 	// 弾が物に当たった瞬間の砂ぼこり（遠くの着弾を見えるようにする）。
 	ImpactDustList mImpactDust;
+	// 撃った瞬間に銃口が光る演出（自キャラの銃の）。
+	MuzzleFlash mMuzzleFlash;
 	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。

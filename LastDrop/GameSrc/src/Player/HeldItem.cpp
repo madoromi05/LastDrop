@@ -1,7 +1,6 @@
 #include "GameSrc/Player/HeldItem.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
-
 #include "GameLib/GameLib.h"
 
 using namespace GameLib::Math;
@@ -15,9 +14,18 @@ HeldItem::HeldItem( const StaticMeshData* data, int boneIndex, const Matrix34& g
 
 void HeldItem::draw( const SkinnedMeshInstance& holder ) const {
 	Matrix34 world;
-	if ( !holder.boneMatrix( mBoneIndex, &world ) ) {
+	if (!placement( holder, &world )) {
 		return;
 	}
-	world *= mGrip; // world = 骨 * 持ち方（持ち方で骨の空間へ置いてから、骨と一緒にワールドへ）
 	mData->draw( world );
+}
+
+bool HeldItem::placement( const SkinnedMeshInstance& holder, GameLib::Math::Matrix34* out ) const {
+	Matrix34 world;
+	if (!holder.boneMatrix( mBoneIndex, &world )) {
+		return false;
+	}
+	world *= mGrip; // world = 骨 * 持ち方（持ち方で骨の空間へ置いてから、骨と一緒にワールドへ）
+	*out = world;
+	return true;
 }

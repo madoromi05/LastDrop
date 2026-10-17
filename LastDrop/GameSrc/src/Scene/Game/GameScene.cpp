@@ -26,6 +26,7 @@ namespace{
 	const Vector3 kAmbientColor( 0.4f, 0.4f, 0.4f );
 	const int kSunLight = 0;
 	const int kFillLight = 1;
+	const int kMuzzleLight = 2; // 撃った瞬間だけ銃口の前に灯す（MuzzleFlash）。光っていない間は強さ0
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
 }
 
@@ -95,6 +96,7 @@ void GameScene::draw() {
 	mWorld.draw( ViewFrustum( mControl.camera().projectionViewMatrix() ) );
 	mWorld.drawBulletHoles( mControl.camera().projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
 	mWorld.drawImpactDust( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 弾痕の上に舞う
+	mWorld.drawMuzzleFlash( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 加算なので順番は問わない
 #ifdef _DEBUG
 	mDebug.drawCollision( mWorld, mControl.camera() );
 #endif
@@ -130,7 +132,15 @@ void GameScene::setupLights() const {
 	gm.setLightColor( kFillLight, kFillColor );
 	gm.setLightPosition( kFillLight, kFillPosition );
 	gm.setLightIntensity( kFillLight, kFillPosition.length() );
-	for ( int i = kFillLight + 1; i < kLightNumber; ++i ) {
+	MuzzleFlash::Light muzzle;
+	if ( mWorld.muzzleLight( &muzzle ) ) {
+		gm.setLightColor( kMuzzleLight, muzzle.color );
+		gm.setLightPosition( kMuzzleLight, muzzle.position );
+		gm.setLightIntensity( kMuzzleLight, muzzle.intensity );
+	} else {
+		gm.setLightIntensity( kMuzzleLight, 0.f );
+	}
+	for ( int i = kMuzzleLight + 1; i < kLightNumber; ++i ) {
 		gm.setLightIntensity( i, 0.f );
 	}
 }

@@ -21,6 +21,9 @@ public:
 	// holder の骨の今の姿勢に付けて描く。holder の update の後に呼ぶ（まだポーズが無ければ描かない）。
 	void draw( const SkinnedMeshInstance& holder ) const;
 
+	// holder の骨の今の姿勢に付けたときの置き場所（骨 × 持ち方）。描くときと同じ行列。
+	// まだポーズが無ければ false（out は変えない）。
+	bool placement( const SkinnedMeshInstance& holder, GameLib::Math::Matrix34* out ) const;
 private:
 	const StaticMeshData* mData;
 	int mBoneIndex;

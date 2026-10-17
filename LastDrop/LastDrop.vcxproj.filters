@@ -467,6 +467,9 @@
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp">
       <Filter>GameSrc\Core</Filter>
     </ClCompile>
@@ -504,6 +507,9 @@
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\ImpactDustList.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\MuzzleFlash.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\LitQuadBatch.cpp">
@@ -1096,6 +1102,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h">
       <Filter>GameSrc\Core</Filter>
     </ClInclude>
@@ -1136,6 +1145,9 @@
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDustList.h">
+      <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlash.h">
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\LitQuadBatch.h">
@@ -1269,6 +1281,9 @@
     <Image Include="Resource\font.tga" />
     <None Include="Resource\Shader\Common.hlsli" />
     <None Include="Resource\Shader\Present.hlsl" />
+    <None Include="Resource\Shader\BloomExtract.hlsl" />
+    <None Include="Resource\Shader\BloomDown.hlsl" />
+    <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
   </ItemGroup>

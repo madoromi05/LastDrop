@@ -23,15 +23,18 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 
 	// 材質の設定（MeshMaterial::apply と同じ項目）。色と不透明度は絵と頂点の色で決めるので、ここは素通しにする。
-	const Vector3 kWhite( 1.f, 1.f, 1.f );      // 拡散色（絵の色をそのまま使う）
+	const Vector3 kWhite( 1.f, 1.f, 1.f );      // 拡散色（絵の色をそのまま使う。明るさの倍率を掛けて渡す）
+	const float kDefaultBrightness = 1.f;       // 明るさの倍率の初期値（絵と頂点の色のまま）
 	const Vector3 kNoSpecular( 0.f, 0.f, 0.f ); // 反射のツヤを付けない
 	const Vector3 kNoEmission( 0.f, 0.f, 0.f ); // 自分では光らない
 	const float kOpaque = 1.f;                  // 材質としての透明度（MeshMaterial と同じ。不透明度はアルファで決める）
 }
 
-LitQuadBatch::LitQuadBatch( int quadCapacity ) :
+LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode ) :
 	mVertexBuffer( Graphics::VertexBuffer::create( quadCapacity * kVerticesPerQuad ) ),
-	mVertexCapacity( quadCapacity * kVerticesPerQuad ) {
+	mVertexCapacity( quadCapacity * kVerticesPerQuad ),
+	mMode( mode ),
+	mBrightness( kDefaultBrightness ) {
 	ASSERT( quadCapacity > 0 && "LitQuadBatch : quadCapacity must be positive." );
 	mVertices.reserve( mVertexCapacity );
 }
@@ -57,6 +60,11 @@ void LitQuadBatch::add( const Vector3& center, const Vector3& right, const Vecto
 	}
 }
 
+void LitQuadBatch::setBrightness( float brightness ) {
+	ASSERT( brightness >= 0.f && "LitQuadBatch : brightness must not be negative." );
+	mBrightness = brightness;
+}
+
 void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionView ) {
 	if ( mVertices.empty() ) {
 		return;
@@ -71,14 +79,21 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.setProjectionViewMatrix( projectionView );
 	m.setWorldMatrix( world );
 	m.setTexture( texture ); // 法線マップも外れる（setTexture の決まり）
-	m.setLightingMode( Graphics::LIGHTING_PER_PIXEL ); // 壁や地面（MeshMaterial）と同じ照らし方
-	m.setDiffuseColor( kWhite );
+	if ( mMode == MODE_GLOW ) {
+		m.setLightingMode( Graphics::LIGHTING_NONE );   // 自分で光るので、ライトの当たり方で暗くしない
+		m.setBlendMode( Graphics::BLEND_ADDITIVE );     // 後ろの色に、絵の色×アルファを足す
+	} else {
+		m.setLightingMode( Graphics::LIGHTING_PER_PIXEL ); // 壁や地面（MeshMaterial）と同じ照らし方
+		m.setBlendMode( Graphics::BLEND_LINEAR );          // 絵のアルファで後ろと混ぜる
+	}
+	Vector3 diffuse;
+	diffuse.setMul( kWhite, mBrightness ); // 頂点の色に掛かる（1 を超えると、1 より明るく描ける）
+	m.setDiffuseColor( diffuse );
 	m.setSpecularColor( kNoSpecular );
 	m.setEmissionColor( kNoEmission );
 	m.setTransparency( kOpaque );
 	m.enableDepthTest( true );                // 壁の向こうの板は隠す
 	m.enableDepthWrite( false );              // 板どうし・後から描く物を隠さない
-	m.setBlendMode( Graphics::BLEND_LINEAR ); // 絵のアルファで後ろと混ぜる
 	m.setCullMode( Graphics::CULL_NONE );
 	m.setVertexBuffer( mVertexBuffer );
 	m.draw( 0, static_cast< int >( mVertices.size() ) / kVerticesPerTriangle );

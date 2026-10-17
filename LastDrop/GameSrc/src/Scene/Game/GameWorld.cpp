@@ -136,11 +136,14 @@ void GameWorld::placeMissionObjects() {
 }
 
 void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection ) {
+	// 前に撃った光を先に進めてから、このティックに撃った光を灯す（撃ったティックの描画が光り始めになる）。
+	mMuzzleFlash.update();
 	if ( mPlayer ) {
 		mPlayer->update( command, cameraYaw, cameraPitch );
 		// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
 		if ( mPlayer->firedThisTick() ) {
 			mBullets.fire( mPlayer->eyePosition(), viewDirection );
+			mMuzzleFlash.fire();
 		}
 	}
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
@@ -192,6 +195,25 @@ void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
 
 void GameWorld::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection ) {
 	mImpactDust.draw( projectionView, viewDirection );
+}
+
+void GameWorld::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) {
+	Vector3 muzzlePosition;
+	Vector3 muzzleDirection;
+	// 撃った後に銃をしまったら、銃口が無いので描かない。
+	if ( !mPlayer || !mPlayer->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+		return;
+	}
+	mMuzzleFlash.draw( projectionView, viewDirection, muzzlePosition, muzzleDirection, mPlayer->aimWeight() );
+}
+
+bool GameWorld::muzzleLight( MuzzleFlash::Light* out ) const {
+	Vector3 muzzlePosition;
+	Vector3 muzzleDirection;
+	if ( !mPlayer || !mPlayer->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+		return false;
+	}
+	return mMuzzleFlash.light( muzzlePosition, muzzleDirection, out );
 }
 
 void GameWorld::removeTakenPickups() {
