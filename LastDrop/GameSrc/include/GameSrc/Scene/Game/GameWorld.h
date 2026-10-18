@@ -7,6 +7,7 @@
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Zombie/Zombie.h"
 #include "GameSrc/Zombie/ZombieModel.h"
+#include "GameSrc/Zombie/SeveredLimbList.h"
 #include "GameSrc/World/ActorList.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Interaction/Pickup.h"
@@ -16,6 +17,7 @@
 #include "GameSrc/Weapon/BulletList.h"
 #include "GameSrc/Weapon/BulletHoleList.h"
 #include "GameSrc/Effect/ImpactDustList.h"
+#include "GameSrc/Effect/BloodSprayList.h"
 #include "GameSrc/Effect/MuzzleFlash.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
@@ -40,6 +42,12 @@ class ViewFrustum;
 // その後どうするか（クリア画面へ進む）は知らない。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
 class GameWorld{
 public:
+	// ゾンビに弾が当たった出来事（ヒット音を鳴らすなど、世界の外の係が読む）。死体に当たったときも入る。
+	struct ZombieHit{
+		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
+		BodyPart part;                // 当たった部位
+	};
+
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから place を呼ぶ。
 	// meshes: 設計図を借りる倉庫。所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
 	explicit GameWorld( MeshCache* meshes );
@@ -51,7 +59,8 @@ public:
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
 	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
-	// ゾンビのアニメを進め、消す印の付いた物を消す。
+	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビのアニメを進め、
+	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消す。
 	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
 	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection );
@@ -64,6 +73,8 @@ public:
 	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
 	void drawImpactDust( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
+	// ゾンビに当たった血しぶきを描く。呼ぶ場所の決まり・引数は drawImpactDust と同じ（砂ぼこりの後に呼ぶ）。
+	void drawBloodSpray( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
 	// 撃った瞬間に銃口が光る板を描く。呼ぶ場所の決まりは drawBulletHoles と同じ（砂ぼこりの後に呼ぶ）。
 	// 銃口の位置は、描くたびに自キャラの今の銃から取り直す。引数は drawImpactDust と同じ。
 	void drawMuzzleFlash( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
@@ -90,8 +101,19 @@ public:
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す。
 	// 確認用の表示が、物の場所を壁越しに見せるのに使う。out: 出力先。nullptr 不可。
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
+	// ゾンビ全員（倒れている途中・死体も含む）。確認用の表示が体力を読むのに使う。
+	const ActorList< Zombie >& zombies() const;
+	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる。
+	const std::vector< ZombieHit >& zombieHitsThisTick() const;
 
 private:
+	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。
+	// 部位が切れたら飛ばす。倒れ始めたら移動の名簿から外す（update から）。
+	void hitZombie( const BulletList::Impact& impact );
+	// zombie の part が今切れたので、切り口に血しぶきを出し、千切れた部位を飛ばす（hitZombie から）。
+	// direction: 弾の進む向き（長さ1）。
+	void severLimb( const Zombie& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
+
 	// data の建物を placements の場所へ建てる（place から。名簿へ載せるのは、全部建て終えた後）。data: nullptr 不可。
 	void placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements );
 	void placeMissionObjects(); // 脱出用の車と、何度でも拾えるガソリン、候補点から選んだ場所のガソリンを置く（place から）
@@ -118,12 +140,22 @@ private:
 	BulletHoleList mBulletHoles;
 	// 弾が物に当たった瞬間の砂ぼこり（遠くの着弾を見えるようにする）。
 	ImpactDustList mImpactDust;
+	// 弾がゾンビに当たった瞬間の血しぶき。
+	BloodSprayList mBloodSpray;
+	// このティックにゾンビへ当たった出来事（update のたびに作り直す。毎回確保し直さないために持つ）。
+	std::vector< ZombieHit > mZombieHits;
+	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。
+	std::vector< BulletList::Impact > mImpacts;
 	// 撃った瞬間に銃口が光る演出（自キャラの銃の）。
 	MuzzleFlash mMuzzleFlash;
 	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。
 	ActorList< Zombie > mZombies;
+	// ゾンビから千切れた部位（どの名簿にも載らない）。ゾンビと同じ形を借りるので、mZombieData が生きている間だけ使う。
+	SeveredLimbList mSeveredLimbs;
+	// 切れた瞬間の骨の姿勢（severLimb の作業領域。毎回確保し直さないために持つ）。
+	std::vector< GameLib::Math::Matrix34 > mSeverPose;
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
 	ActorList< Pickup > mPickups;            // 落ちているガソリン（拾うと消える）

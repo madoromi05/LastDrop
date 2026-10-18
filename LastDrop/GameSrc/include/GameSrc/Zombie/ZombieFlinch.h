@@ -1,0 +1,34 @@
+#ifndef INCLUDED_ZOMBIE_FLINCH_H
+#define INCLUDED_ZOMBIE_FLINCH_H
+
+#include "GameSrc/Render/SkinnedMesh/BonePoseModifier.h"
+#include "GameSrc/Hit/BodyPart.h"
+#include "GameLib/Math/Vector3.h"
+#include <vector>
+
+class ZombieFlinchLayout;
+
+// ゾンビ1体ぶんの「のけぞり」。弾が当たるたびに、当たった部位を弾の進む向きへ押し、毎ティック少しずつ戻す。
+// アニメ（歩き・よろけ）で決まった姿勢の上に、描く直前に曲げを足す（BonePoseModifier）。どのアニメの最中でも効く。
+// 押す量は「まとまり（頭・胴・腕・脚）」ごとに、向きと角度を1本の矢印で持つ。続けて当たったら矢印を足し合わせる（上限あり）。
+// 曲げるのは見た目の姿勢だけ。部位の当たり判定（HitboxSet）はアニメどおりの姿勢に付くので動かない。
+// どの関節で・どの骨を曲げるかは ZombieFlinchLayout（種類ごとに共有）を借りる。
+class ZombieFlinch : public BonePoseModifier{
+public:
+	// layout: 曲げ方の設計図。所有権は受け取らない。nullptr 不可。こののけぞりより長く生きていること（ZombieModel が持つ）。
+	explicit ZombieFlinch( const ZombieFlinchLayout* layout );
+
+	// part に当たった弾で押す。direction: 弾の進む向き（長さ1。骨格の根の空間＝置き場所と向きを掛ける前）。
+	void push( BodyPart part, const GameLib::Math::Vector3& direction );
+	// 押した分を1ティック戻す。
+	void update();
+	// 押されている分だけ、当たったまとまりを関節で曲げる（BonePoseModifier）。
+	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
+
+private:
+	const ZombieFlinchLayout* mLayout; // 借りているだけ
+	// まとまりごとの押す量（骨格の根の空間。向き＝押す向き、長さ＝角度（度））。並びは ZombieFlinchLayout::groups と同じ。
+	std::vector< GameLib::Math::Vector3 > mPushes;
+};
+
+#endif

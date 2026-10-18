@@ -14,6 +14,12 @@ class IHittable;
 // いつ撃つか（連射の間隔）は知らない（FireControl）。当たった後どうするかも知らない（Bullet と同じ）。
 class BulletList{
 public:
+	// 弾が当たった所と、そのとき弾が飛んでいた向き（血しぶきを弾の抜ける向きへ飛ばすのに使う）。
+	struct Impact{
+		HitWorld::Hit hit;
+		GameLib::Math::Vector3 direction; // 弾の飛んでいた向き（長さ1）
+	};
+
 	// data: 弾頭の形と見た目（Resource/bullet_tip.txt）。所有権は受け取らない。nullptr 不可。このリストより長く生きていること（MeshCache が持つ）。
 	//       まだ構築中でもよい。構築に失敗したら、弾は飛んで当たるが描かれない。
 	explicit BulletList( const StaticMeshData* data );
@@ -22,9 +28,9 @@ public:
 	void fire( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& direction );
 	// 全部の弾を1ティック進め、終わった弾（当たった・飛びきった）を消す。
 	// world / shooter: Bullet::update へそのまま渡す（当たりを聞く名簿と、当てないキャラ）。
-	// hits: このティックに当たった所を後ろへ足す（前の中身は消さない）。nullptr 不可。
-	//       当たった後どうするか（弾痕・ダメージ）は、受け取った側が決める。
-	void update( const HitWorld& world, const IHittable* shooter, std::vector< HitWorld::Hit >* hits );
+	// impacts: このティックに当たった所を後ろへ足す（前の中身は消さない）。nullptr 不可。
+	//          当たった後どうするか（弾痕・ダメージ・血）は、受け取った側が決める。
+	void update( const HitWorld& world, const IHittable* shooter, std::vector< Impact >* impacts );
 	void draw() const;
 
 private:

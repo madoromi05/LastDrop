@@ -8,6 +8,8 @@ namespace{
 	// 一歩ごとに鳴る音は、同じ音が続くと機械的に聞こえやすいので多めに持つ。
 	const int kStepVariations = 4;
 	const int kSingle = 1;
+	// 連射で続けて当たるので、体に当たった音は別テイクを持つ。
+	const int kHitFleshVariations = 3;
 
 	// ── 素材の出どころ ──
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）。
@@ -19,6 +21,8 @@ namespace{
 	const float kFoleyPitchJitter = 0.04f;
 	// 連射で同じ音が続くので、少しだけ揺らして機械的に聞こえないようにする（大きく揺らすと別の銃に聞こえる）。
 	const float kGunshotPitchJitter = 0.03f;
+	// 当たった音は 1 体に 10 回/秒 続くので、銃声より大きく揺らす（同じ音の繰り返しに聞こえないように）。
+	const float kHitPitchJitter = 0.08f;
 	const float kNoPitchJitter = 0.f;
 
 	// ── 聞こえる距離（m）──
@@ -31,6 +35,9 @@ namespace{
 	// 銃声は足音よりずっと遠くまで届く大きな音（撃つと遠くの相手にも居場所が伝わる）。
 	const float kGunshotMinDistance = 5.f;
 	const float kGunshotMaxDistance = 300.f;
+	// 当たった音は足音と同じくらい届く。近い間（3m まで）は減衰させず、すぐ横で鳴る銃声に埋もれないようにする。
+	const float kHitMinDistance = 3.f;
+	const float kHitMaxDistance = 40.f;
 	// 位置を持たない環境音（2D で鳴らすので距離は使わない）。
 	const float kUnusedDistance = 1.f;
 	const float kGeneratorMinDistance = 2.f;
@@ -46,6 +53,8 @@ namespace{
 	// 銃声の素材は、頭の約 0.6 秒がほぼ無音で、発砲の音はその後に入っている。
 	// 頭から鳴らすと、引き金を引いてから音が出るまでが遅れて聞こえるので、発砲の音の直前から鳴らす。
 	const float kGunshotStartSeconds = 0.6f;
+	// 体に当たった音の素材は、頭の約 0.04〜0.06 秒が無音（3 テイクで短い方に合わせる）。弾が当たった瞬間に鳴らすため飛ばす。
+	const float kHitFleshStartSeconds = 0.04f;
 
 	// SoundId の順に並べる（static_assert で数を確かめる）。
 	const SoundEntry kEntries[] = {
@@ -71,6 +80,10 @@ namespace{
 		{ "generator",         kSingle, kNoPitchJitter, kGeneratorMinDistance, kGeneratorMaxDistance, kSynthesized, kFromStart },
 		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
 		{ "airplane",          kSingle, kNoPitchJitter, kAirplaneMinDistance, kAirplaneMaxDistance, kSynthesized, kFromStart },
+		// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
+		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },
+		// 元の素材名: "Weapon Knife Hit Short 01.wav"（頭に無音は無い）
+		{ "hit_head",          kSingle, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kFromStart },
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

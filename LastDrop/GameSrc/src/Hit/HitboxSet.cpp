@@ -15,6 +15,7 @@ HitboxSet::HitboxSet( const HitboxLayout* layout ) :
 	notPlaced.world.setIdentity();
 	notPlaced.toLocal.setIdentity();
 	notPlaced.placed = false;
+	notPlaced.removed = false;
 	mPlacements.assign( mLayout->boxes().size(), notPlaced );
 }
 
@@ -22,6 +23,9 @@ void HitboxSet::update( const SkinnedMeshInstance& mesh ) {
 	const std::vector< HitboxLayout::Box >& boxes = mLayout->boxes();
 	for ( size_t i = 0; i < boxes.size(); ++i ) {
 		Placement& placement = mPlacements[ i ];
+		if ( placement.removed ) {
+			continue;
+		}
 		Matrix34 bone;
 		placement.placed = mesh.animatedBoneMatrix( boxes[ i ].anchorBone, &bone );
 		if ( !placement.placed ) {
@@ -29,6 +33,16 @@ void HitboxSet::update( const SkinnedMeshInstance& mesh ) {
 		}
 		placement.world.setMul( bone, boxes[ i ].local );
 		placement.toLocal.setInverse( placement.world );
+	}
+}
+
+void HitboxSet::removePart( BodyPart part ) {
+	const std::vector< HitboxLayout::Box >& boxes = mLayout->boxes();
+	for ( size_t i = 0; i < boxes.size(); ++i ) {
+		if ( boxes[ i ].part == part ) {
+			mPlacements[ i ].removed = true;
+			mPlacements[ i ].placed = false; // 当たり判定・表示は placed だけを見る
+		}
 	}
 }
 
@@ -79,4 +93,8 @@ bool HitboxSet::boxMatrix( int index, Matrix34* out ) const {
 	}
 	*out = placement.world;
 	return true;
+}
+
+BodyPart HitboxSet::boxPart( int index ) const {
+	return mLayout->boxes()[ index ].part;
 }

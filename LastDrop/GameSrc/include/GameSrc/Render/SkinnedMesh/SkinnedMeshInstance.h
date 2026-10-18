@@ -21,6 +21,12 @@ class BonePoseModifier;
 // コピーすると骨格を2体で共有してしまうので、コピーは禁止（std::unique_ptr 等で持つ）。
 class SkinnedMeshInstance{
 public:
+	// アニメの再生のしかた。
+	enum PlayMode{
+		PLAY_LOOP, // 最後まで来たら始めへ戻る（歩き・待機）
+		PLAY_ONCE, // 最後のフレームで止まる（倒れる）
+	};
+
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このインスタンスより長く生きていること（MeshCache が持つ）。
 	explicit SkinnedMeshInstance( const SkinnedMeshData* data );
@@ -31,15 +37,18 @@ public:
 	void setAngleY( float degree );						// Y軸まわりの向き（度）
 	// 再生するアニメを名前で設定する。見つからなければデバッグ出力してレスト姿勢のまま。
 	// startTime: 再生開始時刻（フレーム）。同じアニメの複数体をずらして、動きが揃わないようにする。
-	void setAnimation( const char* name, float startTime );
+	// mode: 再生のしかた。省略するとループ。
+	void setAnimation( const char* name, float startTime, PlayMode mode = PLAY_LOOP );
 	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる。
-	void setAnimation( GameLib::Scene::Animation, float startTime );
+	void setAnimation( GameLib::Scene::Animation, float startTime, PlayMode mode = PLAY_LOOP );
 	// 今見えているポーズから、animation へ fadeFrames フレームかけて滑らかに切り替える。
 	// フェード中に呼び直してもよい（その時点で見えている混ざったポーズから、改めて混ぜ始める）。
 	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う。
-	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames );
+	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode = PLAY_LOOP );
 	// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0。
 	float animationPhase() const;
+	// PLAY_ONCE のアニメが最後のフレームまで来て、止まっているか。PLAY_LOOP なら常に false。
+	bool isAnimationFinished() const;
 	// 描く直前にポーズを書き換える処理（一人称で頭を消す・視点に合わせて上半身を曲げる等）。
 	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること。
 	void setPoseModifier( BonePoseModifier* );
@@ -63,11 +72,14 @@ public:
 private:
 	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。
 	void blendFadingPose();
+	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前。
+	float lastFrameTime() const;
 
 	const SkinnedMeshData* mData;
 	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は骨の行列を求めるとき＝computeSkinMatrices で掛ける）
 	GameLib::Scene::Animation mAnimation;				// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
 	float mTime;										// 次の update で使うアニメ時刻（フレーム）
+	PlayMode mPlayMode;									// 再生中のアニメの再生のしかた
 
 	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）。
 	// クロスフェード中にキャラが移動・旋回しても、切り替え前のポーズが元の場所に取り残されないようにするため。

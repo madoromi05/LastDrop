@@ -7,6 +7,7 @@
 #include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Player/FirstPersonControl.h"
 #include "GameSrc/Player/PlayerBodySounds.h"
+#include "GameSrc/Scene/Game/ZombieHitSounds.h"
 #include "GameSrc/Scene/Game/GameHud.h"
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
@@ -23,6 +24,7 @@ class GameResources;
 //   入力と視点                          … FirstPersonControl
 //   見ている物を使う                    … Interactor（持ち物は Inventory）
 //   足音・装備の音                      … PlayerBodySounds
+//   弾がゾンビに当たった音              … ZombieHitSounds
 //   HUD                                 … GameHud
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
@@ -47,6 +49,7 @@ private:
 	Interactor mInteractor;
 	FirstPersonControl mControl;
 	PlayerBodySounds mBodySounds;
+	ZombieHitSounds mZombieHitSounds;
 	GameHud mHud;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GameDebugOverlay mDebug;

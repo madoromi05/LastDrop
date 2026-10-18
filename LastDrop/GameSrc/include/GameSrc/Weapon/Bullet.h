@@ -27,6 +27,11 @@ public:
 	void draw( const StaticMeshData& data ) const;
 
 	bool isFinished() const;	// 何かに当たったか、届く距離を飛びきったか（持ち主が消す）
+	const GameLib::Math::Vector3& direction() const; // 飛ぶ向き（長さ1）
+
+	// この弾1発の、部位の倍率を掛ける前のダメージ。当たった後に相手へ渡すのは持ち主（GameWorld）。
+	// 弾の性能なので、弾の速さと同じ所（Bullet.cpp）に置く。
+	static float damage();
 
 private:
 	GameLib::Math::Vector3 mPosition;	// 弾の底の位置（ワールド座標）

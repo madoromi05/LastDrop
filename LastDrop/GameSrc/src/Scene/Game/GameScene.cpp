@@ -36,6 +36,7 @@ GameScene::GameScene( GameResources* resources ) :
 	mInteractor( &mWorld.hitWorld(), kInteractReach, [ this ]( const HitWorld::Hit& hit ) { return mWorld.resolveInteractable( hit ); } ),
 	mControl( mWorld.map().playerStart().yawDegree ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
+	mZombieHitSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
 	mReady( false ) {
 }
@@ -70,6 +71,7 @@ void GameScene::update() {
 	const FirstPersonCamera& camera = mControl.camera();
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection() );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
+	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
 	const PlayerCharacter* player = mWorld.player();
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
 	mControl.updateRecoil( player && player->firedThisTick() );
@@ -96,11 +98,16 @@ void GameScene::draw() {
 	mWorld.draw( ViewFrustum( mControl.camera().projectionViewMatrix() ) );
 	mWorld.drawBulletHoles( mControl.camera().projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
 	mWorld.drawImpactDust( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 弾痕の上に舞う
+	mWorld.drawBloodSpray( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 砂ぼこりの後（同じ作り）
 	mWorld.drawMuzzleFlash( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 加算なので順番は問わない
 #ifdef _DEBUG
 	mDebug.drawCollision( mWorld, mControl.camera() );
 #endif
 	mPostProcess.endScene();
+#ifdef _DEBUG
+	// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
+	mDebug.addZombieHealth( mWorld, mControl.camera(), &mResources->uiRenderer() );
+#endif
 	mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory );
 
 	GameDebugOverlay::TextState text;

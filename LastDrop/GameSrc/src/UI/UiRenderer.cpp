@@ -22,11 +22,12 @@ namespace{
 	const bool kAntialias = true;
 
 	// 積める量。画面1枚ぶんのボタン・HUD に十分な数。足りなくなったら増やす（超えると ASSERT で止まる）。
+	// 文字は、確認用のゾンビの体力表示（1体に最大 12 行・約 100 文字。ゾンビは上限 10 体の想定）も入る量にしてある。
 	const int kRectCapacity = 256;
 	const int kVerticesPerRect = 6; // 長方形は三角形2つ
 	const int kBatchCapacity = 64;
-	const int kCharCapacity = 1024;
-	const int kTextCapacity = 64;
+	const int kCharCapacity = 4096;
+	const int kTextCapacity = 256;
 
 	const float kHalf = 0.5f;
 	// 最初に文字の絵を作っておく範囲（ASCII の表示できる文字すべて。空白〜チルダ）。

@@ -156,6 +156,7 @@ bool InputAim        (int playerId) { return Pad::instance()->isOn(WorkId::Aim, 
 bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(WorkId::Holster, playerId); }
 bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugCollision, playerId); }
 bool InputDebugPickupCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugPickupCollision, playerId); }
+bool InputDebugZombieHealth(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugZombieHealth, playerId); }
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }
 bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiDown, playerId); }
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }

@@ -108,6 +108,7 @@ bool InputAim        (int playerId = 0);   // 構える（押されている間�
 bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）
 bool InputDebugCollision(int playerId = 0); // 当たり判定の表示を切り替える（押した瞬間）
 bool InputDebugPickupCollision(int playerId = 0); // 落ちている物の当たり判定を透かして表示する切り替え（押した瞬間）
+bool InputDebugZombieHealth(int playerId = 0); // ゾンビの体力を頭の上に表示する切り替え（押した瞬間）
 bool InputUiUp       (int playerId = 0);   // 画面の部品の選択を上へ（押した瞬間）
 bool InputUiDown     (int playerId = 0);   // 画面の部品の選択を下へ（押した瞬間）
 bool InputUiDecide   (int playerId = 0);   // 選んでいる部品を決定する（押した瞬間）

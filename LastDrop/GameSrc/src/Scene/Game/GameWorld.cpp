@@ -2,10 +2,12 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Map/SpawnPicker.h"
+#include "GameSrc/Hit/DamageInfo.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Random.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -23,6 +25,16 @@ namespace{
 	const char* kZombieFile = "Resource/character.txt";
 	const char* kZombieAnimation = "walk";
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
+	// 倒れるときのアニメ（tools/configs/zombie.json の extra_animations）。体ごとにどれかをランダムで選ぶ（倒れ方が揃わないように）。
+	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
+	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
+	// 撃たれてよろけるときのアニメ（同じく extra_animations）。
+	const char* kZombieStaggerAnimation = "gethit";
+	// 血しぶきの量と大きさの倍率。頭は多く大きく飛ばす（当たった手応えを一番強くする部位）。
+	const float kBodyBloodScale = 1.f;
+	const float kHeadBloodScale = 1.5f;
+	// 部位が千切れたときに切り口から出す血しぶきの倍率。当たったときより大きく、一番多く出す（BloodSpray::kMaxDropNumber まで）。
+	const float kSeverBloodScale = 2.f;
 	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
 	const char* kBuildingFile = "Resource/building.txt";
 	// 町を囲む建物。同じ建物から足元の歩道の板を除いた形（tools/configs/building_noground.json）。
@@ -78,17 +90,31 @@ void GameWorld::place() {
 	}
 	if ( mZombieData->isReady() ) {
 		mZombieModel = std::make_unique< ZombieModel >( mZombieData );
-		// 置く（移動・命中の両方の当たり判定への登録は ActorList が行う）。animation が nullptr なら T ポーズ。
-		auto addZombie = [ this ]( const TownPlacement& p, const char* animation, float startTime ) {
-			mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), toPosition( p ), p.yawDegree, animation, startTime ) );
+		// 置く（移動・命中の両方の当たり判定への登録は ActorList が行う）。アニメの名前が nullptr の所は、そのアニメを使わない。
+		auto addZombie = [ this ]( const TownPlacement& p, const Zombie::Animations& animations ) {
+			mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), toPosition( p ), p.yawDegree, animations ) );
 		};
+		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
+		Random random = Random::create( static_cast< int >( Framework::instance().time() ) );
 		int zombieIndex = 0;
 		for ( const TownPlacement& p : mMap.walkingZombies() ) {
-			addZombie( p, kZombieAnimation, kAnimationStartStep * zombieIndex );
+			Zombie::Animations animations;
+			animations.move = kZombieAnimation;
+			animations.moveStartTime = kAnimationStartStep * zombieIndex;
+			animations.death = kZombieDeathAnimations[ random.getInt( kZombieDeathAnimationNumber ) ];
+			animations.stagger = kZombieStaggerAnimation;
+			addZombie( p, animations );
 			++zombieIndex;
 		}
 		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
-		addZombie( mMap.tPoseZombie(), nullptr, 0.f );
+		// アニメを付けない（T ポーズ）。倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
+		// 止まった的なので、部位ごとの体力の減り方・のけぞりの向きを確かめやすい。
+		Zombie::Animations tPose;
+		tPose.move = nullptr;
+		tPose.moveStartTime = 0.f;
+		tPose.death = nullptr;
+		tPose.stagger = nullptr;
+		addZombie( mMap.tPoseZombie(), tPose );
 	}
 	mGround.place( mMap );
 	mHitWorld.addBlocker( &mGround ); // 地面も弾・視線を止める（地面全体で1つの物）
@@ -147,23 +173,71 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		}
 	}
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
-	std::vector< HitWorld::Hit > hits;
-	mBullets.update( mHitWorld, mPlayer.get(), &hits );
-	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出す。ゾンビ（target）には出さない（血は別の演出にする）。
-	for ( const HitWorld::Hit& hit : hits ) {
+	mImpacts.clear();
+	mZombieHits.clear();
+	mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
+	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出す。ゾンビ（target）には出さず、血しぶきを出す。
+	for ( const BulletList::Impact& impact : mImpacts ) {
+		const HitWorld::Hit& hit = impact.hit;
 		if ( hit.blocker ) {
 			mBulletHoles.add( hit.point, hit.normal, hit.blocker );
 			mImpactDust.spawn( hit.point, hit.normal );
+		} else if ( hit.target ) {
+			hitZombie( impact );
 		}
 	}
 	mBulletHoles.update();
 	mImpactDust.update();
+	mBloodSpray.update();
+	mSeveredLimbs.update( &mGround ); // 落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
 	for ( auto& zombie : mZombies ) {
 		zombie->update();
+		// 沈み終わった死体は、全員の更新が済んでから消す（下の flush）。
+		if ( zombie->isGone() ) {
+			mZombies.destroyLater( zombie.get() );
+		}
 	}
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
 	mZombies.flush();
 	mPickups.flush();
+}
+
+void GameWorld::hitZombie( const BulletList::Impact& impact ) {
+	const HitWorld::Hit& hit = impact.hit;
+	Zombie* zombie = mZombies.find( hit.target );
+	if ( !zombie ) {
+		return; // ゾンビでない的（今は無いが、自キャラを撃つ相手が増えたとき）
+	}
+	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力は Zombie が生きている間だけ減らす）。
+	mBloodSpray.spawn( hit.point, impact.direction, ( hit.part == BodyPart::Head ) ? kHeadBloodScale : kBodyBloodScale );
+	ZombieHit event;
+	event.point = hit.point;
+	event.part = hit.part;
+	mZombieHits.push_back( event );
+
+	DamageInfo damage;
+	damage.part = hit.part;
+	damage.baseAmount = Bullet::damage();
+	damage.point = hit.point;
+	damage.direction = impact.direction;
+	zombie->applyDamage( damage );
+	for ( BodyPart part : zombie->severedByLastDamage() ) {
+		severLimb( *zombie, part, impact.direction );
+	}
+	// 倒れ始めたら（脚を失って倒れたときも）移動の名簿から外す（死体の上を歩ける）。命中の名簿には消えるまで残す（死体も弾を止める）。
+	// ここは名簿をたどっている最中ではないので、すぐ外してよい。外すのは何回呼んでも安全。
+	if ( !zombie->blocksMovement() ) {
+		mCollisionWorld.removeBody( zombie );
+	}
+}
+
+void GameWorld::severLimb( const Zombie& zombie, BodyPart part, const Vector3& direction ) {
+	// 切れた部位は、applyDamage の直後ならまだ見えている（体から消えるのは次の update）ので、その姿勢を写して飛ばす。
+	zombie.shownWorldPose( &mSeverPose );
+	const ZombieSeverLayout::Cut& cut = mZombieModel->severLayout().cut( part );
+	const Matrix34& joint = mSeverPose[ cut.jointBone ];
+	mBloodSpray.spawn( Vector3( joint.m03, joint.m13, joint.m23 ), direction, kSeverBloodScale );
+	mSeveredLimbs.spawn( mZombieData, cut, mSeverPose, direction );
 }
 
 void GameWorld::draw( const ViewFrustum& frustum ) const {
@@ -175,6 +249,7 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 	for ( const auto& zombie : mZombies ) {
 		zombie->draw();
 	}
+	mSeveredLimbs.draw();
 	for ( const Building& building : mBuildings ) {
 		building.draw( frustum );
 	}
@@ -195,6 +270,10 @@ void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
 
 void GameWorld::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection ) {
 	mImpactDust.draw( projectionView, viewDirection );
+}
+
+void GameWorld::drawBloodSpray( const Matrix44& projectionView, const Vector3& viewDirection ) {
+	mBloodSpray.draw( projectionView, viewDirection );
 }
 
 void GameWorld::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) {
@@ -271,6 +350,14 @@ const EscapeCar* GameWorld::escapeCar() const {
 
 bool GameWorld::isEscapeReady() const {
 	return mEscapeCar && mEscapeCar->isFueled();
+}
+
+const ActorList< Zombie >& GameWorld::zombies() const {
+	return mZombies;
+}
+
+const std::vector< GameWorld::ZombieHit >& GameWorld::zombieHitsThisTick() const {
+	return mZombieHits;
 }
 
 void GameWorld::appendPickupColliders( std::vector< BoxCollider >* out ) const {

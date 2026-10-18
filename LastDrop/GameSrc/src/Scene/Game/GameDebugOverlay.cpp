@@ -20,10 +20,10 @@ namespace{
 	const int kHelpRow = 1;
 	const int kGroundRow = 2;
 	const int kShaderErrorRow = 4; // シェーダのコンパイルエラー（あるときだけ）
-	const int kDebugTextSize = 64;
+	const int kDebugTextSize = 96; // 表示の切り替えの1行（F1〜F3）が収まる長さ
 	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
 #ifdef _DEBUG
-	const int kCollisionRow = 3; // 当たり判定の表示（F1）と、落ちている物の箱の表示（F2）の ON/OFF
+	const int kCollisionRow = 3; // 当たり判定の表示（F1）・落ちている物の箱の表示（F2）・ゾンビの体力の表示（F3）の ON/OFF
 	const int kRayRow = 5;       // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 #endif
@@ -58,7 +58,8 @@ namespace{
 GameDebugOverlay::GameDebugOverlay()
 #ifdef _DEBUG
 	: mShowCollision( false ),
-	mShowPickups( false )
+	mShowPickups( false ),
+	mShowZombieHealth( false )
 #endif
 	{
 }
@@ -86,6 +87,15 @@ void GameDebugOverlay::handleInput() {
 	}
 	if ( InputDebugPickupCollision() ) {
 		mShowPickups = !mShowPickups;
+	}
+	if ( InputDebugZombieHealth() ) {
+		mShowZombieHealth = !mShowZombieHealth;
+	}
+}
+
+void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
+	if ( mShowZombieHealth ) {
+		mZombieHealthBars.add( world, camera, renderer );
 	}
 }
 
@@ -125,7 +135,8 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
 	char text[ kDebugTextSize ];
-	std::snprintf( text, sizeof( text ), "Collision: %s (F1)  Fuel boxes: %s (F2)", mShowCollision ? "ON " : "OFF", mShowPickups ? "ON " : "OFF" );
+	std::snprintf( text, sizeof( text ), "Collision: %s (F1)  Fuel boxes: %s (F2)  Zombie HP: %s (F3)",
+		mShowCollision ? "ON " : "OFF", mShowPickups ? "ON " : "OFF", mShowZombieHealth ? "ON " : "OFF" );
 	DebugScreen::instance().draw( kHelpColumn, kCollisionRow, text );
 }
 #endif

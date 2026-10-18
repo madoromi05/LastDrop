@@ -1,6 +1,7 @@
 #include "GameSrc/Player/FirstPersonBody.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Math/MatrixBlend.h"
+#include "GameSrc/Math/AxisRotation.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -117,26 +118,6 @@ namespace{
 
 	Vector3 translationOf( const Matrix34& m ) {
 		return Vector3( m.m03, m.m13, m.m23 );
-	}
-
-	// pivot を中心に、長さ1の軸 axis のまわりへ degree 度回す行列（ロドリゲスの回転公式）。
-	// Matrix34 には X/Y/Z 軸まわりの回転しか無いので、任意の軸はここで組む。
-	Matrix34 rotationAbout( const Vector3& pivot, const Vector3& axis, float degree ) {
-		float c = Math::cos( degree );
-		float s = Math::sin( degree );
-		float t = 1.f - c;
-		Matrix34 m;
-		m.setIdentity();
-		m.m00 = c + t * axis.x * axis.x;          m.m01 = t * axis.x * axis.y - s * axis.z; m.m02 = t * axis.x * axis.z + s * axis.y;
-		m.m10 = t * axis.y * axis.x + s * axis.z; m.m11 = c + t * axis.y * axis.y;          m.m12 = t * axis.y * axis.z - s * axis.x;
-		m.m20 = t * axis.z * axis.x - s * axis.y; m.m21 = t * axis.z * axis.y + s * axis.x; m.m22 = c + t * axis.z * axis.z;
-		// 中心を原点へ動かして回し、戻す（= 移動成分は pivot - R*pivot）。
-		Vector3 rotatedPivot;
-		m.mul33( &rotatedPivot, pivot );
-		m.m03 = pivot.x - rotatedPivot.x;
-		m.m13 = pivot.y - rotatedPivot.y;
-		m.m23 = pivot.z - rotatedPivot.z;
-		return m;
 	}
 
 	// 骨の並びへまとめて、左から変換を掛ける（骨格の根の空間で動かす）。
@@ -341,7 +322,7 @@ void FirstPersonBody::holdWithBothHands( std::vector< Matrix34 >* pose ) const {
 	float angle = Math::atan2( sine, toGun.dot( toHand ) ); // 度。外積の長さと内積の比から求めると、0°・180°付近でも精度が落ちない
 	// 手首から左手までの距離は合わせない（向きだけ）。向きを合わせた後の残りは 歩き 1〜1.7cm・走り 0.6cm 以下と測れたので、
 	// 腕を伸び縮みさせる処理（IK）は持たない。
-	transformBones( rotationAbout( wrist, axis, angle * mHoldWeight ), mRightHandBones, pose );
+	transformBones( AxisRotation::about( wrist, axis, angle * mHoldWeight ), mRightHandBones, pose );
 }
 
 void FirstPersonBody::updateEyePosition( const std::vector< Matrix34 >& pose ) {
@@ -417,7 +398,7 @@ void FirstPersonBody::kickWeapon( std::vector< Matrix34 >* pose ) const {
 
 	// 手首を中心に銃口を跳ね上げてから、銃口と逆の向きへ引く。銃の横の軸まわりは、正の角度で銃口が下を向くので負で回す。
 	// 手首を中心にするのは、握っている所を支点に銃の先が跳ねるように見せるため。
-	Matrix34 kick = rotationAbout( translationOf( ( *pose )[ mHandBone ] ), gunSide, -rise );
+	Matrix34 kick = AxisRotation::about( translationOf( ( *pose )[ mHandBone ] ), gunSide, -rise );
 	kick.m03 -= barrel.x * back;
 	kick.m13 -= barrel.y * back;
 	kick.m23 -= barrel.z * back;

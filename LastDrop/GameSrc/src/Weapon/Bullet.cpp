@@ -14,6 +14,8 @@ namespace{
 	const float kSpeed = 830.f / GameTime::kTicksPerSecond;
 	// 届く距離（m）。これだけ飛んだら消す。空へ撃った弾は何にも当たらないので、飛び続ける弾が溜まらないようにするための上限。
 	const float kMaxRange = 300.f;
+	// 1発のダメージ（部位の倍率を掛ける前）。ゾンビの胴（倍率 1）なら 3 発で倒れる量（ZombieHealth の全体 120）。
+	const float kDamage = 20.f;
 
 	// 弾の向きを作るときの仮の「横」を決める軸。飛ぶ向きとほぼ平行だと外積が 0 に近づくので、そのときはもう一方を使う。
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
@@ -66,4 +68,12 @@ void Bullet::draw( const StaticMeshData& data ) const {
 
 bool Bullet::isFinished() const {
 	return mFinished;
+}
+
+const Vector3& Bullet::direction() const {
+	return mDirection;
+}
+
+float Bullet::damage() {
+	return kDamage;
 }

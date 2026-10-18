@@ -11,7 +11,9 @@ namespace{
 ZombieModel::ZombieModel( const SkinnedMeshData* data ) :
 	mData( data ),
 	mHitboxLayout( data, kBoneNamePrefix ),
-	mFootprint( data, kBoneNamePrefix, kFootprintPadding ) {
+	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
+	mFlinchLayout( data, kBoneNamePrefix ),
+	mSeverLayout( data, kBoneNamePrefix ) {
 }
 
 const SkinnedMeshData* ZombieModel::data() const {
@@ -24,4 +26,12 @@ const HitboxLayout& ZombieModel::hitboxLayout() const {
 
 const BodyFootprint& ZombieModel::footprint() const {
 	return mFootprint;
+}
+
+const ZombieFlinchLayout& ZombieModel::flinchLayout() const {
+	return mFlinchLayout;
+}
+
+const ZombieSeverLayout& ZombieModel::severLayout() const {
+	return mSeverLayout;
 }

@@ -1,10 +1,15 @@
 {
     "mode": "skinned",
-    "fbx_path": "C:/Users/mador/Downloads/ゾンビ/Zombie+animation/animation fbx/zombie@walk.fbx",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@walk.fbx",
     "out_path": "../../Resource/character.txt",
     "split_vertices": true,
     "tree_name": "skel",
     "anim_name": "walk",
+    "extra_animations": [
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@death1.fbx", "name": "death1" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@death2.fbx", "name": "death2" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@gethit.fbx", "name": "gethit" }
+    ],
     "mesh_texture": "Resource/zombie_albedo.tga",
     "mesh_normalmap": "Resource/zombie_normal.tga",
     "material_colors": {

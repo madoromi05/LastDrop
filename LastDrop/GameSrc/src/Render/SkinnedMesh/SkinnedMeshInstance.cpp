@@ -15,6 +15,9 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kTimeStep = 1.f; // update 1回で進めるアニメ時刻（アニメのキー時刻はゲームのフレーム数）
+	// PLAY_ONCE で止める時刻を、最後のキーからどれだけ手前にするか（フレーム）。
+	// ちょうど最後のキーの時刻だと始めへ折り返してしまうが、見た目では区別できないほど小さくする。
+	const float kLastFrameMargin = 0.001f;
 
 	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする。
 	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため。
@@ -26,6 +29,7 @@ namespace{
 SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mData( data ),
 	mTime( 0.f ),
+	mPlayMode( PLAY_LOOP ),
 	mPoseModifier( nullptr ),
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
@@ -48,23 +52,24 @@ void SkinnedMeshInstance::setAngleY( float degree ) {
 	mAngleY = degree;
 }
 
-void SkinnedMeshInstance::setAnimation( const char* name, float startTime ) {
+void SkinnedMeshInstance::setAnimation( const char* name, float startTime, PlayMode mode ) {
 	Scene::Animation animation = mData->animation( name );
 	if ( !animation ) {
 		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる。
 		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;
 	}
-	setAnimation( animation, startTime );
+	setAnimation( animation, startTime, mode );
 }
 
-void SkinnedMeshInstance::setAnimation( Scene::Animation animation, float startTime ) {
+void SkinnedMeshInstance::setAnimation( Scene::Animation animation, float startTime, PlayMode mode ) {
 	mSkeleton.setAnimation( animation );
 	mAnimation = animation;
 	mTime = startTime; // 以降の update は、ここから1フレームずつ進む
+	mPlayMode = mode;
 	mFadeFrames = 0.f;
 }
 
-void SkinnedMeshInstance::crossFadeTo( Scene::Animation animation, float startTime, float fadeFrames ) {
+void SkinnedMeshInstance::crossFadeTo( Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode ) {
 	// 混ぜる元は「切り替え直前に実際に見えていたポーズ」を写し取ったもの。
 	// 前のアニメを動かし続けて混ぜる方法だと、フェード中にもう一度切り替えたとき（歩き始めてすぐ止まる等）
 	// 混ざっていた分が一瞬で消えてポーズが飛ぶ。見えていたポーズから始めれば、何度切り替えても飛ばない。
@@ -72,7 +77,7 @@ void SkinnedMeshInstance::crossFadeTo( Scene::Animation animation, float startTi
 	if ( canFade ) {
 		mFadeFromPose = mBonePose;
 	}
-	setAnimation( animation, startTime );
+	setAnimation( animation, startTime, mode );
 	if ( canFade ) {
 		mFadeFrames = fadeFrames;
 		mFadeElapsed = 0.f;
@@ -94,7 +99,20 @@ void SkinnedMeshInstance::setPoseModifier( BonePoseModifier* modifier ) {
 	mPoseModifier = modifier;
 }
 
+bool SkinnedMeshInstance::isAnimationFinished() const {
+	// update は時刻を使ってから進めるので、今見えているのは1つ前の時刻。
+	return mPlayMode == PLAY_ONCE && mTime - kTimeStep >= lastFrameTime();
+}
+
+float SkinnedMeshInstance::lastFrameTime() const {
+	return mAnimation ? mAnimation.period() - kLastFrameMargin : 0.f;
+}
+
 void SkinnedMeshInstance::update() {
+	// 1回だけのアニメは、最後のフレームを超えたらそこで止める（時刻を戻すので、止まった後も増え続けない）。
+	if ( mPlayMode == PLAY_ONCE && mTime > lastFrameTime() ) {
+		mTime = lastFrameTime();
+	}
 	mSkeleton.updateAnimation( mTime );
 	mTime += kTimeStep;
 	mData->computeBonePose( mSkeleton, &mBonePose );

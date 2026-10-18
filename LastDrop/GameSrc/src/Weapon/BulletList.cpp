@@ -16,12 +16,13 @@ void BulletList::fire( const Vector3& origin, const Vector3& direction ) {
 	mBullets.emplace_back( origin, direction );
 }
 
-void BulletList::update( const HitWorld& world, const IHittable* shooter, std::vector< HitWorld::Hit >* hits ) {
-	ASSERT( hits && "BulletList : hits is null." );
-	HitWorld::Hit hit;
+void BulletList::update( const HitWorld& world, const IHittable* shooter, std::vector< Impact >* impacts ) {
+	ASSERT( impacts && "BulletList : impacts is null." );
+	Impact impact;
 	for ( Bullet& bullet : mBullets ) {
-		if ( bullet.update( world, shooter, &hit ) ) {
-			hits->push_back( hit );
+		if ( bullet.update( world, shooter, &impact.hit ) ) {
+			impact.direction = bullet.direction();
+			impacts->push_back( impact );
 		}
 	}
 	mBullets.erase( std::remove_if( mBullets.begin(), mBullets.end(),

@@ -575,6 +575,48 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieModel.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieFlinch.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BoneNamePattern.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BonePoseModifierChain.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieSeverLayout.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberment.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\SeveredLimb.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp">
+      <Filter>GameSrc\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieHealth.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -1224,6 +1266,54 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModel.h">
       <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinch.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BoneNamePattern.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifierChain.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSeverLayout.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDismemberment.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimb.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h">
+      <Filter>GameSrc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealth.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h">
+      <Filter>GameSrc\Hit</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h">
+      <Filter>GameSrc\Hit</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h">
+      <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h">
+      <Filter>GameSrc\Effect</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h">
       <Filter>GameSrc\Render</Filter>

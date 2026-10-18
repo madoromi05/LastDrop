@@ -30,6 +30,9 @@ public:
 	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。
 	// 見た目の書き換え（一人称で頭を潰すなど）を掛ける前の、アニメどおりのポーズに合わせる。
 	void update( const SkinnedMeshInstance& mesh );
+	// part の箱を外す（部位欠損で部位が無くなったとき）。以後その箱には当たらず、置いていない箱として扱う（boxMatrix が false）。
+	// 戻す入口は無い（無くなった部位は戻らない）。何回呼んでも安全。
+	void removePart( BodyPart part );
 
 	// origin から delta だけ進む線分が、一番早く当たる部位の結果を hit に書く。当たらなければ false。
 	// hit: 出力先。nullptr 不可。
@@ -39,6 +42,8 @@ public:
 	int boxNumber() const;
 	// -1〜1 の立方体をワールドの箱へ置く行列。まだ置いていない箱（update 前）なら false。
 	bool boxMatrix( int index, GameLib::Math::Matrix34* out ) const;
+	// 箱が受け持つ部位（体力の表示で、箱の所に部位の体力を出すのに使う）。
+	BodyPart boxPart( int index ) const;
 
 private:
 	// 箱1つの置き場所。並びは HitboxLayout::boxes と同じ。
@@ -46,6 +51,7 @@ private:
 		GameLib::Math::Matrix34 world;    // -1〜1 の立方体 → ワールドの箱（update で求める）
 		GameLib::Math::Matrix34 toLocal;  // world の逆。線分を箱の空間へ移すのに使う
 		bool placed;                      // update で置けたか
+		bool removed;                     // removePart で外したか（外した箱は置かない）
 	};
 	const HitboxLayout* mLayout; // 借りているだけ
 	std::vector< Placement > mPlacements;

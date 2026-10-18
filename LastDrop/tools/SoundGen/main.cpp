@@ -39,6 +39,8 @@ namespace{
 		case SOUND_GENERATOR:		return makeGenerator( random );
 		case SOUND_SIREN:			return makeSiren( random );
 		case SOUND_AIRPLANE:		return makeAirplane( random );
+		case SOUND_HIT_FLESH:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
+		case SOUND_HIT_HEAD:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
 		case SOUND_NUM:				break;
 		}
 		return Synth::Buffer(); // 目録に足したのにレシピが無い（main で知らせる）
