@@ -3,7 +3,7 @@
 #include "GameLib/GameLib.h"
 
 namespace{
-	// 全体の体力。胴（倍率 1）だけを撃つと 3 発で 0 になる（7.62 NATO 1発 40）。
+	// 全体の体力。胴（倍率 1）だけを撃つと 6 発で 0 になる（弾1発 20。Bullet.cpp）。
 	const float kMaxTotal = 120.f;
 
 	// 部位ごとの決まり。
@@ -14,7 +14,7 @@ namespace{
 	};
 	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。値の理由は SummaryPlan/個別仕様/ZombieDamage_Plan.txt の 3 章。
 	const PartRule kPartRules[] = {
-		{  80.f, 1.5f,  true  }, // Head          一番効くが 1 発では倒れない（2 発で 0）
+		{  80.f, 1.5f,  true  }, // Head          一番効くが 1 発では倒れない（3 発で 0）
 		{ 120.f, 1.0f,  false }, // Torso         基準。全体と同じ値なので、胴だけ撃てば全体と同時に 0
 		{  40.f, 0.5f,  false }, // LeftUpperArm  腕・すねは「外した」に近い扱い
 		{  40.f, 0.5f,  false }, // RightUpperArm

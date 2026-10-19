@@ -13,7 +13,7 @@ namespace{
 	const unsigned kRandomSeed = 5630u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
 	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる（2026-10-17 ユーザー指定）。
-	const int kLifeTicks = 3;
+	const int kLifeTicks = 5;
 
 	// ── 光の芯 ── 見た目を確かめる前の初期値。
 	const float kFlashOffset = 0.02f;   // 銃口の先端から少し前に置く（銃身の先に半分埋まって見えないように）
@@ -21,13 +21,13 @@ namespace{
 	const float kSizeJitter = 0.2f;     // 大きさのばらつき（±割合）
 	// 明るさの倍率。描画先（RGBA16F）に 1 を超える明るさで描いておき、ブルームが入ったときに光としてにじむようにする。
 	// 今は画面に出すときに 1 で切られるので、真ん中は白く飛んで見える。
-	const float kCoreBrightness = 3.f;
+	const float kCoreBrightness = 4.f;
 	const int kCoreQuadNumber = 1;
 
 	// ── にじみの板 ── 見た目を確かめる前の初期値。
 	const float kGlowWidth = 0.8f;      // 幅（m）
 	const float kGlowOpacity = 0.45f;   // 濃さ
-	const float kGlowBrightness = 1.f;  // 明るさの倍率（芯と違い、1 のまま）
+	const float kGlowBrightness = 1.2f;  // 明るさの倍率（芯と違い、1 のまま）
 	const int kGlowQuadNumber = 1;
 
 	// ── 覗いているとき ── 覗き具合 1 での倍率。照準のすぐ先が埋まらないように。にじみの板は大きいので強く絞る。
