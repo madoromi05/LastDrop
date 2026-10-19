@@ -240,6 +240,8 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberment.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimb.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp" />
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp" />
@@ -435,6 +437,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\WallMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\WallPiece.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MoveHeight.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\StaticProp.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h" />
@@ -524,6 +527,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDismemberment.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimb.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h" />

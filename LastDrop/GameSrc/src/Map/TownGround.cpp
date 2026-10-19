@@ -2,6 +2,7 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshMerger.h"
+#include "GameSrc/Collision/MoveHeight.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
@@ -40,10 +41,12 @@ namespace{
 	static_assert( sizeof( kPieceMaterials ) / sizeof( kPieceMaterials[ 0 ] ) == TOWN_PIECE_NUM, "kPieceMaterials must list every TownPiece" );
 
 	// 足元の材質を調べる縦の線分の両端（足元からの高さ、m）。
-	// キャラは高さ 0 のまま動くので、歩道の上では面の方が足元より高い。面を上から探せるよう、足元より上から下ろす。
-	// 下の端は、車道より少し低く敷いてある町の外の土まで届かせる。
+	// キャラの足元は面の高さへ少しずつ近づく（CharacterMover::followGround）ので、段差を上る途中は面の方が足元より高い。
+	// 面を上から探せるよう、足元より上から下ろす。下の端は、車道より少し低く敷いてある町の外の土まで届かせる。
 	const float kProbeTop = 1.f;
 	const float kProbeBottom = -1.f;
+	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ。
+	const float kHeightProbeTop = MoveHeight::kStepOver;
 }
 
 TownGround::TownGround( MeshCache* cache ) {
@@ -97,6 +100,18 @@ bool TownGround::materialBelow( const Vector3& position, GroundMaterial* materia
 		return false;
 	}
 	*material = kPieceMaterials[ tile->piece ];
+	return true;
+}
+
+bool TownGround::heightBelow( const Vector3& position, float* height ) const {
+	Vector3 top( position.x, position.y + kHeightProbeTop, position.z );
+	Vector3 down( 0.f, kProbeBottom - kHeightProbeTop, 0.f );
+	float time;
+	Vector3 normal;
+	if ( !nearestTile( top, down, &time, &normal ) ) {
+		return false;
+	}
+	*height = top.y + down.y * time;
 	return true;
 }
 

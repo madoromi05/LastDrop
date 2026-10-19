@@ -106,6 +106,15 @@ namespace{
 		}
 		return "-";
 	}
+
+	const char* chaseModeName( ZombieChase::Mode mode ) {
+		switch ( mode ) {
+			case ZombieChase::Mode::Idle:   return "Idle";
+			case ZombieChase::Mode::Chase:  return "Chase";
+			case ZombieChase::Mode::Search: return "Search";
+		}
+		return "-";
+	}
 }
 
 void ZombieHealthBars::add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
@@ -152,22 +161,19 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	std::snprintf( text, sizeof( text ), "HP %d/%d", rounded( health.total() ), rounded( health.maxTotal() ) );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
-	// 立っていてよろけていなければ出さない（ふだんの状態なので、出すと画面がうるさい）。
-	bool showState = true;
+	// 立っている間は、追ってくる AI の考え（Idle / Chase / Search）。よろけている間はそちらを出す。
 	Zombie::State state = zombie.state();
 	if ( alive && zombie.isStaggering() ) {
 		std::snprintf( text, sizeof( text ), "Staggered" );
 	} else if ( state == Zombie::State::Alive ) {
-		showState = false;
+		std::snprintf( text, sizeof( text ), "%s", chaseModeName( zombie.chaseMode() ) );
 	} else if ( state == Zombie::State::Downed || state == Zombie::State::Falling ) {
 		std::snprintf( text, sizeof( text ), "%s", stateName( state ) );
 	} else {
 		std::snprintf( text, sizeof( text ), "%s %.1fs", stateName( state ), zombie.secondsUntilGone() );
 	}
-	if ( showState ) {
-		Vector2 below( screen.x, back.bottom() + kTextGap + kLineHeight * kHalf );
-		renderer->addText( text, below, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
-	}
+	Vector2 below( screen.x, back.bottom() + kTextGap + kLineHeight * kHalf );
+	renderer->addText( text, below, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 
 	if ( distance <= kMaxPartDistance ) {
 		addPartLabels( zombie, projectionView, renderer );

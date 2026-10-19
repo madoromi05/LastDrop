@@ -82,6 +82,8 @@ public:
 	typename Container::iterator end(){ return mActors.end(); }
 	typename Container::const_iterator begin() const { return mActors.begin(); }
 	typename Container::const_iterator end() const { return mActors.end(); }
+	// 今いる数（消す印が付いていて、まだ flush していないものも数える）。
+	int size() const { return static_cast< int >( mActors.size() ); }
 
 private:
 	CollisionWorld* mCollisionWorld;

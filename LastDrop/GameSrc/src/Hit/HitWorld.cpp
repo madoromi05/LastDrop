@@ -67,6 +67,18 @@ bool HitWorld::raycast( const Vector3& origin, const Vector3& delta, const IHitt
 	return found;
 }
 
+bool HitWorld::isBlocked( const Vector3& origin, const Vector3& delta ) const {
+	// どれか1つに当たれば足りるので、一番手前を探さずに見つけた所で止める。
+	for ( const IRayBlocker* blocker : mBlockers ) {
+		float time;
+		Vector3 normal;
+		if ( blocker->raycast( origin, delta, &time, &normal ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
 const std::vector< const IHittable* >& HitWorld::targets() const {
 	return mTargets;
 }

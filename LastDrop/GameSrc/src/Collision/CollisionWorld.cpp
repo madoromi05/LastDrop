@@ -1,5 +1,6 @@
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Collision/ICollisionBody.h"
+#include "GameSrc/Collision/IGroundHeight.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -53,6 +54,10 @@ namespace{
 	}
 }
 
+CollisionWorld::CollisionWorld() :
+	mGround( nullptr ) {
+}
+
 void CollisionWorld::addBox( const BoxCollider& box ) {
 	mBoxes.push_back( box );
 }
@@ -68,6 +73,17 @@ void CollisionWorld::addBody( const ICollisionBody* body ) {
 
 void CollisionWorld::removeBody( const ICollisionBody* body ) {
 	mBodies.erase( std::remove( mBodies.begin(), mBodies.end(), body ), mBodies.end() );
+}
+
+void CollisionWorld::setGround( const IGroundHeight* ground ) {
+	mGround = ground;
+}
+
+bool CollisionWorld::groundHeight( const Vector3& position, float* height ) const {
+	if ( !mGround ) {
+		return false;
+	}
+	return mGround->heightBelow( position, height );
 }
 
 bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, const ICollisionBody* ignore, SweepHit* hit ) const {

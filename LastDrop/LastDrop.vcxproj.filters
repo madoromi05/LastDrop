@@ -599,6 +599,12 @@
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp">
       <Filter>GameSrc\Math</Filter>
     </ClCompile>
@@ -1027,6 +1033,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MoveHeight.h">
       <Filter>GameSrc\Collision</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h">
+      <Filter>GameSrc\Collision</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\StaticProp.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
@@ -1289,6 +1298,15 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h">

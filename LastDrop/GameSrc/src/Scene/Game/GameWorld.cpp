@@ -3,6 +3,7 @@
 #include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Hit/DamageInfo.h"
+#include "GameSrc/Zombie/ChaseTarget.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -25,11 +26,15 @@ namespace{
 	const char* kZombieFile = "Resource/character.txt";
 	const char* kZombieAnimation = "walk";
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
+	// 同時に居られるゾンビの数（死体も数える）。これより多くは出さない（追ってくる AI と見通しの線・描画が体の数だけ重くなる）。
+	const int kMaxZombies = 30;
 	// 倒れるときのアニメ（tools/configs/zombie.json の extra_animations）。体ごとにどれかをランダムで選ぶ（倒れ方が揃わないように）。
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
 	// 撃たれてよろけるときのアニメ（同じく extra_animations）。
 	const char* kZombieStaggerAnimation = "gethit";
+	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
+	const char* kZombieIdleAnimation = "idle1";
 	// 血しぶきの量と大きさの倍率。頭は多く大きく飛ばす（当たった手応えを一番強くする部位）。
 	const float kBodyBloodScale = 1.f;
 	const float kHeadBloodScale = 1.5f;
@@ -64,6 +69,7 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mZombies( &mCollisionWorld, &mHitWorld ),
+	mZombieNumber( 0 ),
 	mPickups( &mCollisionWorld, &mHitWorld ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
 	// 読み込みを頼むだけ（非同期）。構築が終わったら place で並べる。
@@ -89,35 +95,26 @@ void GameWorld::place() {
 		mPlayer->addTo( &mCollisionWorld, &mHitWorld );
 	}
 	if ( mZombieData->isReady() ) {
-		mZombieModel = std::make_unique< ZombieModel >( mZombieData );
-		// 置く（移動・命中の両方の当たり判定への登録は ActorList が行う）。アニメの名前が nullptr の所は、そのアニメを使わない。
-		auto addZombie = [ this ]( const TownPlacement& p, const Zombie::Animations& animations ) {
-			mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), toPosition( p ), p.yawDegree, animations ) );
-		};
+		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation );
 		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
-		Random random = Random::create( static_cast< int >( Framework::instance().time() ) );
-		int zombieIndex = 0;
+		mZombieRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
 		for ( const TownPlacement& p : mMap.walkingZombies() ) {
-			Zombie::Animations animations;
-			animations.move = kZombieAnimation;
-			animations.moveStartTime = kAnimationStartStep * zombieIndex;
-			animations.death = kZombieDeathAnimations[ random.getInt( kZombieDeathAnimationNumber ) ];
-			animations.stagger = kZombieStaggerAnimation;
-			addZombie( p, animations );
-			++zombieIndex;
+			spawnZombie( toPosition( p ), p.yawDegree );
 		}
 		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
-		// アニメを付けない（T ポーズ）。倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
+		// アニメを付けない（T ポーズ）。追ってこず、倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
 		// 止まった的なので、部位ごとの体力の減り方・のけぞりの向きを確かめやすい。
 		Zombie::Animations tPose;
 		tPose.move = nullptr;
 		tPose.moveStartTime = 0.f;
+		tPose.idle = nullptr;
 		tPose.death = nullptr;
 		tPose.stagger = nullptr;
-		addZombie( mMap.tPoseZombie(), tPose );
+		addZombie( toPosition( mMap.tPoseZombie() ), mMap.tPoseZombie().yawDegree, tPose );
 	}
 	mGround.place( mMap );
 	mHitWorld.addBlocker( &mGround ); // 地面も弾・視線を止める（地面全体で1つの物）
+	mCollisionWorld.setGround( &mGround ); // キャラは地面の高さに乗る（歩道の段差）
 	placeBuildings( mBuildingData, mMap.buildings() );
 	placeBuildings( mPerimeterBuildingData, mMap.perimeterBuildings() );
 	// 弾を止める物として登録する。mBuildings を並べ終えてから行う（push_back の途中で登録すると、
@@ -126,6 +123,26 @@ void GameWorld::place() {
 		mHitWorld.addBlocker( &building );
 	}
 	placeMissionObjects();
+}
+
+bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
+	if ( !mZombieModel || mZombies.size() >= kMaxZombies ) {
+		return false;
+	}
+	Zombie::Animations animations;
+	animations.move = kZombieAnimation;
+	animations.moveStartTime = kAnimationStartStep * mZombieNumber;
+	animations.idle = kZombieIdleAnimation;
+	animations.death = kZombieDeathAnimations[ mZombieRandom.getInt( kZombieDeathAnimationNumber ) ];
+	animations.stagger = kZombieStaggerAnimation;
+	addZombie( position, yawDegree, animations );
+	return true;
+}
+
+void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombie::Animations& animations ) {
+	// 移動・命中の両方の当たり判定への登録は ActorList が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
+	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, position, yawDegree, animations, mZombieNumber ) );
+	++mZombieNumber;
 }
 
 void GameWorld::placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements ) {
@@ -190,8 +207,16 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	mImpactDust.update();
 	mBloodSpray.update();
 	mSeveredLimbs.update( &mGround ); // 落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
+	// ゾンビが追う先は自キャラ（このティックに動いた後の位置）。自キャラが居なければ追わない。
+	ChaseTarget target;
+	const ChaseTarget* chaseTarget = nullptr;
+	if ( mPlayer ) {
+		target.position = mPlayer->position();
+		target.eyePosition = mPlayer->eyePosition();
+		chaseTarget = &target;
+	}
 	for ( auto& zombie : mZombies ) {
-		zombie->update();
+		zombie->update( chaseTarget, mHitWorld );
 		// 沈み終わった死体は、全員の更新が済んでから消す（下の flush）。
 		if ( zombie->isGone() ) {
 			mZombies.destroyLater( zombie.get() );

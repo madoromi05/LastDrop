@@ -6,6 +6,7 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Audio/IGroundSurface.h"
+#include "GameSrc/Collision/IGroundHeight.h"
 #include <memory>
 #include <vector>
 
@@ -16,12 +17,13 @@ class ViewFrustum;
 // 部品は小さい板が何百枚もあるので、描くときは部品の種類ごとに1つのメッシュへまとめた物（StaticMeshMerger）を使う
 // （1枚ずつ描くと、頂点は少ないのに描画の回数だけが部品の数になる）。置いた後は変えられない。
 // 1枚ずつの置き場所（mTiles）は、当たり判定と足元の材質のために残してある。
-// 移動の当たり判定は持たない（どれも歩いて越えられる高さなので移動を止めない）。
+// 移動を横から止める当たり判定は持たない（どれも歩いて越えられる高さなので移動を止めない）。
+// 代わりに、キャラが乗る面の高さを答える（IGroundHeight）。歩道の段差に乗るのに使う。
 // 弾・視線は、部品の見た目の三角形で止める（IRayBlocker）。部品ごとではなく、地面全体で1つの物として答える
 // （どの部品に当たったかを使う処理が無いので、名簿を部品の数だけ増やさない）。
 // 足元の材質も答える（IGroundSurface）。足元にある部品の種類で決まる。
 // 部品の種類ごとの決めごと（ファイル・材質）はここだけが知っている（TownMap は「どの種類をどこに」だけを決める）。
-class TownGround : public IRayBlocker, public IGroundSurface{
+class TownGround : public IRayBlocker, public IGroundSurface, public IGroundHeight{
 public:
 	// 部品の読み込みを頼むだけ（非同期）。cache->update() が true を返してから place を呼ぶ。
 	// cache: 部品の設計図を借りる倉庫。所有権は受け取らない。nullptr 不可。この地面より長く生きていること。
@@ -36,6 +38,8 @@ public:
 		float* time, GameLib::Math::Vector3* normal ) const;
 	// 足元の材質。position を通る縦の線分で、一番上にある部品を探し、その種類から決める。重さは raycast と同じ。
 	virtual bool materialBelow( const GameLib::Math::Vector3& position, GroundMaterial* material ) const;
+	// 足元の面の高さ。position を通る縦の線分（足元の MoveHeight::kStepOver 上から下）で、一番上の面を探す。重さは raycast と同じ。
+	virtual bool heightBelow( const GameLib::Math::Vector3& position, float* height ) const;
 
 private:
 	// 置いた部品1枚（当たり判定・足元の材質用。描くのには使わない）。

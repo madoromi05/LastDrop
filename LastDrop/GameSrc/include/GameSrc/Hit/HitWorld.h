@@ -38,6 +38,9 @@ public:
 	// hit: 出力先。nullptr 不可。
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* ignore,
 		Hit* hit ) const;
+	// origin から delta だけ進む線分が、弾を止める物（建物・車・地面など）のどれかに当たるか。キャラは数えない。
+	// 見通しを聞くのに使う（ゾンビが自キャラを見えているか。間に他のゾンビが居ても見える扱い）。
+	bool isBlocked( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta ) const;
 
 	// 登録されたものを読む（当たり判定の表示のため）。
 	const std::vector< const IHittable* >& targets() const;

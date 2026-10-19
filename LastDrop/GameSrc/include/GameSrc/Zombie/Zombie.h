@@ -12,13 +12,20 @@
 #include "GameSrc/Zombie/ZombieFlinch.h"
 #include "GameSrc/Zombie/ZombieDismemberment.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
+#include "GameSrc/Zombie/ZombieChase.h"
+#include "GameSrc/Collision/CharacterMover.h"
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Scene/Animation.h"
 #include <vector>
 
 class ZombieModel;
+class CollisionWorld;
+class HitWorld;
+struct ChaseTarget;
 
-// ゾンビ1体。今は AI が無いので、置いた場所でアニメを再生するだけ。
+// ゾンビ1体。立っている間は自キャラに気付くと歩いて追ってくる（どこへ行くかは ZombieChase が決め、
+// ここが向きを変えて歩き、壁・他のキャラに沿って滑る移動を CharacterMover に任せる。SummaryPlan/個別仕様/ZombieChase_Plan.txt）。
+// 気付いていない・追いついた・見失って探し終えたときは、立つアニメで立ち止まる。
 // 形と、当たり判定の大きさ・部位の箱の設計図は ZombieModel を借りる（同じ種類の全員で共有。1体ごとには求めない）。
 // 見た目は SkinnedMeshInstance に任せ、体を真上から囲む長方形（BodyFootprint）を差し出して、他のキャラの移動を止める（ICollisionBody）。
 // 部位ごとの当たり判定（命中判定用）も持ち、弾がどの部位に当たったかを答えられる（IHittable）。
@@ -30,7 +37,6 @@ class ZombieModel;
 // 千切れた部位を飛ばすのは持ち主（severedByLastDamage と shownWorldPose を読んで作る）。
 // 脚を失うと死亡アニメで倒れ、倒れたまま生きている（Downed。這うアニメが来るまでの代わり。SummaryPlan/個別仕様/ZombieDismember_Plan.txt）。
 // 名簿から外す・消すのは持ち主（GameWorld）。ここは「もう移動を止めないか（blocksMovement）」「もう消えてよいか（isGone）」を答えるだけ。
-// 歩かせるとき（AI を足すとき）は、PlayerCharacter と同じく CharacterMover を持たせて移動を任せる。
 class Zombie : public ICollisionBody, public IHittable, public IDamageable, public IWorldMember{
 public:
 	// 生きているか・倒れているか。並びは時間の順。
@@ -44,10 +50,11 @@ public:
 
 	// 使うアニメの名前（文字列は持ち主の定数。コンストラクタの中で引くだけで、覚えない）。
 	struct Animations{
-		// 立っている間のアニメ（歩き）と開始時刻（フレーム。体ごとにずらして動きを揃えない）。
-		// nullptr ならアニメを付けず、レスト姿勢（T ポーズ）のまま立たせる（当たり判定の確認用）。
+		// 歩くアニメと開始時刻（フレーム。体ごとにずらして動きを揃えない）。
+		// nullptr ならアニメを付けず、レスト姿勢（T ポーズ）のまま立たせ、追ってもこない（当たり判定の確認用）。
 		const char* move;
 		float moveStartTime;
+		const char* idle;    // 立ち止まっているときのアニメ。nullptr なら立ち止まっている間も歩くアニメのまま
 		// 倒れるときのアニメ（脚を失って倒れるときにも使う）。nullptr なら体力が 0 になっても・脚を失っても倒れない
 		// （確認用。体力は減って 0 で止まる）
 		const char* death;
@@ -56,13 +63,18 @@ public:
 
 	// model: 形・見た目・アニメと、当たり判定の設計図。所有権は受け取らない。nullptr 不可。
 	//        このゾンビより長く生きていること（持ち主の GameWorld が、ゾンビより後に破棄する）。
+	// collisionWorld: 歩くときに壁・他のキャラを聞く名簿。所有権は受け取らない。nullptr 不可。このゾンビより長く生きていること。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
-	Zombie( const ZombieModel* model, const GameLib::Math::Vector3& position, float angleY, const Animations& animations );
+	// sightPhase: 見通しを調べる時刻をずらす番号（何体目か。ZombieChase）。
+	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const GameLib::Math::Vector3& position, float angleY,
+		const Animations& animations, int sightPhase );
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;
 
-	// アニメを1フレーム（1ティック）進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は draw で行う。
-	void update();
+	// 1フレーム（1ティック）進める。立っていてよろけていなければ、追う先を考えて向きを変え・歩き、
+	// アニメを進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は draw で行う。
+	// target: 追う先。nullptr なら追わない（自キャラが居ない）。hitWorld: 見通しを聞く名簿。
+	void update( const ChaseTarget* target, const HitWorld& hitWorld );
 	void draw() const;
 
 	// 生きている間だけ体力を減らし、のけぞらせ、当たった部位が 0 になったら切り、条件を満たせばよろけさせる。
@@ -78,6 +90,8 @@ public:
 	State state() const;
 	// 生きているか（Alive か Downed）。
 	bool isAlive() const;
+	// 追ってくる AI の今の考え（Idle / Chase / Search）。確認用の表示に使う。
+	ZombieChase::Mode chaseMode() const;
 	// よろけのアニメの最中か（生きている間だけ true になりうる）。AI を作るとき、この間は動かない。
 	bool isStaggering() const;
 	const ZombieHealth& health() const;
@@ -107,11 +121,23 @@ private:
 	// 今当たった part でよろけを始めてよいか（よろけていない・間あけが済んだ、または頭）。
 	bool canStagger( BodyPart part ) const;
 	void startStagger();      // よろけのアニメへ繋ぐ
-	void updateStagger();     // よろけが終わったら歩きへ戻し、間あけを数える
+	void updateStagger();     // よろけが終わったら歩く・立つのアニメへ戻し、間あけを数える
+	// 追う先を考え、向きを変えて歩く（立っていて、よろけていないときだけ）。
+	void chase( const ChaseTarget* target, const HitWorld& hitWorld );
+	// このティックに歩いて進む長さ（m）。歩きアニメの足の動きの表（ZombieModel::stride）から引く。
+	float walkDistanceThisTick() const;
+	// 行き先の方へ1ティックぶん向きを変える。向きの差が大きいうちは false（まだ歩き出さない）。
+	bool turnToward( const GameLib::Math::Vector3& destination );
+	// 歩く・立つのアニメを walking に合わせる（変わったときだけ繋ぐ）。
+	void setWalking( bool walking );
+	// 今の歩く・立つに合ったアニメ（立つアニメが無ければ歩くアニメ）。
+	GameLib::Scene::Animation locomotionAnimation() const;
+	bool canChase() const;    // 追ってくる体か（歩くアニメがある＝T ポーズの確認用ではない）
 
 	const ZombieModel* mModel; // 借りているだけ
 	// 使うアニメ（コンストラクタで名前から引いておく）。空なら、そのアニメは使わない（Animations の nullptr と同じ意味）。
 	GameLib::Scene::Animation mMoveAnimation;
+	GameLib::Scene::Animation mIdleAnimation;
 	GameLib::Scene::Animation mDeathAnimation;
 	GameLib::Scene::Animation mStaggerAnimation;
 	// 描く直前の姿勢の書き換え。のけぞり → 失った部位を潰す、の順に掛ける（のけぞった肩の位置で切り口を作るため）。
@@ -126,6 +152,10 @@ private:
 	int mStaggerCooldownTicks;    // 次のよろけを出せるまでの残り（ティック。0 なら出せる）
 	GameLib::Math::Vector3 mPosition; // 足元の位置（沈んでも変えない。沈む分は見た目の位置だけ下げる）
 	float mAngleY;                    // 向き（度）
+	ZombieChase mChase;               // どこへ行きたいか
+	CharacterMover mMover;            // 壁・他のキャラに沿って滑る移動（自分を当たり判定として読む）
+	bool mWalking;                    // 歩くアニメを再生しているか（false なら立つアニメ）
+	float mMoveStartTime;             // 歩き・立つのアニメを最初に始める時刻（体ごとにずらした値）
 	State mState;
 	int mStateTicks;                  // 今の状態に入ってからのティック数（Corpse・Sinking で使う）
 	std::vector< BodyPart > mSeveredByLastDamage; // 最後の applyDamage で切れた部位

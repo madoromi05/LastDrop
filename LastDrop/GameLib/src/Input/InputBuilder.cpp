@@ -51,6 +51,7 @@ namespace
         case WorkId::UiDecide: return "UiDecide";
         case WorkId::Interact: return "Interact";
         case WorkId::DebugZombieHealth: return "DebugZombieHealth";
+        case WorkId::DebugSpawnZombie: return "DebugSpawnZombie";
         default:            return "";
         }
     }
@@ -177,6 +178,7 @@ namespace
         { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
         { CollectorId::InGame, WorkId::DebugPickupCollision, DeviceKind::Keyboard, Keyboard::KEY_F2 },
         { CollectorId::InGame, WorkId::DebugZombieHealth, DeviceKind::Keyboard, Keyboard::KEY_F3 },
+        { CollectorId::InGame, WorkId::DebugSpawnZombie, DeviceKind::Keyboard, Keyboard::KEY_F9 },
         // 画面の部品（タイトル・クリア画面のボタン）の操作。矢印キーと WASD の両方で選べるようにする
         // （W/S は移動の Up/Down と共有。ボタンの画面ではキャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, Keyboard::KEY_UP },

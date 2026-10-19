@@ -281,6 +281,7 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 	mMesh->update();
 	// 向き（mAngleY）は上で変えてある。変えた向き・伸びた当たり判定で壁にめり込んだ分も、ここで外へ出す。
 	mPosition += mMover.move( step );
+	mPosition.y = mMover.followGround( mPosition ); // 歩道の段差に乗る
 	mMesh->setPosition( mPosition );
 	mHitboxes.update( *mMesh );
 }

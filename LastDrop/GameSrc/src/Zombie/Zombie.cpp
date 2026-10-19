@@ -9,6 +9,7 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
 #include "GameLib/Math/Matrix34.h"
+#include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -36,6 +37,34 @@ namespace{
 	// よろけが終わってから、次のよろけを出さない時間（秒）。頭に当たったときは待たない。
 	const float kStaggerCooldownSeconds = 1.f;
 
+	// ── 追ってくるときの歩き方（SummaryPlan/個別仕様/ZombieChase_Plan.txt の 3 章）──
+	// 歩く速さ（m/ティック）。ふだんは歩きアニメの足の動きから求めた表（ZombieStride）で進み、これは表が作れなかったときだけ使う。
+	// 接地している足先が 1 周で左 0.45m・右 0.57m 後ろへ動くのを Blender で測った平均（1 周 1 秒で約 1.0m）。
+	const float kFallbackWalkSpeed = 1.0f / GameTime::kTicksPerSecond;
+	// 向きを変える速さ（度/ティック）。1 秒に 180°（急に振り向かない）。
+	const float kTurnPerTick = 180.f / GameTime::kTicksPerSecond;
+	// 行き先との向きの差がこれより大きい間は、その場で向きを変えるだけで進まない（横歩き・後ろ歩きに見えないように）。
+	const float kTurnInPlaceDegree = 60.f;
+	// 行き先がこれより近ければ、向きを決めない（真上に居るときに向きが定まらず回り続けないように。m）。
+	const float kMinTurnDistance = 0.05f;
+	// 目の高さ（m。足元から）。ここから自キャラの目が見えているかを調べる。身長 1.82m の目の辺り。
+	const float kEyeHeight = 1.6f;
+	// 歩く ⇔ 立つ のアニメを繋ぐ長さ（ティック）。
+	const float kLocomotionFadeTicks = 10.f;
+	const float kHalfTurn = 180.f;
+	const float kFullTurn = 360.f;
+
+	// degree を -180〜180 へ。
+	float wrapSignedAngle( float degree ) {
+		while ( degree > kHalfTurn ) {
+			degree -= kFullTurn;
+		}
+		while ( degree < -kHalfTurn ) {
+			degree += kFullTurn;
+		}
+		return degree;
+	}
+
 	int secondsToTicks( float seconds ) {
 		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
 	}
@@ -60,9 +89,11 @@ namespace{
 	}
 }
 
-Zombie::Zombie( const ZombieModel* model, const Vector3& position, float angleY, const Animations& animations ) :
+Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const Vector3& position, float angleY,
+const Animations& animations, int sightPhase ) :
 	mModel( model ),
 	mMoveAnimation( findAnimation( model->data(), animations.move ) ),
+	mIdleAnimation( findAnimation( model->data(), animations.idle ) ),
 	mDeathAnimation( findAnimation( model->data(), animations.death ) ),
 	mStaggerAnimation( findAnimation( model->data(), animations.stagger ) ),
 	mFlinch( &model->flinchLayout() ),
@@ -72,7 +103,11 @@ Zombie::Zombie( const ZombieModel* model, const Vector3& position, float angleY,
 	mStaggering( false ),
 	mStaggerCooldownTicks( 0 ),
 	mPosition( position ),
-	mAngleY( angleY ),
+	mAngleY( wrapSignedAngle( angleY ) ),
+	mChase( sightPhase ),
+	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
+	mWalking( false ),
+	mMoveStartTime( animations.moveStartTime ),
 	mState( State::Alive ),
 	mStateTicks( 0 ) {
 	mMesh.setPosition( mPosition );
@@ -80,11 +115,21 @@ Zombie::Zombie( const ZombieModel* model, const Vector3& position, float angleY,
 	mPoseModifiers.add( &mFlinch );
 	mPoseModifiers.add( &mDismemberment );
 	mMesh.setPoseModifier( &mPoseModifiers );
-	// 空のアニメならレスト姿勢（T ポーズ）。
-	mMesh.setAnimation( mMoveAnimation, animations.moveStartTime );
+	// 気付く前は立っている（立つアニメが無ければ歩くアニメ。どちらも空ならレスト姿勢＝T ポーズ）。
+	mMesh.setAnimation( locomotionAnimation(), mMoveStartTime );
 }
 
-void Zombie::update() {
+void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
+	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。
+	if ( mState == State::Alive && !mStaggering && canChase() ) {
+		chase( target, hitWorld );
+	}
+	// 足元を地面（歩道の段差）の高さへ合わせる。歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
+	// 倒れた後は動かないので、倒れた場所の高さのまま（沈む演出は見た目の位置だけを下げる）。
+	if ( mState == State::Alive ) {
+		mPosition.y = mMover.followGround( mPosition );
+		mMesh.setPosition( mPosition );
+	}
 	mMesh.update();
 	if ( mState == State::Alive ) {
 		updateStagger();
@@ -93,6 +138,66 @@ void Zombie::update() {
 	}
 	mFlinch.update();
 	mHitboxes.update( mMesh );
+}
+
+void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
+	Vector3 eye = mPosition;
+	eye.y += kEyeHeight;
+	mChase.update( mPosition, eye, target, hitWorld );
+	bool facing = mChase.hasDestination() ? turnToward( mChase.destination() ) : false;
+	// 向きを変えている最中も、歩きたいなら歩くアニメにする（その場で向きを変える動きに見せる）。
+	setWalking( mChase.wantsToWalk() );
+	if ( mChase.wantsToWalk() && facing ) {
+		float distance = walkDistanceThisTick();
+		Vector3 step( Math::sin( mAngleY ) * distance, 0.f, Math::cos( mAngleY ) * distance );
+		// 壁・車・他のキャラに当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）。
+		mPosition += mMover.move( step );
+	}
+	mMesh.setPosition( mPosition );
+	mMesh.setAngleY( mAngleY );
+}
+
+float Zombie::walkDistanceThisTick() const {
+	const ZombieStride& stride = mModel->stride();
+	if ( !stride.isValid() ) {
+		return kFallbackWalkSpeed;
+	}
+	// 今見えている歩きのフレームから、次の update で見せるフレームまでに、地面についた足が後ろへ動く長さだけ進む
+	// （足が地面を滑らない。歩き方がびっこを引いているので、速さは1歩ごとに波打つ）。
+	return stride.distanceAt( mMesh.animationPhase() * mMoveAnimation.period() );
+}
+
+bool Zombie::turnToward( const Vector3& destination ) {
+	Vector3 toDestination;
+	toDestination.setSub( destination, mPosition );
+	toDestination.y = 0.f;
+	if ( toDestination.length() < kMinTurnDistance ) {
+		return true;
+	}
+	// 向き 0 が +Z、90 が +X（PlayerCharacter と同じ）。
+	float difference = wrapSignedAngle( Math::atan2( toDestination.x, toDestination.z ) - mAngleY );
+	float turn = Math::max( -kTurnPerTick, Math::min( kTurnPerTick, difference ) );
+	mAngleY = wrapSignedAngle( mAngleY + turn );
+	return Math::abs( difference - turn ) <= kTurnInPlaceDegree;
+}
+
+void Zombie::setWalking( bool walking ) {
+	if ( walking == mWalking ) {
+		return;
+	}
+	mWalking = walking;
+	// 立つアニメが無ければ、どちらも歩くアニメなので繋ぎ直さない。
+	if ( mIdleAnimation ) {
+		mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kLocomotionFadeTicks );
+	}
+}
+
+Scene::Animation Zombie::locomotionAnimation() const {
+	return ( mWalking || !mIdleAnimation ) ? mMoveAnimation : mIdleAnimation;
+}
+
+bool Zombie::canChase() const {
+	return static_cast< bool >( mMoveAnimation );
 }
 
 void Zombie::draw() const {
@@ -106,6 +211,7 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 		return;
 	}
 	mHealth.takeDamage( damage.part, damage.baseAmount );
+	mChase.alert(); // 撃たれたら、見えていなくても気付く
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。
 	Matrix34 worldToRoot;
 	worldToRoot.setInverse( mMesh.rootMatrix() );
@@ -181,7 +287,8 @@ void Zombie::startStagger() {
 void Zombie::updateStagger() {
 	if ( mStaggering ) {
 		if ( mMesh.isAnimationFinished() ) {
-			mMesh.crossFadeTo( mMoveAnimation, kMoveRestartTime, kRecoverFadeTicks );
+			// よろける前に歩いていたか立っていたかに戻す（次の update で追う先を考え直し、要れば切り替える）。
+			mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
 			mStaggering = false;
 			mStaggerCooldownTicks = kStaggerCooldownTicks;
 		}
@@ -228,6 +335,10 @@ Zombie::State Zombie::state() const {
 
 bool Zombie::isAlive() const {
 	return mState == State::Alive || mState == State::Downed;
+}
+
+ZombieChase::Mode Zombie::chaseMode() const {
+	return mChase.mode();
 }
 
 bool Zombie::isStaggering() const {

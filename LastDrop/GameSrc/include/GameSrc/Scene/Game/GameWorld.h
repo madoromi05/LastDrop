@@ -21,6 +21,7 @@
 #include "GameSrc/Effect/MuzzleFlash.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
+#include "GameLib/Math/Random.h"
 #include <memory>
 #include <vector>
 
@@ -59,7 +60,7 @@ public:
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
 	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
-	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビのアニメを進め、
+	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビに自キャラを追わせてアニメを進め、
 	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消す。
 	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
@@ -81,6 +82,12 @@ public:
 	// 撃った瞬間に銃口の前に灯す点光源。光っていない・自キャラが銃を構えていなければ false（out は変えない）。
 	// シーンがライトを設定するときに読む。out: nullptr 不可。
 	bool muzzleLight( MuzzleFlash::Light* out ) const;
+
+	// 歩いて追ってくるゾンビを1体出す（place で町に置くのと同じ決まり。倒れ方は体ごとにランダム）。
+	// update の外（ティックの間）で呼ぶ（ゾンビの名簿をたどっている最中に増やさない）。
+	// まだ place していない・ゾンビの形の構築に失敗した・数が上限に達しているなら出さずに false。
+	// position / yawDegree: 足元の位置と向き（度。0 は +Z）。
+	bool spawnZombie( const GameLib::Math::Vector3& position, float yawDegree );
 
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
@@ -113,6 +120,9 @@ private:
 	// zombie の part が今切れたので、切り口に血しぶきを出し、千切れた部位を飛ばす（hitZombie から）。
 	// direction: 弾の進む向き（長さ1）。
 	void severLimb( const Zombie& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
+
+	// ゾンビを作って名簿へ載せる（spawnZombie と、place の確認用の T ポーズの1体から）。mZombieModel があること。
+	void addZombie( const GameLib::Math::Vector3& position, float yawDegree, const Zombie::Animations& animations );
 
 	// data の建物を placements の場所へ建てる（place から。名簿へ載せるのは、全部建て終えた後）。data: nullptr 不可。
 	void placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements );
@@ -152,6 +162,8 @@ private:
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。
 	ActorList< Zombie > mZombies;
+	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）を選ぶ（place で種を決める）
+	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
 	// ゾンビから千切れた部位（どの名簿にも載らない）。ゾンビと同じ形を借りるので、mZombieData が生きている間だけ使う。
 	SeveredLimbList mSeveredLimbs;
 	// 切れた瞬間の骨の姿勢（severLimb の作業領域。毎回確保し直さないために持つ）。

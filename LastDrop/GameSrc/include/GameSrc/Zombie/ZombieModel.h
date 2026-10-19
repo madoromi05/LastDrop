@@ -5,12 +5,13 @@
 #include "GameSrc/Collision/BodyFootprint.h"
 #include "GameSrc/Zombie/ZombieFlinchLayout.h"
 #include "GameSrc/Zombie/ZombieSeverLayout.h"
+#include "GameSrc/Zombie/ZombieStride.h"
 
 class SkinnedMeshData;
 
 // ゾンビ1種類ぶんの、全員で共有する決まりごと。形（SkinnedMeshData）と、そこから求めた
 // 部位の箱の設計図（HitboxLayout）・移動の当たり判定の大きさ（BodyFootprint）・のけぞりで曲げる骨（ZombieFlinchLayout）・
-// 部位欠損で切る関節と骨（ZombieSeverLayout）。
+// 部位欠損で切る関節と骨（ZombieSeverLayout）・歩きアニメで体を進める長さの表（ZombieStride）。
 // どれもメッシュが同じなら結果も同じ（前の2つは全頂点を調べて求める）なので、種類ごとに1回だけ求めてここに置く。
 // ゾンビ（Zombie）はこれを借りるだけなので、何体出しても、途中で湧かせても、求め直しにならない。
 // 骨の名前の決まり・当たり判定の余白といったゾンビ固有の値は、この .cpp だけが知っている。
@@ -18,7 +19,8 @@ class ZombieModel{
 public:
 	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       この ZombieModel より長く生きていること（MeshCache が持つ）。
-	explicit ZombieModel( const SkinnedMeshData* data );
+	// walkAnimation: その場で歩くアニメの名前（体を進める長さの表を作る）。nullptr 不可。名前は構築中だけ使う（覚えない）。
+	ZombieModel( const SkinnedMeshData* data, const char* walkAnimation );
 	ZombieModel( const ZombieModel& ) = delete;
 	ZombieModel& operator=( const ZombieModel& ) = delete;
 
@@ -27,6 +29,7 @@ public:
 	const BodyFootprint& footprint() const;		// 移動の当たり判定の大きさ（体を真上から囲む長方形）
 	const ZombieFlinchLayout& flinchLayout() const; // のけぞりで曲げる関節と骨
 	const ZombieSeverLayout& severLayout() const;   // 部位欠損で切る関節と、無くなる骨・部位
+	const ZombieStride& stride() const;             // 歩きアニメの1フレームごとに体を進める長さ
 
 private:
 	const SkinnedMeshData* mData; // 借りているだけ
@@ -34,6 +37,7 @@ private:
 	BodyFootprint mFootprint;
 	ZombieFlinchLayout mFlinchLayout;
 	ZombieSeverLayout mSeverLayout;
+	ZombieStride mStride;
 };
 
 #endif

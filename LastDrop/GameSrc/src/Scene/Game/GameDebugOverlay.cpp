@@ -135,7 +135,8 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
 	char text[ kDebugTextSize ];
-	std::snprintf( text, sizeof( text ), "Collision: %s (F1)  Fuel boxes: %s (F2)  Zombie HP: %s (F3)",
+	// F9（ゾンビを出す）は切り替えではないので、キーだけ書く（出すのは GameScene）。
+	std::snprintf( text, sizeof( text ), "Collision: %s (F1)  Fuel boxes: %s (F2)  Zombie HP: %s (F3)  Spawn: F9",
 		mShowCollision ? "ON " : "OFF", mShowPickups ? "ON " : "OFF", mShowZombieHealth ? "ON " : "OFF" );
 	DebugScreen::instance().draw( kHelpColumn, kCollisionRow, text );
 }

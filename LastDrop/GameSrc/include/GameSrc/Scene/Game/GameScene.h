@@ -40,6 +40,11 @@ private:
 	void setupLights() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
+#ifdef _DEBUG
+	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
+	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
+	void spawnDebugZombies();
+#endif
 	float aimWeight() const;     // 自キャラの覗き具合（0〜1。自キャラがいなければ 0）
 
 	GameResources* mResources;   // 借りているだけ

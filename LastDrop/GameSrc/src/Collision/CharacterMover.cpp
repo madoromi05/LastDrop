@@ -1,6 +1,7 @@
 #include "GameSrc/Collision/CharacterMover.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Collision/ICollisionBody.h"
+#include "GameSrc/Core/GameTime.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -19,6 +20,9 @@ namespace{
 	const int kMaxDepenetrationIterations = 3;
 	// これより短い移動は進まない（m）。滑らせた残りが誤差だけになったら打ち切る。
 	const float kMinMoveDistance = 0.0001f;
+	// 足元を地面の高さへ近づける速さ（m/ティック。秒あたりで決めて直す）。
+	// 縁石（15cm）を約 0.1 秒で上り下りする。速すぎると視点が跳ね、遅すぎると歩道の上でしばらく足が沈んで見える。
+	const float kGroundFollowSpeed = 1.5f / GameTime::kTicksPerSecond;
 }
 
 CharacterMover::CharacterMover( const CollisionWorld* world, const ICollisionBody* self ) :
@@ -65,6 +69,15 @@ Vector3 CharacterMover::move( const Vector3& delta ) const {
 	Vector3 moved;
 	moved.setSub( box.center, start );
 	return moved;
+}
+
+float CharacterMover::followGround( const Vector3& position ) const {
+	float ground;
+	if ( !mWorld->groundHeight( position, &ground ) ) {
+		return position.y;
+	}
+	float step = Math::max( -kGroundFollowSpeed, Math::min( ground - position.y, kGroundFollowSpeed ) );
+	return position.y + step;
 }
 
 void CharacterMover::depenetrate( BoxCollider* box ) const {

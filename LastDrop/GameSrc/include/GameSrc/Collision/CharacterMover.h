@@ -24,6 +24,10 @@ public:
 	// 本人の位置は書き換えない（返した量を持ち主が自分の位置へ足す）。delta の y は無視する（地面を歩く）。
 	// 向きを変えるときは、向きを変えてから呼ぶ（変えた向きでめり込んだ分も、ここで外へ出す）。
 	GameLib::Math::Vector3 move( const GameLib::Math::Vector3& delta ) const;
+	// position（本人の足元）の高さを、真下の地面（歩道の段差など）の高さへ1ティック分だけ近づけた値を返す。
+	// 一気に合わせると、段差を越えた瞬間に視点が跳ねるので、決まった速さで上り下りする。地面が無ければ position.y のまま。
+	// 1ティックに1回、move の後の位置で呼ぶ（返した値を持ち主が自分の位置の y に入れる）。
+	float followGround( const GameLib::Math::Vector3& position ) const;
 
 private:
 	// box がめり込んでいれば、外へ出るまで box の位置を動かす。

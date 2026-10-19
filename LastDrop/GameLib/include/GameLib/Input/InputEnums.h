@@ -45,6 +45,7 @@ enum class WorkId
     UiDecide, // 選んでいる部品を決定する（押した瞬間）
     Interact, // 見ている物を使う（拾う・給油する。押した瞬間）
     DebugZombieHealth, // ゾンビの体力（全体・部位）を頭の上に表示する切り替え（押した瞬間。Debug ビルドだけで効く）
+    DebugSpawnZombie,  // 自キャラの前にゾンビを出す（押した瞬間。Debug ビルドだけで効く）
 };
 
 // コレクター（シーン別の入力割り当てグループ）種別

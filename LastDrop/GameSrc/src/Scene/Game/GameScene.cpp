@@ -9,6 +9,7 @@
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -28,6 +29,16 @@ namespace{
 	const int kFillLight = 1;
 	const int kMuzzleLight = 2; // 撃った瞬間だけ銃口の前に灯す（MuzzleFlash）。光っていない間は強さ0
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
+
+#ifdef _DEBUG
+	// ── F9 でゾンビを出す（確認用。2026-10-19 ユーザー指定：8m 前に 3 体）──
+	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
+	const int kDebugSpawnNumber = 3;
+	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
+	const float kDebugSpawnSpacing = 1.2f;
+	const float kFaceBackDegree = 180.f; // 自キャラの方を向かせる
+	const float kHalf = 0.5f;
+#endif
 }
 
 GameScene::GameScene( GameResources* resources ) :
@@ -59,8 +70,35 @@ void GameScene::beginFrame() {
 	updateInteraction();
 #ifdef _DEBUG
 	mDebug.handleInput();
+	if ( InputDebugSpawnZombie() ) {
+		spawnDebugZombies();
+	}
 #endif
 }
+
+#ifdef _DEBUG
+void GameScene::spawnDebugZombies() {
+	const PlayerCharacter* player = mWorld.player();
+	if ( !player ) {
+		return;
+	}
+	// 視点の水平の向きの前と右（PlayerCharacter の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）。
+	float yaw = mControl.camera().yaw();
+	Vector3 forward( Math::sin( yaw ), 0.f, Math::cos( yaw ) );
+	Vector3 right( -Math::cos( yaw ), 0.f, Math::sin( yaw ) );
+	Vector3 center;
+	center.setMadd( player->position(), forward, kDebugSpawnDistance );
+	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）。
+	float firstOffset = -kDebugSpawnSpacing * static_cast< float >( kDebugSpawnNumber - 1 ) * kHalf;
+	for ( int i = 0; i < kDebugSpawnNumber; ++i ) {
+		Vector3 position;
+		position.setMadd( center, right, firstOffset + kDebugSpawnSpacing * static_cast< float >( i ) );
+		if ( !mWorld.spawnZombie( position, yaw + kFaceBackDegree ) ) {
+			break; // 上限に達した
+		}
+	}
+}
+#endif
 
 void GameScene::update() {
 	if ( !mReady ) {
