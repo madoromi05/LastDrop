@@ -17,12 +17,23 @@ namespace{
 	const int kBloomSlot = kSceneColorSlot + 1;
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
-	// Present.hlsl の cbuffer PresentConstants と同じ並び（float 4つ＝16バイト）。
+	const int kColorChannels = 3; // 赤・緑・青
+	// Present.hlsl の cbuffer PresentConstants と同じ並び（float 16 個＝64 バイト。16 バイトずつの区切りに合わせる）。
 	struct PresentConstants{
 		float vignetteStrength;
 		float vignetteInner;
 		float vignetteOuter;
 		float bloomIntensity;
+		float damageFlash;
+		float flashInner;
+		float flashOuter;
+		float fade;
+		float flashColor[ kColorChannels ];
+		float padding;
+		float pain;
+		float painBlurLength;
+		float painBlurInner;
+		float painDarken;
 	};
 	// ビネット。角が少し暗くなる程度（確認用なので控えめ。見た目の調整はポストプロセスを作り込むときに行う）。
 	const float kVignetteStrength = 0.35f;
@@ -30,16 +41,27 @@ namespace{
 	const float kVignetteOuter = 1.4f;
 	// ブルームを足す強さ。4 つの段を足した絵なので、1 だと超えた分の約 4 倍の光が足される。画面で見て決める前の初期値。
 	const float kBloomIntensity = 0.5f;
+	// 噛まれた瞬間の赤み。画面の周り（中心からこの距離の間で強まる）を、この色へ寄せる。強さ 1 でも真ん中は赤くしない（狙いを隠さない）。
+	const float kFlashInner = 0.3f;
+	const float kFlashOuter = 1.2f;
+	const float kFlashColor[ kColorChannels ] = { 0.45f, 0.02f, 0.02f }; // 血しぶきと同じ暗い赤に寄せる
+	// 噛まれた瞬間の痛み（CameraShake_Recoil_Plan.txt の 4 章）。画面の中心へ向かう線の上を読んで平均する（放射状のぼかし）。
+	// kPainBlurLength: 痛み 1・画面の端で、中心までの距離の何割の長さを読むか。中心からこの距離（kPainBlurInner）より内はぼかさない。
+	const float kPainBlurLength = 0.12f;
+	const float kPainBlurInner = 0.25f;
+	// 痛み 1 のとき、ビネットの暗さに足す量（角での暗さが 0.35 → 0.85 になる）。
+	const float kPainDarken = 0.5f;
+	const float kNoEffect = 0.f;
 }
 
-PostProcess::PostProcess() {
+PostProcess::PostProcess() :
+	mDamageFlash( kNoEffect ),
+	mPain( kNoEffect ),
+	mFade( kNoEffect ) {
 	mSceneColor = Graphics::RenderTarget::createScreenSized( kSceneScale, Graphics::RENDER_TARGET_RGBA16F );
 	mSceneDepth = Graphics::DepthTarget::createScreenSized( kSceneScale );
 	mPresentShader = Graphics::Shader::create( kPresentShaderFile );
 	mPresentConstants = Graphics::ConstantBuffer::create( sizeof( PresentConstants ) );
-
-	PresentConstants constants = { kVignetteStrength, kVignetteInner, kVignetteOuter, kBloomIntensity };
-	mPresentConstants.set( &constants, sizeof( constants ) );
 }
 
 void PostProcess::beginScene() {
@@ -55,6 +77,7 @@ void PostProcess::endScene() {
 	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );
 	gm.resetRenderTargets();
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // 写すだけ。画面に元からある色とは混ぜない
+	updateConstants();
 	gm.setShader( mPresentShader );
 	gm.setShaderResource( kSceneColorSlot, mSceneColor );
 	gm.setShaderResource( kBloomSlot, bloom );
@@ -73,4 +96,37 @@ const char* PostProcess::errorMessage() const {
 		return message;
 	}
 	return mBloom.errorMessage();
+}
+
+void PostProcess::setDamageFlash( float amount ) {
+	mDamageFlash = amount;
+}
+
+void PostProcess::setPain( float amount ) {
+	mPain = amount;
+}
+
+void PostProcess::setFade( float amount ) {
+	mFade = amount;
+}
+
+void PostProcess::updateConstants() {
+	PresentConstants constants;
+	constants.vignetteStrength = kVignetteStrength;
+	constants.vignetteInner = kVignetteInner;
+	constants.vignetteOuter = kVignetteOuter;
+	constants.bloomIntensity = kBloomIntensity;
+	constants.damageFlash = mDamageFlash;
+	constants.flashInner = kFlashInner;
+	constants.flashOuter = kFlashOuter;
+	constants.fade = mFade;
+	for ( int i = 0; i < kColorChannels; ++i ) {
+		constants.flashColor[ i ] = kFlashColor[ i ];
+	}
+	constants.padding = 0.f;
+	constants.pain = mPain;
+	constants.painBlurLength = kPainBlurLength;
+	constants.painBlurInner = kPainBlurInner;
+	constants.painDarken = kPainDarken;
+	mPresentConstants.set( &constants, sizeof( constants ) );
 }

@@ -112,12 +112,9 @@ namespace{
 	// ── 自キャラとゾンビ。町の中央の北側の通り（東西の道 1 番）の真ん中から、東を向いて始める ──
 	// 脱出用の車と同じ通りから始める（ユーザー指定: 車と始めの位置は近くに）。
 	const StreetSpot kPlayerStart = { 1.5f, 1.f, 0.f, 0.f, 90.f };
-	// 自キャラに気付くと歩いて追ってくるゾンビ。始めの視界の奥（東の交差点の手前）に、こちら向きに置く。
-	const StreetSpot kWalkingZombies[] = {
-		{ 1.5f, 1.f, 11.0f, -1.2f,  -90.f },
-		{ 1.5f, 1.f, 13.5f,  1.3f, -115.f },
-		{ 1.5f, 1.f, 16.0f, -1.7f,  -70.f },
-	};
+	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）。
+	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）。
+	const float kSpawnBetweenJunctions = 0.5f;
 	// T ポーズの1体は、始めの位置から 5m 前・少し右（始めの視界に収まる所）に、こちら向きに置く。
 	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
@@ -307,6 +304,27 @@ namespace{
 	}
 }
 
+namespace{
+	// ゾンビが湧く場所の候補を、交差点と、東西・南北に隣り合う交差点の真ん中に置く（道の本数から作るので、町の形を変えても直さなくてよい）。
+	void addZombieSpawnPoints( std::vector< TownPlacement >* points ) {
+		const float kNoOffset = 0.f;
+		const float kNoYaw = 0.f; // 向きは ZombieSpawner が湧かせるときに決める
+		for ( int row = 0; row < kRowNumber; ++row ) {
+			for ( int column = 0; column < kColumnNumber; ++column ) {
+				float x = static_cast< float >( column );
+				float z = static_cast< float >( row );
+				points->push_back( toPlacement( { x, z, kNoOffset, kNoOffset, kNoYaw } ) );
+				if ( column + 1 < kColumnNumber ) {
+					points->push_back( toPlacement( { x + kSpawnBetweenJunctions, z, kNoOffset, kNoOffset, kNoYaw } ) );
+				}
+				if ( row + 1 < kRowNumber ) {
+					points->push_back( toPlacement( { x, z + kSpawnBetweenJunctions, kNoOffset, kNoOffset, kNoYaw } ) );
+				}
+			}
+		}
+	}
+}
+
 TownMap::TownMap() :
 	mPlayerStart( toPlacement( kPlayerStart ) ),
 	mTPoseZombie( toPlacement( kTPoseZombie ) ),
@@ -319,9 +337,7 @@ TownMap::TownMap() :
 	addPerimeterBuildings( &mPerimeterBuildings );
 	addPerimeterFloor( &mGroundTiles );
 
-	for ( const StreetSpot& spot : kWalkingZombies ) {
-		mWalkingZombies.push_back( toPlacement( spot ) );
-	}
+	addZombieSpawnPoints( &mZombieSpawnPoints );
 	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
 		mFuelSpawnPoints.push_back( toPlacement( spot ) );
 	}
@@ -343,8 +359,8 @@ const TownPlacement& TownMap::playerStart() const {
 	return mPlayerStart;
 }
 
-const std::vector< TownPlacement >& TownMap::walkingZombies() const {
-	return mWalkingZombies;
+const std::vector< TownPlacement >& TownMap::zombieSpawnPoints() const {
+	return mZombieSpawnPoints;
 }
 
 const TownPlacement& TownMap::tPoseZombie() const {

@@ -9,7 +9,8 @@
         { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@death1.fbx", "name": "death1" },
         { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@death2.fbx", "name": "death2" },
         { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@gethit.fbx", "name": "gethit" },
-        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@idle1.fbx", "name": "idle1" }
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@idle1.fbx", "name": "idle1" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/ゾンビ/Zombie+animation/animation fbx/zombie@atack3.fbx", "name": "atack3" }
     ],
     "mesh_texture": "Resource/zombie_albedo.tga",
     "mesh_normalmap": "Resource/zombie_normal.tga",

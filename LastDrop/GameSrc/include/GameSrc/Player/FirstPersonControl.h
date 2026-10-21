@@ -3,7 +3,10 @@
 
 #include "GameSrc/Player/FirstPersonCamera.h"
 #include "GameSrc/Player/PlayerCommand.h"
+#include "GameSrc/Player/AimPunch.h"
+#include "GameSrc/Player/CameraShake.h"
 #include "GameSrc/Weapon/ViewRecoil.h"
+#include "GameSrc/Weapon/AimRecoil.h"
 #include "GameLib/Math/Vector3.h"
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
@@ -14,7 +17,7 @@
 // 解除中は撃たない。ロックし直すためのクリックも、離すまでは撃つ操作にしない。
 //
 // 呼ぶ順（IScene の beginFrame → update → draw に合わせる）:
-//   readInput（1回の描画につき1回）→ command を使ってキャラを動かす → consumePressed・updateRecoil（update のたび）→ placeCamera（描く前）
+//   readInput（1回の描画につき1回）→ command を使ってキャラを動かす → consumePressed・updateViewEffects（update のたび）→ placeCamera（描く前）
 class FirstPersonControl{
 public:
 	// startYaw: 始めに見る水平の向き（度。FirstPersonCamera::yaw と同じ約束）。キャラの向いている方を渡す。
@@ -32,14 +35,31 @@ public:
 	// カーソルロックの切り替え → ロック中ならマウスの移動量で視点を回す → 操作を command へまとめる。
 	// aimWeight: 覗き具合（0〜1。PlayerCharacter::aimWeight）。ズーム中は視野角の比で感度を下げるのに使う。
 	void readInput( float aimWeight );
+	// 自キャラを操作しない間（確認用の FreeCamera を使っている間）に、readInput の代わりに呼ぶ。
+	// カーソルロックの切り替えだけ行い、視点は回さず、command は「何もしない」（その場で立ち止まる・撃たない・覗かない）にする。
+	// 撃つ入力は一度離すまで止める（観察用カメラから戻った瞬間に、押していたクリックで撃ち出さないように）。
+	void readInputIdle();
 	// 自キャラへの操作。押した瞬間の入力（holsterPressed）は、consumePressed で消すまで貯めてある。
 	// 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため。
 	const PlayerCommand& command() const;
 	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ。
 	void consumePressed();
-	// 撃った反動で視点を少し跳ね上げ、時間で戻す。1ティックに1回、キャラを動かした後に呼ぶ。
+	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・噛まれた怯み）と、見える絵の揺れを進めてカメラへ渡す。
+	// 1ティックに1回、キャラを動かした後（flinch・shakeOnGrab の後）に呼ぶ。
 	// fired: このティックに1発撃ったか（PlayerCharacter::firedThisTick）。
-	void updateRecoil( bool fired );
+	void updateViewEffects( bool fired );
+	// 噛まれた瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
+	void flinch();
+	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）。
+	void shakeOnGrab();
+
+	// 視点を target（ワールド座標）の方へ、決まった時間をかけて向け始める（ゾンビにつかまれた瞬間に、その顔を見る）。
+	// 向けている間もマウスで回せる（回した分はそのまま足される）。続けて呼ぶと、その時点の向きから向け直す。
+	void lookToward( const GameLib::Math::Vector3& target );
+	// lookToward の向きへ1ティックぶん回す。1ティックに1回、キャラを動かした後に呼ぶ。
+	void updateLookPull();
+	// 目の位置から下げる長さ（m。0 以上）。死んだ後に膝から崩れて見せるのに使う。placeCamera で渡された目の位置から引く。
+	void setEyeDrop( float meters );
 
 	// 視点を目へ置き、覗き具合に合わせた視野角にして、描画ステートへ反映する。描く前、キャラを動かした後に呼ぶ。
 	// eye: 目の位置（ワールド座標。PlayerCharacter::eyePosition）。nullptr なら前に置いた位置のまま（キャラがいないとき）。
@@ -48,12 +68,23 @@ public:
 	const FirstPersonCamera& camera() const;
 
 private:
+	// Esc でカーソルロックを解除し、解除中のクリックでロックし直す（readInput と readInputIdle で共通）。
+	void updateCursorLock();
+
 	FirstPersonCamera mCamera;
 	PlayerCommand mCommand;
-	ViewRecoil mRecoil; // 撃った反動による視点の跳ね上がり（mCamera のピッチへ足す）
+	ViewRecoil mRecoil;     // 1 発ごとに跳ねて戻る視点の反動（狙いへ足す）
+	AimRecoil mAimRecoil;   // 連射でたまる弾道のずれ（狙いへ足す）
+	AimPunch mAimPunch;     // 噛まれた瞬間の怯み（狙いへ足す）
+	CameraShake mShake;     // 見える絵の揺れ（描く行列だけへ足す）
 	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
 	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
 	bool mFireSuppressed;
+	// lookToward で残っている回す量（度）と、残りのティック数（0 なら向けていない）。
+	float mPullYaw;
+	float mPullPitch;
+	int mPullTicks;
+	float mEyeDrop; // setEyeDrop の値（m）
 };
 
 #endif

@@ -13,6 +13,7 @@
 #include "GameSrc/Zombie/ZombieDismemberment.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
 #include "GameSrc/Zombie/ZombieChase.h"
+#include "GameSrc/Zombie/ZombieAttack.h"
 #include "GameSrc/Collision/CharacterMover.h"
 #include "GameLib/Math/Matrix34.h"
 #include "GameLib/Scene/Animation.h"
@@ -36,6 +37,10 @@ struct ChaseTarget;
 // 頭・腕・脚の体力が 0 になると、その部位を切る（ZombieDismemberment が見た目から消し、ここが部位の箱を外す）。
 // 千切れた部位を飛ばすのは持ち主（severedByLastDamage と shownWorldPose を読んで作る）。
 // 脚を失うと死亡アニメで倒れ、倒れたまま生きている（Downed。這うアニメが来るまでの代わり。SummaryPlan/個別仕様/ZombieDismember_Plan.txt）。
+// 追いついたら、つかんで噛む攻撃をする（段階は ZombieAttack が決め、ここが攻撃のアニメを流し、向きを変え、寄る。
+// SummaryPlan/個別仕様/ZombieAttack_Plan.txt）。相手に何が起きるか（動けない・体力が減る）は知らない。
+// 「つかんでいるか」「このティックに噛んだか」を答えるだけで、相手へ伝えるのは持ち主（GameWorld）。
+// つかんでいる間に決まった量のダメージを受けると離して、よろける。攻撃の途中は、撃たれてもよろけない（のけぞりだけ）。
 // 名簿から外す・消すのは持ち主（GameWorld）。ここは「もう移動を止めないか（blocksMovement）」「もう消えてよいか（isGone）」を答えるだけ。
 class Zombie : public ICollisionBody, public IHittable, public IDamageable, public IWorldMember{
 public:
@@ -59,6 +64,8 @@ public:
 		// （確認用。体力は減って 0 で止まる）
 		const char* death;
 		const char* stagger; // よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
+		// つかんで噛む攻撃のアニメ（atack3）。nullptr なら攻撃しない（追いついても立って待つだけ）
+		const char* attack;
 	};
 
 	// model: 形・見た目・アニメと、当たり判定の設計図。所有権は受け取らない。nullptr 不可。
@@ -66,8 +73,9 @@ public:
 	// collisionWorld: 歩くときに壁・他のキャラを聞く名簿。所有権は受け取らない。nullptr 不可。このゾンビより長く生きていること。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
 	// sightPhase: 見通しを調べる時刻をずらす番号（何体目か。ZombieChase）。
+	// randomSeed: うろつく先・立つ長さを選ぶ乱数の種（体ごとに違う値。ZombieChase）。
 	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const GameLib::Math::Vector3& position, float angleY,
-		const Animations& animations, int sightPhase );
+		const Animations& animations, int sightPhase, int randomSeed );
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;
 
@@ -88,12 +96,22 @@ public:
 	void shownWorldPose( std::vector< GameLib::Math::Matrix34 >* out ) const;
 
 	State state() const;
+	const GameLib::Math::Vector3& position() const; // 足元の位置（ワールド）
 	// 生きているか（Alive か Downed）。
 	bool isAlive() const;
-	// 追ってくる AI の今の考え（Idle / Chase / Search）。確認用の表示に使う。
+	// 追ってくる AI の今の考え（Wander / Chase / Search）。確認用の表示に使う。
 	ZombieChase::Mode chaseMode() const;
 	// よろけのアニメの最中か（生きている間だけ true になりうる）。AI を作るとき、この間は動かない。
 	bool isStaggering() const;
+	// ── 攻撃（ZombieAttack）──
+	ZombieAttack::Phase attackPhase() const; // 今の攻撃の段階。確認用の表示に使う
+	// 相手を取りに行っている・つかんでいる間か。持ち主は、この間ほかのゾンビに攻撃を始めさせない（ChaseTarget::attackTaken）。
+	bool isAttacking() const;
+	bool isHoldingTarget() const; // 相手をつかんでいるか
+	bool grabbedThisTick() const; // 直前の update で相手をつかんだか
+	bool bitThisTick() const;     // 直前の update で相手を噛んだか（ダメージの量は ZombieAttack::biteDamage）
+	// 頭の位置（ワールド。頭の部位の箱の中心）。つかまれた相手が顔を向ける先・噛む音を鳴らす所。頭を失っていれば目の高さ。
+	GameLib::Math::Vector3 headPosition() const;
 	const ZombieHealth& health() const;
 	// 他のキャラの移動を止めるか（立っている間だけ。Downed も止めない＝立ち姿の長方形が倒れた体と合わないため）。
 	// false になったら、持ち主が移動の名簿から外す（死体・倒れたゾンビの上を歩ける）。
@@ -122,8 +140,21 @@ private:
 	bool canStagger( BodyPart part ) const;
 	void startStagger();      // よろけのアニメへ繋ぐ
 	void updateStagger();     // よろけが終わったら歩く・立つのアニメへ戻し、間あけを数える
-	// 追う先を考え、向きを変えて歩く（立っていて、よろけていないときだけ）。
+	// 追う先を考え、向きを変えて歩く（立っていて、よろけていなくて、攻撃していないときだけ）。追いついたら攻撃を始める。
 	void chase( const ChaseTarget* target, const HitWorld& hitWorld );
+	// 追いついた相手へ攻撃を始めてよいか（追っている・近い・前に居る・つかんでよい・ほかのゾンビが攻撃に行っていない）。
+	bool canStartAttack( const ChaseTarget* target ) const;
+	void startAttack();       // 攻撃のアニメへ繋ぐ
+	void shakeOff();          // 振りほどかれた。よろけて手を放す
+	// 攻撃の間、相手の方を向き、手を伸ばしている間は手が届く所まで寄る。
+	void approachDuringAttack( const ChaseTarget* target );
+	// 攻撃の段階を1ティック進め、噛んだら首を突き出し、終わったら立つ・歩くのアニメへ戻す（立っている間は毎ティック）。
+	void updateAttack( const ChaseTarget* target );
+	// 今つかめる所に相手が居るか（つかんでよい・近い・前に居る）。
+	bool isTargetInReach( const ChaseTarget* target ) const;
+	// 足元から target までの水平の距離（m）と、向きの差（度。-180〜180）。
+	float flatDistanceTo( const GameLib::Math::Vector3& target ) const;
+	float headingDifferenceTo( const GameLib::Math::Vector3& target ) const;
 	// このティックに歩いて進む長さ（m）。歩きアニメの足の動きの表（ZombieModel::stride）から引く。
 	float walkDistanceThisTick() const;
 	// 行き先の方へ1ティックぶん向きを変える。向きの差が大きいうちは false（まだ歩き出さない）。
@@ -140,6 +171,7 @@ private:
 	GameLib::Scene::Animation mIdleAnimation;
 	GameLib::Scene::Animation mDeathAnimation;
 	GameLib::Scene::Animation mStaggerAnimation;
+	GameLib::Scene::Animation mAttackAnimation;
 	// 描く直前の姿勢の書き換え。のけぞり → 失った部位を潰す、の順に掛ける（のけぞった肩の位置で切り口を作るため）。
 	// mMesh が借りるので、mMesh より先に宣言する。
 	ZombieFlinch mFlinch;
@@ -153,6 +185,7 @@ private:
 	GameLib::Math::Vector3 mPosition; // 足元の位置（沈んでも変えない。沈む分は見た目の位置だけ下げる）
 	float mAngleY;                    // 向き（度）
 	ZombieChase mChase;               // どこへ行きたいか
+	ZombieAttack mAttack;             // つかんで噛む攻撃の段階
 	CharacterMover mMover;            // 壁・他のキャラに沿って滑る移動（自分を当たり判定として読む）
 	bool mWalking;                    // 歩くアニメを再生しているか（false なら立つアニメ）
 	float mMoveStartTime;             // 歩き・立つのアニメを最初に始める時刻（体ごとにずらした値）

@@ -36,6 +36,8 @@ std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 		return std::make_unique< GameScene >( mResources.get() );
 	case SCENE_CLEAR:
 		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::clear() );
+	case SCENE_GAME_OVER:
+		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::gameOver() );
 	default:
 		ASSERT( false && "SceneManager::createScene : unknown SceneId." );
 		return nullptr;

@@ -43,6 +43,7 @@ UiRenderer::UiRenderer() :
 		mStrings[ i ].setFont( mFonts[ i ] );
 		prepareGlyphs( mFonts[ i ] );
 	}
+	prepareRectState(); // 最初の描画で積む長方形に効かせる
 }
 
 void UiRenderer::addRect( const UiRect& rect, unsigned color ) {
@@ -59,14 +60,18 @@ void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize 
 	mStrings[ size ].add( topLeft, text, color );
 }
 
-void UiRenderer::draw() {
+void UiRenderer::prepareRectState() {
 	mPrimitives.setBlendMode( Graphics::BLEND_LINEAR ); // 半透明の板も描けるように
 	mPrimitives.enableDepthTest( false );               // 3D の上に重ねる
 	mPrimitives.enableDepthWrite( false );
 	mPrimitives.setCullMode( Graphics::CULL_NONE );
+}
+
+void UiRenderer::draw() {
 	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。描き終えたら 3D 用の読み方へ戻す。
 	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
 	mPrimitives.draw();
+	prepareRectState(); // 次の描画で積む長方形に効かせる（理由は prepareRectState の宣言）
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
 		mStrings[ i ].draw();
 	}

@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/Zombie.h"
 #include "GameSrc/Zombie/ZombieModel.h"
+#include "GameSrc/Zombie/ChaseTarget.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
@@ -51,6 +52,27 @@ namespace{
 	const float kEyeHeight = 1.6f;
 	// 歩く ⇔ 立つ のアニメを繋ぐ長さ（ティック）。
 	const float kLocomotionFadeTicks = 10.f;
+	// ── 攻撃（SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）──
+	// 攻撃を始める間合い（m。足元どうし、水平だけ）。追いついて止まる距離（ZombieChase の kStopDistance = 1.2m）より遠くする。
+	// 自キャラの移動の当たり判定は、銃を持っている間は銃の先まで前へ伸びるので、正面から来たゾンビは 1.2m より手前で
+	// 銃の箱にぶつかって止まり、1.2m の内へ入れない（2026-10-21 ユーザー報告「攻撃してこない」）。
+	// 止まった後に歩き出す距離（kResumeDistance = 1.5m）より少し遠くして、ぶつかって止まったゾンビも攻撃を始めるようにする。
+	const float kAttackStartDistance = 1.6f;
+	// 攻撃を始める向きの差（度。左右それぞれ）。相手の方を向き終わってから手を伸ばす。
+	const float kAttackStartHalfAngle = 30.f;
+	// 手を伸ばし切ったときに、つかめる距離（m）と向きの差（度）。伸ばしている間に下がられたら空振りにする。
+	// 距離は始める間合いと同じ（銃の箱にぶつかって寄れなかったときも、手は銃・腕に届いている）。
+	const float kGrabReachDistance = kAttackStartDistance;
+	const float kGrabHalfAngle = 45.f;
+	// 手を伸ばしている間に寄る距離（m）。手は足元から 0.8m 前へ出るので、止まる距離（1.2m）のままだと相手に届かない。
+	const float kGrabCloseDistance = 0.9f;
+	// 寄る速さ（m/ティック）。0.3m を 0.5 秒で（手を伸ばし切る 0.75 秒より前に寄り終える）。
+	const float kReachApproachSpeed = 0.6f / GameTime::kTicksPerSecond;
+	const float kAttackStartTime = 0.f;  // 攻撃のアニメは頭から再生する
+	const float kAttackFadeTicks = 6.f;  // 立つ・歩くから攻撃のアニメへ繋ぐ長さ（ティック）
+	// 噛むときに首・背骨を押す向き（骨格の根の空間で前）と、首を押す回数（のけぞり 1 回 20°なので 2 回で 40°。背骨は 1 回 12°）。
+	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
+	const int kBiteHeadPushes = 2;
 	const float kHalfTurn = 180.f;
 	const float kFullTurn = 360.f;
 
@@ -90,12 +112,13 @@ namespace{
 }
 
 Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const Vector3& position, float angleY,
-const Animations& animations, int sightPhase ) :
+const Animations& animations, int sightPhase, int randomSeed ) :
 	mModel( model ),
 	mMoveAnimation( findAnimation( model->data(), animations.move ) ),
 	mIdleAnimation( findAnimation( model->data(), animations.idle ) ),
 	mDeathAnimation( findAnimation( model->data(), animations.death ) ),
 	mStaggerAnimation( findAnimation( model->data(), animations.stagger ) ),
+	mAttackAnimation( findAnimation( model->data(), animations.attack ) ),
 	mFlinch( &model->flinchLayout() ),
 	mDismemberment( &model->severLayout() ),
 	mMesh( model->data() ),
@@ -104,7 +127,7 @@ const Animations& animations, int sightPhase ) :
 	mStaggerCooldownTicks( 0 ),
 	mPosition( position ),
 	mAngleY( wrapSignedAngle( angleY ) ),
-	mChase( sightPhase ),
+	mChase( sightPhase, randomSeed ),
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
 	mWalking( false ),
 	mMoveStartTime( animations.moveStartTime ),
@@ -120,9 +143,16 @@ const Animations& animations, int sightPhase ) :
 }
 
 void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
-	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。
+	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。攻撃の間は追う先を考え直さない（相手の方を向いて寄るだけ）。
 	if ( mState == State::Alive && !mStaggering && canChase() ) {
-		chase( target, hitWorld );
+		if ( mAttack.isActive() ) {
+			approachDuringAttack( target );
+		} else {
+			chase( target, hitWorld );
+		}
+	}
+	if ( mState == State::Alive ) {
+		updateAttack( target );
 	}
 	// 足元を地面（歩道の段差）の高さへ合わせる。歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
 	// 倒れた後は動かないので、倒れた場所の高さのまま（沈む演出は見た目の位置だけを下げる）。
@@ -143,8 +173,13 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
 void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
 	Vector3 eye = mPosition;
 	eye.y += kEyeHeight;
-	mChase.update( mPosition, eye, target, hitWorld );
+	mChase.update( mPosition, eye, mAngleY, target, hitWorld );
 	bool facing = mChase.hasDestination() ? turnToward( mChase.destination() ) : false;
+	if ( canStartAttack( target ) ) {
+		startAttack();
+		mMesh.setAngleY( mAngleY );
+		return;
+	}
 	// 向きを変えている最中も、歩きたいなら歩くアニメにする（その場で向きを変える動きに見せる）。
 	setWalking( mChase.wantsToWalk() );
 	if ( mChase.wantsToWalk() && facing ) {
@@ -155,6 +190,81 @@ void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
 	}
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
+}
+
+bool Zombie::canStartAttack( const ChaseTarget* target ) const {
+	if ( !mAttackAnimation || !target || !target->grabbable || target->attackTaken || !mAttack.canStart() ) {
+		return false;
+	}
+	if ( mChase.mode() != ZombieChase::Mode::Chase ) {
+		return false; // 見えている相手だけを襲う（見失って探している間・うろついている間は襲わない）
+	}
+	return flatDistanceTo( target->position ) <= kAttackStartDistance &&
+		Math::abs( headingDifferenceTo( target->position ) ) <= kAttackStartHalfAngle;
+}
+
+void Zombie::startAttack() {
+	mAttack.start();
+	mMesh.crossFadeTo( mAttackAnimation, kAttackStartTime, kAttackFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）。
+	mWalking = false;
+}
+
+void Zombie::approachDuringAttack( const ChaseTarget* target ) {
+	if ( !target ) {
+		return;
+	}
+	turnToward( target->position );
+	float remaining = flatDistanceTo( target->position ) - kGrabCloseDistance;
+	if ( mAttack.phase() == ZombieAttack::Phase::Reach && remaining > 0.f ) {
+		float distance = Math::min( kReachApproachSpeed, remaining );
+		Vector3 step( Math::sin( mAngleY ) * distance, 0.f, Math::cos( mAngleY ) * distance );
+		mPosition += mMover.move( step ); // 相手の体・銃の箱に当たったら、そこで止まる
+	}
+	mMesh.setPosition( mPosition );
+	mMesh.setAngleY( mAngleY );
+}
+
+void Zombie::updateAttack( const ChaseTarget* target ) {
+	bool wasActive = mAttack.isActive();
+	mAttack.update( mMesh.animationTime(), mMesh.isAnimationFinished(), isTargetInReach( target ) );
+	if ( mAttack.bitThisTick() ) {
+		// 噛むアニメが無いので、首と背骨を前へ突き出して顔を近づける（のけぞりと同じく、すぐ曲がって 0.25 秒で戻る）。
+		for ( int i = 0; i < kBiteHeadPushes; ++i ) {
+			mFlinch.push( BodyPart::Head, kBiteLungeDirection );
+		}
+		mFlinch.push( BodyPart::Torso, kBiteLungeDirection );
+	}
+	if ( mAttack.isActive() ) {
+		mMesh.setPlaybackRate( mAttack.playbackRate() );
+	} else if ( wasActive ) {
+		// 攻撃のアニメの最後（元の立ち姿）から、立つアニメへ戻す。
+		mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
+	}
+}
+
+bool Zombie::isTargetInReach( const ChaseTarget* target ) const {
+	if ( !target || !target->grabbable ) {
+		return false;
+	}
+	return flatDistanceTo( target->position ) <= kGrabReachDistance &&
+		Math::abs( headingDifferenceTo( target->position ) ) <= kGrabHalfAngle;
+}
+
+float Zombie::flatDistanceTo( const Vector3& target ) const {
+	Vector3 toTarget;
+	toTarget.setSub( target, mPosition );
+	toTarget.y = 0.f;
+	return toTarget.length();
+}
+
+float Zombie::headingDifferenceTo( const Vector3& target ) const {
+	Vector3 toTarget;
+	toTarget.setSub( target, mPosition );
+	if ( toTarget.x == 0.f && toTarget.z == 0.f ) {
+		return 0.f; // 真上は向きが無い（向いているとみなす）
+	}
+	return wrapSignedAngle( Math::atan2( toTarget.x, toTarget.z ) - mAngleY );
 }
 
 float Zombie::walkDistanceThisTick() const {
@@ -210,7 +320,10 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 	if ( !isAlive() ) {
 		return;
 	}
+	// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）。
+	float totalBefore = mHealth.total();
 	mHealth.takeDamage( damage.part, damage.baseAmount );
+	float dealt = totalBefore - mHealth.total();
 	mChase.alert(); // 撃たれたら、見えていなくても気付く
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。
 	Matrix34 worldToRoot;
@@ -224,8 +337,19 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 		startFalling();
 	} else if ( mDeathAnimation && mState == State::Alive && mDismemberment.hasLostFooting() ) {
 		startDowned();
-	} else if ( mState == State::Alive && canStagger( damage.part ) ) {
+	} else if ( mState == State::Alive && mAttack.takeShakeDamage( dealt ) ) {
+		shakeOff();
+	} else if ( mState == State::Alive && !mAttack.isActive() && canStagger( damage.part ) ) {
+		startStagger(); // 攻撃の途中はよろけない（攻撃のアニメが途切れないように。のけぞりだけ）
+	}
+}
+
+void Zombie::shakeOff() {
+	// 離すときは、よろけて手を放す（よろけのアニメが無ければ、立つアニメへ戻すだけ）。よろけの間あけは待たない。
+	if ( mStaggerAnimation ) {
 		startStagger();
+	} else {
+		mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
 	}
 }
 
@@ -246,6 +370,7 @@ void Zombie::startFalling() {
 		mMesh.crossFadeTo( mDeathAnimation, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	}
 	mState = State::Falling;
+	mAttack.cancel(); // つかんでいたら離す
 	mStateTicks = 0;
 	mStaggering = false;
 }
@@ -254,6 +379,7 @@ void Zombie::startDowned() {
 	// 這うアニメが無いので、死亡アニメで倒し、最後の姿勢で止めて代わりにする（ZombieDismember_Plan.txt の 5 章）。
 	mMesh.crossFadeTo( mDeathAnimation, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	mState = State::Downed;
+	mAttack.cancel();
 	mStaggering = false;
 }
 
@@ -384,4 +510,40 @@ void Zombie::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
 void Zombie::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
 	collisionWorld->removeBody( this );
 	hitWorld->removeTarget( this );
+}
+
+ZombieAttack::Phase Zombie::attackPhase() const {
+	return mAttack.phase();
+}
+
+bool Zombie::isAttacking() const {
+	return mState == State::Alive && mAttack.isAttacking();
+}
+
+bool Zombie::isHoldingTarget() const {
+	return mState == State::Alive && mAttack.isHolding();
+}
+
+bool Zombie::grabbedThisTick() const {
+	return mState == State::Alive && mAttack.grabbedThisTick();
+}
+
+bool Zombie::bitThisTick() const {
+	return mState == State::Alive && mAttack.bitThisTick();
+}
+
+Vector3 Zombie::headPosition() const {
+	for ( int i = 0; i < mHitboxes.boxNumber(); ++i ) {
+		Matrix34 box;
+		if ( mHitboxes.boxPart( i ) == BodyPart::Head && mHitboxes.boxMatrix( i, &box ) ) {
+			return Vector3( box.m03, box.m13, box.m23 ); // -1〜1 の立方体の中心が置かれた所
+		}
+	}
+	Vector3 eye = mPosition;
+	eye.y += kEyeHeight;
+	return eye;
+}
+
+const Vector3& Zombie::position() const {
+	return mPosition;
 }

@@ -18,6 +18,7 @@ public:
 		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
 		SCENE_GAME,      // ゲーム本編（ガソリンを車へ運ぶ）。タイトルの Start とクリア画面の Retry の行き先。
 		SCENE_CLEAR,     // クリア画面（MenuScene に MenuCatalog::clear の中身を載せたもの）。
+		SCENE_GAME_OVER, // ゲームオーバー画面（自キャラが死んだ後。MenuScene に MenuCatalog::gameOver の中身を載せたもの）。
 	};
 
 	static SceneManager& instance();

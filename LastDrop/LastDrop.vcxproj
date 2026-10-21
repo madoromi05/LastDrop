@@ -182,6 +182,7 @@
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitMath.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitboxSet.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitWorld.cpp" />
@@ -201,6 +202,7 @@
     <ClCompile Include="GameSrc\src\Weapon\FireControl.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\AimRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\Bullet.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\BulletList.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp" />
@@ -242,6 +244,14 @@
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieAttack.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerHealth.cpp" />
+    <ClCompile Include="GameSrc\src\Player\CameraShake.cpp" />
+    <ClCompile Include="GameSrc\src\Player\AimPunch.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\PlayerBodyFigure.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\ZombieAttackSounds.cpp" />
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp" />
@@ -460,6 +470,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxSet.h" />
@@ -487,6 +498,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\AimRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h" />
@@ -529,6 +541,15 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttack.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealth.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\CameraShake.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\AimPunch.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodyZone.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerBodyFigure.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerDamageView.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieAttackSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h" />

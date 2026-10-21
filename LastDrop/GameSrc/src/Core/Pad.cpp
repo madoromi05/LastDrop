@@ -158,6 +158,9 @@ bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(Wor
 bool InputDebugPickupCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugPickupCollision, playerId); }
 bool InputDebugZombieHealth(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugZombieHealth, playerId); }
 bool InputDebugSpawnZombie(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugSpawnZombie, playerId); }
+bool InputDebugFreeCamera(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugFreeCamera, playerId); }
+bool InputDebugCameraUp(int playerId)   { return Pad::instance()->isOn(WorkId::DebugCameraUp, playerId); }
+bool InputDebugCameraDown(int playerId) { return Pad::instance()->isOn(WorkId::DebugCameraDown, playerId); }
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }
 bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiDown, playerId); }
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }

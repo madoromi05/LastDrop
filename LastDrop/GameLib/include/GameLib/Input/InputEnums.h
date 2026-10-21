@@ -46,6 +46,9 @@ enum class WorkId
     Interact, // 見ている物を使う（拾う・給油する。押した瞬間）
     DebugZombieHealth, // ゾンビの体力（全体・部位）を頭の上に表示する切り替え（押した瞬間。Debug ビルドだけで効く）
     DebugSpawnZombie,  // 自キャラの前にゾンビを出す（押した瞬間。Debug ビルドだけで効く）
+    DebugFreeCamera,   // 自キャラとは別の観察用カメラを使う／やめる（押した瞬間。Debug ビルドだけで効く）
+    DebugCameraUp,     // 観察用カメラを上げる（押している間。Debug ビルドだけで効く）
+    DebugCameraDown,   // 観察用カメラを下げる（押している間。Debug ビルドだけで効く）
 };
 
 // コレクター（シーン別の入力割り当てグループ）種別

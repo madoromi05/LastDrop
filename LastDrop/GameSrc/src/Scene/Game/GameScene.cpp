@@ -48,6 +48,7 @@ GameScene::GameScene( GameResources* resources ) :
 	mControl( mWorld.map().playerStart().yawDegree ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
 	mZombieHitSounds( &resources->audio() ),
+	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
 	mReady( false ) {
 }
@@ -65,10 +66,21 @@ void GameScene::beginFrame() {
 		mReady = true;
 	}
 
+#ifdef _DEBUG
+	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
+	mFreeCamera.handleToggle( mControl.camera() );
+#endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう。
-	mControl.readInput( aimWeight() );
+	if ( isFreeCameraActive() ) {
+		mControl.readInputIdle(); // 自キャラはその場で立ち止まる（マウスとキーは観察用カメラが使う）
+	} else if ( mWorld.isPlayerDead() ) {
+		mControl.readInputIdle(); // 死んだ後は視点も回さない（崩れて暗くなるのを見せる）
+	} else {
+		mControl.readInput( aimWeight() );
+	}
 	updateInteraction();
 #ifdef _DEBUG
+	mFreeCamera.look(); // 使っていなければ何もしない。カーソルロックの切り替え（readInputIdle）の後に読む
 	mDebug.handleInput();
 	if ( InputDebugSpawnZombie() ) {
 		spawnDebugZombies();
@@ -110,18 +122,24 @@ void GameScene::update() {
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection() );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
+	updatePlayerDamage();
 	const PlayerCharacter* player = mWorld.player();
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
-	mControl.updateRecoil( player && player->firedThisTick() );
+	// 噛まれた怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
+	mControl.updateViewEffects( player && player->firedThisTick() );
 	if ( player ) {
 		mBodySounds.update( *player );
 	}
+#ifdef _DEBUG
+	mFreeCamera.move(); // 使っていなければ何もしない
+#endif
 }
 
 void GameScene::draw() {
 	if ( !mReady ) {
 		return;
 	}
+	mControl.setEyeDrop( mDamageView.eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
 	const PlayerCharacter* player = mWorld.player();
 	if ( player ) {
 		Vector3 eye = player->eyePosition();
@@ -129,24 +147,37 @@ void GameScene::draw() {
 	} else {
 		mControl.placeCamera( nullptr, aimWeight() );
 	}
+#ifdef _DEBUG
+	// 自キャラの視点は、観察用カメラの間も目へ置き続ける（見ている物を使う視線と、戻ったときの位置のため）。
+	// 描くのは観察用カメラから（自キャラの視点で設定した描画ステートを上書きする）。
+	if ( mFreeCamera.isActive() ) {
+		mFreeCamera.apply();
+	}
+#endif
+	const FirstPersonCamera& camera = viewCamera();
 	updateListener();
+	// 噛まれた瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く。
+	mPostProcess.setDamageFlash( mDamageView.damageFlash() );
+	mPostProcess.setPain( mDamageView.pain() );
+	mPostProcess.setFade( mDamageView.fade() );
 	mPostProcess.beginScene();
 	setupLights();
 	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない。
-	mWorld.draw( ViewFrustum( mControl.camera().projectionViewMatrix() ) );
-	mWorld.drawBulletHoles( mControl.camera().projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
-	mWorld.drawImpactDust( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 弾痕の上に舞う
-	mWorld.drawBloodSpray( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 砂ぼこりの後（同じ作り）
-	mWorld.drawMuzzleFlash( mControl.camera().projectionViewMatrix(), mControl.camera().viewDirection() ); // 加算なので順番は問わない
+	mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ) );
+	mWorld.drawBulletHoles( camera.projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
+	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection() ); // 弾痕の上に舞う
+	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection() ); // 砂ぼこりの後（同じ作り）
+	mWorld.drawMuzzleFlash( camera.projectionViewMatrix(), camera.viewDirection() ); // 加算なので順番は問わない
 #ifdef _DEBUG
-	mDebug.drawCollision( mWorld, mControl.camera() );
+	mDebug.drawCollision( mWorld, camera );
 #endif
 	mPostProcess.endScene();
 #ifdef _DEBUG
 	// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
-	mDebug.addZombieHealth( mWorld, mControl.camera(), &mResources->uiRenderer() );
+	mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
+	mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
-	mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory );
+	mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
 
 	GameDebugOverlay::TextState text;
 	text.cursorLocked = mControl.isCursorLocked();
@@ -197,7 +228,8 @@ void GameScene::updateInteraction() {
 	}
 	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）。
 	const FirstPersonCamera& camera = mControl.camera();
-	mInteractor.update( camera.eyePosition(), camera.viewDirection(), player, &mInventory, InputInteract() );
+	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。案内は今まで通り出す。
+	mInteractor.update( camera.eyePosition(), camera.viewDirection(), player, &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.removeTakenPickups();
 	if ( mWorld.isEscapeReady() ) {
@@ -206,8 +238,8 @@ void GameScene::updateInteraction() {
 }
 
 void GameScene::updateListener() {
-	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる。
-	const FirstPersonCamera& camera = mControl.camera();
+	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる。観察用カメラの間はそのカメラで聞く（近づいたゾンビの音を確かめるため）。
+	const FirstPersonCamera& camera = viewCamera();
 	AudioEngine& audio = mResources->audio();
 	audio.setListener( camera.eyePosition(), camera.viewDirection() );
 	audio.update();
@@ -216,4 +248,40 @@ void GameScene::updateListener() {
 float GameScene::aimWeight() const {
 	const PlayerCharacter* player = mWorld.player();
 	return player ? player->aimWeight() : 0.f;
+}
+
+const FirstPersonCamera& GameScene::viewCamera() const {
+#ifdef _DEBUG
+	if ( mFreeCamera.isActive() ) {
+		return mFreeCamera.camera();
+	}
+#endif
+	return mControl.camera();
+}
+
+bool GameScene::isFreeCameraActive() const {
+#ifdef _DEBUG
+	return mFreeCamera.isActive();
+#else
+	return false;
+#endif
+}
+
+void GameScene::updatePlayerDamage() {
+	bool bitten = false;
+	for ( const GameWorld::ZombieAttackEvent& event : mWorld.zombieAttacksThisTick() ) {
+		if ( event.kind == GameWorld::ZombieAttackEvent::Kind::Grab ) {
+			mControl.lookToward( event.point ); // つかんだゾンビの顔を見る（その後はマウスで自由に回せる）
+			mControl.shakeOnGrab();
+		} else {
+			mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
+			bitten = true;
+		}
+	}
+	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
+	mControl.updateLookPull();
+	mDamageView.update( bitten, mWorld.isPlayerDead() );
+	if ( mDamageView.isFadedOut() ) {
+		SceneManager::instance().requestChange( SceneManager::SCENE_GAME_OVER );
+	}
 }

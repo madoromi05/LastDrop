@@ -10,6 +10,8 @@ namespace MenuCatalog{
 	MenuDefinition title();
 	// クリア画面（ガソリンを車へ運び終えた後）。見出しと、Retry（本編をもう一度）・Title（タイトルへ）。
 	MenuDefinition clear();
+	// ゲームオーバー画面（自キャラが死んで暗くなった後）。見出しと、Retry（本編をもう一度）・Title（タイトルへ）。
+	MenuDefinition gameOver();
 }
 
 #endif

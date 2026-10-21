@@ -52,6 +52,9 @@ namespace
         case WorkId::Interact: return "Interact";
         case WorkId::DebugZombieHealth: return "DebugZombieHealth";
         case WorkId::DebugSpawnZombie: return "DebugSpawnZombie";
+        case WorkId::DebugFreeCamera: return "DebugFreeCamera";
+        case WorkId::DebugCameraUp:   return "DebugCameraUp";
+        case WorkId::DebugCameraDown: return "DebugCameraDown";
         default:            return "";
         }
     }
@@ -179,6 +182,10 @@ namespace
         { CollectorId::InGame, WorkId::DebugPickupCollision, DeviceKind::Keyboard, Keyboard::KEY_F2 },
         { CollectorId::InGame, WorkId::DebugZombieHealth, DeviceKind::Keyboard, Keyboard::KEY_F3 },
         { CollectorId::InGame, WorkId::DebugSpawnZombie, DeviceKind::Keyboard, Keyboard::KEY_F9 },
+        // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）。
+        { CollectorId::InGame, WorkId::DebugFreeCamera, DeviceKind::Keyboard, Keyboard::KEY_F4 },
+        { CollectorId::InGame, WorkId::DebugCameraUp,   DeviceKind::Keyboard, ' ' },
+        { CollectorId::InGame, WorkId::DebugCameraDown, DeviceKind::Keyboard, Keyboard::KEY_CONTROL },
         // 画面の部品（タイトル・クリア画面のボタン）の操作。矢印キーと WASD の両方で選べるようにする
         // （W/S は移動の Up/Down と共有。ボタンの画面ではキャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, Keyboard::KEY_UP },

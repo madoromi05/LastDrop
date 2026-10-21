@@ -7,6 +7,7 @@
 #include "GameSrc/Weapon/FireControl.h"
 #include "GameSrc/Weapon/WeaponRecoil.h"
 #include "GameSrc/Player/PlayerCommand.h"
+#include "GameSrc/Player/PlayerHealth.h"
 #include "GameSrc/Audio/Gait.h"
 #include "GameSrc/Collision/ICollisionBody.h"
 #include "GameSrc/Collision/CharacterMover.h"
@@ -42,6 +43,10 @@ class CollisionWorld;
 //
 // 撃つ操作からは「このティックに1発撃ったか」だけを決める（連射の間隔は FireControl に任せる）。
 // 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。武器をしまっている間と、走っている間（銃を抱えている）は撃てない。
+//
+// 体力は 7 部位（PlayerHealth）。ゾンビに噛まれると減る（applyBite）。ゾンビにつかまれている間（setHeld）は動けない（撃つ・覗く・向きを変えるはできる）。
+// 脚が壊れたら走れず、歩くのも遅い。頭か胸が 0 で死に、それからは操作を受け付けない（その場で止まる）。
+// 誰がつかんでいるか・死んだ後どうするか（暗転・ゲームオーバー）は知らない（GameWorld・シーンが決める）。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプはまだ持たない。
 class PlayerCharacter : public ICollisionBody, public IHittable, public IWorldMember{
@@ -83,6 +88,17 @@ public:
 	// 銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）。
 	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
 
+	// ── 体力とつかまれている間（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 2・4 章）──
+	// ゾンビに噛まれた。damage: ダメージの量。roll: 噛まれる所を選ぶ 0 以上 1 未満の乱数（PlayerHealth::biteZone）。死んだ後は何もしない。
+	void applyBite( float damage, float roll );
+	// ゾンビにつかまれているか。1ティックに1回、update の後に呼ぶ（次の update から動けなくなる・動けるようになる）。
+	// 離されてから少しの間は、canBeGrabbed が false のまま（続けてつかまれて抜け出せなくならないように）。
+	void setHeld( bool held );
+	bool isHeld() const;			// つかまれているか
+	bool canBeGrabbed() const;		// つかんでよいか（生きている・つかまれていない・離されてから少したった）
+	bool isDead() const;			// 死んだか（PlayerHealth::isDead）
+	const PlayerHealth& health() const;
+
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る）。
 	virtual BoxCollider collider() const;
 	// 部位ごとの当たり判定。
@@ -92,6 +108,8 @@ public:
 	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
+	// 今できない操作を外した操作（死んだら何もしない・つかまれていたら動かない・脚が壊れていたら走らない）。
+	PlayerCommand allowedCommand( const PlayerCommand& command ) const;
 	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false。
 	bool readMoveDirection( const PlayerCommand& command, float cameraYaw, GameLib::Math::Vector3* direction ) const;
 	// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける。
@@ -122,6 +140,9 @@ private:
 	float mSpeed;                          // 今の移動の速さ（m/フレーム）。目標の速さへ加速・減速して近づく
 	float mHoldWeight;                     // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
 	float mCarryWeight;                    // 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）
+	PlayerHealth mHealth;
+	bool mHeld;                            // ゾンビにつかまれているか（setHeld）
+	int mGrabCooldownTicks;                // 離されてから、またつかまれるようになるまでの残り（ティック）
 };
 
 #endif

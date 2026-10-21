@@ -29,6 +29,8 @@ namespace{
 SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mData( data ),
 	mTime( 0.f ),
+	mShownTime( -kTimeStep ),
+	mPlaybackRate( kTimeStep ),
 	mPlayMode( PLAY_LOOP ),
 	mPoseModifier( nullptr ),
 	mFadeFrames( 0.f ),
@@ -65,6 +67,8 @@ void SkinnedMeshInstance::setAnimation( Scene::Animation animation, float startT
 	mSkeleton.setAnimation( animation );
 	mAnimation = animation;
 	mTime = startTime; // 以降の update は、ここから1フレームずつ進む
+	mShownTime = startTime - kTimeStep; // まだこのアニメを見せていない（update の前は、始める時刻の1つ前とみなす）
+	mPlaybackRate = kTimeStep;
 	mPlayMode = mode;
 	mFadeFrames = 0.f;
 }
@@ -89,9 +93,7 @@ float SkinnedMeshInstance::animationPhase() const {
 	if ( period <= 0.f ) {
 		return 0.f;
 	}
-	// update は時刻を使ってから進めるので、今見えているのは1つ前の時刻。
-	float shownTime = mTime - kTimeStep;
-	float phase = std::fmod( shownTime, period ) / period;
+	float phase = std::fmod( mShownTime, period ) / period;
 	return ( phase < 0.f ) ? phase + 1.f : phase;
 }
 
@@ -100,8 +102,7 @@ void SkinnedMeshInstance::setPoseModifier( BonePoseModifier* modifier ) {
 }
 
 bool SkinnedMeshInstance::isAnimationFinished() const {
-	// update は時刻を使ってから進めるので、今見えているのは1つ前の時刻。
-	return mPlayMode == PLAY_ONCE && mTime - kTimeStep >= lastFrameTime();
+	return mPlayMode == PLAY_ONCE && mShownTime >= lastFrameTime();
 }
 
 float SkinnedMeshInstance::lastFrameTime() const {
@@ -114,7 +115,8 @@ void SkinnedMeshInstance::update() {
 		mTime = lastFrameTime();
 	}
 	mSkeleton.updateAnimation( mTime );
-	mTime += kTimeStep;
+	mShownTime = mTime;
+	mTime += mPlaybackRate;
 	mData->computeBonePose( mSkeleton, &mBonePose );
 	blendFadingPose();
 	mHasPose = true;
@@ -169,4 +171,13 @@ void SkinnedMeshInstance::draw() const {
 	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
 	mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );
 	mData->draw( mSkinMatrices );
+}
+
+void SkinnedMeshInstance::setPlaybackRate( float rate ) {
+	ASSERT( rate > 0.f && "SkinnedMeshInstance : playback rate must be positive." );
+	mPlaybackRate = kTimeStep * rate;
+}
+
+float SkinnedMeshInstance::animationTime() const {
+	return mShownTime;
 }

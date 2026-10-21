@@ -52,7 +52,9 @@ public:
 	const std::vector< TownPlacement >& buildings() const;			// ブロックの中の建物（向きは、正面がどちらを向くか）
 	const std::vector< TownPlacement >& perimeterBuildings() const;	// 町を囲む建物（足元の板の無い形を置く。向きは同上）
 	const TownPlacement& playerStart() const;						// 自キャラの始めの位置と向き
-	const std::vector< TownPlacement >& walkingZombies() const;		// その場で歩くゾンビ
+	// ゾンビが湧くかもしれない場所（交差点と、隣り合う交差点の真ん中。道の中心。向きは使わない）。
+	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ。
+	const std::vector< TownPlacement >& zombieSpawnPoints() const;
 	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
 	const TownPlacement& escapeCar() const;							// 脱出用の車
 	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
@@ -64,7 +66,7 @@ private:
 	std::vector< TownPlacement > mBuildings;
 	std::vector< TownPlacement > mPerimeterBuildings;
 	TownPlacement mPlayerStart;
-	std::vector< TownPlacement > mWalkingZombies;
+	std::vector< TownPlacement > mZombieSpawnPoints;
 	TownPlacement mTPoseZombie;
 	TownPlacement mEscapeCar;
 	TownPlacement mEndlessFuel;

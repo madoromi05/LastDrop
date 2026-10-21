@@ -3,6 +3,12 @@
 #include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Player/FirstPersonCamera.h"
 #include "GameSrc/Core/Pad.h"
+#include "GameSrc/UI/UiScreen.h"
+#ifdef _DEBUG
+#include "GameSrc/Scene/Game/PlayerBodyFigure.h"
+#include "GameSrc/UI/UiRenderer.h"
+#include "GameSrc/Render/VertexColor.h"
+#endif
 
 #include "GameLib/GameLib.h"
 #include "Framework.h" // DebugScreen.h が使う Framework の宣言
@@ -15,18 +21,31 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── DebugScreen の文字位置 ──
+	// ── DebugScreen の文字位置（2026-10-21 ユーザー指定：左上から左下へ。左上は体の図を置く）──
+	// 左下の状態表示（Car fuel・Carrying。GameHud）の上に、下から順に積む。行は下から数えた番号（0 が一番下）。
 	const int kHelpColumn = 1;
-	const int kHelpRow = 1;
-	const int kGroundRow = 2;
-	const int kShaderErrorRow = 4; // シェーダのコンパイルエラー（あるときだけ）
-	const int kDebugTextSize = 96; // 表示の切り替えの1行（F1〜F3）が収まる長さ
+	const int kHelpLine = 0;
+	const int kGroundLine = 1;
+	const int kShaderErrorLine = 2; // シェーダのコンパイルエラー（あるときだけ）
+	const int kDebugRowHeight = 16; // DebugScreen の 1 行の高さ（画素。Framework::drawDebugString）
+	const int kStatusLines = 2;     // 左下の状態表示の行の数（この上に積む）
+	const int kDebugTextSize = 128;
 	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
 #ifdef _DEBUG
-	const int kCollisionRow = 3; // 当たり判定の表示（F1）・落ちている物の箱の表示（F2）・ゾンビの体力の表示（F3）の ON/OFF
-	const int kRayRow = 5;       // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
+	const int kRayLine = 3;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
+	const int kSpawnerLine = 4; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
+	// 自キャラの部位ごとの体力の数字（F3）。体の図の右に、上から PlayerBodyZone の順に並べる。
+	const float kPlayerHealthGap = 8.f;         // 体の図の右端から数字までの間（画素）
+	const float kPlayerHealthLineHeight = 18.f; // 1 行の高さ（画素）
+	const unsigned kPlayerHealthColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
 #endif
+
+	// 下から line 番目（0 が一番下）の DebugScreen の行。状態表示の一番上の行の上端より上の、まるごと入る行から上へ数える。
+	int rowFromBottom( int line ) {
+		int statusTop = static_cast< int >( UiScreen::statusLinePosition( kStatusLines - 1 ).y );
+		return statusTop / kDebugRowHeight - 1 - line;
+	}
 
 	// コンパイラのエラー文の1行目を、ファイル名から先だけ画面に出す。
 	// 1行目は「フォルダ\ファイル名(行,列): error ...」の形で、フォルダまで出すと画面の幅が足りず、肝心の行番号と理由が見えないため。
@@ -67,16 +86,16 @@ GameDebugOverlay::GameDebugOverlay()
 void GameDebugOverlay::drawText( const TextState& state ) const {
 	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく。
 	if ( state.shaderError[ 0 ] != '\0' ) {
-		drawErrorLine( kHelpColumn, kShaderErrorRow, state.shaderError );
+		drawErrorLine( kHelpColumn, rowFromBottom( kShaderErrorLine ), state.shaderError );
 	}
-	DebugScreen::instance().draw( kHelpColumn, kHelpRow,
+	DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kHelpLine ),
 		state.cursorLocked
 			? "OnCursor"
 			: "Click: lock cursor" );
 	if ( state.floorMaterial ) {
 		char ground[ kDebugTextSize ];
 		std::snprintf( ground, sizeof( ground ), "Floor: %s", state.floorMaterial );
-		DebugScreen::instance().draw( kHelpColumn, kGroundRow, ground );
+		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kGroundLine ), ground );
 	}
 }
 
@@ -94,8 +113,17 @@ void GameDebugOverlay::handleInput() {
 }
 
 void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
-	if ( mShowZombieHealth ) {
-		mZombieHealthBars.add( world, camera, renderer );
+	if ( !mShowZombieHealth ) {
+		return;
+	}
+	mZombieHealthBars.add( world, camera, renderer );
+	// 湧く仕組みの様子（立っている数 / 目標の数・次に湧くまで）。足りている間の秒数は補充の間隔のまま止まっている。
+	const ZombieSpawner* spawner = world.zombieSpawner();
+	if ( spawner ) {
+		char text[ kDebugTextSize ];
+		std::snprintf( text, sizeof( text ), "Zombies: %d/%d  Next spawn: %.1fs",
+			spawner->standingCount(), spawner->targetCount(), spawner->secondsUntilNext() );
+		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), text );
 	}
 }
 
@@ -119,7 +147,7 @@ void GameDebugOverlay::castRay( const GameWorld& world, const FirstPersonCamera&
 	} else {
 		std::snprintf( text, sizeof( text ), "Ray: none" );
 	}
-	DebugScreen::instance().draw( kHelpColumn, kRayRow, text );
+	DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kRayLine ), text );
 }
 
 void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonCamera& camera ) {
@@ -134,10 +162,26 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		world.appendPickupColliders( &mPickupBoxes );
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
+	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
+}
+#endif
+
+#ifdef _DEBUG
+void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const {
+	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
+	const PlayerCharacter* player = world.player();
+	if ( !mShowZombieHealth || !player ) {
+		return;
+	}
+	const PlayerHealth& health = player->health();
+	UiRect figure = PlayerBodyFigure::bounds();
+	Vector2 position( figure.right() + kPlayerHealthGap, figure.top );
 	char text[ kDebugTextSize ];
-	// F9（ゾンビを出す）は切り替えではないので、キーだけ書く（出すのは GameScene）。
-	std::snprintf( text, sizeof( text ), "Collision: %s (F1)  Fuel boxes: %s (F2)  Zombie HP: %s (F3)  Spawn: F9",
-		mShowCollision ? "ON " : "OFF", mShowPickups ? "ON " : "OFF", mShowZombieHealth ? "ON " : "OFF" );
-	DebugScreen::instance().draw( kHelpColumn, kCollisionRow, text );
+	for ( int i = 0; i < static_cast< int >( PlayerBodyZone::Count ); ++i ) {
+		PlayerBodyZone zone = static_cast< PlayerBodyZone >( i );
+		std::snprintf( text, sizeof( text ), "%s %.0f/%.0f", playerBodyZoneName( zone ), health.part( zone ), health.maxPart( zone ) );
+		renderer->addText( text, position, UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );
+		position.y += kPlayerHealthLineHeight;
+	}
 }
 #endif

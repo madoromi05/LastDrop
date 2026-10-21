@@ -36,6 +36,10 @@ public:
 	void draw();
 
 private:
+	// 長方形の描き方（半透明に混ぜる・奥行きを見ない・裏も描く）を、これから積む長方形に設定する。
+	// PrimitiveRenderer の描き方の設定は「設定した後に積んだもの」にだけ効く（積み終えた後で設定すると、空のまとまりに掛かるだけ）。
+	// そのため積む前（作った直後と、描き終えた直後）に呼ぶ。2026-10-21 まで draw の中で積んだ後に設定していて、半透明が効いていなかった。
+	void prepareRectState();
 	// font の英数字・記号の絵を、最初の描画より前にすべて作っておく（理由は UiRenderer.cpp）。
 	static void prepareGlyphs( GameLib::Scene::Font& font );
 	// text を size の文字で書いたときの幅（画素）。中央に揃えるのに使う。

@@ -45,6 +45,11 @@ public:
 	// フェード中に呼び直してもよい（その時点で見えている混ざったポーズから、改めて混ぜ始める）。
 	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う。
 	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode = PLAY_LOOP );
+	// 再生の速さ（1 で 1 ティックに 1 フレーム。0.5 なら半分の速さ）。アニメを切り替える（setAnimation・crossFadeTo）と 1 に戻る。
+	// アニメの一部だけをゆっくり見せたいとき（ゾンビがつかんでいる間）に、そのアニメの間だけ変える。0 より大きいこと。
+	void setPlaybackRate( float rate );
+	// 今見えているアニメの時刻（フレーム。最後の update で使った時刻）。アニメの何フレーム目で何かを起こすときに読む。
+	float animationTime() const;
 	// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0。
 	float animationPhase() const;
 	// PLAY_ONCE のアニメが最後のフレームまで来て、止まっているか。PLAY_LOOP なら常に false。
@@ -79,6 +84,9 @@ private:
 	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は骨の行列を求めるとき＝computeSkinMatrices で掛ける）
 	GameLib::Scene::Animation mAnimation;				// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
 	float mTime;										// 次の update で使うアニメ時刻（フレーム）
+	// 今見えているアニメ時刻（最後の update で使った時刻）。再生の速さが途中で変わっても、見えている時刻を正しく答えるために分けて持つ。
+	float mShownTime;
+	float mPlaybackRate;								// 1 回の update で進めるアニメ時刻（フレーム）
 	PlayMode mPlayMode;									// 再生中のアニメの再生のしかた
 
 	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）。

@@ -15,13 +15,21 @@
 // 目の位置はキャラを動かした後のものを渡す（前のフレームの頭の位置だと、視点が体から1フレーム遅れる）。
 class FirstPersonCamera{
 public:
+	// 上下の向きは、自キャラの背骨の曲げで体が付いてこられる範囲で止める。
 	FirstPersonCamera();
+	// pitchLimit: 上下の向きを止める角度（度。正の値で、上下とも同じだけ）。
+	// 体の付いていないカメラ（確認用の FreeCamera）が、真下近くまで見下ろせるようにするために使う。
+	explicit FirstPersonCamera( float pitchLimit );
 
 	// 向きを変える（度）。ピッチは真上・真下へ回り込まないよう上下限で止める。
 	void rotate( float yawDelta, float pitchDelta );
-	// rotate で決めた上下の向きへ足す角度（度。負で見上げる側）。撃った反動のように、一時的に視点をずらして後で戻すものに使う。
-	// rotate の向きそのものは変えないので、0 を渡せば元の向きへ戻る。足した結果も上下限で止める。
-	void setPitchOffset( float degree );
+	// rotate で決めた向きへ足す角度（度。ヨーは正で左、ピッチは負で見上げる側）。撃った反動・噛まれた怯みのように、
+	// 一時的に狙いをずらして後で戻すものに使う。yaw・pitch・viewDirection（弾の向き）に入る。
+	// rotate の向きそのものは変えないので、0 を渡せば元の向きへ戻る。足した結果のピッチも上下限で止める。
+	void setAimOffset( float yawDegree, float pitchDegree );
+	// 描く行列だけへ足す揺れ（度。カメラシェイク）。yaw・pitch・viewDirection には入らない（弾・体・音の向きは揺らさない）。
+	// ロールは視線の周りの傾き（向きは正負どちらでもよい。揺れは両方へ振れる）。
+	void setShake( float yawDegree, float pitchDegree, float rollDegree );
 	// 視点（ワールド座標）。キャラの頭の位置から求めたものを渡す。
 	void setEyePosition( const GameLib::Math::Vector3& );
 	// 縦の視野角（度）。覗くときに狭めてズームする。
@@ -31,16 +39,21 @@ public:
 	// 射影×ビュー行列（apply で設定するものと同じ）。メッシュ以外のもの（デバッグ表示など）を同じ視点で描くのに使う。
 	GameLib::Math::Matrix44 projectionViewMatrix() const;
 
-	float yaw() const;		// 水平の向き（度）。キャラの向きと移動方向の基準
-	float pitch() const;	// 上下の向き（度。setPitchOffset の分を足したもの）。キャラの背骨の曲げに使う
-	// 視線の向き（長さ1）。音の聞き手の向きにも使う。
+	float yaw() const;		// 水平の向き（度。setAimOffset の分を足したもの）。キャラの向きと移動方向の基準
+	float pitch() const;	// 上下の向き（度。setAimOffset の分を足したもの）。キャラの背骨の曲げに使う
+	// 狙いの向き（長さ1。setAimOffset の分は入り、setShake の分は入らない）。弾の向き・音の聞き手の向きにも使う。
 	GameLib::Math::Vector3 viewDirection() const;
 	const GameLib::Math::Vector3& eyePosition() const;	// 視点（setEyePosition で渡したもの）
 
 private:
+	float mPitchLimit;  // 上下の向きを止める角度（度。-mPitchLimit〜+mPitchLimit）
 	float mYaw;
 	float mPitch;       // rotate で決めた上下の向き（mPitchOffset を足す前）
-	float mPitchOffset; // 一時的に足す角度（反動など）
+	float mYawOffset;   // 一時的に狙いへ足す角度（反動・怯み）
+	float mPitchOffset;
+	float mShakeYaw;    // 描く行列だけへ足す揺れ（カメラシェイク）
+	float mShakePitch;
+	float mShakeRoll;
 	float mFieldOfView;
 	GameLib::Math::Vector3 mEyePosition;
 };

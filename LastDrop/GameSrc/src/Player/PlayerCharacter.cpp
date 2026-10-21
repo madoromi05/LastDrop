@@ -36,6 +36,9 @@ namespace{
 	const float kHalfTurn = 180.f;
 	const float kFullTurn = 360.f;
 	const float kMinInputLength = 0.001f; // これより短い入力（逆方向キーの同時押しなど）は静止とみなす
+	// ゾンビに離されてから、またつかまれるようになるまで（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）。
+	const float kGrabCooldownSeconds = 1.f;
+	const int kGrabCooldownTicks = static_cast< int >( kGrabCooldownSeconds * GameTime::kTicksPerSecond );
 	// 骨の名前の頭の共通部分（移動の当たり判定・部位ごとの当たり判定で骨を引くのに使う）。
 	const char* kBoneNamePrefix = "mixamorig:";
 	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
@@ -199,7 +202,9 @@ const Vector3& position, float angleY ) :
 	mMoveDirection( 0.f, 0.f, 0.f ),
 	mSpeed( 0.f ),
 	mHoldWeight( 0.f ),
-	mCarryWeight( 0.f ) {
+	mCarryWeight( 0.f ),
+	mHeld( false ),
+	mGrabCooldownTicks( 0 ) {
 	mMesh->setPoseModifier( mBody.get() );
 
 	// 状態にアニメを登録する。見つからないアニメは静止のアニメで代用する
@@ -243,7 +248,8 @@ const Vector3& position, float angleY ) :
 PlayerCharacter::~PlayerCharacter() {
 }
 
-void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, float cameraPitch ) {
+void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, float cameraPitch ) {
+	PlayerCommand command = allowedCommand( requested );
 	// 一人称では体の向き＝視線の向き。振り向きを遅らせると、視点と腕・銃の向きがずれて見えるため即座に合わせる。
 	mAngleY = wrapSignedAngle( cameraYaw );
 	mBody->setPitch( cameraPitch );
@@ -270,7 +276,7 @@ void PlayerCharacter::update( const PlayerCommand& command, float cameraYaw, flo
 	mBody->setCarryWeight( mCarryWeight );
 	mBody->setAimWeight( mStance.aimWeight() );
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
-	approachSpeed( stateAnimation( next ).speed );
+	approachSpeed( stateAnimation( next ).speed * mHealth.walkSpeedScale() );
 	Vector3 step;
 	step.setMul( mMoveDirection, mSpeed );
 	changeState( next );
@@ -365,6 +371,58 @@ bool PlayerCharacter::isAiming() const {
 
 bool PlayerCharacter::firedThisTick() const {
 	return mFiredThisTick;
+}
+
+PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) const {
+	PlayerCommand allowed = command;
+	if ( isDead() ) {
+		// 死んだら、その場で止まって何もしない（押した瞬間の入力も捨てる）。
+		allowed.forward = 0.f;
+		allowed.strafe = 0.f;
+		allowed.run = false;
+		allowed.holsterPressed = false;
+		allowed.aimHeld = false;
+		allowed.fireHeld = false;
+		return allowed;
+	}
+	if ( mHeld ) {
+		allowed.forward = 0.f; // つかまれている間は動けない（撃って振りほどく）
+		allowed.strafe = 0.f;
+		allowed.run = false;
+	}
+	if ( !mHealth.canRun() ) {
+		allowed.run = false;
+	}
+	return allowed;
+}
+
+void PlayerCharacter::applyBite( float damage, float roll ) {
+	mHealth.takeDamage( PlayerHealth::biteZone( roll ), damage );
+}
+
+void PlayerCharacter::setHeld( bool held ) {
+	if ( mHeld && !held ) {
+		mGrabCooldownTicks = kGrabCooldownTicks; // 離された
+	} else if ( !held && mGrabCooldownTicks > 0 ) {
+		--mGrabCooldownTicks;
+	}
+	mHeld = held;
+}
+
+bool PlayerCharacter::isHeld() const {
+	return mHeld;
+}
+
+bool PlayerCharacter::canBeGrabbed() const {
+	return !isDead() && !mHeld && mGrabCooldownTicks <= 0;
+}
+
+bool PlayerCharacter::isDead() const {
+	return mHealth.isDead();
+}
+
+const PlayerHealth& PlayerCharacter::health() const {
+	return mHealth;
 }
 
 bool PlayerCharacter::readMoveDirection( const PlayerCommand& command, float cameraYaw, Vector3* direction ) const {

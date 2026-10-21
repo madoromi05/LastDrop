@@ -2,6 +2,7 @@
 #include "GameSrc/UI/UiLabel.h"
 #include "GameSrc/Interaction/EscapeCar.h"
 #include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Scene/Game/PlayerBodyFigure.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"
@@ -20,6 +21,7 @@ namespace{
 
 GameHud::GameHud( UiRenderer* renderer ) :
 	mScreen( renderer ),
+	mRenderer( renderer ),
 	mPromptLabel( nullptr ),
 	mTankLabel( nullptr ),
 	mCarryLabel( nullptr ) {
@@ -30,7 +32,7 @@ GameHud::GameHud( UiRenderer* renderer ) :
 	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
 }
 
-void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory ) {
+void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health ) {
 	ASSERT( prompt && "GameHud : prompt is null." );
 	char text[ kHudTextSize ];
 	mPromptLabel->setText( prompt );
@@ -41,5 +43,9 @@ void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& i
 	int carried = inventory.count( ITEM_FUEL );
 	std::snprintf( text, sizeof( text ), "Carrying: %s", carried > 0 ? itemSpec( ITEM_FUEL ).name : "-" );
 	mCarryLabel->setText( text );
+	// 積むだけ。下の mScreen.draw の中でまとめて描かれる（長方形は文字より先に描かれる）。
+	if ( health ) {
+		PlayerBodyFigure::add( *health, mRenderer );
+	}
 	mScreen.draw();
 }

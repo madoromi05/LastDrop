@@ -107,9 +107,19 @@ namespace{
 		return "-";
 	}
 
+	const char* attackPhaseName( ZombieAttack::Phase phase ) {
+		switch ( phase ) {
+			case ZombieAttack::Phase::Ready:   return "Ready";
+			case ZombieAttack::Phase::Reach:   return "Reach";
+			case ZombieAttack::Phase::Hold:    return "Hold";
+			case ZombieAttack::Phase::Recover: return "Recover";
+		}
+		return "-";
+	}
+
 	const char* chaseModeName( ZombieChase::Mode mode ) {
 		switch ( mode ) {
-			case ZombieChase::Mode::Idle:   return "Idle";
+			case ZombieChase::Mode::Wander: return "Wander";
 			case ZombieChase::Mode::Chase:  return "Chase";
 			case ZombieChase::Mode::Search: return "Search";
 		}
@@ -161,10 +171,18 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	std::snprintf( text, sizeof( text ), "HP %d/%d", rounded( health.total() ), rounded( health.maxTotal() ) );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
-	// 立っている間は、追ってくる AI の考え（Idle / Chase / Search）。よろけている間はそちらを出す。
+	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。
 	Zombie::State state = zombie.state();
 	if ( alive && zombie.isStaggering() ) {
 		std::snprintf( text, sizeof( text ), "Staggered" );
+	} else if ( state == Zombie::State::Alive && zombie.attackPhase() != ZombieAttack::Phase::Ready ) {
+		std::snprintf( text, sizeof( text ), "Attack %s", attackPhaseName( zombie.attackPhase() ) );
+	} else if ( state == Zombie::State::Alive && zombie.chaseMode() == ZombieChase::Mode::Chase && world.player() ) {
+		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため。
+		Vector3 toPlayer;
+		toPlayer.setSub( world.player()->position(), zombie.position() );
+		toPlayer.y = 0.f;
+		std::snprintf( text, sizeof( text ), "%s %.2fm", chaseModeName( zombie.chaseMode() ), toPlayer.length() );
 	} else if ( state == Zombie::State::Alive ) {
 		std::snprintf( text, sizeof( text ), "%s", chaseModeName( zombie.chaseMode() ) );
 	} else if ( state == Zombie::State::Downed || state == Zombie::State::Falling ) {

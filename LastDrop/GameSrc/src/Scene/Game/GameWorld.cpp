@@ -35,6 +35,8 @@ namespace{
 	const char* kZombieStaggerAnimation = "gethit";
 	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
 	const char* kZombieIdleAnimation = "idle1";
+	// 追いついたら、つかんで噛む攻撃のアニメ（同じく extra_animations。両手を前へ伸ばしてつかむ）。
+	const char* kZombieAttackAnimation = "atack3";
 	// 血しぶきの量と大きさの倍率。頭は多く大きく飛ばす（当たった手応えを一番強くする部位）。
 	const float kBodyBloodScale = 1.f;
 	const float kHeadBloodScale = 1.5f;
@@ -98,9 +100,13 @@ void GameWorld::place() {
 		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation );
 		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
 		mZombieRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
-		for ( const TownPlacement& p : mMap.walkingZombies() ) {
-			spawnZombie( toPosition( p ), p.yawDegree );
+		// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）。
+		std::vector< Vector3 > spawnPoints;
+		for ( const TownPlacement& p : mMap.zombieSpawnPoints() ) {
+			spawnPoints.push_back( toPosition( p ) );
 		}
+		mZombieSpawner = std::make_unique< ZombieSpawner >( spawnPoints, &mHitWorld, &mCollisionWorld,
+			&mZombieModel->footprint(), mZombieRandom.getInt() );
 		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
 		// アニメを付けない（T ポーズ）。追ってこず、倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
 		// 止まった的なので、部位ごとの体力の減り方・のけぞりの向きを確かめやすい。
@@ -110,6 +116,7 @@ void GameWorld::place() {
 		tPose.idle = nullptr;
 		tPose.death = nullptr;
 		tPose.stagger = nullptr;
+		tPose.attack = nullptr;
 		addZombie( toPosition( mMap.tPoseZombie() ), mMap.tPoseZombie().yawDegree, tPose );
 	}
 	mGround.place( mMap );
@@ -135,13 +142,17 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	animations.idle = kZombieIdleAnimation;
 	animations.death = kZombieDeathAnimations[ mZombieRandom.getInt( kZombieDeathAnimationNumber ) ];
 	animations.stagger = kZombieStaggerAnimation;
+	animations.attack = kZombieAttackAnimation;
 	addZombie( position, yawDegree, animations );
 	return true;
 }
 
 void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombie::Animations& animations ) {
 	// 移動・命中の両方の当たり判定への登録は ActorList が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
-	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, position, yawDegree, animations, mZombieNumber ) );
+	// うろつき方の乱数の種も体ごとに変える（同じ種だと全員が同じ向き・同じ間で歩き出す）。
+	int randomSeed = mZombieRandom.getInt();
+	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, position, yawDegree, animations,
+		mZombieNumber, randomSeed ) );
 	++mZombieNumber;
 }
 
@@ -192,6 +203,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
 	mImpacts.clear();
 	mZombieHits.clear();
+	mZombieAttacks.clear();
 	mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
 	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出す。ゾンビ（target）には出さず、血しぶきを出す。
 	for ( const BulletList::Impact& impact : mImpacts ) {
@@ -207,24 +219,88 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	mImpactDust.update();
 	mBloodSpray.update();
 	mSeveredLimbs.update( &mGround ); // 落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
+	updateZombies();
+	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
+	mZombies.flush();
+	mPickups.flush();
+	// 名簿をたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
+	spawnZombiesFromSpawner( cameraYaw );
+}
+
+void GameWorld::updateZombies() {
 	// ゾンビが追う先は自キャラ（このティックに動いた後の位置）。自キャラが居なければ追わない。
 	ChaseTarget target;
 	const ChaseTarget* chaseTarget = nullptr;
 	if ( mPlayer ) {
 		target.position = mPlayer->position();
 		target.eyePosition = mPlayer->eyePosition();
+		target.grabbable = mPlayer->canBeGrabbed();
+		target.attackTaken = false;
 		chaseTarget = &target;
 	}
+	// 攻撃に行っているゾンビ（前のティックから続いている 1 体）。名簿をたどる途中で攻撃を始めた体も、ここへ入れて
+	// 後の体に attackTaken を渡す（同じティックに 2 体が攻撃を始めないように）。
+	const Zombie* attacker = nullptr;
+	for ( const auto& zombie : mZombies ) {
+		if ( zombie->isAttacking() ) {
+			attacker = zombie.get();
+			break;
+		}
+	}
+	const Zombie* holder = nullptr;
 	for ( auto& zombie : mZombies ) {
+		target.attackTaken = ( attacker != nullptr && attacker != zombie.get() );
 		zombie->update( chaseTarget, mHitWorld );
-		// 沈み終わった死体は、全員の更新が済んでから消す（下の flush）。
+		if ( !attacker && zombie->isAttacking() ) {
+			attacker = zombie.get();
+		}
+		if ( zombie->isHoldingTarget() ) {
+			holder = zombie.get();
+		}
+		if ( zombie->grabbedThisTick() ) {
+			ZombieAttackEvent event;
+			event.kind = ZombieAttackEvent::Kind::Grab;
+			event.point = zombie->headPosition();
+			mZombieAttacks.push_back( event );
+		}
+		if ( zombie->bitThisTick() && mPlayer ) {
+			mPlayer->applyBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
+			ZombieAttackEvent event;
+			event.kind = ZombieAttackEvent::Kind::Bite;
+			event.point = zombie->headPosition();
+			mZombieAttacks.push_back( event );
+		}
+		// 沈み終わった死体は、全員の更新が済んでから消す（update の flush）。
 		if ( zombie->isGone() ) {
 			mZombies.destroyLater( zombie.get() );
 		}
 	}
-	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
-	mZombies.flush();
-	mPickups.flush();
+	// つかんでいるゾンビが倒れた・振りほどかれた・噛み終えたら、次の update から動ける。
+	if ( mPlayer ) {
+		mPlayer->setHeld( holder != nullptr );
+	}
+}
+
+void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
+	if ( !mZombieSpawner || !mPlayer ) {
+		return; // ゾンビの形が無い・見えない所を決める自キャラが居ない
+	}
+	ZombieSpawner::View view;
+	view.playerEye = mPlayer->eyePosition();
+	view.viewYaw = cameraYaw;
+	view.standingZombies = 0;
+	for ( const auto& zombie : mZombies ) {
+		if ( zombie->state() == Zombie::State::Alive ) {
+			++view.standingZombies;
+		}
+	}
+	view.fuelDelivered = mEscapeCar ? mEscapeCar->fuelDelivered() : 0;
+	view.hasRoom = mZombies.size() < kMaxZombies;
+	mSpawnOrders.clear();
+	mZombieSpawner->update( view, &mSpawnOrders );
+	for ( const ZombieSpawner::Order& order : mSpawnOrders ) {
+		spawnZombie( order.position, order.yawDegree );
+	}
 }
 
 void GameWorld::hitZombie( const BulletList::Impact& impact ) {
@@ -385,10 +461,22 @@ const std::vector< GameWorld::ZombieHit >& GameWorld::zombieHitsThisTick() const
 	return mZombieHits;
 }
 
+const ZombieSpawner* GameWorld::zombieSpawner() const {
+	return mZombieSpawner.get();
+}
+
 void GameWorld::appendPickupColliders( std::vector< BoxCollider >* out ) const {
 	for ( const auto& pickup : mPickups ) {
 		if ( !pickup->isTaken() ) {
 			out->push_back( pickup->collider() );
 		}
 	}
+}
+
+const std::vector< GameWorld::ZombieAttackEvent >& GameWorld::zombieAttacksThisTick() const {
+	return mZombieAttacks;
+}
+
+bool GameWorld::isPlayerDead() const {
+	return mPlayer && mPlayer->isDead();
 }

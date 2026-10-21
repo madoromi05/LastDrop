@@ -8,6 +8,7 @@
 #include "GameSrc/Zombie/Zombie.h"
 #include "GameSrc/Zombie/ZombieModel.h"
 #include "GameSrc/Zombie/SeveredLimbList.h"
+#include "GameSrc/Zombie/ZombieSpawner.h"
 #include "GameSrc/World/ActorList.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Interaction/Pickup.h"
@@ -48,6 +49,15 @@ public:
 		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
 		BodyPart part;                // 当たった部位
 	};
+	// ゾンビが自キャラをつかんだ・噛んだ出来事（音・画面の赤み・視点を向ける係が読む）。
+	struct ZombieAttackEvent{
+		enum class Kind{
+			Grab, // つかんだ
+			Bite, // 噛んだ（自キャラの体力はもう減らしてある）
+		};
+		Kind kind;
+		GameLib::Math::Vector3 point; // ゾンビの頭の位置（ワールド座標。顔を向ける先・音を鳴らす所）
+	};
 
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから place を呼ぶ。
 	// meshes: 設計図を借りる倉庫。所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
@@ -61,8 +71,9 @@ public:
 	void place();
 	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
 	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビに自キャラを追わせてアニメを進め、
-	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消す。
-	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す。
+	// 追いついたゾンビが自キャラをつかんだら動けなくし、噛んだら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
+	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消し、足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
+	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
 	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection );
 	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
@@ -112,6 +123,12 @@ public:
 	const ActorList< Zombie >& zombies() const;
 	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる。
 	const std::vector< ZombieHit >& zombieHitsThisTick() const;
+	// 最後の update でゾンビが自キャラをつかんだ・噛んだ出来事（起きた順）。次の update で入れ替わる。
+	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;
+	// 自キャラが死んだか（自キャラが居なければ false）。
+	bool isPlayerDead() const;
+	// ゾンビを湧かせる係（確認用の表示が、立っている数・目標の数・次に湧くまでを読む）。ゾンビの形が無ければ nullptr。
+	const ZombieSpawner* zombieSpawner() const;
 
 private:
 	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。
@@ -121,6 +138,12 @@ private:
 	// direction: 弾の進む向き（長さ1）。
 	void severLimb( const Zombie& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
 
+	// ゾンビに自キャラを追わせ・攻撃させてアニメを進め、つかんでいるゾンビを自キャラへ伝え、噛まれたら自キャラの体力を減らす（update から）。
+	// 攻撃に行けるのは一度に 1 体だけ（攻撃に行ったゾンビが居る間、ほかのゾンビには attackTaken を渡す）。
+	void updateZombies();
+	// 立っているゾンビの数・給油の数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
+	// cameraYaw: カメラの水平の向き（度）。
+	void spawnZombiesFromSpawner( float cameraYaw );
 	// ゾンビを作って名簿へ載せる（spawnZombie と、place の確認用の T ポーズの1体から）。mZombieModel があること。
 	void addZombie( const GameLib::Math::Vector3& position, float yawDegree, const Zombie::Animations& animations );
 
@@ -154,6 +177,8 @@ private:
 	BloodSprayList mBloodSpray;
 	// このティックにゾンビへ当たった出来事（update のたびに作り直す。毎回確保し直さないために持つ）。
 	std::vector< ZombieHit > mZombieHits;
+	// このティックにゾンビが自キャラをつかんだ・噛んだ出来事（同上）。
+	std::vector< ZombieAttackEvent > mZombieAttacks;
 	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。
 	std::vector< BulletList::Impact > mImpacts;
 	// 撃った瞬間に銃口が光る演出（自キャラの銃の）。
@@ -164,6 +189,9 @@ private:
 	ActorList< Zombie > mZombies;
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）を選ぶ（place で種を決める）
 	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
+	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。
+	std::unique_ptr< ZombieSpawner > mZombieSpawner;
+	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）
 	// ゾンビから千切れた部位（どの名簿にも載らない）。ゾンビと同じ形を借りるので、mZombieData が生きている間だけ使う。
 	SeveredLimbList mSeveredLimbs;
 	// 切れた瞬間の骨の姿勢（severLimb の作業領域。毎回確保し直さないために持つ）。

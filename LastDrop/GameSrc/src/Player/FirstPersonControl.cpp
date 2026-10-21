@@ -1,8 +1,11 @@
 #include "GameSrc/Player/FirstPersonControl.h"
 #include "GameSrc/Core/Pad.h"
+#include "GameSrc/Core/GameTime.h"
+#include "Framework.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Input/Manager.h"
+#include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -19,15 +22,55 @@ namespace{
 		return kHipFieldOfView + ( kAimFieldOfView - kHipFieldOfView ) * aimWeight;
 	}
 
+	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
+	const float kLookPullSeconds = 0.25f;
+	const int kLookPullTicks = static_cast< int >( kLookPullSeconds * GameTime::kTicksPerSecond );
+	const float kHalfTurn = 180.f;
+	const float kFullTurn = 360.f;
+
+	// degree を -180〜180 へ。
+	float wrapSignedAngle( float degree ) {
+		while ( degree > kHalfTurn ) {
+			degree -= kFullTurn;
+		}
+		while ( degree < -kHalfTurn ) {
+			degree += kFullTurn;
+		}
+		return degree;
+	}
+
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
 		return on ? 1.f : 0.f;
 	}
+
+	// 見える絵の揺れ（CameraShake のトラウマ。0〜1）。仕様は SummaryPlan/個別仕様/CameraShake_Recoil_Plan.txt の 3・4 章。
+	// 射撃は 1 発ごとに足すが、射撃だけでは kFireTraumaLimit より揺らさない（連射しても揺れすぎない）。
+	const float kFireTrauma = 0.12f;
+	const float kFireTraumaLimit = 0.45f;
+	const float kBiteTrauma = 0.8f;
+	const float kGrabTrauma = 0.35f;
+	const float kTraumaFull = 1.f;
+
+	// 揺れ方・ぶれ方を遊ぶたびに変える種（起動からの時間）。部品ごとに足す数を変えて、同じ並びにならないようにする。
+	int timeSeed( int salt ) {
+		return static_cast< int >( Framework::instance().time() ) + salt;
+	}
+	const int kAimRecoilSalt = 1;
+	const int kAimPunchSalt = 2;
+	const int kShakeSalt = 3;
 }
 
 FirstPersonControl::FirstPersonControl( float startYaw ) :
 	mCommand(),
-	mFireSuppressed( true ) {
+	mAimRecoil( timeSeed( kAimRecoilSalt ) ),
+	mAimPunch( timeSeed( kAimPunchSalt ) ),
+	mShake( timeSeed( kShakeSalt ) ),
+	mFireSuppressed( true ),
+	mPullYaw( 0.f ),
+	mPullPitch( 0.f ),
+	mPullTicks( 0 ),
+	mEyeDrop( 0.f ) {
 	mCamera.rotate( startYaw, 0.f );
 }
 
@@ -44,15 +87,8 @@ bool FirstPersonControl::isCursorLocked() const {
 }
 
 void FirstPersonControl::readInput( float aimWeight ) {
+	updateCursorLock();
 	GameLib::Input::Manager input = GameLib::Input::Manager::instance();
-	if ( InputMenu() ) {
-		input.setCursorLocked( false );
-	} else if ( InputFire() && !input.isCursorLocked() ) {
-		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
-		input.setCursorLocked( true );
-		mFireSuppressed = true;
-	}
-
 	if ( input.isCursorLocked() ) {
 		AxisStatus look = InputLook();
 		// ズーム中は視野角の比で感度を下げる。同じだけマウスを動かしたとき、画面上で動く量を揃えるため。
@@ -75,6 +111,28 @@ void FirstPersonControl::readInput( float aimWeight ) {
 	mCommand.fireHeld = fireHeld && input.isCursorLocked() && !mFireSuppressed;
 }
 
+void FirstPersonControl::readInputIdle() {
+	updateCursorLock();
+	// 押した瞬間の入力（holsterPressed）は readInput と同じく consumePressed に任せる（ここで消すと、切り替えた描画の入力が落ちる）。
+	mCommand.forward = 0.f;
+	mCommand.strafe = 0.f;
+	mCommand.run = false;
+	mCommand.aimHeld = false;
+	mCommand.fireHeld = false;
+	mFireSuppressed = true;
+}
+
+void FirstPersonControl::updateCursorLock() {
+	GameLib::Input::Manager input = GameLib::Input::Manager::instance();
+	if ( InputMenu() ) {
+		input.setCursorLocked( false );
+	} else if ( InputFire() && !input.isCursorLocked() ) {
+		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
+		input.setCursorLocked( true );
+		mFireSuppressed = true;
+	}
+}
+
 const PlayerCommand& FirstPersonControl::command() const {
 	return mCommand;
 }
@@ -83,14 +141,35 @@ void FirstPersonControl::consumePressed() {
 	mCommand.holsterPressed = false;
 }
 
-void FirstPersonControl::updateRecoil( bool fired ) {
+void FirstPersonControl::updateViewEffects( bool fired ) {
 	mRecoil.update( fired );
-	mCamera.setPitchOffset( mRecoil.pitchOffset() );
+	mAimRecoil.update( fired );
+	mAimPunch.update();
+	if ( fired ) {
+		mShake.addTrauma( kFireTrauma, kFireTraumaLimit );
+	}
+	mShake.update();
+	// 狙いのずれは 3 つを足して渡す（どれも弾の向きに入る）。揺れは描く行列だけへ。
+	float yawOffset = mAimRecoil.yawOffset() + mAimPunch.yawOffset();
+	float pitchOffset = mRecoil.pitchOffset() + mAimRecoil.pitchOffset() + mAimPunch.pitchOffset();
+	mCamera.setAimOffset( yawOffset, pitchOffset );
+	mCamera.setShake( mShake.yaw(), mShake.pitch(), mShake.roll() );
+}
+
+void FirstPersonControl::flinch() {
+	mAimPunch.punch();
+	mShake.addTrauma( kBiteTrauma, kTraumaFull );
+}
+
+void FirstPersonControl::shakeOnGrab() {
+	mShake.addTrauma( kGrabTrauma, kTraumaFull );
 }
 
 void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {
 	if ( eye ) {
-		mCamera.setEyePosition( *eye );
+		Vector3 dropped = *eye;
+		dropped.y -= mEyeDrop;
+		mCamera.setEyePosition( dropped );
 	}
 	mCamera.setFieldOfView( fieldOfView( aimWeight ) );
 	mCamera.apply();
@@ -98,4 +177,34 @@ void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {
 
 const FirstPersonCamera& FirstPersonControl::camera() const {
 	return mCamera;
+}
+
+void FirstPersonControl::lookToward( const Vector3& target ) {
+	Vector3 toTarget;
+	toTarget.setSub( target, mCamera.eyePosition() );
+	float flat = Math::sqrt( toTarget.x * toTarget.x + toTarget.z * toTarget.z );
+	// ヨーは 0 で +Z を向き、左回りが正（FirstPersonCamera）。ピッチは見下ろしが正なので、下にある相手は正。
+	float yaw = Math::atan2( toTarget.x, toTarget.z );
+	float pitch = Math::atan2( -toTarget.y, flat );
+	mPullYaw = wrapSignedAngle( yaw - mCamera.yaw() );
+	mPullPitch = pitch - mCamera.pitch();
+	mPullTicks = kLookPullTicks;
+}
+
+void FirstPersonControl::updateLookPull() {
+	if ( mPullTicks <= 0 ) {
+		return;
+	}
+	// 残りを残りのティック数で割って回す（等速。最後のティックで残りを全部回し切る）。
+	float share = 1.f / static_cast< float >( mPullTicks );
+	float yawStep = mPullYaw * share;
+	float pitchStep = mPullPitch * share;
+	mCamera.rotate( yawStep, pitchStep );
+	mPullYaw -= yawStep;
+	mPullPitch -= pitchStep;
+	--mPullTicks;
+}
+
+void FirstPersonControl::setEyeDrop( float meters ) {
+	mEyeDrop = meters;
 }

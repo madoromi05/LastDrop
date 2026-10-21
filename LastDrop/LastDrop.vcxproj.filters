@@ -437,6 +437,9 @@
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Hit\HitMath.cpp">
       <Filter>GameSrc\Hit</Filter>
     </ClCompile>
@@ -492,6 +495,9 @@
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Weapon\AimRecoil.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\Bullet.cpp">
@@ -604,6 +610,30 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
       <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieAttack.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\PlayerHealth.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\CameraShake.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\AimPunch.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\PlayerBodyFigure.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\ZombieAttackSounds.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp">
       <Filter>GameSrc\Math</Filter>
@@ -1102,6 +1132,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
@@ -1181,6 +1214,9 @@
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\AimRecoil.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet.h">
@@ -1305,6 +1341,33 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
       <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttack.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealth.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\CameraShake.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\AimPunch.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodyZone.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerBodyFigure.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerDamageView.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieAttackSounds.h">
+      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h">
       <Filter>GameSrc\Zombie</Filter>
