@@ -323,6 +323,28 @@ namespace{
 			}
 		}
 	}
+
+	// 交差点の番号（北の行から、西から順に数える）。
+	int junctionIndex( int column, int row ) {
+		return row * kColumnNumber + column;
+	}
+
+	// 道探しの図の材料を、道の本数から作る（町の形を変えても直さなくてよい）。外周の道もつなぐ（囲いの建物の内側は歩ける）。
+	void addStreetGraph( std::vector< TownPlacement >* junctions, std::vector< StreetLink >* links ) {
+		const float kNoOffset = 0.f;
+		const float kNoYaw = 0.f; // 向きは使わない
+		for ( int row = 0; row < kRowNumber; ++row ) {
+			for ( int column = 0; column < kColumnNumber; ++column ) {
+				junctions->push_back( toPlacement( { static_cast< float >( column ), static_cast< float >( row ), kNoOffset, kNoOffset, kNoYaw } ) );
+				if ( column + 1 < kColumnNumber ) {
+					links->push_back( { junctionIndex( column, row ), junctionIndex( column + 1, row ) } );
+				}
+				if ( row + 1 < kRowNumber ) {
+					links->push_back( { junctionIndex( column, row ), junctionIndex( column, row + 1 ) } );
+				}
+			}
+		}
+	}
 }
 
 TownMap::TownMap() :
@@ -338,6 +360,7 @@ TownMap::TownMap() :
 	addPerimeterFloor( &mGroundTiles );
 
 	addZombieSpawnPoints( &mZombieSpawnPoints );
+	addStreetGraph( &mJunctions, &mStreetLinks );
 	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
 		mFuelSpawnPoints.push_back( toPlacement( spot ) );
 	}
@@ -381,4 +404,12 @@ const std::vector< TownPlacement >& TownMap::fuelSpawnPoints() const {
 
 const std::vector< GroundZone >& TownMap::groundZones() const {
 	return mGroundZones;
+}
+
+const std::vector< TownPlacement >& TownMap::junctions() const {
+	return mJunctions;
+}
+
+const std::vector< StreetLink >& TownMap::streetLinks() const {
+	return mStreetLinks;
 }

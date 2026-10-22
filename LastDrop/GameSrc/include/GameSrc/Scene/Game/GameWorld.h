@@ -3,6 +3,7 @@
 
 #include "GameSrc/Map/TownMap.h"
 #include "GameSrc/Map/TownGround.h"
+#include "GameSrc/Map/StreetGraph.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Zombie/Zombie.h"
@@ -71,7 +72,7 @@ public:
 	// 全データの構築後に一度だけ、物を作って並べ、名簿へ載せる。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	void place();
-	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
+	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、近くのゾンビに銃声を聞かせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
 	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビに自キャラを追わせてアニメを進め、
 	// 追いついたゾンビが自キャラをつかんだら動けなくし、噛んだら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
 	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消し、足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
@@ -146,6 +147,8 @@ private:
 	// list の拾われた物に、消す印を付ける（removeTakenPickups から。ガソリンと弾で同じ手順）。
 	void removeTaken( ActorList< Pickup >* list );
 
+	// position（撃った瞬間の自キャラの足元）で銃声がした。届く距離の内のゾンビへ知らせる（update で撃ったティックに）。
+	void alertZombiesToGunshot( const GameLib::Math::Vector3& position );
 	// ゾンビに自キャラを追わせ・攻撃させてアニメを進め、つかんでいるゾンビを自キャラへ伝え、噛まれたら自キャラの体力を減らす（update から）。
 	// 攻撃に行けるのは一度に 1 体だけ（攻撃に行ったゾンビが居る間、ほかのゾンビには attackTaken を渡す）。
 	void updateZombies();
@@ -161,6 +164,8 @@ private:
 
 	// 町のどこに何を置くか。
 	TownMap mMap;
+	// 町の道の図（ゾンビが建物を回り込む通り道を聞く）。mMap から作るので mMap より後、ゾンビが借りるのでゾンビより先に宣言する。
+	StreetGraph mStreets;
 	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
 	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃（弾倉を除いた形）
 	const StaticMeshData* mMagazineData;  // 銃の弾倉（リロードで外れる）

@@ -13,6 +13,7 @@
 #include "GameSrc/Zombie/ZombieDismemberment.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
 #include "GameSrc/Zombie/ZombieChase.h"
+#include "GameSrc/Zombie/ZombiePath.h"
 #include "GameSrc/Zombie/ZombieAttack.h"
 #include "GameSrc/Collision/CharacterMover.h"
 #include "GameLib/Math/Matrix34.h"
@@ -22,10 +23,13 @@
 class ZombieModel;
 class CollisionWorld;
 class HitWorld;
+class StreetGraph;
 struct ChaseTarget;
 
 // ゾンビ1体。立っている間は自キャラに気付くと歩いて追ってくる（どこへ行くかは ZombieChase が決め、
 // ここが向きを変えて歩き、壁・他のキャラに沿って滑る移動を CharacterMover に任せる。SummaryPlan/個別仕様/ZombieChase_Plan.txt）。
+// 追っている・探している間、行き先へまっすぐ通れなければ、ZombiePath に聞いた通り道に沿って建物を回り込む。
+// 見失った後に着けない所へ向かっていれば、探すのをやめさせる（SummaryPlan/個別仕様/ZombiePath_Plan.txt）。
 // 気付いていない・追いついた・見失って探し終えたときは、立つアニメで立ち止まる。
 // 形と、当たり判定の大きさ・部位の箱の設計図は ZombieModel を借りる（同じ種類の全員で共有。1体ごとには求めない）。
 // 見た目は SkinnedMeshInstance に任せ、体を真上から囲む長方形（BodyFootprint）を差し出して、他のキャラの移動を止める（ICollisionBody）。
@@ -71,11 +75,12 @@ public:
 	// model: 形・見た目・アニメと、当たり判定の設計図。所有権は受け取らない。nullptr 不可。
 	//        このゾンビより長く生きていること（持ち主の GameWorld が、ゾンビより後に破棄する）。
 	// collisionWorld: 歩くときに壁・他のキャラを聞く名簿。所有権は受け取らない。nullptr 不可。このゾンビより長く生きていること。
+	// streets: 建物を回り込む通り道を聞く道の図。所有権は受け取らない。nullptr 不可。寿命の決まりは collisionWorld と同じ。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
-	// sightPhase: 見通しを調べる時刻をずらす番号（何体目か。ZombieChase）。
+	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号（何体目か。ZombieChase・ZombiePath）。
 	// randomSeed: うろつく先・立つ長さを選ぶ乱数の種（体ごとに違う値。ZombieChase）。
-	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const GameLib::Math::Vector3& position, float angleY,
-		const Animations& animations, int sightPhase, int randomSeed );
+	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
+		const GameLib::Math::Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed );
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;
 
@@ -88,6 +93,9 @@ public:
 	// 生きている間だけ体力を減らし、のけぞらせ、当たった部位が 0 になったら切り、条件を満たせばよろけさせる。
 	// 脚を失ったら倒れて Downed に、倒れる条件を満たしたら死亡アニメへ繋いで倒し始める（IDamageable）。
 	virtual void applyDamage( const DamageInfo& damage );
+	// position で銃声がした（届くかは持ち主が決める）。立っていて、よろけ・攻撃の最中でなければ、
+	// 少し遅れてからそこへ探しに来る（ZombieChase::hearNoise。SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。
+	void hearNoise( const GameLib::Math::Vector3& position );
 	// 最後の applyDamage で切れた部位（無ければ空。次の applyDamage で入れ替わる）。持ち主が千切れた部位を飛ばすのに読む。
 	const std::vector< BodyPart >& severedByLastDamage() const;
 	// 今見えている骨の姿勢（ワールド。のけぞり・部位欠損の書き換え後）を、骨の番号の順に out へ書く（前の中身は捨てる）。
@@ -101,6 +109,8 @@ public:
 	bool isAlive() const;
 	// 追ってくる AI の今の考え（Wander / Chase / Search）。確認用の表示に使う。
 	ZombieChase::Mode chaseMode() const;
+	// 建物を回り込む通り道（確認用の表示に使う）。
+	const ZombiePath& path() const;
 	// よろけのアニメの最中か（生きている間だけ true になりうる）。AI を作るとき、この間は動かない。
 	bool isStaggering() const;
 	// ── 攻撃（ZombieAttack）──
@@ -166,6 +176,7 @@ private:
 	bool canChase() const;    // 追ってくる体か（歩くアニメがある＝T ポーズの確認用ではない）
 
 	const ZombieModel* mModel; // 借りているだけ
+	const StreetGraph* mStreets; // 借りているだけ
 	// 使うアニメ（コンストラクタで名前から引いておく）。空なら、そのアニメは使わない（Animations の nullptr と同じ意味）。
 	GameLib::Scene::Animation mMoveAnimation;
 	GameLib::Scene::Animation mIdleAnimation;
@@ -185,6 +196,7 @@ private:
 	GameLib::Math::Vector3 mPosition; // 足元の位置（沈んでも変えない。沈む分は見た目の位置だけ下げる）
 	float mAngleY;                    // 向き（度）
 	ZombieChase mChase;               // どこへ行きたいか
+	ZombiePath mPath;                 // 行き先へまっすぐ通れないときの通り道
 	ZombieAttack mAttack;             // つかんで噛む攻撃の段階
 	CharacterMover mMover;            // 壁・他のキャラに沿って滑る移動（自分を当たり判定として読む）
 	bool mWalking;                    // 歩くアニメを再生しているか（false なら立つアニメ）

@@ -162,6 +162,9 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		world.appendPickupColliders( &mPickupBoxes );
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
+	if ( mShowZombieHealth ) {
+		mZombiePathDrawer.draw( world.zombies(), camera.projectionViewMatrix() );
+	}
 	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
 }
 #endif

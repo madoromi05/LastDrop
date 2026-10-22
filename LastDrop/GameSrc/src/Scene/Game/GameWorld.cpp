@@ -32,6 +32,9 @@ namespace{
 	// 倒れるときのアニメ（tools/configs/zombie.json の extra_animations）。体ごとにどれかをランダムで選ぶ（倒れ方が揃わないように）。
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
+	// 銃声が届く距離（m。撃った所から水平だけ。SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。隣の通り（33m 先）まで届く。
+	// 建物越しでも縮めない（音は回り込むので）。
+	const float kGunshotHearingRange = 40.f;
 	// 撃たれてよろけるときのアニメ（同じく extra_animations）。
 	const char* kZombieStaggerAnimation = "gethit";
 	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
@@ -75,6 +78,7 @@ namespace{
 }
 
 GameWorld::GameWorld( MeshCache* meshes ) :
+	mStreets( mMap ),
 	mPlayerData( nullptr ),
 	mWeaponData( nullptr ),
 	mMagazineData( nullptr ),
@@ -172,7 +176,7 @@ void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombi
 	// 移動・命中の両方の当たり判定への登録は ActorList が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
 	// うろつき方の乱数の種も体ごとに変える（同じ種だと全員が同じ向き・同じ間で歩き出す）。
 	int randomSeed = mZombieRandom.getInt();
-	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, position, yawDegree, animations,
+	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mStreets, position, yawDegree, animations,
 		mZombieNumber, randomSeed ) );
 	++mZombieNumber;
 }
@@ -220,6 +224,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		if ( mPlayer->firedThisTick() ) {
 			mBullets.fire( mPlayer->eyePosition(), viewDirection );
 			mMuzzleFlash.fire();
+			alertZombiesToGunshot( mPlayer->position() );
 		}
 	}
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
@@ -248,6 +253,17 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	mAmmoDrops.flush();
 	// 名簿をたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
 	spawnZombiesFromSpawner( cameraYaw );
+}
+
+void GameWorld::alertZombiesToGunshot( const Vector3& position ) {
+	for ( auto& zombie : mZombies ) {
+		Vector3 toZombie;
+		toZombie.setSub( zombie->position(), position );
+		toZombie.y = 0.f;
+		if ( toZombie.squareLength() <= kGunshotHearingRange * kGunshotHearingRange ) {
+			zombie->hearNoise( position ); // 聞くかどうか（倒れている・よろけている等）はゾンビが決める
+		}
+	}
 }
 
 void GameWorld::updateZombies() {

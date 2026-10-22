@@ -50,6 +50,11 @@ namespace{
 	const int kWanderStallTicks = static_cast< int >( kWanderStallSeconds * GameTime::kTicksPerSecond );
 	const float kHalfTurn = 180.f;
 
+	// ── 銃声を聞く（SummaryPlan/個別仕様/ZombieHearing_Plan.txt）──
+	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように。
+	const float kNoiseDelayMinSeconds = 0.2f;
+	const float kNoiseDelayMaxSeconds = 1.0f;
+
 	// a と b の水平の距離（m）。
 	float flatDistance( const Vector3& a, const Vector3& b ) {
 		Vector3 d;
@@ -82,6 +87,9 @@ ZombieChase::ZombieChase( int sightPhase, int randomSeed ) :
 	mSeesTarget( false ),
 	mAlerted( false ),
 	mSightTicks( ( sightPhase >= 0 ? sightPhase : -sightPhase ) % kSightIntervalTicks ),
+	mNoisePending( false ),
+	mNoisePosition( 0.f, 0.f, 0.f ),
+	mNoiseDelayTicks( 0 ),
 	mWanderWaitTicks( 0 ),
 	mWanderBestDistance( 0.f ),
 	mWanderStallTicks( 0 ),
@@ -93,15 +101,36 @@ void ZombieChase::alert() {
 	mAlerted = true;
 }
 
+void ZombieChase::giveUpSearch() {
+	if ( mMode == Mode::Search ) {
+		startWanderWait(); // 着いたときと同じく、立ってからうろつく
+	}
+}
+
+void ZombieChase::hearNoise( const Vector3& position ) {
+	if ( mMode == Mode::Chase ) {
+		return; // 見えている相手を追っている間は、銃声で行き先を変えない
+	}
+	mNoisePosition = position;
+	if ( !mNoisePending ) {
+		mNoisePending = true;
+		float seconds = mRandom.getFloat( kNoiseDelayMinSeconds, kNoiseDelayMaxSeconds );
+		mNoiseDelayTicks = static_cast< int >( seconds * GameTime::kTicksPerSecond );
+	}
+}
+
 void ZombieChase::update( const Vector3& self, const Vector3& eye, float angleY, const ChaseTarget* target,
 const HitWorld& hitWorld ) {
 	updateSight( eye, angleY, target, hitWorld );
 	if ( mSeesTarget ) {
 		mMode = Mode::Chase;
 		mDestination = target->position; // 見えている間は、線を引かないティックも今の位置を追う
+		mNoisePending = false;           // 見えているので、聞いた所へは行かない
 	} else if ( mMode == Mode::Chase ) {
 		mMode = Mode::Search; // 最後に見た場所（mDestination）へ向かう
 		mWalking = true;
+	} else {
+		updateNoise();
 	}
 
 	switch ( mMode ) {
@@ -143,6 +172,16 @@ bool ZombieChase::canSee( const Vector3& eye, float angleY, const ChaseTarget& t
 		return false;
 	}
 	return !hitWorld.isBlocked( eye, toTarget );
+}
+
+void ZombieChase::updateNoise() {
+	if ( !mNoisePending || --mNoiseDelayTicks > 0 ) {
+		return;
+	}
+	mNoisePending = false;
+	mMode = Mode::Search; // 見失ったときと同じく、行き先へ歩き、着いても見えなければ立ってからうろつく
+	mDestination = mNoisePosition;
+	mWalking = true;
 }
 
 void ZombieChase::updateChase( const Vector3& self ) {

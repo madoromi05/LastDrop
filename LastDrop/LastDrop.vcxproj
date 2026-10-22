@@ -175,6 +175,7 @@
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
+    <ClCompile Include="GameSrc\src\Map\StreetGraph.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownGround.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiInput.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
@@ -183,6 +184,7 @@
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitMath.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitboxSet.cpp" />
@@ -247,6 +249,7 @@
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimb.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombiePath.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieAttack.cpp" />
@@ -462,6 +465,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\StreetGraph.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRect.h" />
@@ -475,6 +479,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />
@@ -548,6 +553,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimb.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombiePath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttack.h" />

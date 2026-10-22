@@ -12,6 +12,12 @@ struct TownPlacement{
 	float yawDegree; // 上から見て反時計回りが正
 };
 
+// 道でつながった交差点2つ（TownMap::junctions の番号）。
+struct StreetLink{
+	int from;
+	int to;
+};
+
 // 地面に並べる部品の種類（道路キットから変換した物と、町の外の土）。
 enum TownPiece{
 	TOWN_PIECE_ROAD,			// 二車線の道路の直線（1枚ぶん）
@@ -60,6 +66,10 @@ public:
 	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
 	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
+	// 道探しの図（StreetGraph）の材料。交差点の真ん中（道の中心どうしが交わる所。向きは使わない）と、
+	// 東西・南北に隣り合って道でつながった交差点の組。
+	const std::vector< TownPlacement >& junctions() const;
+	const std::vector< StreetLink >& streetLinks() const;
 
 private:
 	std::vector< TownTile > mGroundTiles;
@@ -72,6 +82,8 @@ private:
 	TownPlacement mEndlessFuel;
 	std::vector< TownPlacement > mFuelSpawnPoints;
 	std::vector< GroundZone > mGroundZones;
+	std::vector< TownPlacement > mJunctions;
+	std::vector< StreetLink > mStreetLinks;
 };
 
 #endif

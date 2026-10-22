@@ -111,9 +111,10 @@ namespace{
 	}
 }
 
-Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const Vector3& position, float angleY,
-const Animations& animations, int sightPhase, int randomSeed ) :
+Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
+const Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed ) :
 	mModel( model ),
+	mStreets( streets ),
 	mMoveAnimation( findAnimation( model->data(), animations.move ) ),
 	mIdleAnimation( findAnimation( model->data(), animations.idle ) ),
 	mDeathAnimation( findAnimation( model->data(), animations.death ) ),
@@ -128,11 +129,13 @@ const Animations& animations, int sightPhase, int randomSeed ) :
 	mPosition( position ),
 	mAngleY( wrapSignedAngle( angleY ) ),
 	mChase( sightPhase, randomSeed ),
+	mPath( sightPhase ),
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
 	mWalking( false ),
 	mMoveStartTime( animations.moveStartTime ),
 	mState( State::Alive ),
 	mStateTicks( 0 ) {
+	ASSERT( streets && "Zombie : streets is null." );
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
 	mPoseModifiers.add( &mFlinch );
@@ -173,9 +176,26 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
 void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
 	Vector3 eye = mPosition;
 	eye.y += kEyeHeight;
+	ZombieChase::Mode modeBefore = mChase.mode();
 	mChase.update( mPosition, eye, mAngleY, target, hitWorld );
-	bool facing = mChase.hasDestination() ? turnToward( mChase.destination() ) : false;
+	if ( mChase.mode() == ZombieChase::Mode::Search && modeBefore != ZombieChase::Mode::Search ) {
+		mPath.resetProgress(); // 着けるかは探し始めてから数える（追っている間に寄れなかった分で、すぐあきらめないように）
+	}
+	bool facing = false;
+	if ( mChase.mode() == ZombieChase::Mode::Wander ) {
+		mPath.clear(); // うろつく先は近く（ZombieChase が通れる所を選ぶ）なので、通り道は使わない
+		if ( mChase.hasDestination() ) {
+			facing = turnToward( mChase.destination() );
+		}
+	} else {
+		// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）。
+		facing = turnToward( mPath.steer( mPosition, mChase.destination(), *mStreets, hitWorld ) );
+		if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
+			mChase.giveUpSearch(); // 最後に見た場所へ着けない。次のティックから立ってうろつく
+		}
+	}
 	if ( canStartAttack( target ) ) {
+		mPath.clear();
 		startAttack();
 		mMesh.setAngleY( mAngleY );
 		return;
@@ -461,6 +481,17 @@ Zombie::State Zombie::state() const {
 
 bool Zombie::isAlive() const {
 	return mState == State::Alive || mState == State::Downed;
+}
+
+void Zombie::hearNoise( const Vector3& position ) {
+	if ( mState != State::Alive || mStaggering || mAttack.isActive() || !canChase() ) {
+		return; // 倒れている・よろけている・攻撃している体と、追ってこない確認用の体は聞かない
+	}
+	mChase.hearNoise( position );
+}
+
+const ZombiePath& Zombie::path() const {
+	return mPath;
 }
 
 ZombieChase::Mode Zombie::chaseMode() const {

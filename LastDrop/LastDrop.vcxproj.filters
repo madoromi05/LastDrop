@@ -416,6 +416,9 @@
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\StreetGraph.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Map\TownGround.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
@@ -438,6 +441,9 @@
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp">
@@ -618,6 +624,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombiePath.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
@@ -1108,6 +1117,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\StreetGraph.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
@@ -1145,6 +1157,9 @@
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h">
@@ -1361,6 +1376,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombiePath.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
