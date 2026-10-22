@@ -13,14 +13,14 @@ Interactor::Interactor( const HitWorld* world, float reach, Resolver resolver ) 
 	ASSERT( mWorld && mReach > 0.f && mResolver && "Interactor : bad argument." );
 }
 
-void Interactor::update( const Vector3& eye, const Vector3& direction, const IHittable* self,
+void Interactor::update( const Vector3& eye, const Vector3& direction,
 	Inventory* inventory, bool interactPressed ) {
 	ASSERT( inventory && "Interactor : inventory is null." );
 	mPrompt.clear();
 	Vector3 delta = direction;
 	delta *= mReach;
 	HitWorld::Hit hit;
-	if ( !mWorld->raycast( eye, delta, self, &hit ) ) {
+	if ( !mWorld->raycastBlockers( eye, delta, &hit ) ) {
 		return;
 	}
 	IInteractable* target = mResolver( hit );

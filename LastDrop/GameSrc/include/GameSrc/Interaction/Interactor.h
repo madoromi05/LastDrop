@@ -7,11 +7,11 @@
 #include <string>
 
 class IInteractable;
-class IHittable;
 class Inventory;
 
 // 視線の先にある「使える物」（IInteractable）を探し、操作キーが押されたら使う。
-// 視線は命中の名簿（HitWorld）へ撃つので、壁や車の向こうにある物は見つからない（手前の物に遮られる）。
+// 視線は命中の名簿（HitWorld）の「弾を止める物」へ撃つので、壁や車の向こうにある物は見つからない（手前の物に遮られる）。
+// キャラ（ゾンビ・死体・自分）は素通りする（倒したゾンビが落とした弾を、死体が上に倒れていても拾えるように）。
 // 当たった物が「使える物」かどうかは、名簿の持ち主（シーン）が教える（resolver）。名簿に載る物の種類を
 // Interactor が知らずに済み、使える物の種類を増やしても Interactor は変わらない。
 class Interactor{
@@ -24,9 +24,9 @@ public:
 	Interactor( const HitWorld* world, float reach, Resolver resolver );
 
 	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う。
-	// 1回の描画につき1回（押した瞬間を1回だけ拾うため）。self: 視線を当てない自分の体。nullptr なら全員に当てる。
+	// 1回の描画につき1回（押した瞬間を1回だけ拾うため）。
 	// inventory: 使うときに増やしたり減らしたりする持ち物。nullptr 不可。
-	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction, const IHittable* self,
+	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction,
 		Inventory* inventory, bool interactPressed );
 	// 今見ている使える物の案内（無ければ空）。update の後で読む。
 	const std::string& prompt() const;

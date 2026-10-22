@@ -119,7 +119,7 @@ void GameScene::update() {
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	const FirstPersonCamera& camera = mControl.camera();
-	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection() );
+	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
 	updatePlayerDamage();
@@ -229,7 +229,7 @@ void GameScene::updateInteraction() {
 	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）。
 	const FirstPersonCamera& camera = mControl.camera();
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。案内は今まで通り出す。
-	mInteractor.update( camera.eyePosition(), camera.viewDirection(), player, &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
+	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.removeTakenPickups();
 	if ( mWorld.isEscapeReady() ) {

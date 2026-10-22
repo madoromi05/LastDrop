@@ -32,6 +32,7 @@ class SkinnedMeshData;
 class PlayerCharacter;
 class IInteractable;
 class ViewFrustum;
+class Inventory;
 
 // 本編の世界。町（道路・歩道・建物）、自キャラ、飛んでいる弾、ゾンビ、ゲームループの物（脱出用の車・落ちているガソリン）と、
 // それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
@@ -41,6 +42,7 @@ class ViewFrustum;
 // 舞台は碁盤の目の町。町の周りは建物で囲んであり、外へは出られない。
 // 建物とゾンビと車は移動を止め、自キャラは当たると沿って滑る。道路と歩道は移動を止めないが、弾・視線は止める（TownGround）。
 // ゲームループ: 候補点から選んだ場所にガソリンが出る。拾って車へ運び、決まった数を入れると車が走れるようになる（isEscapeReady）。
+// 倒したゾンビは、決まった割合で足元に予備の弾を落とす（拾うのはガソリンと同じく E。上を歩ける）。
 // その後どうするか（クリア画面へ進む）は知らない。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
 class GameWorld{
 public:
@@ -73,9 +75,10 @@ public:
 	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビに自キャラを追わせてアニメを進め、
 	// 追いついたゾンビが自キャラをつかんだら動けなくし、噛んだら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
 	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消し、足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
-	// command / cameraYaw / cameraPitch: PlayerCharacter::update へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
+	// command / cameraYaw / cameraPitch / inventory: PlayerCharacter::update へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
-	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection );
+	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection,
+		Inventory* inventory );
 	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
 	void draw( const ViewFrustum& frustum ) const;
@@ -137,6 +140,11 @@ private:
 	// zombie の part が今切れたので、切り口に血しぶきを出し、千切れた部位を飛ばす（hitZombie から）。
 	// direction: 弾の進む向き（長さ1）。
 	void severLimb( const Zombie& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
+	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とす（hitZombie から）。
+	// 落ちている弾が多すぎたら、一番古い物を消す。
+	void dropAmmo( const Zombie& zombie );
+	// list の拾われた物に、消す印を付ける（removeTakenPickups から。ガソリンと弾で同じ手順）。
+	void removeTaken( ActorList< Pickup >* list );
 
 	// ゾンビに自キャラを追わせ・攻撃させてアニメを進め、つかんでいるゾンビを自キャラへ伝え、噛まれたら自キャラの体力を減らす（update から）。
 	// 攻撃に行けるのは一度に 1 体だけ（攻撃に行ったゾンビが居る間、ほかのゾンビには attackTaken を渡す）。
@@ -154,13 +162,15 @@ private:
 	// 町のどこに何を置くか。
 	TownMap mMap;
 	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
-	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃
+	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃（弾倉を除いた形）
+	const StaticMeshData* mMagazineData;  // 銃の弾倉（リロードで外れる）
 	const StaticMeshData* mBulletData;    // 飛ぶ弾（7.62 NATO の弾頭）
 	const SkinnedMeshData* mZombieData;
 	const StaticMeshData* mBuildingData;
 	const StaticMeshData* mPerimeterBuildingData; // 町を囲む、足元の板の無い建物
 	const StaticMeshData* mVehicleData;   // 脱出用の車
 	const StaticMeshData* mFuelCanData;   // ガソリンの携行缶
+	const StaticMeshData* mAmmoDropData;  // ゾンビが落とす予備の弾（7.62 NATO の弾薬を大きくして寝かせた物）
 	TownGround mGround;                   // 道路と歩道（見た目・弾の当たり判定・足元の材質）
 
 	// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する（＝載る物より後に破棄される）。
@@ -199,6 +209,9 @@ private:
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
 	ActorList< Pickup > mPickups;            // 落ちているガソリン（拾うと消える）
+	// ゾンビが落とした予備の弾。ガソリンと分けて持つのは、数の上限（古い物から消す）があるのは弾だけで、
+	// 確認用の表示（appendPickupColliders）に出すのはガソリンだけのため。
+	ActorList< Pickup > mAmmoDrops;
 	std::unique_ptr< EscapeCar > mEscapeCar; // 名簿が自分の箱を指すので、置いた後は動かさない（unique_ptr で持つ）
 	std::unique_ptr< ItemSource > mEndlessFuel; // 車の近くの、何度でも拾えるガソリン（同上）
 };

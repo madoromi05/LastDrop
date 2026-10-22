@@ -5,12 +5,17 @@
 
 #include "GameLib/GameLib.h"
 
+#include <string>
+
 using namespace GameLib::Math;
 
-Pickup::Pickup( const StaticMeshData* data, const Vector3& position, float angleY, ItemId item ) :
+Pickup::Pickup( const StaticMeshData* data, const Vector3& position, float angleY, ItemId item, int amount, bool blocksMovement ) :
 	mBody( data, position, angleY ),
 	mItem( item ),
+	mAmount( amount ),
+	mBlocksMovement( blocksMovement ),
 	mTaken( false ) {
+	ASSERT( amount > 0 && "Pickup : amount must be positive." );
 }
 
 void Pickup::draw( const ViewFrustum& frustum ) const {
@@ -34,13 +39,20 @@ std::string Pickup::prompt( const Inventory& inventory ) const {
 	if ( !inventory.canAdd( mItem ) ) {
 		return "Can't carry more " + name;
 	}
+	// 1 つだけなら数は書かない（ガソリンの「Pick up Fuel」のまま）。
+	if ( mAmount > 1 ) {
+		return "[E] Pick up " + name + " (" + std::to_string( mAmount ) + ")";
+	}
 	return "[E] Pick up " + name;
 }
 
 void Pickup::interact( Inventory* inventory ) {
 	ASSERT( inventory && canInteract( *inventory ) && "Pickup::interact : cannot pick up." );
-	inventory->add( mItem );
-	mTaken = true;
+	while ( mAmount > 0 && inventory->canAdd( mItem ) ) {
+		inventory->add( mItem );
+		--mAmount;
+	}
+	mTaken = ( mAmount == 0 );
 }
 
 BoxCollider Pickup::collider() const {
@@ -49,12 +61,16 @@ BoxCollider Pickup::collider() const {
 
 void Pickup::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
 	ASSERT( collisionWorld && hitWorld && "Pickup : world is null." );
-	collisionWorld->addBody( this );
+	if ( mBlocksMovement ) {
+		collisionWorld->addBody( this );
+	}
 	hitWorld->addBlocker( this );
 }
 
 void Pickup::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
 	ASSERT( collisionWorld && hitWorld && "Pickup : world is null." );
-	collisionWorld->removeBody( this );
+	if ( mBlocksMovement ) {
+		collisionWorld->removeBody( this );
+	}
 	hitWorld->removeBlocker( this );
 }

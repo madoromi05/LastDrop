@@ -26,6 +26,11 @@ void PlayerBodySounds::update( const PlayerCharacter& player ) {
 	foley.weaponDrawn = player.isWeaponDrawn();
 	foley.aiming = player.isAiming();
 	foley.fired = player.firedThisTick();
+	foley.dryFired = player.dryFiredThisTick();
+	WeaponReload::Cue cue = player.reloadCueThisTick();
+	foley.magazineOut = ( cue == WeaponReload::CUE_MAG_OUT );
+	foley.magazineIn = ( cue == WeaponReload::CUE_MAG_IN );
+	foley.boltPulled = ( cue == WeaponReload::CUE_BOLT );
 	mFoley.update( foley, stepped );
 }
 

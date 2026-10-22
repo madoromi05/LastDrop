@@ -4,7 +4,7 @@
 
 Inventory::Inventory() {
 	for ( int i = 0; i < ITEM_NUMBER; ++i ) {
-		mCounts[ i ] = 0;
+		mCounts[ i ] = itemSpec( static_cast< ItemId >( i ) ).startCarry;
 	}
 }
 

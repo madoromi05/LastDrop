@@ -1,18 +1,19 @@
 {
     "mode": "skinned",
-    "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Idle.fbx",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Idle.fbx",
     "out_path": "../../Resource/player.txt",
     "split_vertices": true,
     "mesh_names": ["Ch15"],
     "tree_name": "skel",
     "fbx_animations": false,
     "extra_animations": [
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Idle.fbx",     "name": "idle" },
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Walking.fbx",  "name": "walk" },
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Slow Run.fbx", "name": "run" },
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/rifle aiming idle.fbx", "name": "rifle_idle" },
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/walking.fbx",           "name": "rifle_walk", "in_place": true },
-        { "fbx_path": "C:/Users/mador/Downloads/ゲームモデル/Basic Shooter Pack/rifle run.fbx",         "name": "rifle_run",  "in_place": true }
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Idle.fbx",     "name": "idle" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Walking.fbx",  "name": "walk" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Slow Run.fbx", "name": "run" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Basic Shooter Pack/rifle aiming idle.fbx", "name": "rifle_idle" },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Basic Shooter Pack/walking.fbx",           "name": "rifle_walk", "in_place": true },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Basic Shooter Pack/rifle run.fbx",         "name": "rifle_run",  "in_place": true },
+        { "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Basic Shooter Pack/reloading.fbx",         "name": "rifle_reload" }
     ],
     "game_fps": 60,
     "resource_root": "../..",

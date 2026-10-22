@@ -55,6 +55,7 @@ namespace
         case WorkId::DebugFreeCamera: return "DebugFreeCamera";
         case WorkId::DebugCameraUp:   return "DebugCameraUp";
         case WorkId::DebugCameraDown: return "DebugCameraDown";
+        case WorkId::Reload:   return "Reload";
         default:            return "";
         }
     }
@@ -177,6 +178,8 @@ namespace
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
         // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
+        // R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）。
+        { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
         // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
         { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
         { CollectorId::InGame, WorkId::DebugPickupCollision, DeviceKind::Keyboard, Keyboard::KEY_F2 },

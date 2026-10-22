@@ -103,6 +103,7 @@ void FirstPersonControl::readInput( float aimWeight ) {
 	mCommand.strafe = axisValue( InputRight() ) - axisValue( InputLeft() );
 	mCommand.run = InputRun();
 	mCommand.holsterPressed = mCommand.holsterPressed || InputHolster();
+	mCommand.reloadPressed = mCommand.reloadPressed || InputReload();
 	mCommand.aimHeld = InputAim();
 	bool fireHeld = InputFireHeld();
 	if ( !fireHeld ) {
@@ -113,7 +114,7 @@ void FirstPersonControl::readInput( float aimWeight ) {
 
 void FirstPersonControl::readInputIdle() {
 	updateCursorLock();
-	// 押した瞬間の入力（holsterPressed）は readInput と同じく consumePressed に任せる（ここで消すと、切り替えた描画の入力が落ちる）。
+	// 押した瞬間の入力（holsterPressed・reloadPressed）は readInput と同じく consumePressed に任せる（ここで消すと、切り替えた描画の入力が落ちる）。
 	mCommand.forward = 0.f;
 	mCommand.strafe = 0.f;
 	mCommand.run = false;
@@ -139,6 +140,7 @@ const PlayerCommand& FirstPersonControl::command() const {
 
 void FirstPersonControl::consumePressed() {
 	mCommand.holsterPressed = false;
+	mCommand.reloadPressed = false;
 }
 
 void FirstPersonControl::updateViewEffects( bool fired ) {

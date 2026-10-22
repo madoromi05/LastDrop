@@ -165,3 +165,4 @@ bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::U
 bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiDown, playerId); }
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }
 bool InputInteract(int playerId) { return Pad::instance()->isTriggered(WorkId::Interact, playerId); }
+bool InputReload(int playerId)   { return Pad::instance()->isTriggered(WorkId::Reload, playerId); }

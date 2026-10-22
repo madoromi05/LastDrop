@@ -9,7 +9,7 @@
 // 何個まで持てるかの決まりは ItemCatalog が持つ（ここには書かない）。
 class Inventory{
 public:
-	Inventory();
+	Inventory(); // 種類ごとに ItemSpec::startCarry だけ持って始まる
 
 	// id をもう1つ持てるか。
 	bool canAdd( ItemId id ) const;

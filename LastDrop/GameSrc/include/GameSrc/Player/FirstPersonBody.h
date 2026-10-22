@@ -8,6 +8,8 @@
 class SkinnedMeshData;
 
 // 一人称（Escape from Tarkov のような「自分の体が見える」FPS）用に、全身のポーズを書き換える。
+// 0. リロード中は、両腕（肩から先）だけを別のアニメ（リロード）のポーズに差し替える。胸の骨から見た位置・向きで写すので、
+//    脚と背骨は今のアニメ（歩き・静止）のまま、腕だけ胸に付いて動く。差し替えた後の腕も、下の 1〜 の補正をそのまま受ける。
 // 1. 視点の上下（ピッチ）ぶん背骨を曲げる。腕と銃が視線に付いてきて、見上げても見下ろしても画面に残る。
 //    背骨3本（Spine / Spine1 / Spine2）に分けて曲げるのは、1本で曲げると腰から折れたように見えるため。
 // 2. 右手首を曲げて、銃の先を左手（支える手）へ向ける。銃は右手の骨に付けているので、そのままだと
@@ -49,6 +51,9 @@ public:
 	void setCarryWeight( float weight );
 	// 反動の量（0 = 反動なし、1 = 撃った瞬間。WeaponRecoil::kick）。
 	void setRecoil( float kick );
+	// 腕を差し替えるポーズ（AnimationPoseSampler::sample の結果）と効き具合（0〜1）。pose が nullptr か weight が 0 なら差し替えない。
+	// pose は借りるだけ（次の apply まで中身を変えないこと）。腕がアニメで銃から手を離すので、両手持ちの補正（setHoldWeight）は呼び出し側が弱める。
+	void setArmOverride( const std::vector< GameLib::Math::Matrix34 >* pose, float weight );
 
 	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ。
 	const GameLib::Math::Vector3& eyePosition() const;
@@ -76,6 +81,8 @@ private:
 	void alignSightToEye( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 反動の量の分だけ、銃を後ろへ引いて銃口を跳ね上げる補正を両腕へ掛ける。
 	void kickWeapon( std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	// 両腕を、差し替えるポーズの「胸から見た腕」へ効き具合の分だけ寄せる（背骨を曲げる前に掛ける）。
+	void overrideArms( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 置き終えた銃の8隅から、銃を囲む箱を求めて mWeaponLow / mWeaponHigh へ覚える。
 	void updateWeaponBounds( const std::vector< GameLib::Math::Matrix34 >& pose );
 	void hideHead( std::vector< GameLib::Math::Matrix34 >* pose ) const;
@@ -85,7 +92,7 @@ private:
 	std::vector< int > mRightHandBones; // 右手と右手の指（手首を曲げるときに一緒に回す）
 	std::vector< int > mHiddenBones;
 	int mHeadBone;
-	int mChestBone;                   // 走るときに銃を寄せる基準の骨。-1 なら寄せない
+	int mChestBone;                   // 走るときに銃を寄せる基準の骨・腕を差し替えるときの基準の骨。-1 ならどちらもしない
 	float mPitch;
 
 	int mHandBone;                    // 銃を付けた骨。-1 なら銃なし
@@ -99,6 +106,8 @@ private:
 	float mAimWeight;
 	float mCarryWeight;
 	float mRecoil;
+	const std::vector< GameLib::Math::Matrix34 >* mArmOverride; // 借りているだけ。nullptr なら差し替えない
+	float mArmOverrideWeight;
 
 	GameLib::Math::Vector3 mEyePosition;
 	bool mHasWeaponBounds;                // mWeaponLow / mWeaponHigh を一度でも求めたか

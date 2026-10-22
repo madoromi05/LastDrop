@@ -25,6 +25,7 @@
 # =====================================================================
 
 import bpy
+import bmesh
 import mathutils
 import numpy
 import math
@@ -88,6 +89,14 @@ CONFIG = {
     # 軸ごとの拡大は、部品を決まった長さへ伸び縮みさせるためのもの（歩道の帯を交差点の幅に合わせる、など）。
     "scale": 1.0,
     "center_origin": False,     # True: 原点を「真上から見た中心・一番下」へ移す（地面に置いて、その場で回せるように）
+    # static モードのみ。頂点を回す角度（度。Blender に読み込んだ向きの X / Y / Z 軸まわり、この順に掛ける）。
+    # scale と center_origin より先に掛ける（回した後の形で、一番下を原点にする）。立った形のモデルを寝かせて置くのに使う。
+    "rotation": [0.0, 0.0, 0.0],
+    # static モードのみ。つながった面のかたまり（島）のうち、範囲が箱にすっぽり入る物だけを残す／除く。
+    # 1つのメッシュの部品を別のモデルに分けるのに使う（銃から弾倉を外して、別に動かせるようにする、など）。
+    # 箱は Blender に読み込んだ向き・大きさ（scale・rotation を掛ける前。Z が上）。keep は "inside"（箱の中の島だけ残す）か "outside"（箱の中の島を除く）。
+    # 例: {"min": [-0.013, -0.1, 1.33], "max": [0.013, 0.045, 1.512], "keep": "inside"}。None なら全部残す。
+    "island_filter": None,
     # static モードのみ。mesh_texture / mesh_normalmap の元にする画像ファイル（設定ファイルからの相対パスで書ける）。
     # 書いた項目は、マテリアルに繋がった画像ではなくこのファイルから書き出す。
     # FBX の中の画像の参照が切れているモデル用（作者の PC のパスが入っていて、読み込んでも画像が空になる）。
@@ -162,20 +171,60 @@ def adjust_static_transform(mesh_objs):
     # ここで動かせば出力に反映される。親子関係があるモデルで子まで二重に動かさないよう、根のオブジェクトだけ動かす。
     scale = CONFIG["scale"]
     factors = tuple(scale) if isinstance(scale, (list, tuple)) else (scale, scale, scale)
-    if factors == (1.0, 1.0, 1.0) and not CONFIG["center_origin"]:
+    angles = tuple(CONFIG["rotation"])
+    if factors == (1.0, 1.0, 1.0) and not CONFIG["center_origin"] and angles == (0.0, 0.0, 0.0):
         return
+    rotation = mathutils.Euler(tuple(math.radians(a) for a in angles), "XYZ").to_matrix().to_4x4()
     offset = mathutils.Vector((0.0, 0.0, 0.0))
     if CONFIG["center_origin"]:
-        # Blender は Z が上なので、X/Y の中心と Z の一番下を原点へ持ってくる。
-        points = [o.matrix_world @ v.co for o in mesh_objs for v in o.data.vertices]
+        # Blender は Z が上なので、X/Y の中心と Z の一番下を原点へ持ってくる（回した後の形で測る）。
+        points = [rotation @ o.matrix_world @ v.co for o in mesh_objs for v in o.data.vertices]
         low = [min(p[i] for p in points) for i in range(3)]
         high = [max(p[i] for p in points) for i in range(3)]
         offset = mathutils.Vector(((low[0] + high[0]) * 0.5, (low[1] + high[1]) * 0.5, low[2]))
-    adjust = mathutils.Matrix.Diagonal((factors[0], factors[1], factors[2], 1.0)) @ mathutils.Matrix.Translation(-offset)
+    adjust = mathutils.Matrix.Diagonal((factors[0], factors[1], factors[2], 1.0)) @ mathutils.Matrix.Translation(-offset) @ rotation
     for obj in [o for o in bpy.data.objects if o.parent is None]:
         obj.matrix_world = adjust @ obj.matrix_world
     bpy.context.view_layer.update()  # 子の matrix_world を新しい親の位置で計算し直す
-    print("ADJUST", "scale", " ".join(f(x) for x in factors), "offset", f(offset.x), f(offset.y), f(offset.z))
+    print("ADJUST", "scale", " ".join(f(x) for x in factors), "rotation", " ".join(f(a) for a in angles),
+          "offset", f(offset.x), f(offset.y), f(offset.z))
+
+
+def filter_islands(mesh_objs):
+    # island_filter の箱で、島ごとに残す・除く。範囲がすっぽり入るかで決めるのは、箱の端にかかった別の部品を半端に切らないため。
+    rule = CONFIG["island_filter"]
+    if not rule:
+        return
+    low = mathutils.Vector(rule["min"])
+    high = mathutils.Vector(rule["max"])
+    keep_inside = rule["keep"] == "inside"
+    for obj in mesh_objs:
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        seen = set()
+        doomed = []
+        for start in bm.verts:
+            if start in seen:
+                continue
+            island = []
+            stack = [start]
+            seen.add(start)
+            while stack:
+                v = stack.pop()
+                island.append(v)
+                for edge in v.link_edges:
+                    other = edge.other_vert(v)
+                    if other not in seen:
+                        seen.add(other)
+                        stack.append(other)
+            points = [obj.matrix_world @ v.co for v in island]
+            inside = all(low[i] <= min(p[i] for p in points) and max(p[i] for p in points) <= high[i] for i in range(3))
+            if inside != keep_inside:
+                doomed.extend(island)
+        bmesh.ops.delete(bm, geom=doomed, context="VERTS")
+        bm.to_mesh(obj.data)
+        bm.free()
+        print("ISLANDS", obj.name, "removed verts", len(doomed), "left", len(obj.data.vertices))
 
 
 def find_meshes():
@@ -813,6 +862,7 @@ def main():
 
     out = "<Container>\n"
     if CONFIG["mode"] == "static":
+        filter_islands(mesh_objs)
         adjust_static_transform(mesh_objs)
         out += emit_static_mesh(mesh_objs)
         export_mesh_textures(mesh_objs)

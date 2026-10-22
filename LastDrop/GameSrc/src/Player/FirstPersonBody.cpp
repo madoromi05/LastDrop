@@ -188,6 +188,8 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mAimWeight( 0.f ),
 	mCarryWeight( 0.f ),
 	mRecoil( 0.f ),
+	mArmOverride( nullptr ),
+	mArmOverrideWeight( 0.f ),
 	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ),
 	mHasWeaponBounds( false ),
 	mWeaponLow( 0.f, 0.f, 0.f ),
@@ -246,6 +248,11 @@ void FirstPersonBody::setRecoil( float kick ) {
 	mRecoil = kick;
 }
 
+void FirstPersonBody::setArmOverride( const std::vector< Matrix34 >* pose, float weight ) {
+	mArmOverride = pose;
+	mArmOverrideWeight = weight;
+}
+
 const Vector3& FirstPersonBody::eyePosition() const {
 	return mEyePosition;
 }
@@ -260,13 +267,16 @@ bool FirstPersonBody::weaponBounds( Vector3* low, Vector3* high ) const {
 }
 
 void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
-	// 順番に意味がある: 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める → その目へ銃を寄せる → 反動で銃を跳ねさせる
+	// 順番に意味がある: リロードなら腕をアニメへ差し替える → 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める
+	// → その目へ銃を寄せる → 反動で銃を跳ねさせる
+	// 腕の差し替えを最初にするのは、差し替えた腕も背骨の曲げ（視線の上下）に付いてくるようにするため。
 	// → 跳ねた銃を囲む → 頭を消す。
 	// 反動は、置き終えた銃（覗いていればサイトが目に合った銃）から跳ねさせる。覗く補正より前に掛けると、合わせ直されて反動が消える。
 	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）。
 	// 目を曲げる前の頭で決めると、見上げ・見下ろしで目と銃がずれる。
 	// 胸元へ寄せる・覗く補正は両腕をまとめて動かすだけなので、先に両手持ちにしておけば左手は銃に付いたまま。
 	// 覗く補正は最後に目へ合わせ直すので、走り⇔覗くの切り替え中に両方が効いていても銃は目へ向かう。
+	overrideArms( pose );
 	bendSpine( pose );
 	holdWithBothHands( pose );
 	carryAtChest( pose );
@@ -403,6 +413,26 @@ void FirstPersonBody::kickWeapon( std::vector< Matrix34 >* pose ) const {
 	kick.m13 -= barrel.y * back;
 	kick.m23 -= barrel.z * back;
 	transformBones( kick, mArmBones, pose );
+}
+
+void FirstPersonBody::overrideArms( std::vector< Matrix34 >* pose ) const {
+	if ( !mArmOverride || mArmOverrideWeight <= 0.f || mChestBone < 0 ) {
+		return;
+	}
+	const std::vector< Matrix34 >& layer = *mArmOverride;
+	// 差し替えるポーズの胸 → 今のポーズの胸 へ移す変換。腕はこれを掛けて置く（今の胸に付いた、アニメどおりの腕）。
+	// 根から見た位置で写さないのは、歩きで揺れる胸から腕が離れて見えないようにするため。
+	Matrix34 toCurrentChest;
+	toCurrentChest.setInverse( layer[ mChestBone ] );
+	Matrix34 chestMove;
+	chestMove.setMul( ( *pose )[ mChestBone ], toCurrentChest );
+	for ( int b : mArmBones ) {
+		Matrix34 target;
+		target.setMul( chestMove, layer[ b ] );
+		Matrix34 blended;
+		MatrixBlend::blend( ( *pose )[ b ], target, mArmOverrideWeight, &blended );
+		( *pose )[ b ] = blended;
+	}
 }
 
 void FirstPersonBody::updateWeaponBounds( const std::vector< Matrix34 >& pose ) {

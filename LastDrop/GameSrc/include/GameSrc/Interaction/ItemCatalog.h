@@ -4,6 +4,7 @@
 // アイテムの種類。増やすときはここに1つ足し、ItemCatalog.cpp の表にも1行足す（ここを見れば全種類が分かる）。
 enum ItemId{
 	ITEM_FUEL, // ガソリンの携行缶（車へ運ぶ）
+	ITEM_AMMO, // 予備の弾（7.62 NATO。1 つが 1 発。R で弾倉へ込める）
 
 	ITEM_NUMBER,
 };
@@ -13,6 +14,7 @@ enum ItemId{
 struct ItemSpec{
 	const char* name; // 画面に出す名前（英語）
 	int maxCarry;     // 同時に持てる数
+	int startCarry;   // 始めから持っている数
 };
 
 // 種類 id の決まり。id は ITEM_NUMBER 未満であること。

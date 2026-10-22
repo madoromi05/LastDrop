@@ -81,6 +81,10 @@ void WeaponStance::updateAimMode( bool aimHeld ) {
 	}
 }
 
+void WeaponStance::stopAiming() {
+	mAimMode = AIM_OFF;
+}
+
 bool WeaponStance::isDrawn() const {
 	return mDrawn;
 }

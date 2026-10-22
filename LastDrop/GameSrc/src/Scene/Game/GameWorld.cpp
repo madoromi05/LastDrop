@@ -18,7 +18,8 @@ namespace{
 
 	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
 	const char* kPlayerFile = "Resource/player.txt"; // tools/configs/player.json で変換
-	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM）
+	const char* kWeaponFile = "Resource/rifle.txt"; // tools/configs/rifle.json で変換（AKM。弾倉を除いた形）
+	const char* kMagazineFile = "Resource/rifle_mag.txt"; // tools/configs/rifle_mag.json で変換（AKM の弾倉だけ。銃と同じ座標）
 	// 飛ぶ弾（7.62 NATO の弾頭。実物大・底が原点・先が +Y）。tools/configs/bullet_tip.json で変換
 	const char* kBulletFile = "Resource/bullet_tip.txt";
 
@@ -53,6 +54,20 @@ namespace{
 	const char* kFuelCanFile = "Resource/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
 	// 車に入れると走れるようになるガソリンの数。候補の場所（TownMap）から、毎回この数だけ選んで置く（SpawnPicker）。
 	const int kRequiredFuel = 3;
+	const int kFuelPerCan = 1;
+	const bool kBlocksMovement = true;  // ガソリンは移動を止める（ユーザー指定）
+	const bool kWalkOver = false;       // 落ちた弾は上を歩ける（足元の小さな物で引っかからないように）
+
+	// ── ゾンビが落とす予備の弾（2026-10-22 ユーザー指定：40% で 10 発）──
+	// 1 体あたり平均 4 発。倒すのに 3〜6 発使うので、無駄撃ちすると減っていく（バイオハザードの乏しさ）。
+	const char* kAmmoDropFile = "Resource/ammo_drop.txt"; // tools/configs/ammo_drop.json で変換（7.62 NATO の弾薬を 3 倍にして寝かせた物）
+	const float kAmmoDropChance = 0.4f;
+	const int kAmmoDropRounds = 10;
+	// 同時に落ちていられる数。超えたら一番古い物を消す（拾わずに倒し続けても名簿が増え続けないように）。
+	const int kMaxAmmoDrops = 10;
+	// 足元から自キャラの方へ寄せる長さ（m）。死体の脚の下に隠れにくくする（視線は死体を素通りするので、隠れても拾える）。
+	const float kAmmoDropTowardPlayer = 0.5f;
+	const float kFullTurnDegree = 360.f; // 落ちた弾の向きは体ごとにばらばら
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
@@ -62,26 +77,31 @@ namespace{
 GameWorld::GameWorld( MeshCache* meshes ) :
 	mPlayerData( nullptr ),
 	mWeaponData( nullptr ),
+	mMagazineData( nullptr ),
 	mBulletData( meshes->staticMesh( kBulletFile ) ), // mBullets が借りるので、ここで頼む（他は下でまとめて頼む）
 	mZombieData( nullptr ),
 	mBuildingData( nullptr ),
 	mPerimeterBuildingData( nullptr ),
 	mVehicleData( nullptr ),
 	mFuelCanData( nullptr ),
+	mAmmoDropData( nullptr ),
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mZombies( &mCollisionWorld, &mHitWorld ),
 	mZombieNumber( 0 ),
-	mPickups( &mCollisionWorld, &mHitWorld ) {
+	mPickups( &mCollisionWorld, &mHitWorld ),
+	mAmmoDrops( &mCollisionWorld, &mHitWorld ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
 	// 読み込みを頼むだけ（非同期）。構築が終わったら place で並べる。
 	mPlayerData = meshes->skinnedMesh( kPlayerFile );
 	mWeaponData = meshes->staticMesh( kWeaponFile );
+	mMagazineData = meshes->staticMesh( kMagazineFile );
 	mZombieData = meshes->skinnedMesh( kZombieFile );
 	mBuildingData = meshes->staticMesh( kBuildingFile );
 	mPerimeterBuildingData = meshes->staticMesh( kPerimeterBuildingFile );
 	mVehicleData = meshes->staticMesh( kVehicleFile );
 	mFuelCanData = meshes->staticMesh( kFuelCanFile );
+	mAmmoDropData = meshes->staticMesh( kAmmoDropFile );
 }
 
 // PlayerCharacter の定義が見える所で破棄する（ヘッダでは前方宣言だけ）。
@@ -92,8 +112,9 @@ void GameWorld::place() {
 	if ( mPlayerData->isReady() ) {
 		// 銃の構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
 		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
+		const StaticMeshData* magazine = mMagazineData->isReady() ? mMagazineData : nullptr; // 失敗したら弾倉の無い銃になるだけ
 		const TownPlacement& start = mMap.playerStart();
-		mPlayer = std::make_unique< PlayerCharacter >( mPlayerData, weapon, &mCollisionWorld, toPosition( start ), start.yawDegree );
+		mPlayer = std::make_unique< PlayerCharacter >( mPlayerData, weapon, magazine, &mCollisionWorld, toPosition( start ), start.yawDegree );
 		mPlayer->addTo( &mCollisionWorld, &mHitWorld );
 	}
 	if ( mZombieData->isReady() ) {
@@ -184,16 +205,17 @@ void GameWorld::placeMissionObjects() {
 		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
 		for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kRequiredFuel, seed ) ) {
 			const TownPlacement& p = spawnPoints[ index ];
-			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL ) );
+			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL, kFuelPerCan, kBlocksMovement ) );
 		}
 	}
 }
 
-void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection ) {
+void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection,
+	Inventory* inventory ) {
 	// 前に撃った光を先に進めてから、このティックに撃った光を灯す（撃ったティックの描画が光り始めになる）。
 	mMuzzleFlash.update();
 	if ( mPlayer ) {
-		mPlayer->update( command, cameraYaw, cameraPitch );
+		mPlayer->update( command, cameraYaw, cameraPitch, inventory );
 		// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
 		if ( mPlayer->firedThisTick() ) {
 			mBullets.fire( mPlayer->eyePosition(), viewDirection );
@@ -223,6 +245,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
 	mZombies.flush();
 	mPickups.flush();
+	mAmmoDrops.flush();
 	// 名簿をたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
 	spawnZombiesFromSpawner( cameraYaw );
 }
@@ -321,7 +344,11 @@ void GameWorld::hitZombie( const BulletList::Impact& impact ) {
 	damage.baseAmount = Bullet::damage();
 	damage.point = hit.point;
 	damage.direction = impact.direction;
+	bool wasAlive = zombie->isAlive();
 	zombie->applyDamage( damage );
+	if ( wasAlive && !zombie->isAlive() ) {
+		dropAmmo( *zombie ); // 脚を失って倒れたまま生きている（Downed）間は落とさない。止めを刺したときに落とす
+	}
 	for ( BodyPart part : zombie->severedByLastDamage() ) {
 		severLimb( *zombie, part, impact.direction );
 	}
@@ -339,6 +366,29 @@ void GameWorld::severLimb( const Zombie& zombie, BodyPart part, const Vector3& d
 	const Matrix34& joint = mSeverPose[ cut.jointBone ];
 	mBloodSpray.spawn( Vector3( joint.m03, joint.m13, joint.m23 ), direction, kSeverBloodScale );
 	mSeveredLimbs.spawn( mZombieData, cut, mSeverPose, direction );
+}
+
+void GameWorld::dropAmmo( const Zombie& zombie ) {
+	if ( !mAmmoDropData->isReady() || mZombieRandom.getFloat() >= kAmmoDropChance ) {
+		return; // 形の構築に失敗した（理由は MeshCache が出力済み）・外れた
+	}
+	if ( mAmmoDrops.size() >= kMaxAmmoDrops ) {
+		const Pickup* oldest = mAmmoDrops.begin()->get();
+		mBulletHoles.removeAttachedTo( oldest ); // 物が消える前に外す
+		mAmmoDrops.destroyLater( oldest );
+	}
+	Vector3 position = zombie.position();
+	if ( mPlayer ) {
+		Vector3 toPlayer;
+		toPlayer.setSub( mPlayer->position(), position );
+		toPlayer.y = 0.f;
+		if ( toPlayer.length() > kAmmoDropTowardPlayer ) {
+			toPlayer.normalize();
+			position.madd( toPlayer, kAmmoDropTowardPlayer );
+		}
+	}
+	float yaw = mZombieRandom.getFloat( kFullTurnDegree );
+	mAmmoDrops.spawn( std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
 }
 
 void GameWorld::draw( const ViewFrustum& frustum ) const {
@@ -362,6 +412,9 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 	}
 	for ( const auto& pickup : mPickups ) {
 		pickup->draw( frustum );
+	}
+	for ( const auto& drop : mAmmoDrops ) {
+		drop->draw( frustum );
 	}
 }
 
@@ -397,10 +450,15 @@ bool GameWorld::muzzleLight( MuzzleFlash::Light* out ) const {
 }
 
 void GameWorld::removeTakenPickups() {
-	for ( const auto& pickup : mPickups ) {
+	removeTaken( &mPickups );
+	removeTaken( &mAmmoDrops );
+}
+
+void GameWorld::removeTaken( ActorList< Pickup >* list ) {
+	for ( const auto& pickup : *list ) {
 		if ( pickup->isTaken() ) {
 			mBulletHoles.removeAttachedTo( pickup.get() ); // 物が消える前に外す
-			mPickups.destroyLater( pickup.get() );
+			list->destroyLater( pickup.get() );
 		}
 	}
 }
@@ -411,6 +469,9 @@ IInteractable* GameWorld::resolveInteractable( const HitWorld::Hit& hit ) {
 	}
 	if ( Pickup* pickup = mPickups.find( hit.blocker ) ) {
 		return pickup;
+	}
+	if ( Pickup* drop = mAmmoDrops.find( hit.blocker ) ) {
+		return drop;
 	}
 	if ( mEndlessFuel && mEndlessFuel->isBody( hit.blocker ) ) {
 		return mEndlessFuel.get();

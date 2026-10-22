@@ -17,6 +17,9 @@ public:
 	// holsterPressed: 出し入れの入力（押した瞬間）。aimHeld: 覗く入力（押されている間）。
 	// runHeld: 走ろうとしているか（走る入力が押されていて、移動の入力もある間）。押した瞬間に覗いたままをやめる。
 	void update( bool holsterPressed, bool aimHeld, bool runHeld );
+	// 覗くのをやめる（覗いたまま・長押しのどちらも）。覗き具合は次の update から一定の速さで戻る。
+	// リロードを始めたときに呼ぶ（リロード中は呼び出し側が aimHeld を false で渡し、覗き直さないようにする）。
+	void stopAiming();
 
 	bool isDrawn() const;	// 武器を持っているか（しまっていれば false）
 	bool isAiming() const;	// 覗いているか（覗き具合が 1 へ向かっている途中も true）

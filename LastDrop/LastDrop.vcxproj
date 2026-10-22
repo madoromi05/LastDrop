@@ -149,6 +149,7 @@
     <ClCompile Include="GameSrc\src\Player\Animator.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshData.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshInstance.cpp" />
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\AnimationPoseSampler.cpp" />
     <ClCompile Include="GameSrc\src\Render\MeshCache.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshLoader.cpp" />
     <ClCompile Include="GameSrc\src\Render\MeshMaterial.cpp" />
@@ -200,6 +201,9 @@
     <ClCompile Include="GameSrc\src\Player\FirstPersonBody.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponStance.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\FireControl.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\Magazine.cpp" />
+    <ClCompile Include="GameSrc\src\Player\HeldMagazine.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\WeaponReload.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\AimRecoil.cpp" />
@@ -427,6 +431,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\Animator.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshData.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshInstance.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\AnimationPoseSampler.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshCache.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshLoader.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshMaterial.h" />
@@ -496,6 +501,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Magazine.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldMagazine.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponReload.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\AimRecoil.h" />

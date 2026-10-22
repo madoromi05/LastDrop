@@ -338,6 +338,9 @@
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshInstance.cpp">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\SkinnedMesh\AnimationPoseSampler.cpp">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\MeshCache.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -489,6 +492,15 @@
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\FireControl.cpp">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Weapon\Magazine.cpp">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\HeldMagazine.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Weapon\WeaponReload.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp">
@@ -1003,6 +1015,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshInstance.h">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\AnimationPoseSampler.h">
+      <Filter>GameSrc\Render\SkinnedMesh</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshCache.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1208,6 +1223,15 @@
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Magazine.h">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldMagazine.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponReload.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h">

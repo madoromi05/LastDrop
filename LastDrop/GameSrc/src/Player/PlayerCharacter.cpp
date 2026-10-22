@@ -4,13 +4,17 @@
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Player/HeldItem.h"
+#include "GameSrc/Player/HeldMagazine.h"
 #include "GameSrc/Player/FirstPersonBody.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
+#include "GameSrc/Interaction/Inventory.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
 #include "GameLib/Math/Functions.h"
+
+#include <algorithm>
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -58,6 +62,9 @@ namespace{
 	// 先頭は、アニメが見つからない状態・表に無い状態の代わりに使う静止の行。
 	const bool kBareHands = false;
 	const bool kWeaponDrawn = true;
+
+	// リロード中に腕だけ差し替えるアニメ（Basic Shooter Pack の reloading。tools/configs/player.json の extra_animations）。
+	const char* kReloadAnimation = "rifle_reload";
 
 	// 銃口の先端（銃のモデル座標。m）。rifle.txt の一番前の頂点（z = 0.471）での銃身の中心。
 	const Vector3 kMuzzlePoint( 0.f, 1.541f, 0.471f );
@@ -188,11 +195,14 @@ namespace{
 	}
 }
 
-PlayerCharacter::PlayerCharacter( const SkinnedMeshData* data, const StaticMeshData* weapon, const CollisionWorld* world,
+PlayerCharacter::PlayerCharacter( const SkinnedMeshData* data, const StaticMeshData* weapon, const StaticMeshData* magazine, const CollisionWorld* world,
 const Vector3& position, float angleY ) :
 	mBody( std::make_unique< FirstPersonBody >( data ) ),
 	mMesh( std::make_unique< SkinnedMeshInstance >( data ) ),
 	mFiredThisTick( false ),
+	mReloadArms( data, kReloadAnimation ),
+	mDryFiredThisTick( false ),
+	mDryFireLatched( false ),
 	mMover( world, this ), // this は覚えるだけ（位置を読むのは move のとき＝構築の後）
 	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
 	mHitboxLayout( data, kBoneNamePrefix ),
@@ -239,7 +249,18 @@ const Vector3& position, float angleY ) :
 			} else if ( !findSupportHandOnWeapon( data, hand, supportHand, grip, &supportOnWeapon ) ) {
 				supportHand = -1;
 			}
-			mBody->setWeapon( hand, grip, kSightEyeOnWeapon, supportHand, supportOnWeapon, weapon->boundsMin(), weapon->boundsMax() );
+			// 銃を囲む箱（移動の当たり判定）には弾倉も含める（弾倉を分ける前と同じ大きさにする）。
+			Vector3 weaponMin = weapon->boundsMin();
+			Vector3 weaponMax = weapon->boundsMax();
+			if ( magazine ) {
+				weaponMin.set( Math::min( weaponMin.x, magazine->boundsMin().x ), Math::min( weaponMin.y, magazine->boundsMin().y ), Math::min( weaponMin.z, magazine->boundsMin().z ) );
+				weaponMax.set( Math::max( weaponMax.x, magazine->boundsMax().x ), Math::max( weaponMax.y, magazine->boundsMax().y ), Math::max( weaponMax.z, magazine->boundsMax().z ) );
+			}
+			mBody->setWeapon( hand, grip, kSightEyeOnWeapon, supportHand, supportOnWeapon, weaponMin, weaponMax );
+			// 弾倉は支える手（左手）で抜いて挿す。支える手が無ければ、弾倉は描かない。
+			if ( magazine && supportHand >= 0 ) {
+				mMagazineModel = std::make_unique< HeldMagazine >( magazine, supportHand );
+			}
 		}
 	}
 	mHoldWeight = mStance.isDrawn() ? kFullWeight : kNoWeight;
@@ -248,7 +269,8 @@ const Vector3& position, float angleY ) :
 PlayerCharacter::~PlayerCharacter() {
 }
 
-void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, float cameraPitch ) {
+void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, float cameraPitch, Inventory* inventory ) {
+	ASSERT( inventory && "PlayerCharacter::update : inventory is null." );
 	PlayerCommand command = allowedCommand( requested );
 	// 一人称では体の向き＝視線の向き。振り向きを遅らせると、視点と腕・銃の向きがずれて見えるため即座に合わせる。
 	mAngleY = wrapSignedAngle( cameraYaw );
@@ -260,19 +282,29 @@ void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, f
 	if ( moving ) {
 		mMoveDirection = direction;
 	}
-	mStance.update( command.holsterPressed, command.aimHeld, wantsRun );
+	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）。
+	mStance.update( command.holsterPressed, command.aimHeld && !mReload.isActive(), wantsRun );
+	updateReload( command, inventory );
 	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る。
-	bool running = wantsRun && !mStance.isAiming();
+	// リロード中も走らない（弾倉を替えながら歩くだけ。バイオハザードと同じ）。
+	bool running = wantsRun && !mStance.isAiming() && !mReload.isActive();
 	Animator::State next = chooseState( moving, running, mStance.isDrawn() );
 	// 撃てるのは、銃を手に持っていて、走っていない間だけ（走りでは銃口を下げて胸元に抱えている）。
+	// リロード中も撃てない（銃を下げて弾倉を替えている）。
 	// 撃てない間も FireControl は進める（次の1発までの間隔を、撃てない間に止めないため）。
-	bool canFire = mWeapon && mStance.isDrawn() && !running;
-	mFiredThisTick = mFire.update( command.fireHeld && canFire );
+	bool canFire = mWeapon && mStance.isDrawn() && !running && !mReload.isActive();
+	updateTrigger( command.fireHeld && canFire, command.fireHeld );
 	mRecoil.update( mFiredThisTick );
 	mBody->setRecoil( mRecoil.kick() );
+	// リロード中は腕をアニメへ差し替える。アニメでは左手が銃を離れるので、その間は両手持ちの補正（右手首を左手へ向ける）を弱める。
+	float armWeight = 0.f;
+	if ( mReload.isActive() && mReloadArms.sample( mReload.animationFrame(), &mReloadPose ) ) {
+		armWeight = mReload.armWeight();
+	}
+	mBody->setArmOverride( armWeight > 0.f ? &mReloadPose : nullptr, armWeight );
 	approachHoldWeight();
 	approachCarryWeight( next );
-	mBody->setHoldWeight( mHoldWeight );
+	mBody->setHoldWeight( mHoldWeight * ( kFullWeight - armWeight ) );
 	mBody->setCarryWeight( mCarryWeight );
 	mBody->setAimWeight( mStance.aimWeight() );
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
@@ -290,14 +322,30 @@ void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, f
 	mPosition.y = mMover.followGround( mPosition ); // 歩道の段差に乗る
 	mMesh->setPosition( mPosition );
 	mHitboxes.update( *mMesh );
+	// 弾倉を抜いた瞬間の左手から見た場所を覚える（それからは左手に付いて動く）。このティックのポーズ・置き場所が決まった後に読む。
+	if ( mReload.cueThisTick() == WeaponReload::CUE_MAG_OUT ) {
+		takeOutMagazine();
+	}
 }
 
 void PlayerCharacter::draw() const {
 	mMesh->draw();
 	// しまった武器は描かない（背中に背負った見た目は、一人称では見えないので持たない）。
 	// 出し入れのアニメが無いので、切り替えた瞬間に手へ現れる・消える。
-	if ( mWeapon && mStance.isDrawn() ){
-		mWeapon->draw( *mMesh );
+	if ( !mWeapon || !mStance.isDrawn() ){
+		return;
+	}
+	mWeapon->draw( *mMesh );
+	Matrix34 gun;
+	if ( mMagazineModel && mWeapon->placement( *mMesh, &gun ) ) {
+		mMagazineModel->draw( *mMesh, gun, mReload.isMagazineOut(), mReload.magazineSeatWeight() );
+	}
+}
+
+void PlayerCharacter::takeOutMagazine() {
+	Matrix34 gun;
+	if ( mMagazineModel && mWeapon && mWeapon->placement( *mMesh, &gun ) ) {
+		mMagazineModel->takeOut( *mMesh, gun );
 	}
 }
 
@@ -373,6 +421,65 @@ bool PlayerCharacter::firedThisTick() const {
 	return mFiredThisTick;
 }
 
+bool PlayerCharacter::dryFiredThisTick() const {
+	return mDryFiredThisTick;
+}
+
+bool PlayerCharacter::isReloading() const {
+	return mReload.isActive();
+}
+
+WeaponReload::Cue PlayerCharacter::reloadCueThisTick() const {
+	return mReload.cueThisTick();
+}
+
+int PlayerCharacter::magazineRounds() const {
+	return mMagazine.rounds();
+}
+
+void PlayerCharacter::updateReload( const PlayerCommand& command, Inventory* inventory ) {
+	if ( !mStance.isDrawn() ) {
+		// しまったらやめる（替えている途中の銃は手から消えるので、弾は込めない）。
+		mReload.cancel();
+	} else if ( command.reloadPressed && canStartReload( *inventory ) ) {
+		mReload.start();
+		mStance.stopAiming(); // 覗いていたら銃を下ろしてから替える
+	}
+	// リロード中でなくても進める（揺れを戻し、合図を消すため）。
+	if ( !mReload.update() ) {
+		return;
+	}
+	// 込め終えた。予備から弾倉の足りない分だけ移す（予備が足りなければ、ある分だけ）。
+	int count = std::min( mMagazine.missingRounds(), inventory->count( ITEM_AMMO ) );
+	for ( int i = 0; i < count; ++i ) {
+		inventory->remove( ITEM_AMMO );
+	}
+	mMagazine.load( count );
+}
+
+bool PlayerCharacter::canStartReload( const Inventory& inventory ) const {
+	return mWeapon && !mReload.isActive() && mMagazine.missingRounds() > 0 && inventory.count( ITEM_AMMO ) > 0;
+}
+
+void PlayerCharacter::updateTrigger( bool pulling, bool triggerHeld ) {
+	mFiredThisTick = false;
+	mDryFiredThisTick = false;
+	if ( !triggerHeld ) {
+		mDryFireLatched = false;
+	}
+	// 空撃ちの後は、離すまで引き金を引いていないことにする（押し続けてもカチッは 1 回。実銃も撃鉄が落ちるのは 1 回）。
+	if ( !mFire.update( pulling && !mDryFireLatched ) ) {
+		return;
+	}
+	if ( mMagazine.isEmpty() ) {
+		mDryFiredThisTick = true;
+		mDryFireLatched = true;
+		return;
+	}
+	mMagazine.takeRound();
+	mFiredThisTick = true;
+}
+
 PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) const {
 	PlayerCommand allowed = command;
 	if ( isDead() ) {
@@ -383,6 +490,7 @@ PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) co
 		allowed.holsterPressed = false;
 		allowed.aimHeld = false;
 		allowed.fireHeld = false;
+		allowed.reloadPressed = false;
 		return allowed;
 	}
 	if ( mHeld ) {

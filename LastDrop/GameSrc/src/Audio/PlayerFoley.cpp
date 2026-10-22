@@ -26,6 +26,14 @@ namespace{
 	// 元の WAV のまま鳴らす。足音・装備の音（0.5 以下）よりはっきり大きく、連射で重なっても割れにくい大きさ。
 	const float kGunshotVolume = 1.f;
 
+	// ── 空撃ち・リロードの大きさ ──
+	// 自分の手元の金属音。素材の一番大きい所が 0.9 前後と大きいので、出し入れの音（0.5）と同じくらいに抑える。
+	// 空撃ちは弾切れに気付かせる音なので、リロードより少し大きくする。
+	const float kDryFireVolume = 0.6f;
+	const float kMagazineOutVolume = 0.45f;
+	const float kMagazineInVolume = 0.5f;
+	const float kBoltPullVolume = 0.5f;
+
 	// ── 一歩ごとの音の大きさ（Gait の順）──
 	// 装備（銃を持っている間だけ）は走ると大きく揺れる。
 	// 服の擦れは足音に被って邪魔だったので一歩ごとには鳴らさない（状態の切り替わりでだけ鳴らす）。
@@ -50,6 +58,7 @@ void PlayerFoley::update( const FoleyState& state, bool stepped ) {
 	if ( state.fired ) {
 		mAudio->play( SOUND_GUNSHOT, AudioEngine::BUS_EFFECT, state.bodyPosition, kGunshotVolume );
 	}
+	playWeaponHandling( state );
 	mHasPrevious = true;
 	mWasWeaponDrawn = state.weaponDrawn;
 	mWasAiming = state.aiming;
@@ -69,6 +78,21 @@ void PlayerFoley::playTransitions( const FoleyState& state ) {
 		mAudio->play( id, AudioEngine::BUS_EFFECT, state.bodyPosition, volume, kWeaponPitch );
 		float clothVolume = state.aiming ? kClothAimInVolume : kClothAimOutVolume;
 		mAudio->play( SOUND_CLOTH_RUSTLE, AudioEngine::BUS_EFFECT, state.bodyPosition, clothVolume );
+	}
+}
+
+void PlayerFoley::playWeaponHandling( const FoleyState& state ) {
+	if ( state.dryFired ) {
+		mAudio->play( SOUND_DRY_FIRE, AudioEngine::BUS_EFFECT, state.bodyPosition, kDryFireVolume );
+	}
+	if ( state.magazineOut ) {
+		mAudio->play( SOUND_MAG_OUT, AudioEngine::BUS_EFFECT, state.bodyPosition, kMagazineOutVolume );
+	}
+	if ( state.magazineIn ) {
+		mAudio->play( SOUND_MAG_IN, AudioEngine::BUS_EFFECT, state.bodyPosition, kMagazineInVolume );
+	}
+	if ( state.boltPulled ) {
+		mAudio->play( SOUND_BOLT_PULL, AudioEngine::BUS_EFFECT, state.bodyPosition, kBoltPullVolume );
 	}
 }
 

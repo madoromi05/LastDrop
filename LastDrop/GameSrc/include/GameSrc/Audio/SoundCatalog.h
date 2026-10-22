@@ -28,6 +28,10 @@ enum SoundId{
 	SOUND_AIM_OUT,			// 覗くのをやめる
 	// ── 銃 ──
 	SOUND_GUNSHOT,			// 銃声（1発ごと）
+	SOUND_DRY_FIRE,			// 空撃ち（弾倉が空で引き金を引いた）
+	SOUND_MAG_OUT,			// リロード：弾倉を抜く
+	SOUND_MAG_IN,			// リロード：弾倉を挿す
+	SOUND_BOLT_PULL,		// リロード：槓桿を引く
 	// ── 環境音 ──
 	SOUND_AMBIENCE_WIND,	// 風（ループ）
 	SOUND_AMBIENCE_BIRDS,	// 鳥（ループ）

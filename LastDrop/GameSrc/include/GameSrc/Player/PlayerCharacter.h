@@ -6,6 +6,9 @@
 #include "GameSrc/Weapon/WeaponStance.h"
 #include "GameSrc/Weapon/FireControl.h"
 #include "GameSrc/Weapon/WeaponRecoil.h"
+#include "GameSrc/Weapon/Magazine.h"
+#include "GameSrc/Weapon/WeaponReload.h"
+#include "GameSrc/Render/SkinnedMesh/AnimationPoseSampler.h"
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/PlayerHealth.h"
 #include "GameSrc/Audio/Gait.h"
@@ -22,8 +25,10 @@ class SkinnedMeshData;
 class SkinnedMeshInstance;
 class StaticMeshData;
 class HeldItem;
+class HeldMagazine;
 class FirstPersonBody;
 class CollisionWorld;
+class Inventory;
 
 // 一人称(FPS)で操作する自キャラ。体は常にカメラの水平の向きを向き、WASD はその向き基準の前後・横歩きになる。
 // 地面(Y=0)を歩かせ、静止／歩き／走り のアニメを切り替える。
@@ -44,6 +49,12 @@ class CollisionWorld;
 // 撃つ操作からは「このティックに1発撃ったか」だけを決める（連射の間隔は FireControl に任せる）。
 // 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。武器をしまっている間と、走っている間（銃を抱えている）は撃てない。
 //
+// 弾倉の弾の数は Magazine、リロードの時間割は WeaponReload に任せる。予備の弾は持ち物（Inventory の ITEM_AMMO）にあり、
+// リロードを込め終えた瞬間に、そこから弾倉の足りない分だけ移す（弾倉に残っていた弾は捨てない）。
+// 弾倉が空で撃つ番が来たら、弾は出ずに空撃ちになる（dryFiredThisTick）。引き金を離すまで次の空撃ちはしない。
+// リロード中は撃てない・覗けない・走れない（歩ける）。武器をしまうとリロードをやめる（弾は込めない）。
+// リロード中の腕は、リロードのアニメ（"rifle_reload"）のポーズを AnimationPoseSampler で求め、FirstPersonBody が腕だけ差し替える（脚は歩き・静止のまま）。
+//
 // 体力は 7 部位（PlayerHealth）。ゾンビに噛まれると減る（applyBite）。ゾンビにつかまれている間（setHeld）は動けない（撃つ・覗く・向きを変えるはできる）。
 // 脚が壊れたら走れず、歩くのも遅い。頭か胸が 0 で死に、それからは操作を受け付けない（その場で止まる）。
 // 誰がつかんでいるか・死んだ後どうするか（暗転・ゲームオーバー）は知らない（GameWorld・シーンが決める）。
@@ -51,13 +62,15 @@ class CollisionWorld;
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプはまだ持たない。
 class PlayerCharacter : public ICollisionBody, public IHittable, public IWorldMember{
 public:
-	// data: 形・見た目・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
+	// data: 形・見た目・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run" / "rifle_reload"）。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このキャラより長く生きていること（MeshCache が持つ）。
-	// weapon: 右手に持たせる銃（Resource/rifle.txt）。所有権は受け取らない。nullptr なら素手で描く。
+	// weapon: 右手に持たせる銃（Resource/rifle.txt。弾倉を除いた形）。所有権は受け取らない。nullptr なら素手で描く。
 	//         data と同じく、このキャラより長く生きていること。
+	// magazine: 銃の弾倉（Resource/rifle_mag.txt。銃と同じ座標）。リロードで左手が抜いて挿す。所有権は受け取らない。
+	//           nullptr なら弾倉を描かない（銃に穴が開いて見えるだけで落ちない）。data と同じく、このキャラより長く生きていること。
 	// world: 移動で当たる相手の問い合わせ先。所有権は受け取らない。nullptr 不可。このキャラより長く生きていること。
 	// position / angleY: 最初の足元の位置と向き（度。0 は +Z）。
-	PlayerCharacter( const SkinnedMeshData* data, const StaticMeshData* weapon, const CollisionWorld* world,
+	PlayerCharacter( const SkinnedMeshData* data, const StaticMeshData* weapon, const StaticMeshData* magazine, const CollisionWorld* world,
 		const GameLib::Math::Vector3& position, float angleY );
 	~PlayerCharacter();
 	PlayerCharacter( const PlayerCharacter& ) = delete;
@@ -67,7 +80,8 @@ public:
 	// command: この1フレームの操作。入力デバイスは読まない（作るのは呼び出し側）。
 	// cameraYaw: カメラの水平の向き（度。FirstPersonCamera::yaw）。体はこの向きを向き、W がこの向きへの前進になる。
 	// cameraPitch: カメラの上下の向き（度。FirstPersonCamera::pitch）。背骨をこのぶん曲げ、腕と銃を視線に付いてこさせる。
-	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch );
+	// inventory: 予備の弾（ITEM_AMMO）を持つ持ち物。リロードを込め終えたら、ここから減らす。所有権は受け取らない。nullptr 不可。
+	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, Inventory* inventory );
 	void draw() const;
 
 	const GameLib::Math::Vector3& position() const;	// 足元の位置
@@ -84,6 +98,10 @@ public:
 	bool isWeaponDrawn() const;	// 武器を持っているか
 	bool isAiming() const;		// 覗いているか（覗き始め・終わりの途中も true）
 	bool firedThisTick() const;	// 直前の update で1発撃ったか（弾を出す・銃声を鳴らす側が読む）
+	bool dryFiredThisTick() const;	// 直前の update で、弾倉が空のまま引き金を引いたか（空撃ちの音を鳴らす側が読む）
+	bool isReloading() const;		// リロード中か
+	WeaponReload::Cue reloadCueThisTick() const;	// 直前の update で来たリロードの合図（弾倉を抜く・挿す・槓桿。音を鳴らす側が読む）
+	int magazineRounds() const;	// 弾倉に入っている弾の数
 	// 銃口の今の位置（ワールド）と向き（長さ1）。マズルフラッシュを描く側が描くたびに読む。
 	// 銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）。
 	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
@@ -120,16 +138,31 @@ private:
 	void approachCarryWeight( Animator::State next );
 	// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ。
 	void changeState( Animator::State );
+	// R でリロードを始め・しまったらやめ、時間割を進め、込め終えたら予備の弾を弾倉へ移す（update から。構えの段階を決めた後）。
+	void updateReload( const PlayerCommand& command, Inventory* inventory );
+	bool canStartReload( const Inventory& inventory ) const; // 銃がある・リロード中でない・弾倉が満タンでない・予備がある
+	// 撃つ番が来たら、弾倉に弾があれば 1 発撃ち、空なら空撃ちにする。
+	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）。
+	void updateTrigger( bool pulling, bool triggerHeld );
+	// 弾倉を銃から外して左手に持たせる（弾倉を抜く合図のティックに、update の最後から）。
+	void takeOutMagazine();
 
 	// mMesh が借りる（setPoseModifier）ので、mMesh より先に宣言する（＝後に破棄される）。
 	std::unique_ptr< FirstPersonBody > mBody;
 	std::unique_ptr< SkinnedMeshInstance > mMesh;
 	std::unique_ptr< HeldItem > mWeapon; // 持っていなければ空
+	std::unique_ptr< HeldMagazine > mMagazineModel; // 弾倉の見た目。銃・弾倉・支える手のどれかが無ければ空
 	Animator mAnimator;
 	WeaponStance mStance;
 	FireControl mFire;         // 連射の間隔
 	bool mFiredThisTick;       // 直前の update で1発撃ったか
 	WeaponRecoil mRecoil;      // 撃った反動の量（FirstPersonBody::setRecoil へ渡す）
+	Magazine mMagazine;        // 弾倉の弾の数
+	WeaponReload mReload;      // リロードの時間割と、アニメの何フレーム目を見せるか
+	AnimationPoseSampler mReloadArms;  // リロードのアニメのポーズを求める（腕の差し替えに使う）
+	std::vector< GameLib::Math::Matrix34 > mReloadPose; // 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
+	bool mDryFiredThisTick;    // 直前の update で空撃ちしたか
+	bool mDryFireLatched;      // 空撃ちした後、まだ引き金を離していないか（離すまで次の空撃ちをしない）
 	CharacterMover mMover;    // 当たりながら滑って進む移動
 	BodyFootprint mFootprint;  // 移動の当たり判定の大きさ
 	HitboxLayout mHitboxLayout; // 部位の箱の設計図（自キャラは1人なので自分で持つ）。mHitboxes が借りるので先に宣言する

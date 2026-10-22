@@ -1,0 +1,36 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/source/FP_AKM_binary.fbx",
+    "out_path": "../../Resource/rifle_mag.txt",
+    "split_vertices": true,
+    "resource_root": "../..",
+    "texture_export_size": 1024,
+    "island_filter": {
+        "min": [
+            -0.013,
+            -0.1,
+            1.33
+        ],
+        "max": [
+            0.013,
+            0.045,
+            1.512
+        ],
+        "keep": "inside"
+    },
+    "texture_sources": {
+        "mesh_texture": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/textures/AKM_01.png",
+        "mesh_normalmap": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/textures/AKM_01_NRM.png"
+    },
+    "mesh_texture": "Resource/rifle_albedo.tga",
+    "mesh_normalmap": "Resource/rifle_normal.tga",
+    "material_params": {
+        "specular": [
+            0.15,
+            0.15,
+            0.15
+        ],
+        "sharpness": 24.0,
+        "normalstrength": 0.6
+    }
+}

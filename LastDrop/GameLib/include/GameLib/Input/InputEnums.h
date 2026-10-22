@@ -49,6 +49,7 @@ enum class WorkId
     DebugFreeCamera,   // 自キャラとは別の観察用カメラを使う／やめる（押した瞬間。Debug ビルドだけで効く）
     DebugCameraUp,     // 観察用カメラを上げる（押している間。Debug ビルドだけで効く）
     DebugCameraDown,   // 観察用カメラを下げる（押している間。Debug ビルドだけで効く）
+    Reload,            // 弾を込める（押した瞬間）
 };
 
 // コレクター（シーン別の入力割り当てグループ）種別

@@ -33,6 +33,10 @@ namespace{
 		case SOUND_AIM_IN:			return makeAimIn( random );
 		case SOUND_AIM_OUT:			return makeAimOut( random );
 		case SOUND_GUNSHOT:			break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
+		case SOUND_DRY_FIRE:
+		case SOUND_MAG_OUT:
+		case SOUND_MAG_IN:
+		case SOUND_BOLT_PULL:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
 		case SOUND_AMBIENCE_WIND:	return makeWind( random );
 		case SOUND_AMBIENCE_BIRDS:	return makeBirds( random );
 		case SOUND_AMBIENCE_INSECTS:return makeInsects( random );

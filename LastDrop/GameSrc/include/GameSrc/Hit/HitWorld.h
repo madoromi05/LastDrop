@@ -38,6 +38,9 @@ public:
 	// hit: 出力先。nullptr 不可。
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* ignore,
 		Hit* hit ) const;
+	// raycast と同じだが、弾を止める物（建物・車・地面・拾える物など）だけを調べる（キャラは素通りする）。
+	// 見ている物を使う視線に使う（死体の下に落ちた弾も拾えるように）。hit: 出力先。nullptr 不可。target はいつも nullptr。
+	bool raycastBlockers( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, Hit* hit ) const;
 	// origin から delta だけ進む線分が、弾を止める物（建物・車・地面など）のどれかに当たるか。キャラは数えない。
 	// 見通しを聞くのに使う（ゾンビが自キャラを見えているか。間に他のゾンビが居ても見える扱い）。
 	bool isBlocked( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta ) const;
@@ -47,6 +50,9 @@ public:
 	const std::vector< const IRayBlocker* >& blockers() const;
 
 private:
+	// 弾を止める物のうち、hit より手前（found が false なら一番手前）に当たる物があれば hit に書く。何か書いてあれば true。
+	bool findNearerBlocker( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, bool found, Hit* hit ) const;
+
 	std::vector< const IHittable* > mTargets;    // 借りているだけ
 	std::vector< const IRayBlocker* > mBlockers; // 借りているだけ
 };

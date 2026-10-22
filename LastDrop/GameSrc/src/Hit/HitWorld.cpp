@@ -47,6 +47,14 @@ bool HitWorld::raycast( const Vector3& origin, const Vector3& delta, const IHitt
 		hit->normal = candidate.normal;
 		found = true;
 	}
+	return findNearerBlocker( origin, delta, found, hit );
+}
+
+bool HitWorld::raycastBlockers( const Vector3& origin, const Vector3& delta, Hit* hit ) const {
+	return findNearerBlocker( origin, delta, false, hit );
+}
+
+bool HitWorld::findNearerBlocker( const Vector3& origin, const Vector3& delta, bool found, Hit* hit ) const {
 	for ( const IRayBlocker* blocker : mBlockers ) {
 		float time;
 		Vector3 normal;

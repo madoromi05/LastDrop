@@ -55,6 +55,8 @@ namespace{
 	const float kGunshotStartSeconds = 0.6f;
 	// 体に当たった音の素材は、頭の約 0.04〜0.06 秒が無音（3 テイクで短い方に合わせる）。弾が当たった瞬間に鳴らすため飛ばす。
 	const float kHitFleshStartSeconds = 0.04f;
+	// 槓桿の音の素材は、頭の約 0.22 秒が無音。動きの合図（WeaponReload の CUE_BOLT）と同時に鳴らすため飛ばす。
+	const float kBoltPullStartSeconds = 0.2f;
 
 	// SoundId の順に並べる（static_assert で数を確かめる）。
 	const SoundEntry kEntries[] = {
@@ -74,6 +76,15 @@ namespace{
 		{ "aim_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 		// 元の素材名: "GunShot.wav"
 		{ "gunshot",           kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kGunshotStartSeconds },
+		// 空撃ち・リロードは自分の手元の音なので、装備の音と同じ距離。素材はどれも weapons/Weapons の録音（頭に無音が無い物は頭から）。
+		// 元の素材名: "Weapon Gun Rifle M16 Dry Fire 02.wav"
+		{ "dry_fire",          kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
+		// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Release 01.wav"
+		{ "mag_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
+		// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
+		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
+		// 元の素材名: "Weapon Gun Rifle M16 Bolt Cock 02.wav"
+		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds },
 		{ "ambience_wind",     kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
 		{ "ambience_birds",    kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
 		{ "ambience_insects",  kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
