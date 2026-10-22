@@ -34,6 +34,8 @@ public:
 
 	// 毎フレーム呼ぶ。鳴り終わった1回きりの音の後片付けをする。
 	void update();
+	// すべての音を止める（true）・続きから鳴らし直す（false）。一時停止の間に使う。止めている間に鳴らした音は、戻したときに鳴り始める。
+	void setPaused( bool paused );
 
 	// 聞き手（カメラ）の位置と向き（長さ1）。毎フレーム、カメラを置いた後に呼ぶ。
 	void setListener( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& forward );

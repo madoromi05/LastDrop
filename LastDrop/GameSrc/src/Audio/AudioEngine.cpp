@@ -209,6 +209,18 @@ void AudioEngine::update() {
 	}
 }
 
+void AudioEngine::setPaused( bool paused ) {
+	if ( !mImpl->mEngineReady ) {
+		return;
+	}
+	// 出力の装置ごと止める。鳴っている途中の音は、その位置のまま止まって続きから鳴る（音ごとに止めて覚え直さなくてよい）。
+	if ( paused ) {
+		ma_engine_stop( &mImpl->mEngine );
+	} else {
+		ma_engine_start( &mImpl->mEngine );
+	}
+}
+
 void AudioEngine::setListener( const Vector3& position, const Vector3& forward ) {
 	if ( !isReady() ) {
 		return;

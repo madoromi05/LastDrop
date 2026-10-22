@@ -587,6 +587,9 @@
     <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
@@ -678,6 +681,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp">
@@ -1339,6 +1345,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
@@ -1442,6 +1451,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h">

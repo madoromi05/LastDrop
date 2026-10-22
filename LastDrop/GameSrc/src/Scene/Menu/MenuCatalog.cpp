@@ -12,6 +12,8 @@ namespace{
 	const unsigned kClearColor = VertexColor::pack( 0.4f, 0.9f, 0.4f );
 	const char* kGameOverHeading = "YOU DIED";
 	const unsigned kGameOverColor = VertexColor::pack( 0.85f, 0.12f, 0.1f );
+	const char* kPauseHeading = "PAUSED";
+	const unsigned kPauseColor = VertexColor::WHITE;
 
 	// 押されたら種別 id のシーンへ切り替える処理。ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）。
 	std::function< void() > changeTo( SceneManager::SceneId id ) {
@@ -34,6 +36,17 @@ MenuDefinition MenuCatalog::clear() {
 	menu.headingColor = kClearColor;
 	menu.buttons.push_back( { "Retry", changeTo( SceneManager::SCENE_GAME ) } );
 	menu.buttons.push_back( { "Title", changeTo( SceneManager::SCENE_TITLE ) } );
+	return menu;
+}
+
+MenuDefinition MenuCatalog::pause( std::function< void() > onResume ) {
+	MenuDefinition menu;
+	menu.heading = kPauseHeading;
+	menu.headingColor = kPauseColor;
+	menu.buttons.push_back( { "Resume", onResume } );
+	menu.buttons.push_back( { "Retry", changeTo( SceneManager::SCENE_GAME ) } );
+	menu.buttons.push_back( { "Title", changeTo( SceneManager::SCENE_TITLE ) } );
+	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
 	return menu;
 }
 

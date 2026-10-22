@@ -235,6 +235,7 @@
     <ClCompile Include="GameSrc\src\Player\FirstPersonControl.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp" />
     <ClCompile Include="GameSrc\src\Scene\GameResources.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitboxLayout.cpp" />
@@ -266,6 +267,7 @@
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp" />
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshMerger.cpp" />
     <!-- Base -->
@@ -539,6 +541,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\GameResources.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxLayout.h" />
@@ -574,6 +577,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshMerger.h" />
     <ClInclude Include="GameLib\include\GameLib\Framework.h" />

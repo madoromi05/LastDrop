@@ -11,6 +11,7 @@
 #include "GameSrc/Scene/Game/ZombieAttackSounds.h"
 #include "GameSrc/Scene/Game/PlayerDamageView.h"
 #include "GameSrc/Scene/Game/GameHud.h"
+#include "GameSrc/Scene/Game/PauseMenu.h"
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
 #ifdef _DEBUG
@@ -24,6 +25,7 @@ class GameResources;
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
 // 車にガソリンを決まった数だけ入れるとクリア画面へ進む。
 // ゾンビに噛まれて頭か胸の体力が 0 になると、視点が下がって暗くなり、ゲームオーバー画面へ進む。
+// ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
@@ -34,6 +36,7 @@ class GameResources;
 //   ゾンビがつかんだ・噛んだ音          … ZombieAttackSounds
 //   噛まれた・死んだ後の見せ方の量      … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がり・顔を向けるのは FirstPersonControl へ渡す）
 //   HUD                                 … GameHud
+//   一時停止のメニュー                  … PauseMenu
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug だけ。F4）… FreeCamera
@@ -42,10 +45,17 @@ class GameScene : public IScene{
 public:
 	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること。
 	explicit GameScene( GameResources* resources );
+	// 一時停止のまま別のシーンへ移る（Retry・Title）ときに、止めた音を戻す（音の道具は次のシーンも使う）。
+	virtual ~GameScene();
 	virtual void beginFrame();
 	virtual void update();
 	virtual void draw();
 private:
+	// 一時停止する・戻る。止める間は世界を進めず、音を止め、カーソルを外す。戻ったらカーソルをロックする。
+	void pause();
+	void resume();
+	// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない。
+	void handlePausedInput();
 	void setupLights() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
@@ -74,12 +84,14 @@ private:
 	ZombieAttackSounds mZombieAttackSounds;
 	PlayerDamageView mDamageView;
 	GameHud mHud;
+	PauseMenu mPauseMenu;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GameDebugOverlay mDebug;
 #ifdef _DEBUG
 	FreeCamera mFreeCamera;
 #endif
 	bool mReady; // 世界の配置が済んだか
+	bool mPaused; // 一時停止しているか
 };
 
 #endif

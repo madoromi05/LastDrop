@@ -82,6 +82,10 @@ void FirstPersonControl::lockCursor() {
 	GameLib::Input::Manager::instance().setCursorLocked( true );
 }
 
+void FirstPersonControl::unlockCursor() {
+	GameLib::Input::Manager::instance().setCursorLocked( false );
+}
+
 bool FirstPersonControl::isCursorLocked() const {
 	return GameLib::Input::Manager::instance().isCursorLocked();
 }
@@ -114,6 +118,10 @@ void FirstPersonControl::readInput( float aimWeight ) {
 
 void FirstPersonControl::readInputIdle() {
 	updateCursorLock();
+	clearInput();
+}
+
+void FirstPersonControl::clearInput() {
 	// 押した瞬間の入力（holsterPressed・reloadPressed）は readInput と同じく consumePressed に任せる（ここで消すと、切り替えた描画の入力が落ちる）。
 	mCommand.forward = 0.f;
 	mCommand.strafe = 0.f;
@@ -125,9 +133,7 @@ void FirstPersonControl::readInputIdle() {
 
 void FirstPersonControl::updateCursorLock() {
 	GameLib::Input::Manager input = GameLib::Input::Manager::instance();
-	if ( InputMenu() ) {
-		input.setCursorLocked( false );
-	} else if ( InputFire() && !input.isCursorLocked() ) {
+	if ( InputFire() && !input.isCursorLocked() ) {
 		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
 		input.setCursorLocked( true );
 		mFireSuppressed = true;

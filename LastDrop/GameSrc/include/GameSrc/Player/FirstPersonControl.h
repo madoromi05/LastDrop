@@ -12,7 +12,7 @@
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）。
 //
-// マウスはカーソルロック（GameLib::Input::Manager）で読む。Esc で解除、クリックで再ロック。
+// マウスはカーソルロック（GameLib::Input::Manager）で読む。解除は一時停止（GameScene が unlockCursor）、解除中のクリックで再ロック。
 // 解除中は視点を回さない（カーソルが自由に動く間の移動量を視点に入れると、画面外の操作で回ってしまうため）。
 // 解除中は撃たない。ロックし直すためのクリックも、離すまでは撃つ操作にしない。
 //
@@ -29,6 +29,8 @@ public:
 
 	// カーソルをロックして、視点を回せるようにする（世界を並べ終えて操作を始めるときに呼ぶ）。
 	void lockCursor();
+	// カーソルのロックを外す（一時停止でメニューを出すとき）。
+	void unlockCursor();
 	bool isCursorLocked() const;
 
 	// 入力を読む。1回の描画につき1回、Pad::update の後に呼ぶ（update の回数に合わせると、2回進めた描画で視点が2倍回るため）。
@@ -39,6 +41,9 @@ public:
 	// カーソルロックの切り替えだけ行い、視点は回さず、command は「何もしない」（その場で立ち止まる・撃たない・覗かない）にする。
 	// 撃つ入力は一度離すまで止める（観察用カメラから戻った瞬間に、押していたクリックで撃ち出さないように）。
 	void readInputIdle();
+	// command を「何もしない」にし、撃つ入力を一度離すまで止める（readInputIdle の後半。カーソルロックには触らない）。
+	// 一時停止した瞬間に呼ぶ（メニューを押したクリックで、戻った瞬間に撃ち出さないように）。
+	void clearInput();
 	// 自キャラへの操作。押した瞬間の入力（holsterPressed）は、consumePressed で消すまで貯めてある。
 	// 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため。
 	const PlayerCommand& command() const;
@@ -68,7 +73,7 @@ public:
 	const FirstPersonCamera& camera() const;
 
 private:
-	// Esc でカーソルロックを解除し、解除中のクリックでロックし直す（readInput と readInputIdle で共通）。
+	// 解除中のクリックでロックし直す（readInput と readInputIdle で共通）。解除は一時停止が行う（ESC は一時停止のキー）。
 	void updateCursorLock();
 
 	FirstPersonCamera mCamera;

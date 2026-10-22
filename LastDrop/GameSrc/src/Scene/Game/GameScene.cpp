@@ -10,6 +10,7 @@
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Functions.h"
+#include "GameLib/WindowCreator/WindowCreator.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -50,7 +51,36 @@ GameScene::GameScene( GameResources* resources ) :
 	mZombieHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
-	mReady( false ) {
+	mPauseMenu( &resources->uiRenderer(), [ this ]() { resume(); } ),
+	mReady( false ),
+	mPaused( false ) {
+}
+
+GameScene::~GameScene() {
+	if ( mPaused ) {
+		mResources->audio().setPaused( false );
+	}
+}
+
+void GameScene::pause() {
+	mPaused = true;
+	mResources->audio().setPaused( true );
+	mControl.clearInput();   // 押していた移動・撃つを放す（戻った後も、離すまで撃たない）
+	mControl.unlockCursor(); // ボタンをマウスで押せるように
+}
+
+void GameScene::resume() {
+	mPaused = false;
+	mResources->audio().setPaused( false );
+	mControl.lockCursor();
+}
+
+void GameScene::handlePausedInput() {
+	if ( InputMenu() ) {
+		resume();
+		return;
+	}
+	mPauseMenu.handleInput(); // Resume が押されたら、この中で resume が呼ばれる
 }
 
 void GameScene::beginFrame() {
@@ -64,6 +94,17 @@ void GameScene::beginFrame() {
 		mWorld.place();
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 		mReady = true;
+	}
+
+	// 止めている間は、メニューの操作だけを読む（視点・移動・使う・確認用のキーは読まない）。
+	if ( mPaused ) {
+		handlePausedInput();
+		return;
+	}
+	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら噛まれていた、とならないように）。
+	if ( InputMenu() || !GameLib::WindowCreator().isActive() ) {
+		pause();
+		return;
 	}
 
 #ifdef _DEBUG
@@ -113,8 +154,8 @@ void GameScene::spawnDebugZombies() {
 #endif
 
 void GameScene::update() {
-	if ( !mReady ) {
-		return;
+	if ( !mReady || mPaused ) {
+		return; // 止めている間は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
@@ -172,12 +213,18 @@ void GameScene::draw() {
 	mDebug.drawCollision( mWorld, camera );
 #endif
 	mPostProcess.endScene();
+	// UiRenderer は 1 回の描画に 1 回しか描けない（中の PrimitiveRenderer が 2 回目の draw で ASSERT）。
+	// 止めている間は HUD を出さず、メニューがまとめて描く（2026-10-23。HUD とメニューの両方が描いて止まっていた）。
+	if ( mPaused ) {
+		mPauseMenu.draw();
+	} else {
 #ifdef _DEBUG
-	// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
-	mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
-	mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
+		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
+		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
+		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
-	mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
+		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
+	}
 
 	GameDebugOverlay::TextState text;
 	text.cursorLocked = mControl.isCursorLocked();
