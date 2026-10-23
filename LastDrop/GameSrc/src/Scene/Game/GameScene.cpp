@@ -49,6 +49,7 @@ GameScene::GameScene( GameResources* resources ) :
 	mControl( mWorld.map().playerStart().yawDegree ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
 	mZombieHitSounds( &resources->audio() ),
+	mSurfaceHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), [ this ]() { resume(); } ),
@@ -171,6 +172,7 @@ void GameScene::update() {
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
+	mSurfaceHitSounds.play( mWorld.surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	const PlayerCharacter* player = mWorld.player();
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。

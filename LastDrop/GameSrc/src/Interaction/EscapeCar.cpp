@@ -7,8 +7,12 @@
 
 using namespace GameLib::Math;
 
+namespace{
+	const GroundMaterial kBodyMaterial = GROUND_METAL; // 車体（弾が当たると金属の音）
+}
+
 EscapeCar::EscapeCar( const StaticMeshData* data, const Vector3& position, float angleY, int requiredFuel ) :
-	mBody( data, position, angleY ),
+	mBody( data, position, angleY, kBodyMaterial ),
 	mFuelRequired( requiredFuel ),
 	mFuelDelivered( 0 ) {
 	ASSERT( requiredFuel > 0 && "EscapeCar : requiredFuel must be positive." );

@@ -7,8 +7,13 @@
 
 using namespace GameLib::Math;
 
+namespace{
+	// 置き場の見た目（今はガソリンの携行缶だけ）。違う物を置き場にするときは、作るときに受け取る形に変える。
+	const GroundMaterial kBodyMaterial = GROUND_METAL;
+}
+
 ItemSource::ItemSource( const StaticMeshData* data, const Vector3& position, float angleY, ItemId item ) :
-	mBody( data, position, angleY ),
+	mBody( data, position, angleY, kBodyMaterial ),
 	mItem( item ) {
 }
 

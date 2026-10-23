@@ -32,16 +32,15 @@ enum SoundId{
 	SOUND_MAG_OUT,			// リロード：弾倉を抜く
 	SOUND_MAG_IN,			// リロード：弾倉を挿す
 	SOUND_BOLT_PULL,		// リロード：槓桿を引く
-	// ── 環境音 ──
-	SOUND_AMBIENCE_WIND,	// 風（ループ）
-	SOUND_AMBIENCE_BIRDS,	// 鳥（ループ）
-	SOUND_AMBIENCE_INSECTS,	// 虫（ループ）
-	SOUND_GENERATOR,		// 発電機（ループ。置いた場所から鳴る）
+	// ── 環境音 ──（風・鳥・虫・発電機・飛行機は 2026-10-23 に消した。ユーザー指定）
 	SOUND_SIREN,			// 脱出のサイレン（1回鳴らす）
-	SOUND_AIRPLANE,			// エアドロップの飛行機（ループ。動かしながら鳴らす）
 	// ── 弾が当たった音 ──
 	SOUND_HIT_FLESH,		// ゾンビの体（頭以外）に当たった（当たった所から鳴らす）
 	SOUND_HIT_HEAD,			// ゾンビの頭に当たった（体より短く硬い音）
+	// ── 弾が物に当たった音（着弾音。当たった所から鳴らす）──
+	SOUND_IMPACT_CONCRETE,	// コンクリート・レンガ（建物・歩道）。高い破裂と細かい破片
+	SOUND_IMPACT_DIRT,		// 土・砂利（車道・町の外）。低く鈍い音と砂の落ちる音
+	SOUND_IMPACT_METAL,		// 金属（車・ガソリン缶・弾）。短い破裂の後に響く
 
 	SOUND_NUM, // 音の種類の数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 };

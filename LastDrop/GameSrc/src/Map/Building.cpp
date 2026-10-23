@@ -6,8 +6,9 @@
 
 using namespace GameLib::Math;
 
-Building::Building( const StaticMeshData* data, const Vector3& position, float angleY ) :
-	mMesh( data, position, angleY ) {
+Building::Building( const StaticMeshData* data, const Vector3& position, float angleY, GroundMaterial material ) :
+	mMesh( data, position, angleY ),
+	mMaterial( material ) {
 }
 
 void Building::addCollidersTo( CollisionWorld* world ) const {
@@ -21,4 +22,8 @@ void Building::draw( const ViewFrustum& frustum ) const {
 
 bool Building::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	return mMesh.raycast( origin, delta, time, normal );
+}
+
+GroundMaterial Building::surfaceMaterial( const Vector3& ) const {
+	return mMaterial;
 }

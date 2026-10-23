@@ -37,14 +37,12 @@ namespace{
 		case SOUND_MAG_OUT:
 		case SOUND_MAG_IN:
 		case SOUND_BOLT_PULL:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
-		case SOUND_AMBIENCE_WIND:	return makeWind( random );
-		case SOUND_AMBIENCE_BIRDS:	return makeBirds( random );
-		case SOUND_AMBIENCE_INSECTS:return makeInsects( random );
-		case SOUND_GENERATOR:		return makeGenerator( random );
 		case SOUND_SIREN:			return makeSiren( random );
-		case SOUND_AIRPLANE:		return makeAirplane( random );
 		case SOUND_HIT_FLESH:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
 		case SOUND_HIT_HEAD:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
+		case SOUND_IMPACT_CONCRETE:
+		case SOUND_IMPACT_DIRT:
+		case SOUND_IMPACT_METAL:	return makeImpact( id, random );
 		case SOUND_NUM:				break;
 		}
 		return Synth::Buffer(); // 目録に足したのにレシピが無い（main で知らせる）

@@ -17,7 +17,7 @@ class AudioEngine{
 public:
 	enum Bus{
 		BUS_EFFECT,		// 足音・装備の音など、ゲームの出来事の音
-		BUS_AMBIENCE,	// 環境音（風・鳥・発電機・マップのイベント）
+		BUS_AMBIENCE,	// 環境音（マップのイベント。今は脱出のサイレン）
 		BUS_NUM,
 	};
 	// ループの音を指す番号。startLoop が返し、stopLoop などに渡す。

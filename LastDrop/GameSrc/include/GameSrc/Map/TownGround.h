@@ -36,6 +36,8 @@ public:
 	// 弾の当たり判定（見た目の三角形で判定する）。置いた部品を全部調べるので、部品の数に比例して重くなる。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	// 弾が当たった所の材質。足元の材質（materialBelow）と同じ答え。部品のすき間なら町の外の土と同じ材質。
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;
 	// 足元の材質。position を通る縦の線分で、一番上にある部品を探し、その種類から決める。重さは raycast と同じ。
 	virtual bool materialBelow( const GameLib::Math::Vector3& position, GroundMaterial* material ) const;
 	// 足元の面の高さ。position を通る縦の線分（足元の MoveHeight::kStepOver 上から下）で、一番上の面を探す。重さは raycast と同じ。

@@ -8,6 +8,7 @@
 #include "GameSrc/Player/FirstPersonControl.h"
 #include "GameSrc/Player/PlayerBodySounds.h"
 #include "GameSrc/Scene/Game/ZombieHitSounds.h"
+#include "GameSrc/Scene/Game/SurfaceHitSounds.h"
 #include "GameSrc/Scene/Game/ZombieAttackSounds.h"
 #include "GameSrc/Scene/Game/PlayerDamageView.h"
 #include "GameSrc/Scene/Game/GameHud.h"
@@ -33,6 +34,7 @@ class GameResources;
 //   見ている物を使う                    … Interactor（持ち物は Inventory）
 //   足音・装備の音                      … PlayerBodySounds
 //   弾がゾンビに当たった音              … ZombieHitSounds
+//   弾が物（建物・地面・車）に当たった音… SurfaceHitSounds
 //   ゾンビがつかんだ・噛んだ音          … ZombieAttackSounds
 //   噛まれた・死んだ後の見せ方の量      … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がり・顔を向けるのは FirstPersonControl へ渡す）
 //   HUD                                 … GameHud
@@ -81,6 +83,7 @@ private:
 	FirstPersonControl mControl;
 	PlayerBodySounds mBodySounds;
 	ZombieHitSounds mZombieHitSounds;
+	SurfaceHitSounds mSurfaceHitSounds;
 	ZombieAttackSounds mZombieAttackSounds;
 	PlayerDamageView mDamageView;
 	GameHud mHud;

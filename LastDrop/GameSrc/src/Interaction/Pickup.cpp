@@ -9,8 +9,13 @@
 
 using namespace GameLib::Math;
 
+namespace{
+	// 落ちている物（ガソリンの携行缶・ゾンビが落とした弾）はどれも金属。木箱などを置くときは、作るときに受け取る形に変える。
+	const GroundMaterial kBodyMaterial = GROUND_METAL;
+}
+
 Pickup::Pickup( const StaticMeshData* data, const Vector3& position, float angleY, ItemId item, int amount, bool blocksMovement ) :
-	mBody( data, position, angleY ),
+	mBody( data, position, angleY, kBodyMaterial ),
 	mItem( item ),
 	mAmount( amount ),
 	mBlocksMovement( blocksMovement ),
@@ -28,6 +33,10 @@ bool Pickup::isTaken() const {
 
 bool Pickup::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	return mBody.raycast( origin, delta, time, normal );
+}
+
+GroundMaterial Pickup::surfaceMaterial( const Vector3& point ) const {
+	return mBody.surfaceMaterial( point );
 }
 
 bool Pickup::canInteract( const Inventory& inventory ) const {

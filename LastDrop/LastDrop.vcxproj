@@ -265,6 +265,7 @@
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp" />
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp" />
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp" />
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp" />
@@ -577,6 +578,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\SurfaceHitSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h" />

@@ -54,6 +54,8 @@ namespace{
 	// 町を囲む建物。同じ建物から足元の歩道の板を除いた形（tools/configs/building_noground.json）。
 	// 板があると、壁どうしを付けて並べたときに隣の板と重なって面がちらつくため。
 	const char* kPerimeterBuildingFile = "Resource/building_noground.txt";
+	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす。
+	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
 
 	// ── ゲームループ（ガソリンを集めて車で脱出）──
 	const char* kVehicleFile = "Resource/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
@@ -193,7 +195,7 @@ void GameWorld::placeBuildings( const StaticMeshData* data, const std::vector< T
 	}
 	mBuildings.reserve( mBuildings.size() + placements.size() );
 	for ( const TownPlacement& p : placements ) {
-		mBuildings.emplace_back( data, toPosition( p ), p.yawDegree );
+		mBuildings.emplace_back( data, toPosition( p ), p.yawDegree, kBuildingMaterial );
 		mBuildings.back().addCollidersTo( &mCollisionWorld );
 	}
 }
@@ -235,14 +237,17 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
 	mImpacts.clear();
 	mZombieHits.clear();
+	mSurfaceHits.clear();
 	mZombieAttacks.clear();
 	mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
-	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出す。ゾンビ（target）には出さず、血しぶきを出す。
+	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出し、着弾音のために材質を記録する。
+	// ゾンビ（target）には出さず、血しぶきを出す。
 	for ( const BulletList::Impact& impact : mImpacts ) {
 		const HitWorld::Hit& hit = impact.hit;
 		if ( hit.blocker ) {
 			mBulletHoles.add( hit.point, hit.normal, hit.blocker );
 			mImpactDust.spawn( hit.point, hit.normal );
+			mSurfaceHits.push_back( { hit.point, hit.blocker->surfaceMaterial( hit.point ) } );
 		} else if ( hit.target ) {
 			hitZombie( impact );
 		}
@@ -546,6 +551,10 @@ const ActorList< Zombie >& GameWorld::zombies() const {
 
 const std::vector< GameWorld::ZombieHit >& GameWorld::zombieHitsThisTick() const {
 	return mZombieHits;
+}
+
+const std::vector< GameWorld::SurfaceHit >& GameWorld::surfaceHitsThisTick() const {
+	return mSurfaceHits;
 }
 
 const ZombieSpawner* GameWorld::zombieSpawner() const {

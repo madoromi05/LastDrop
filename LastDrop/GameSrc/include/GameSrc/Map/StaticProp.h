@@ -20,7 +20,8 @@ public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること（箱の大きさを頂点から求めるため）。
 	//       この置物より長く生きていること（MeshCache が持つ）。
 	// position / angleY: 置き場所（地面の上）と向き（度）。
-	StaticProp( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY );
+	// material: 表面の材質（着弾音に使う）。何でできた物かは持ち主が決める。
+	StaticProp( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY, GroundMaterial material );
 
 	// 当たり判定の箱を、動かない箱として world へ登録する（world が値をコピーして持つ。後から外せない）。
 	// 最後まで置いておく物（車）用。途中で消える物は、持ち主が collider() を外せる形で載せる（Pickup）。
@@ -33,10 +34,13 @@ public:
 	// 弾の当たり判定（見た目の三角形で判定する）。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	// 作るときに受け取った材質（どこに当たっても同じ）。
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;
 
 private:
 	StaticMeshInstance mMesh;
 	BoxCollider mCollider;
+	GroundMaterial mMaterial;
 };
 
 #endif

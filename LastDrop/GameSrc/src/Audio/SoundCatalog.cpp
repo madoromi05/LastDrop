@@ -10,6 +10,9 @@ namespace{
 	const int kSingle = 1;
 	// 連射で続けて当たるので、体に当たった音は別テイクを持つ。
 	const int kHitFleshVariations = 3;
+	// 着弾音も連射で続くので、足音と同じ数を持つ。金属は響きが長く聞き分けやすいので少なめ。
+	const int kImpactVariations = 4;
+	const int kImpactMetalVariations = 3;
 
 	// ── 素材の出どころ ──
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）。
@@ -23,6 +26,9 @@ namespace{
 	const float kGunshotPitchJitter = 0.03f;
 	// 当たった音は 1 体に 10 回/秒 続くので、銃声より大きく揺らす（同じ音の繰り返しに聞こえないように）。
 	const float kHitPitchJitter = 0.08f;
+	// 着弾音も同じ理由で揺らす。金属は響きの高さが変わると別の物に聞こえるので、少し控えめ。
+	const float kImpactPitchJitter = 0.08f;
+	const float kImpactMetalPitchJitter = 0.06f;
 	const float kNoPitchJitter = 0.f;
 
 	// ── 聞こえる距離（m）──
@@ -38,15 +44,13 @@ namespace{
 	// 当たった音は足音と同じくらい届く。近い間（3m まで）は減衰させず、すぐ横で鳴る銃声に埋もれないようにする。
 	const float kHitMinDistance = 3.f;
 	const float kHitMaxDistance = 40.f;
-	// 位置を持たない環境音（2D で鳴らすので距離は使わない）。
-	const float kUnusedDistance = 1.f;
-	const float kGeneratorMinDistance = 2.f;
-	const float kGeneratorMaxDistance = 60.f;
-	// サイレンと飛行機は遠くから鳴る大きな音。近くでは減衰させず、マップの端からでも聞こえるようにする。
+	// 物に当たった音（着弾音）。まずはゾンビに当たった音と同じ距離から始め、耳で直す。
+	// タルコフも物への着弾と体への命中の聞こえる距離を別々に調整しているので、定数を分けておく（ImpactSound_Plan.txt 1 章）。
+	const float kImpactMinDistance = 3.f;
+	const float kImpactMaxDistance = 40.f;
+	// サイレンは遠くから鳴る大きな音。近くでは減衰させず、マップの端からでも聞こえるようにする。
 	const float kSirenMinDistance = 30.f;
 	const float kSirenMaxDistance = 800.f;
-	const float kAirplaneMinDistance = 60.f;
-	const float kAirplaneMaxDistance = 1500.f;
 
 	// ── 鳴らし始める位置（秒）──
 	const float kFromStart = 0.f;
@@ -85,16 +89,14 @@ namespace{
 		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
 		// 元の素材名: "Weapon Gun Rifle M16 Bolt Cock 02.wav"
 		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds },
-		{ "ambience_wind",     kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
-		{ "ambience_birds",    kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
-		{ "ambience_insects",  kSingle, kNoPitchJitter, kUnusedDistance, kUnusedDistance, kSynthesized, kFromStart },
-		{ "generator",         kSingle, kNoPitchJitter, kGeneratorMinDistance, kGeneratorMaxDistance, kSynthesized, kFromStart },
 		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
-		{ "airplane",          kSingle, kNoPitchJitter, kAirplaneMinDistance, kAirplaneMaxDistance, kSynthesized, kFromStart },
 		// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
 		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },
 		// 元の素材名: "Weapon Knife Hit Short 01.wav"（頭に無音は無い）
 		{ "hit_head",          kSingle, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kFromStart },
+		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
+		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
+		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

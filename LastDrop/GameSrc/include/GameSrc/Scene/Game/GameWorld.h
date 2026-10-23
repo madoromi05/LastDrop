@@ -52,6 +52,11 @@ public:
 		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
 		BodyPart part;                // 当たった部位
 	};
+	// 弾が物（建物・車・地面・拾える物）に当たった出来事（着弾音を鳴らす係が読む）。
+	struct SurfaceHit{
+		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
+		GroundMaterial material;      // 当たった物の、その位置の表面の材質
+	};
 	// ゾンビが自キャラをつかんだ・噛んだ出来事（音・画面の赤み・視点を向ける係が読む）。
 	struct ZombieAttackEvent{
 		enum class Kind{
@@ -127,6 +132,8 @@ public:
 	const ActorList< Zombie >& zombies() const;
 	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる。
 	const std::vector< ZombieHit >& zombieHitsThisTick() const;
+	// 最後の update で弾が物に当たった出来事（当たった順）。次の update で入れ替わる。
+	const std::vector< SurfaceHit >& surfaceHitsThisTick() const;
 	// 最後の update でゾンビが自キャラをつかんだ・噛んだ出来事（起きた順）。次の update で入れ替わる。
 	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;
 	// 自キャラが死んだか（自キャラが居なければ false）。
@@ -192,6 +199,8 @@ private:
 	BloodSprayList mBloodSpray;
 	// このティックにゾンビへ当たった出来事（update のたびに作り直す。毎回確保し直さないために持つ）。
 	std::vector< ZombieHit > mZombieHits;
+	// このティックに弾が物へ当たった出来事（同上）。
+	std::vector< SurfaceHit > mSurfaceHits;
 	// このティックにゾンビが自キャラをつかんだ・噛んだ出来事（同上）。
 	std::vector< ZombieAttackEvent > mZombieAttacks;
 	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。

@@ -34,6 +34,7 @@ public:
 	// IRayBlocker（視線で見つける。見た目の三角形で判定する）
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const; // 見た目（StaticProp）の材質
 	// IInteractable
 	virtual bool canInteract( const Inventory& inventory ) const;
 	virtual std::string prompt( const Inventory& inventory ) const;

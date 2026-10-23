@@ -6,9 +6,10 @@
 
 using namespace GameLib::Math;
 
-StaticProp::StaticProp( const StaticMeshData* data, const Vector3& position, float angleY ) :
+StaticProp::StaticProp( const StaticMeshData* data, const Vector3& position, float angleY, GroundMaterial material ) :
 	mMesh( data, position, angleY ),
-	mCollider( MeshBoundsBox::make( mMesh ) ) { // mMesh を先に置いてから作る（メンバの宣言順）
+	mCollider( MeshBoundsBox::make( mMesh ) ), // mMesh を先に置いてから作る（メンバの宣言順）
+	mMaterial( material ) {
 }
 
 void StaticProp::addColliderTo( CollisionWorld* world ) const {
@@ -26,4 +27,8 @@ void StaticProp::draw( const ViewFrustum& frustum ) const {
 
 bool StaticProp::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	return mMesh.raycast( origin, delta, time, normal );
+}
+
+GroundMaterial StaticProp::surfaceMaterial( const Vector3& ) const {
+	return mMaterial;
 }

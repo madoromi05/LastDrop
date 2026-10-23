@@ -17,12 +17,10 @@ Synth::Buffer makeWeaponHolster( Synth::Random* random );
 Synth::Buffer makeAimIn( Synth::Random* random );
 Synth::Buffer makeAimOut( Synth::Random* random );
 
-// 環境音（AmbienceSynth.cpp）。ループで鳴らすものは継ぎ目なくつながる長さで返す。
-Synth::Buffer makeWind( Synth::Random* random );
-Synth::Buffer makeBirds( Synth::Random* random );
-Synth::Buffer makeInsects( Synth::Random* random );
-Synth::Buffer makeGenerator( Synth::Random* random );
+// 環境音（AmbienceSynth.cpp）。今はサイレンだけ。
 Synth::Buffer makeSiren( Synth::Random* random );
-Synth::Buffer makeAirplane( Synth::Random* random );
+
+// 着弾音（ImpactSynth.cpp）。id は SOUND_IMPACT_* のどれか。
+Synth::Buffer makeImpact( SoundId id, Synth::Random* random );
 
 #endif

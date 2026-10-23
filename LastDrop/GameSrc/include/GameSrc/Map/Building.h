@@ -21,7 +21,8 @@ public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること（当たり判定を三角形から作るため）。
 	//       この建物より長く生きていること（MeshCache が持つ）。
 	// position / angleY: 置き場所（地面の上）と向き（度）。
-	Building( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY );
+	// material: 壁の材質（着弾音に使う）。何でできた建物かは置く側が決める。
+	Building( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY, GroundMaterial material );
 
 	// 移動の当たり判定を作って world へ渡す（以後は world が持つ）。建物1軒につき1回だけ呼ぶ（呼ぶたびに登録が増える）。
 	// world: 所有権は受け取らない。nullptr 不可。
@@ -31,9 +32,12 @@ public:
 	// 弾の当たり判定（見た目の三角形で判定する）。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	// 作るときに受け取った材質（どこに当たっても同じ）。
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;
 
 private:
 	StaticMeshInstance mMesh;
+	GroundMaterial mMaterial;
 };
 
 #endif

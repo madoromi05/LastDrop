@@ -90,6 +90,12 @@ bool TownGround::raycast( const Vector3& origin, const Vector3& delta, float* ti
 	return nearestTile( origin, delta, time, normal ) != nullptr;
 }
 
+GroundMaterial TownGround::surfaceMaterial( const Vector3& point ) const {
+	GroundMaterial material = kPieceMaterials[ TOWN_PIECE_EARTH ];
+	materialBelow( point, &material ); // 当たった所の真上から下ろすので、当たった部品が見つかる（見つからなければ土のまま）
+	return material;
+}
+
 bool TownGround::materialBelow( const Vector3& position, GroundMaterial* material ) const {
 	Vector3 top( position.x, position.y + kProbeTop, position.z );
 	Vector3 down( 0.f, kProbeBottom - kProbeTop, 0.f );

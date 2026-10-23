@@ -677,6 +677,9 @@
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
@@ -1451,6 +1454,9 @@
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\SurfaceHitSounds.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h">
