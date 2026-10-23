@@ -54,6 +54,7 @@ namespace
         case WorkId::DebugCameraUp:   return "DebugCameraUp";
         case WorkId::DebugCameraDown: return "DebugCameraDown";
         case WorkId::Reload:   return "Reload";
+        case WorkId::DebugInvincible: return "DebugInvincible";
         default:            return "";
         }
     }
@@ -192,6 +193,8 @@ namespace
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
         // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
+		// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
+        { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 }, 
     };
 
     // Player 1：キーボードのみ

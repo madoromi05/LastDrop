@@ -163,3 +163,4 @@ bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::U
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }
 bool InputInteract(int playerId) { return Pad::instance()->isTriggered(WorkId::Interact, playerId); }
 bool InputReload(int playerId)   { return Pad::instance()->isTriggered(WorkId::Reload, playerId); }
+bool InputDebugInvincible(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugInvincible, playerId); }

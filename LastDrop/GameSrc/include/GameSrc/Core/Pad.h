@@ -115,3 +115,4 @@ bool InputUiDown     (int playerId = 0);   // 画面の部品の選択を下へ�
 bool InputUiDecide   (int playerId = 0);   // 選んでいる部品を決定する（押した瞬間）
 bool InputInteract    (int playerId = 0);   // 見ている物を使う（拾う・給油する。押した瞬間）
 bool InputReload      (int playerId = 0);   // 弾を込める（押した瞬間）
+bool InputDebugInvincible(int playerId = 0);// 自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）

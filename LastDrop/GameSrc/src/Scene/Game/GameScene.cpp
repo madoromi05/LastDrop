@@ -107,6 +107,14 @@ void GameScene::beginFrame() {
 		return;
 	}
 
+	// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
+	if (InputDebugInvincible()) {
+		PlayerCharacter* player = mWorld.player();
+		if (player) {
+			player->toggleInvincible();
+		}
+	}
+
 #ifdef _DEBUG
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
 	mFreeCamera.handleToggle( mControl.camera() );
