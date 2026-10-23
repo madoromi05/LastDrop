@@ -30,8 +30,6 @@ enum class WorkId
     Right,
     Jump,
     Fire,
-    Wire,     // 立体機動ワイヤー（押下保持でグラップル、離すと離脱）
-    WireReel, // ワイヤー引き寄せ（保持中は自然長を縮めて手前へ引かれる）
     Dodge,    // 回避ステップ
     Run,      // 走る（押している間）
     Look,     // 視点操作（軸ワーク。GetAxisWorkState で横・縦の移動量を読む）
@@ -50,6 +48,7 @@ enum class WorkId
     DebugCameraUp,     // 観察用カメラを上げる（押している間。Debug ビルドだけで効く）
     DebugCameraDown,   // 観察用カメラを下げる（押している間。Debug ビルドだけで効く）
     Reload,            // 弾を込める（押した瞬間）
+    DebugInvincible, // 自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）
 };
 
 // コレクター（シーン別の入力割り当てグループ）種別

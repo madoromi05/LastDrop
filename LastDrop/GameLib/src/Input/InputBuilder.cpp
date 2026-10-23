@@ -36,8 +36,6 @@ namespace
         case WorkId::Right: return "Right";
         case WorkId::Jump:  return "Jump";
         case WorkId::Fire:  return "Fire";
-        case WorkId::Wire:     return "Wire";
-        case WorkId::WireReel: return "WireReel";
         case WorkId::Dodge:    return "Dodge";
         case WorkId::Run:      return "Run";
         case WorkId::Look:     return "Look";
@@ -162,11 +160,6 @@ namespace
         { CollectorId::InGame, WorkId::Jump,  DeviceKind::Joystick, 0 },              // A
         { CollectorId::InGame, WorkId::Fire,  DeviceKind::Mouse,    Mouse::BUTTON_LEFT },
         { CollectorId::InGame, WorkId::Fire,  DeviceKind::Joystick, 1 },              // B
-        { CollectorId::InGame, WorkId::Wire,  DeviceKind::Keyboard, 'q' },
-        { CollectorId::InGame, WorkId::Wire,  DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
-        { CollectorId::InGame, WorkId::Wire,  DeviceKind::Joystick, 5 },              // RB
-        { CollectorId::InGame, WorkId::WireReel, DeviceKind::Keyboard, 'e' },
-        { CollectorId::InGame, WorkId::WireReel, DeviceKind::Joystick, 3 },           // Y
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Joystick, 4 },              // LB
         { CollectorId::InGame, WorkId::Run,   DeviceKind::Keyboard, Keyboard::KEY_SHIFT },
@@ -174,7 +167,6 @@ namespace
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Joystick, 7 },              // Start
-        // 右クリックは Wire（v4 アクション）と共有する。両方を使うシーンが無いため（Space の Jump/Dodge と同じ扱い）。
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
         // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
@@ -198,8 +190,7 @@ namespace
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
-        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。E は旧アクションの WireReel と共有
-        // （WireReel を使うシーンはもう無い）。
+        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
     };
 

@@ -505,7 +505,13 @@ PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) co
 }
 
 void PlayerCharacter::applyBite( float damage, float roll ) {
+	if (mInvincible) return;
 	mHealth.takeDamage( PlayerHealth::biteZone( roll ), damage );
+}
+
+void PlayerCharacter::applyLegBite( float damage, float roll ) {
+	if (mInvincible) return;
+	mHealth.takeDamage( PlayerHealth::legBiteZone( roll ), damage );
 }
 
 void PlayerCharacter::setHeld( bool held ) {
@@ -589,4 +595,8 @@ void PlayerCharacter::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld 
 void PlayerCharacter::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) {
 	collisionWorld->removeBody( this );
 	hitWorld->removeTarget( this );
+}
+
+void PlayerCharacter::toggleInvincible() {
+	mInvincible = !mInvincible;
 }

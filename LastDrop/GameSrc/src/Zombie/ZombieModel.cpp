@@ -20,7 +20,8 @@ ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation
 	mFlinchLayout( data, kBoneNamePrefix ),
 	mSeverLayout( data, kBoneNamePrefix ),
 	mStride( data, data->animation( walkAnimation ),
-		BoneNamePattern::find( data, kBoneNamePrefix, kLeftToeBone ), BoneNamePattern::find( data, kBoneNamePrefix, kRightToeBone ) ) {
+		BoneNamePattern::find( data, kBoneNamePrefix, kLeftToeBone ), BoneNamePattern::find( data, kBoneNamePrefix, kRightToeBone ) ),
+	mCrawlLayout( data, kBoneNamePrefix ) {
 }
 
 const SkinnedMeshData* ZombieModel::data() const {
@@ -45,4 +46,8 @@ const ZombieSeverLayout& ZombieModel::severLayout() const {
 
 const ZombieStride& ZombieModel::stride() const {
 	return mStride;
+}
+
+const ZombieCrawlLayout& ZombieModel::crawlLayout() const {
+	return mCrawlLayout;
 }

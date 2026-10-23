@@ -19,7 +19,7 @@ HitboxSet::HitboxSet( const HitboxLayout* layout ) :
 	mPlacements.assign( mLayout->boxes().size(), notPlaced );
 }
 
-void HitboxSet::update( const SkinnedMeshInstance& mesh ) {
+void HitboxSet::update( const SkinnedMeshInstance& mesh, PoseSource source ) {
 	const std::vector< HitboxLayout::Box >& boxes = mLayout->boxes();
 	for ( size_t i = 0; i < boxes.size(); ++i ) {
 		Placement& placement = mPlacements[ i ];
@@ -27,7 +27,9 @@ void HitboxSet::update( const SkinnedMeshInstance& mesh ) {
 			continue;
 		}
 		Matrix34 bone;
-		placement.placed = mesh.animatedBoneMatrix( boxes[ i ].anchorBone, &bone );
+		placement.placed = ( source == POSE_SHOWN ) ?
+			mesh.boneMatrix( boxes[ i ].anchorBone, &bone ) :
+			mesh.animatedBoneMatrix( boxes[ i ].anchorBone, &bone );
 		if ( !placement.placed ) {
 			continue;
 		}

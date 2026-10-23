@@ -6,12 +6,14 @@
 #include "GameSrc/Zombie/ZombieFlinchLayout.h"
 #include "GameSrc/Zombie/ZombieSeverLayout.h"
 #include "GameSrc/Zombie/ZombieStride.h"
+#include "GameSrc/Zombie/ZombieCrawlLayout.h"
 
 class SkinnedMeshData;
 
 // ゾンビ1種類ぶんの、全員で共有する決まりごと。形（SkinnedMeshData）と、そこから求めた
 // 部位の箱の設計図（HitboxLayout）・移動の当たり判定の大きさ（BodyFootprint）・のけぞりで曲げる骨（ZombieFlinchLayout）・
-// 部位欠損で切る関節と骨（ZombieSeverLayout）・歩きアニメで体を進める長さの表（ZombieStride）。
+// 部位欠損で切る関節と骨（ZombieSeverLayout）・歩きアニメで体を進める長さの表（ZombieStride）・
+// 脚を失って体を引きずるときに曲げる腕の骨（ZombieCrawlLayout）。
 // どれもメッシュが同じなら結果も同じ（前の2つは全頂点を調べて求める）なので、種類ごとに1回だけ求めてここに置く。
 // ゾンビ（Zombie）はこれを借りるだけなので、何体出しても、途中で湧かせても、求め直しにならない。
 // 骨の名前の決まり・当たり判定の余白といったゾンビ固有の値は、この .cpp だけが知っている。
@@ -30,6 +32,7 @@ public:
 	const ZombieFlinchLayout& flinchLayout() const; // のけぞりで曲げる関節と骨
 	const ZombieSeverLayout& severLayout() const;   // 部位欠損で切る関節と、無くなる骨・部位
 	const ZombieStride& stride() const;             // 歩きアニメの1フレームごとに体を進める長さ
+	const ZombieCrawlLayout& crawlLayout() const;   // 体を引きずるときに曲げる腕の骨
 
 private:
 	const SkinnedMeshData* mData; // 借りているだけ
@@ -38,6 +41,7 @@ private:
 	ZombieFlinchLayout mFlinchLayout;
 	ZombieSeverLayout mSeverLayout;
 	ZombieStride mStride;
+	ZombieCrawlLayout mCrawlLayout;
 };
 
 #endif

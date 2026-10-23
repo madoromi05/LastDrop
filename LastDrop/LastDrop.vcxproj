@@ -243,6 +243,8 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieHealth.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinch.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawl.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlLayout.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BoneNamePattern.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BonePoseModifierChain.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieSeverLayout.cpp" />
@@ -549,6 +551,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealth.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawl.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlLayout.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BoneNamePattern.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifierChain.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSeverLayout.h" />

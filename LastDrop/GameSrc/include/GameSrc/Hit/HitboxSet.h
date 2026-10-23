@@ -27,9 +27,13 @@ public:
 	// layout: 箱の設計図。所有権は受け取らない。nullptr 不可。この当たり判定より長く生きていること。
 	explicit HitboxSet( const HitboxLayout* layout );
 
-	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。
-	// 見た目の書き換え（一人称で頭を潰すなど）を掛ける前の、アニメどおりのポーズに合わせる。
-	void update( const SkinnedMeshInstance& mesh );
+	// 箱をどのポーズに合わせるか。
+	enum PoseSource{
+		POSE_ANIMATED, // 見た目の書き換え（一人称で頭を潰す・のけぞり等）を掛ける前の、アニメどおりのポーズ
+		POSE_SHOWN,    // 書き換えた後の、見えているポーズ（アニメ無しで骨を大きく動かす間。体を引きずるゾンビ）
+	};
+	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。ふだんはアニメどおりのポーズに合わせる。
+	void update( const SkinnedMeshInstance& mesh, PoseSource source = POSE_ANIMATED );
 	// part の箱を外す（部位欠損で部位が無くなったとき）。以後その箱には当たらず、置いていない箱として扱う（boxMatrix が false）。
 	// 戻す入口は無い（無くなった部位は戻らない）。何回呼んでも安全。
 	void removePart( BodyPart part );

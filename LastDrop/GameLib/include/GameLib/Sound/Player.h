@@ -40,7 +40,7 @@ private:
 	Impl* mImpl;
 };
 
-} //namespace Sound
-} //namespace GameLib
+}
+}
 
 #endif

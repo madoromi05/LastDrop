@@ -18,6 +18,8 @@ public:
 	void takeDamage( PlayerBodyZone zone, float amount );
 	// ゾンビに噛まれる所を選ぶ。roll: 0 以上 1 未満の乱数（呼ぶ側が引く。体力は乱数を持たない）。
 	static PlayerBodyZone biteZone( float roll );
+	// 脚を失って体を引きずるゾンビに足元から噛まれる所（左脚か右脚を半々）。roll は biteZone と同じ。
+	static PlayerBodyZone legBiteZone( float roll );
 
 	bool isDead() const;                  // 頭か胸が 0 になったか
 	float part( PlayerBodyZone zone ) const;    // 部位の残り（0 以上）
@@ -25,7 +27,6 @@ public:
 	bool isBroken( PlayerBodyZone zone ) const; // 部位が 0 になったか（頭・胸も、0 なら true）
 	bool canRun() const;                  // 走れるか（脚がどちらも壊れていない）
 	float walkSpeedScale() const;         // 歩く・走る速さに掛ける倍率（脚が壊れていれば 1 より小さい）
-
 private:
 	// zone から amount を引く。0 を超えた分（引ききれなかった分）を返す。
 	float subtract( PlayerBodyZone zone, float amount );

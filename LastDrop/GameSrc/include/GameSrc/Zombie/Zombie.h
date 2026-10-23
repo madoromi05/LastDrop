@@ -11,6 +11,7 @@
 #include "GameSrc/Zombie/ZombieHealth.h"
 #include "GameSrc/Zombie/ZombieFlinch.h"
 #include "GameSrc/Zombie/ZombieDismemberment.h"
+#include "GameSrc/Zombie/ZombieCrawl.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
 #include "GameSrc/Zombie/ZombieChase.h"
 #include "GameSrc/Zombie/ZombiePath.h"
@@ -40,7 +41,10 @@ struct ChaseTarget;
 // フルオートで当て続けても、よろけ続けて動けなくならないようにするため（SummaryPlan/個別仕様/ZombieStagger_Plan.txt）。
 // 頭・腕・脚の体力が 0 になると、その部位を切る（ZombieDismemberment が見た目から消し、ここが部位の箱を外す）。
 // 千切れた部位を飛ばすのは持ち主（severedByLastDamage と shownWorldPose を読んで作る）。
-// 脚を失うと死亡アニメで倒れ、倒れたまま生きている（Downed。這うアニメが来るまでの代わり。SummaryPlan/個別仕様/ZombieDismember_Plan.txt）。
+// 脚を失うと前へ倒れるアニメで倒れ、倒れたまま生きている（Downed。SummaryPlan/個別仕様/ZombieDismember_Plan.txt）。
+// 倒れ終わったら、腕で体を引きずって追ってくる（腕の動きは ZombieCrawl。這うアニメが無いので、倒れた姿勢のまま腕の骨を曲げる。
+// SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。追い方は立っている時と同じで、向きを変える中心・見る高さ・壁に当たる所は胸。
+// 頭が相手の足元に届いたら、足をつかんで噛む（攻撃のアニメの代わりに時計で ZombieAttack を進める）。
 // 追いついたら、つかんで噛む攻撃をする（段階は ZombieAttack が決め、ここが攻撃のアニメを流し、向きを変え、寄る。
 // SummaryPlan/個別仕様/ZombieAttack_Plan.txt）。相手に何が起きるか（動けない・体力が減る）は知らない。
 // 「つかんでいるか」「このティックに噛んだか」を答えるだけで、相手へ伝えるのは持ち主（GameWorld）。
@@ -67,6 +71,9 @@ public:
 		// 倒れるときのアニメ（脚を失って倒れるときにも使う）。nullptr なら体力が 0 になっても・脚を失っても倒れない
 		// （確認用。体力は減って 0 で止まる）
 		const char* death;
+		// 脚を失って倒れるときのアニメ（前へ倒れてうつ伏せになる物。倒れ終わったら体を引きずる）。nullptr なら death で倒し、
+		// 倒れたまま動かない（仰向けに倒れるアニメでは引きずれないため）。
+		const char* downed;
 		const char* stagger; // よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
 		// つかんで噛む攻撃のアニメ（atack3）。nullptr なら攻撃しない（追いついても立って待つだけ）
 		const char* attack;
@@ -93,7 +100,7 @@ public:
 	// 生きている間だけ体力を減らし、のけぞらせ、当たった部位が 0 になったら切り、条件を満たせばよろけさせる。
 	// 脚を失ったら倒れて Downed に、倒れる条件を満たしたら死亡アニメへ繋いで倒し始める（IDamageable）。
 	virtual void applyDamage( const DamageInfo& damage );
-	// position で銃声がした（届くかは持ち主が決める）。立っていて、よろけ・攻撃の最中でなければ、
+	// position で銃声がした（届くかは持ち主が決める）。立っている（か、体を引きずっている）、よろけ・攻撃の最中でなければ、
 	// 少し遅れてからそこへ探しに来る（ZombieChase::hearNoise。SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。
 	void hearNoise( const GameLib::Math::Vector3& position );
 	// 最後の applyDamage で切れた部位（無ければ空。次の applyDamage で入れ替わる）。持ち主が千切れた部位を飛ばすのに読む。
@@ -107,6 +114,10 @@ public:
 	const GameLib::Math::Vector3& position() const; // 足元の位置（ワールド）
 	// 生きているか（Alive か Downed）。
 	bool isAlive() const;
+	// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）。噛む所を脚にするのに持ち主が読む。
+	bool isCrawling() const;
+	// 体の中心（ワールド）。立っている間は足元、体を引きずっている間は胸。追う・回り込む・壁に当たるのはこの位置。
+	GameLib::Math::Vector3 bodyCenter() const;
 	// 追ってくる AI の今の考え（Wander / Chase / Search）。確認用の表示に使う。
 	ZombieChase::Mode chaseMode() const;
 	// 建物を回り込む通り道（確認用の表示に使う）。
@@ -142,7 +153,20 @@ public:
 
 private:
 	void startFalling();      // 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする
-	void startDowned();       // 死亡アニメへ繋ぎ、Downed にする（倒れたまま生きている）
+	void startDowned();       // 前へ倒れるアニメ（無ければ死亡アニメ）へ繋ぎ、Downed にする（倒れたまま生きている）
+	// ── 体を引きずる（Downed の間。SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）──
+	// 倒れ終わるのを待って引きずり始め、追う先を考えて胸を中心に向きを変え、腕で引いた分だけ進む。
+	void updateDowned( const ChaseTarget* target, const HitWorld& hitWorld );
+	bool canStartCrawling() const; // 前へ倒れるアニメで倒れ終わったか（引きずれる骨がそろっているか）
+	// 倒れ終わった姿勢の腰 → 首を進む向きに、胸を体の中心にする（見た目は動かさず、向きと中心の数字だけ合わせる）。
+	void startCrawling();
+	// 追う先を考え、向きを変える（攻撃していないとき）。追いついたら攻撃を始める。
+	// 腕の往復の速さ（ZombieCrawl::update の pace）を返し、前へ進むなら *moving を true にする。
+	float crawlChase( const ChaseTarget* target, const HitWorld& hitWorld, bool* moving );
+	// 胸の位置と進む向きから、見た目の向き・足元の位置を決め直す（胸の位置は地面の高さへ合わせる）。
+	void placeCrawlingBody();
+	bool hasArm( ZombieCrawlLayout::Side side ) const; // その腕（前腕から先）がまだあるか
+	bool canCrawl() const;    // 引きずれる腕が1本でも残っているか（両腕を失ったら進まず、つかまない）
 	// part が 0 になっていて、まだあれば切る（見た目から消し、部位の箱を外し、severedByLastDamage へ足す）。
 	void severIfBroken( BodyPart part );
 	void updateAfterDeath();  // Falling → Corpse → Sinking と進め、沈む分だけ見た目を下げる
@@ -160,14 +184,16 @@ private:
 	void approachDuringAttack( const ChaseTarget* target );
 	// 攻撃の段階を1ティック進め、噛んだら首を突き出し、終わったら立つ・歩くのアニメへ戻す（立っている間は毎ティック）。
 	void updateAttack( const ChaseTarget* target );
-	// 今つかめる所に相手が居るか（つかんでよい・近い・前に居る）。
+	// 今つかめる所に相手が居るか（つかんでよい・近い・前に居る）。体を引きずっている間は、近いかを頭から測る。
 	bool isTargetInReach( const ChaseTarget* target ) const;
-	// 足元から target までの水平の距離（m）と、向きの差（度。-180〜180）。
+	// 相手へ手が届く距離（m。水平だけ）。立っている間は足元から、体を引きずっている間は頭から相手の足元まで。
+	float reachDistanceTo( const GameLib::Math::Vector3& target ) const;
+	// 体の中心（bodyCenter）から target までの水平の距離（m）と、向きの差（度。-180〜180）。
 	float flatDistanceTo( const GameLib::Math::Vector3& target ) const;
 	float headingDifferenceTo( const GameLib::Math::Vector3& target ) const;
 	// このティックに歩いて進む長さ（m）。歩きアニメの足の動きの表（ZombieModel::stride）から引く。
 	float walkDistanceThisTick() const;
-	// 行き先の方へ1ティックぶん向きを変える。向きの差が大きいうちは false（まだ歩き出さない）。
+	// 体の中心から行き先の方へ1ティックぶん向きを変える（体を引きずっている間はゆっくり）。向きの差が大きいうちは false（まだ歩き出さない）。
 	bool turnToward( const GameLib::Math::Vector3& destination );
 	// 歩く・立つのアニメを walking に合わせる（変わったときだけ繋ぐ）。
 	void setWalking( bool walking );
@@ -181,10 +207,13 @@ private:
 	GameLib::Scene::Animation mMoveAnimation;
 	GameLib::Scene::Animation mIdleAnimation;
 	GameLib::Scene::Animation mDeathAnimation;
+	GameLib::Scene::Animation mDownedAnimation;
 	GameLib::Scene::Animation mStaggerAnimation;
 	GameLib::Scene::Animation mAttackAnimation;
-	// 描く直前の姿勢の書き換え。のけぞり → 失った部位を潰す、の順に掛ける（のけぞった肩の位置で切り口を作るため）。
+	// 描く直前の姿勢の書き換え。引きずる腕 → のけぞり → 失った部位を潰す、の順に掛ける
+	// （撃たれた腕は引きずる形から押され、のけぞった肩の位置で切り口を作るため）。
 	// mMesh が借りるので、mMesh より先に宣言する。
+	ZombieCrawl mCrawl;
 	ZombieFlinch mFlinch;
 	ZombieDismemberment mDismemberment;
 	BonePoseModifierChain mPoseModifiers;
@@ -203,6 +232,11 @@ private:
 	float mMoveStartTime;             // 歩き・立つのアニメを最初に始める時刻（体ごとにずらした値）
 	State mState;
 	int mStateTicks;                  // 今の状態に入ってからのティック数（Corpse・Sinking で使う）
+	// ── 体を引きずっている間だけ使う ──
+	GameLib::Math::Vector3 mCrawlCenter;      // 胸の位置（ワールド。動かすのはこちらで、足元 mPosition はここから決める）
+	GameLib::Math::Vector3 mCrawlChestOffset; // 足元から胸まで（骨格の根の空間。水平だけ。倒れ終わった姿勢で決める）
+	float mCrawlYawOffset;                    // 見た目の向きから進む向き（腰 → 首）までの角度（度）
+	float mAttackClock;                       // 攻撃のアニメの代わりに進める時刻（フレーム）
 	std::vector< BodyPart > mSeveredByLastDamage; // 最後の applyDamage で切れた部位
 };
 

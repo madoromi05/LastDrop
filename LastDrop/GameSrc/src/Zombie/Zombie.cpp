@@ -73,6 +73,24 @@ namespace{
 	// 噛むときに首・背骨を押す向き（骨格の根の空間で前）と、首を押す回数（のけぞり 1 回 20°なので 2 回で 40°。背骨は 1 回 12°）。
 	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
 	const int kBiteHeadPushes = 2;
+	// ── 脚を失って体を引きずる（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）──
+	// 前へ倒れるアニメ（death1）が倒れ終わる時刻（フレーム）。ここから後は腰が動かない（Resource/character.txt の腰のキーで確かめた）。
+	// これより短いアニメなら、最後まで来たら引きずり始める。
+	const float kCrawlStartTime = 160.f;
+	// 向きを変える速さ（度/ティック）。1 秒に 60°（立っている時の 1/3。寝た体は大きく回せない）。
+	const float kCrawlTurnPerTick = 60.f / GameTime::kTicksPerSecond;
+	// 目の高さ（m。胸から）。伏せているので低い。ここから自キャラの目が見えているかを調べる。
+	const float kCrawlEyeHeight = 0.4f;
+	// 腕の往復の速さ（ZombieCrawl::update の pace）。追っている間は 1、気付いていない・追いついて待っている間はゆっくりもがく。
+	const float kCrawlPace = 1.f;
+	const float kStrugglePace = 0.3f;
+	const float kStillPace = 0.f; // つかみに行っている間・両腕を失った体は、往復を止める
+	// 攻撃を始める間合い（m。頭から相手の足元まで、水平だけ）と、手を伸ばし切ったときにつかめる距離。
+	// 追いついて止まる距離（胸から 1.2m）で、頭は相手の足元の手前 0.7m 辺りに来るので、それより少し遠くする。
+	const float kCrawlAttackStartDistance = 0.9f;
+	const float kCrawlGrabReachDistance = 1.0f;
+	// 噛むときに首・背骨を押す向き（骨格の根の空間で上）。寝ている体は頭が前を向いているので、頭を持ち上げて脚へ噛みつく。
+	const Vector3 kCrawlBiteLungeDirection( 0.f, 1.f, 0.f );
 	const float kHalfTurn = 180.f;
 	const float kFullTurn = 360.f;
 
@@ -85,6 +103,17 @@ namespace{
 			degree += kFullTurn;
 		}
 		return degree;
+	}
+
+	Vector3 translationOf( const Matrix34& m ) {
+		return Vector3( m.m03, m.m13, m.m23 );
+	}
+
+	float flatDistanceBetween( const Vector3& a, const Vector3& b ) {
+		Vector3 d;
+		d.setSub( b, a );
+		d.y = 0.f;
+		return d.length();
 	}
 
 	int secondsToTicks( float seconds ) {
@@ -118,8 +147,10 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mMoveAnimation( findAnimation( model->data(), animations.move ) ),
 	mIdleAnimation( findAnimation( model->data(), animations.idle ) ),
 	mDeathAnimation( findAnimation( model->data(), animations.death ) ),
+	mDownedAnimation( findAnimation( model->data(), animations.downed ) ),
 	mStaggerAnimation( findAnimation( model->data(), animations.stagger ) ),
 	mAttackAnimation( findAnimation( model->data(), animations.attack ) ),
+	mCrawl( &model->crawlLayout() ),
 	mFlinch( &model->flinchLayout() ),
 	mDismemberment( &model->severLayout() ),
 	mMesh( model->data() ),
@@ -134,10 +165,15 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mWalking( false ),
 	mMoveStartTime( animations.moveStartTime ),
 	mState( State::Alive ),
-	mStateTicks( 0 ) {
+	mStateTicks( 0 ),
+	mCrawlCenter( position ),
+	mCrawlChestOffset( 0.f, 0.f, 0.f ),
+	mCrawlYawOffset( 0.f ),
+	mAttackClock( 0.f ) {
 	ASSERT( streets && "Zombie : streets is null." );
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
+	mPoseModifiers.add( &mCrawl );
 	mPoseModifiers.add( &mFlinch );
 	mPoseModifiers.add( &mDismemberment );
 	mMesh.setPoseModifier( &mPoseModifiers );
@@ -153,8 +189,10 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
 		} else {
 			chase( target, hitWorld );
 		}
+	} else if ( mState == State::Downed ) {
+		updateDowned( target, hitWorld );
 	}
-	if ( mState == State::Alive ) {
+	if ( isAlive() ) {
 		updateAttack( target );
 	}
 	// 足元を地面（歩道の段差）の高さへ合わせる。歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
@@ -166,11 +204,13 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
 	mMesh.update();
 	if ( mState == State::Alive ) {
 		updateStagger();
-	} else if ( mState != State::Downed ) { // Downed は死亡アニメの最後の姿勢で止まっているだけ
+	} else if ( mState != State::Downed ) { // Downed は倒れるアニメの最後の姿勢のまま（動かすのは腕と置き場所だけ）
 		updateAfterDeath();
 	}
 	mFlinch.update();
-	mHitboxes.update( mMesh );
+	// 体を引きずり始めた後は（死んだ後も）、起こした頭・動かした腕に当たるよう、見えている姿勢に箱を付ける
+	// （頭を 0.2m ほど持ち上げるので、アニメどおりの姿勢のままだと頭を狙っても当たらない）。
+	mHitboxes.update( mMesh, mCrawl.isStarted() ? HitboxSet::POSE_SHOWN : HitboxSet::POSE_ANIMATED );
 }
 
 void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
@@ -219,12 +259,21 @@ bool Zombie::canStartAttack( const ChaseTarget* target ) const {
 	if ( mChase.mode() != ZombieChase::Mode::Chase ) {
 		return false; // 見えている相手だけを襲う（見失って探している間・うろついている間は襲わない）
 	}
-	return flatDistanceTo( target->position ) <= kAttackStartDistance &&
+	if ( isCrawling() && !canCrawl() ) {
+		return false; // 両腕を失った体はつかめない
+	}
+	float startDistance = isCrawling() ? kCrawlAttackStartDistance : kAttackStartDistance;
+	return reachDistanceTo( target->position ) <= startDistance &&
 		Math::abs( headingDifferenceTo( target->position ) ) <= kAttackStartHalfAngle;
 }
 
 void Zombie::startAttack() {
 	mAttack.start();
+	if ( isCrawling() ) {
+		// 攻撃のアニメは流さない（倒れた姿勢のまま、腕を前へ伸ばす）。段階はアニメと同じ時間割の時計で進める。
+		mAttackClock = kAttackStartTime;
+		return;
+	}
 	mMesh.crossFadeTo( mAttackAnimation, kAttackStartTime, kAttackFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）。
 	mWalking = false;
@@ -247,13 +296,28 @@ void Zombie::approachDuringAttack( const ChaseTarget* target ) {
 
 void Zombie::updateAttack( const ChaseTarget* target ) {
 	bool wasActive = mAttack.isActive();
-	mAttack.update( mMesh.animationTime(), mMesh.isAnimationFinished(), isTargetInReach( target ) );
-	if ( mAttack.bitThisTick() ) {
-		// 噛むアニメが無いので、首と背骨を前へ突き出して顔を近づける（のけぞりと同じく、すぐ曲がって 0.25 秒で戻る）。
-		for ( int i = 0; i < kBiteHeadPushes; ++i ) {
-			mFlinch.push( BodyPart::Head, kBiteLungeDirection );
+	bool crawling = isCrawling();
+	if ( crawling ) {
+		// 時計はアニメと同じく「見えている時刻」を渡してから進める（つかんでいる間は同じ速さでゆっくり進む）。
+		bool finished = mAttack.isActive() && mAttackClock >= mAttackAnimation.period();
+		mAttack.update( mAttackClock, finished, isTargetInReach( target ) );
+		if ( mAttack.isActive() ) {
+			mAttackClock += mAttack.playbackRate();
 		}
-		mFlinch.push( BodyPart::Torso, kBiteLungeDirection );
+	} else {
+		mAttack.update( mMesh.animationTime(), mMesh.isAnimationFinished(), isTargetInReach( target ) );
+	}
+	if ( mAttack.bitThisTick() ) {
+		// 噛むアニメが無いので、首と背骨を突き出して顔を近づける（のけぞりと同じく、すぐ曲がって 0.25 秒で戻る）。
+		// 立っている体は前へ、体を引きずっている体は上へ（頭を持ち上げて脚へ噛みつく）。
+		const Vector3& lunge = crawling ? kCrawlBiteLungeDirection : kBiteLungeDirection;
+		for ( int i = 0; i < kBiteHeadPushes; ++i ) {
+			mFlinch.push( BodyPart::Head, lunge );
+		}
+		mFlinch.push( BodyPart::Torso, lunge );
+	}
+	if ( crawling ) {
+		return; // 腕を伸ばす・戻すのは ZombieCrawl（updateDowned）。アニメは替えない
 	}
 	if ( mAttack.isActive() ) {
 		mMesh.setPlaybackRate( mAttack.playbackRate() );
@@ -267,20 +331,23 @@ bool Zombie::isTargetInReach( const ChaseTarget* target ) const {
 	if ( !target || !target->grabbable ) {
 		return false;
 	}
-	return flatDistanceTo( target->position ) <= kGrabReachDistance &&
+	float reach = isCrawling() ? kCrawlGrabReachDistance : kGrabReachDistance;
+	return reachDistanceTo( target->position ) <= reach &&
 		Math::abs( headingDifferenceTo( target->position ) ) <= kGrabHalfAngle;
 }
 
+float Zombie::reachDistanceTo( const Vector3& target ) const {
+	// 寝ている体は足元から前へ 1.5m ほど伸びているので、手の届く距離は頭から測る。
+	return isCrawling() ? flatDistanceBetween( headPosition(), target ) : flatDistanceTo( target );
+}
+
 float Zombie::flatDistanceTo( const Vector3& target ) const {
-	Vector3 toTarget;
-	toTarget.setSub( target, mPosition );
-	toTarget.y = 0.f;
-	return toTarget.length();
+	return flatDistanceBetween( bodyCenter(), target );
 }
 
 float Zombie::headingDifferenceTo( const Vector3& target ) const {
 	Vector3 toTarget;
-	toTarget.setSub( target, mPosition );
+	toTarget.setSub( target, bodyCenter() );
 	if ( toTarget.x == 0.f && toTarget.z == 0.f ) {
 		return 0.f; // 真上は向きが無い（向いているとみなす）
 	}
@@ -299,14 +366,15 @@ float Zombie::walkDistanceThisTick() const {
 
 bool Zombie::turnToward( const Vector3& destination ) {
 	Vector3 toDestination;
-	toDestination.setSub( destination, mPosition );
+	toDestination.setSub( destination, bodyCenter() );
 	toDestination.y = 0.f;
 	if ( toDestination.length() < kMinTurnDistance ) {
 		return true;
 	}
 	// 向き 0 が +Z、90 が +X（PlayerCharacter と同じ）。
 	float difference = wrapSignedAngle( Math::atan2( toDestination.x, toDestination.z ) - mAngleY );
-	float turn = Math::max( -kTurnPerTick, Math::min( kTurnPerTick, difference ) );
+	float turnLimit = isCrawling() ? kCrawlTurnPerTick : kTurnPerTick;
+	float turn = Math::max( -turnLimit, Math::min( turnLimit, difference ) );
 	mAngleY = wrapSignedAngle( mAngleY + turn );
 	return Math::abs( difference - turn ) <= kTurnInPlaceDegree;
 }
@@ -357,8 +425,11 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 		startFalling();
 	} else if ( mDeathAnimation && mState == State::Alive && mDismemberment.hasLostFooting() ) {
 		startDowned();
-	} else if ( mState == State::Alive && mAttack.takeShakeDamage( dealt ) ) {
-		shakeOff();
+	} else if ( mAttack.takeShakeDamage( dealt ) ) {
+		// 体を引きずっている体はよろけない（手を放して腕を戻すだけ。腕を戻すのは ZombieCrawl）。
+		if ( mState == State::Alive ) {
+			shakeOff();
+		}
 	} else if ( mState == State::Alive && !mAttack.isActive() && canStagger( damage.part ) ) {
 		startStagger(); // 攻撃の途中はよろけない（攻撃のアニメが途切れないように。のけぞりだけ）
 	}
@@ -396,11 +467,151 @@ void Zombie::startFalling() {
 }
 
 void Zombie::startDowned() {
-	// 這うアニメが無いので、死亡アニメで倒し、最後の姿勢で止めて代わりにする（ZombieDismember_Plan.txt の 5 章）。
-	mMesh.crossFadeTo( mDeathAnimation, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+	// 這うアニメが無いので、前へ倒れるアニメで倒し、最後の姿勢で止めて代わりにする（ZombieDismember_Plan.txt の 5 章）。
+	// 倒れ終わったら、その姿勢のまま腕で体を引きずる（ZombieCrawl_Plan.txt の 2 章）。
+	Scene::Animation fall = mDownedAnimation ? mDownedAnimation : mDeathAnimation;
+	mMesh.crossFadeTo( fall, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	mState = State::Downed;
 	mAttack.cancel();
 	mStaggering = false;
+}
+
+void Zombie::updateDowned( const ChaseTarget* target, const HitWorld& hitWorld ) {
+	if ( !mCrawl.isStarted() ) {
+		if ( !canStartCrawling() ) {
+			return; // まだ倒れている途中（または引きずれない体）。倒れた場所の姿勢のまま
+		}
+		startCrawling();
+	}
+	float pace = kStillPace;
+	bool moving = false;
+	if ( mAttack.isActive() ) {
+		if ( target ) {
+			turnToward( target->position ); // つかみに行く・つかんでいる間は、相手の方を向くだけ（寄らない）
+		}
+	} else {
+		pace = crawlChase( target, hitWorld, &moving );
+	}
+	mCrawl.update( pace, mAttack.isAttacking() );
+	if ( moving ) {
+		// 腕で引いた分だけ進む（引いていない腕・失った腕の分は進まない）。壁・車に当たったら胸の位置で沿って滑る。
+		float distance = mCrawl.pullDistance( hasArm( ZombieCrawlLayout::SIDE_LEFT ), hasArm( ZombieCrawlLayout::SIDE_RIGHT ) );
+		if ( distance > 0.f ) {
+			Vector3 step( Math::sin( mAngleY ) * distance, 0.f, Math::cos( mAngleY ) * distance );
+			mCrawlCenter += mMover.move( step );
+		}
+	}
+	placeCrawlingBody();
+	// 見えている相手（追っている・つかみに行っている間）へ顔を向ける。置き場所を決めた後の骨格の根の空間で渡す。
+	bool looking = target && ( mChase.mode() == ZombieChase::Mode::Chase || mAttack.isActive() );
+	Vector3 lookPoint( 0.f, 0.f, 0.f );
+	if ( looking ) {
+		Matrix34 worldToRoot;
+		worldToRoot.setInverse( mMesh.rootMatrix() );
+		worldToRoot.mul( &lookPoint, target->eyePosition );
+	}
+	mCrawl.setLookTarget( looking, lookPoint );
+}
+
+bool Zombie::canStartCrawling() const {
+	if ( !mDownedAnimation || !canChase() || !mModel->crawlLayout().isValid() ) {
+		return false; // 前へ倒れるアニメが無い（仰向けかもしれない）・確認用の体・腕の骨が無い
+	}
+	return mMesh.isAnimationFinished() || mMesh.animationTime() >= kCrawlStartTime;
+}
+
+void Zombie::startCrawling() {
+	const ZombieCrawlLayout& layout = mModel->crawlLayout();
+	Matrix34 hips;
+	Matrix34 chest;
+	Matrix34 neck;
+	if ( !mMesh.animatedBoneMatrix( layout.hips(), &hips ) || !mMesh.animatedBoneMatrix( layout.chest(), &chest ) ||
+		!mMesh.animatedBoneMatrix( layout.neck(), &neck ) ) {
+		return; // まだ update していない（倒れ終わってから呼ぶので起きない）
+	}
+	// 骨の位置を、置き場所と向きを掛ける前（骨格の根の空間）へ戻して測る。
+	Matrix34 worldToRoot;
+	worldToRoot.setInverse( mMesh.rootMatrix() );
+	Vector3 hipsRoot;
+	Vector3 chestRoot;
+	Vector3 neckRoot;
+	worldToRoot.mul( &hipsRoot, translationOf( hips ) );
+	worldToRoot.mul( &chestRoot, translationOf( chest ) );
+	worldToRoot.mul( &neckRoot, translationOf( neck ) );
+	Vector3 bodyDirection;
+	bodyDirection.setSub( neckRoot, hipsRoot );
+	mCrawlYawOffset = ( bodyDirection.x == 0.f && bodyDirection.z == 0.f ) ? 0.f :
+		Math::atan2( bodyDirection.x, bodyDirection.z );
+	mCrawlChestOffset.set( chestRoot.x, 0.f, chestRoot.z );
+	// 見た目の向き（今の mAngleY）は変えず、進む向きを体の向きへ。胸の位置も今の見た目から求める（どちらも見た目は飛ばない）。
+	Vector3 chestOffset;
+	mMesh.rootMatrix().mul33( &chestOffset, mCrawlChestOffset );
+	mCrawlCenter.setAdd( mPosition, chestOffset );
+	mAngleY = wrapSignedAngle( mAngleY + mCrawlYawOffset );
+	mPath.clear();
+	mCrawl.start();
+}
+
+float Zombie::crawlChase( const ChaseTarget* target, const HitWorld& hitWorld, bool* moving ) {
+	*moving = false;
+	if ( !canCrawl() ) {
+		return kStillPace; // 両腕を失った。倒れたまま動かない
+	}
+	Vector3 eye = mCrawlCenter;
+	eye.y += kCrawlEyeHeight;
+	ZombieChase::Mode modeBefore = mChase.mode();
+	mChase.update( mCrawlCenter, eye, mAngleY, target, hitWorld );
+	if ( mChase.mode() == ZombieChase::Mode::Search && modeBefore != ZombieChase::Mode::Search ) {
+		mPath.resetProgress(); // 着けるかは探し始めてから数える（chase と同じ）
+	}
+	if ( mChase.mode() == ZombieChase::Mode::Wander ) {
+		mPath.clear();
+		return kStrugglePace; // 気付いていない間はうろつかず、その場でもがくだけ
+	}
+	bool facing = turnToward( mPath.steer( mCrawlCenter, mChase.destination(), *mStreets, hitWorld ) );
+	if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
+		mChase.giveUpSearch();
+	}
+	if ( canStartAttack( target ) ) {
+		mPath.clear();
+		startAttack();
+		return kStillPace;
+	}
+	if ( !mChase.wantsToWalk() ) {
+		return kStrugglePace; // 追いついて待っている
+	}
+	// 向きを変えている最中も腕は動かす（その場で向きを変える動きに見せる）。進むのは向き終わってから。
+	*moving = facing;
+	return kCrawlPace;
+}
+
+void Zombie::placeCrawlingBody() {
+	mMesh.setAngleY( wrapSignedAngle( mAngleY - mCrawlYawOffset ) );
+	mCrawlCenter.y = mMover.followGround( mCrawlCenter );
+	// 足元は、胸から見た目の向きで戻した所（胸を中心に向きを変えるので、向きを変えると足元が回る）。
+	Vector3 chestOffset;
+	mMesh.rootMatrix().mul33( &chestOffset, mCrawlChestOffset );
+	mPosition.setSub( mCrawlCenter, chestOffset );
+	mPosition.y = mCrawlCenter.y;
+	mMesh.setPosition( mPosition );
+}
+
+bool Zombie::hasArm( ZombieCrawlLayout::Side side ) const {
+	// 前腕から先が無ければ引けない（上腕を失ったときは、その先の前腕も無い）。
+	BodyPart foreArm = ( side == ZombieCrawlLayout::SIDE_LEFT ) ? BodyPart::LeftForeArm : BodyPart::RightForeArm;
+	return !mDismemberment.isLost( foreArm );
+}
+
+bool Zombie::canCrawl() const {
+	return hasArm( ZombieCrawlLayout::SIDE_LEFT ) || hasArm( ZombieCrawlLayout::SIDE_RIGHT );
+}
+
+bool Zombie::isCrawling() const {
+	return mState == State::Downed && mCrawl.isStarted();
+}
+
+Vector3 Zombie::bodyCenter() const {
+	return isCrawling() ? mCrawlCenter : mPosition;
 }
 
 const std::vector< BodyPart >& Zombie::severedByLastDamage() const {
@@ -484,8 +695,9 @@ bool Zombie::isAlive() const {
 }
 
 void Zombie::hearNoise( const Vector3& position ) {
-	if ( mState != State::Alive || mStaggering || mAttack.isActive() || !canChase() ) {
-		return; // 倒れている・よろけている・攻撃している体と、追ってこない確認用の体は聞かない
+	bool listening = ( mState == State::Alive && !mStaggering ) || isCrawling();
+	if ( !listening || mAttack.isActive() || !canChase() ) {
+		return; // 倒れている途中・死んだ・よろけている・攻撃している体と、追ってこない確認用の体は聞かない
 	}
 	mChase.hearNoise( position );
 }
@@ -526,7 +738,8 @@ float Zombie::secondsUntilGone() const {
 }
 
 BoxCollider Zombie::collider() const {
-	return mModel->footprint().place( mPosition, mAngleY );
+	// 体を引きずっている間は、胸の位置に置く（壁に当たるのは胸。頭・足は少しめり込むことがある）。
+	return mModel->footprint().place( bodyCenter(), mAngleY );
 }
 
 const HitboxSet& Zombie::hitboxes() const {
@@ -547,20 +760,21 @@ ZombieAttack::Phase Zombie::attackPhase() const {
 	return mAttack.phase();
 }
 
+// 攻撃は立っている体と、体を引きずっている体だけがする（倒れ始めたら ZombieAttack::cancel 済み）。
 bool Zombie::isAttacking() const {
-	return mState == State::Alive && mAttack.isAttacking();
+	return isAlive() && mAttack.isAttacking();
 }
 
 bool Zombie::isHoldingTarget() const {
-	return mState == State::Alive && mAttack.isHolding();
+	return isAlive() && mAttack.isHolding();
 }
 
 bool Zombie::grabbedThisTick() const {
-	return mState == State::Alive && mAttack.grabbedThisTick();
+	return isAlive() && mAttack.grabbedThisTick();
 }
 
 bool Zombie::bitThisTick() const {
-	return mState == State::Alive && mAttack.bitThisTick();
+	return isAlive() && mAttack.bitThisTick();
 }
 
 Vector3 Zombie::headPosition() const {

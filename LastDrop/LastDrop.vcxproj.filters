@@ -608,6 +608,12 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawl.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlLayout.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BoneNamePattern.cpp">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
@@ -1364,6 +1370,12 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawl.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlLayout.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BoneNamePattern.h">

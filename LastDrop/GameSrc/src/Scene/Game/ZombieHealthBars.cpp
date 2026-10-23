@@ -175,8 +175,12 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	Zombie::State state = zombie.state();
 	if ( alive && zombie.isStaggering() ) {
 		std::snprintf( text, sizeof( text ), "Staggered" );
-	} else if ( state == Zombie::State::Alive && zombie.attackPhase() != ZombieAttack::Phase::Ready ) {
-		std::snprintf( text, sizeof( text ), "Attack %s", attackPhaseName( zombie.attackPhase() ) );
+	} else if ( alive && zombie.attackPhase() != ZombieAttack::Phase::Ready ) {
+		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
+			attackPhaseName( zombie.attackPhase() ) );
+	} else if ( zombie.isCrawling() ) {
+		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
+		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.chaseMode() ) );
 	} else if ( state == Zombie::State::Alive && zombie.chaseMode() == ZombieChase::Mode::Chase && world.player() ) {
 		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため。
 		Vector3 toPlayer;

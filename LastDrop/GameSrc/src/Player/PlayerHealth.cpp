@@ -44,6 +44,8 @@ namespace{
 		{ PlayerBodyZone::LeftArm,  0.3f },
 		{ PlayerBodyZone::RightArm, 0.3f },
 	};
+	// 足元から噛まれるときに左脚になる割合（残りが右脚）。
+	const float kLeftLegBiteChance = 0.5f;
 
 	const ZoneSpec& spec( PlayerBodyZone zone ) {
 		return kZoneSpecs[ static_cast< int >( zone ) ];
@@ -108,6 +110,10 @@ PlayerBodyZone PlayerHealth::biteZone( float roll ) {
 	// 割合の足し算の誤差で 1 に届かなかったときは、最後の所。
 	const int kLast = sizeof( kBiteChances ) / sizeof( kBiteChances[ 0 ] ) - 1;
 	return kBiteChances[ kLast ].zone;
+}
+
+PlayerBodyZone PlayerHealth::legBiteZone( float roll ) {
+	return ( roll < kLeftLegBiteChance ) ? PlayerBodyZone::LeftLeg : PlayerBodyZone::RightLeg;
 }
 
 bool PlayerHealth::isDead() const {

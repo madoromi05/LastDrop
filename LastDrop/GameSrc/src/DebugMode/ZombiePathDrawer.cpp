@@ -33,11 +33,11 @@ void ZombiePathDrawer::draw( const ActorList< Zombie >& zombies, const Matrix44&
 	mRenderer.setCullMode( Graphics::CULL_NONE );
 	int lineNumber = 0;
 	for ( const auto& zombie : zombies ) {
-		if ( zombie->state() != Zombie::State::Alive ) {
+		if ( zombie->state() != Zombie::State::Alive && !zombie->isCrawling() ) {
 			continue;
 		}
 		zombie->path().remainingRoute( &mRoute );
-		Vector3 from = lifted( zombie->position() );
+		Vector3 from = lifted( zombie->bodyCenter() ); // 体を引きずっている体は胸から
 		for ( const Vector3& point : mRoute ) {
 			if ( lineNumber >= kLineCapacity ) {
 				break; // 容量を超えると止まるので、描かずに終える

@@ -32,9 +32,9 @@ namespace{
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
 
 #ifdef _DEBUG
-	// ── F9 でゾンビを出す（確認用。2026-10-19 ユーザー指定：8m 前に 3 体）──
+	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
 	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
-	const int kDebugSpawnNumber = 3;
+	const int kDebugSpawnNumber = 1;
 	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
 	const float kDebugSpawnSpacing = 1.2f;
 	const float kFaceBackDegree = 180.f; // 自キャラの方を向かせる

@@ -97,9 +97,6 @@ bool InputRight(int playerId = 0);
 bool InputJump (int playerId = 0);
 bool InputFire (int playerId = 0);
 bool InputFireHeld   (int playerId = 0);   // 撃つ（押されている間。連射用。InputFire と同じ Fire を読む）
-bool InputWire       (int playerId = 0);   // ワイヤーのグラップル開始（押した瞬間）
-bool InputWireRelease(int playerId = 0);   // ワイヤー離脱（Wireボタンを離した瞬間）
-bool InputWireReel   (int playerId = 0);   // 引き寄せ（押されている間・自然長を縮める）
 bool InputDodge      (int playerId = 0);   // 回避ステップ（押した瞬間）
 bool InputRun        (int playerId = 0);   // 走る（押されている間）
 AxisStatus InputLook (int playerId = 0);   // 視点操作の量（横=右が正、縦=下が正。マウスなら画素数）

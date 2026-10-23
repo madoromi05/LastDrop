@@ -32,6 +32,9 @@ namespace{
 	// 倒れるときのアニメ（tools/configs/zombie.json の extra_animations）。体ごとにどれかをランダムで選ぶ（倒れ方が揃わないように）。
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
+	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない。
+	// SummaryPlan/個別仕様/ZombieCrawl_Plan.txt の 2 章）。
+	const char* kZombieDownedAnimation = "death1";
 	// 銃声が届く距離（m。撃った所から水平だけ。SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。隣の通り（33m 先）まで届く。
 	// 建物越しでも縮めない（音は回り込むので）。
 	const float kGunshotHearingRange = 40.f;
@@ -140,6 +143,7 @@ void GameWorld::place() {
 		tPose.moveStartTime = 0.f;
 		tPose.idle = nullptr;
 		tPose.death = nullptr;
+		tPose.downed = nullptr;
 		tPose.stagger = nullptr;
 		tPose.attack = nullptr;
 		addZombie( toPosition( mMap.tPoseZombie() ), mMap.tPoseZombie().yawDegree, tPose );
@@ -166,6 +170,7 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	animations.moveStartTime = kAnimationStartStep * mZombieNumber;
 	animations.idle = kZombieIdleAnimation;
 	animations.death = kZombieDeathAnimations[ mZombieRandom.getInt( kZombieDeathAnimationNumber ) ];
+	animations.downed = kZombieDownedAnimation;
 	animations.stagger = kZombieStaggerAnimation;
 	animations.attack = kZombieAttackAnimation;
 	addZombie( position, yawDegree, animations );
@@ -303,7 +308,12 @@ void GameWorld::updateZombies() {
 			mZombieAttacks.push_back( event );
 		}
 		if ( zombie->bitThisTick() && mPlayer ) {
-			mPlayer->applyBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
+			// 体を引きずっているゾンビは足元から噛むので、脚だけ（ZombieCrawl_Plan.txt の 5 章）。
+			if ( zombie->isCrawling() ) {
+				mPlayer->applyLegBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
+			} else {
+				mPlayer->applyBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
+			}
 			ZombieAttackEvent event;
 			event.kind = ZombieAttackEvent::Kind::Bite;
 			event.point = zombie->headPosition();

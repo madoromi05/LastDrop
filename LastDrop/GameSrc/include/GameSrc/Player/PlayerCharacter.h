@@ -109,12 +109,15 @@ public:
 	// ── 体力とつかまれている間（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 2・4 章）──
 	// ゾンビに噛まれた。damage: ダメージの量。roll: 噛まれる所を選ぶ 0 以上 1 未満の乱数（PlayerHealth::biteZone）。死んだ後は何もしない。
 	void applyBite( float damage, float roll );
+	// 脚を失って体を引きずるゾンビに、足元から噛まれた（噛まれる所は脚だけ。PlayerHealth::legBiteZone）。ほかは applyBite と同じ。
+	void applyLegBite( float damage, float roll );
 	// ゾンビにつかまれているか。1ティックに1回、update の後に呼ぶ（次の update から動けなくなる・動けるようになる）。
 	// 離されてから少しの間は、canBeGrabbed が false のまま（続けてつかまれて抜け出せなくならないように）。
 	void setHeld( bool held );
 	bool isHeld() const;			// つかまれているか
 	bool canBeGrabbed() const;		// つかんでよいか（生きている・つかまれていない・離されてから少したった）
 	bool isDead() const;			// 死んだか（PlayerHealth::isDead）
+	void toggleInvincible();      // 無敵モードか（デバッグ用。true なら体力が減らない）
 	const PlayerHealth& health() const;
 
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る）。
@@ -163,6 +166,8 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mReloadPose; // 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
 	bool mDryFiredThisTick;    // 直前の update で空撃ちしたか
 	bool mDryFireLatched;      // 空撃ちした後、まだ引き金を離していないか（離すまで次の空撃ちをしない）
+	//無敵モードの判定
+	bool mInvincible = false;
 	CharacterMover mMover;    // 当たりながら滑って進む移動
 	BodyFootprint mFootprint;  // 移動の当たり判定の大きさ
 	HitboxLayout mHitboxLayout; // 部位の箱の設計図（自キャラは1人なので自分で持つ）。mHitboxes が借りるので先に宣言する
