@@ -2,7 +2,7 @@
 #define INCLUDED_GAME_DEBUG_OVERLAY_H
 
 #include "GameSrc/Hit/HitWorld.h"
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/CollisionDebugDrawer.h"
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
 #include "GameSrc/Scene/Game/ZombieHealthBars.h"
@@ -12,9 +12,9 @@ class GameWorld;
 class FirstPersonCamera;
 class UiRenderer;
 
-// 本編の確認用の表示。画面の左下（状態表示の上）に文字（DebugScreen）で出すものと、Debug ビルドだけの当たり判定の表示をまとめる。
+// 本編の確認用の表示。画面の左下（状態表示の上）に文字（DebugScreen）で出すものと、Debug・Profile ビルドだけの当たり判定の表示をまとめる。
 // ・どのビルドでも出す文字: 操作説明、シェーダのコンパイルエラー（あるときだけ）
-// ・Debug ビルドだけ: 足元の床の材質（渡されたときだけ出す。調べるのが重いので、渡す側が Debug だけにしている）。
+// ・Debug・Profile ビルド（ZF_EDITOR）だけ:
 //   F1（InputDebugCollision）で当たり判定の表示を切り替える。表示中は画面中央（視線）へ確認用の線分を撃ち、
 //   当たった所と相手を出す。
 //   F2（InputDebugPickupCollision）で、落ちている物（ガソリン）の当たり判定の箱を、壁や建物を透かして表示する切り替え。
@@ -33,13 +33,12 @@ public:
 	// 画面に出す文字の材料。
 	struct TextState{
 		bool cursorLocked;            // カーソルをロックしているか（操作説明を切り替える）
-		const char* floorMaterial;    // 足元の床の材質の名前。nullptr なら出さない（Release・自キャラがいないとき）
 		const char* shaderError;      // シェーダのコンパイルエラー。空文字列なら出さない。nullptr 不可
 	};
 	// 文字を出す。1回の描画につき1回。
 	void drawText( const TextState& state ) const;
 
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	// 入力を読んで、表示を切り替える（F1・F2・F3）。1回の描画につき1回、Pad::update の後に呼ぶ。
 	void handleInput();
 	// 表示中のもの（F1 の当たり判定・F2 の落ちている物の箱・F3 のゾンビの通り道）を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。

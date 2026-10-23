@@ -8,7 +8,7 @@ class FirstPersonCamera;
 class UiRenderer;
 class Zombie;
 
-// 確認用の、ゾンビの体力の表示（Debug ビルドだけ。GameDebugOverlay が F3 で出し入れする）。
+// 確認用の、ゾンビの体力の表示（Debug・Profile ビルドだけ。GameDebugOverlay が F3 で出し入れする）。
 // ・頭の上に全体の体力のバーと「HP 80/120」。倒れた後は状態（Falling / Corpse 残り秒 / Sinking）も出す
 // ・近いときは、部位の箱の中心に部位の体力の数字。0 になった部位は赤い「0 BROKEN」
 // 世界の位置を画面の位置へ直し、UiRenderer へ積む（描くのは UiRenderer::draw。HUD の描画でまとめて描かれる）。

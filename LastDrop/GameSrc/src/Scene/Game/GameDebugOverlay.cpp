@@ -4,7 +4,7 @@
 #include "GameSrc/Player/FirstPersonCamera.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/UI/UiScreen.h"
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 #include "GameSrc/Scene/Game/PlayerBodyFigure.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Render/VertexColor.h"
@@ -25,15 +25,14 @@ namespace{
 	// 左下の状態表示（Car fuel・Carrying。GameHud）の上に、下から順に積む。行は下から数えた番号（0 が一番下）。
 	const int kHelpColumn = 1;
 	const int kHelpLine = 0;
-	const int kGroundLine = 1;
-	const int kShaderErrorLine = 2; // シェーダのコンパイルエラー（あるときだけ）
+	const int kShaderErrorLine = 1; // シェーダのコンパイルエラー（あるときだけ）
 	const int kDebugRowHeight = 16; // DebugScreen の 1 行の高さ（画素。Framework::drawDebugString）
 	const int kStatusLines = 2;     // 左下の状態表示の行の数（この上に積む）
-	const int kDebugTextSize = 128;
 	const int kErrorTextSize = 160; // コンパイラのエラーはファイル名と行番号が付いて長い
-#ifdef _DEBUG
-	const int kRayLine = 3;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
-	const int kSpawnerLine = 4; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
+#ifdef ZF_EDITOR
+	const int kDebugTextSize = 128;
+	const int kRayLine = 2;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
+	const int kSpawnerLine = 3; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 	// 自キャラの部位ごとの体力の数字（F3）。体の図の右に、上から PlayerBodyZone の順に並べる。
 	const float kPlayerHealthGap = 8.f;         // 体の図の右端から数字までの間（画素）
@@ -75,7 +74,7 @@ namespace{
 }
 
 GameDebugOverlay::GameDebugOverlay()
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	: mShowCollision( false ),
 	mShowPickups( false ),
 	mShowZombieHealth( false )
@@ -92,14 +91,9 @@ void GameDebugOverlay::drawText( const TextState& state ) const {
 		state.cursorLocked
 			? "OnCursor"
 			: "Click: lock cursor" );
-	if ( state.floorMaterial ) {
-		char ground[ kDebugTextSize ];
-		std::snprintf( ground, sizeof( ground ), "Floor: %s", state.floorMaterial );
-		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kGroundLine ), ground );
-	}
 }
 
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 void GameDebugOverlay::handleInput() {
 	if ( InputDebugCollision() ) {
 		mShowCollision = !mShowCollision;
@@ -169,7 +163,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 }
 #endif
 
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const {
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
 	const PlayerCharacter* player = world.player();

@@ -4,7 +4,6 @@
 #include "GameSrc/Audio/GroundMaterial.h"
 #include "GameSrc/Audio/FootstepEmitter.h"
 #include "GameSrc/Audio/PlayerFoley.h"
-#include "GameLib/Math/Vector3.h"
 #include <vector>
 
 class AudioEngine;
@@ -23,9 +22,6 @@ public:
 
 	// 足音・装備の音を鳴らす。1ティックに1回、キャラの更新の後に呼ぶ。
 	void update( const PlayerCharacter& player );
-	// position（足元。ワールド座標）の床の材質（足音に使っているのと同じ表。確認の表示用）。
-	// 地面へ線分を撃つので、毎フレーム呼ぶのは確認用の表示だけにする。
-	GroundMaterial materialAt( const GameLib::Math::Vector3& position ) const;
 
 private:
 	GroundMaterialMap mGround; // 足元の床の材質（地面の部品の材質に、zones の長方形を重ねたもの）

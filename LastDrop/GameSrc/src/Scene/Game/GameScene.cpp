@@ -31,7 +31,7 @@ namespace{
 	const int kMuzzleLight = 2; // 撃った瞬間だけ銃口の前に灯す（MuzzleFlash）。光っていない間は強さ0
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
 
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
 	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
 	const int kDebugSpawnNumber = 1;
@@ -108,7 +108,8 @@ void GameScene::beginFrame() {
 		return;
 	}
 
-	// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
+#ifdef ZF_EDITOR
+	// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug と Profile ビルドだけで効く）。
 	if (InputDebugInvincible()) {
 		PlayerCharacter* player = mWorld.player();
 		if (player) {
@@ -116,7 +117,7 @@ void GameScene::beginFrame() {
 		}
 	}
 
-#ifdef _DEBUG
+
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
 	mFreeCamera.handleToggle( mControl.camera() );
 #endif
@@ -129,7 +130,7 @@ void GameScene::beginFrame() {
 		mControl.readInput( aimWeight() );
 	}
 	updateInteraction();
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	mFreeCamera.look(); // 使っていなければ何もしない。カーソルロックの切り替え（readInputIdle）の後に読む
 	mDebug.handleInput();
 	if ( InputDebugSpawnZombie() ) {
@@ -138,7 +139,7 @@ void GameScene::beginFrame() {
 #endif
 }
 
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 void GameScene::spawnDebugZombies() {
 	const PlayerCharacter* player = mWorld.player();
 	if ( !player ) {
@@ -181,7 +182,7 @@ void GameScene::update() {
 	if ( player ) {
 		mBodySounds.update( *player );
 	}
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	mFreeCamera.move(); // 使っていなければ何もしない
 #endif
 }
@@ -198,7 +199,7 @@ void GameScene::draw() {
 	} else {
 		mControl.placeCamera( nullptr, aimWeight() );
 	}
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	// 自キャラの視点は、観察用カメラの間も目へ置き続ける（見ている物を使う視線と、戻ったときの位置のため）。
 	// 描くのは観察用カメラから（自キャラの視点で設定した描画ステートを上書きする）。
 	if ( mFreeCamera.isActive() ) {
@@ -219,7 +220,7 @@ void GameScene::draw() {
 	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection() ); // 弾痕の上に舞う
 	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection() ); // 砂ぼこりの後（同じ作り）
 	mWorld.drawMuzzleFlash( camera.projectionViewMatrix(), camera.viewDirection() ); // 加算なので順番は問わない
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	mDebug.drawCollision( mWorld, camera );
 #endif
 	mPostProcess.endScene();
@@ -228,7 +229,7 @@ void GameScene::draw() {
 	if ( mPaused ) {
 		mPauseMenu.draw();
 	} else {
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
@@ -238,13 +239,6 @@ void GameScene::draw() {
 
 	GameDebugOverlay::TextState text;
 	text.cursorLocked = mControl.isCursorLocked();
-	text.floorMaterial = nullptr;
-#ifdef _DEBUG
-	// 足元の材質は地面へ線分を撃って調べるので、毎回の描画で引くのは Debug ビルドの確認用の表示だけにする。
-	if ( player ) {
-		text.floorMaterial = groundMaterialName( mBodySounds.materialAt( player->position() ) );
-	}
-#endif
 	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）の順に、先に見つかった方を出す。
 	text.shaderError = mPostProcess.errorMessage();
 	if ( text.shaderError[ 0 ] == '\0' ) {
@@ -308,7 +302,7 @@ float GameScene::aimWeight() const {
 }
 
 const FirstPersonCamera& GameScene::viewCamera() const {
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	if ( mFreeCamera.isActive() ) {
 		return mFreeCamera.camera();
 	}
@@ -317,7 +311,7 @@ const FirstPersonCamera& GameScene::viewCamera() const {
 }
 
 bool GameScene::isFreeCameraActive() const {
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	return mFreeCamera.isActive();
 #else
 	return false;

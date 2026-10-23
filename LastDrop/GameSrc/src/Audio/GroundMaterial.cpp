@@ -5,18 +5,6 @@
 
 using namespace GameLib::Math;
 
-namespace{
-	// GroundMaterial の順に並べる。
-	const char* kMaterialNames[] = {
-		"CONCRETE", "METAL", "WOOD", "GRASS", "GRAVEL", "WATER", "GLASS",
-	};
-	static_assert( sizeof( kMaterialNames ) / sizeof( kMaterialNames[ 0 ] ) == GROUND_NUM, "kMaterialNames must list every GroundMaterial" );
-}
-
-const char* groundMaterialName( GroundMaterial material ) {
-	return kMaterialNames[ material ];
-}
-
 GroundMaterialMap::GroundMaterialMap( const GroundZone* zones, int zoneCount, const IGroundSurface* surface, GroundMaterial fallback ) :
 	mZones( zones, zones + zoneCount ),
 	mSurface( surface ),

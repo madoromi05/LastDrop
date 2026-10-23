@@ -16,9 +16,6 @@ enum GroundMaterial{
 	GROUND_NUM,
 };
 
-// デバッグ表示用の材質の名前。
-const char* groundMaterialName( GroundMaterial );
-
 // 地面の上に置いた長方形（上から見た XZ の範囲）の材質。
 struct GroundZone{
 	float minX, minZ;

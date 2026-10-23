@@ -15,7 +15,7 @@
 #include "GameSrc/Scene/Game/PauseMenu.h"
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
 #endif
 
@@ -41,7 +41,7 @@ class GameResources;
 //   一時停止のメニュー                  … PauseMenu
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
-//   確認用の観察カメラ（Debug だけ。F4）… FreeCamera
+//   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
 // 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
 class GameScene : public IScene{
 public:
@@ -64,7 +64,7 @@ private:
 	// ゾンビがつかんだ・噛んだ出来事を読み、音を鳴らし、つかまれたら視点をその顔へ向け、噛まれた・死んだ後の見せ方を進める。
 	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
 	void updatePlayerDamage();
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
 	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
 	void spawnDebugZombies();
@@ -90,7 +90,7 @@ private:
 	PauseMenu mPauseMenu;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GameDebugOverlay mDebug;
-#ifdef _DEBUG
+#ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
 #endif
 	bool mReady; // 世界の配置が済んだか

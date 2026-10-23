@@ -33,7 +33,3 @@ void PlayerBodySounds::update( const PlayerCharacter& player ) {
 	foley.boltPulled = ( cue == WeaponReload::CUE_BOLT );
 	mFoley.update( foley, stepped );
 }
-
-GroundMaterial PlayerBodySounds::materialAt( const Vector3& position ) const {
-	return mGround.materialAt( position );
-}
