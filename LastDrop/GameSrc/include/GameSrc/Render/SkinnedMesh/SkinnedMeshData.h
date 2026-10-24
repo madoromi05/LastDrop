@@ -81,8 +81,8 @@ public:
 	GameLib::Scene::Tree createSkeleton() const;
 	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。
 	GameLib::Scene::Animation animation( const char* name ) const;
-	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。
-	void updateLoading();
+	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true。
+	bool updateLoading();
 
 	// pose の現在ポーズから、各ボーンの行列（骨格の根から見た姿勢）を bonePose へ書く。
 	// ボーンの並びは setBone の番号。Tree に無いボーンは単位行列。

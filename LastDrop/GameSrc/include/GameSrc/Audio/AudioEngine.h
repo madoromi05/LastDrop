@@ -36,6 +36,10 @@ public:
 	void update();
 	// すべての音を止める（true）・続きから鳴らし直す（false）。一時停止の間に使う。止めている間に鳴らした音は、戻したときに鳴り始める。
 	void setPaused( bool paused );
+	// 全体の音量（出力の直前で掛ける倍率。1 で元の大きさ）。設定画面の Master Volume。
+	void setMasterVolume( float gain );
+	// バスの音量（そのバスに流す全ての音に掛ける倍率。1 で元の大きさ）。設定画面の Effects Volume など。
+	void setBusVolume( Bus bus, float gain );
 
 	// 聞き手（カメラ）の位置と向き（長さ1）。毎フレーム、カメラを置いた後に呼ぶ。
 	void setListener( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& forward );

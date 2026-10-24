@@ -27,8 +27,8 @@ public:
 
 	// 全パーツが描画できる状態か（upload 済みか）。パーツが無ければ false。
 	bool isReady() const;
-	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。
-	void updateLoading();
+	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true。
+	bool updateLoading();
 	// world の位置・向き・大きさで全パーツを描く。
 	void draw( const GameLib::Math::Matrix34& world ) const;
 	// 全パーツのうち、線分が一番早く当たる所の時刻と法線。座標はモデルの空間（置く前）。当たらなければ false。

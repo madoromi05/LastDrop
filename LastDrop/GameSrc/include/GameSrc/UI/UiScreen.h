@@ -29,6 +29,15 @@ public:
 	static GameLib::Math::Vector2 headingPosition();
 	// 画面中央に縦に並べるボタンの index 番目（0 が一番上）の範囲（UI_ANCHOR_CENTER）。
 	static UiRect menuButtonRect( int index );
+	// 設定画面の index 行目（0 が一番上）の範囲（UI_ANCHOR_CENTER）。スライダーの行は幅いっぱい。
+	static UiRect settingRowRect( int index );
+	// 設定画面の index 行目に置くボタンの範囲（UI_ANCHOR_CENTER）。行と同じ高さで、幅はメニューのボタンと同じ。
+	static UiRect settingButtonRect( int index );
+	// 操作の一覧の index 行目の文字の位置（UI_ANCHOR_CENTER。UI_ALIGN_MIDDLE_LEFT で使う）。
+	// column: 0 が操作の名前、1 がキーの名前。
+	static GameLib::Math::Vector2 listLinePosition( int index, int column );
+	// 操作の一覧（lineCount 行）の下に置くボタンの範囲（UI_ANCHOR_CENTER）。
+	static UiRect listButtonRect( int lineCount );
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。
 	static GameLib::Math::Vector2 screenCenter();
 	// 見ている物の案内を出す位置（照準の少し下。UI_ANCHOR_CENTER。中央揃えで使う）。

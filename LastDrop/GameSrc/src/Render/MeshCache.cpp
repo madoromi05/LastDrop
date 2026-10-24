@@ -4,6 +4,7 @@
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshLoader.h"
 
 #include "GameLib/Base/DebugStream.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib;
 
@@ -18,33 +19,46 @@ namespace{
 		// ここに来るのはファイルごとに1回だけ。使い回せているかはこの出力の回数で確かめられる。
 		GameLib::cout << "MeshCache: load " << filename << GameLib::endl;
 		auto entry = std::make_unique< TEntry >();
+		entry->mRequestedAt = Profiling::now();
 		entry->mDocument = PseudoXml::Document::create( filename );
 		TEntry* raw = entry.get();
 		( *entries )[ filename ] = std::move( entry );
 		return raw;
 	}
 
-	// 読み終えた文書からデータを構築する。構築済み・読み込み中なら何もしない。
-	// 全部終わっていれば true（失敗も終わりに含める。ずっと待ち続けないように）。
+	// 読み終えた文書からデータを構築し、貼るテクスチャの展開を進める。構築済み・読み込み中なら構築はしない。
+	// 構築もテクスチャの展開も全部終わっていれば true（失敗も終わりに含める。ずっと待ち続けないように）。
+	// テクスチャまで待つのは、展開（大きい絵で 1 枚 約 40ms）をロードの中で済ませ、
+	// ゲームが始まった最初の描画にまとめて来させないため（2026-10-24。計測で 243ms のひっかかりが出ていた）。
 	template< class TEntry, class TLoad >
 	bool buildLoaded( std::map< std::string, std::unique_ptr< TEntry > >* entries, TLoad load, TextureCache* textures ) {
-		bool allBuilt = true;
+		bool allReady = true;
 		for ( auto& pair : *entries ) {
 			TEntry& entry = *pair.second;
 			if ( !entry.mBuilt ) {
+				// 読み終えた文書は、最初に isReady が true を返すときにメインスレッドで解析される。
+				// 終わってから解析だったと分かるので、呼ぶ前の時刻を取っておく。
+				long long polledAt = Profiling::now();
 				if ( entry.mDocument.isReady() ) {
+					const char* filename = pair.first.c_str();
+					Profiling::addLoadWait( filename, entry.mRequestedAt );
+					Profiling::addLoadWork( "parse", filename, polledAt );
+					LOAD_SCOPE( "build", filename );
 					if ( !load( &entry.mData, MeshLoaderUtil::containerRoot( entry.mDocument.root() ), textures ) ) {
 						GameLib::cout << "MeshCache: failed to build " << pair.first.c_str() << GameLib::endl;
 					}
 					entry.mDocument.release(); // 構築済みなので文書は解放
 					entry.mBuilt = true;
 				} else {
-					allBuilt = false;
+					allReady = false;
 				}
 			}
-			entry.mData.updateLoading(); // テクスチャの非同期ロードを進める
+			// テクスチャの非同期ロードを進める（構築前のデータはパーツが無いので true が返る）。
+			if ( !entry.mData.updateLoading() ) {
+				allReady = false;
+			}
 		}
-		return allBuilt;
+		return allReady;
 	}
 }
 
@@ -76,9 +90,9 @@ const SkinnedMeshData* MeshCache::skinnedMesh( const char* filename ) {
 
 bool MeshCache::update() {
 	// 両方を必ず呼ぶ（&& の短絡で片方のロードが止まらないように）。
-	bool staticBuilt = buildLoaded( &mStaticMeshes, StaticMeshLoader::load, &mTextures );
-	bool skinnedBuilt = buildLoaded( &mSkinnedMeshes, SkinnedMeshLoader::load, &mTextures );
-	return staticBuilt && skinnedBuilt;
+	bool staticReady = buildLoaded( &mStaticMeshes, StaticMeshLoader::load, &mTextures );
+	bool skinnedReady = buildLoaded( &mSkinnedMeshes, SkinnedMeshLoader::load, &mTextures );
+	return staticReady && skinnedReady;
 }
 
 const SkinningPipeline& MeshCache::skinning() const {

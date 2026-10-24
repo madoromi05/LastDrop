@@ -26,7 +26,8 @@ namespace
         }
     }
 
-    std::string WorkName(WorkId a_work)
+    // 文字列リテラルを返す（計測の印は名前のポインタを持ち続けるので、std::string にしない）。
+    const char* WorkName(WorkId a_work)
     {
         switch (a_work)
         {
@@ -55,6 +56,9 @@ namespace
         case WorkId::DebugCameraDown: return "DebugCameraDown";
         case WorkId::Reload:   return "Reload";
         case WorkId::DebugInvincible: return "DebugInvincible";
+        case WorkId::DebugRecordPerf: return "DebugRecordPerf";
+        case WorkId::UiLeft:   return "UiLeft";
+        case WorkId::UiRight:  return "UiRight";
         default:            return "";
         }
     }
@@ -191,10 +195,18 @@ namespace
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
+        // 設定画面のスライダーの値を変える。上下と同じく矢印キーと WASD の両方で
+        // （A/D は移動の Left/Right と共有。設定の画面ではキャラを動かさないので重ならない）。
+        { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, Keyboard::KEY_LEFT },
+        { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, 'a' },
+        { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, Keyboard::KEY_RIGHT },
+        { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, 'd' },
         // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
 		// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
-        { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 }, 
+        { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 },
+        // 計測の CSV の記録を始める／止める（2026-10-23 決定。F6 は ImGui のエディタに空けておく）。
+        { CollectorId::InGame, WorkId::DebugRecordPerf, DeviceKind::Keyboard, Keyboard::KEY_F7 },
     };
 
     // Player 1：キーボードのみ
@@ -206,6 +218,25 @@ namespace
         { CollectorId::InGame, WorkId::Jump,  DeviceKind::Keyboard, 'l' },
         { CollectorId::InGame, WorkId::Fire,  DeviceKind::Keyboard, ',' },
     };
+}
+
+const char* GameLib::Input::WorkIdName(WorkId a_work)
+{
+    return WorkName(a_work);
+}
+
+std::string GameLib::Input::BindingDisplayName(const BindingRecord& a_record)
+{
+    switch (a_record.device)
+    {
+    case DeviceKind::Keyboard:  return KeyboardKeyName(static_cast<char>(a_record.code));
+    case DeviceKind::Mouse:     return "Mouse " + MouseButtonName(static_cast<Mouse::Button>(a_record.code));
+    case DeviceKind::Joystick:  return "Pad " + JoystickButtonName(a_record.code);
+    case DeviceKind::MouseAxis:
+        // 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる。
+        return static_cast<MouseAxisKind>(a_record.code) == MouseAxisKind::Move ? "Mouse" : "Mouse " + MouseAxisName(static_cast<MouseAxisKind>(a_record.code));
+    default:                    return "";
+    }
 }
 
 const char* GameLib::Input::InputConfigFilePath(int a_playerId)

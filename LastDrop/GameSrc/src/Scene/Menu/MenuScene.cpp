@@ -1,18 +1,22 @@
 #include "GameSrc/Scene/Menu/MenuScene.h"
 #include "GameSrc/Scene/GameResources.h"
+#include "GameSrc/Core/Pad.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Input/Manager.h"
 
 MenuScene::MenuScene( GameResources* resources, const MenuDefinition& definition ) :
-	mScreen( &resources->uiRenderer() ) {
+	mPages( &resources->uiRenderer(), &resources->settings(), &resources->audio(), definition ) {
 	// 本編でロックしたカーソルを戻す（ボタンをマウスで押せるように）。
 	GameLib::Input::Manager::instance().setCursorLocked( false );
-	MenuLayout::build( &mScreen.canvas(), definition );
 }
 
 void MenuScene::beginFrame() {
-	mScreen.handleInput();
+	// ESC は 1 ページ戻る（最初のページでは何もしない。タイトルを ESC で閉じてしまわないように）。
+	if ( InputMenu() ) {
+		mPages.back();
+	}
+	mPages.handleInput();
 }
 
 void MenuScene::update() {
@@ -20,5 +24,5 @@ void MenuScene::update() {
 }
 
 void MenuScene::draw() {
-	mScreen.draw();
+	mPages.draw();
 }

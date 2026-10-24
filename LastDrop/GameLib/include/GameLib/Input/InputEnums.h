@@ -49,7 +49,14 @@ enum class WorkId
     DebugCameraDown,   // 観察用カメラを下げる（押している間。Debug ビルドだけで効く）
     Reload,            // 弾を込める（押した瞬間）
     DebugInvincible, // 自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）
+    DebugRecordPerf, // 計測の CSV の記録を始める／止める（押した瞬間。Debug・Profile ビルドだけで効く）
+    UiLeft,   // 選んでいる部品（音量のスライダーなど）の値を下げる（押した瞬間）
+    UiRight,  // 選んでいる部品の値を上げる（押した瞬間）
 };
+
+// WorkId の数（全部の操作を順に見るとき用。計測の印など）。
+// WorkId を末尾に足したら、ここの最後の WorkId も足した物に直すこと。
+constexpr int kWorkIdCount = static_cast< int >( WorkId::UiRight ) + 1;
 
 // コレクター（シーン別の入力割り当てグループ）種別
 enum class CollectorId

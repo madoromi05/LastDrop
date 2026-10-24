@@ -251,10 +251,15 @@ Scene::Animation SkinnedMeshData::animation( const char* name ) const {
 	return mContainer.animation( name );
 }
 
-void SkinnedMeshData::updateLoading() {
+bool SkinnedMeshData::updateLoading() {
+	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）。
+	bool allReady = true;
 	for ( int i = 0; i < mParts.size(); ++i ) {
-		mParts[ i ].mMaterial.updateLoading();
+		if ( !mParts[ i ].mMaterial.updateLoading() ) {
+			allReady = false;
+		}
 	}
+	return allReady;
 }
 
 void SkinnedMeshData::computeBonePose( Scene::Tree& pose, std::vector< Matrix34 >* bonePose ) const {

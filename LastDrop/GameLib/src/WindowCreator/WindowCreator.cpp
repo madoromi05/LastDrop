@@ -13,6 +13,7 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
 #include "GameLib/Threading/Functions.h"
+#include "GameLib/DebugUi/DebugUi.h"
 
 using namespace std;
 using namespace GameLib;
@@ -459,6 +460,10 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	// 開発用のエディタ（ImGui）に、マウス・キー・文字の知らせを先に渡す（Release では何もしない）。
+	if ( DebugUi::handleWindowMessage( hWnd, message, wParam, lParam ) ){
+		return 1;
+	}
 	switch (message)
 	{
 		break;

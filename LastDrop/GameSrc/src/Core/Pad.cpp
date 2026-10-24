@@ -1,6 +1,12 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameLib/GameLib.h"
+#include "GameLib/Profiling/Profiler.h"
 using namespace GameLib::Input;
+
+namespace {
+    // 計測の印を付ける操作の持ち主（自キャラを動かすのは 0 番だけ）。
+    const int kProfiledPlayer = 0;
+}
 
 Pad* Pad::mInstance = nullptr;
 
@@ -62,6 +68,18 @@ void Pad::update()
     {
         m_inputs[i].Update();
     }
+#ifdef ZF_EDITOR
+    // 押した操作を計測の印にする（どのボタンを押した時に重いかを、CSV・スパイクの JSON・右上の表示で見るため）。
+    // 名前は GameLib が持つ（ここには文字列を書かない）。割り当てが無い操作・軸の操作（Look）は押されたことにならない。
+    for (int work = 0; work < kWorkIdCount; ++work)
+    {
+        WorkId id = static_cast<WorkId>(work);
+        if (IsWorkPress(m_inputs[kProfiledPlayer], id))
+        {
+            PROFILE_EVENT(WorkIdName(id));
+        }
+    }
+#endif
 }
 
 // ────────────────────────────────────────────────
@@ -79,6 +97,7 @@ bool Pad::isTriggered(WorkId work, int playerId) const
 
 bool Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
 AxisStatus Pad::getAxisWorkState(WorkId work, int playerId) const { return GetAxisWorkState(m_inputs[playerId], work); }
+const std::vector<BindingRecord>& Pad::bindings(int playerId) const { return m_configs[playerId].records(); }
 
 // ────────────────────────────────────────────────
 // キーコンフィグ
@@ -161,6 +180,9 @@ bool InputDebugCameraDown(int playerId) { return Pad::instance()->isOn(WorkId::D
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }
 bool InputUiDown(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiDown, playerId); }
 bool InputUiDecide(int playerId) { return Pad::instance()->isTriggered(WorkId::UiDecide, playerId); }
+bool InputUiLeft(int playerId)   { return Pad::instance()->isTriggered(WorkId::UiLeft, playerId); }
+bool InputUiRight(int playerId)  { return Pad::instance()->isTriggered(WorkId::UiRight, playerId); }
 bool InputInteract(int playerId) { return Pad::instance()->isTriggered(WorkId::Interact, playerId); }
 bool InputReload(int playerId)   { return Pad::instance()->isTriggered(WorkId::Reload, playerId); }
 bool InputDebugInvincible(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugInvincible, playerId); }
+bool InputDebugRecordPerf(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugRecordPerf, playerId); }

@@ -52,6 +52,8 @@ public:
 	virtual void beginFrame();
 	virtual void update();
 	virtual void draw();
+	// メッシュの組み立てが終わって世界を並べるまでは読み込み中（draw は何も描かない）。
+	virtual bool isLoading() const;
 private:
 	// 一時停止する・戻る。止める間は世界を進めず、音を止め、カーソルを外す。戻ったらカーソルをロックする。
 	void pause();

@@ -37,6 +37,8 @@ public:
     bool isTriggered(GameLib::Input::WorkId work, int playerId) const;  // 押した瞬間だけ
     bool isWorkRelease(GameLib::Input::WorkId work, int playerId) const; // 離した瞬間だけ
     AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const; // 軸ワークの今フレームの量
+    // 今の割り当て（設定画面の操作の一覧が、どのキーかを見せるのに使う。キーの名前は GameLib::Input::BindingDisplayName）
+    const std::vector<GameLib::Input::BindingRecord>& bindings(int playerId) const;
 
     // ─────────────────────────────────────────
     // キーコンフィグ：ワークへのボタン追加・削除
@@ -113,6 +115,9 @@ bool InputDebugCameraDown(int playerId = 0);   // 観察用カメラを下げる
 bool InputUiUp       (int playerId = 0);   // 画面の部品の選択を上へ（押した瞬間）
 bool InputUiDown     (int playerId = 0);   // 画面の部品の選択を下へ（押した瞬間）
 bool InputUiDecide   (int playerId = 0);   // 選んでいる部品を決定する（押した瞬間）
+bool InputUiLeft     (int playerId = 0);   // 選んでいる部品の値を下げる（押した瞬間。設定画面のスライダー）
+bool InputUiRight    (int playerId = 0);   // 選んでいる部品の値を上げる（押した瞬間）
 bool InputInteract    (int playerId = 0);   // 見ている物を使う（拾う・給油する。押した瞬間）
 bool InputReload      (int playerId = 0);   // 弾を込める（押した瞬間）
 bool InputDebugInvincible(int playerId = 0);// 自キャラの無敵を切り替える（押した瞬間。Debug・Profile ビルドだけで効く）
+bool InputDebugRecordPerf(int playerId = 0);// 計測の CSV の記録を始める／止める（押した瞬間。Debug・Profile ビルドだけで効く）

@@ -43,6 +43,15 @@
     <Filter Include="GameLib\Threading">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF1234567899}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameLib\Profiling">
+      <UniqueIdentifier>{6F1D2C3B-8A47-4E5D-9B21-3C7E0A5F4D18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\DebugUi">
+      <UniqueIdentifier>{9C3E5A71-2B64-4D8F-A1E0-7F5B3D2C6E49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameLib\ThirdParty\imgui">
+      <UniqueIdentifier>{4B8D1F26-7C3A-4E95-B0D2-8A6E1C5F3B70}</UniqueIdentifier>
+    </Filter>
     <Filter Include="GameLib\WindowCreator">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
     </Filter>
@@ -300,6 +309,157 @@
     <ClCompile Include="GameLib\src\Sound\Wave.cpp">
       <Filter>GameLib\Sound</Filter>
     </ClCompile>
+    <!-- Profiling -->
+    <ClCompile Include="GameLib\src\Profiling\FrameRecorder.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\FrameTimeline.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\JsonWriter.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\LoadTracker.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\OutputFiles.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\PerfOverlay.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\Profiler.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\SpikeWriter.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Profiling\SystemInfo.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\include\GameLib\Profiling\Profiler.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\Profiling\EventLog.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\src\Profiling\EventLog.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\Profiling\GpuTimer.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\src\Profiling\GpuTimer.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\Profiling\PerfPanel.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\src\Profiling\PerfPanel.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\Profiling\PerfStats.cpp">
+      <Filter>GameLib\Profiling</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\src\Profiling\PerfStats.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\DebugUi\DebugUi.cpp">
+      <Filter>GameLib\DebugUi</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\include\GameLib\DebugUi\DebugUi.h">
+      <Filter>GameLib\DebugUi</Filter>
+    </ClInclude>
+    <ClCompile Include="GameSrc\src\DebugMode\EditorWindow.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TuningVisitors.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TuningCatalog.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TuningPanel.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\EditorWindow.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningVisitors.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningCatalog.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningPanel.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_draw.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_tables.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_widgets.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.cpp">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClCompile>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_internal.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_rectpack.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_textedit.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_truetype.h">
+      <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\FrameRecorder.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\FrameTimeline.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\JsonWriter.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\LoadTracker.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\OutputFiles.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\PerfOverlay.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\SpikeWriter.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Profiling\SystemInfo.h">
+      <Filter>GameLib\Profiling</Filter>
+    </ClInclude>
     <!-- Threading -->
     <ClCompile Include="GameLib\src\Threading\Event.cpp">
       <Filter>GameLib\Threading</Filter>
@@ -434,6 +594,9 @@
     <ClCompile Include="GameSrc\src\UI\UiButton.cpp">
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\UiSlider.cpp">
+      <Filter>GameSrc\UI</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp">
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
@@ -483,6 +646,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp">
+      <Filter>GameSrc\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Core\GameSettings.cpp">
       <Filter>GameSrc\Core</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp">
@@ -693,6 +859,15 @@
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsPage.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Menu\OptionsPage.cpp">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuPages.cpp">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp">
@@ -1165,6 +1340,12 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiButton.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiAdjustable.h">
+      <Filter>GameSrc\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiSlider.h">
+      <Filter>GameSrc\UI</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
@@ -1237,6 +1418,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h">
       <Filter>GameSrc\Core</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Core\GameSettings.h">
+      <Filter>GameSrc\Core</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h">
       <Filter>GameSrc\Core</Filter>
     </ClInclude>
@@ -1250,6 +1434,9 @@
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStanceParams.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h">
@@ -1346,6 +1533,12 @@
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\LookParams.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\WeaponPoseParams.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h">
@@ -1472,6 +1665,15 @@
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsPage.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\OptionsPage.h">
+      <Filter>GameSrc\Scene\Menu</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuPages.h">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h">

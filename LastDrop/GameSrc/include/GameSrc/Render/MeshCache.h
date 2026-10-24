@@ -37,7 +37,8 @@ public:
 	const SkinnedMeshData* skinnedMesh( const char* filename );
 
 	// 読み込み中のファイルを進め、読み終えたものを構築する。テクスチャのロードも進める。毎フレーム呼ぶ。
-	// 頼まれた全ファイルの構築が終わっていれば true（構築に失敗したものも「終わった」に含む）。
+	// 頼まれた全ファイルの構築と、それが貼るテクスチャの展開が終わっていれば true
+	// （構築・読み込みに失敗したものも「終わった」に含む）。
 	bool update();
 
 	// スキンメッシュを描く道具（シェーダ）。エラー表示などで読むだけ。
@@ -49,6 +50,7 @@ private:
 		GameLib::PseudoXml::Document mDocument;
 		TData mData;
 		bool mBuilt = false;
+		long long mRequestedAt = 0; // 読み込みを頼んだ時刻（ロードの計測で、届くまで待った時間を出すため）
 	};
 	// スキンメッシュの描き方。データより先に宣言する（＝データより後に破棄される。データが借りて持つため）。
 	std::unique_ptr< SkinningPipeline > mSkinning;

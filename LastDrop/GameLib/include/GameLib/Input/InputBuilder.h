@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <string>
 #include "Input.h"
 #include "InputEnums.h"
 #include "KeyboardDevice.h"
@@ -105,6 +106,14 @@ namespace Input {
 // ファイル名という「文字列」も InputBuilder.cpp 側で一元管理し、
 // ゲーム側（Pad.cpp 等）は番号だけを渡す。
 const char* InputConfigFilePath(int a_playerId);
+
+// 操作（WorkId）の名前（例："Fire"）。保存ファイル・計測の印で使う。文字列リテラルなので持ち続けてよい。
+// 名前も InputBuilder.cpp 側で一元管理し、ゲーム側（Pad.cpp 等）は WorkId だけを渡す。
+const char* WorkIdName(WorkId a_work);
+
+// 割り当て 1 件を、画面に見せるキーの名前にする（例："W"・"Shift"・"Mouse Left"・"Mouse"）。設定画面の操作の一覧で使う。
+// キーの名前も InputBuilder.cpp 側で一元管理し、ゲーム側は割り当て（BindingRecord）を渡すだけにする。
+std::string BindingDisplayName(const BindingRecord& a_record);
 
 // プレイヤー番号 → デフォルト割当表（先頭ポインタ）。要素数は a_outCount に返す。
 // 「どのキーを何に割り当てるか」という入力データも GameLib 側が持ち、

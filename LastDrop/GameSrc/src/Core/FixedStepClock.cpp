@@ -3,11 +3,16 @@
 
 namespace{
 	const int kFirstTicks = 1; // reset 直後の描画で進めるティック数
+	const int kStepTicks = 1;  // コマ送り 1 回で進めるティック数
+	const float kNormalTimeScale = 1.f;
 }
 
 FixedStepClock::FixedStepClock() :
 	mAccumulated( 0.0 ),
-	mStarted( false ) {
+	mStarted( false ),
+	mPaused( false ),
+	mStepRequested( false ),
+	mTimeScale( kNormalTimeScale ) {
 }
 
 void FixedStepClock::reset() {
@@ -24,7 +29,13 @@ int FixedStepClock::ticksToRun() {
 	}
 	std::chrono::duration< double > elapsed = now - mPrevious;
 	mPrevious = now;
-	mAccumulated += elapsed.count();
+	if ( mPaused ) {
+		// 止めている間の時間は貯めない（戻した瞬間に、止めていた分を早送りしないように）。
+		int stepTicks = mStepRequested ? kStepTicks : 0;
+		mStepRequested = false;
+		return stepTicks;
+	}
+	mAccumulated += elapsed.count() * mTimeScale;
 
 	int ticks = static_cast< int >( mAccumulated / GameTime::kTickSeconds );
 	if ( ticks > GameTime::kMaxTicksPerFrame ) {
@@ -34,4 +45,28 @@ int FixedStepClock::ticksToRun() {
 	}
 	mAccumulated -= ticks * static_cast< double >( GameTime::kTickSeconds );
 	return ticks;
+}
+
+void FixedStepClock::setPaused( bool paused ) {
+	mPaused = paused;
+	mStepRequested = false;
+	mAccumulated = 0.0; // 止める前・戻す前の端数を持ち越さない
+}
+
+bool FixedStepClock::isPaused() const {
+	return mPaused;
+}
+
+void FixedStepClock::requestStep() {
+	if ( mPaused ) {
+		mStepRequested = true;
+	}
+}
+
+void FixedStepClock::setTimeScale( float scale ) {
+	mTimeScale = scale;
+}
+
+float FixedStepClock::timeScale() const {
+	return mTimeScale;
 }

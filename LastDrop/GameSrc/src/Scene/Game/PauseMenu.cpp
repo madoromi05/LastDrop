@@ -11,15 +11,22 @@ namespace{
 	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
 }
 
-PauseMenu::PauseMenu( UiRenderer* renderer, std::function< void() > onResume ) :
-	mScreen( renderer ),
+PauseMenu::PauseMenu( UiRenderer* renderer, GameSettings* settings, AudioEngine* audio, std::function< void() > onResume ) :
+	mPages( renderer, settings, audio, MenuCatalog::pause( onResume ) ),
 	mRenderer( renderer ) {
 	ASSERT( mRenderer && "PauseMenu : renderer is null." );
-	MenuLayout::build( &mScreen.canvas(), MenuCatalog::pause( onResume ) );
+}
+
+void PauseMenu::open() {
+	mPages.showMain();
 }
 
 void PauseMenu::handleInput() {
-	mScreen.handleInput();
+	mPages.handleInput();
+}
+
+bool PauseMenu::back() {
+	return mPages.back();
 }
 
 void PauseMenu::draw() {
@@ -30,5 +37,5 @@ void PauseMenu::draw() {
 	screen.width = static_cast< float >( GameLib::Framework::instance().width() );
 	screen.height = static_cast< float >( GameLib::Framework::instance().height() );
 	mRenderer->addRect( screen, kDimColor );
-	mScreen.draw();
+	mPages.draw();
 }

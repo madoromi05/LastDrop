@@ -13,8 +13,11 @@ UiInput UiInput::read( const Vector2& previousCursor ) {
 	input.cursor.set( static_cast< float >( mouse.x() ), static_cast< float >( mouse.y() ) );
 	input.cursorMoved = input.cursor.x != previousCursor.x || input.cursor.y != previousCursor.y;
 	input.clicked = mouse.isTriggered( GameLib::Input::Mouse::BUTTON_LEFT );
+	input.held = mouse.isOn( GameLib::Input::Mouse::BUTTON_LEFT );
 	input.upPressed = InputUiUp();
 	input.downPressed = InputUiDown();
 	input.decidePressed = InputUiDecide();
+	input.leftPressed = InputUiLeft();
+	input.rightPressed = InputUiRight();
 	return input;
 }

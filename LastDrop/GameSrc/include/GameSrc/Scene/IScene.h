@@ -18,6 +18,9 @@ public:
 	// 視点・音の聞き手を置き直すなど描く前の準備で状態を書き換えるので const にしない
 	// （何回描いても結果が変わらない「描くだけ」の部分は、各シーンの中で const 関数に分ける）。
 	virtual void draw() = 0;
+	// まだ読み込み中で、操作できる絵を描いていないか。ロードの時間の計測（Profiling）が、終わりを知るために読む。
+	// 作ったらすぐ遊べるシーンは false のまま（既定）。
+	virtual bool isLoading() const { return false; }
 };
 
 #endif

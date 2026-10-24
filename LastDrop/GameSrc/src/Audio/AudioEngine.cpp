@@ -3,6 +3,7 @@
 #include "ThirdParty/miniaudio/miniaudio.h"
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
+#include "GameLib/Profiling/Profiler.h"
 
 #include <random>
 #include <vector>
@@ -64,7 +65,12 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 	for ( Voice& voice : mLoops ) {
 		voice.used = false;
 	}
-	if ( ma_engine_init( nullptr, &mEngine ) != MA_SUCCESS ) {
+	ma_result engineResult;
+	{
+		LOAD_SCOPE( "device", "ma_engine_init" );
+		engineResult = ma_engine_init( nullptr, &mEngine );
+	}
+	if ( engineResult != MA_SUCCESS ) {
 		GameLib::cout << "AudioEngine: failed to open the audio device (sound is disabled)" << GameLib::endl;
 		return;
 	}
@@ -78,6 +84,7 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 		SoundId id = static_cast< SoundId >( i );
 		for ( int variation = 0; variation < soundEntry( id ).variationCount; ++variation ) {
 			std::string path = soundFilePath( id, variation );
+			LOAD_SCOPE( "sound", path.c_str() ); // 読み込みと展開（MA_SOUND_FLAG_DECODE）。起動のロードに入る
 			auto source = std::make_unique< ma_sound >();
 			if ( ma_sound_init_from_file( &mEngine, path.c_str(), MA_SOUND_FLAG_DECODE, nullptr, nullptr, source.get() ) != MA_SUCCESS ) {
 				// tools/SoundGen を実行していないとここに来る。
@@ -219,6 +226,20 @@ void AudioEngine::setPaused( bool paused ) {
 	} else {
 		ma_engine_start( &mImpl->mEngine );
 	}
+}
+
+void AudioEngine::setMasterVolume( float gain ) {
+	if ( !mImpl->mEngineReady ) {
+		return;
+	}
+	ma_engine_set_volume( &mImpl->mEngine, gain );
+}
+
+void AudioEngine::setBusVolume( Bus bus, float gain ) {
+	if ( !mImpl->mBusReady[ bus ] ) {
+		return;
+	}
+	ma_sound_group_set_volume( &mImpl->mBuses[ bus ], gain );
 }
 
 void AudioEngine::setListener( const Vector3& position, const Vector3& forward ) {

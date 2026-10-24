@@ -99,8 +99,8 @@ bool StaticMeshPart::isReady() const {
 	return mTriangleNumber > 0;
 }
 
-void StaticMeshPart::updateLoading() {
-	mMaterial.updateLoading();
+bool StaticMeshPart::updateLoading() {
+	return mMaterial.updateLoading();
 }
 
 void StaticMeshPart::draw( const Matrix34& world ) const {

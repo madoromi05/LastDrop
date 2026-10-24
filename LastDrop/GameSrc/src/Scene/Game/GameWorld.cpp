@@ -9,6 +9,7 @@
 #include "Framework.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -226,9 +227,12 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	// 前に撃った光を先に進めてから、このティックに撃った光を灯す（撃ったティックの描画が光り始めになる）。
 	mMuzzleFlash.update();
 	if ( mPlayer ) {
+		PROFILE_SCOPE( "World.player" );
 		mPlayer->update( command, cameraYaw, cameraPitch, inventory );
 		// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
 		if ( mPlayer->firedThisTick() ) {
+			// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。
+			PROFILE_EVENT( "Shot" );
 			mBullets.fire( mPlayer->eyePosition(), viewDirection );
 			mMuzzleFlash.fire();
 			alertZombiesToGunshot( mPlayer->position() );
@@ -239,7 +243,10 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	mZombieHits.clear();
 	mSurfaceHits.clear();
 	mZombieAttacks.clear();
-	mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
+	{
+		PROFILE_SCOPE( "World.bullets" );
+		mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
+	}
 	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出し、着弾音のために材質を記録する。
 	// ゾンビ（target）には出さず、血しぶきを出す。
 	for ( const BulletList::Impact& impact : mImpacts ) {
@@ -252,11 +259,17 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 			hitZombie( impact );
 		}
 	}
-	mBulletHoles.update();
-	mImpactDust.update();
-	mBloodSpray.update();
-	mSeveredLimbs.update( &mGround ); // 落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
-	updateZombies();
+	{
+		PROFILE_SCOPE( "World.effects" );
+		mBulletHoles.update();
+		mImpactDust.update();
+		mBloodSpray.update();
+		mSeveredLimbs.update( &mGround ); // 落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
+	}
+	{
+		PROFILE_SCOPE( "World.zombies" );
+		updateZombies();
+	}
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
 	mZombies.flush();
 	mPickups.flush();
@@ -353,6 +366,7 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 	mSpawnOrders.clear();
 	mZombieSpawner->update( view, &mSpawnOrders );
 	for ( const ZombieSpawner::Order& order : mSpawnOrders ) {
+		PROFILE_EVENT( "ZombieSpawn" ); // 計測の印（湧いた体ごと）
 		spawnZombie( order.position, order.yawDegree );
 	}
 }
@@ -363,6 +377,7 @@ void GameWorld::hitZombie( const BulletList::Impact& impact ) {
 	if ( !zombie ) {
 		return; // ゾンビでない的（今は無いが、自キャラを撃つ相手が増えたとき）
 	}
+	PROFILE_EVENT( "ZombieHit" ); // 計測の印（血しぶき・ひるみ・部位欠損が始まる）
 	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力は Zombie が生きている間だけ減らす）。
 	mBloodSpray.spawn( hit.point, impact.direction, ( hit.part == BodyPart::Head ) ? kHeadBloodScale : kBodyBloodScale );
 	ZombieHit event;

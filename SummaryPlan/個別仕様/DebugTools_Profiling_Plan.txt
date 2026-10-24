@@ -3,6 +3,7 @@
  （ImGui エディタ / フレーム予算 / CPU律速・GPU律速の判定）
  作成日：2026-10-09
  更新日：2026-10-23（未決事項を決定。今のコードとの違いを反映。ロードの計測(6-6)を追加）
+         2026-10-24（手順5の仕様 5-5 を追加。保存形式は PseudoXml）
 ================================================================================
 
 目次
@@ -329,6 +330,116 @@
  将来：建物や小物の配置を placeObjects のハードコードから level.json へ移し、
        ImGuizmo で動かせるようにする。
 
+--------------------------------------------------------------------------------
+ 5-5. 手順5の仕様（2026-10-24 作成。★＝ユーザーの決定待ち。2026-10-25 後回し）
+--------------------------------------------------------------------------------
+ 決定：保存形式は PseudoXml（2026-10-24 ユーザー決定。比べた中身は GameChats/DebugTools.md）。
+       5-2 の「JSON」はこれで読み替える。キーコンフィグ（InputConfig）と同じく、
+       PseudoXml で文字列にして fstream で書き、fstream で読んで PseudoXml で解析する。
+
+ タルコフでは：開発用の道具で、遊ぶ人には見えない物なので調べない。
+
+ ■ 今のコードで分かったこと（5-1 の候補との違い）
+  ・WeaponStance は「しまう／持つ／覗く」の状態と覗き具合だけを持ち、銃の位置・角度は持っていない。
+    調整したい値は次の所にある。
+      FirstPersonBody.cpp ：走るときの抱え方（手首の位置・銃の向き 3 つ）、撃った反動の見た目
+                            （後ろへ引く長さ・跳ね上げる角度。腰だめ／覗き）、目の位置
+      WeaponStance.cpp    ：短押しの長さ（0.2 秒）、覗くまでの時間（0.25 秒）
+      FirstPersonControl.cpp：マウス感度（0.15 度/画素）、視野角（腰だめ 60・覗き 45）
+      CameraShake.cpp     ：揺れの大きさ・減り方・速さ
+  ・上の値はどれも毎フレーム読んでいるので、変えればすぐ効く（作り直しはいらない）。
+  ・PlayerCharacter.cpp の握りの位置・角度（kGripInHand など）は、読み込みのときに 1 回だけ使う。
+    変えてもすぐには効かないので、手順5では移さない（5-1 の「要リスポーン」に当たる）。
+
+ ■ 最初に移す物（★1）
+  おすすめ：次の 3 つ。CameraShake・移動の速さ・ポストプロセスは、作りが固まってから 2 回目で移す。
+    WeaponPoseParams （FirstPersonBody） 抱え方・反動の見た目・目の位置  …… 10 項目
+                                         （頭の骨が無いときの目の高さ kFallbackEyeHeight は使わないので移さない）
+    WeaponStanceParams（WeaponStance）   短押しの長さ・覗くまでの時間     ……  2 項目
+    LookParams        （FirstPersonControl）感度・腰だめと覗きの視野角     ……  3 項目
+
+ ■ 値をどこに置くか（★2）
+  案A（おすすめ）：仕組みごとに 1 つだけの調整値を、その仕組みの cpp に置く。
+      ヘッダ  ：struct WeaponPoseParams{ 値と既定値、visit }; と、取り出す関数
+                WeaponPoseParams& weaponPoseParams();
+      cpp     ：namespace{ WeaponPoseParams gParams; } と、上の関数の中身（FirstPersonBody.cpp）
+      使う側  ：const WeaponPoseParams& p = weaponPoseParams(); p.carryMuzzleDown …
+      ・Retry でシーンを作り直しても、調整した値が戻らない（試しながらやり直せる）。
+      ・エディタは GameScene → GameWorld → 自キャラ…と辿らずに値へ届く。
+  案B：各クラスのメンバに持たせ、エディタが自キャラなどを辿って参照する。
+      ・Retry のたびに既定値へ戻る。辿る道が長く、シーンの作りに引きずられる。
+  どちらでも Release は同じ値を読むだけ（ImGui も保存もビルドしない）。
+
+ ■ 構造体の約束
+  ・単位は 秒・度・m で持つ（5-1 のとおり）。ティックへの換算は使う所でする。
+    WeaponStance の kTapFrames・kAimStep のように、今は起動時に換算している物も使う所へ移す。
+  ・値の型は float と Vector3 だけ（今回移す物で足りる。bool・int は要るようになったら足す）。
+  ・今の定数に付いている「なぜその値か」のコメントは、構造体の項目へそのまま移す。
+  ・visit の形：
+      template< class V > void visit( V& v ){
+          v( "carryMuzzleDown", carryMuzzleDown, 0.f, 90.f, "deg" );   // 名前・値・下限・上限・単位
+          v( "carryWristFromChest", carryWristFromChest, -0.5f, 0.5f, "m" );  // Vector3 も同じ形
+      }
+    名前はファイルのキーと C++ のコピーにも使うので、メンバの名前と同じにする。
+
+ ■ visit から作る物（GameSrc/DebugMode/。ZF_EDITOR の中だけ）
+  TuningVisitors.h：v( 名前, 値, 下限, 上限, 単位 ) を受ける 5 つ
+    ・描く    ：DragFloat（Vector3 は DragFloat3）。Ctrl＋クリックで数字を直接打てる。
+                既定値と違う項目は色を変え、横に「既定値に戻す」ボタン
+    ・書く    ：PseudoXml の属性にする
+    ・読む    ：PseudoXml の属性から読む（getFloatValues の戻り値＝読めた数で、読めなかったのを見分ける）
+    ・比べる  ：既定値（構造体を作り直した物）と違うか
+    ・C++ 化  ：違う項目だけ、構造体の初期値の形の文字列にする
+  TuningCatalog.h/.cpp：調整値の一覧（名前と、取り出す関数）。項目を足すときに直すのはここと構造体だけ。
+    「全部描く」「全部書く」「全部読む」「全部既定値へ」「全部 C++ 化」を持つ。
+  EditorWindow：灰色の見出し「Player / Camera / Weapon (next)」を中身のある欄に変える。
+    欄の上に Preset（保存・読み込み）と Copy as C++、その下に構造体ごとの小見出し。
+
+ ■ プリセットのファイル
+  ・置き場所（★3）おすすめ：Profiling/ と同じ所に Tuning/ を作り、.gitignore に入れる。
+    決まった値は「C++ としてコピー」でコードへ戻すので、ファイルは試している間の控えでよい。
+    （共有したいなら Resource/Tuning/ に置いてコミットする案もある）
+  ・名前は ImGui の欄に打つ（既定は tuning）。Tuning/<名前>.xml。
+    読み込みは、Tuning/ にあるファイルの一覧から選んで「Load」を押したときだけ（起動時には読まない。5-3）。
+  ・中身：構造体 1 つが要素 1 つ、項目が属性。
+      <Tuning version="1">
+        <WeaponPose carryMuzzleDown="32.5" carryWristFromChest="-0.12, -0.1, 0.28" .../>
+        <Look lookDegreesPerPixel="0.12"/>
+      </Tuning>
+    書くのは既定値と違う項目だけでなく全部（後でコードの既定値が変わっても、試した値のまま戻せるように）。
+  ・読むとき：まず全部を既定値へ戻してから、ファイルの値を入れる（ファイルにない項目は既定値）。
+    知らない要素・属性、読めなかった値、version の違いは、欄の中に黄色い字で一覧にする（止めない）。
+  ・書くとき：Tuning/<名前>.xml.tmp に書いてから MoveFileEx（MOVEFILE_REPLACE_EXISTING）で置き換える。
+
+ ■ C++ としてコピー（★4）
+  おすすめ：既定値と違う項目だけを、構造体ごとにまとめてクリップボードへ（ImGui::SetClipboardText）。
+      // WeaponPoseParams（GameSrc/Weapon/WeaponPoseParams.h）
+      float carryMuzzleDown = 32.5f;  // deg
+      Vector3 carryWristFromChest = Vector3( -0.12f, -0.1f, 0.28f );  // m
+    小数は元の値へ戻る桁（%.9g）で書き、必ず「.」と「f」を付ける。
+  （全部の項目を出す案もあるが、どこを変えたか分かりにくい）
+
+ ■ 新しく作る物・直す物
+  新：GameSrc/Weapon/WeaponPoseParams.h、Weapon/WeaponStanceParams.h、Player/LookParams.h
+      GameSrc/DebugMode/TuningVisitors.h、DebugMode/TuningCatalog.h/.cpp
+  直：FirstPersonBody.cpp・WeaponStance.cpp・FirstPersonControl.cpp（定数を構造体の読みに）
+      EditorWindow.cpp（欄を足す）、vcxproj と filters、.gitignore（Tuning/）
+  GameLib は触らない。
+
+ ■ 確かめ方
+  ・Debug・Profile・Release のビルドが警告なしで通る。
+  ・Release で動きが今と変わらない（既定値が今の定数と同じ）。
+  ・F6 で値を動かすとすぐ見た目が変わる。既定値に戻すと戻る。色が付く・消える。
+  ・保存 → 値を変える → 読み込み で、保存したときの値に戻る。知らない属性を手で足すと黄色い字が出る。
+  ・Copy as C++ を貼ると、そのままコンパイルが通る形になっている。
+  ・Retry しても調整した値が残る（案A のとき）。
+
+ ■ 懸念
+  ・値をファイルの中の変数にすると、Release でも定数ではなくなる。読むのは 1 フレームに数回なので
+    速さは変わらない見込み（手順2の計測で前後を比べる）。
+  ・名前（文字列）を変えると、前に保存したプリセットのその項目は「知らない属性」になる。
+    控えのファイルなので、黄色い字で知らせるだけにする。
+
 
 ================================================================================
  6. フレーム予算と計測
@@ -453,6 +564,110 @@
     「2回目以降の起動」を基準にし、何回目の起動かを JSON に書く
   ・別スレッドの読み込みそのものの時間は測らない。メインスレッドから見た「頼んでから届くまで」を測る
     （ゲームがどれだけ待たされたかはこれで分かる）
+
+--------------------------------------------------------------------------------
+ 6-7. 手順 2 で作った物（2026-10-24 実装）
+--------------------------------------------------------------------------------
+ 置き場所：GameLib/include/GameLib/Profiling/Profiler.h（窓口）と GameLib/src/Profiling/。
+ 中身は #ifdef ZF_EDITOR。Release では窓口が何もしない関数・マクロになり、呼ぶ側に #ifdef は要らない。
+
+  部品             役目
+  ---------------  ----------------------------------------------------------------
+  Profiler         窓口。フレームの区切り・PROFILE_SCOPE・LOAD_SCOPE・F7 を受けて下の部品へ渡す
+  FrameTimeline    直近 240 フレームの記録（区切りの時刻・区間・ティック数）。1 フレーム 256 区間まで
+  FrameRecorder    F7 の CSV。記録中はメモリに貯め、止めたときに書く（区間の名前ごとに列）
+  SpikeWriter      予算の 1.5 倍（25ms）を超えたフレームを spike_*.json に。1 秒あけ、1 回の起動で 50 個まで
+  LoadTracker      ロードの区切りと内訳。load_<名前>_<時刻>.json。直近 256 件の読み込みはスパイク用に残す
+  SystemInfo       PC の情報（6-5）。CSV の横の _system.json と、ロード・スパイクの JSON の "system"
+  PerfOverlay      右上の数字（30 フレームの平均）
+  JsonWriter       JSON を書くだけの小さな部品（ライブラリを足さない）
+  OutputFiles      Profiling/ への書き出し（一時ファイル → MoveFileEx で置き換え）
+
+ フレームの区切り
+  ・Framework::preUpdate の先頭 → beginFrame、sleep のループの後 → endLimiterSleep
+  ・Graphics::ManagerImpl::endDraw の Present の前後 → beginPresent / endPresent
+  ・最小化で sleep しているフレームは suspended（平均・スパイクに入れない。CSV の state 列）
+  ・計測のファイルを書いたフレームは wroteFile（CSV の列。スパイクにしない）
+
+ ロードの区切り
+  ・Boot：Framework::start で、プロセスが作られた時刻から。最初のシーンの絵の Present まで
+  ・シーン：SceneManager::change で始め、IScene::isLoading() が false になった描画の Present まで
+    （GameScene はメッシュを組み立てて place するまで true。メニューのシーンは作ったらすぐ終わる）
+  ・同じ名前の何回目か（attempt）と、何回目の起動か（launch。Profiling/launch_count.txt）を書く
+
+ 内訳の名前（category）
+  wait     別スレッドの読み込みを待った時間（メッシュの文書・テクスチャ）。並んで進むので足さない
+  parse    メッシュの文書の解析（PseudoXml。最初に isReady が true になるとき）
+  build    メッシュの組み立て（StaticMeshLoader / SkinnedMeshLoader）
+  texture  テクスチャの展開（TextureImpl::isReady）
+  shader   HLSL のコンパイル（ShaderImpl::compile）
+  sound    音の読み込みと展開（AudioEngine）
+  device   Graphics::Manager の作成、miniaudio の初期化
+  place    GameWorld::place
+
+ 区間（PROFILE_SCOPE）を付けた所
+  Input、Pad、Scene.beginFrame、Scene.update（ティックごと）、Scene.draw、DebugString、
+  World.player、World.bullets、World.effects、World.zombies、World.draw、Audio
+
+--------------------------------------------------------------------------------
+ 6-8. 計測で見つけて直したこと
+--------------------------------------------------------------------------------
+ ・ロード直後の最初のフレームが 243ms（2026-10-24）
+   原因：GameScene はメッシュの組み立てが終わった時点で始めていたが、テクスチャはまだ別スレッドで読み込み中で、
+         読み終えた大きい絵（building・zombie の albedo / normal。1 枚 約 42ms）の展開が、始まった最初の描画に集まっていた。
+   直し方（案 A。ユーザー指定）：MeshCache::update() が true を返す条件に「貼るテクスチャも全部展開済み」を足した
+         （MeshMaterial / StaticMeshPart / StaticMeshData / SkinnedMeshData の updateLoading が bool を返す）。
+   結果：ひっかかり 243ms → 30ms。ロード（Game の 1 回目）0.75 秒 → 1.12 秒。
+         残りの 30ms は cpu 3.5ms・present 26ms で、GPU 側の初めて描く物の準備（絵を GPU へ送るなど）を待っている。
+         ほかの案（展開を別スレッドへ・DDS に変換）は、ロード時間を縮めたくなったときの候補（6-6 の後に比べた表は GameChats/DebugTools.md）。
+
+--------------------------------------------------------------------------------
+ 6-9. 印（イベント）：どの操作・出来事の時の時間か（2026-10-24 実装。渡した変更コードをユーザーの指示で反映した）
+--------------------------------------------------------------------------------
+ ・PROFILE_EVENT( "名前" ) で、今のフレームに印を付ける（1 フレーム 16 個まで。FrameRecord::events）
+ ・押した操作は自動で印にする：Pad::update の後、全部の WorkId を見て押された物の名前（GameLib の WorkIdName）を付ける
+ ・押した瞬間と重い処理がずれる物は手で付ける：Shot（弾が出たティック）・ZombieHit・ZombieSpawn・Refuel
+ ・EventLog：印のフレームの時間・cpu と、そこから 10 フレームの一番長い時間を、直近 64 個残す
+ ・出し方：CSV の events 列（; でつなぐ）、スパイクの JSON の "events"、右上に直近の印 1 行
+   （手順 4 の Perf 欄に「最近の印」の表を足す）
+ ・作業用の写しで Profile・Release のビルドと、右上に「Reload 6.16ms cpu 1.33 max10f 11.16」と出ることを確かめた
+ ・本体に反映後、Profile・Debug・Release のビルドが通り、CSV の events 列に DebugRecordPerf・Reload・Holster が入ることを確かめた
+   （左クリック＝Fire・Shot、ZombieHit・ZombieSpawn・Refuel は画面での確認がまだ）
+
+--------------------------------------------------------------------------------
+ 6-10. 手順 3・4 で作った物（2026-10-24 実装。ユーザー「手順3・4もやってほしい」）
+--------------------------------------------------------------------------------
+ 決めたこと
+  ・F6 は DebugUi が ImGui から直接読む（案(イ)）。一時停止とコマ送りは入れる（おすすめのまま）
+  ・ImGui は v1.92.9b に固定（v1.93.0 は出てから 2 週間たっていなかった）。GameLib/src/ThirdParty/imgui/。
+    Release では .cpp をビルドしない（vcxproj の ExcludedFromBuild）
+  ・Editor の窓の並びは Scene → Render → Perf（4 章の案は Scene → Perf → Render。Perf の下だとスクロールしないと
+    VSync に届かなかったので入れ替えた）。幅は画面の 45%（260～420 画素）。照準を隠さない
+  ・開いている間のキーボードは io.WantTextInput（文字を打っている間）だけ止める。WantCaptureKeyboard だと
+    ボタンを押している間なども真になり、1 回の F7 が 2 回に数えられた
+  ・右上の表示は drawDebugString から ImGui の小さな窓（クリックできない・半透明）に変えた。開いている間は出さない
+
+ 作った物
+  GameLib/DebugUi          ImGui の準備・片付け・NewFrame・Render・F6・入力の受け渡し（Input::Manager::setUiCapture）
+  Input::Manager           setUiCapture( mouse, keyboard )。マウスを使っている間はロックも外す（ゲームが頼んだロックは覚えておく）
+  Graphics::Manager        setVSync / isVSync（Present が毎フレーム読む値を書き換えるだけ）
+  WndProc                  先頭で DebugUi::handleWindowMessage
+  FixedStepClock           setPaused / requestStep / setTimeScale（止めている間の時間は貯めない）。SceneManager::clock()
+  GameSrc/DebugMode/EditorWindow   右端の窓（Scene・Render・Perf・灰色の見出し 2 つ）。Main.cpp から開いている時だけ呼ぶ
+  Profiling/GpuTimer       D3D11 タイムスタンプ。5 フレームの輪で、待たずに読む。Disjoint は捨てる
+  Profiling/PerfStats      30 フレームの平均・GPU の履歴（240）・律速の判定（gpu / cpu の比。1.25 倍で決め直し、1.1 倍の内側で釣り合い）
+  Profiling/PerfPanel      Perf の欄（数字・グラフ 2 本と予算の線・CSV の記録ボタン・Scopes・GPU・Events・Load）
+  CSV                      gpuMs の列を足した（数フレーム遅れて届くので後から入れる。読めなかったフレームは空）
+  GPU の印                  フレームの始め・"Scene"（世界を描き終えた）・"PostProcess"・"UI"（HUD とデバッグ文字）・"ImGui"・"Rest"（Present まで）
+
+ 画面で確かめたこと（Profile）
+  ・閉じている時：右上に frame / cpu・present・gpu / ticks と Bound / load / 直近の印
+  ・F6 で右端に Editor の窓。VSync を切ると Bound が出る（Balanced）。Pause のチェックが入る。F6 で閉じると右上の表示に戻る
+  ・ロードが終わる最後のフレーム（place と最初のゾンビ 8 体）は 0.43 秒。ロード中なのでスパイクにはしていない
+ まだ確かめていないこと
+  ・開いている間にクリックしてもゲームに届かない（撃たない）こと。自動テストの途中で実際のキー・マウスの入力が混ざり、
+    その回の結果が使えなかった
+  ・Step 1 tick、Time scale、Record CSV のボタン
 
 
 ================================================================================

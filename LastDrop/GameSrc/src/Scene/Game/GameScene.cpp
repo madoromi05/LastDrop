@@ -11,6 +11,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Functions.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -46,13 +47,13 @@ GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	mWorld( &resources->meshes() ),
 	mInteractor( &mWorld.hitWorld(), kInteractReach, [ this ]( const HitWorld::Hit& hit ) { return mWorld.resolveInteractable( hit ); } ),
-	mControl( mWorld.map().playerStart().yawDegree ), // キャラの向いている方を見始める
+	mControl( mWorld.map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
 	mZombieHitSounds( &resources->audio() ),
 	mSurfaceHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
-	mPauseMenu( &resources->uiRenderer(), [ this ]() { resume(); } ),
+	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
 	mReady( false ),
 	mPaused( false ) {
 }
@@ -65,6 +66,7 @@ GameScene::~GameScene() {
 
 void GameScene::pause() {
 	mPaused = true;
+	mPauseMenu.open(); // 前に設定のページで閉じていても、最初のページから
 	mResources->audio().setPaused( true );
 	mControl.clearInput();   // 押していた移動・撃つを放す（戻った後も、離すまで撃たない）
 	mControl.unlockCursor(); // ボタンをマウスで押せるように
@@ -77,8 +79,11 @@ void GameScene::resume() {
 }
 
 void GameScene::handlePausedInput() {
+	// ESC は 1 ページ戻る。最初のページで押したらゲームへ戻る。
 	if ( InputMenu() ) {
-		resume();
+		if ( !mPauseMenu.back() ) {
+			resume();
+		}
 		return;
 	}
 	mPauseMenu.handleInput(); // Resume が押されたら、この中で resume が呼ばれる
@@ -87,12 +92,15 @@ void GameScene::handlePausedInput() {
 void GameScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
 	// 2回目以降のこのシーン（Retry）では、もう構築済みなのですぐに並べられる。
-	bool allBuilt = mResources->meshes().update();
+	bool allReady = mResources->meshes().update();
 	if ( !mReady ) {
-		if ( !allBuilt ) {
-			return; // ロード完了待ち
+		if ( !allReady ) {
+			return; // ロード完了待ち（テクスチャの展開まで。始まった直後にひっかからないように）
 		}
-		mWorld.place();
+		{
+			LOAD_SCOPE( "place", "GameWorld::place" );
+			mWorld.place();
+		}
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 		mReady = true;
 	}
@@ -187,6 +195,10 @@ void GameScene::update() {
 #endif
 }
 
+bool GameScene::isLoading() const {
+	return !mReady;
+}
+
 void GameScene::draw() {
 	if ( !mReady ) {
 		return;
@@ -207,7 +219,10 @@ void GameScene::draw() {
 	}
 #endif
 	const FirstPersonCamera& camera = viewCamera();
-	updateListener();
+	{
+		PROFILE_SCOPE( "Audio" );
+		updateListener();
+	}
 	// 噛まれた瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く。
 	mPostProcess.setDamageFlash( mDamageView.damageFlash() );
 	mPostProcess.setPain( mDamageView.pain() );
@@ -215,7 +230,10 @@ void GameScene::draw() {
 	mPostProcess.beginScene();
 	setupLights();
 	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない。
-	mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ) );
+	{
+		PROFILE_SCOPE( "World.draw" );
+		mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ) );
+	}
 	mWorld.drawBulletHoles( camera.projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
 	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection() ); // 弾痕の上に舞う
 	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection() ); // 砂ぼこりの後（同じ作り）
@@ -223,7 +241,10 @@ void GameScene::draw() {
 #ifdef ZF_EDITOR
 	mDebug.drawCollision( mWorld, camera );
 #endif
+	// GPU の時間の区切り（Perf の欄の GPU）。ここまでが世界を描く分、次の印までが画面全体の処理（ブルームなど）。
+	Profiling::gpuMark( "Scene" );
 	mPostProcess.endScene();
+	Profiling::gpuMark( "PostProcess" );
 	// UiRenderer は 1 回の描画に 1 回しか描けない（中の PrimitiveRenderer が 2 回目の draw で ASSERT）。
 	// 止めている間は HUD を出さず、メニューがまとめて描く（2026-10-23。HUD とメニューの両方が描いて止まっていた）。
 	if ( mPaused ) {

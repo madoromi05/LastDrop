@@ -27,6 +27,8 @@ public:
 	mVelocityY( 0 ),
 	mWheel( 0 ),
 	mCursorLocked( false ),
+	mUiCapturesMouse( false ),
+	mUiCapturesKeyboard( false ),
 
 	mCursorHidden( false ),
 	mDiscardLockedDelta( false ),
@@ -100,6 +102,20 @@ public:
 			mButtons[ mDoubleBufferIndex ][ 1 ] = ( GetAsyncKeyState( VK_RBUTTON ) & 0xf000 ) ? true : false;
 			mButtons[ mDoubleBufferIndex ][ 2 ] = ( GetAsyncKeyState( VK_MBUTTON ) & 0xf000 ) ? true : false;
 			mWheel = WindowCreator().getAndResetMouseWheel();
+			// 開発用のエディタが使っている入力は、ゲームに渡さない（Manager::setUiCapture）。
+			if ( mUiCapturesKeyboard ){
+				for ( int i = 0; i < KEY_MAX; ++i ){
+					mKeys[ mDoubleBufferIndex ][ i ] = false;
+				}
+			}
+			if ( mUiCapturesMouse ){
+				for ( int i = 0; i < BUTTON_MAX; ++i ){
+					mButtons[ mDoubleBufferIndex ][ i ] = false;
+				}
+				mWheel = 0;
+				mVelocityX = 0;
+				mVelocityY = 0;
+			}
 		}else{
 			//キーボード
 			for ( int i = 0; i < KEY_MAX; ++i ){
@@ -154,11 +170,14 @@ public:
 	int mVelocityY;
 	int mWheel;
 	bool mCursorLocked; //ゲームが要求したロック状態（非アクティブ中も保持し、復帰したら再びロックする）
+	bool mUiCapturesMouse;    //開発用のエディタがマウスを使っているか（この間はロックも外す）
+	bool mUiCapturesKeyboard; //開発用のエディタがキーボードを使っているか（文字を打っている間）
 private:
 	//カーソルロック中なら、中央からのずれを移動量にしてカーソルを中央へ戻す。
 	//clientPos: 今フレームのカーソル位置（クライアント座標・変換前）。
 	void updateCursorLock( const POINT& clientPos, float pointerScale, const Vector2& pointerOffset ){
-		bool capture = mCursorLocked && WindowCreator().isActive();
+		//エディタがマウスを使っている間は外す（ゲームが頼んだロックは mCursorLocked に残り、エディタを閉じれば戻る）。
+		bool capture = mCursorLocked && WindowCreator().isActive() && !mUiCapturesMouse;
 		applyCursorCapture( capture );
 		if ( !capture ){
 			//非アクティブ中に動いたカーソル位置から戻ってくるので、復帰した最初の1フレームは捨てる。

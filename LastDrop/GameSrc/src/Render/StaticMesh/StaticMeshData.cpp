@@ -58,10 +58,15 @@ bool StaticMeshData::isReady() const {
 	return true;
 }
 
-void StaticMeshData::updateLoading() {
+bool StaticMeshData::updateLoading() {
+	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）。
+	bool allReady = true;
 	for ( int i = 0; i < mParts.size(); ++i ) {
-		mParts[ i ].updateLoading();
+		if ( !mParts[ i ].updateLoading() ) {
+			allReady = false;
+		}
 	}
+	return allReady;
 }
 
 void StaticMeshData::draw( const Matrix34& world ) const {

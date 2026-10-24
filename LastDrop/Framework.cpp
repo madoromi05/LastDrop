@@ -10,6 +10,8 @@
 #include "GameLib/Threading/Functions.h"
 #include "GameLib/Threading/Manager.h"
 #include "GameLib/Base/Array.h"
+#include "GameLib/Profiling/Profiler.h"
+#include "GameLib/DebugUi/DebugUi.h"
 
 #include "Framework.h"
 
@@ -47,6 +49,9 @@ public:
 		}
 	}
 	~Impl(){
+		// 記録中の CSV は PC の情報（GPU）と一緒に書くので、Graphics::Manager を消す前に書き出す。
+		Profiling::shutdown();
+		DebugUi::destroy(); // D3D11 のデバイスを借りているので、Graphics::Manager より先に片付ける
 		if ( mArchiveNames ){
 			SAFE_DELETE_ARRAY( mArchiveNames );
 		}
@@ -61,6 +66,8 @@ public:
 	}
 
 	void start( void* windowHandle ){
+		// 起動のロードはプロセスが作られた時から数える（ここまでの窓づくりも入る）。終わりは最初のシーンの絵が出た所。
+		Profiling::beginBootLoad();
 		Threading::Manager::create( 0 );
 		if ( mArchiveNumber > 0 ){
 			Array< const char* > names( mArchiveNumber );
@@ -75,7 +82,11 @@ public:
 		}
 		Sound::Manager::create( windowHandle );
 		Input::Manager::create( windowHandle );
-		Graphics::Manager::create( windowHandle, mWidth, mHeight, mFullScreen, mVSync, mAntiAlias );
+		{
+			LOAD_SCOPE( "device", "Graphics::Manager::create" );
+			Graphics::Manager::create( windowHandle, mWidth, mHeight, mFullScreen, mVSync, mAntiAlias );
+		}
+		DebugUi::create( windowHandle ); // 開発用のエディタ（Release では何もしない）
 
 		Scene::Font::BitmapChar chars[158];
 		int pos = 0;
@@ -125,11 +136,13 @@ public:
 		return WindowCreator().time();
 	}
 	void preUpdate(){
+		Profiling::beginFrame();
 		unsigned currentTime = time();
 		while ( ( currentTime - mPreviousFrameTime ) < mIdealFrameInterval ){
 			Threading::sleep( 1 );
 			currentTime = time();
 		}
+		Profiling::endLimiterSleep();
 		mPreviousFrameTime = currentTime;
 
 		mPreviousFrameInterval = currentTime - mTimeHistory[ TIME_HISTORY_SIZE - 1 ];
@@ -144,14 +157,25 @@ public:
 		float pointerScale;
 		Vector2 pointerOffset;
 		Graphics::Manager().getPointerModifier( &pointerScale, &pointerOffset );
-		Input::Manager().update( pointerScale, pointerOffset );
+		{
+			PROFILE_SCOPE( "Input" );
+			Input::Manager().update( pointerScale, pointerOffset );
+		}
+		// エディタの 1 フレームを始める。ここから postUpdate までの間に、ゲーム側も ImGui で描ける。
+		DebugUi::beginFrame();
 		// 3D は異方性つきで読む。点サンプリングだと、浅い角度で見た路面の細い線が粗いミップでつぶれて太く見える。
 		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 	}
 	void postUpdate(){
 		// デバッグ文字・2D は画素をにじませない。
 		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
-		mDebugStringRenderer.draw();
+		Profiling::drawOverlay(); // 右上の計測の数字（ImGui。エディタを開いている間は出さない）
+		{
+			PROFILE_SCOPE( "DebugString" );
+			mDebugStringRenderer.draw();
+		}
+		// エディタは一番上に描く（ポストプロセスも HUD も済んだ後）。
+		DebugUi::render();
 		Graphics::Manager().endDraw();
 	}
 
@@ -274,6 +298,7 @@ void WindowCreator::update(){
 		f.requestEnd();
 	}
 	if ( sleepFlag ){
+		Profiling::markSuspended(); // 最小化している間の時間を、フレームの時間として数えない
 		Threading::sleep( 50 );
 	}else{
 		f.update();

@@ -17,6 +17,7 @@
 #include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Graphics/IndexBuffer.h"
 #include "GameLib/Threading/Manager.h"
+#include "GameLib/Profiling/Profiler.h"
 #include "Graphics/TextureImpl.h"
 #include "Graphics/VertexBufferImpl.h"
 #include "Graphics/IndexBufferImpl.h"
@@ -659,7 +660,10 @@ public:
 		if ( mCaptureRequest && !mCaptureFilename.empty() ){
 			capture();
 		}
+		// Present の呼び出しだけを測る（capture も GPU を待つが、頼んだときだけなので混ぜない。計画書 2 章）。
+		Profiling::beginPresent();
 		HRESULT hr = mSwapChain->Present( mVSync ? 1 : 0, 0 );
+		Profiling::endPresent();
 		if ( hr == DXGI_ERROR_DEVICE_REMOVED || hr == DXGI_ERROR_DEVICE_RESET ){
 			mCanRender = false;
 		}

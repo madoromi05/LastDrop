@@ -46,14 +46,17 @@ void MeshMaterial::setNormalMapStrength( float strength ) {
 	mNormalMapStrength = strength;
 }
 
-void MeshMaterial::updateLoading() {
+bool MeshMaterial::updateLoading() {
 	// isReady() を呼ぶことで非同期ロードが進む（完了時にデコード＆GPU転送）。
-	if ( mTexture ) {
-		mTexture.isReady();
+	// 片方がまだでも、もう片方の isReady も必ず呼ぶ（展開を 1 枚ずつ待たせないため）。
+	bool ready = true;
+	if ( mTexture && !mTexture.isReady() ) {
+		ready = false;
 	}
-	if ( mNormalMap ) {
-		mNormalMap.isReady();
+	if ( mNormalMap && !mNormalMap.isReady() ) {
+		ready = false;
 	}
+	return ready;
 }
 
 void MeshMaterial::apply() const {

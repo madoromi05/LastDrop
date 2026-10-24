@@ -216,11 +216,36 @@
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiLabel.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiButton.cpp" />
+    <ClCompile Include="GameSrc\src\UI\UiSlider.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\EditorWindow.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TuningVisitors.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TuningCatalog.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TuningPanel.cpp" />
+    <ClCompile Include="GameLib\src\DebugUi\DebugUi.cpp" />
+    <!-- Dear ImGui v1.92.9b（MIT。開発用のエディタだけが使うので、Release ではビルドしない） -->
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_draw.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_tables.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_widgets.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)'=='Release'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Hit\HitMath.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitboxSet.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitWorld.cpp" />
@@ -233,6 +258,7 @@
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
+    <ClCompile Include="GameSrc\src\Core\GameSettings.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonBody.cpp" />
@@ -306,6 +332,9 @@
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsPage.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\OptionsPage.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\MenuPages.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshMerger.cpp" />
     <!-- Base -->
@@ -383,6 +412,20 @@
     </ClCompile>
     <ClCompile Include="GameLib\src\Sound\Player.cpp" />
     <ClCompile Include="GameLib\src\Sound\Wave.cpp" />
+    <!-- Profiling（中身は ZF_EDITOR のときだけ。Release では空になる） -->
+    <ClCompile Include="GameLib\src\Profiling\EventLog.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\GpuTimer.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\PerfPanel.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\PerfStats.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\FrameRecorder.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\FrameTimeline.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\JsonWriter.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\LoadTracker.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\OutputFiles.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\PerfOverlay.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\Profiler.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\SpikeWriter.cpp" />
+    <ClCompile Include="GameLib\src\Profiling\SystemInfo.cpp" />
     <!-- Threading -->
     <ClCompile Include="GameLib\src\Threading\Event.cpp" />
     <ClCompile Include="GameLib\src\Threading\Functions.cpp">
@@ -463,6 +506,32 @@
     <ClInclude Include="GameLib\include\GameLib\Scene\Container.h" />
     <ClInclude Include="GameLib\include\GameLib\Scene\Tree.h" />
     <ClInclude Include="GameLib\include\GameLib\Sound\Wave.h" />
+    <ClInclude Include="GameLib\include\GameLib\Profiling\Profiler.h" />
+    <ClInclude Include="GameLib\src\Profiling\EventLog.h" />
+    <ClInclude Include="GameLib\src\Profiling\GpuTimer.h" />
+    <ClInclude Include="GameLib\src\Profiling\PerfPanel.h" />
+    <ClInclude Include="GameLib\src\Profiling\PerfStats.h" />
+    <ClInclude Include="GameLib\include\GameLib\DebugUi\DebugUi.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\EditorWindow.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningVisitors.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningCatalog.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningPanel.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="GameLib\src\Profiling\FrameRecorder.h" />
+    <ClInclude Include="GameLib\src\Profiling\FrameTimeline.h" />
+    <ClInclude Include="GameLib\src\Profiling\JsonWriter.h" />
+    <ClInclude Include="GameLib\src\Profiling\LoadTracker.h" />
+    <ClInclude Include="GameLib\src\Profiling\OutputFiles.h" />
+    <ClInclude Include="GameLib\src\Profiling\PerfOverlay.h" />
+    <ClInclude Include="GameLib\src\Profiling\SpikeWriter.h" />
+    <ClInclude Include="GameLib\src\Profiling\SystemInfo.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Event.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Functions.h" />
     <ClInclude Include="GameLib\include\GameLib\Threading\Manager.h" />
@@ -516,6 +585,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiLabel.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiButton.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiAdjustable.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\UiSlider.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
@@ -540,11 +611,13 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Core\GameSettings.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStanceParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\FireControl.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\Magazine.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\HeldMagazine.h" />
@@ -577,6 +650,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\LookParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\WeaponPoseParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h" />
@@ -619,6 +694,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsPage.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\OptionsPage.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuPages.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshMerger.h" />
     <ClInclude Include="GameLib\include\GameLib\Framework.h" />

@@ -84,6 +84,10 @@ public:
 	int fullScreenWindowHeight() const;
 	///フレーム番号を返す
 	unsigned frameId() const;
+	///画面の更新を待つか（VSync）を切り替える。次の Present から効く。
+	///CPU と GPU のどちらが重いかを見分けるときに切る（VSync 中はどちらも画面の更新待ちに見えるため）。
+	void setVSync( bool );
+	bool isVSync() const;
 	///スクリーンショットを取る(拡張子でDDS,TGA自動判別)。保存タイミングは描画終了後。
 	void captureScreen( const char* filename );
 

@@ -7,6 +7,7 @@
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/PseudoXml/Attribute.h"
 #include "GameLib/Base/RefString.h"
+#include "GameLib/Profiling/Profiler.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -39,7 +40,8 @@ public:
 	mOriginalHeight( 0 ),
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
-	mName( 0 ){
+	mName( 0 ),
+	mRequestedAt( 0 ){
 		mIsError = true;
 		int an = e.attributeNumber();
 		for ( int i = 0; i < an; ++i ){
@@ -57,6 +59,8 @@ public:
 						if ( last != '\\' && last != '/' ) filename += '/';
 					}
 					filename += a.value();
+					mRequestedAt = Profiling::now();
+					mProfileName = filename;
 					mFile = FileIO::InFile::create( filename.c_str() );
 					mIsError = false;
 				}
@@ -76,9 +80,12 @@ public:
 	mOriginalHeight( 0 ),
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
-	mName( 0 ){
+	mName( 0 ),
+	mRequestedAt( 0 ){
 		mExtension = getExtension( filename );
 		if ( mExtension != EXT_UNKNOWN ){
+			mRequestedAt = Profiling::now();
+			mProfileName = filename;
 			mFile = FileIO::InFile::create( filename );
 		}else{
 			mIsError = true;
@@ -97,7 +104,8 @@ public:
 	mOriginalHeight( h ),
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
-	mName( 0 ){
+	mName( 0 ),
+	mRequestedAt( 0 ){
 		createStagingObject( w, h, createMipChain );
 	}
 	// Constructor from raw data buffer
@@ -113,7 +121,8 @@ public:
 	mOriginalHeight( 0 ),
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
-	mName( 0 ){
+	mName( 0 ),
+	mRequestedAt( 0 ){
 		if ( data[ 0 ] == 'D' && data[ 1 ] == 'D' && data[ 2 ] == 'S' && data[ 3 ] == ' ' ){
 			readDDS( data, size );
 		}else{
@@ -334,6 +343,10 @@ public:
 				if ( mFile.isError() ){
 					mIsError = true;
 				}else{
+					// 画像を展開して GPU へ送るのは、ここ（最初に isReady を呼んだ描画の中）。
+					// ゲームが始まった後に初めて使うテクスチャだと、ここがプレイ中のひっかかりになる（計画書 6-6 ③）。
+					Profiling::addLoadWait( mProfileName.c_str(), mRequestedAt );
+					LOAD_SCOPE( "texture", mProfileName.c_str() );
 					if ( mExtension == EXT_DDS ) readDDS( mFile.data(), mFile.size() );
 					else if ( mExtension == EXT_TGA ) readTGA( mFile.data(), mFile.size() );
 					else ASSERT( 0 );
@@ -611,6 +624,9 @@ public:
 	bool                      mNeedsUpload;
 	Extension                 mExtension;
 	char*                     mName;
+	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）。
+	long long                 mRequestedAt;
+	string                    mProfileName;
 };
 
 } //namespace Graphics

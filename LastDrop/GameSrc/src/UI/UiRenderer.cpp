@@ -55,6 +55,8 @@ void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize 
 	Vector2 topLeft = position;
 	if ( align == UI_ALIGN_CENTER ) {
 		topLeft.x -= textWidth( text, size ) * kHalf;
+	}
+	if ( align == UI_ALIGN_CENTER || align == UI_ALIGN_MIDDLE_LEFT ) {
 		topLeft.y -= static_cast< float >( mFonts[ size ].charHeight() ) * kHalf;
 	}
 	mStrings[ size ].add( topLeft, text, color );

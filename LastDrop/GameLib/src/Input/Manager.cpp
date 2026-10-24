@@ -53,6 +53,11 @@ namespace GameLib{
 			return gManagerImpl->mCursorLocked;
 		}
 
+		void Manager::setUiCapture( bool mouse, bool keyboard ){
+			gManagerImpl->mUiCapturesMouse = mouse;
+			gManagerImpl->mUiCapturesKeyboard = keyboard;
+		}
+
 		Keyboard Manager::keyboard() const {
 			return Keyboard();
 		}

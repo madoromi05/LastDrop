@@ -18,11 +18,24 @@ public:
 	// GameTime::kMaxTicksPerFrame を超える遅れは捨てる。
 	int ticksToRun();
 
+	// ── 開発用のエディタ（Scene の欄）から使う。ESC の一時停止（GameScene。メニューを出し音も止める）とは別 ──
+	// 止める。止めている間は 0 ティック（絵は描き続ける）。止めている間の時間は貯めない（戻した瞬間に早送りにならない）。
+	void setPaused( bool paused );
+	bool isPaused() const;
+	// 止めている間に、次の描画で 1 ティックだけ進める（コマ送り）。止めていなければ何もしない。
+	void requestStep();
+	// 時間の倍率（1 で通常。0.25 なら 4 倍のスロー）。ティックの長さは変えず、進めるティックの数で調整する。
+	void setTimeScale( float scale );
+	float timeScale() const;
+
 private:
 	typedef std::chrono::steady_clock Clock;
 	Clock::time_point mPrevious; // 前回 ticksToRun を呼んだ時刻
 	double mAccumulated;         // まだティックにしていない時間（秒）
 	bool mStarted;               // reset 後に一度でも数えたか
+	bool mPaused;
+	bool mStepRequested;
+	float mTimeScale;
 };
 
 #endif

@@ -19,6 +19,7 @@ enum UiTextSize{
 enum UiAlign{
 	UI_ALIGN_LEFT,   // position が文字の左上
 	UI_ALIGN_CENTER, // position が文字の中心
+	UI_ALIGN_MIDDLE_LEFT, // position が文字の左端の、縦の真ん中（行の中で左に寄せて縦は揃えるとき。設定画面の名前など）
 };
 
 // 画面の部品（IUiElement）が描く内容を積んでおき、draw でまとめて画面に描く（画素の座標。左上が原点）。

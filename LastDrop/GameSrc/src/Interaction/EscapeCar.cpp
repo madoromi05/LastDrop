@@ -3,6 +3,7 @@
 #include "GameSrc/Hit/HitWorld.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Profiling/Profiler.h"
 #include <string>
 
 using namespace GameLib::Math;
@@ -61,6 +62,7 @@ std::string EscapeCar::prompt( const Inventory& inventory ) const {
 
 void EscapeCar::interact( Inventory* inventory ) {
 	ASSERT( inventory && canInteract( *inventory ) && "EscapeCar::interact : cannot refuel." );
+	PROFILE_EVENT( "Refuel" ); // 計測の印（給油の数でゾンビが増える）
 	inventory->remove( ITEM_FUEL );
 	++mFuelDelivered;
 }

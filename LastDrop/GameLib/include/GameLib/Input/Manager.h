@@ -27,6 +27,11 @@ public:
 	void setCursorLocked( bool );
 	bool isCursorLocked() const;
 
+	// 開発用のエディタ（DebugUi）が入力を使っている間、ゲームに渡さない（FPS のカーソルロックとの取り合いを避けるため）。
+	// mouse：ボタン・ホイール・移動量を 0 にし、カーソルロックも外す（ゲームが頼んだロックは覚えておき、外れたら戻す）。
+	// keyboard：キーを全部離したことにする。DebugUi が毎フレーム呼ぶ。効くのは次に入力を読むとき。
+	void setUiCapture( bool mouse, bool keyboard );
+
 	//以下知らなくていい
 	static void create( void* windowHandle );
 	static void destroy();

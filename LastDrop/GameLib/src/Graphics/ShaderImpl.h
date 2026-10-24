@@ -5,6 +5,7 @@
 #include "GameLib/Graphics/VertexFormat.h"
 #include "GameLib/Base/Impl/ReferenceType.h"
 #include "GameLib/Base/DebugStream.h"
+#include "GameLib/Profiling/Profiler.h"
 
 #include <d3dcompiler.h>
 #include <cstdio>
@@ -165,6 +166,8 @@ public:
 	// ファイルを読んでコンパイルし、成功したら作ったシェーダに差し替える。失敗したら今のシェーダのまま mError に理由を残す。
 	bool compile(){
 		using namespace ShaderDetail;
+		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい（計画書 6-6）。
+		LOAD_SCOPE( "shader", mFilename.c_str() );
 		std::vector< FileStamp > files;
 		std::vector< char > source;
 		if ( !readFile( mFilename, &source, &files ) ){

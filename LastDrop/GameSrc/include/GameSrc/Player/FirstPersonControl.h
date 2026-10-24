@@ -9,6 +9,8 @@
 #include "GameSrc/Weapon/AimRecoil.h"
 #include "GameLib/Math/Vector3.h"
 
+struct GameSettings;
+
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）。
 //
@@ -21,7 +23,8 @@
 class FirstPersonControl{
 public:
 	// startYaw: 始めに見る水平の向き（度。FirstPersonCamera::yaw と同じ約束）。キャラの向いている方を渡す。
-	explicit FirstPersonControl( float startYaw );
+	// settings: 視点の感度を毎回読む（設定画面で変えたらすぐ効く）。所有権は受け取らない。nullptr 不可。これより長く生きていること。
+	FirstPersonControl( float startYaw, const GameSettings* settings );
 	// シーンを抜けたらカーソルを返す（隠れたまま・閉じ込められたままにしない）。
 	~FirstPersonControl();
 	FirstPersonControl( const FirstPersonControl& ) = delete;
@@ -76,6 +79,7 @@ private:
 	// 解除中のクリックでロックし直す（readInput と readInputIdle で共通）。解除は一時停止が行う（ESC は一時停止のキー）。
 	void updateCursorLock();
 
+	const GameSettings* mSettings; // 借りているだけ（視点の感度）
 	FirstPersonCamera mCamera;
 	PlayerCommand mCommand;
 	ViewRecoil mRecoil;     // 1 発ごとに跳ねて戻る視点の反動（狙いへ足す）

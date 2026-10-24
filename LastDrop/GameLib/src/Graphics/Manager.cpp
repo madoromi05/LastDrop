@@ -126,7 +126,15 @@ void Manager::drawIndexed( int offset, int primitiveNumber, PrimitiveType p ){
 	gManagerImpl->drawIndexed( offset, primitiveNumber, p );
 }
 
-int Manager::width() const { 
+void Manager::setVSync( bool enabled ){
+	gManagerImpl->mVSync = enabled; // Present( mVSync ? 1 : 0 ) が毎フレーム読む
+}
+
+bool Manager::isVSync() const {
+	return gManagerImpl->mVSync;
+}
+
+int Manager::width() const {
 	return gManagerImpl->mWidth;
 }
 
