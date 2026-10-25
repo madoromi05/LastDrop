@@ -22,18 +22,27 @@ namespace{
 GameHud::GameHud( UiRenderer* renderer ) :
 	mScreen( renderer ),
 	mRenderer( renderer ),
+	mCrosshairLabel( nullptr ),
 	mPromptLabel( nullptr ),
 	mTankLabel( nullptr ),
 	mCarryLabel( nullptr ) {
 	UiCanvas& canvas = mScreen.canvas();
-	canvas.add( std::make_unique< UiLabel >( kCrosshair, UI_ANCHOR_CENTER, UiScreen::screenCenter(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHudColor ) );
+	mCrosshairLabel = canvas.add( std::make_unique< UiLabel >( kCrosshair, UI_ANCHOR_CENTER, UiScreen::screenCenter(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHudColor ) );
 	mPromptLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_CENTER, UiScreen::promptPosition(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kPromptColor ) );
 	mTankLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kTankLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
 	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
 }
 
-void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health ) {
+void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health,
+	const GameLib::Math::Vector2* crosshair ) {
 	ASSERT( prompt && "GameHud : prompt is null." );
+	// 消すときは文字を空にする（部品は残して、置き場所だけ毎回変える）。
+	if ( crosshair ) {
+		mCrosshairLabel->setText( kCrosshair );
+		mCrosshairLabel->setOffset( *crosshair );
+	} else {
+		mCrosshairLabel->setText( "" );
+	}
 	char text[ kHudTextSize ];
 	mPromptLabel->setText( prompt );
 	if ( car ) {

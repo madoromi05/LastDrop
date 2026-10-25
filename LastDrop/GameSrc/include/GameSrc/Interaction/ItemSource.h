@@ -29,6 +29,8 @@ public:
 
 	// 視線が当たった物がこの置き場か（Interactor が、当たった物から使える物を探すため）。
 	bool isBody( const IRayBlocker* blocker ) const;
+	// 移動の当たり判定の箱（ゾンビの道の図に、回り込む角を足すのに使う）。
+	const BoxCollider& collider() const;
 
 	// IInteractable
 	virtual bool canInteract( const Inventory& inventory ) const;

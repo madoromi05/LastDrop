@@ -25,6 +25,7 @@ class ZombieModel;
 class CollisionWorld;
 class HitWorld;
 class StreetGraph;
+class ZombieCrowd;
 struct ChaseTarget;
 
 // ゾンビ1体。立っている間は自キャラに気付くと歩いて追ってくる（どこへ行くかは ZombieChase が決め、
@@ -94,7 +95,9 @@ public:
 	// 1フレーム（1ティック）進める。立っていてよろけていなければ、追う先を考えて向きを変え・歩き、
 	// アニメを進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は draw で行う。
 	// target: 追う先。nullptr なら追わない（自キャラが居ない）。hitWorld: 見通しを聞く名簿。
-	void update( const ChaseTarget* target, const HitWorld& hitWorld );
+	// crowd: 立って歩けるゾンビの位置の並び（近くの仲間を避けるのに使う。SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 3 章）。
+	//        nullptr なら避けない。借りるだけ。
+	void update( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd );
 	void draw() const;
 
 	// 生きている間だけ体力を減らし、のけぞらせ、当たった部位が 0 になったら切り、条件を満たせばよろけさせる。
@@ -122,6 +125,8 @@ public:
 	ZombieChase::Mode chaseMode() const;
 	// 建物を回り込む通り道（確認用の表示に使う）。
 	const ZombiePath& path() const;
+	// 最後の update で歩く向きへ混ぜた、仲間から離れる向き（水平。長さは強さを掛けた後）。確認用の表示に使う。
+	const GameLib::Math::Vector3& separation() const;
 	// よろけのアニメの最中か（生きている間だけ true になりうる）。AI を作るとき、この間は動かない。
 	bool isStaggering() const;
 	// ── 攻撃（ZombieAttack）──
@@ -175,7 +180,13 @@ private:
 	void startStagger();      // よろけのアニメへ繋ぐ
 	void updateStagger();     // よろけが終わったら歩く・立つのアニメへ戻し、間あけを数える
 	// 追う先を考え、向きを変えて歩く（立っていて、よろけていなくて、攻撃していないときだけ）。追いついたら攻撃を始める。
-	void chase( const ChaseTarget* target, const HitWorld& hitWorld );
+	// 歩く向きには、近くの仲間から離れる向きを混ぜる。自キャラのそばで立ち止まっている間は、重なりそうな仲間から半歩よける。
+	void chase( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd );
+	// point（向かいたい点）へ、近くの仲間から離れる向きを混ぜた「向く点」を返し、混ぜた向きを mSeparation へ覚える。
+	// crowd が nullptr なら point のまま。
+	GameLib::Math::Vector3 avoidCrowd( const GameLib::Math::Vector3& point, const ZombieCrowd* crowd );
+	// 自キャラのそばで立ち止まっている間に、重なりそうな仲間から横へ半歩よける（向きは変えない）。
+	void standAside( const ZombieCrowd* crowd );
 	// 追いついた相手へ攻撃を始めてよいか（追っている・近い・前に居る・つかんでよい・ほかのゾンビが攻撃に行っていない）。
 	bool canStartAttack( const ChaseTarget* target ) const;
 	void startAttack();       // 攻撃のアニメへ繋ぐ
@@ -228,6 +239,7 @@ private:
 	ZombiePath mPath;                 // 行き先へまっすぐ通れないときの通り道
 	ZombieAttack mAttack;             // つかんで噛む攻撃の段階
 	CharacterMover mMover;            // 壁・他のキャラに沿って滑る移動（自分を当たり判定として読む）
+	GameLib::Math::Vector3 mSeparation; // 最後に歩く向きへ混ぜた、仲間から離れる向き（確認用の表示）
 	bool mWalking;                    // 歩くアニメを再生しているか（false なら立つアニメ）
 	float mMoveStartTime;             // 歩き・立つのアニメを最初に始める時刻（体ごとにずらした値）
 	State mState;

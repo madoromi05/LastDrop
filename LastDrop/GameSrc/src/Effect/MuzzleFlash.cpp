@@ -8,7 +8,11 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const char* kCoreTextureFile = "Resource/muzzle_flash.tga";
+	// 芯は 2×2 のます目に 4 つの形（tools/muzzle_flash_gen.py）。撃つたびに 1 つを選ぶ（コマ送りではない）。
+	const char* kCoreTextureFile = "Resource/muzzle_flash_sheet.tga";
+	const int kCoreShapeColumns = 2;
+	const int kCoreShapeRows = 2;
+	const int kCoreShapeNumber = kCoreShapeColumns * kCoreShapeRows;
 	const char* kGlowTextureFile = "Resource/muzzle_glow.tga";
 	const unsigned kRandomSeed = 5630u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
@@ -55,21 +59,24 @@ namespace{
 	}
 
 	// 画面に平行な、幅 width の丸い板を1枚ためる。right / up: 視線に直交する横と縦（長さ1）。
+	// uv: 貼る絵の範囲（省けば絵 1 枚まるごと）。
 	void addFacingQuad( LitQuadBatch* quads, const Vector3& center, const Vector3& right, const Vector3& up,
-		const Vector3& towardCamera, float width, unsigned color ) {
+		const Vector3& towardCamera, float width, unsigned color, const QuadUv& uv = QuadUv() ) {
 		Vector3 halfRight;
 		halfRight.setMul( right, width * kHalf );
 		Vector3 halfUp;
 		halfUp.setMul( up, width * kHalf );
-		quads->add( center, halfRight, halfUp, towardCamera, color ); // 加算で描くので、照らす向きは使われない
+		quads->add( center, halfRight, halfUp, towardCamera, color, uv ); // 加算で描くので、照らす向きは使われない
 	}
 }
 
 MuzzleFlash::MuzzleFlash() :
 	mAge( kLifeTicks ), // 消えている
 	mScale( 1.f ),
+	mShape( 0 ),
 	mRandom( kRandomSeed ),
 	mCoreTexture( Graphics::Texture::create( kCoreTextureFile ) ),
+	mCoreFrames( kCoreShapeColumns, kCoreShapeRows, kCoreShapeNumber ),
 	mGlowTexture( Graphics::Texture::create( kGlowTextureFile ) ),
 	mCoreQuads( kCoreQuadNumber, LitQuadBatch::MODE_GLOW ),
 	mGlowQuads( kGlowQuadNumber, LitQuadBatch::MODE_GLOW ) {
@@ -79,8 +86,10 @@ MuzzleFlash::MuzzleFlash() :
 
 void MuzzleFlash::fire() {
 	std::uniform_real_distribution< float > scale( 1.f - kSizeJitter, 1.f + kSizeJitter );
+	std::uniform_int_distribution< int > shape( 0, kCoreShapeNumber - 1 );
 	mAge = 0;
 	mScale = scale( mRandom );
+	mShape = shape( mRandom );
 }
 
 void MuzzleFlash::update() {
@@ -125,7 +134,7 @@ void MuzzleFlash::draw( const Matrix44& projectionView, const Vector3& viewDirec
 	if ( mCoreTexture.isReady() && !mCoreTexture.isError() ) {
 		float width = kCoreWidth * mScale * rateByAim( kAimCoreSize, aimWeight );
 		unsigned color = VertexColor::pack( 1.f, 1.f, 1.f, rateByAim( kAimCoreOpacity, aimWeight ) ); // 色は絵に入っている
-		addFacingQuad( &mCoreQuads, center, right, up, towardCamera, width, color );
+		addFacingQuad( &mCoreQuads, center, right, up, towardCamera, width, color, mCoreFrames.frameUv( mShape ) );
 		mCoreQuads.draw( mCoreTexture, projectionView );
 	}
 	if ( mGlowTexture.isReady() && !mGlowTexture.isError() ) {

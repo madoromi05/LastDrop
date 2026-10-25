@@ -45,6 +45,8 @@ FirstPersonCamera::FirstPersonCamera( float pitchLimit ) :
 	mShakeYaw( 0.f ),
 	mShakePitch( 0.f ),
 	mShakeRoll( 0.f ),
+	mSwayYaw( 0.f ),
+	mSwayPitch( 0.f ),
 	mFieldOfView( kDefaultFieldOfView ),
 	mEyePosition( 0.f, 0.f, 0.f ) {
 }
@@ -69,6 +71,11 @@ void FirstPersonCamera::setShake( float yawDegree, float pitchDegree, float roll
 	mShakeYaw = yawDegree;
 	mShakePitch = pitchDegree;
 	mShakeRoll = rollDegree;
+}
+
+void FirstPersonCamera::setWeaponSway( float yawDegree, float pitchDegree ) {
+	mSwayYaw = yawDegree;
+	mSwayPitch = pitchDegree;
 }
 
 void FirstPersonCamera::setEyePosition( const Vector3& eye ) {
@@ -119,6 +126,23 @@ float FirstPersonCamera::pitch() const {
 
 Vector3 FirstPersonCamera::viewDirection() const {
 	return directionOf( yaw(), pitch() ); // 反動・怯みを足した向き
+}
+
+Vector3 FirstPersonCamera::weaponDirection() const {
+	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）。
+	return directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );
+}
+
+float FirstPersonCamera::weaponSwayYaw() const {
+	return mSwayYaw;
+}
+
+float FirstPersonCamera::weaponSwayPitch() const {
+	return mSwayPitch;
+}
+
+float FirstPersonCamera::fieldOfView() const {
+	return mFieldOfView;
 }
 
 const Vector3& FirstPersonCamera::eyePosition() const {

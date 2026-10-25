@@ -804,6 +804,9 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombiePath.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieCrowd.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
@@ -821,6 +824,12 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Player\AimPunch.cpp">
       <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\AimSway.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\Flipbook.cpp">
+      <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\PlayerBodyFigure.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
@@ -1598,6 +1607,12 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombiePath.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
@@ -1615,6 +1630,15 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\AimPunch.h">
       <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\AimSway.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\AimSwayParams.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Flipbook.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodyZone.h">
       <Filter>GameSrc\Player</Filter>

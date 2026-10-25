@@ -30,6 +30,9 @@ public:
 	// 描く行列だけへ足す揺れ（度。カメラシェイク）。yaw・pitch・viewDirection には入らない（弾・体・音の向きは揺らさない）。
 	// ロールは視線の周りの傾き（向きは正負どちらでもよい。揺れは両方へ振れる）。
 	void setShake( float yawDegree, float pitchDegree, float rollDegree );
+	// 銃と弾の向きだけへ足すぶれ（度。照準のぶれ AimSway。ヨーは正で左、ピッチは正で見下ろす）。
+	// 描く行列・yaw・pitch・viewDirection には入らない（画面の中央は動かさない）。weaponDirection にだけ入る。
+	void setWeaponSway( float yawDegree, float pitchDegree );
 	// 視点（ワールド座標）。キャラの頭の位置から求めたものを渡す。
 	void setEyePosition( const GameLib::Math::Vector3& );
 	// 縦の視野角（度）。覗くときに狭めてズームする。
@@ -43,6 +46,11 @@ public:
 	float pitch() const;	// 上下の向き（度。setAimOffset の分を足したもの）。キャラの背骨の曲げに使う
 	// 狙いの向き（長さ1。setAimOffset の分は入り、setShake の分は入らない）。弾の向き・音の聞き手の向きにも使う。
 	GameLib::Math::Vector3 viewDirection() const;
+	// 弾を出す向き（長さ1）。viewDirection に setWeaponSway の分を足したもの（銃の見た目も同じだけぶれている）。
+	GameLib::Math::Vector3 weaponDirection() const;
+	float weaponSwayYaw() const;   // setWeaponSway で渡した左右（度）
+	float weaponSwayPitch() const; // setWeaponSway で渡した上下（度）
+	float fieldOfView() const;     // 縦の視野角（度。setFieldOfView で渡したもの）
 	const GameLib::Math::Vector3& eyePosition() const;	// 視点（setEyePosition で渡したもの）
 
 private:
@@ -54,6 +62,8 @@ private:
 	float mShakeYaw;    // 描く行列だけへ足す揺れ（カメラシェイク）
 	float mShakePitch;
 	float mShakeRoll;
+	float mSwayYaw;     // 銃と弾の向きだけへ足すぶれ（照準のぶれ）
+	float mSwayPitch;
 	float mFieldOfView;
 	GameLib::Math::Vector3 mEyePosition;
 };

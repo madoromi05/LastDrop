@@ -1,4 +1,6 @@
 #include "GameSrc/Player/FirstPersonBody.h"
+#include "GameSrc/Player/WeaponPoseParams.h"
+#include "GameSrc/Player/AimSwayParams.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Math/MatrixBlend.h"
 #include "GameSrc/Math/AxisRotation.h"
@@ -53,30 +55,11 @@ namespace{
 
 	const float kCollapsedScale = 0.f; // 骨の原点へ頂点を潰す縮尺
 
-	// ── 走るときの抱え方（胸元へ寄せる）──
-	// 胸の骨から見た、右手首（銃を付けた骨）を置く点（m）。胸の向き（体の前方をピッチぶん傾けたもの）で測る。
-	// 骨格の根の空間では左が +X なので、右へ寄せるのは -X。銃が体から離れて見えるなら z を減らし、腕が詰まって見えるなら増やす。
-	const Vector3 kCarryWristFromChest( -0.12f, -0.12f, 0.28f );
-	// 胸の向きから見た銃の向き（度）。この順（内側へ振る → 下へ向ける → 銃口まわりに傾ける）に掛ける。
-	const float kCarryMuzzleInward = 25.f; // 正で銃口が体の内側（左）を向く
-	const float kCarryMuzzleDown   = 30.f; // 正で銃口が下を向く
-	const float kCarryCant         = 15.f; // 正で銃の上面が右へ倒れる
+	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）。
 	const char* const kChestBone = "mixamorig:Spine2";
-
-	// ── 撃った反動（反動の量が 1 のとき＝撃った瞬間の動き）──
-	// 銃を銃口と逆の向きへ引く長さ（m）と、手首を中心に銃口を跳ね上げる角度（度）。
-	// 覗いている間は小さくする（肩と頬で銃を押さえているのと、目のすぐ前でサイトが大きく動くと狙いが見えなくなるため）。
-	const float kRecoilBackHip    = 0.035f;
-	const float kRecoilBackAim    = 0.015f;
-	const float kRecoilMuzzleRiseHip = 2.5f;
-	const float kRecoilMuzzleRiseAim = 0.8f;
-
-	// ── 目の位置（m）──
-	// 頭の骨の原点は頭蓋の付け根（首の上端）にあるので、そこから目の高さ・顔の前面まで出す。
-	// 前へ出すのは、潰した頭の頂点（骨の原点に集まる）や首の内側が視界に入らないようにするため。
-	const float kEyeAboveHead = 0.08f;
-	const float kEyeForward   = 0.10f;
 	const float kFallbackEyeHeight = 1.65f; // 頭の骨が無いときの、足元からの目の高さ（身長約1.8）
+
+	WeaponPoseParams gParams;
 
 	bool contains( const std::vector< int >& bones, int bone ) {
 		return std::find( bones.begin(), bones.end(), bone ) != bones.end();
@@ -174,6 +157,10 @@ namespace{
 	}
 }
 
+WeaponPoseParams& weaponPoseParams() {
+	return gParams;
+}
+
 FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mHeadBone( data->findBone( kHeadBone ) ),
 	mChestBone( data->findBone( kChestBone ) ),
@@ -188,6 +175,8 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mAimWeight( 0.f ),
 	mCarryWeight( 0.f ),
 	mRecoil( 0.f ),
+	mSwayYaw( 0.f ),
+	mSwayPitch( 0.f ),
 	mArmOverride( nullptr ),
 	mArmOverrideWeight( 0.f ),
 	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ),
@@ -248,6 +237,11 @@ void FirstPersonBody::setRecoil( float kick ) {
 	mRecoil = kick;
 }
 
+void FirstPersonBody::setSway( float yawDegree, float pitchDegree ) {
+	mSwayYaw = yawDegree;
+	mSwayPitch = pitchDegree;
+}
+
 void FirstPersonBody::setArmOverride( const std::vector< Matrix34 >* pose, float weight ) {
 	mArmOverride = pose;
 	mArmOverrideWeight = weight;
@@ -268,10 +262,10 @@ bool FirstPersonBody::weaponBounds( Vector3* low, Vector3* high ) const {
 
 void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
 	// 順番に意味がある: リロードなら腕をアニメへ差し替える → 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める
-	// → その目へ銃を寄せる → 反動で銃を跳ねさせる
+	// → その目へ銃を寄せる → 照準のぶれで銃を回す → 反動で銃を跳ねさせる
 	// 腕の差し替えを最初にするのは、差し替えた腕も背骨の曲げ（視線の上下）に付いてくるようにするため。
 	// → 跳ねた銃を囲む → 頭を消す。
-	// 反動は、置き終えた銃（覗いていればサイトが目に合った銃）から跳ねさせる。覗く補正より前に掛けると、合わせ直されて反動が消える。
+	// ぶれと反動は、置き終えた銃（覗いていればサイトが目に合った銃）から動かす。覗く補正より前に掛けると、合わせ直されて消える。
 	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）。
 	// 目を曲げる前の頭で決めると、見上げ・見下ろしで目と銃がずれる。
 	// 胸元へ寄せる・覗く補正は両腕をまとめて動かすだけなので、先に両手持ちにしておけば左手は銃に付いたまま。
@@ -282,6 +276,7 @@ void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
 	carryAtChest( pose );
 	updateEyePosition( *pose );
 	alignSightToEye( pose );
+	swayWeapon( pose );
 	kickWeapon( pose );
 	updateWeaponBounds( *pose );
 	hideHead( pose );
@@ -346,7 +341,7 @@ void FirstPersonBody::updateEyePosition( const std::vector< Matrix34 >& pose ) {
 	Matrix34 view;
 	view.setRotationX( mPitch );
 	Vector3 eyeFromHead;
-	view.mul33( &eyeFromHead, Vector3( 0.f, kEyeAboveHead, kEyeForward ) );
+	view.mul33( &eyeFromHead, Vector3( 0.f, gParams.eyeAboveHead, gParams.eyeForward ) );
 	mEyePosition.setAdd( translationOf( pose[ mHeadBone ] ), eyeFromHead );
 }
 
@@ -367,6 +362,28 @@ void FirstPersonBody::alignSightToEye( std::vector< Matrix34 >* pose ) const {
 	transformBonesPartially( alignWeapon( gun, view, sight, mEyePosition ), mAimWeight, mArmBones, pose );
 }
 
+void FirstPersonBody::swayWeapon( std::vector< Matrix34 >* pose ) const {
+	if ( mHandBone < 0 || ( mSwayYaw == 0.f && mSwayPitch == 0.f ) ) {
+		return;
+	}
+	// 回す中心は目から視線の逆へ下げた所（視線は前方 +Z をピッチぶん下へ傾けたもの。alignSightToEye と同じ向き）。
+	Matrix34 view;
+	view.setRotationX( mPitch );
+	Vector3 behind;
+	view.mul33( &behind, Vector3( 0.f, 0.f, -aimSwayParams().pivotBehindEye ) );
+	Vector3 pivot;
+	pivot.setAdd( mEyePosition, behind );
+	// 体はカメラのヨーを向き、背骨はピッチぶん曲げてあるので、銃の向きは「ヨー 0・ピッチ mPitch」の視線に揃っている。
+	// そこへ上の軸（Y）まわりにヨー、横の軸（X）まわりにピッチを足すと、向きは ヨー mSwayYaw・ピッチ mPitch + mSwayPitch になり、
+	// FirstPersonCamera::weaponDirection と同じ向きになる（X まわりの回転どうしは順番を入れ替えても同じなので、ピッチを先に戻さなくてよい）。
+	Matrix34 sway; // 中心を原点へ → 回す → 中心へ戻す
+	sway.setTranslation( pivot );
+	sway.rotateY( mSwayYaw );
+	sway.rotateX( mSwayPitch );
+	sway.translate( -pivot.x, -pivot.y, -pivot.z );
+	transformBones( sway, mArmBones, pose );
+}
+
 void FirstPersonBody::carryAtChest( std::vector< Matrix34 >* pose ) const {
 	if ( mHandBone < 0 || mChestBone < 0 || mCarryWeight <= 0.f ) {
 		return;
@@ -378,12 +395,12 @@ void FirstPersonBody::carryAtChest( std::vector< Matrix34 >* pose ) const {
 	Matrix34 chest;
 	chest.setRotationX( mPitch );
 	Vector3 wristGoal;
-	chest.mul33( &wristGoal, kCarryWristFromChest );
+	chest.mul33( &wristGoal, gParams.carryWristFromChest );
 	wristGoal += translationOf( ( *pose )[ mChestBone ] );
 	Matrix34 carry = chest;
-	carry.rotateY( kCarryMuzzleInward );
-	carry.rotateX( kCarryMuzzleDown );
-	carry.rotateZ( kCarryCant );
+	carry.rotateY( gParams.carryMuzzleInward );
+	carry.rotateX( gParams.carryMuzzleDown );
+	carry.rotateZ( gParams.carryCant );
 	// 置き場所を手首で決めるのは、手首の位置と銃の向きを別々の定数で合わせられるようにするため（銃の先は向きだけで決まる）。
 	Vector3 wrist = translationOf( ( *pose )[ mHandBone ] );
 	transformBonesPartially( alignWeapon( gun, carry, wrist, wristGoal ), mCarryWeight, mArmBones, pose );
@@ -403,8 +420,8 @@ void FirstPersonBody::kickWeapon( std::vector< Matrix34 >* pose ) const {
 	gunSide.normalize();
 
 	// 覗き具合で、腰だめの動きと覗いているときの動きの間を取る。
-	float back = ( kRecoilBackHip + ( kRecoilBackAim - kRecoilBackHip ) * mAimWeight ) * mRecoil;
-	float rise = ( kRecoilMuzzleRiseHip + ( kRecoilMuzzleRiseAim - kRecoilMuzzleRiseHip ) * mAimWeight ) * mRecoil;
+	float back = ( gParams.recoilBackHip + ( gParams.recoilBackAim - gParams.recoilBackHip ) * mAimWeight ) * mRecoil;
+	float rise = ( gParams.recoilMuzzleRiseHip + ( gParams.recoilMuzzleRiseAim - gParams.recoilMuzzleRiseHip ) * mAimWeight ) * mRecoil;
 
 	// 手首を中心に銃口を跳ね上げてから、銃口と逆の向きへ引く。銃の横の軸まわりは、正の角度で銃口が下を向くので負で回す。
 	// 手首を中心にするのは、握っている所を支点に銃の先が跳ねるように見せるため。

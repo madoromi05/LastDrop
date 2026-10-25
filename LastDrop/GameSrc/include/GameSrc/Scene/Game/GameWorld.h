@@ -10,6 +10,7 @@
 #include "GameSrc/Zombie/ZombieModel.h"
 #include "GameSrc/Zombie/SeveredLimbList.h"
 #include "GameSrc/Zombie/ZombieSpawner.h"
+#include "GameSrc/Zombie/ZombieCrowd.h"
 #include "GameSrc/World/ActorList.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Interaction/Pickup.h"
@@ -82,7 +83,8 @@ public:
 	// 追いついたゾンビが自キャラをつかんだら動けなくし、噛んだら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
 	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消し、足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
 	// command / cameraYaw / cameraPitch / inventory: PlayerCharacter::update へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
-	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。弾は自キャラの目からこの向きへ飛ぶ（画面の中央へ飛ぶ）。
+	// viewDirection: 弾を出す向き（長さ1。FirstPersonCamera::weaponDirection）。弾は自キャラの目からこの向きへ飛ぶ
+	//                （画面の中央から、照準のぶれの分だけずれた所＝銃が向いている所へ飛ぶ）。
 	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection,
 		Inventory* inventory );
 	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
@@ -93,9 +95,12 @@ public:
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
 	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
-	void drawImpactDust( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
+	// eye: 目の位置（FirstPersonCamera::eyePosition）。粒を目から遠い順に並べ替えて描くため。
+	void drawImpactDust( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection,
+		const GameLib::Math::Vector3& eye );
 	// ゾンビに当たった血しぶきを描く。呼ぶ場所の決まり・引数は drawImpactDust と同じ（砂ぼこりの後に呼ぶ）。
-	void drawBloodSpray( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
+	void drawBloodSpray( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection,
+		const GameLib::Math::Vector3& eye );
 	// 撃った瞬間に銃口が光る板を描く。呼ぶ場所の決まりは drawBulletHoles と同じ（砂ぼこりの後に呼ぶ）。
 	// 銃口の位置は、描くたびに自キャラの今の銃から取り直す。引数は drawImpactDust と同じ。
 	void drawMuzzleFlash( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
@@ -115,6 +120,7 @@ public:
 	IInteractable* resolveInteractable( const HitWorld::Hit& hit );
 
 	const TownMap& map() const;							// 町のどこに何を置くか
+	const StreetGraph& streets() const;					// 町の道の図（確認用の表示が、足した障害物の角を描くのに使う）
 	const TownGround& ground() const;					// 道路と歩道（足元の材質を聞ける）
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
 	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
@@ -211,6 +217,8 @@ private:
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。
 	ActorList< Zombie > mZombies;
+	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、全員の update へ渡す。毎回確保し直さないために持つ）。
+	ZombieCrowd mCrowd;
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）を選ぶ（place で種を決める）
 	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
 	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。

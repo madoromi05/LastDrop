@@ -1,4 +1,5 @@
 #include "GameSrc/Weapon/WeaponStance.h"
+#include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Core/GameTime.h"
 
 #include "GameLib/Math/Functions.h"
@@ -6,16 +7,27 @@
 using namespace GameLib;
 
 namespace{
-	// これより短く押して離したら「覗いたまま」にする（フレーム）。0.2秒。Tarkov の短押し判定に合わせた体感値。
-	const int kTapFrames = static_cast< int >( 0.2f * GameTime::kTicksPerSecond );
-	// 覗き始めてからサイトが目の前に来るまで（フレーム）。0.25秒。短すぎると銃が瞬間移動して見え、長いと操作が重い。
-	const float kAimFrames = 0.25f * GameTime::kTicksPerSecond;
-	const float kAimStep = 1.f / kAimFrames;
+	// 短押しの長さ・覗くまでの時間は WeaponStanceParams（秒。起動中に F6 で動かせる）。ティックへは使うたびに換算する。
+	WeaponStanceParams gParams;
+
+	// これより短く押して離したら「覗いたまま」にする（ティック）。
+	int tapTicks() {
+		return static_cast< int >( gParams.tapSeconds * GameTime::kTicksPerSecond );
+	}
+
+	// 覗き具合が 1 ティックに進む量（覗き始めてからサイトが目の前に来るまでで 1）。
+	float aimStep() {
+		return 1.f / ( gParams.aimSeconds * GameTime::kTicksPerSecond );
+	}
 
 	// 始めと終わりがゆっくりになる曲線（smoothstep）。直線だと銃が急に動き出し・急に止まって見えるため。
 	float easeInOut( float t ) {
 		return t * t * ( 3.f - 2.f * t );
 	}
+}
+
+WeaponStanceParams& weaponStanceParams() {
+	return gParams;
 }
 
 WeaponStance::WeaponStance() :
@@ -46,9 +58,9 @@ void WeaponStance::update( bool holsterPressed, bool aimHeld, bool runHeld ) {
 
 	float target = isAiming() ? 1.f : 0.f;
 	if ( mAimProgress < target ) {
-		mAimProgress = Math::min( target, mAimProgress + kAimStep );
+		mAimProgress = Math::min( target, mAimProgress + aimStep() );
 	} else {
-		mAimProgress = Math::max( target, mAimProgress - kAimStep );
+		mAimProgress = Math::max( target, mAimProgress - aimStep() );
 	}
 }
 
@@ -68,7 +80,7 @@ void WeaponStance::updateAimMode( bool aimHeld ) {
 		break;
 	case AIM_HOLD:
 		if ( released ) {
-			mAimMode = ( mAimHeldFrames < kTapFrames ) ? AIM_TOGGLE : AIM_OFF;
+			mAimMode = ( mAimHeldFrames < tapTicks() ) ? AIM_TOGGLE : AIM_OFF;
 		} else {
 			++mAimHeldFrames;
 		}

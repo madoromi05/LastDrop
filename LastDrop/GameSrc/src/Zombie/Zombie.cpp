@@ -1,6 +1,8 @@
 #include "GameSrc/Zombie/Zombie.h"
 #include "GameSrc/Zombie/ZombieModel.h"
 #include "GameSrc/Zombie/ChaseTarget.h"
+#include "GameSrc/Zombie/ZombieCrowd.h"
+#include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
@@ -162,6 +164,7 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mChase( sightPhase, randomSeed ),
 	mPath( sightPhase ),
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
+	mSeparation( 0.f, 0.f, 0.f ),
 	mWalking( false ),
 	mMoveStartTime( animations.moveStartTime ),
 	mState( State::Alive ),
@@ -181,13 +184,15 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mMesh.setAnimation( locomotionAnimation(), mMoveStartTime );
 }
 
-void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
+void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd ) {
 	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。攻撃の間は追う先を考え直さない（相手の方を向いて寄るだけ）。
+	// 攻撃に行っている体は仲間を避けない（つかみに行く動きを崩さない。ほかの体が、この体から離れる）。
+	mSeparation.set( 0.f, 0.f, 0.f );
 	if ( mState == State::Alive && !mStaggering && canChase() ) {
 		if ( mAttack.isActive() ) {
 			approachDuringAttack( target );
 		} else {
-			chase( target, hitWorld );
+			chase( target, hitWorld, crowd );
 		}
 	} else if ( mState == State::Downed ) {
 		updateDowned( target, hitWorld );
@@ -213,7 +218,7 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld ) {
 	mHitboxes.update( mMesh, mCrawl.isStarted() ? HitboxSet::POSE_SHOWN : HitboxSet::POSE_ANIMATED );
 }
 
-void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
+void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd ) {
 	Vector3 eye = mPosition;
 	eye.y += kEyeHeight;
 	ZombieChase::Mode modeBefore = mChase.mode();
@@ -222,16 +227,19 @@ void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
 		mPath.resetProgress(); // 着けるかは探し始めてから数える（追っている間に寄れなかった分で、すぐあきらめないように）
 	}
 	bool facing = false;
+	bool walking = mChase.wantsToWalk();
 	if ( mChase.mode() == ZombieChase::Mode::Wander ) {
 		mPath.clear(); // うろつく先は近く（ZombieChase が通れる所を選ぶ）なので、通り道は使わない
 		if ( mChase.hasDestination() ) {
-			facing = turnToward( mChase.destination() );
+			facing = turnToward( walking ? avoidCrowd( mChase.destination(), crowd ) : mChase.destination() );
 		}
 	} else {
 		// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）。
-		facing = turnToward( mPath.steer( mPosition, mChase.destination(), *mStreets, hitWorld ) );
+		// 歩いている間は、近くの仲間から離れる向きを混ぜる（前の仲間を避けて横へ回り込む）。
+		const Vector3& point = mPath.steer( mPosition, mChase.destination(), *mStreets, hitWorld, walking );
+		facing = turnToward( walking ? avoidCrowd( point, crowd ) : point );
 		if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
-			mChase.giveUpSearch(); // 最後に見た場所へ着けない。次のティックから立ってうろつく
+			mChase.giveUpSearch(); // 最後に見た場所へ着けない（よけても寄れなかった）。次のティックから立ってうろつく
 		}
 	}
 	if ( canStartAttack( target ) ) {
@@ -241,15 +249,60 @@ void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld ) {
 		return;
 	}
 	// 向きを変えている最中も、歩きたいなら歩くアニメにする（その場で向きを変える動きに見せる）。
-	setWalking( mChase.wantsToWalk() );
-	if ( mChase.wantsToWalk() && facing ) {
+	setWalking( walking );
+	if ( walking && facing ) {
 		float distance = walkDistanceThisTick();
 		Vector3 step( Math::sin( mAngleY ) * distance, 0.f, Math::cos( mAngleY ) * distance );
 		// 壁・車・他のキャラに当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）。
 		mPosition += mMover.move( step );
+	} else if ( !walking && mChase.mode() == ZombieChase::Mode::Chase ) {
+		standAside( crowd ); // 追いついて立ち止まっている。仲間の後ろに重なったまま止まり続けないように
 	}
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
+}
+
+Vector3 Zombie::avoidCrowd( const Vector3& point, const ZombieCrowd* crowd ) {
+	if ( !crowd ) {
+		return point;
+	}
+	const ZombieCrowdParams& params = zombieCrowdParams();
+	Vector3 center = bodyCenter();
+	Vector3 toPoint( point.x - center.x, 0.f, point.z - center.z );
+	float distance = toPoint.length();
+	if ( distance < kMinTurnDistance ) {
+		return point; // 着いている。向きを決めない（turnToward と同じ）
+	}
+	// 行き先への向き（長さ 1）に、仲間から離れる向き（長さ 0〜1）× 強さを足す。向く点は、その向きの 1m 先。
+	mSeparation = crowd->separation( this, center, params.separationRadius );
+	mSeparation *= params.separationStrength;
+	Vector3 direction;
+	direction.setMul( toPoint, 1.f / distance );
+	direction += mSeparation;
+	if ( direction.length() < kMinTurnDistance ) {
+		return point; // 真後ろから押し返されて向きが消えた。行き先へ向く
+	}
+	direction.normalize();
+	Vector3 facingPoint;
+	facingPoint.setAdd( center, direction );
+	return facingPoint;
+}
+
+void Zombie::standAside( const ZombieCrowd* crowd ) {
+	if ( !crowd ) {
+		return;
+	}
+	const ZombieCrowdParams& params = zombieCrowdParams();
+	Vector3 aside = crowd->separation( this, bodyCenter(), params.standAsideRadius );
+	float length = aside.length();
+	if ( length <= 0.f ) {
+		return;
+	}
+	// 向きは変えず（相手の方を向いたまま）、決まった速さで横へずれる。壁・ほかの体に当たったら沿って滑る。
+	Vector3 step;
+	step.setMul( aside, params.standAsideSpeed / GameTime::kTicksPerSecond / length );
+	mPosition += mMover.move( step );
+	mSeparation = aside;
 }
 
 bool Zombie::canStartAttack( const ChaseTarget* target ) const {
@@ -568,7 +621,7 @@ float Zombie::crawlChase( const ChaseTarget* target, const HitWorld& hitWorld, b
 		mPath.clear();
 		return kStrugglePace; // 気付いていない間はうろつかず、その場でもがくだけ
 	}
-	bool facing = turnToward( mPath.steer( mCrawlCenter, mChase.destination(), *mStreets, hitWorld ) );
+	bool facing = turnToward( mPath.steer( mCrawlCenter, mChase.destination(), *mStreets, hitWorld, mChase.wantsToWalk() ) );
 	if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
 		mChase.giveUpSearch();
 	}
@@ -704,6 +757,10 @@ void Zombie::hearNoise( const Vector3& position ) {
 
 const ZombiePath& Zombie::path() const {
 	return mPath;
+}
+
+const Vector3& Zombie::separation() const {
+	return mSeparation;
 }
 
 ZombieChase::Mode Zombie::chaseMode() const {

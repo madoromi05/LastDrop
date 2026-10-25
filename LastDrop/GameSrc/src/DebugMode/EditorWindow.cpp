@@ -2,6 +2,7 @@
 
 #ifdef ZF_EDITOR
 
+#include "GameSrc/DebugMode/TuningPanel.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Core/FixedStepClock.h"
 
@@ -82,7 +83,10 @@ void draw() {
 		if ( ImGui::CollapsingHeader( "Perf", ImGuiTreeNodeFlags_DefaultOpen ) ) {
 			GameLib::Profiling::drawPerfPanel();
 		}
-		drawPlannedHeader( "Player / Camera / Weapon (next)" );
+		// 調整値（自キャラ・銃・視点・ゾンビの群れ）。ゾンビの値も入ったので、見出しは「Tuning」にまとめた。
+		if ( ImGui::CollapsingHeader( "Tuning" ) ) {
+			TuningPanel::draw();
+		}
 		drawPlannedHeader( "Zombies / Audio (next)" );
 	}
 	ImGui::End();

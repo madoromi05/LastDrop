@@ -2,6 +2,7 @@
 #define INCLUDED_MUZZLE_FLASH_H
 
 #include "GameSrc/Render/LitQuadBatch.h"
+#include "GameSrc/Render/Flipbook.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Graphics/Texture.h"
@@ -14,7 +15,8 @@
 //   光の芯     … 銃口の前の、小さくとても明るい丸（画面に平行な板1枚。加算・1 を超える明るさで描く）
 //   にじみの板 … 芯のまわりの空気が光って見える、大きく柔らかい板1枚（面は照らさない。面は点光源が照らす）
 //   点光源     … 周りの壁・地面と自分の腕・銃を一瞬照らす（主役）。置き場所と強さを答えるだけで、ライトを設定するのはシーン
-// 芯の大きさだけ1発ごとに乱数で変える（同じ光が続くと機械的に見えるため）。
+// 芯の形（4 つの絵から 1 つ。EffectFlipbook_Plan.txt の 4 章）と大きさを1発ごとに乱数で変える（同じ光が続くと機械的に見えるため）。
+// 形はとげにはせず、光のふちの出方が少し違うだけ（炎の形は描かない、の決まりのまま）。
 // 覗いているときは、照準のすぐ先が白く埋まらないよう、覗き具合に合わせて小さく・薄くする。
 // 銃口の位置は持たない（描くたびに今の銃から取り直したものを受け取る。反動・歩きの揺れで銃口から離れないように）。
 // 計画は SummaryPlan/個別仕様/MuzzleFlash_Plan.txt。
@@ -52,8 +54,10 @@ public:
 private:
 	int mAge;      // 撃ってからのティック数（撃ったティックが 0）。消えている間は光る長さ以上
 	float mScale;  // 芯の大きさのばらつき（倍率）
-	std::mt19937 mRandom;                    // 大きさのばらつき
-	GameLib::Graphics::Texture mCoreTexture; // 光の芯の絵（Resource/muzzle_flash.tga）
+	int mShape;    // 芯の形（mCoreFrames のコマの番号）
+	std::mt19937 mRandom;                    // 大きさと形のばらつき
+	GameLib::Graphics::Texture mCoreTexture; // 光の芯の絵（Resource/muzzle_flash_sheet.tga。2×2 に 4 つの形）
+	Flipbook mCoreFrames;                    // 上の絵のコマの並び
 	GameLib::Graphics::Texture mGlowTexture; // にじみの板の絵（Resource/muzzle_glow.tga）
 	LitQuadBatch mCoreQuads; // 絵と明るさの倍率が違うので、芯とにじみの板は別にためて描く
 	LitQuadBatch mGlowQuads;

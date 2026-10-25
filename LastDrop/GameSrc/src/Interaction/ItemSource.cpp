@@ -31,6 +31,10 @@ bool ItemSource::isBody( const IRayBlocker* blocker ) const {
 	return blocker == &mBody;
 }
 
+const BoxCollider& ItemSource::collider() const {
+	return mBody.collider();
+}
+
 bool ItemSource::canInteract( const Inventory& inventory ) const {
 	return inventory.canAdd( mItem );
 }

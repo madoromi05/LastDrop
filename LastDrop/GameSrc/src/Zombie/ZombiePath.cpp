@@ -1,4 +1,5 @@
 #include "GameSrc/Zombie/ZombiePath.h"
+#include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Map/StreetGraph.h"
 #include "GameSrc/Core/GameTime.h"
 
@@ -18,9 +19,8 @@ namespace{
 	const float kDestinationJumpDistance = 1.f;
 	// この長さ（m）近づくたびに「近づけている」とみなす。壁に沿って滑るだけで寄れていないのを見分ける（うろつきと同じ値）。
 	const float kProgressDistance = 0.3f;
-	// 近づけないまま、これだけ過ぎたら「着けない」（秒。うろつきと同じ値）。
-	const float kStallSeconds = 2.f;
-	const int kStallTicks = static_cast< int >( kStallSeconds * GameTime::kTicksPerSecond );
+	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす。
+	const float kMinDirectionLength = 0.001f;
 
 	// a と b の水平の距離（m）。
 	float flatDistance( const Vector3& a, const Vector3& b ) {
@@ -28,6 +28,10 @@ namespace{
 		d.setSub( b, a );
 		d.y = 0.f;
 		return d.length();
+	}
+
+	int secondsToTicks( float seconds ) {
+		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
 	}
 }
 
@@ -39,17 +43,33 @@ ZombiePath::ZombiePath( int probePhase ) :
 	mProbeTicks( ( probePhase >= 0 ? probePhase : -probePhase ) % kProbeIntervalTicks ),
 	mProgressStarted( false ),
 	mBestDistance( 0.f ),
-	mStallTicks( 0 ) {
+	mStallTicks( 0 ),
+	mSidestepPoint( 0.f, 0.f, 0.f ),
+	mSidestepTicks( 0 ),
+	mSidestepCount( 0 ),
+	mStuck( false ) {
 }
 
 const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const StreetGraph& streets,
-const HitWorld& hitWorld ) {
+const HitWorld& hitWorld, bool walking ) {
+	const ZombieCrowdParams& params = zombieCrowdParams();
 	if ( mHasLastDestination && flatDistance( mLastDestination, destination ) > kDestinationJumpDistance ) {
 		mProbeTicks = 0; // 新しい行き先へ通れるかを、このティックに調べる（古い通り道は探し直すか捨てる）
+		mSidestepTicks = 0;
 		resetProgress();
 	}
 	mLastDestination = destination;
 	mHasLastDestination = true;
+	// よけている間は、よける点へ着くか決まった時間がたつまで、そちらを向く。終わったらこのティックに通り道を調べ直す。
+	if ( mSidestepTicks > 0 ) {
+		--mSidestepTicks;
+		if ( mSidestepTicks > 0 && flatDistance( self, mSidestepPoint ) > params.sidestepReach ) {
+			return mSidestepPoint;
+		}
+		mSidestepTicks = 0;
+		mProbeTicks = 0;
+		restartProgress();
+	}
 	if ( --mProbeTicks <= 0 ) {
 		mProbeTicks = kProbeIntervalTicks;
 		probe( self, destination, streets, hitWorld );
@@ -64,6 +84,10 @@ const HitWorld& hitWorld ) {
 	}
 
 	const Vector3& point = currentPoint( destination );
+	if ( !walking ) {
+		mProgressStarted = false; // 立ち止まっている間は数えない（歩き出したら、その時の距離から数え直す）
+		return point;
+	}
 	float distance = flatDistance( self, point );
 	if ( !mProgressStarted ) {
 		mProgressStarted = true;
@@ -75,7 +99,47 @@ const HitWorld& hitWorld ) {
 	} else {
 		++mStallTicks;
 	}
+	if ( mStallTicks >= secondsToTicks( params.sidestepAfterSeconds ) ) {
+		// 一度よけた後にまた詰まったら、着けない所かもしれない印を付ける（Search ならあきらめる。Chase はよけ続ける）。
+		if ( mSidestepCount > 0 ) {
+			mStuck = true;
+		}
+		startSidestep( self, point, streets, hitWorld );
+		return mSidestepPoint;
+	}
 	return point;
+}
+
+void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const StreetGraph& streets, const HitWorld& hitWorld ) {
+	const ZombieCrowdParams& params = zombieCrowdParams();
+	Vector3 forward( point.x - self.x, 0.f, point.z - self.z );
+	float length = forward.length();
+	if ( length < kMinDirectionLength ) {
+		forward.set( 0.f, 0.f, 1.f );
+	} else {
+		forward *= 1.f / length;
+	}
+	// 前への向きを左右へ 90° 回した 2 つ（水平）。どちらが左かは問わない（通れる方・近い方で選ぶ）。
+	Vector3 sideA( forward.z, 0.f, -forward.x );
+	Vector3 sideB( -forward.z, 0.f, forward.x );
+	Vector3 pointA;
+	pointA.setMadd( self, sideA, params.sidestepDistance );
+	Vector3 pointB;
+	pointB.setMadd( self, sideB, params.sidestepDistance );
+	bool openA = streets.isWalkable( self, pointA, hitWorld );
+	bool openB = streets.isWalkable( self, pointB, hitWorld );
+	if ( openA && openB ) {
+		mSidestepPoint = ( flatDistance( pointA, point ) <= flatDistance( pointB, point ) ) ? pointA : pointB;
+	} else if ( openA ) {
+		mSidestepPoint = pointA;
+	} else if ( openB ) {
+		mSidestepPoint = pointB;
+	} else {
+		mSidestepPoint.setMadd( self, forward, -params.backstepDistance ); // 左右とも塞がっている。少し下がる
+	}
+	mSidestepTicks = secondsToTicks( params.sidestepSeconds );
+	++mSidestepCount;
+	mStallTicks = 0;
 }
 
 void ZombiePath::probe( const Vector3& self, const Vector3& destination, const StreetGraph& streets, const HitWorld& hitWorld ) {
@@ -106,16 +170,20 @@ void ZombiePath::clear() {
 	mNext = 0;
 	mHasLastDestination = false;
 	mProbeTicks = 0; // 次の steer ですぐ調べる
+	mSidestepTicks = 0;
 	resetProgress();
 }
 
 bool ZombiePath::isStuck() const {
-	return mStallTicks >= kStallTicks;
+	return mStuck;
 }
 
 void ZombiePath::remainingRoute( std::vector< Vector3 >* out ) const {
 	ASSERT( out && "ZombiePath : out is null." );
 	out->clear();
+	if ( mSidestepTicks > 0 ) {
+		out->push_back( mSidestepPoint );
+	}
 	for ( int i = mNext; i < static_cast< int >( mRoute.size() ); ++i ) {
 		out->push_back( mRoute[ i ] );
 	}
@@ -126,6 +194,12 @@ const Vector3& ZombiePath::currentPoint( const Vector3& destination ) const {
 }
 
 void ZombiePath::resetProgress() {
+	restartProgress();
+	mSidestepCount = 0;
+	mStuck = false;
+}
+
+void ZombiePath::restartProgress() {
 	mProgressStarted = false;
 	mStallTicks = 0;
 }

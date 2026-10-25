@@ -15,6 +15,8 @@ class HitWorld;
 // 通り道の点に近づいたら次の点へ。次の次の点が見えていれば、今の点を飛ばす（角で交差点の真ん中まで寄らない）。
 // 向く点へ近づけているかも数える（見失った後に着けない所で押し続けないため。あきらめるかは持ち主が決める）。
 // 行き先が 1 ティックで大きく飛んだら（新しい銃声の所へ向かい直した）、すぐ調べ直して数え直す。
+// 歩いているのに向かう点へ決まった時間近づけなければ（群れ・図に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
+// 向かい直す（SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
 // 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt。
 class ZombiePath{
 public:
@@ -22,20 +24,27 @@ public:
 	explicit ZombiePath( int probePhase );
 
 	// このティックに向く点を返す。self: 自分の足元。destination: 最後に向かいたい所（ZombieChase::destination）。
+	// walking: 歩こうとしているか（ZombieChase::wantsToWalk）。立ち止まっている間は「近づけない」を数えない。
 	// 毎ティック呼ぶ（間隔を数え、近づけているかを数えるため）。
 	const GameLib::Math::Vector3& steer( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
-		const StreetGraph& streets, const HitWorld& hitWorld );
+		const StreetGraph& streets, const HitWorld& hitWorld, bool walking );
 	// 通り道を捨てる（うろつきに戻った・攻撃を始めた）。次の steer ですぐ、まっすぐ通れるかを調べる。
 	void clear();
-	// 向く点へ、決まった時間近づけていないか（見失った後、着けない所へ向かっているのを見分ける）。
+	// 一度よけても、まだ向く点へ近づけないか（見失った後、着けない所へ向かっているのを見分ける。あきらめるかは持ち主が決める）。
 	bool isStuck() const;
 	// 近づけているかを数え直す（探し始めたとき。追っている間に数えた分を持ち越さない）。
 	void resetProgress();
-	// 残りの通り道（今向かっている点から最後＝行き先まで）。まっすぐ向かっている間は空。確認用の表示に使う。
-	// out: nullptr 不可。前の中身は捨てる。
+	// 残りの通り道（今向かっている点から最後＝行き先まで）。まっすぐ向かっている間は空。よけている間は、よける点が先頭に入る。
+	// 確認用の表示に使う。out: nullptr 不可。前の中身は捨てる。
 	void remainingRoute( std::vector< GameLib::Math::Vector3 >* out ) const;
 
 private:
+	// 詰まった。point（今向かっている点）への向きの左右のうち、まっすぐ通れる方（両方なら point に近い方）へよける点を決める。
+	// どちらも通れなければ、少し後ろへ下がる点にする。
+	void startSidestep( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& point,
+		const StreetGraph& streets, const HitWorld& hitWorld );
+	// 近づけているかを数え直す（よけた回数・詰まった印は残す。よけ終わった後に使う）。
+	void restartProgress();
 	// 決まった間隔で、まっすぐ通れるか・探し直すか・点を飛ばせるかを決める。
 	void probe( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
 		const StreetGraph& streets, const HitWorld& hitWorld );
@@ -51,6 +60,10 @@ private:
 	bool mProgressStarted;                        // 近づけているかを数え始めたか（向く点が変わると false）
 	float mBestDistance;                          // 今の向く点へ、これまでで一番近づいた距離
 	int mStallTicks;                              // mBestDistance が縮まないまま過ぎた長さ（ティック）
+	GameLib::Math::Vector3 mSidestepPoint;        // よける点
+	int mSidestepTicks;                           // よける点へ向かう残り（ティック。0 ならよけていない）
+	int mSidestepCount;                           // 今の向く点へ向かう間によけた回数
+	bool mStuck;                                  // よけた後も、また詰まったか（isStuck）
 };
 
 #endif

@@ -413,6 +413,22 @@ bool PlayerCharacter::isWeaponDrawn() const {
 	return mStance.isDrawn();
 }
 
+AimSwayBody PlayerCharacter::aimSwayBody() const {
+	AimSwayBody body;
+	body.weaponDrawn = mWeapon && mStance.isDrawn();
+	body.aimWeight = mStance.aimWeight();
+	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）。
+	body.walkRate = mSpeed / kRifleWalkSpeed;
+	body.gaitPhase = gaitPhase();
+	body.carryWeight = mCarryWeight;
+	body.brokenArms = ( mHealth.isBroken( PlayerBodyZone::LeftArm ) ? 1 : 0 ) + ( mHealth.isBroken( PlayerBodyZone::RightArm ) ? 1 : 0 );
+	return body;
+}
+
+void PlayerCharacter::setWeaponSway( float yawDegree, float pitchDegree ) {
+	mBody->setSway( yawDegree, pitchDegree );
+}
+
 bool PlayerCharacter::isAiming() const {
 	return mStance.isAiming();
 }

@@ -3,6 +3,7 @@
 #include "GameSrc/Hit/HitWorld.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Math/Functions.h"
 
 #include <algorithm>
 #include <limits>
@@ -18,6 +19,10 @@ namespace{
 	const int kPortalCandidates = 4;
 	const int kNoNode = -1;
 	const float kUnreached = std::numeric_limits< float >::max();
+	// 箱の四隅を回る順（ローカルの X・Z の向きの符号）。隣どうしが箱の辺になる。
+	const int kCornerNumber = 4;
+	const float kCornerSignX[ kCornerNumber ] = { -1.f, 1.f, 1.f, -1.f };
+	const float kCornerSignZ[ kCornerNumber ] = { -1.f, -1.f, 1.f, 1.f };
 
 	// a と b の水平の距離（m）。
 	float flatDistance( const Vector3& a, const Vector3& b ) {
@@ -35,12 +40,56 @@ StreetGraph::StreetGraph( const TownMap& map ) {
 		mNodes.push_back( node );
 	}
 	const int nodeNumber = static_cast< int >( mNodes.size() );
-	for ( const StreetLink& link : map.streetLinks() ) {
-		ASSERT( link.from >= 0 && link.from < nodeNumber && link.to >= 0 && link.to < nodeNumber && "StreetGraph : bad link." );
-		float length = flatDistance( mNodes[ link.from ].position, mNodes[ link.to ].position );
-		mNodes[ link.from ].links.push_back( { link.to, length } );
-		mNodes[ link.to ].links.push_back( { link.from, length } );
+	for ( const StreetLink& street : map.streetLinks() ) {
+		ASSERT( street.from >= 0 && street.from < nodeNumber && street.to >= 0 && street.to < nodeNumber && "StreetGraph : bad link." );
+		link( street.from, street.to );
 	}
+}
+
+void StreetGraph::link( int a, int b ) {
+	float length = flatDistance( mNodes[ a ].position, mNodes[ b ].position );
+	mNodes[ a ].links.push_back( { b, length } );
+	mNodes[ b ].links.push_back( { a, length } );
+}
+
+void StreetGraph::addObstacle( const BoxCollider& box, float margin, const HitWorld& hitWorld ) {
+	// 箱のローカルの X 軸・Z 軸がワールドで向く向き（SweepMath の boxAxes と同じ。Matrix34::rotateY と同じ回転の向き）。
+	float c = GameLib::Math::cos( box.angleY );
+	float s = GameLib::Math::sin( box.angleY );
+	Vector3 axisX( c, 0.f, -s );
+	Vector3 axisZ( s, 0.f, c );
+	float halfX = box.halfWidthX + margin;
+	float halfZ = box.halfWidthZ + margin;
+	const int first = static_cast< int >( mNodes.size() );
+	for ( int i = 0; i < kCornerNumber; ++i ) {
+		Node corner;
+		corner.position = box.center;
+		corner.position.madd( axisX, kCornerSignX[ i ] * halfX );
+		corner.position.madd( axisZ, kCornerSignZ[ i ] * halfZ );
+		mNodes.push_back( corner );
+		mObstacleCorners.push_back( corner.position );
+	}
+	// 箱のまわりを回る線（隣り合う角どうし）。角が建物に食い込んでいれば線が当たるので結ばない。
+	for ( int i = 0; i < kCornerNumber; ++i ) {
+		int a = first + i;
+		int b = first + ( i + 1 ) % kCornerNumber;
+		if ( isWalkable( mNodes[ a ].position, mNodes[ b ].position, hitWorld ) ) {
+			link( a, b );
+		}
+	}
+	// 角とほかの点（交差点・先に足した物の角）。箱そのものを通る線は箱に当たるので結ばれない。
+	for ( int i = 0; i < kCornerNumber; ++i ) {
+		int corner = first + i;
+		for ( int other = 0; other < first; ++other ) {
+			if ( isWalkable( mNodes[ corner ].position, mNodes[ other ].position, hitWorld ) ) {
+				link( corner, other );
+			}
+		}
+	}
+}
+
+const std::vector< Vector3 >& StreetGraph::obstacleCorners() const {
+	return mObstacleCorners;
 }
 
 bool StreetGraph::isWalkable( const Vector3& from, const Vector3& to, const HitWorld& hitWorld ) const {

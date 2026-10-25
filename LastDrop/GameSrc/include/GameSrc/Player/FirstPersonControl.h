@@ -5,6 +5,7 @@
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/AimPunch.h"
 #include "GameSrc/Player/CameraShake.h"
+#include "GameSrc/Player/AimSway.h"
 #include "GameSrc/Weapon/ViewRecoil.h"
 #include "GameSrc/Weapon/AimRecoil.h"
 #include "GameLib/Math/Vector3.h"
@@ -52,10 +53,12 @@ public:
 	const PlayerCommand& command() const;
 	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ。
 	void consumePressed();
-	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・噛まれた怯み）と、見える絵の揺れを進めてカメラへ渡す。
+	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・噛まれた怯み）と、見える絵の揺れ、
+	// 照準のぶれ（銃と弾の向きだけ。AimSway）を進めてカメラへ渡す。
 	// 1ティックに1回、キャラを動かした後（flinch・shakeOnGrab の後）に呼ぶ。
 	// fired: このティックに1発撃ったか（PlayerCharacter::firedThisTick）。
-	void updateViewEffects( bool fired );
+	// body: 自キャラの今の状態（PlayerCharacter::aimSwayBody。自キャラがいなければ既定のまま＝ぶれない）。
+	void updateViewEffects( bool fired, const AimSwayBody& body );
 	// 噛まれた瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
 	void flinch();
 	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）。
@@ -86,6 +89,11 @@ private:
 	AimRecoil mAimRecoil;   // 連射でたまる弾道のずれ（狙いへ足す）
 	AimPunch mAimPunch;     // 噛まれた瞬間の怯み（狙いへ足す）
 	CameraShake mShake;     // 見える絵の揺れ（描く行列だけへ足す）
+	AimSway mSway;          // 照準のぶれ（銃と弾の向きだけへ足す）
+	// readInput でマウスが回した角度（度）のうち、まだぶれ（振り向きの遅れ）へ渡していない分。
+	// マウスは描画ごと、ぶれはティックごとに進むので、ためておいて次のティックで使い切る。
+	float mPendingLookYaw;
+	float mPendingLookPitch;
 	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
 	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
 	bool mFireSuppressed;

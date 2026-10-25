@@ -22,11 +22,14 @@ public:
 	// prompt: 見ている物の案内（Interactor::prompt。見ている物が無ければ空文字列）。nullptr 不可。
 	// car: 脱出用の車。nullptr なら車のガソリンの行は書き換えない（車を置けなかったとき）。所有権は受け取らない。
 	// health: 自キャラの体力。nullptr なら体の図を出さない（自キャラを置けなかったとき）。所有権は受け取らない。
-	void draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health );
+	// crosshair: 照準の「+」を置く所（UI_ANCHOR_CENTER から見た画素。銃が向いている所）。nullptr なら「+」を出さない（覗いている間）。
+	void draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health,
+		const GameLib::Math::Vector2* crosshair );
 
 private:
 	UiScreen mScreen;
 	UiRenderer* mRenderer; // 借りているだけ（体の図の四角を積む。mScreen が描く）
+	UiLabel* mCrosshairLabel; // mScreen が持つ部品を借りる（置き場所を毎回変える）
 	UiLabel* mPromptLabel; // mScreen が持つ部品を借りる（文字を毎回書き換える）
 	UiLabel* mTankLabel;
 	UiLabel* mCarryLabel;

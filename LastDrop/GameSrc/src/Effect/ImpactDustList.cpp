@@ -9,7 +9,11 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const char* kTextureFile = "Resource/impact_dust.tga"; // tools/dust_gen.py で作る
+	// tools/smoke_flipbook_gen.py で作る（4×4 のます目に 16 コマ）。
+	const char* kTextureFile = "Resource/impact_smoke_sheet.tga";
+	const int kFrameColumns = 4;
+	const int kFrameRows = 4;
+	const int kFrameNumber = kFrameColumns * kFrameRows;
 
 	// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.5 秒で消えるので、ふだんは 5 回分ほど）。
 	const int kCapacity = 16;
@@ -29,6 +33,7 @@ namespace{
 ImpactDustList::ImpactDustList() :
 	mRandom( kRandomSeed ),
 	mTexture( Graphics::Texture::create( kTextureFile ) ),
+	mFrames( kFrameColumns, kFrameRows, kFrameNumber ),
 	mQuads( kCapacity * ImpactDust::kParticleNumber ) {
 	mDusts.reserve( kCapacity );
 }
@@ -48,7 +53,7 @@ void ImpactDustList::update() {
 		[]( const ImpactDust& dust ) { return dust.isFinished(); } ), mDusts.end() );
 }
 
-void ImpactDustList::draw( const Matrix44& projectionView, const Vector3& viewDirection ) {
+void ImpactDustList::draw( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {
 	// isReady を呼ぶと読み込みが進む（毎フレーム呼ぶ）。読めなかった絵では描かない。
 	if ( !mTexture.isReady() || mTexture.isError() || mDusts.empty() ) {
 		return;
@@ -64,17 +69,24 @@ void ImpactDustList::draw( const Matrix44& projectionView, const Vector3& viewDi
 	Vector3 towardCamera;
 	towardCamera.setNeg( viewDirection );
 
-	// 粒ごとに濃さと大きさが違う（外へ飛ぶ粒ほど薄く大きい）ので、色と板の大きさは粒ごとに作る。
+	// 粒ごとに濃さと大きさ・向きが違う（外へ飛ぶ粒ほど薄く大きい）ので、色と板の大きさは粒ごとに作る。
+	// コマは 1 回分の中で同じ（同じ時に出た粒は、同じだけ育っている）。
 	for ( const ImpactDust& dust : mDusts ) {
+		QuadUv frame = mFrames.frameUv( mFrames.frameAt( dust.progress() ) );
 		for ( int i = 0; i < ImpactDust::kParticleNumber; ++i ) {
 			unsigned color = VertexColor::pack( kDustRed, kDustGreen, kDustBlue, dust.particleOpacity( i ) );
 			float radius = dust.particleRadius( i );
+			// 板の横と縦を、視線の周りに粒の向きだけ回す（どちらも視線に直交したまま）。
+			float cosine = Math::cos( dust.particleAngle( i ) );
+			float sine = Math::sin( dust.particleAngle( i ) );
 			Vector3 halfRight;
-			halfRight.setMul( right, radius );
+			halfRight.setMul( right, cosine * radius );
+			halfRight.madd( up, sine * radius );
 			Vector3 halfUp;
-			halfUp.setMul( up, radius );
-			mQuads.add( dust.particlePosition( i ), halfRight, halfUp, towardCamera, color );
+			halfUp.setMul( up, cosine * radius );
+			halfUp.madd( right, -sine * radius );
+			mQuads.add( dust.particlePosition( i ), halfRight, halfUp, towardCamera, color, frame );
 		}
 	}
-	mQuads.draw( mTexture, projectionView );
+	mQuads.draw( mTexture, projectionView, &eye );
 }

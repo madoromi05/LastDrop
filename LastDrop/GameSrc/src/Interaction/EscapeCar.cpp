@@ -33,6 +33,10 @@ bool EscapeCar::isBody( const IRayBlocker* blocker ) const {
 	return blocker == &mBody;
 }
 
+const BoxCollider& EscapeCar::collider() const {
+	return mBody.collider();
+}
+
 int EscapeCar::fuelDelivered() const {
 	return mFuelDelivered;
 }

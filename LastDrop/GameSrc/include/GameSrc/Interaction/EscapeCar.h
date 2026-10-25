@@ -27,6 +27,8 @@ public:
 
 	// 視線が当たった物がこの車か（Interactor が、当たった物から使える物を探すため）。
 	bool isBody( const IRayBlocker* blocker ) const;
+	// 移動の当たり判定の箱（ゾンビの道の図に、回り込む角を足すのに使う）。
+	const BoxCollider& collider() const;
 	int fuelDelivered() const;
 	int fuelRequired() const;
 	// ガソリンが決まった数だけ入ったか。

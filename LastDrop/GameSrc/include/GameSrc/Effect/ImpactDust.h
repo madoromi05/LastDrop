@@ -23,13 +23,16 @@ public:
 	const GameLib::Math::Vector3& particlePosition( int index ) const; // 粒 index（0〜kParticleNumber-1）の今の位置（ワールド）
 	float particleRadius( int index ) const; // 粒 index の今の板の幅の半分（m。外へ飛ぶ粒ほど大きい）
 	float particleOpacity( int index ) const; // 粒 index の今の不透明度（0〜1。外へ飛ぶ粒ほど薄い）
+	// 粒 index の板を視線の周りに回す角度（度。出たときに乱数で決め、そのまま回り続けない）。
+	// 同じ煙のコマ送りの絵が、どの粒も同じ向きに並んで判子を押したように見えないようにする。
+	float particleAngle( int index ) const;
+	float progress() const; // 出てから消えるまでの進み具合（0〜1。煙のコマ送りの絵のコマを決めるのにも使う）
 
 private:
-	float progress() const; // 出てから消えるまでの進み具合（0〜1）
-
 	GameLib::Math::Vector3 mPosition[ kParticleNumber ]; // 粒の位置（ワールド）
 	GameLib::Math::Vector3 mVelocity[ kParticleNumber ]; // 粒の速さ（m/ティック）
 	float mReach[ kParticleNumber ];                     // 粒の外向き度（0 = 一番遅く中心に残る 〜 1 = 一番速く外へ飛ぶ）
+	float mAngle[ kParticleNumber ];                     // 粒の板の向き（度）
 	int mAge;                                            // 出てからのティック数
 };
 

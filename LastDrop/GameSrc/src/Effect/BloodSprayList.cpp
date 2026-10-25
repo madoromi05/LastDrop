@@ -48,7 +48,7 @@ void BloodSprayList::update() {
 		[]( const BloodSpray& spray ) { return spray.isFinished(); } ), mSprays.end() );
 }
 
-void BloodSprayList::draw( const Matrix44& projectionView, const Vector3& viewDirection ) {
+void BloodSprayList::draw( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {
 	// isReady を呼ぶと読み込みが進む（毎フレーム呼ぶ）。読めなかった絵では描かない。
 	if ( !mTexture.isReady() || mTexture.isError() || mSprays.empty() ) {
 		return;
@@ -75,5 +75,5 @@ void BloodSprayList::draw( const Matrix44& projectionView, const Vector3& viewDi
 			mQuads.add( spray.dropPosition( i ), halfRight, halfUp, towardCamera, color );
 		}
 	}
-	mQuads.draw( mTexture, projectionView );
+	mQuads.draw( mTexture, projectionView, &eye );
 }

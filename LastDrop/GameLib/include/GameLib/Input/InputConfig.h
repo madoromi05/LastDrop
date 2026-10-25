@@ -34,6 +34,10 @@ public:
     void rebind(CollectorId a_collector, WorkId a_work, DeviceKind a_device,
                 int a_oldCode, int a_newCode);
 
+    // 既定の表にある操作のうち、今の表に 1 つも割り当てが無い操作へ、既定の行を足す。
+    // 保存した後に操作（WorkId）を足しても、古いファイルを読んだまま新しい操作が効くようにする（load の後に呼ぶ）。
+    void addMissingWorks(const BindingRecord* a_defaults, int a_count);
+
     // 永続化。load はファイルが無ければ false（呼び側が loadDefaults にフォールバックする）
     bool save(const char* a_path) const;
     bool load(const char* a_path);

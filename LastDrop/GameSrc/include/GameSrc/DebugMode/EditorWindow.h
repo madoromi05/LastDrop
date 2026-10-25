@@ -6,7 +6,8 @@
 //   Scene ：一時停止・1 ティック進める・時間の倍率（SceneManager の時計。ESC の一時停止とは別で、メニューも音も触らない）
 //   Render：VSync の切り替え（CPU と GPU のどちらが重いかを見分けるときに切る）
 //   Perf  ：計測の数字・グラフ・区間・印・ロード・GPU（中身は GameLib の Profiling::drawPerfPanel）
-//   Player / Camera / Weapon、Zombies / Audio：まだ灰色の見出しだけ（調整値の構造体を作る手順 5 で中身を入れる）
+//   Tuning：調整値の構造体（TuningPanel。自キャラ・銃・視点・ゾンビの群れ。プリセットの保存・読み込みと Copy as C++）
+//   Zombies / Audio：まだ灰色の見出しだけ
 // ImGui の土台（開け閉め・入力の受け渡し）は GameLib の DebugUi が持つ。ここは窓の中身だけ。
 namespace EditorWindow{
 

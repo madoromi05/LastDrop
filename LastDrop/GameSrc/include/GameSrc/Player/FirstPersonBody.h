@@ -19,6 +19,8 @@ class SkinnedMeshData;
 //    持っている走りのアニメは肩の高さで前に構えたままなので、覗くときと同じく両腕をまとめて動かす。
 // 4. 覗く（ADS）ときは、銃のサイト線が目と視線に重なるよう、両腕（肩から先）をまとめて動かす（手続き的 ADS）。
 //    覗く専用のアニメが無くても、持っているアニメのまま覗ける。両手ごと動かすので手は銃から離れない。
+// 4.5 照準のぶれ（AimSway）のぶん、目の少し後ろ（肩の付け根あたり）を中心に両腕と銃を回す。目とカメラは動かさないので、
+//    覗いているとサイトが画面の中で少し動いて見える。弾の向き（FirstPersonCamera::weaponDirection）も同じ角度だけぶれている。
 // 5. 撃った反動のぶん、銃を後ろへ引いて銃口を跳ね上げる。両腕をまとめて動かすので手は銃から離れない。
 //    目は動かさない（照準と弾の向きは変わらず、銃の見た目だけが跳ねる）。
 // 6. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
@@ -51,6 +53,8 @@ public:
 	void setCarryWeight( float weight );
 	// 反動の量（0 = 反動なし、1 = 撃った瞬間。WeaponRecoil::kick）。
 	void setRecoil( float kick );
+	// 照準のぶれ（度。FirstPersonCamera::setWeaponSway と同じ角度・同じ約束。ヨーは正で左、ピッチは正で見下ろす）。
+	void setSway( float yawDegree, float pitchDegree );
 	// 腕を差し替えるポーズ（AnimationPoseSampler::sample の結果）と効き具合（0〜1）。pose が nullptr か weight が 0 なら差し替えない。
 	// pose は借りるだけ（次の apply まで中身を変えないこと）。腕がアニメで銃から手を離すので、両手持ちの補正（setHoldWeight）は呼び出し側が弱める。
 	void setArmOverride( const std::vector< GameLib::Math::Matrix34 >* pose, float weight );
@@ -79,6 +83,8 @@ private:
 	void updateEyePosition( const std::vector< GameLib::Math::Matrix34 >& pose );
 	// サイト線を目と視線へ重ねる補正を、覗き具合の分だけ両腕へ掛ける。
 	void alignSightToEye( std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	// 照準のぶれの角度だけ、目の少し後ろを中心に両腕を回す。
+	void swayWeapon( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 反動の量の分だけ、銃を後ろへ引いて銃口を跳ね上げる補正を両腕へ掛ける。
 	void kickWeapon( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 両腕を、差し替えるポーズの「胸から見た腕」へ効き具合の分だけ寄せる（背骨を曲げる前に掛ける）。
@@ -106,6 +112,8 @@ private:
 	float mAimWeight;
 	float mCarryWeight;
 	float mRecoil;
+	float mSwayYaw;   // 照準のぶれ（度）
+	float mSwayPitch;
 	const std::vector< GameLib::Math::Matrix34 >* mArmOverride; // 借りているだけ。nullptr なら差し替えない
 	float mArmOverrideWeight;
 

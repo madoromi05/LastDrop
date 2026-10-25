@@ -11,6 +11,7 @@
 #include "GameSrc/Render/SkinnedMesh/AnimationPoseSampler.h"
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/PlayerHealth.h"
+#include "GameSrc/Player/AimSway.h"
 #include "GameSrc/Audio/Gait.h"
 #include "GameSrc/Collision/ICollisionBody.h"
 #include "GameSrc/Collision/CharacterMover.h"
@@ -105,6 +106,12 @@ public:
 	// 銃口の今の位置（ワールド）と向き（長さ1）。マズルフラッシュを描く側が描くたびに読む。
 	// 銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）。
 	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
+
+	// ── 照準のぶれ（SummaryPlan/個別仕様/AimSway_Plan.txt）──
+	// ぶれを決めるのに要る今の状態（持っているか・覗き具合・歩きの速さと位相・抱えている割合・壊れた腕の数）。update の後に呼ぶ。
+	AimSwayBody aimSwayBody() const;
+	// 照準のぶれ（度。FirstPersonCamera::setWeaponSway と同じ角度）。次の update で銃の見た目に入る（1 ティック遅れ。反動の見た目と同じ）。
+	void setWeaponSway( float yawDegree, float pitchDegree );
 
 	// ── 体力とつかまれている間（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 2・4 章）──
 	// ゾンビに噛まれた。damage: ダメージの量。roll: 噛まれる所を選ぶ 0 以上 1 未満の乱数（PlayerHealth::biteZone）。死んだ後は何もしない。

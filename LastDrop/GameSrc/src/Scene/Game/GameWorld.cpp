@@ -4,6 +4,7 @@
 #include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Zombie/ChaseTarget.h"
+#include "GameSrc/Zombie/ZombieCrowdParams.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -207,11 +208,14 @@ void GameWorld::placeMissionObjects() {
 		const TownPlacement& p = mMap.escapeCar();
 		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, toPosition( p ), p.yawDegree, kRequiredFuel );
 		mEscapeCar->addTo( &mCollisionWorld, &mHitWorld );
+		// 車は通りの途中にあり、交差点を結ぶ道が車を通り抜けるので、車の角を道の図に足す（ZombieCrowd_Plan.txt の 4 章）。
+		mStreets.addObstacle( mEscapeCar->collider(), zombieCrowdParams().obstacleMargin, mHitWorld );
 	}
 	if ( mFuelCanData->isReady() ) {
 		const TownPlacement& endless = mMap.endlessFuel();
 		mEndlessFuel = std::make_unique< ItemSource >( mFuelCanData, toPosition( endless ), endless.yawDegree, ITEM_FUEL );
 		mEndlessFuel->addTo( &mCollisionWorld, &mHitWorld );
+		mStreets.addObstacle( mEndlessFuel->collider(), zombieCrowdParams().obstacleMargin, mHitWorld );
 		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
 		unsigned seed = Framework::instance().time();
 		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
@@ -309,10 +313,17 @@ void GameWorld::updateZombies() {
 			break;
 		}
 	}
+	// 立って歩ける体の位置（このティックに動く前）。近くの仲間を避けるのに全員が読む（倒れた体・這う体・死体は数えない）。
+	mCrowd.clear();
+	for ( const auto& zombie : mZombies ) {
+		if ( zombie->state() == Zombie::State::Alive ) {
+			mCrowd.add( zombie.get(), zombie->bodyCenter() );
+		}
+	}
 	const Zombie* holder = nullptr;
 	for ( auto& zombie : mZombies ) {
 		target.attackTaken = ( attacker != nullptr && attacker != zombie.get() );
-		zombie->update( chaseTarget, mHitWorld );
+		zombie->update( chaseTarget, mHitWorld, &mCrowd );
 		if ( !attacker && zombie->isAttacking() ) {
 			attacker = zombie.get();
 		}
@@ -468,12 +479,12 @@ void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
 	mBulletHoles.draw( projectionView );
 }
 
-void GameWorld::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection ) {
-	mImpactDust.draw( projectionView, viewDirection );
+void GameWorld::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {
+	mImpactDust.draw( projectionView, viewDirection, eye );
 }
 
-void GameWorld::drawBloodSpray( const Matrix44& projectionView, const Vector3& viewDirection ) {
-	mBloodSpray.draw( projectionView, viewDirection );
+void GameWorld::drawBloodSpray( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {
+	mBloodSpray.draw( projectionView, viewDirection, eye );
 }
 
 void GameWorld::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) {
@@ -530,6 +541,10 @@ IInteractable* GameWorld::resolveInteractable( const HitWorld::Hit& hit ) {
 
 const TownMap& GameWorld::map() const {
 	return mMap;
+}
+
+const StreetGraph& GameWorld::streets() const {
+	return mStreets;
 }
 
 const TownGround& GameWorld::ground() const {

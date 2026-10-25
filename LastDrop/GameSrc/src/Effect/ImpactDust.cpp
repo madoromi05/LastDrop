@@ -34,6 +34,8 @@ namespace{
 	const float kOuterOpacityRate = 0.2f;
 	const float kOuterRadiusRate = 1.3f;
 
+	const float kFullTurn = 360.f; // 粒の板の向きの範囲（度）
+
 	// 外向き度 reach（0〜1）に合わせて、1 倍（中心）から rate 倍（一番外）までの間の倍率を返す。
 	float rateByReach( float rate, float reach ) {
 		return 1.f + ( rate - 1.f ) * reach;
@@ -52,6 +54,7 @@ ImpactDust::ImpactDust( const Vector3& point, const Vector3& normal, std::mt1993
 		direction.normalize();
 		// 速い粒ほど遠くで止まる（減速が速さに比例するため）ので、速さの割合をそのまま外向き度にする。
 		mReach[ i ] = GameLib::Math::pow( unit( *random ), kSpeedBias );
+		mAngle[ i ] = unit( *random ) * kFullTurn;
 		mPosition[ i ] = start;
 		mVelocity[ i ].setMul( direction, kMinSpeed + ( kMaxSpeed - kMinSpeed ) * mReach[ i ] );
 	}
@@ -89,6 +92,11 @@ float ImpactDust::particleRadius( int index ) const {
 float ImpactDust::particleOpacity( int index ) const {
 	ASSERT( index >= 0 && index < kParticleNumber && "ImpactDust : index is out of range." );
 	return kStartOpacity * ( 1.f - progress() ) * rateByReach( kOuterOpacityRate, mReach[ index ] );
+}
+
+float ImpactDust::particleAngle( int index ) const {
+	ASSERT( index >= 0 && index < kParticleNumber && "ImpactDust : index is out of range." );
+	return mAngle[ index ];
 }
 
 float ImpactDust::progress() const {

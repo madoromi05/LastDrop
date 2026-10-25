@@ -40,10 +40,15 @@ void Pad::loadOrDefault(int playerId)
 {
     // 保存済み設定があればそれを、無ければ GameLib 側のデフォルト表を採用する。
     // デフォルト割当（どのキーを何に）は GameLib が持つので Pad は番号で引くだけ。
-    if (!m_configs[playerId].load(InputConfigFilePath(playerId)))
+    // 保存済み設定を読めたときも、保存した後に足した操作（ファイルに無い操作）はデフォルト表で補う。
+    int count = 0;
+    const BindingRecord* defaults = DefaultBindings(playerId, &count);
+    if (m_configs[playerId].load(InputConfigFilePath(playerId)))
     {
-        int count = 0;
-        const BindingRecord* defaults = DefaultBindings(playerId, &count);
+        m_configs[playerId].addMissingWorks(defaults, count);
+    }
+    else
+    {
         m_configs[playerId].loadDefaults(defaults, count);
     }
     applyConfig(playerId);

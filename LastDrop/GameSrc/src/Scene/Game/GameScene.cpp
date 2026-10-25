@@ -4,10 +4,13 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Render/ViewFrustum.h"
+#include "GameSrc/UI/UiScreen.h"
+#include "Framework.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Enum.h"
+#include "GameLib/Math/Vector2.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Functions.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
@@ -31,6 +34,20 @@ namespace{
 	const int kFillLight = 1;
 	const int kMuzzleLight = 2; // 撃った瞬間だけ銃口の前に灯す（MuzzleFlash）。光っていない間は強さ0
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
+
+	// ── 照準（HUD の「+」）──
+	// 覗き具合がこれを超えたら「+」を消す（サイトで狙う）。
+	const float kCrosshairHideAimWeight = 0.5f;
+	const float kHalfView = 0.5f; // 視野角・画面の高さの半分
+
+	// 銃が向いている所（照準のぶれの分だけ画面の中央からずれた所）の、画面上の位置（UI_ANCHOR_CENTER から見た画素）。
+	// 縦の視野角から「画面の半分の高さが何度か」を決め、ぶれの角度を画素へ直す（横も同じ割合。画素は縦横同じ大きさ）。
+	Vector2 crosshairPosition( const FirstPersonCamera& camera ) {
+		float focal = Framework::instance().height() * kHalfView / Math::tan( camera.fieldOfView() * kHalfView );
+		Vector2 center = UiScreen::screenCenter();
+		// ヨーは正で左（画面の左＝x が小さい）、ピッチは正で見下ろす（画面の下＝y が大きい）。
+		return Vector2( center.x - Math::tan( camera.weaponSwayYaw() ) * focal, center.y + Math::tan( camera.weaponSwayPitch() ) * focal );
+	}
 
 #ifdef ZF_EDITOR
 	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
@@ -178,16 +195,20 @@ void GameScene::update() {
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	const FirstPersonCamera& camera = mControl.camera();
-	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.viewDirection(), &mInventory );
+	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる。
+	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
 	mSurfaceHitSounds.play( mWorld.surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
-	const PlayerCharacter* player = mWorld.player();
+	PlayerCharacter* player = mWorld.player();
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
 	// 噛まれた怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
-	mControl.updateViewEffects( player && player->firedThisTick() );
+	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
+	mControl.updateViewEffects( player && player->firedThisTick(), player ? player->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
+		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
+		player->setWeaponSway( mControl.camera().weaponSwayYaw(), mControl.camera().weaponSwayPitch() );
 		mBodySounds.update( *player );
 	}
 #ifdef ZF_EDITOR
@@ -235,8 +256,8 @@ void GameScene::draw() {
 		mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ) );
 	}
 	mWorld.drawBulletHoles( camera.projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
-	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection() ); // 弾痕の上に舞う
-	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection() ); // 砂ぼこりの後（同じ作り）
+	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
+	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 砂ぼこりの後（同じ作り）
 	mWorld.drawMuzzleFlash( camera.projectionViewMatrix(), camera.viewDirection() ); // 加算なので順番は問わない
 #ifdef ZF_EDITOR
 	mDebug.drawCollision( mWorld, camera );
@@ -255,7 +276,11 @@ void GameScene::draw() {
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
-		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
+		// 腰だめの「+」は銃が向いている所へ動かし、覗いている間は消す（サイトで狙う。AimSway_Plan.txt の ★4）。
+		Vector2 crosshair = crosshairPosition( mControl.camera() );
+		bool showCrosshair = aimWeight() <= kCrosshairHideAimWeight;
+		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr,
+			showCrosshair ? &crosshair : nullptr );
 	}
 
 	GameDebugOverlay::TextState text;

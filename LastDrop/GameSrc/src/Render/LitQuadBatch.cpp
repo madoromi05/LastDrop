@@ -13,10 +13,10 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むかと、その隅の UV（絵の左上が 0,0）。
+	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか。
+	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）。
 	const int kQuadCorners = 4;
 	const float kCornerSign[ kQuadCorners ][ 2 ] = { { -1.f, -1.f }, { 1.f, -1.f }, { 1.f, 1.f }, { -1.f, 1.f } };
-	const Vector2 kCornerUv[ kQuadCorners ] = { Vector2( 0.f, 1.f ), Vector2( 1.f, 1.f ), Vector2( 1.f, 0.f ), Vector2( 0.f, 0.f ) };
 	// 4隅を三角形2つに分ける並び（隅の番号）。
 	const int kVerticesPerQuad = 6;
 	const int kQuadTriangleOrder[ kVerticesPerQuad ] = { 0, 1, 2, 0, 2, 3 };
@@ -28,6 +28,17 @@ namespace{
 	const Vector3 kNoSpecular( 0.f, 0.f, 0.f ); // 反射のツヤを付けない
 	const Vector3 kNoEmission( 0.f, 0.f, 0.f ); // 自分では光らない
 	const float kOpaque = 1.f;                  // 材質としての透明度（MeshMaterial と同じ。不透明度はアルファで決める）
+
+	// 隅 index の UV。
+	Vector2 cornerUv( int index, const QuadUv& uv ) {
+		return Vector2( ( kCornerSign[ index ][ 0 ] < 0.f ) ? uv.left : uv.right, ( kCornerSign[ index ][ 1 ] < 0.f ) ? uv.bottom : uv.top );
+	}
+
+	float squaredDistance( const Vector3& a, const Vector3& b ) {
+		Vector3 d;
+		d.setSub( a, b );
+		return d.dot( d );
+	}
 }
 
 LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode ) :
@@ -37,9 +48,12 @@ LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode ) :
 	mBrightness( kDefaultBrightness ) {
 	ASSERT( quadCapacity > 0 && "LitQuadBatch : quadCapacity must be positive." );
 	mVertices.reserve( mVertexCapacity );
+	mCenters.reserve( quadCapacity );
+	mOrder.reserve( quadCapacity );
 }
 
-void LitQuadBatch::add( const Vector3& center, const Vector3& right, const Vector3& up, const Vector3& normal, unsigned color ) {
+void LitQuadBatch::add( const Vector3& center, const Vector3& right, const Vector3& up, const Vector3& normal, unsigned color,
+	const QuadUv& uv ) {
 	if ( static_cast< int >( mVertices.size() ) + kVerticesPerQuad > mVertexCapacity ) {
 		ASSERT( false && "LitQuadBatch : capacity over." );
 		return;
@@ -55,9 +69,10 @@ void LitQuadBatch::add( const Vector3& center, const Vector3& right, const Vecto
 		vertex.mPosition = Vector4( corner[ index ].x, corner[ index ].y, corner[ index ].z );
 		vertex.mNormal = normal;
 		vertex.mColor = color;
-		vertex.mUv = kCornerUv[ index ];
+		vertex.mUv = cornerUv( index, uv );
 		mVertices.push_back( vertex );
 	}
+	mCenters.push_back( center );
 }
 
 void LitQuadBatch::setBrightness( float brightness ) {
@@ -65,12 +80,31 @@ void LitQuadBatch::setBrightness( float brightness ) {
 	mBrightness = brightness;
 }
 
-void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionView ) {
+void LitQuadBatch::copySortedFromBack( const Vector3& eye, Graphics::Vertex* locked ) {
+	mOrder.clear();
+	for ( int i = 0; i < static_cast< int >( mCenters.size() ); ++i ) {
+		mOrder.push_back( i );
+	}
+	// 遠い板から描く（手前の板が後から重なる）。同じ距離なら、ためた順のまま（毎フレーム並びが入れ替わってちらつかないように）。
+	std::stable_sort( mOrder.begin(), mOrder.end(), [ this, &eye ]( int a, int b ) {
+		return squaredDistance( mCenters[ a ], eye ) > squaredDistance( mCenters[ b ], eye );
+	} );
+	for ( int quad : mOrder ) {
+		auto first = mVertices.begin() + quad * kVerticesPerQuad;
+		locked = std::copy( first, first + kVerticesPerQuad, locked );
+	}
+}
+
+void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionView, const Vector3* eye ) {
 	if ( mVertices.empty() ) {
 		return;
 	}
 	Graphics::Vertex* locked = mVertexBuffer.lock();
-	std::copy( mVertices.begin(), mVertices.end(), locked );
+	if ( eye ) {
+		copySortedFromBack( *eye, locked );
+	} else {
+		std::copy( mVertices.begin(), mVertices.end(), locked );
+	}
 	mVertexBuffer.unlock( &locked );
 
 	Graphics::Manager m = Graphics::Manager::instance();
@@ -102,4 +136,5 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.setBlendMode( Graphics::BLEND_OPAQUE );
 	m.enableDepthWrite( true );
 	mVertices.clear();
+	mCenters.clear();
 }

@@ -19,6 +19,10 @@ void UiLabel::setText( const char* text ) {
 	mText = text;
 }
 
+void UiLabel::setOffset( const Vector2& offset ) {
+	mOffset = offset;
+}
+
 void UiLabel::draw( UiRenderer& renderer ) const {
 	Vector2 position = mOffset;
 	position.x += UiLayout::anchorX( mAnchor );
