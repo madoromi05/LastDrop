@@ -13,9 +13,10 @@ class HitWorld;
 //   通る  ：通り道を捨てて、行き先へまっすぐ向かう（今までと同じ動き）
 //   当たる：通り道が無いか、行き先が前に探したときから大きく動いていたら StreetGraph に探し直させる
 // 通り道の点に近づいたら次の点へ。次の次の点が見えていれば、今の点を飛ばす（角で交差点の真ん中まで寄らない）。
-// 向く点へ近づけているかも数える（見失った後に着けない所で押し続けないため。あきらめるかは持ち主が決める）。
+// 向く点の向きへ自分が進めているかも数える（見失った後に着けない所で押し続けないため。あきらめるかは持ち主が決める）。
+// 点との距離では見ない（逃げる自キャラを追う間は、歩けていても距離が縮まらないため）。
 // 行き先が 1 ティックで大きく飛んだら（新しい銃声の所へ向かい直した）、すぐ調べ直して数え直す。
-// 歩いているのに向かう点へ決まった時間近づけなければ（群れ・図に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
+// 歩いているのに向かう点の向きへ決まった時間進めなければ（群れ・図に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
 // 向かい直す（SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
 // 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt。
 class ZombiePath{
@@ -58,8 +59,8 @@ private:
 	bool mHasLastDestination;                     // mLastDestination が入っているか（clear の後は空）
 	int mProbeTicks;                              // 次にまっすぐ通れるかを調べるまでの残り（ティック）
 	bool mProgressStarted;                        // 近づけているかを数え始めたか（向く点が変わると false）
-	float mBestDistance;                          // 今の向く点へ、これまでで一番近づいた距離
-	int mStallTicks;                              // mBestDistance が縮まないまま過ぎた長さ（ティック）
+	GameLib::Math::Vector3 mProgressOrigin;       // 最後に「進めている」とみなした時の自分の足元
+	int mStallTicks;                              // 向く点の向きへ進めないまま過ぎた長さ（ティック）
 	GameLib::Math::Vector3 mSidestepPoint;        // よける点
 	int mSidestepTicks;                           // よける点へ向かう残り（ティック。0 ならよけていない）
 	int mSidestepCount;                           // 今の向く点へ向かう間によけた回数

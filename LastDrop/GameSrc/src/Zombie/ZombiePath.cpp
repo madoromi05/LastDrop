@@ -18,7 +18,9 @@ namespace{
 	const float kReplanDistance = 3.f;
 	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m。
 	const float kDestinationJumpDistance = 1.f;
-	// この長さ（m）近づくたびに「近づけている」とみなす。壁に沿って滑るだけで寄れていないのを見分ける（うろつきと同じ値）。
+	// 自分が向く点の向きへこの長さ（m）進むたびに「進めている」とみなす（うろつきと同じ値）。
+	// 点との距離ではなく自分の動きで見るのは、逃げる自キャラ（ゾンビより速い）を追う間、まっすぐ歩けていても
+	// 距離が縮まらず詰まったとみなされ、横へよけてしまうため。向く点の向きだけを数えるので、壁に沿って滑るだけの動きは数えない。
 	const float kProgressDistance = 0.3f;
 	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす。
 	const float kMinDirectionLength = 0.001f;
@@ -31,7 +33,7 @@ ZombiePath::ZombiePath( int probePhase ) :
 	mHasLastDestination( false ),
 	mProbeTicks( ( probePhase >= 0 ? probePhase : -probePhase ) % kProbeIntervalTicks ),
 	mProgressStarted( false ),
-	mBestDistance( 0.f ),
+	mProgressOrigin( 0.f, 0.f, 0.f ),
 	mStallTicks( 0 ),
 	mSidestepPoint( 0.f, 0.f, 0.f ),
 	mSidestepTicks( 0 ),
@@ -77,16 +79,21 @@ const HitWorld& hitWorld, bool walking ) {
 		mProgressStarted = false; // 立ち止まっている間は数えない（歩き出したら、その時の距離から数え直す）
 		return point;
 	}
-	float distance = FlatMath::distance( self, point );
 	if ( !mProgressStarted ) {
 		mProgressStarted = true;
-		mBestDistance = distance;
-		mStallTicks = 0;
-	} else if ( distance < mBestDistance - kProgressDistance ) {
-		mBestDistance = distance;
+		mProgressOrigin = self;
 		mStallTicks = 0;
 	} else {
-		++mStallTicks;
+		// 数え始めた所から動いた分のうち、向く点の向きへ進んだ長さ（水平だけ）。点が近すぎて向きが無ければ進めているとみなす。
+		Vector3 moved( self.x - mProgressOrigin.x, 0.f, self.z - mProgressOrigin.z );
+		Vector3 toPoint( point.x - self.x, 0.f, point.z - self.z );
+		float length = toPoint.length();
+		if ( length < kMinDirectionLength || moved.dot( toPoint ) >= kProgressDistance * length ) {
+			mProgressOrigin = self;
+			mStallTicks = 0;
+		} else {
+			++mStallTicks;
+		}
 	}
 	if ( mStallTicks >= GameTime::secondsToTicks( params.sidestepAfterSeconds ) ) {
 		// 一度よけた後にまた詰まったら、着けない所かもしれない印を付ける（Search ならあきらめる。Chase はよけ続ける）。
