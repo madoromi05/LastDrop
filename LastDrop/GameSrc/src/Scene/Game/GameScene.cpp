@@ -4,6 +4,7 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Render/ViewFrustum.h"
+#include "GameSrc/DebugMode/EditorWindow.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -62,6 +63,7 @@ GameScene::~GameScene() {
 	if ( mPaused ) {
 		mResources->audio().setPaused( false );
 	}
+	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
 }
 
 void GameScene::pause() {
@@ -124,6 +126,8 @@ void GameScene::beginFrame() {
 			player->toggleInvincible();
 		}
 	}
+	// F6 のエディタの一番上に出す。
+	EditorWindow::setPlayerInvincible( mWorld.player() && mWorld.player()->isInvincible() );
 
 
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。

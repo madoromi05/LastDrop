@@ -605,3 +605,7 @@ void PlayerCharacter::removeFrom( CollisionWorld* collisionWorld, HitWorld* hitW
 void PlayerCharacter::toggleInvincible() {
 	mInvincible = !mInvincible;
 }
+
+bool PlayerCharacter::isInvincible() const {
+	return mInvincible;
+}

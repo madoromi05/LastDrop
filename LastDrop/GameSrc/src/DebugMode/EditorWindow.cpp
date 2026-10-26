@@ -20,6 +20,18 @@ namespace{
 	const float kMaxTimeScale = 2.f;
 	const float kNormalTimeScale = 1.f;
 	const char* const kTimeScaleFormat = "%.2f";
+	// 無敵の行。ON は見落とさないよう赤くし、OFF は他の説明の行と同じ灰色にする。
+	const ImVec4 kInvincibleOnColor( 1.f, 0.3f, 0.3f, 1.f );
+
+	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
+
+	void drawInvincible() {
+		if ( gPlayerInvincible ) {
+			ImGui::TextColored( kInvincibleOnColor, "Invincible (F5): ON" );
+		} else {
+			ImGui::TextDisabled( "Invincible (F5): OFF" );
+		}
+	}
 
 	void drawScene() {
 		FixedStepClock& clock = SceneManager::instance().clock();
@@ -75,6 +87,8 @@ void draw() {
 	if ( ImGui::Begin( "Editor (F6)", nullptr, kFlags ) ) {
 		// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）。
 		ImGui::TextDisabled( "Hold Alt to use the mouse here." );
+		// 見出しを閉じていても見えるよう、見出しの外に置く。
+		drawInvincible();
 		if ( ImGui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
 			drawScene();
 		}
@@ -94,6 +108,10 @@ void draw() {
 	ImGui::End();
 }
 
+void setPlayerInvincible( bool invincible ) {
+	gPlayerInvincible = invincible;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -101,6 +119,9 @@ void draw() {
 namespace EditorWindow{
 
 void draw() {
+}
+
+void setPlayerInvincible( bool ) {
 }
 
 } //namespace EditorWindow

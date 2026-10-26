@@ -774,6 +774,9 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinch.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieSway.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
@@ -1613,6 +1616,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinch.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSway.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
@@ -1650,6 +1656,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">

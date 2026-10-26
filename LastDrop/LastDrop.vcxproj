@@ -304,6 +304,7 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieModel.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieHealth.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinch.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieSway.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieCrawl.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlLayout.cpp" />
@@ -675,6 +676,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModel.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealth.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinch.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSway.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawl.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlLayout.h" />
@@ -688,6 +690,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombiePath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotion.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h" />

@@ -47,11 +47,11 @@ namespace{
 	// この長さ（m）近づくたびに「近づけている」とみなす。壁に沿って滑るだけで行き先へ寄れていないのを見分ける。
 	const float kWanderProgressDistance = 0.3f;
 	// 近づけないまま、これだけ過ぎたら選び直す（秒）。
-	const float kWanderStallSeconds = 2.f;
+	const float kWanderStallSeconds = 1.f;
 	const int kWanderStallTicks = GameTime::secondsToTicks( kWanderStallSeconds );
 	const float kHalfTurn = 180.f;
 
-	// ── 銃声を聞く（SummaryPlan/個別仕様/ZombieHearing_Plan.txt）──
+	// ── 銃声を聞く──
 	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように。
 	const float kNoiseDelayMinSeconds = 0.2f;
 	const float kNoiseDelayMaxSeconds = 1.0f;

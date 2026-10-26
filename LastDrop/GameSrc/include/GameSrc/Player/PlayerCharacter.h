@@ -124,7 +124,8 @@ public:
 	bool isHeld() const;			// つかまれているか
 	bool canBeGrabbed() const;		// つかんでよいか（生きている・つかまれていない・離されてから少したった）
 	bool isDead() const;			// 死んだか（PlayerHealth::isDead）
-	void toggleInvincible();      // 無敵モードか（デバッグ用。true なら体力が減らない）
+	void toggleInvincible();      // 無敵を切り替える（デバッグ用。無敵の間は体力が減らない）
+	bool isInvincible() const;    // 無敵か（F6 のエディタに出すため）
 	const PlayerHealth& health() const;
 
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る）。

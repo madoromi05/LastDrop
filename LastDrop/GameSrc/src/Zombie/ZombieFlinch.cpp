@@ -1,8 +1,6 @@
 #include "GameSrc/Zombie/ZombieFlinch.h"
 #include "GameSrc/Zombie/ZombieFlinchLayout.h"
-#include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Core/GameTime.h"
-#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -20,8 +18,6 @@ namespace{
 	const float kDecayPerTick = Math::pow( kRemainAfterReturn, 1.f / ( kReturnSeconds * GameTime::kTicksPerSecond ) );
 	// これより小さい角度（度）は 0 とみなして曲げない（戻りきった後に毎回計算しないため）。
 	const float kNegligibleDegree = 0.1f;
-	// 骨の向きと押す向きがほぼ平行（外積の長さがこれ未満）なら、回す軸が決まらないので曲げない。
-	const float kParallelLimit = 0.001f;
 }
 
 ZombieFlinch::ZombieFlinch( const ZombieFlinchLayout* layout ) :
@@ -47,35 +43,13 @@ void ZombieFlinch::update() {
 }
 
 void ZombieFlinch::apply( std::vector< Matrix34 >* pose ) {
-	const std::vector< ZombieFlinchLayout::Group >& groups = mLayout->groups();
-	for ( size_t g = 0; g < groups.size(); ++g ) {
+	for ( size_t g = 0; g < mPushes.size(); ++g ) {
 		float degree = mPushes[ g ].length();
 		if ( degree < kNegligibleDegree ) {
 			continue;
 		}
 		Vector3 pushDirection = mPushes[ g ];
 		pushDirection *= 1.f / degree;
-		// 根の側の関節から順に、「今の」関節の位置で曲げる（前の関節で動いた後の位置。FirstPersonBody::bendSpine と同じ）。
-		for ( const ZombieFlinchLayout::Joint& joint : groups[ g ].joints ) {
-			Vector3 center = PlacementMatrix::translationOf( ( *pose )[ joint.bone ] );
-			Vector3 boneDirection;
-			boneDirection.setSub( PlacementMatrix::translationOf( ( *pose )[ joint.tipBone ] ), center );
-			boneDirection.normalize();
-			// 骨の向き × 押す向き の軸で正に回すと、骨の先が押す向きへ倒れる。
-			// 外積の長さ（sin）を角度に掛けて、骨が押す向きに近いほど少なく倒す（平行なら倒れない）。
-			Vector3 axis;
-			axis.setCross( boneDirection, pushDirection );
-			float sine = axis.length();
-			if ( sine < kParallelLimit ) {
-				continue;
-			}
-			axis *= 1.f / sine;
-			Matrix34 rotation = AxisRotation::about( center, axis, degree * joint.share * sine );
-			for ( int b : joint.followers ) {
-				Matrix34 bent;
-				bent.setMul( rotation, ( *pose )[ b ] );
-				( *pose )[ b ] = bent;
-			}
-		}
+		mLayout->bend( static_cast< int >( g ), pushDirection, degree, pose );
 	}
 }

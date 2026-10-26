@@ -13,6 +13,9 @@ namespace EditorWindow{
 
 // エディタが開いているときに、1 回の描画につき 1 回呼ぶ（SceneManager::update の後）。Release では何もしない。
 void draw();
+// 自キャラが無敵か（F5）を、窓の一番上に出すために受け取る。窓は自キャラを知らないので、GameScene から渡す。
+// GameScene が終わるときに false へ戻す（タイトルなどで ON のまま残さない）。Release では何もしない。
+void setPlayerInvincible( bool invincible );
 
 } //namespace EditorWindow
 

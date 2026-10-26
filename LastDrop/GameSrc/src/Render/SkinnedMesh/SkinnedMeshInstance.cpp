@@ -28,6 +28,7 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mPlaybackRate( kTimeStep ),
 	mPlayMode( PLAY_LOOP ),
 	mPoseModifier( nullptr ),
+	mBodyPoseModifier( nullptr ),
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
 	mHasPose( false ),
@@ -37,6 +38,7 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mSkeleton = mData->createSkeleton();
 	mBonePose.resize( mData->boneNumber() );
 	mShownPose.resize( mData->boneNumber() );
+	mBodyPose.resize( mData->boneNumber() );
 	mFadeFromPose.resize( mData->boneNumber() );
 	mSkinMatrices.resize( mData->boneNumber() );
 }
@@ -96,6 +98,14 @@ void SkinnedMeshInstance::setPoseModifier( BonePoseModifier* modifier ) {
 	mPoseModifier = modifier;
 }
 
+void SkinnedMeshInstance::setBodyPoseModifier( BonePoseModifier* modifier ) {
+	mBodyPoseModifier = modifier;
+}
+
+const std::vector< Matrix34 >& SkinnedMeshInstance::bodyPose() const {
+	return mBodyPoseModifier ? mBodyPose : mBonePose;
+}
+
 bool SkinnedMeshInstance::isAnimationFinished() const {
 	return mPlayMode == PLAY_ONCE && mShownTime >= lastFrameTime();
 }
@@ -116,7 +126,12 @@ void SkinnedMeshInstance::update() {
 	blendFadingPose();
 	mHasPose = true;
 
-	mShownPose = mBonePose;
+	// 体の書き換え（当たり判定も動く）→ 見た目だけの書き換え、の順に掛ける。
+	if ( mBodyPoseModifier ) {
+		mBodyPose = mBonePose;
+		mBodyPoseModifier->apply( &mBodyPose );
+	}
+	mShownPose = bodyPose();
 	if ( mPoseModifier ) {
 		mPoseModifier->apply( &mShownPose );
 	}
@@ -136,10 +151,11 @@ bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
 }
 
 bool SkinnedMeshInstance::animatedBoneMatrix( int boneIndex, Matrix34* out ) const {
-	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mBonePose.size() ) ) {
+	const std::vector< Matrix34 >& pose = bodyPose();
+	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( pose.size() ) ) {
 		return false;
 	}
-	out->setMul( rootMatrix(), mBonePose[ boneIndex ] );
+	out->setMul( rootMatrix(), pose[ boneIndex ] );
 	return true;
 }
 

@@ -168,7 +168,8 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 
 	// 数字はバーの上、状態はバーの下。
 	char text[ kTextSize ];
-	std::snprintf( text, sizeof( text ), "HP %d/%d", rounded( health.total() ), rounded( health.maxTotal() ) );
+	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。
+	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness() );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。

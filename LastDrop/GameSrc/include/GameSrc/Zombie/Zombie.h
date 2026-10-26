@@ -13,12 +13,14 @@
 #include "GameSrc/Zombie/ZombieFlinch.h"
 #include "GameSrc/Zombie/ZombieDismemberment.h"
 #include "GameSrc/Zombie/ZombieCrawl.h"
+#include "GameSrc/Zombie/ZombieSway.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
 #include "GameSrc/Zombie/ZombieChase.h"
 #include "GameSrc/Zombie/ZombiePath.h"
 #include "GameSrc/Zombie/ZombieAttack.h"
 #include "GameSrc/Collision/CharacterMover.h"
 #include "GameLib/Math/Matrix34.h"
+#include "GameLib/Math/Random.h"
 #include "GameLib/Scene/Animation.h"
 #include <vector>
 
@@ -39,6 +41,9 @@ struct ChaseTarget;
 // 見た目は SkinnedMeshInstance に任せ、体を真上から囲む長方形（BodyFootprint）を差し出して、他のキャラの移動を止める（ICollisionBody）。
 // 部位ごとの当たり判定（命中判定用）も持ち、弾がどの部位に当たったかを答えられる（IHittable）。
 // 撃たれると体力（ZombieHealth）が減り、倒れる条件を満たすと死亡アニメで倒れ、しばらく死体として残ってから地面へ沈んで消える（IDamageable）。
+// 体力の最大は体ごとに違う（作るときに丈夫さを選ぶ。撃ってみないと何発で倒れるか分からない。SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt）。
+// 頭に当たると、確率で頭が弾けて倒れる（クリティカル。確率は ZombieHealth の表、乱数を引くのはここ）。
+// 自キャラを追って近づくと、胴を左右に揺らしながら（ZombieSway）、揺れた側へ少し流れて歩く。揺れには部位の箱も付いてくる（頭を狙いにくい）。
 // 生きている間に撃たれると、1 発ごとに当たった部位がのけぞり（ZombieFlinch）、ときどきよろける（よろけのアニメを1回再生して歩きへ戻る）。
 // よろけは、よろけていない間に当たったときに出し、終わってから少しの間は出さない（頭に当たったときは待たない）。
 // フルオートで当て続けても、よろけ続けて動けなくならないようにするため（SummaryPlan/個別仕様/ZombieStagger_Plan.txt）。
@@ -93,7 +98,7 @@ public:
 	// streets: 建物を回り込む通り道を聞く道の図。所有権は受け取らない。nullptr 不可。寿命の決まりは collisionWorld と同じ。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号（何体目か。ZombieChase・ZombiePath）。
-	// randomSeed: うろつく先・立つ長さを選ぶ乱数の種（体ごとに違う値。ZombieChase）。
+	// randomSeed: 体ごとの乱数の種（体ごとに違う値）。丈夫さを選び、うろつく先・立つ長さを選ぶ乱数（ZombieChase）の種もここから引く。
 	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
 		const GameLib::Math::Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed );
 	Zombie( const Zombie& ) = delete;
@@ -214,6 +219,11 @@ private:
 	// point（向かいたい点）へ、近くの仲間から離れる向きを混ぜた「向く点」を返し、混ぜた向きを mSeparation へ覚える。
 	// crowd が nullptr なら point のまま。
 	GameLib::Math::Vector3 avoidCrowd( const GameLib::Math::Vector3& point, const ZombieCrowd* crowd );
+	// ── フラつき（SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 6 章）──
+	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて（よろけ・攻撃の最中でない）、近いほど強い。それ以外は 0。
+	float swayStrength( const ChaseTarget* target ) const;
+	// point（向く点）を、体の中心のまわりに今の傾きの分だけ回した点（倒れている側へ流れて歩く）。揺れていなければ point のまま。
+	GameLib::Math::Vector3 weave( const GameLib::Math::Vector3& point ) const;
 	// 自キャラのそばで立ち止まっている間に、重なりそうな仲間から横へ半歩よける（向きは変えない）。
 	void standAside( const ZombieCrowd* crowd );
 	// 追いついた相手へ攻撃を始めてよいか（追っている・近い・前に居る・つかんでよい・ほかのゾンビが攻撃に行っていない）。
@@ -250,6 +260,8 @@ private:
 	GameLib::Scene::Animation mDownedAnimation;
 	GameLib::Scene::Animation mStaggerAnimation;
 	GameLib::Scene::Animation mAttackAnimation;
+	// 体ごとの乱数（丈夫さ・揺れの速さを選ぶ・頭のクリティカルを引く）。mSway・mHealth・mChase の初期化に使うので、それらより先に宣言する。
+	GameLib::Math::Random mRandom;
 	// 描く直前の姿勢の書き換え。引きずる腕 → のけぞり → 失った部位を潰す、の順に掛ける
 	// （撃たれた腕は引きずる形から押され、のけぞった肩の位置で切り口を作るため）。
 	// mMesh が借りるので、mMesh より先に宣言する。
@@ -257,6 +269,8 @@ private:
 	ZombieFlinch mFlinch;
 	ZombieDismemberment mDismemberment;
 	BonePoseModifierChain mPoseModifiers;
+	// フラつき。見た目だけの書き換え（上の 3 つ）より先に、部位の箱も動く「体の書き換え」として掛ける（setBodyPoseModifier）。
+	ZombieSway mSway;
 	SkinnedMeshInstance mMesh;
 	HitboxSet mHitboxes;
 	ZombieHealth mHealth;

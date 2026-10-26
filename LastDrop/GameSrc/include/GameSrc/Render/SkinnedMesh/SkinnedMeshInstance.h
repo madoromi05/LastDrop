@@ -57,6 +57,11 @@ public:
 	// 描く直前にポーズを書き換える処理（一人称で頭を消す・視点に合わせて上半身を曲げる等）。
 	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること。
 	void setPoseModifier( BonePoseModifier* );
+	// 体の位置そのものを動かす書き換え（ゾンビのフラつき）。setPoseModifier より先に掛かり、
+	// 見た目だけでなく animatedBoneMatrix（部位の当たり判定が付く姿勢）にも入る。
+	// 見た目だけの書き換え（のけぞり等）と分けるのは、狙いにくさを作る揺れは当たり判定も動かさないと意味が無いため。
+	// 所有権は受け取らない。nullptr で外す（無ければアニメのポーズのまま）。このインスタンスより長く生きていること。
+	void setBodyPoseModifier( BonePoseModifier* );
 
 	// アニメを1フレーム（1ティック）進めて、ポーズを求める。
 	void update();
@@ -68,7 +73,8 @@ public:
 	// boneIndex: SkinnedMeshData::findBone の番号。範囲外、またはまだ update していなければ false（out は変えない）。
 	// 骨格の単位のまま返す（Mixamo なら cm の縮尺 0.01 が入っている）ので、付ける物の側で合わせる。
 	bool boneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
-	// boneMatrix と同じだが、書き換え（BonePoseModifier）を掛ける前の、アニメどおりのポーズで返す。
+	// boneMatrix と同じだが、見た目だけの書き換え（setPoseModifier）を掛ける前の、アニメどおりのポーズで返す
+	// （体の書き換え setBodyPoseModifier は掛けた後）。
 	// 部位の当たり判定に使う（一人称で頭を潰した・視点に合わせて曲げた見た目ではなく、体の本来の位置で判定するため）。
 	bool animatedBoneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
 	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける。
@@ -79,6 +85,8 @@ private:
 	void blendFadingPose();
 	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前。
 	float lastFrameTime() const;
+	// 体のポーズ（体の書き換えが無ければ mBonePose、あれば mBodyPose）。
+	const std::vector< GameLib::Math::Matrix34 >& bodyPose() const;
 
 	const SkinnedMeshData* mData;
 	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は骨の行列を求めるとき＝computeSkinMatrices で掛ける）
@@ -96,6 +104,10 @@ private:
 	// クロスフェードの混ぜ元にも入り込み、混ぜた後にもう一度掛かって二重になるため分けて持つ。
 	std::vector< GameLib::Math::Matrix34 > mShownPose;
 	BonePoseModifier* mPoseModifier;				// 無ければ nullptr（アニメのポーズをそのまま見せる）
+	// 体の書き換えを掛けた写し（mBonePose ＋ mBodyPoseModifier）。当たり判定と、見せるポーズの元にする。
+	// mBonePose に直接入れないのは、mShownPose と同じくクロスフェードの混ぜ元に入り込ませないため。
+	std::vector< GameLib::Math::Matrix34 > mBodyPose;
+	BonePoseModifier* mBodyPoseModifier;			// 無ければ nullptr（mBodyPose は使わず mBonePose を体のポーズとみなす）
 	std::vector< GameLib::Math::Matrix34 > mFadeFromPose;	// 切り替え直前に見えていたポーズ（フェード中だけ使う）
 	float mFadeFrames;									// フェードの長さ（フレーム）。0 ならフェードしていない
 	float mFadeElapsed;									// フェード開始からの経過（フレーム）

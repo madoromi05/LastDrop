@@ -3,6 +3,7 @@
 #include "GameSrc/Zombie/ChaseTarget.h"
 #include "GameSrc/Zombie/ZombieCrowd.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
+#include "GameSrc/Zombie/ZombieUncertaintyParams.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
@@ -10,6 +11,7 @@
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/ScalarMath.h"
 #include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
@@ -101,6 +103,28 @@ namespace{
 	const int kSinkTicks = GameTime::secondsToTicks( kSinkSeconds );
 	const int kStaggerCooldownTicks = GameTime::secondsToTicks( kStaggerCooldownSeconds );
 
+	// ── 体力の個体差（SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 3 章）──
+	// T ポーズの確認用の体の丈夫さ。表のままにして、部位ごとの減り方を確かめられるようにする。
+	const float kFixedToughness = 1.f;
+	// 丈夫さ・フラつきの値（F6 で動かせる）。
+	ZombieUncertaintyParams gUncertaintyParams;
+
+	// low〜high から一様に選ぶ。F6 で幅を逆にしても（high <= low）、low を使う。
+	float pickInRange( float low, float high, Random* random ) {
+		if ( high <= low ) {
+			return low;
+		}
+		return random->getFloat( low, high );
+	}
+
+	// 体の丈夫さを選ぶ。T ポーズの確認用（歩くアニメが無い）は固定。
+	float pickToughness( const Zombie::Animations& animations, Random* random ) {
+		if ( !animations.move ) {
+			return kFixedToughness;
+		}
+		return pickInRange( gUncertaintyParams.toughnessMin, gUncertaintyParams.toughnessMax, random );
+	}
+
 	// name のアニメを引く。name が nullptr なら空（使わない）。名前が無ければ、静かに使えなくなるので知らせる。
 	Scene::Animation findAnimation( const SkinnedMeshData* data, const char* name ) {
 		if ( !name ) {
@@ -114,6 +138,10 @@ namespace{
 	}
 }
 
+ZombieUncertaintyParams& zombieUncertaintyParams() {
+	return gUncertaintyParams;
+}
+
 Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
 const Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed ) :
 	mModel( model ),
@@ -124,16 +152,20 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mDownedAnimation( findAnimation( model->data(), animations.downed ) ),
 	mStaggerAnimation( findAnimation( model->data(), animations.stagger ) ),
 	mAttackAnimation( findAnimation( model->data(), animations.attack ) ),
+	mRandom( Random::create( randomSeed ) ),
 	mCrawl( &model->crawlLayout() ),
 	mFlinch( &model->flinchLayout() ),
 	mDismemberment( &model->severLayout() ),
+	mSway( &model->flinchLayout(),
+		pickInRange( gUncertaintyParams.swayPeriodMin, gUncertaintyParams.swayPeriodMax, &mRandom ), mRandom.getFloat() ),
 	mMesh( model->data() ),
 	mHitboxes( &model->hitboxLayout() ),
+	mHealth( pickToughness( animations, &mRandom ) ),
 	mStaggering( false ),
 	mStaggerCooldownTicks( 0 ),
 	mPosition( position ),
 	mAngleY( AngleMath::wrapSigned( angleY ) ),
-	mChase( sightPhase, randomSeed ),
+	mChase( sightPhase, mRandom.getInt() ), // 丈夫さと同じ種のままだと、選ぶ値の並びが揃うので引き直す
 	mPath( sightPhase ),
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
 	mSeparation( 0.f, 0.f, 0.f ),
@@ -162,6 +194,7 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mPoseModifiers.add( &mFlinch );
 	mPoseModifiers.add( &mDismemberment );
 	mMesh.setPoseModifier( &mPoseModifiers );
+	mMesh.setBodyPoseModifier( &mSway ); // 揺れには部位の箱も付いてくる
 	// 気付く前は立っている（立つアニメが無ければ歩くアニメ。どちらも空ならレスト姿勢＝T ポーズ）。
 	mMesh.setAnimation( locomotionAnimation(), mMoveStartTime );
 }
@@ -189,6 +222,7 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld, const 
 		mPosition.y = mMover.followGround( mPosition );
 		mMesh.setPosition( mPosition );
 	}
+	mSway.update( swayStrength( target ), gUncertaintyParams.swayMaxDegree ); // 姿勢を求める前に、このティックの揺れを決める
 	mMesh.update();
 	applyRootMotion( target );
 	if ( mState == State::Alive ) {
@@ -220,8 +254,9 @@ void Zombie::chase( const ChaseTarget* target, const HitWorld& hitWorld, const Z
 	} else {
 		// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）。
 		// 歩いている間は、近くの仲間から離れる向きを混ぜる（前の仲間を避けて横へ回り込む）。
+		// 揺れている間は、倒れている側へ少し流れる（追っている間だけ揺れるので、探す間は weave が何もしない）。
 		const Vector3& point = mPath.steer( mPosition, mChase.destination(), *mStreets, hitWorld, walking );
-		facing = turnToward( walking ? avoidCrowd( point, crowd ) : point );
+		facing = turnToward( walking ? weave( avoidCrowd( point, crowd ) ) : point );
 		if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
 			mChase.giveUpSearch(); // 最後に見た場所へ着けない（よけても寄れなかった）。次のティックから立ってうろつく
 		}
@@ -270,6 +305,36 @@ Vector3 Zombie::avoidCrowd( const Vector3& point, const ZombieCrowd* crowd ) {
 	Vector3 facingPoint;
 	facingPoint.setAdd( center, direction );
 	return facingPoint;
+}
+
+float Zombie::swayStrength( const ChaseTarget* target ) const {
+	// 遠くでは揺らさない（遠くから頭を狙う楽しさは残す）。音で探しに来る・うろつく間も揺らさない。
+	if ( !target || mState != State::Alive || mStaggering || mAttack.isActive() || !canChase() ||
+		mChase.mode() != ZombieChase::Mode::Chase ) {
+		return 0.f;
+	}
+	const ZombieUncertaintyParams& params = gUncertaintyParams;
+	float distance = flatDistanceTo( target->position );
+	float range = params.swayStartDistance - params.swayFullDistance;
+	if ( range <= 0.f ) {
+		return ( distance <= params.swayFullDistance ) ? 1.f : 0.f; // F6 で幅を 0 以下にしたときは、境目で切り替える
+	}
+	float t = ScalarMath::clamp( ( params.swayStartDistance - distance ) / range, 0.f, 1.f );
+	return ScalarMath::smoothStep( t );
+}
+
+Vector3 Zombie::weave( const Vector3& point ) const {
+	float degree = mSway.lean() * gUncertaintyParams.weaveDegree;
+	if ( degree == 0.f ) {
+		return point;
+	}
+	// 体の向きを正に回すと前は +X（骨格の根の空間の横）へ寄る。傾きが正の側＝倒れている側へ向く点を回す。
+	Vector3 center = bodyCenter();
+	float x = point.x - center.x;
+	float z = point.z - center.z;
+	float c = Math::cos( degree );
+	float s = Math::sin( degree );
+	return Vector3( center.x + x * c + z * s, point.y, center.z - x * s + z * c );
 }
 
 void Zombie::standAside( const ZombieCrowd* crowd ) {
@@ -450,7 +515,7 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 	}
 	// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）。
 	float totalBefore = mHealth.total();
-	mHealth.takeDamage( damage.part, damage.baseAmount );
+	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
 	float dealt = totalBefore - mHealth.total();
 	mChase.alert(); // 撃たれたら、見えていなくても気付く
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。

@@ -1,10 +1,17 @@
 #include "GameSrc/Zombie/ZombieFlinchLayout.h"
 #include "GameSrc/Render/SkinnedMesh/BoneNamePattern.h"
+#include "GameSrc/Math/AxisRotation.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
 
+using namespace GameLib::Math;
+
 namespace{
+	// 骨の向きと倒す向きがほぼ平行（外積の長さがこれ未満）なら、回す軸が決まらないので曲げない。
+	const float kParallelLimit = 0.001f;
+
 	const int kMaxFollowerNames = 16;
 	const int kMaxJointsPerGroup = 3;
 	// 骨の名前の書き方（末尾の '*' でまとめて引く）は BoneNamePattern。
@@ -126,4 +133,30 @@ int ZombieFlinchLayout::groupOf( BodyPart part ) const {
 	int index = static_cast< int >( part );
 	ASSERT( index >= 0 && index < static_cast< int >( BodyPart::Count ) && "ZombieFlinchLayout : bad part." );
 	return mPartGroups[ index ];
+}
+
+void ZombieFlinchLayout::bend( int group, const Vector3& direction, float degree, std::vector< Matrix34 >* pose ) const {
+	ASSERT( group >= 0 && group < static_cast< int >( mGroups.size() ) && "ZombieFlinchLayout : bad group." );
+	// 根の側の関節から順に、「今の」関節の位置で曲げる（前の関節で動いた後の位置。FirstPersonBody::bendSpine と同じ）。
+	for ( const Joint& joint : mGroups[ group ].joints ) {
+		Vector3 center = PlacementMatrix::translationOf( ( *pose )[ joint.bone ] );
+		Vector3 boneDirection;
+		boneDirection.setSub( PlacementMatrix::translationOf( ( *pose )[ joint.tipBone ] ), center );
+		boneDirection.normalize();
+		// 骨の向き × 倒す向き の軸で正に回すと、骨の先が倒す向きへ倒れる。
+		// 外積の長さ（sin）を角度に掛けて、骨が倒す向きに近いほど少なく倒す（平行なら倒れない）。
+		Vector3 axis;
+		axis.setCross( boneDirection, direction );
+		float sine = axis.length();
+		if ( sine < kParallelLimit ) {
+			continue;
+		}
+		axis *= 1.f / sine;
+		Matrix34 rotation = AxisRotation::about( center, axis, degree * joint.share * sine );
+		for ( int b : joint.followers ) {
+			Matrix34 bent;
+			bent.setMul( rotation, ( *pose )[ b ] );
+			( *pose )[ b ] = bent;
+		}
+	}
 }

@@ -2,6 +2,8 @@
 #define INCLUDED_ZOMBIE_FLINCH_LAYOUT_H
 
 #include "GameSrc/Hit/BodyPart.h"
+#include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix34.h"
 #include <vector>
 
 class SkinnedMeshData;
@@ -9,6 +11,7 @@ class SkinnedMeshData;
 // のけぞり（ZombieFlinch）の「設計図」。撃たれた部位ごとに、どの関節で・どの骨をまとめて・どれだけ曲げるか。
 // 骨の番号はメッシュが同じなら同じなので、ゾンビの種類ごとに1つだけ作り（ZombieModel が持つ）、全員で共有する。
 // 1体ごとに変わるもの（今どれだけ押されているか）は持たない（ZombieFlinch が持つ）。
+// 設計図どおりに曲げる計算（bend）もここに置く。のけぞりと、胴を左右に揺らすフラつき（ZombieSway）の両方が使う。
 // 部位は「曲げるまとまり（頭・胴・左右の腕・左右の脚）」へまとめる。上腕と前腕は同じ腕の肩で曲げる（腕ごと押される）。
 class ZombieFlinchLayout{
 public:
@@ -34,6 +37,9 @@ public:
 	const std::vector< Group >& groups() const;
 	// part の当たったときに曲げるまとまりの番号（groups の添え字）。
 	int groupOf( BodyPart part ) const;
+	// group のまとまりを、根の側の関節から順に、direction（長さ 1。骨格の根の空間）へ degree 度だけ倒す。
+	// 骨の向きが direction に近いほど少なく倒す（平行なら倒れない）。pose: 骨格の根から見た骨の姿勢。nullptr 不可。
+	void bend( int group, const GameLib::Math::Vector3& direction, float degree, std::vector< GameLib::Math::Matrix34 >* pose ) const;
 
 private:
 	std::vector< Group > mGroups;
