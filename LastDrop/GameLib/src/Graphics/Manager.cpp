@@ -226,6 +226,10 @@ void Manager::setNormalMapStrength( float s ){
 	gManagerImpl->setNormalMapStrength( s );
 }
 
+void Manager::enableLinearColor( bool f ){
+	gManagerImpl->enableLinearColor( f );
+}
+
 void Manager::setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth ){
 	ASSERT( count >= 0 && count <= MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
 	RenderTarget::Impl* impls[ MAX_RENDER_TARGET ] = {};

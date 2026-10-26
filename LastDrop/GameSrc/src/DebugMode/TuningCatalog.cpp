@@ -8,6 +8,7 @@
 #include "GameSrc/Player/AimSwayParams.h"
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
+#include "GameSrc/Render/PostProcessParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -73,6 +74,9 @@ namespace{
 			"AimSway", "AimSwayParams", "GameSrc/Player/AimSwayParams.h", &aimSwayParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
+		// 露出・ブルーム（リニア化の後に合わせ直す値。LinearToneMap_Plan.txt 7 章）。
+		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
+			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );
 		return groups;
 	}
 

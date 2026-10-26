@@ -16,7 +16,7 @@ namespace{
 	const int kMaxCount = 50;		// 目標の数の上限（立っているゾンビ。給油 3 回でちょうどここに届く）
 	// 減ったら、これだけ待って 1 体補う（秒）。倒した直後に湧かないように。
 	const float kRefillSeconds = 10.f;
-	const int kRefillTicks = static_cast< int >( kRefillSeconds * GameTime::kTicksPerSecond );
+	const int kRefillTicks = GameTime::secondsToTicks( kRefillSeconds );
 
 	// 自キャラからこれより近い所には湧かせない（m。水平）。目の前に急に出ないように。
 	const float kMinDistance = 25.f;

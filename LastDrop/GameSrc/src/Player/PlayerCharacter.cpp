@@ -1,5 +1,6 @@
 #include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
@@ -37,12 +38,10 @@ namespace{
 	const float kNoWeight   = 0.f; // 補正の効き具合（両手持ち）
 	const float kFullWeight = 1.f;
 
-	const float kHalfTurn = 180.f;
-	const float kFullTurn = 360.f;
 	const float kMinInputLength = 0.001f; // これより短い入力（逆方向キーの同時押しなど）は静止とみなす
 	// ゾンビに離されてから、またつかまれるようになるまで（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）。
 	const float kGrabCooldownSeconds = 1.f;
-	const int kGrabCooldownTicks = static_cast< int >( kGrabCooldownSeconds * GameTime::kTicksPerSecond );
+	const int kGrabCooldownTicks = GameTime::secondsToTicks( kGrabCooldownSeconds );
 	// 骨の名前の頭の共通部分（移動の当たり判定・部位ごとの当たり判定で骨を引くのに使う）。
 	const char* kBoneNamePrefix = "mixamorig:";
 	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
@@ -176,17 +175,6 @@ namespace{
 		return Math::max( target, weight - step );
 	}
 
-	// 角度を [-180, 180) へ折り返す。
-	float wrapSignedAngle( float degree ) {
-		while ( degree >= kHalfTurn ) {
-			degree -= kFullTurn;
-		}
-		while ( degree < -kHalfTurn ) {
-			degree += kFullTurn;
-		}
-		return degree;
-	}
-
 	// 足を交互に出す繰り返しのアニメか。この同士の切り替え（歩き⇔走り、素手⇔銃）だけ足の位相を合わせる。
 	// 4本の歩き・走りは、どれも1周の前半で左足・後半で右足が前に出る（元の FBX で確認済み）ので、
 	// 「1周の何割まで進んだか」を引き継げば足の出方が揃う。
@@ -208,7 +196,7 @@ const Vector3& position, float angleY ) :
 	mHitboxLayout( data, kBoneNamePrefix ),
 	mHitboxes( &mHitboxLayout ),
 	mPosition( position ),
-	mAngleY( wrapSignedAngle( angleY ) ),
+	mAngleY( AngleMath::wrapSigned( angleY ) ),
 	mMoveDirection( 0.f, 0.f, 0.f ),
 	mSpeed( 0.f ),
 	mHoldWeight( 0.f ),
@@ -273,7 +261,7 @@ void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, f
 	ASSERT( inventory && "PlayerCharacter::update : inventory is null." );
 	PlayerCommand command = allowedCommand( requested );
 	// 一人称では体の向き＝視線の向き。振り向きを遅らせると、視点と腕・銃の向きがずれて見えるため即座に合わせる。
-	mAngleY = wrapSignedAngle( cameraYaw );
+	mAngleY = AngleMath::wrapSigned( cameraYaw );
 	mBody->setPitch( cameraPitch );
 
 	Vector3 direction;

@@ -1,7 +1,8 @@
 #ifndef INCLUDED_GAMELIB_GRAPHICS_VERTEXLIGHTINGVS_HLSL_H
 #define INCLUDED_GAMELIB_GRAPHICS_VERTEXLIGHTINGVS_HLSL_H
+#include "Graphics/ColorSpaceHlsl.h"
 namespace {
-const char gVertexLightingVsHlsl[] = R"HLSL(
+const char gVertexLightingVsHlsl[] = GAMELIB_COLOR_SPACE_HLSL R"HLSL(
 cbuffer VSConstants : register(b0)
 {
     float4 gTransform[4];
@@ -13,6 +14,7 @@ cbuffer VSConstants : register(b0)
     float4 gLightPosY;
     float4 gLightPosZ;
     float4 gLightColor[4];
+    float4 gColorParams; // x: 1 なら頂点色をリニアへ直す（Manager::enableLinearColor）
 };
 struct VSIn
 {
@@ -53,7 +55,7 @@ VSOut main(VSIn v)
     c += gLightColor[1].xyz * d.y;
     c += gLightColor[2].xyz * d.z;
     c += gLightColor[3].xyz * d.w;
-    o.color.xyz = c * v.color.zyx * gDiffuseColor.xyz;
+    o.color.xyz = c * vertexColorToScene(v.color, gColorParams).xyz * gDiffuseColor.xyz;
     o.color.w   = v.color.w * gDiffuseColor.w;
     o.uv = v.uv;
     return o;

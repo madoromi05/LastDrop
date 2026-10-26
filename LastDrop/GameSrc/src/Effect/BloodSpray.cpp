@@ -9,7 +9,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// 出てから消えるまで（ティック）。見た目を確かめる前の初期値。
-	const int kLifeTicks = static_cast< int >( 0.4f * GameTime::kTicksPerSecond );
+	const int kLifeTicks = GameTime::secondsToTicks( 0.4f );
 
 	// 体に当たったときの滴の数。弾の抜ける側（体の向こう）へ多く、撃った側（こちら）へ少し。
 	// 頭など scale が大きいときは、どちらも scale 倍にする（合計が kMaxDropNumber を超えないこと）。

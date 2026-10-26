@@ -1,6 +1,7 @@
 #include "GameSrc/Map/StreetGraph.h"
 #include "GameSrc/Map/TownMap.h"
 #include "GameSrc/Hit/HitWorld.h"
+#include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -23,14 +24,6 @@ namespace{
 	const int kCornerNumber = 4;
 	const float kCornerSignX[ kCornerNumber ] = { -1.f, 1.f, 1.f, -1.f };
 	const float kCornerSignZ[ kCornerNumber ] = { -1.f, -1.f, 1.f, 1.f };
-
-	// a と b の水平の距離（m）。
-	float flatDistance( const Vector3& a, const Vector3& b ) {
-		Vector3 d;
-		d.setSub( b, a );
-		d.y = 0.f;
-		return d.length();
-	}
 }
 
 StreetGraph::StreetGraph( const TownMap& map ) {
@@ -47,7 +40,7 @@ StreetGraph::StreetGraph( const TownMap& map ) {
 }
 
 void StreetGraph::link( int a, int b ) {
-	float length = flatDistance( mNodes[ a ].position, mNodes[ b ].position );
+	float length = FlatMath::distance( mNodes[ a ].position, mNodes[ b ].position );
 	mNodes[ a ].links.push_back( { b, length } );
 	mNodes[ b ].links.push_back( { a, length } );
 }
@@ -102,7 +95,7 @@ void StreetGraph::findPortals( const Vector3& point, const HitWorld& hitWorld, s
 	out->clear();
 	std::vector< Portal > candidates;
 	for ( int i = 0; i < static_cast< int >( mNodes.size() ); ++i ) {
-		candidates.push_back( { i, flatDistance( point, mNodes[ i ].position ) } );
+		candidates.push_back( { i, FlatMath::distance( point, mNodes[ i ].position ) } );
 	}
 	int number = std::min( kPortalCandidates, static_cast< int >( candidates.size() ) );
 	std::partial_sort( candidates.begin(), candidates.begin() + number, candidates.end(),
@@ -150,7 +143,7 @@ bool StreetGraph::findPath( const Vector3& start, const Vector3& goal, const Hit
 			if ( closed[ i ] || cost[ i ] == kUnreached ) {
 				continue;
 			}
-			float estimate = cost[ i ] + ( i == goalIndex ? 0.f : flatDistance( mNodes[ i ].position, goal ) );
+			float estimate = cost[ i ] + ( i == goalIndex ? 0.f : FlatMath::distance( mNodes[ i ].position, goal ) );
 			if ( estimate < best ) {
 				best = estimate;
 				current = i;

@@ -4,6 +4,7 @@
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Math/MatrixBlend.h"
 #include "GameSrc/Math/AxisRotation.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -97,10 +98,6 @@ namespace{
 			}
 		}
 		return bones;
-	}
-
-	Vector3 translationOf( const Matrix34& m ) {
-		return Vector3( m.m03, m.m13, m.m23 );
 	}
 
 	// 骨の並びへまとめて、左から変換を掛ける（骨格の根の空間で動かす）。
@@ -288,7 +285,7 @@ void FirstPersonBody::bendSpine( std::vector< Matrix34 >* pose ) const {
 	// 全部同じ軸まわりなので、根の側から順に「今の関節の位置」を中心に回せば、親子で曲げたのと同じになる。
 	float bend = mPitch / static_cast< float >( kSpineBoneNumber );
 	for ( const SpineJoint& joint : mSpine ) {
-		Vector3 center = translationOf( ( *pose )[ joint.bone ] );
+		Vector3 center = PlacementMatrix::translationOf( ( *pose )[ joint.bone ] );
 		Matrix34 rotation; // 関節を原点へ → 回す → 関節へ戻す
 		rotation.setTranslation( center );
 		rotation.rotateX( bend );
@@ -311,11 +308,11 @@ void FirstPersonBody::holdWithBothHands( std::vector< Matrix34 >* pose ) const {
 	gun.setMul( ( *pose )[ mHandBone ], mGrip );
 	Vector3 supportOnGun;
 	gun.mul( &supportOnGun, mSupportHandOnWeapon );
-	Vector3 wrist = translationOf( ( *pose )[ mHandBone ] );
+	Vector3 wrist = PlacementMatrix::translationOf( ( *pose )[ mHandBone ] );
 	Vector3 toGun;
 	toGun.setSub( supportOnGun, wrist );
 	Vector3 toHand;
-	toHand.setSub( translationOf( ( *pose )[ mSupportHandBone ] ), wrist );
+	toHand.setSub( PlacementMatrix::translationOf( ( *pose )[ mSupportHandBone ] ), wrist );
 
 	Vector3 axis;
 	axis.setCross( toGun, toHand );
@@ -342,7 +339,7 @@ void FirstPersonBody::updateEyePosition( const std::vector< Matrix34 >& pose ) {
 	view.setRotationX( mPitch );
 	Vector3 eyeFromHead;
 	view.mul33( &eyeFromHead, Vector3( 0.f, gParams.eyeAboveHead, gParams.eyeForward ) );
-	mEyePosition.setAdd( translationOf( pose[ mHeadBone ] ), eyeFromHead );
+	mEyePosition.setAdd( PlacementMatrix::translationOf( pose[ mHeadBone ] ), eyeFromHead );
 }
 
 void FirstPersonBody::alignSightToEye( std::vector< Matrix34 >* pose ) const {
@@ -396,13 +393,13 @@ void FirstPersonBody::carryAtChest( std::vector< Matrix34 >* pose ) const {
 	chest.setRotationX( mPitch );
 	Vector3 wristGoal;
 	chest.mul33( &wristGoal, gParams.carryWristFromChest );
-	wristGoal += translationOf( ( *pose )[ mChestBone ] );
+	wristGoal += PlacementMatrix::translationOf( ( *pose )[ mChestBone ] );
 	Matrix34 carry = chest;
 	carry.rotateY( gParams.carryMuzzleInward );
 	carry.rotateX( gParams.carryMuzzleDown );
 	carry.rotateZ( gParams.carryCant );
 	// 置き場所を手首で決めるのは、手首の位置と銃の向きを別々の定数で合わせられるようにするため（銃の先は向きだけで決まる）。
-	Vector3 wrist = translationOf( ( *pose )[ mHandBone ] );
+	Vector3 wrist = PlacementMatrix::translationOf( ( *pose )[ mHandBone ] );
 	transformBonesPartially( alignWeapon( gun, carry, wrist, wristGoal ), mCarryWeight, mArmBones, pose );
 }
 
@@ -425,7 +422,7 @@ void FirstPersonBody::kickWeapon( std::vector< Matrix34 >* pose ) const {
 
 	// 手首を中心に銃口を跳ね上げてから、銃口と逆の向きへ引く。銃の横の軸まわりは、正の角度で銃口が下を向くので負で回す。
 	// 手首を中心にするのは、握っている所を支点に銃の先が跳ねるように見せるため。
-	Matrix34 kick = AxisRotation::about( translationOf( ( *pose )[ mHandBone ] ), gunSide, -rise );
+	Matrix34 kick = AxisRotation::about( PlacementMatrix::translationOf( ( *pose )[ mHandBone ] ), gunSide, -rise );
 	kick.m03 -= barrel.x * back;
 	kick.m13 -= barrel.y * back;
 	kick.m23 -= barrel.z * back;

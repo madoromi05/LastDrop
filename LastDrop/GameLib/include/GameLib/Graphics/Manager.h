@@ -116,6 +116,10 @@ public:
 	void setSpecularSharpness( float );
 	///法線マップの凹凸の強さ(0で無効、1で標準)。setNormalMap していない時は影響しない
 	void setNormalMapStrength( float );
+	///true の間は、ディフューズ・スペキュラ・発光・アンビエント・ライトの色と頂点色を、画面の色（sRGB）として
+	///リニアへ直してから計算する（自作シェーダの b0 にも直した値が入る）。1 を超える色は「1 以下の色×倍率」とみなし、倍率は直さない。
+	///リニアの描画先へ 3D を描く間だけ true にし、画面へ直接描く HUD・文字の前に false へ戻す（LinearToneMap_Plan.txt 5 章）。既定は false
+	void enableLinearColor( bool );
 
 	//描画先・自作シェーダ
 	///colors（count 枚。0枚なら深度だけ）と depth（空なら深度なし）へ描く。描画範囲は描画先の全体になる。

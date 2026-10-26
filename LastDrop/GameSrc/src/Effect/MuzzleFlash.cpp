@@ -75,9 +75,9 @@ MuzzleFlash::MuzzleFlash() :
 	mScale( 1.f ),
 	mShape( 0 ),
 	mRandom( kRandomSeed ),
-	mCoreTexture( Graphics::Texture::create( kCoreTextureFile ) ),
+	mCoreTexture( Graphics::Texture::create( kCoreTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mCoreFrames( kCoreShapeColumns, kCoreShapeRows, kCoreShapeNumber ),
-	mGlowTexture( Graphics::Texture::create( kGlowTextureFile ) ),
+	mGlowTexture( Graphics::Texture::create( kGlowTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mCoreQuads( kCoreQuadNumber, LitQuadBatch::MODE_GLOW ),
 	mGlowQuads( kGlowQuadNumber, LitQuadBatch::MODE_GLOW ) {
 	mCoreQuads.setBrightness( kCoreBrightness );

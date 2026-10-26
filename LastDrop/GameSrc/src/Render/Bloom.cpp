@@ -1,4 +1,5 @@
 #include "GameSrc/Render/Bloom.h"
+#include "GameSrc/Render/PostProcessParams.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -14,10 +15,6 @@ namespace{
 	// 段の大きさ。最初の段は画面の半分で、そこから段ごとに半分にする。
 	const float kFirstLevelScale = 0.5f;
 	const float kLevelShrink = 0.5f;
-
-	// 明るさ（r, g, b の一番大きい値）がこれを超えた分だけをにじませる。
-	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる（Bloom_Plan.txt 9 章）。
-	const float kThreshold = 1.f;
 
 	// Bloom*.hlsl の番号と揃える（t2 / b1）。
 	const int kSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
@@ -49,13 +46,14 @@ Bloom::Bloom() {
 	mDownShader = Graphics::Shader::create( kDownShaderFile );
 	mUpShader = Graphics::Shader::create( kUpShaderFile );
 	mConstants = Graphics::ConstantBuffer::create( sizeof( BloomConstants ) );
-
-	BloomConstants constants = { kThreshold, { 0.f, 0.f, 0.f } };
-	mConstants.set( &constants, sizeof( constants ) );
 }
 
 const Graphics::RenderTarget& Bloom::apply( const Graphics::RenderTarget& sceneColor ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
+	// しきい値は F6 で動かせるので、毎回書く（16 バイトだけ）。
+	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる（Bloom_Plan.txt 9 章）。
+	BloomConstants constants = { postProcessParams().bloomThreshold, { 0.f, 0.f, 0.f } };
+	mConstants.set( &constants, sizeof( constants ) );
 	gm.setConstantBuffer( kConstantSlot, mConstants );
 
 	// 取り出しと縮小は、前のフレームの絵を残さないよう上書きで描く（全画面なので消去は要らない）。

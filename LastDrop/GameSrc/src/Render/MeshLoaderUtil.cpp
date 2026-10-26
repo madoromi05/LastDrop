@@ -61,10 +61,10 @@ ConstElement MeshLoaderUtil::containerRoot( const ConstElement& documentRoot ) {
 void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& meshElement, TextureCache* textures ) {
 	ConstAttribute a;
 	if ( hasValue( a = findAttribute( meshElement, "texture" ) ) ) {
-		material->setTexture( textures->load( a.value() ) );
+		material->setTexture( textures->load( a.value(), Graphics::TEXTURE_COLOR_SPACE_SRGB ) ); // アルベドは色の画像
 	}
 	if ( hasValue( a = findAttribute( meshElement, "normalmap" ) ) ) {
-		material->setNormalMap( textures->load( a.value() ) );
+		material->setNormalMap( textures->load( a.value(), Graphics::TEXTURE_COLOR_SPACE_LINEAR ) ); // 法線の向き（色ではない）
 	}
 	// 材質値は書いてあるものだけ上書きする（無ければ MeshMaterial の既定値）。
 	Vector3 color;

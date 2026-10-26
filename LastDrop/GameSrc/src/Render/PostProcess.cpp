@@ -1,4 +1,5 @@
 #include "GameSrc/Render/PostProcess.h"
+#include "GameSrc/Render/PostProcessParams.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -29,7 +30,7 @@ namespace{
 		float flashOuter;
 		float fade;
 		float flashColor[ kColorChannels ];
-		float padding;
+		float exposure;
 		float pain;
 		float painBlurLength;
 		float painBlurInner;
@@ -39,8 +40,6 @@ namespace{
 	const float kVignetteStrength = 0.35f;
 	const float kVignetteInner = 0.6f;
 	const float kVignetteOuter = 1.4f;
-	// ブルームを足す強さ。4 つの段を足した絵なので、1 だと超えた分の約 4 倍の光が足される。画面で見て決める前の初期値。
-	const float kBloomIntensity = 0.5f;
 	// 噛まれた瞬間の赤み。画面の周り（中心からこの距離の間で強まる）を、この色へ寄せる。強さ 1 でも真ん中は赤くしない（狙いを隠さない）。
 	const float kFlashInner = 0.3f;
 	const float kFlashOuter = 1.2f;
@@ -52,6 +51,11 @@ namespace{
 	// 痛み 1 のとき、ビネットの暗さに足す量（角での暗さが 0.35 → 0.85 になる）。
 	const float kPainDarken = 0.5f;
 	const float kNoEffect = 0.f;
+}
+
+PostProcessParams& postProcessParams() {
+	static PostProcessParams sParams; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sParams;
 }
 
 PostProcess::PostProcess() :
@@ -67,12 +71,16 @@ PostProcess::PostProcess() :
 void PostProcess::beginScene() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setRenderTargets( &mSceneColor, 1, mSceneDepth );
+	// 中間の描画先はリニア（光の量に比例した数）で持つ。ここから endScene までに描く 3D の色をリニアへ直す。
+	gm.enableLinearColor( true );
 	gm.clear( mSceneColor, kClearColor );
 	gm.clear( mSceneDepth );
 }
 
 void PostProcess::endScene() {
 	Graphics::Manager gm = Graphics::Manager::instance();
+	// この後に画面へ直接描く HUD・文字は、画像の色のまま出す（今までと同じ色）。
+	gm.enableLinearColor( false );
 	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）。
 	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );
 	gm.resetRenderTargets();
@@ -115,7 +123,7 @@ void PostProcess::updateConstants() {
 	constants.vignetteStrength = kVignetteStrength;
 	constants.vignetteInner = kVignetteInner;
 	constants.vignetteOuter = kVignetteOuter;
-	constants.bloomIntensity = kBloomIntensity;
+	constants.bloomIntensity = postProcessParams().bloomIntensity;
 	constants.damageFlash = mDamageFlash;
 	constants.flashInner = kFlashInner;
 	constants.flashOuter = kFlashOuter;
@@ -123,7 +131,7 @@ void PostProcess::updateConstants() {
 	for ( int i = 0; i < kColorChannels; ++i ) {
 		constants.flashColor[ i ] = kFlashColor[ i ];
 	}
-	constants.padding = 0.f;
+	constants.exposure = postProcessParams().exposure;
 	constants.pain = mPain;
 	constants.painBlurLength = kPainBlurLength;
 	constants.painBlurInner = kPainBlurInner;

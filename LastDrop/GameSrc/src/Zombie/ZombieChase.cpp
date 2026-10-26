@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/ChaseTarget.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -18,7 +19,7 @@ namespace{
 	const float kFieldOfViewHalfDegree = 60.f;
 	// 見通しの線を引く間隔（秒）。気付くのがこれだけ遅れてもよい長さ。
 	const float kSightIntervalSeconds = 0.2f;
-	const int kSightIntervalTicks = static_cast< int >( kSightIntervalSeconds * GameTime::kTicksPerSecond );
+	const int kSightIntervalTicks = GameTime::secondsToTicks( kSightIntervalSeconds );
 
 	// ── 近づく──
 	// 自キャラにこれより近づいたら止まる（m。足元どうし、水平だけ）。
@@ -47,21 +48,13 @@ namespace{
 	const float kWanderProgressDistance = 0.3f;
 	// 近づけないまま、これだけ過ぎたら選び直す（秒）。
 	const float kWanderStallSeconds = 2.f;
-	const int kWanderStallTicks = static_cast< int >( kWanderStallSeconds * GameTime::kTicksPerSecond );
+	const int kWanderStallTicks = GameTime::secondsToTicks( kWanderStallSeconds );
 	const float kHalfTurn = 180.f;
 
 	// ── 銃声を聞く（SummaryPlan/個別仕様/ZombieHearing_Plan.txt）──
 	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように。
 	const float kNoiseDelayMinSeconds = 0.2f;
 	const float kNoiseDelayMaxSeconds = 1.0f;
-
-	// a と b の水平の距離（m）。
-	float flatDistance( const Vector3& a, const Vector3& b ) {
-		Vector3 d;
-		d.setSub( b, a );
-		d.y = 0.f;
-		return d.length();
-	}
 
 	// 向き angleY（度。0 は +Z、90 は +X）の水平の向き（長さ 1）。
 	Vector3 forwardOf( float angleY ) {
@@ -115,7 +108,7 @@ void ZombieChase::hearNoise( const Vector3& position ) {
 	if ( !mNoisePending ) {
 		mNoisePending = true;
 		float seconds = mRandom.getFloat( kNoiseDelayMinSeconds, kNoiseDelayMaxSeconds );
-		mNoiseDelayTicks = static_cast< int >( seconds * GameTime::kTicksPerSecond );
+		mNoiseDelayTicks = GameTime::secondsToTicks( seconds );
 	}
 }
 
@@ -185,13 +178,13 @@ void ZombieChase::updateNoise() {
 }
 
 void ZombieChase::updateChase( const Vector3& self ) {
-	float distance = flatDistance( self, mDestination );
+	float distance = FlatMath::distance( self, mDestination );
 	// 止まっている間は、少し離れるまで歩き出さない。
 	mWalking = mWalking ? ( distance > kStopDistance ) : ( distance > kResumeDistance );
 }
 
 void ZombieChase::updateSearch( const Vector3& self ) {
-	if ( flatDistance( self, mDestination ) <= kArriveDistance ) {
+	if ( FlatMath::distance( self, mDestination ) <= kArriveDistance ) {
 		startWanderWait(); // 着いた。見当たらないので、そこで立ってからうろつく
 	} else {
 		mWalking = true;
@@ -210,12 +203,12 @@ void ZombieChase::updateWander( const Vector3& self, float angleY, const HitWorl
 		}
 		mWanderTurnBack = false;
 		mWalking = true;
-		mWanderBestDistance = flatDistance( self, mDestination );
+		mWanderBestDistance = FlatMath::distance( self, mDestination );
 		mWanderStallTicks = 0;
 		return;
 	}
 
-	float distance = flatDistance( self, mDestination );
+	float distance = FlatMath::distance( self, mDestination );
 	if ( distance <= kArriveDistance ) {
 		startWanderWait();
 		return;
@@ -234,7 +227,7 @@ void ZombieChase::startWanderWait() {
 	mMode = Mode::Wander;
 	mWalking = false;
 	float seconds = mRandom.getFloat( kWanderWaitMinSeconds, kWanderWaitMaxSeconds );
-	mWanderWaitTicks = static_cast< int >( seconds * GameTime::kTicksPerSecond );
+	mWanderWaitTicks = GameTime::secondsToTicks( seconds );
 }
 
 bool ZombieChase::pickWanderPoint( const Vector3& self, float angleY, const HitWorld& hitWorld ) {

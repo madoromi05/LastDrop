@@ -20,7 +20,20 @@ cbuffer VSConstants : register(b0)
     float4 gLightPosY;
     float4 gLightPosZ;
     float4 gLightColor[4];
+    float4 gColorParams;      // x: 1 なら頂点色をリニアへ直す（Manager::enableLinearColor。色の定数は GameLib が直して入れる）
 };
+
+// 画像の色（sRGB）と、光の量に比例した数（リニア）の変換。式は GameLib/src/Graphics/ColorSpace.h・ColorSpaceHlsl.h と同じ
+// （pow 2.2 の近似ではなく、GPU が _SRGB のテクスチャを読むときと同じ式。LinearToneMap_Plan.txt 0 章）。
+float3 srgbToLinear(float3 c)
+{
+    return (c <= 0.04045) ? (c / 12.92) : pow(abs((c + 0.055) / 1.055), 2.4);
+}
+float3 linearToSrgb(float3 c)
+{
+    c = saturate(c);
+    return (c <= 0.0031308) ? (c * 12.92) : (1.055 * pow(c, 1.0 / 2.4) - 0.055);
+}
 
 SamplerState           gWrapSampler   : register(s0);
 SamplerState           gClampSampler  : register(s1);
@@ -49,9 +62,15 @@ float3 normalToWorld(float3 normal)
     return float3(dot(gITWorldMatrix[0].xyz, normal), dot(gITWorldMatrix[1].xyz, normal), dot(gITWorldMatrix[2].xyz, normal));
 }
 // 頂点色は固定パイプラインと同じく .zyxw で並べ替えて使う（GameLib の頂点色の詰め方に合わせる）。
+// 3D をリニアで描く間は、色（アルファ以外）をリニアへ直す（ColorSpaceHlsl.h の vertexColorToScene と同じ）。
 float4 vertexColor(float4 color)
 {
-    return color.zyxw;
+    float4 c = color.zyxw;
+    if (gColorParams.x > 0.5)
+    {
+        c.rgb = srgbToLinear(c.rgb);
+    }
+    return c;
 }
 
 // 全画面描画（Manager::drawFullScreen）の頂点。画面を覆う大きな三角形1枚を SV_VertexID（0,1,2）から作る。

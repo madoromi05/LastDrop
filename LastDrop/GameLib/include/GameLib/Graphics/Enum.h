@@ -38,6 +38,13 @@ enum LightingMode{
 	LIGHTING_PER_PIXEL,
 };
 
+///テクスチャの画素が何を表すか（Texture::create で指定する）。
+///色の画像を SRGB にすると、GPU が読むときにリニア（光の量に比例した数）へ直してくれる。
+enum TextureColorSpace{
+	TEXTURE_COLOR_SPACE_LINEAR, ///読んだ数をそのまま使う。色ではない数（法線マップ）と、そのまま画面へ出す画像（HUD・文字）
+	TEXTURE_COLOR_SPACE_SRGB,   ///色の画像（アルベド・エフェクト）。ミップもリニアで平均して作る
+};
+
 ///描画先（RenderTarget）の画素の形式
 enum RenderTargetFormat{
 	RENDER_TARGET_RGBA8,   ///8bit×4。色（0〜1）

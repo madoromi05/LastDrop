@@ -2,6 +2,7 @@
 #include "GameSrc/Player/LookParams.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Core/GameSettings.h"
 #include "Framework.h"
 
@@ -23,20 +24,7 @@ namespace{
 
 	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
 	const float kLookPullSeconds = 0.25f;
-	const int kLookPullTicks = static_cast< int >( kLookPullSeconds * GameTime::kTicksPerSecond );
-	const float kHalfTurn = 180.f;
-	const float kFullTurn = 360.f;
-
-	// degree を -180〜180 へ。
-	float wrapSignedAngle( float degree ) {
-		while ( degree > kHalfTurn ) {
-			degree -= kFullTurn;
-		}
-		while ( degree < -kHalfTurn ) {
-			degree += kFullTurn;
-		}
-		return degree;
-	}
+	const int kLookPullTicks = GameTime::secondsToTicks( kLookPullSeconds );
 
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
@@ -210,9 +198,9 @@ void FirstPersonControl::lookToward( const Vector3& target ) {
 	toTarget.setSub( target, mCamera.eyePosition() );
 	float flat = Math::sqrt( toTarget.x * toTarget.x + toTarget.z * toTarget.z );
 	// ヨーは 0 で +Z を向き、左回りが正（FirstPersonCamera）。ピッチは見下ろしが正なので、下にある相手は正。
-	float yaw = Math::atan2( toTarget.x, toTarget.z );
+	float yaw = AngleMath::headingOf( toTarget );
 	float pitch = Math::atan2( -toTarget.y, flat );
-	mPullYaw = wrapSignedAngle( yaw - mCamera.yaw() );
+	mPullYaw = AngleMath::difference( yaw, mCamera.yaw() );
 	mPullPitch = pitch - mCamera.pitch();
 	mPullTicks = kLookPullTicks;
 }

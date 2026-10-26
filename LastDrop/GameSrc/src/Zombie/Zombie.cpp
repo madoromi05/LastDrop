@@ -8,6 +8,9 @@
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -93,41 +96,10 @@ namespace{
 	const float kCrawlGrabReachDistance = 1.0f;
 	// 噛むときに首・背骨を押す向き（骨格の根の空間で上）。寝ている体は頭が前を向いているので、頭を持ち上げて脚へ噛みつく。
 	const Vector3 kCrawlBiteLungeDirection( 0.f, 1.f, 0.f );
-	const float kHalfTurn = 180.f;
-	const float kFullTurn = 360.f;
 
-	// degree を -180〜180 へ。
-	float wrapSignedAngle( float degree ) {
-		while ( degree > kHalfTurn ) {
-			degree -= kFullTurn;
-		}
-		while ( degree < -kHalfTurn ) {
-			degree += kFullTurn;
-		}
-		return degree;
-	}
-
-	Vector3 translationOf( const Matrix34& m ) {
-		return Vector3( m.m03, m.m13, m.m23 );
-	}
-
-	float flatDistanceBetween( const Vector3& a, const Vector3& b ) {
-		Vector3 d;
-		d.setSub( b, a );
-		d.y = 0.f;
-		return d.length();
-	}
-
-	int secondsToTicks( float seconds ) {
-		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
-	}
-	const int kCorpseTicks = secondsToTicks( kCorpseSeconds );
-	const int kSinkTicks = secondsToTicks( kSinkSeconds );
-	const int kStaggerCooldownTicks = secondsToTicks( kStaggerCooldownSeconds );
-
-	float ticksToSeconds( int ticks ) {
-		return static_cast< float >( ticks ) / GameTime::kTicksPerSecond;
-	}
+	const int kCorpseTicks = GameTime::secondsToTicks( kCorpseSeconds );
+	const int kSinkTicks = GameTime::secondsToTicks( kSinkSeconds );
+	const int kStaggerCooldownTicks = GameTime::secondsToTicks( kStaggerCooldownSeconds );
 
 	// name のアニメを引く。name が nullptr なら空（使わない）。名前が無ければ、静かに使えなくなるので知らせる。
 	Scene::Animation findAnimation( const SkinnedMeshData* data, const char* name ) {
@@ -160,7 +132,7 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mStaggering( false ),
 	mStaggerCooldownTicks( 0 ),
 	mPosition( position ),
-	mAngleY( wrapSignedAngle( angleY ) ),
+	mAngleY( AngleMath::wrapSigned( angleY ) ),
 	mChase( sightPhase, randomSeed ),
 	mPath( sightPhase ),
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
@@ -406,11 +378,11 @@ bool Zombie::isTargetInReach( const ChaseTarget* target ) const {
 
 float Zombie::reachDistanceTo( const Vector3& target ) const {
 	// 寝ている体は足元から前へ 1.5m ほど伸びているので、手の届く距離は頭から測る。
-	return isCrawling() ? flatDistanceBetween( headPosition(), target ) : flatDistanceTo( target );
+	return isCrawling() ? FlatMath::distance( headPosition(), target ) : flatDistanceTo( target );
 }
 
 float Zombie::flatDistanceTo( const Vector3& target ) const {
-	return flatDistanceBetween( bodyCenter(), target );
+	return FlatMath::distance( bodyCenter(), target );
 }
 
 float Zombie::headingDifferenceTo( const Vector3& target ) const {
@@ -419,7 +391,7 @@ float Zombie::headingDifferenceTo( const Vector3& target ) const {
 	if ( toTarget.x == 0.f && toTarget.z == 0.f ) {
 		return 0.f; // 真上は向きが無い（向いているとみなす）
 	}
-	return wrapSignedAngle( Math::atan2( toTarget.x, toTarget.z ) - mAngleY );
+	return AngleMath::difference( AngleMath::headingOf( toTarget ), mAngleY );
 }
 
 float Zombie::walkDistanceThisTick() const {
@@ -439,11 +411,11 @@ bool Zombie::turnToward( const Vector3& destination ) {
 	if ( toDestination.length() < kMinTurnDistance ) {
 		return true;
 	}
-	// 向き 0 が +Z、90 が +X（PlayerCharacter と同じ）。
-	float difference = wrapSignedAngle( Math::atan2( toDestination.x, toDestination.z ) - mAngleY );
+	// 向き 0 が +Z、90 が +X（AngleMath）。
+	float difference = AngleMath::difference( AngleMath::headingOf( toDestination ), mAngleY );
 	float turnLimit = isCrawling() ? kCrawlTurnPerTick : kTurnPerTick;
 	float turn = Math::max( -turnLimit, Math::min( turnLimit, difference ) );
-	mAngleY = wrapSignedAngle( mAngleY + turn );
+	mAngleY = AngleMath::wrapSigned( mAngleY + turn );
 	return Math::abs( difference - turn ) <= kTurnInPlaceDegree;
 }
 
@@ -608,19 +580,18 @@ void Zombie::startCrawling() {
 	Vector3 hipsRoot;
 	Vector3 chestRoot;
 	Vector3 neckRoot;
-	worldToRoot.mul( &hipsRoot, translationOf( hips ) );
-	worldToRoot.mul( &chestRoot, translationOf( chest ) );
-	worldToRoot.mul( &neckRoot, translationOf( neck ) );
+	worldToRoot.mul( &hipsRoot, PlacementMatrix::translationOf( hips ) );
+	worldToRoot.mul( &chestRoot, PlacementMatrix::translationOf( chest ) );
+	worldToRoot.mul( &neckRoot, PlacementMatrix::translationOf( neck ) );
 	Vector3 bodyDirection;
 	bodyDirection.setSub( neckRoot, hipsRoot );
-	mCrawlYawOffset = ( bodyDirection.x == 0.f && bodyDirection.z == 0.f ) ? 0.f :
-		Math::atan2( bodyDirection.x, bodyDirection.z );
+	mCrawlYawOffset = AngleMath::headingOf( bodyDirection );
 	mCrawlChestOffset.set( chestRoot.x, 0.f, chestRoot.z );
 	// 見た目の向き（今の mAngleY）は変えず、進む向きを体の向きへ。胸の位置も今の見た目から求める（どちらも見た目は飛ばない）。
 	Vector3 chestOffset;
 	mMesh.rootMatrix().mul33( &chestOffset, mCrawlChestOffset );
 	mCrawlCenter.setAdd( mPosition, chestOffset );
-	mAngleY = wrapSignedAngle( mAngleY + mCrawlYawOffset );
+	mAngleY = AngleMath::wrapSigned( mAngleY + mCrawlYawOffset );
 	mPath.clear();
 	mCrawl.start();
 }
@@ -659,7 +630,7 @@ float Zombie::crawlChase( const ChaseTarget* target, const HitWorld& hitWorld, b
 }
 
 void Zombie::placeCrawlingBody() {
-	mMesh.setAngleY( wrapSignedAngle( mAngleY - mCrawlYawOffset ) );
+	mMesh.setAngleY( AngleMath::wrapSigned( mAngleY - mCrawlYawOffset ) );
 	mCrawlCenter.y = mMover.followGround( mCrawlCenter );
 	// 足元は、胸から見た目の向きで戻した所（胸を中心に向きを変えるので、向きを変えると足元が回る）。
 	Vector3 chestOffset;
@@ -886,8 +857,8 @@ bool Zombie::isGone() const {
 
 float Zombie::secondsUntilGone() const {
 	switch ( mState ) {
-		case State::Corpse:  return ticksToSeconds( kCorpseTicks - mStateTicks + kSinkTicks );
-		case State::Sinking: return ticksToSeconds( kSinkTicks - mStateTicks );
+		case State::Corpse:  return GameTime::ticksToSeconds( kCorpseTicks - mStateTicks + kSinkTicks );
+		case State::Sinking: return GameTime::ticksToSeconds( kSinkTicks - mStateTicks );
 		case State::Alive:
 		case State::Downed:
 		case State::Falling: break;

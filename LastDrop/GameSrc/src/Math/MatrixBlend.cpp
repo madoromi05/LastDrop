@@ -1,4 +1,5 @@
 #include "GameSrc/Math/MatrixBlend.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include <cmath>
 
@@ -105,10 +106,6 @@ namespace{
 		q.x /= length; q.y /= length; q.z /= length; q.w /= length;
 		return q;
 	}
-
-	float lerp( float a, float b, float t ) {
-		return a + ( b - a ) * t;
-	}
 }
 
 void MatrixBlend::blend( const Matrix34& from, const Matrix34& to, float t, Matrix34* out ) {
@@ -124,7 +121,7 @@ void MatrixBlend::blend( const Matrix34& from, const Matrix34& to, float t, Matr
 	Quaternion q = slerp( fromRotation, toRotation, t );
 	float s[ kAxisNumber ];
 	for ( int i = 0; i < kAxisNumber; ++i ) {
-		s[ i ] = lerp( fromScale[ i ], toScale[ i ], t );
+		s[ i ] = ScalarMath::lerp( fromScale[ i ], toScale[ i ], t );
 	}
 
 	// 回転行列 × 拡大（列ごとに軸の長さを掛ける）＋移動 で組み立て直す。
@@ -140,7 +137,7 @@ void MatrixBlend::blend( const Matrix34& from, const Matrix34& to, float t, Matr
 	out->m20 = ( 2.f * ( xz - wy ) ) * s[ 0 ];
 	out->m21 = ( 2.f * ( yz + wx ) ) * s[ 1 ];
 	out->m22 = ( 1.f - 2.f * ( xx + yy ) ) * s[ 2 ];
-	out->m03 = lerp( fromTranslation[ 0 ], toTranslation[ 0 ], t );
-	out->m13 = lerp( fromTranslation[ 1 ], toTranslation[ 1 ], t );
-	out->m23 = lerp( fromTranslation[ 2 ], toTranslation[ 2 ], t );
+	out->m03 = ScalarMath::lerp( fromTranslation[ 0 ], toTranslation[ 0 ], t );
+	out->m13 = ScalarMath::lerp( fromTranslation[ 1 ], toTranslation[ 1 ], t );
+	out->m23 = ScalarMath::lerp( fromTranslation[ 2 ], toTranslation[ 2 ], t );
 }

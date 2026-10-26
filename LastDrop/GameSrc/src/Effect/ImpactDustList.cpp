@@ -32,7 +32,7 @@ namespace{
 
 ImpactDustList::ImpactDustList() :
 	mRandom( kRandomSeed ),
-	mTexture( Graphics::Texture::create( kTextureFile ) ),
+	mTexture( Graphics::Texture::create( kTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mFrames( kFrameColumns, kFrameRows, kFrameNumber ),
 	mQuads( kCapacity * ImpactDust::kParticleNumber ) {
 	mDusts.reserve( kCapacity );

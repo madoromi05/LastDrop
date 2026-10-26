@@ -1,6 +1,8 @@
 #include "GameSrc/Zombie/ZombieCrawl.h"
 #include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/PlacementMatrix.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -70,35 +72,18 @@ namespace{
 	const float kTinyLength = 0.001f;
 	const float kHalfTurnDegree = 180.f;
 
-	Vector3 translationOf( const Matrix34& m ) {
-		return Vector3( m.m03, m.m13, m.m23 );
-	}
-
 	float distanceBetween( const Vector3& a, const Vector3& b ) {
 		Vector3 d;
 		d.setSub( b, a );
 		return d.length();
 	}
 
-	// 0〜1 を、始めと終わりがなめらかな 0〜1 へ。
-	float smoothStep( float t ) {
-		return t * t * ( 3.f - 2.f * t );
-	}
-
-	float lerp( float a, float b, float t ) {
-		return a + ( b - a ) * t;
-	}
-
-	float clamp( float value, float low, float high ) {
-		return Math::max( low, Math::min( high, value ) );
-	}
-
 	// 往復の位置 phase で、腕をどこまで伸ばしているか（0 = 引き終わり、1 = 伸ばし切り）。前半で伸ばし、後半で引く。
 	float strokeExtend( float phase ) {
 		if ( phase < kReachShare ) {
-			return smoothStep( phase / kReachShare );
+			return ScalarMath::smoothStep( phase / kReachShare );
 		}
-		return 1.f - smoothStep( ( phase - kReachShare ) / ( 1.f - kReachShare ) );
+		return 1.f - ScalarMath::smoothStep( ( phase - kReachShare ) / ( 1.f - kReachShare ) );
 	}
 
 	// 往復の位置 phase までに、その腕で引いた割合（引き始め 0 → 引き終わり 1。伸ばしている間は 0）。
@@ -156,9 +141,9 @@ namespace{
 	// pivot の骨の原点を中心に、pivot → tip の向きが target の向きへ weight の割合だけ近づくよう、followers を回す。
 	void aimBone( int pivot, int tip, const std::vector< int >& followers, const Vector3& target, float weight,
 		std::vector< Matrix34 >* pose ) {
-		Vector3 center = translationOf( ( *pose )[ pivot ] );
+		Vector3 center = PlacementMatrix::translationOf( ( *pose )[ pivot ] );
 		Vector3 direction;
-		direction.setSub( translationOf( ( *pose )[ tip ] ), center );
+		direction.setSub( PlacementMatrix::translationOf( ( *pose )[ tip ] ), center );
 		if ( direction.length() < kTinyLength ) {
 			return;
 		}
@@ -169,14 +154,14 @@ namespace{
 	// pivot → tip の向き（長さ1。決まらなければ長さ 0）。
 	Vector3 boneDirection( int pivot, int tip, const std::vector< Matrix34 >& pose ) {
 		Vector3 direction;
-		direction.setSub( translationOf( pose[ tip ] ), translationOf( pose[ pivot ] ) );
+		direction.setSub( PlacementMatrix::translationOf( pose[ tip ] ), PlacementMatrix::translationOf( pose[ pivot ] ) );
 		return normalizedOr( direction, Vector3( 0.f, 0.f, 0.f ) );
 	}
 
 	// 骨 b から骨 other への向きを水平にし、forward に直交させたもの（外側の向き）。決まらなければ長さ 0。
 	Vector3 outwardFrom( int b, int other, const Vector3& forward, const std::vector< Matrix34 >& pose ) {
 		Vector3 outward;
-		outward.setSub( translationOf( pose[ b ] ), translationOf( pose[ other ] ) );
+		outward.setSub( PlacementMatrix::translationOf( pose[ b ] ), PlacementMatrix::translationOf( pose[ other ] ) );
 		outward.y = 0.f;
 		outward.msub( forward, outward.dot( forward ) );
 		return normalizedOr( outward, Vector3( 0.f, 0.f, 0.f ) );
@@ -198,7 +183,7 @@ namespace{
 		Vector3 toTarget;
 		toTarget.setSub( target, shoulder );
 		Vector3 direction = normalizedOr( toTarget, fallbackDirection );
-		float reach = clamp( toTarget.length(), Math::abs( upper - lower ) + kTinyLength, upper + lower - kTinyLength );
+		float reach = ScalarMath::clamp( toTarget.length(), Math::abs( upper - lower ) + kTinyLength, upper + lower - kTinyLength );
 		// 肩から、肘を target の方へ射影した所までの長さと、そこから肘までの高さ（余弦定理）。
 		float along = ( upper * upper - lower * lower + reach * reach ) / ( 2.f * reach );
 		float height = Math::sqrt( Math::max( 0.f, upper * upper - along * along ) );
@@ -311,7 +296,7 @@ void ZombieCrawl::apply( std::vector< Matrix34 >* pose ) {
 	}
 	// 体の向きは、倒れた姿勢の腰 → 首を水平にした向き（倒れ方で足元の向きから少しずれている）。胸を反らせる前に測る。
 	Vector3 forward;
-	forward.setSub( translationOf( ( *pose )[ mLayout->neck() ] ), translationOf( ( *pose )[ mLayout->hips() ] ) );
+	forward.setSub( PlacementMatrix::translationOf( ( *pose )[ mLayout->neck() ] ), PlacementMatrix::translationOf( ( *pose )[ mLayout->hips() ] ) );
 	forward.y = 0.f;
 	if ( forward.length() < kTinyLength ) {
 		return; // 立っている（腰の真上に首がある）。引きずる姿勢ではない
@@ -332,7 +317,7 @@ void ZombieCrawl::liftChest( const Vector3& up, std::vector< Matrix34 >* pose ) 
 	Vector3 spineDirection = boneDirection( mLayout->spine(), mLayout->chest(), *pose );
 	Vector3 chestAxis;
 	chestAxis.setCross( spineDirection, up );
-	rotateBones( translationOf( ( *pose )[ mLayout->spine() ] ), chestAxis, kChestLiftDegree * mWeight,
+	rotateBones( PlacementMatrix::translationOf( ( *pose )[ mLayout->spine() ] ), chestAxis, kChestLiftDegree * mWeight,
 		mLayout->chestFollowers(), pose );
 }
 
@@ -341,10 +326,10 @@ void ZombieCrawl::turnHead( const Vector3& forward, const Vector3& up, std::vect
 		return;
 	}
 	// 顔の向き：頭からあごの先への向きから、首 → 頭の向きの成分を除いたもの（頭の骨の軸の取り方に頼らない）。
-	Vector3 headPosition = translationOf( ( *pose )[ mLayout->head() ] );
+	Vector3 headPosition = PlacementMatrix::translationOf( ( *pose )[ mLayout->head() ] );
 	Vector3 headAxis = boneDirection( mLayout->neck(), mLayout->head(), *pose );
 	Vector3 face;
-	face.setSub( translationOf( ( *pose )[ mLayout->chin() ] ), headPosition );
+	face.setSub( PlacementMatrix::translationOf( ( *pose )[ mLayout->chin() ] ), headPosition );
 	face.msub( headAxis, face.dot( headAxis ) );
 	face = normalizedOr( face, forward );
 
@@ -359,9 +344,9 @@ void ZombieCrawl::turnHead( const Vector3& forward, const Vector3& up, std::vect
 	}
 	Vector3 side;
 	side.setCross( up, forward );
-	float yaw = clamp( Math::atan2( desired.dot( side ), desired.dot( forward ) ), -kMaxLookYawDegree, kMaxLookYawDegree );
+	float yaw = ScalarMath::clamp( Math::atan2( desired.dot( side ), desired.dot( forward ) ), -kMaxLookYawDegree, kMaxLookYawDegree );
 	float flat = Math::sqrt( desired.x * desired.x + desired.z * desired.z );
-	float pitch = clamp( Math::atan2( desired.y, flat ), -kMaxLookDownDegree, kMaxLookUpDegree );
+	float pitch = ScalarMath::clamp( Math::atan2( desired.y, flat ), -kMaxLookDownDegree, kMaxLookUpDegree );
 	Vector3 flatDirection( 0.f, 0.f, 0.f );
 	flatDirection.madd( forward, Math::cos( yaw ) );
 	flatDirection.madd( side, Math::sin( yaw ) );
@@ -375,7 +360,7 @@ void ZombieCrawl::turnHead( const Vector3& forward, const Vector3& up, std::vect
 		mHasLookDirection = true;
 	}
 	mLookDirection = rotateToward( mLookDirection, desired, kLookTurnPerTick );
-	turnBones( translationOf( ( *pose )[ mLayout->neck() ] ), face, mLookDirection, mWeight, mLayout->headFollowers(), pose );
+	turnBones( PlacementMatrix::translationOf( ( *pose )[ mLayout->neck() ] ), face, mLookDirection, mWeight, mLayout->headFollowers(), pose );
 }
 
 void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forward, const Vector3& up,
@@ -386,9 +371,9 @@ void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forwar
 	if ( outward.length() < kTinyLength ) {
 		return;
 	}
-	Vector3 shoulder = translationOf( ( *pose )[ arm.shoulder ] );
-	Vector3 elbow = translationOf( ( *pose )[ arm.elbow ] );
-	Vector3 wrist = translationOf( ( *pose )[ arm.hand ] );
+	Vector3 shoulder = PlacementMatrix::translationOf( ( *pose )[ arm.shoulder ] );
+	Vector3 elbow = PlacementMatrix::translationOf( ( *pose )[ arm.elbow ] );
+	Vector3 wrist = PlacementMatrix::translationOf( ( *pose )[ arm.hand ] );
 	float upperLength = distanceBetween( shoulder, elbow );
 	float lowerLength = distanceBetween( elbow, wrist );
 
@@ -400,14 +385,14 @@ void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forwar
 	float height = kWristGroundHeight;
 	if ( phase < kReachShare ) {
 		float t = phase / kReachShare;
-		forwardAmount = lerp( kHandPulledForward, kHandReachForward, smoothStep( t ) );
+		forwardAmount = ScalarMath::lerp( kHandPulledForward, kHandReachForward, ScalarMath::smoothStep( t ) );
 		height += kHandCarryLift * Math::sin( kHalfTurnDegree * t );
 	} else {
-		forwardAmount = lerp( kHandReachForward, kHandPulledForward, pulledShare( phase ) );
+		forwardAmount = ScalarMath::lerp( kHandReachForward, kHandPulledForward, pulledShare( phase ) );
 	}
 	// つかみに行くときは、前へ伸ばして足首の高さで止める。
-	forwardAmount = lerp( forwardAmount, kGrabForward, mReach );
-	height = lerp( height, kGrabWristHeight, mReach );
+	forwardAmount = ScalarMath::lerp( forwardAmount, kGrabForward, mReach );
+	height = ScalarMath::lerp( height, kGrabWristHeight, mReach );
 	Vector3 target( shoulder.x, 0.f, shoulder.z );
 	target.madd( forward, forwardAmount );
 	target.madd( outward, kHandOutward );
@@ -428,18 +413,18 @@ void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forwar
 	aimBone( arm.shoulder, arm.elbow, arm.upperFollowers, normalizedOr( upperTarget, forward ), mWeight, pose );
 	// 回った後の肘から、手首を置く所へ前腕を向ける。
 	Vector3 lowerTarget;
-	lowerTarget.setSub( target, translationOf( ( *pose )[ arm.elbow ] ) );
+	lowerTarget.setSub( target, PlacementMatrix::translationOf( ( *pose )[ arm.elbow ] ) );
 	aimBone( arm.elbow, arm.hand, arm.lowerFollowers, normalizedOr( lowerTarget, forward ), mWeight, pose );
 
 	// 手：前腕の向きを水平にした向きで、中指の付け根を地面の高さへ（手のひらを地面に付ける）。
-	Vector3 placedWrist = translationOf( ( *pose )[ arm.hand ] );
-	float handLength = distanceBetween( placedWrist, translationOf( ( *pose )[ arm.knuckle ] ) );
+	Vector3 placedWrist = PlacementMatrix::translationOf( ( *pose )[ arm.hand ] );
+	float handLength = distanceBetween( placedWrist, PlacementMatrix::translationOf( ( *pose )[ arm.knuckle ] ) );
 	if ( handLength < kTinyLength ) {
 		return;
 	}
 	Vector3 handFlat( lowerTarget.x, 0.f, lowerTarget.z );
 	handFlat = normalizedOr( handFlat, forward );
-	float pitch = clamp( ( kKnuckleGroundHeight - placedWrist.y ) / handLength, kHandMinPitch, kHandMaxPitch );
+	float pitch = ScalarMath::clamp( ( kKnuckleGroundHeight - placedWrist.y ) / handLength, kHandMinPitch, kHandMaxPitch );
 	Vector3 handTarget = handFlat;
 	handTarget *= Math::sqrt( 1.f - pitch * pitch );
 	handTarget.y = pitch;
@@ -466,7 +451,7 @@ void ZombieCrawl::sweepLeg( ZombieCrawlLayout::Side side, const Vector3& forward
 	Vector3 thighAxis;
 	thighAxis.setCross( thighFlat, outward );
 	float thighSign = ( thighAxis.dot( up ) >= 0.f ) ? 1.f : -1.f;
-	rotateBones( translationOf( ( *pose )[ leg.hip ] ), up, thighSign * kThighSpreadDegree * bend, leg.thighFollowers, pose );
+	rotateBones( PlacementMatrix::translationOf( ( *pose )[ leg.hip ] ), up, thighSign * kThighSpreadDegree * bend, leg.thighFollowers, pose );
 	// すね：足先を内へ（膝が外へ出た分、足先は体の真ん中の方へ曲がる。蛙のように地面を蹴る形）。
 	Vector3 shinFlat = boneDirection( leg.knee, leg.ankle, *pose );
 	shinFlat.y = 0.f;
@@ -475,5 +460,5 @@ void ZombieCrawl::sweepLeg( ZombieCrawlLayout::Side side, const Vector3& forward
 	Vector3 shinAxis;
 	shinAxis.setCross( shinFlat, inward );
 	float shinSign = ( shinAxis.dot( up ) >= 0.f ) ? 1.f : -1.f;
-	rotateBones( translationOf( ( *pose )[ leg.knee ] ), up, shinSign * kKneeBendDegree * bend, leg.shinFollowers, pose );
+	rotateBones( PlacementMatrix::translationOf( ( *pose )[ leg.knee ] ), up, shinSign * kKneeBendDegree * bend, leg.shinFollowers, pose );
 }

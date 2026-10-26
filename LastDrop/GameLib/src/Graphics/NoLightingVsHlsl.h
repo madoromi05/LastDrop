@@ -1,7 +1,8 @@
 #ifndef INCLUDED_GAMELIB_GRAPHICS_NOLIGHTINGVS_HLSL_H
 #define INCLUDED_GAMELIB_GRAPHICS_NOLIGHTINGVS_HLSL_H
+#include "Graphics/ColorSpaceHlsl.h"
 namespace {
-const char gNoLightingVsHlsl[] = R"HLSL(
+const char gNoLightingVsHlsl[] = GAMELIB_COLOR_SPACE_HLSL R"HLSL(
 cbuffer VSConstants : register(b0)
 {
     float4 gTransform[4];
@@ -13,6 +14,7 @@ cbuffer VSConstants : register(b0)
     float4 gLightPosY;
     float4 gLightPosZ;
     float4 gLightColor[4];
+    float4 gColorParams; // x: 1 なら頂点色をリニアへ直す（Manager::enableLinearColor）
 };
 struct VSIn
 {
@@ -34,7 +36,7 @@ VSOut main(VSIn v)
     o.pos.y = dot(gTransform[1], v.position);
     o.pos.z = dot(gTransform[2], v.position);
     o.pos.w = dot(gTransform[3], v.position);
-    o.color = v.color.zyxw * gDiffuseColor;
+    o.color = vertexColorToScene(v.color, gColorParams) * gDiffuseColor;
     o.uv = v.uv;
     return o;
 }

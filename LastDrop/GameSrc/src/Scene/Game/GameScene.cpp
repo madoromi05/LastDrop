@@ -4,13 +4,10 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Render/ViewFrustum.h"
-#include "GameSrc/UI/UiScreen.h"
-#include "Framework.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Enum.h"
-#include "GameLib/Math/Vector2.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Functions.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
@@ -34,20 +31,6 @@ namespace{
 	const int kFillLight = 1;
 	const int kMuzzleLight = 2; // 撃った瞬間だけ銃口の前に灯す（MuzzleFlash）。光っていない間は強さ0
 	const int kLightNumber = 4; // GameLib のライト数。使わないライトは強さ0にする
-
-	// ── 照準（HUD の「+」）──
-	// 覗き具合がこれを超えたら「+」を消す（サイトで狙う）。
-	const float kCrosshairHideAimWeight = 0.5f;
-	const float kHalfView = 0.5f; // 視野角・画面の高さの半分
-
-	// 銃が向いている所（照準のぶれの分だけ画面の中央からずれた所）の、画面上の位置（UI_ANCHOR_CENTER から見た画素）。
-	// 縦の視野角から「画面の半分の高さが何度か」を決め、ぶれの角度を画素へ直す（横も同じ割合。画素は縦横同じ大きさ）。
-	Vector2 crosshairPosition( const FirstPersonCamera& camera ) {
-		float focal = Framework::instance().height() * kHalfView / Math::tan( camera.fieldOfView() * kHalfView );
-		Vector2 center = UiScreen::screenCenter();
-		// ヨーは正で左（画面の左＝x が小さい）、ピッチは正で見下ろす（画面の下＝y が大きい）。
-		return Vector2( center.x - Math::tan( camera.weaponSwayYaw() ) * focal, center.y + Math::tan( camera.weaponSwayPitch() ) * focal );
-	}
 
 #ifdef ZF_EDITOR
 	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
@@ -276,11 +259,8 @@ void GameScene::draw() {
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
-		// 腰だめの「+」は銃が向いている所へ動かし、覗いている間は消す（サイトで狙う。AimSway_Plan.txt の ★4）。
-		Vector2 crosshair = crosshairPosition( mControl.camera() );
-		bool showCrosshair = aimWeight() <= kCrosshairHideAimWeight;
-		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr,
-			showCrosshair ? &crosshair : nullptr );
+		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
+		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
 	}
 
 	GameDebugOverlay::TextState text;

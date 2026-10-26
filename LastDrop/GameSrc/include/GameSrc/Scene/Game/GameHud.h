@@ -9,7 +9,7 @@ class EscapeCar;
 class Inventory;
 class PlayerHealth;
 
-// 本編の HUD。照準、見ている物の案内（照準の下）、車のガソリンと持ち物（左下）、左上に自キャラの体の図（PlayerBodyFigure）を出す。
+// 本編の HUD。見ている物の案内（画面の中央の少し下）、車のガソリンと持ち物（左下）、左上に自キャラの体の図（PlayerBodyFigure）を出す。
 // 表示するだけで、ゲームの状態は変えない（車と持ち物を読むだけ）。文言と並べ方を変えるときは、このクラスだけを直す。
 class GameHud{
 public:
@@ -22,14 +22,11 @@ public:
 	// prompt: 見ている物の案内（Interactor::prompt。見ている物が無ければ空文字列）。nullptr 不可。
 	// car: 脱出用の車。nullptr なら車のガソリンの行は書き換えない（車を置けなかったとき）。所有権は受け取らない。
 	// health: 自キャラの体力。nullptr なら体の図を出さない（自キャラを置けなかったとき）。所有権は受け取らない。
-	// crosshair: 照準の「+」を置く所（UI_ANCHOR_CENTER から見た画素。銃が向いている所）。nullptr なら「+」を出さない（覗いている間）。
-	void draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health,
-		const GameLib::Math::Vector2* crosshair );
+	void draw( const char* prompt, const EscapeCar* car, const Inventory& inventory, const PlayerHealth* health );
 
 private:
 	UiScreen mScreen;
 	UiRenderer* mRenderer; // 借りているだけ（体の図の四角を積む。mScreen が描く）
-	UiLabel* mCrosshairLabel; // mScreen が持つ部品を借りる（置き場所を毎回変える）
 	UiLabel* mPromptLabel; // mScreen が持つ部品を借りる（文字を毎回書き換える）
 	UiLabel* mTankLabel;
 	UiLabel* mCarryLabel;

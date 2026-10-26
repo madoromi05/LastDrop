@@ -8,6 +8,7 @@
 #include "GameLib/PseudoXml/Attribute.h"
 #include "GameLib/Base/RefString.h"
 #include "GameLib/Profiling/Profiler.h"
+#include "Graphics/ColorSpace.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -41,7 +42,8 @@ public:
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
 	mName( 0 ),
-	mRequestedAt( 0 ){
+	mRequestedAt( 0 ),
+	mColorSpace( TEXTURE_COLOR_SPACE_LINEAR ){
 		mIsError = true;
 		int an = e.attributeNumber();
 		for ( int i = 0; i < an; ++i ){
@@ -68,7 +70,7 @@ public:
 		}
 	}
 	// Constructor from filename (async file load)
-	Impl( const char* filename, ID3D11Device* device, ID3D11DeviceContext* context ) :
+	Impl( const char* filename, TextureColorSpace colorSpace, ID3D11Device* device, ID3D11DeviceContext* context ) :
 	mGpuTexture( 0 ),
 	mSRV( 0 ),
 	mDevice( device ),
@@ -81,7 +83,8 @@ public:
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
 	mName( 0 ),
-	mRequestedAt( 0 ){
+	mRequestedAt( 0 ),
+	mColorSpace( colorSpace ){
 		mExtension = getExtension( filename );
 		if ( mExtension != EXT_UNKNOWN ){
 			mRequestedAt = Profiling::now();
@@ -105,7 +108,8 @@ public:
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
 	mName( 0 ),
-	mRequestedAt( 0 ){
+	mRequestedAt( 0 ),
+	mColorSpace( TEXTURE_COLOR_SPACE_LINEAR ){
 		createStagingObject( w, h, createMipChain );
 	}
 	// Constructor from raw data buffer
@@ -122,7 +126,8 @@ public:
 	mNeedsUpload( false ),
 	mExtension( EXT_UNKNOWN ),
 	mName( 0 ),
-	mRequestedAt( 0 ){
+	mRequestedAt( 0 ),
+	mColorSpace( TEXTURE_COLOR_SPACE_LINEAR ){
 		if ( data[ 0 ] == 'D' && data[ 1 ] == 'D' && data[ 2 ] == 'S' && data[ 3 ] == ' ' ){
 			readDDS( data, size );
 		}else{
@@ -173,7 +178,8 @@ public:
 		desc.Height         = static_cast< UINT >( mMips[ 0 ].height );
 		desc.MipLevels      = static_cast< UINT >( mipLevels );
 		desc.ArraySize      = 1;
-		desc.Format         = DXGI_FORMAT_B8G8R8A8_UNORM;
+		// 色の画像は _SRGB にして、シェーダが読むときに GPU がリニアへ直す（線形のフィルタもリニアで掛かる）。
+		desc.Format         = ( mColorSpace == TEXTURE_COLOR_SPACE_SRGB ) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
 		desc.SampleDesc.Count = 1;
 		desc.Usage          = D3D11_USAGE_DEFAULT;
 		desc.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
@@ -559,6 +565,57 @@ public:
 		unlock( 0 );
 	}
 
+	// ミップを作るときの画素の並び（BGRA が 8bit ずつ。アルファは一番上の 8bit）と、縮める前の 4 画素。
+	static const int kChannelBits = 8;
+	static const int kChannels = 4;
+	static const int kAlphaShift = 24;
+	static const unsigned kChannelMask = 0xff;
+	static const int kMipSourcePixels = 4;
+	// リニアの数は 16bit（0〜65535）で持つ。8bit の色 256 段を 4 つ足しても溢れず、暗い所の差も潰れない。
+	static const int kSrgbLevels = 256;
+	static const int kLinearBits = 16;
+	static constexpr float kLinearMax = static_cast< float >( ( 1 << kLinearBits ) - 1 );
+	// リニア → 色の表の段数（16bit を下の 4bit 捨てて引く）。暗い所でも 1 段のずれが 8bit の色の 1 より小さくなる細かさ。
+	static const int kLinearToSrgbBits = 12;
+	static const int kLinearToSrgbShift = kLinearBits - kLinearToSrgbBits;
+
+	// 色の画像のミップをリニアで平均するための表。pow を画素ごとに呼ぶと、4096² の読み込みが目に見えて遅くなるため。
+	struct SrgbTables{
+		unsigned short toLinear[ kSrgbLevels ];             // 8bit の色 → 16bit のリニア
+		unsigned char  toSrgb[ 1 << kLinearToSrgbBits ];    // 16bit のリニアの上 12bit → 8bit の色
+		SrgbTables(){
+			const float colorMax = static_cast< float >( kSrgbLevels - 1 );
+			for ( int i = 0; i < kSrgbLevels; ++i ){
+				float linear = ColorSpace::srgbToLinear( i / colorMax );
+				toLinear[ i ] = static_cast< unsigned short >( linear * kLinearMax + 0.5f );
+			}
+			const int steps = 1 << kLinearToSrgbBits;
+			for ( int i = 0; i < steps; ++i ){
+				// 段の真ん中の値で引く（切り捨てで引くと、全体が暗い側へ寄る）。
+				float linear = ( i + 0.5f ) / steps;
+				toSrgb[ i ] = static_cast< unsigned char >( ColorSpace::linearToSrgb( linear ) * colorMax + 0.5f );
+			}
+		}
+	};
+	static const SrgbTables& srgbTables(){
+		static const SrgbTables sTables; // 初めて色の画像のミップを作るときに 1 回だけ作る
+		return sTables;
+	}
+	// 4 画素の、shift の位置の 8bit を平均する。asSrgb なら sRGB の色としてリニアで平均する
+	// （画像の数のまま平均すると、遠くの縮んだ絵が暗い側へ寄るため。LinearToneMap_Plan.txt 4 章）。
+	static unsigned averageChannel( const unsigned* quad, int shift, bool asSrgb ){
+		const unsigned half = kMipSourcePixels / 2; // 四捨五入
+		unsigned sum = 0;
+		if ( !asSrgb ){
+			for ( int i = 0; i < kMipSourcePixels; ++i ) sum += ( quad[ i ] >> shift ) & kChannelMask;
+			return ( sum + half ) / kMipSourcePixels;
+		}
+		const SrgbTables& tables = srgbTables();
+		for ( int i = 0; i < kMipSourcePixels; ++i ) sum += tables.toLinear[ ( quad[ i ] >> shift ) & kChannelMask ];
+		unsigned linear = ( sum + half ) / kMipSourcePixels;
+		return tables.toSrgb[ linear >> kLinearToSrgbShift ];
+	}
+
 	void createMipmapChain( const unsigned* src, int srcPitch, int sw, int sh, int level ){
 		int dw = sw >> 1;
 		int dh = sh >> 1;
@@ -569,21 +626,18 @@ public:
 		unsigned* dst = dstSurface;
 		int dstPitchPx = dstPitch / 4;
 		ASSERT( dstPitchPx >= dw );
+		const bool srgb = ( mColorSpace == TEXTURE_COLOR_SPACE_SRGB );
 		for ( int y = 0; y < dh; ++y ){
 			for ( int x = 0; x < dw; ++x ){
-				unsigned c0 = src[ 2*x ];
-				unsigned c1 = src[ 2*x+1 ];
-				unsigned c2 = src[ 2*x+srcPitch ];
-				unsigned c3 = src[ 2*x+srcPitch+1 ];
-				int b = ((c0)&0xff)+((c1)&0xff)+((c2)&0xff)+((c3)&0xff);
-				c0>>=8; c1>>=8; c2>>=8; c3>>=8;
-				int g = ((c0)&0xff)+((c1)&0xff)+((c2)&0xff)+((c3)&0xff);
-				c0>>=8; c1>>=8; c2>>=8; c3>>=8;
-				int r = ((c0)&0xff)+((c1)&0xff)+((c2)&0xff)+((c3)&0xff);
-				c0>>=8; c1>>=8; c2>>=8; c3>>=8;
-				int a = ((c0)&0xff)+((c1)&0xff)+((c2)&0xff)+((c3)&0xff);
-				b=(b+2)>>2; g=(g+2)>>2; r=(r+2)>>2; a=(a+2)>>2;
-				dst[x] = b | (g<<8) | (r<<16) | (a<<24);
+				const unsigned quad[ kMipSourcePixels ] = {
+					src[ 2*x ], src[ 2*x+1 ], src[ 2*x+srcPitch ], src[ 2*x+srcPitch+1 ] };
+				unsigned averaged = 0;
+				for ( int shift = 0; shift < kChannelBits * kChannels; shift += kChannelBits ){
+					// アルファは色ではない（覆う割合）ので、色の画像でもそのまま平均する。
+					bool linear = srgb && ( shift != kAlphaShift );
+					averaged |= averageChannel( quad, shift, linear ) << shift;
+				}
+				dst[x] = averaged;
 			}
 			dst += dstPitchPx;
 			src += srcPitch * 2;
@@ -627,6 +681,7 @@ public:
 	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）。
 	long long                 mRequestedAt;
 	string                    mProfileName;
+	TextureColorSpace         mColorSpace; // 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
 };
 
 } //namespace Graphics

@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/ZombieFlinchLayout.h"
 #include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -21,10 +22,6 @@ namespace{
 	const float kNegligibleDegree = 0.1f;
 	// 骨の向きと押す向きがほぼ平行（外積の長さがこれ未満）なら、回す軸が決まらないので曲げない。
 	const float kParallelLimit = 0.001f;
-
-	Vector3 translationOf( const Matrix34& m ) {
-		return Vector3( m.m03, m.m13, m.m23 );
-	}
 }
 
 ZombieFlinch::ZombieFlinch( const ZombieFlinchLayout* layout ) :
@@ -60,9 +57,9 @@ void ZombieFlinch::apply( std::vector< Matrix34 >* pose ) {
 		pushDirection *= 1.f / degree;
 		// 根の側の関節から順に、「今の」関節の位置で曲げる（前の関節で動いた後の位置。FirstPersonBody::bendSpine と同じ）。
 		for ( const ZombieFlinchLayout::Joint& joint : groups[ g ].joints ) {
-			Vector3 center = translationOf( ( *pose )[ joint.bone ] );
+			Vector3 center = PlacementMatrix::translationOf( ( *pose )[ joint.bone ] );
 			Vector3 boneDirection;
-			boneDirection.setSub( translationOf( ( *pose )[ joint.tipBone ] ), center );
+			boneDirection.setSub( PlacementMatrix::translationOf( ( *pose )[ joint.tipBone ] ), center );
 			boneDirection.normalize();
 			// 骨の向き × 押す向き の軸で正に回すと、骨の先が押す向きへ倒れる。
 			// 外積の長さ（sin）を角度に掛けて、骨が押す向きに近いほど少なく倒す（平行なら倒れない）。

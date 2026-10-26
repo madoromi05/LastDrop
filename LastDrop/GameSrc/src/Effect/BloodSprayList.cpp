@@ -28,7 +28,7 @@ namespace{
 
 BloodSprayList::BloodSprayList() :
 	mRandom( kRandomSeed ),
-	mTexture( Graphics::Texture::create( kTextureFile ) ),
+	mTexture( Graphics::Texture::create( kTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mQuads( kCapacity * BloodSpray::kMaxDropNumber ) {
 	mSprays.reserve( kCapacity );
 }

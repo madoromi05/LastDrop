@@ -6,7 +6,7 @@ namespace{
 	const float kRoundsPerMinute = 600.f;
 	const float kSecondsPerMinute = 60.f;
 	// 1発ごとの間隔（ティック）。600発/分なら 6 ティックに1発。
-	const int kFireIntervalTicks = static_cast< int >( kSecondsPerMinute * GameTime::kTicksPerSecond / kRoundsPerMinute );
+	const int kFireIntervalTicks = GameTime::secondsToTicks( kSecondsPerMinute / kRoundsPerMinute );
 }
 
 FireControl::FireControl() :

@@ -18,7 +18,7 @@ namespace{
 	const float kShakeOffDamage = 60.f;
 	// 攻撃が終わって（振りほどかれて・倒れかけて）から、次の攻撃を始めるまで（秒）。
 	const float kCooldownSeconds = 2.f;
-	const int kCooldownTicks = static_cast< int >( kCooldownSeconds * GameTime::kTicksPerSecond );
+	const int kCooldownTicks = GameTime::secondsToTicks( kCooldownSeconds );
 }
 
 ZombieAttack::ZombieAttack() :

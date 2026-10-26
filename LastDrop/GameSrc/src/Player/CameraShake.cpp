@@ -1,5 +1,6 @@
 #include "GameSrc/Player/CameraShake.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -39,10 +40,6 @@ namespace{
 		const float kToUnit = 1.f / 4294967295.f;
 		return static_cast< float >( h ) * kToUnit * 2.f - 1.f;
 	}
-
-	float smoothStep( float t ) {
-		return t * t * ( 3.f - 2.f * t );
-	}
 }
 
 CameraShake::CameraShake( int seed ) :
@@ -71,7 +68,7 @@ void CameraShake::update() {
 float CameraShake::noise( int channel ) const {
 	// 前後の格子の値を smoothstep でつなぐ（バリューノイズ）。乱数をそのまま使うとガタガタに跳ねるため。
 	int index = static_cast< int >( mPhase );
-	float t = smoothStep( mPhase - static_cast< float >( index ) );
+	float t = ScalarMath::smoothStep( mPhase - static_cast< float >( index ) );
 	float a = latticeValue( mSeed, channel, mLatticeBase + index );
 	float b = latticeValue( mSeed, channel, mLatticeBase + index + 1 );
 	return a + ( b - a ) * t;

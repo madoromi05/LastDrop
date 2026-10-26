@@ -1,6 +1,7 @@
 #include "GameSrc/Player/AimSway.h"
 #include "GameSrc/Player/AimSwayParams.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -24,26 +25,14 @@ namespace{
 		return ( phase >= 1.f ) ? phase - 1.f : phase;
 	}
 
-	// 位相を -1〜2 の範囲から 0〜1 へ戻す（1 ティックに進む・寄せる量は 1 周より小さい）。
-	float wrapPhase( float phase ) {
-		if ( phase >= 1.f ) {
-			return phase - 1.f;
-		}
-		return ( phase < 0.f ) ? phase + 1.f : phase;
-	}
-
 	// from から to への近い方の差（-0.5〜0.5）。0.95 → 0.05 なら +0.1（逆向きに 0.9 戻らない）。
 	float phaseGap( float from, float to ) {
-		return wrapPhase( to - from + kHalf ) - kHalf;
+		return ScalarMath::wrapUnit( to - from + kHalf ) - kHalf;
 	}
 
 	// seconds 秒で 0 → 1 進むときの、1 ティックあたりの量。
 	float perTick( float seconds ) {
 		return 1.f / ( seconds * GameTime::kTicksPerSecond );
-	}
-
-	float clampSigned( float value, float limit ) {
-		return Math::max( -limit, Math::min( limit, value ) );
 	}
 
 	// 半分に戻るまで halfLife 秒のとき、1 ティックごとに残る割合（はね返らない減り方）。
@@ -96,10 +85,10 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 	}
 	// 位相は速さの割合で自分で進め（止まれば止まる）、歩き・走りのアニメ中だけその位相へ少しずつ寄せる。
 	// アニメの位相をそのまま使うと、A・D を素早く押し替えたときに止まる⇔歩くでアニメが頭から始まり、銃が 1 ティックで跳ぶ。
-	mWalkPhase = wrapPhase( mWalkPhase + target * perTick( gParams.walkCycleSeconds ) );
+	mWalkPhase = ScalarMath::wrapUnit( mWalkPhase + target * perTick( gParams.walkCycleSeconds ) );
 	if ( body.gaitCycling ) {
 		float pull = 1.f - remainPerTick( gParams.walkSyncHalfLife );
-		mWalkPhase = wrapPhase( mWalkPhase + phaseGap( mWalkPhase, body.gaitPhase ) * pull );
+		mWalkPhase = ScalarMath::wrapUnit( mWalkPhase + phaseGap( mWalkPhase, body.gaitPhase ) * pull );
 	}
 	// 上下は 1 歩ごとに 1 往復、左右は 1 周（2 歩）で 1 往復（足を着くたびに沈み、体重が左右へ移るのに合わせて振れる）。
 	yaw += gParams.walkYaw * mWalkStrength * Math::sin( kFullTurn * mWalkPhase );
@@ -107,8 +96,8 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 
 	// c. 振り向きの遅れ：回した向きと逆へ残し、ばねで 0 へ戻す。
 	float remain = remainPerTick( gParams.lagHalfLife );
-	mLagYaw = clampSigned( settle( mLagYaw, remain ) - lookYaw * gParams.lagRate, gParams.lagLimit );
-	mLagPitch = clampSigned( settle( mLagPitch, remain ) - lookPitch * gParams.lagRate, gParams.lagLimit );
+	mLagYaw = ScalarMath::clampSigned( settle( mLagYaw, remain ) - lookYaw * gParams.lagRate, gParams.lagLimit );
+	mLagPitch = ScalarMath::clampSigned( settle( mLagPitch, remain ) - lookPitch * gParams.lagRate, gParams.lagLimit );
 	yaw += mLagYaw;
 	pitch += mLagPitch;
 

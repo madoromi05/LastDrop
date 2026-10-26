@@ -182,10 +182,14 @@ C++(directX11)
 	(個別仕様/DebugTools_Profiling_Plan.txt)
 ・【済】ComponentSystem(10/25。Unity の GameObject＋Component と同じ考え方。ActorList を GameObjectWorld に置き換えた。
   ゾンビ・落ちているガソリン・落ちた弾が部品。個別仕様/ComponentSystem_Plan.txt。遊んでの確認はまだ)
+・【済】秒→ティックの丸め(切り捨て→一番近い整数。GameTime::secondsToTicks)と、重複した小さな計算の共通化
+  (AngleMath・FlatMath・ScalarMath・PlacementMatrix::translationOf。10/26 の設計の見直しの 1・2。個別仕様/MathHelpers_Plan.txt。遊んでの確認はまだ)
 
 ④グラフィック(個別仕様/Graphics_Spec.txt 15 章の段階の順。2026/10/25 に最適化より先にすると決定)
  → は、その段階で一緒にやる最適化(個別仕様/Optimization_Plan.txt 8 章の A。後から入れると描く経路を作り直すため)
-・【未】段階1 リニア化 ＋ ToneMap(描き方は今のまま)
+・【一部】段階1 リニア化 ＋ ToneMap(描き方は今のまま。10/26 仕様を承認。1-a リニア化＋ToneMap → 1-b DDS(BC7・BC5)と大きさの見直し の順。個別仕様/LinearToneMap_Plan.txt)
+	-【済】1-a リニア化＋ToneMap(10/26。色の画像は sRGB で読む・色の定数と頂点色をリニアへ・ACES・露出とブルームは F6 の PostProcessParams。画面確認待ち・値は調整中)
+	-【未】1-b DDS と大きさの見直し(1-a を画面で確かめてから)
 	→ テクスチャの圧縮と大きさの見直し(sRGB として読む指定と同じ場所)
 ・【未】段階2 ディファードレンダリング(G-Buffer 3枚。まずは今と同じ式のライティングで同じ絵を出す)
 https://qiita.com/y_UM4/items/7647fd9fc19e60ec5822

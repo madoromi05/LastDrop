@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Game/PlayerDamageView.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -16,22 +17,14 @@ namespace{
 	// 死んだ後、真っ暗になるまで（秒）。視点が下がり切るより少し後に暗くなり終える。
 	const float kFadeSeconds = 2.f;
 
-	int secondsToTicks( float seconds ) {
-		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
-	}
-	const int kFlashTicks = secondsToTicks( kFlashSeconds );
-	const int kPainTicks = secondsToTicks( kPainSeconds );
-	const int kDropTicks = secondsToTicks( kDropSeconds );
-	const int kFadeTicks = secondsToTicks( kFadeSeconds );
+	const int kFlashTicks = GameTime::secondsToTicks( kFlashSeconds );
+	const int kPainTicks = GameTime::secondsToTicks( kPainSeconds );
+	const int kDropTicks = GameTime::secondsToTicks( kDropSeconds );
+	const int kFadeTicks = GameTime::secondsToTicks( kFadeSeconds );
 
 	// ticks が total のうち何割まで進んだか（0〜1）。
 	float progress( int ticks, int total ) {
 		return Math::min( 1.f, static_cast< float >( ticks ) / static_cast< float >( total ) );
-	}
-
-	// 始めと終わりがゆっくりになる曲線（smoothstep）。崩れ始め・崩れ終わりが急に見えないように。
-	float easeInOut( float t ) {
-		return t * t * ( 3.f - 2.f * t );
 	}
 }
 
@@ -69,7 +62,8 @@ float PlayerDamageView::pain() const {
 }
 
 float PlayerDamageView::eyeDrop() const {
-	return kDropMeters * easeInOut( progress( mDeadTicks, kDropTicks ) );
+	// 始めと終わりがゆっくりになる曲線（smoothstep）にする。崩れ始め・崩れ終わりが急に見えないように。
+	return kDropMeters * ScalarMath::smoothStep( progress( mDeadTicks, kDropTicks ) );
 }
 
 float PlayerDamageView::fade() const {

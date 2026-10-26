@@ -1,5 +1,6 @@
 #include "GameSrc/Weapon/WeaponReload.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -22,28 +23,21 @@ namespace{
 	const float kMagInAnimationSeconds = 1.6f;   // 左手が下から上がりきる（新しい弾倉を挿す）
 	const float kBoltAnimationSeconds = 2.1f;    // 左手が右手へ一番近づく（銃の右の槓桿を引く）
 
-	int secondsToTicks( float seconds ) {
-		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
-	}
 	// アニメの時刻を、リロードを始めてからのティックに直す（1.25 倍で流すので早く来る）。
 	int animationSecondsToTicks( float animationSeconds ) {
-		return secondsToTicks( animationSeconds / kAnimationRate );
+		return GameTime::secondsToTicks( animationSeconds / kAnimationRate );
 	}
-	const int kDurationTicks = secondsToTicks( kDurationSeconds );
+	const int kDurationTicks = GameTime::secondsToTicks( kDurationSeconds );
 	const int kMagOutTicks = animationSecondsToTicks( kMagOutAnimationSeconds );
 	const int kMagInTicks = animationSecondsToTicks( kMagInAnimationSeconds );
 	const int kBoltTicks = animationSecondsToTicks( kBoltAnimationSeconds );
 	const int kInactive = -1;
 
-	// 始めと終わりがゆっくりになる曲線（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため。
-	float easeInOut( float t ) {
-		return t * t * ( 3.f - 2.f * t );
-	}
-
 	// seconds が from → to の間をどれだけ進んだか（0〜1。曲線を掛けた値）。
+	// 曲線は始めと終わりがゆっくりになる物（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため。
 	float easedProgress( float seconds, float from, float to ) {
 		float t = ( seconds - from ) / ( to - from );
-		return easeInOut( Math::min( 1.f, Math::max( 0.f, t ) ) );
+		return ScalarMath::smoothStep( Math::min( 1.f, Math::max( 0.f, t ) ) );
 	}
 }
 
@@ -113,10 +107,10 @@ float WeaponReload::magazineSeatWeight() const {
 	if ( !isActive() ) {
 		return 0.f;
 	}
-	float magInSeconds = static_cast< float >( kMagInTicks ) / GameTime::kTicksPerSecond;
+	float magInSeconds = GameTime::ticksToSeconds( kMagInTicks );
 	return easedProgress( elapsedSeconds(), magInSeconds - kMagazineSeatSeconds, magInSeconds );
 }
 
 float WeaponReload::elapsedSeconds() const {
-	return static_cast< float >( mTicks ) / GameTime::kTicksPerSecond;
+	return GameTime::ticksToSeconds( mTicks );
 }

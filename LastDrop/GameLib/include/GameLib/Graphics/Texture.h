@@ -1,6 +1,8 @@
 #ifndef INCLUDED_GAMELIB_GRAPHICS_TEXTURE_H
 #define INCLUDED_GAMELIB_GRAPHICS_TEXTURE_H
 
+#include "GameLib/Graphics/Enum.h"
+
 namespace GameLib{
 namespace PseudoXml{
 	class ConstElement;
@@ -14,7 +16,8 @@ public:
 	//空のテクスチャ
 	static Texture create( int width, int height, bool createMipChain );
 	///TGAもしくはDDS。拡張子で判別する。
-	static Texture create( const char* filename );
+	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため。SummaryPlan/個別仕様/LinearToneMap_Plan.txt 3 章）。
+	static Texture create( const char* filename, TextureColorSpace colorSpace = TEXTURE_COLOR_SPACE_LINEAR );
 	///TGAもしくはDDSの中身を渡す。最初にDDSと書いてあればDDSとみなし、それ以外はTGAとみなす。
 	static Texture create( const char* fileData, int fileSize );
 	///名前ゲット(ニセxmlからロードすればその名前。他は空。)

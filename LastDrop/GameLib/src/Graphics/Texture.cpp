@@ -22,9 +22,9 @@ Texture Texture::create( int w, int h, bool createMipChain ){
 	return r;
 }
 
-Texture Texture::create( const char* filename ){
+Texture Texture::create( const char* filename, TextureColorSpace colorSpace ){
 	Texture r;
-	r.mImpl = NEW Texture::Impl( filename, gManagerImpl->dxDevice(), gManagerImpl->dxContext() );
+	r.mImpl = NEW Texture::Impl( filename, colorSpace, gManagerImpl->dxDevice(), gManagerImpl->dxContext() );
 	return r;
 }
 

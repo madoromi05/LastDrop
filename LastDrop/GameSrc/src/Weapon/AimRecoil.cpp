@@ -1,4 +1,5 @@
 #include "GameSrc/Weapon/AimRecoil.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -29,10 +30,6 @@ namespace{
 	const float kReturnPerTick = 0.9f;
 	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）。
 	const float kMinOffset = 0.001f;
-
-	float clampSigned( float value, float limit ) {
-		return Math::max( -limit, Math::min( limit, value ) );
-	}
 
 	float settle( float value ) {
 		value *= kReturnPerTick;
@@ -70,9 +67,9 @@ void AimRecoil::kick() {
 		mRise += kRiseFirst * share;
 	} else {
 		mRise += mRandom.getFloat( -kRiseBounce, kRiseBounce );
-		mRise = kRiseTop + clampSigned( mRise - kRiseTop, kRiseBounceLimit );
+		mRise = kRiseTop + ScalarMath::clampSigned( mRise - kRiseTop, kRiseBounceLimit );
 	}
-	mSide = clampSigned( mSide + mRandom.getFloat( -kSidePerShot, kSidePerShot ), kSideLimit );
+	mSide = ScalarMath::clampSigned( mSide + mRandom.getFloat( -kSidePerShot, kSidePerShot ), kSideLimit );
 }
 
 float AimRecoil::pitchOffset() const {

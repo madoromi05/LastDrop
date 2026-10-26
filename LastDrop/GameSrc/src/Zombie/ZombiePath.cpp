@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Map/StreetGraph.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/GameLib.h"
 
@@ -10,7 +11,7 @@ using namespace GameLib::Math;
 namespace{
 	// まっすぐ通れるかを調べる間隔（秒）。角を曲がった後、これだけ古い向きで歩くことがある。
 	const float kProbeIntervalSeconds = 0.5f;
-	const int kProbeIntervalTicks = static_cast< int >( kProbeIntervalSeconds * GameTime::kTicksPerSecond );
+	const int kProbeIntervalTicks = GameTime::secondsToTicks( kProbeIntervalSeconds );
 	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）。
 	const float kWaypointReachDistance = 1.f;
 	// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように。
@@ -21,18 +22,6 @@ namespace{
 	const float kProgressDistance = 0.3f;
 	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす。
 	const float kMinDirectionLength = 0.001f;
-
-	// a と b の水平の距離（m）。
-	float flatDistance( const Vector3& a, const Vector3& b ) {
-		Vector3 d;
-		d.setSub( b, a );
-		d.y = 0.f;
-		return d.length();
-	}
-
-	int secondsToTicks( float seconds ) {
-		return static_cast< int >( seconds * GameTime::kTicksPerSecond );
-	}
 }
 
 ZombiePath::ZombiePath( int probePhase ) :
@@ -53,7 +42,7 @@ ZombiePath::ZombiePath( int probePhase ) :
 const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const StreetGraph& streets,
 const HitWorld& hitWorld, bool walking ) {
 	const ZombieCrowdParams& params = zombieCrowdParams();
-	if ( mHasLastDestination && flatDistance( mLastDestination, destination ) > kDestinationJumpDistance ) {
+	if ( mHasLastDestination && FlatMath::distance( mLastDestination, destination ) > kDestinationJumpDistance ) {
 		mProbeTicks = 0; // 新しい行き先へ通れるかを、このティックに調べる（古い通り道は探し直すか捨てる）
 		mSidestepTicks = 0;
 		resetProgress();
@@ -63,7 +52,7 @@ const HitWorld& hitWorld, bool walking ) {
 	// よけている間は、よける点へ着くか決まった時間がたつまで、そちらを向く。終わったらこのティックに通り道を調べ直す。
 	if ( mSidestepTicks > 0 ) {
 		--mSidestepTicks;
-		if ( mSidestepTicks > 0 && flatDistance( self, mSidestepPoint ) > params.sidestepReach ) {
+		if ( mSidestepTicks > 0 && FlatMath::distance( self, mSidestepPoint ) > params.sidestepReach ) {
 			return mSidestepPoint;
 		}
 		mSidestepTicks = 0;
@@ -77,7 +66,7 @@ const HitWorld& hitWorld, bool walking ) {
 	if ( !mRoute.empty() ) {
 		mRoute.back() = destination; // 最後の点は、動いていく行き先（自キャラ）に付いていく
 		int last = static_cast< int >( mRoute.size() ) - 1;
-		while ( mNext < last && flatDistance( self, mRoute[ mNext ] ) <= kWaypointReachDistance ) {
+		while ( mNext < last && FlatMath::distance( self, mRoute[ mNext ] ) <= kWaypointReachDistance ) {
 			++mNext;
 			resetProgress();
 		}
@@ -88,7 +77,7 @@ const HitWorld& hitWorld, bool walking ) {
 		mProgressStarted = false; // 立ち止まっている間は数えない（歩き出したら、その時の距離から数え直す）
 		return point;
 	}
-	float distance = flatDistance( self, point );
+	float distance = FlatMath::distance( self, point );
 	if ( !mProgressStarted ) {
 		mProgressStarted = true;
 		mBestDistance = distance;
@@ -99,7 +88,7 @@ const HitWorld& hitWorld, bool walking ) {
 	} else {
 		++mStallTicks;
 	}
-	if ( mStallTicks >= secondsToTicks( params.sidestepAfterSeconds ) ) {
+	if ( mStallTicks >= GameTime::secondsToTicks( params.sidestepAfterSeconds ) ) {
 		// 一度よけた後にまた詰まったら、着けない所かもしれない印を付ける（Search ならあきらめる。Chase はよけ続ける）。
 		if ( mSidestepCount > 0 ) {
 			mStuck = true;
@@ -129,7 +118,7 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	bool openA = streets.isWalkable( self, pointA, hitWorld );
 	bool openB = streets.isWalkable( self, pointB, hitWorld );
 	if ( openA && openB ) {
-		mSidestepPoint = ( flatDistance( pointA, point ) <= flatDistance( pointB, point ) ) ? pointA : pointB;
+		mSidestepPoint = ( FlatMath::distance( pointA, point ) <= FlatMath::distance( pointB, point ) ) ? pointA : pointB;
 	} else if ( openA ) {
 		mSidestepPoint = pointA;
 	} else if ( openB ) {
@@ -137,7 +126,7 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	} else {
 		mSidestepPoint.setMadd( self, forward, -params.backstepDistance ); // 左右とも塞がっている。少し下がる
 	}
-	mSidestepTicks = secondsToTicks( params.sidestepSeconds );
+	mSidestepTicks = GameTime::secondsToTicks( params.sidestepSeconds );
 	++mSidestepCount;
 	mStallTicks = 0;
 }
@@ -150,7 +139,7 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const S
 		}
 		return;
 	}
-	if ( mRoute.empty() || flatDistance( mRouteGoal, destination ) > kReplanDistance ) {
+	if ( mRoute.empty() || FlatMath::distance( mRouteGoal, destination ) > kReplanDistance ) {
 		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる。
 		streets.findPath( self, destination, hitWorld, &mRoute );
 		mNext = 0;

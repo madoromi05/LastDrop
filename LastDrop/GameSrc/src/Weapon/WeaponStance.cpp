@@ -12,7 +12,7 @@ namespace{
 
 	// これより短く押して離したら「覗いたまま」にする（ティック）。
 	int tapTicks() {
-		return static_cast< int >( gParams.tapSeconds * GameTime::kTicksPerSecond );
+		return GameTime::secondsToTicks( gParams.tapSeconds );
 	}
 
 	// 覗き具合が 1 ティックに進む量（覗き始めてからサイトが目の前に来るまでで 1）。

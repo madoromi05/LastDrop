@@ -3,6 +3,7 @@
 #include "GameSrc/Math/MatrixBlend.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifier.h"
 #include "GameSrc/Math/PlacementMatrix.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -18,12 +19,6 @@ namespace{
 	// PLAY_ONCE で止める時刻を、最後のキーからどれだけ手前にするか（フレーム）。
 	// ちょうど最後のキーの時刻だと始めへ折り返してしまうが、見た目では区別できないほど小さくする。
 	const float kLastFrameMargin = 0.001f;
-
-	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする。
-	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため。
-	float easeInOut( float t ) {
-		return t * t * ( 3.f - 2.f * t );
-	}
 }
 
 SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
@@ -158,7 +153,9 @@ void SkinnedMeshInstance::blendFadingPose() {
 		mFadeFrames = 0.f; // フェード終了。今のアニメのポーズをそのまま使う
 		return;
 	}
-	float weight = easeInOut( t );
+	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする。
+	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため。
+	float weight = ScalarMath::smoothStep( t );
 	for ( size_t b = 0; b < mBonePose.size(); ++b ) {
 		MatrixBlend::blend( mFadeFromPose[ b ], mBonePose[ b ], weight, &mBonePose[ b ] );
 	}

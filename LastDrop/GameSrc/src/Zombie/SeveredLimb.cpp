@@ -4,6 +4,7 @@
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Scene/Animation.h"
@@ -34,18 +35,14 @@ namespace{
 	const float kRestSeconds = 10.f;
 	const float kSinkSeconds = 1.5f;
 	const float kSinkDepth = 0.3f;
-	const int kRestTicks = static_cast< int >( kRestSeconds * GameTime::kTicksPerSecond );
-	const int kSinkTicks = static_cast< int >( kSinkSeconds * GameTime::kTicksPerSecond );
+	const int kRestTicks = GameTime::secondsToTicks( kRestSeconds );
+	const int kSinkTicks = GameTime::secondsToTicks( kSinkSeconds );
 
 	const Vector3 kOrigin( 0.f, 0.f, 0.f );
 	const float kAnimationStartTime = 0.f;
 	// 長さがこれより短い軸は回る軸にしない（向きが決まらない）。
 	const float kMinAxisLength = 1e-3f;
 	const Vector3 kFallbackAxis( 1.f, 0.f, 0.f );
-
-	Vector3 translationOf( const Matrix34& m ) {
-		return Vector3( m.m03, m.m13, m.m23 );
-	}
 
 	// でたらめな向きの長さ1の軸。
 	Vector3 randomAxis( std::mt19937* random ) {
@@ -88,12 +85,12 @@ const Vector3& direction, std::mt19937* random ) :
 	mMesh.setPoseModifier( this );
 
 	// 残す骨は切れた瞬間の姿勢のまま、ほかは切り口の1点へ潰す。中心は残す骨の原点の平均。
-	Matrix34 collapsed = ZombieDismemberment::collapsedAt( translationOf( worldPose[ cut.jointBone ] ) );
+	Matrix34 collapsed = ZombieDismemberment::collapsedAt( PlacementMatrix::translationOf( worldPose[ cut.jointBone ] ) );
 	mBasePose.assign( worldPose.size(), collapsed );
 	mStartCenter.set( 0.f, 0.f, 0.f );
 	for ( int bone : cut.bones ) {
 		mBasePose[ bone ] = worldPose[ bone ];
-		mStartCenter += translationOf( worldPose[ bone ] );
+		mStartCenter += PlacementMatrix::translationOf( worldPose[ bone ] );
 	}
 	if ( !cut.bones.empty() ) {
 		mStartCenter *= 1.f / static_cast< float >( cut.bones.size() );

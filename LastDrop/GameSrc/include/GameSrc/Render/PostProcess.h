@@ -10,9 +10,11 @@
 // 画面全体に掛ける処理（ポストプロセス）の入口。
 // beginScene と endScene の間に普段どおり描くと、画面ではなく中間の描画先（色と深度）へ描かれ、
 // endScene でシェーダ（Resource/Shader/Present.hlsl）を通して画面へ写す。
-// 今は明るい所のにじみ（ブルーム。Bloom）を足し、周辺を少し暗くする（ビネット）。
+// 中間の描画先はリニア（光の量に比例した数）で持ち、beginScene〜endScene の間は Graphics::Manager::enableLinearColor を入れておく。
+// 写すときに、明るい所のにじみ（ブルーム。Bloom）を足し、露出を掛けて ACES で 0〜1 に収め（トーンマップ）、
+// 周辺を少し暗くして（ビネット）、最後に画面の色（sRGB）へ戻す（LinearToneMap_Plan.txt 6 章）。露出とブルームの値は PostProcessParams。
 // ビネットの所に赤を足す強さ・周りのぼかしと暗さ（噛まれた瞬間）と、全体を暗くする量（死んだ後）を外から動かせる。
-// 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）。トーンマップ・カラーグレーディング等はここに足す。
+// 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）。カラーグレーディング等はここに足す。
 //
 // 写した後の画面には、文字（DebugScreen）など Framework が後から描く物がそのまま重なる（ポストプロセスは掛からない）。
 // 作るのは Graphics::Manager ができた後（シーンの中）。
@@ -23,6 +25,7 @@ public:
 	PostProcess& operator=( const PostProcess& ) = delete;
 
 	// 描画先を中間の描画先へ切り替え、色と深度を消す。シーンを描く前に呼ぶ。
+	// ここから endScene までは、材質・ライト・頂点の色がリニアへ直される（Graphics::Manager::enableLinearColor）。
 	void beginScene();
 	// 噛まれた瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く。
 	void setDamageFlash( float amount );

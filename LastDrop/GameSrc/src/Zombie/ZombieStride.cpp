@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/ZombieStride.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
+#include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -27,13 +28,6 @@ namespace{
 		left->set( l.m03, l.m13, l.m23 );
 		right->set( r.m03, r.m13, r.m23 );
 	}
-
-	// from から to への水平の長さ（m）。
-	float flatDistance( const Vector3& from, const Vector3& to ) {
-		float dx = to.x - from.x;
-		float dz = to.z - from.z;
-		return std::sqrt( dx * dx + dz * dz );
-	}
 }
 
 ZombieStride::ZombieStride( const SkinnedMeshData* data, Scene::Animation walk, int leftToe, int rightToe ) :
@@ -57,7 +51,7 @@ ZombieStride::ZombieStride( const SkinnedMeshData* data, Scene::Animation walk, 
 		toePositions( data, &skeleton, &pose, static_cast< float >( f ), leftToe, rightToe, &leftNow, &rightNow );
 		toePositions( data, &skeleton, &pose, std::fmod( static_cast< float >( f + 1 ), mPeriod ), leftToe, rightToe, &leftNext, &rightNext );
 		bool leftPlanted = ( leftNow.y + leftNext.y ) <= ( rightNow.y + rightNext.y );
-		raw[ f ] = leftPlanted ? flatDistance( leftNow, leftNext ) : flatDistance( rightNow, rightNext );
+		raw[ f ] = leftPlanted ? FlatMath::distance( leftNow, leftNext ) : FlatMath::distance( rightNow, rightNext );
 	}
 	mDistances.resize( frameNumber );
 	for ( int f = 0; f < frameNumber; ++f ) {

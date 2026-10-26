@@ -1,4 +1,5 @@
 #include "GameSrc/Collision/SweepMath.h"
+#include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -14,11 +15,6 @@ namespace{
 	const int kAxesPerBox = 2;
 	// 調べる軸の数の上限。長方形どうしなら 4 本（2 + 2）、長方形とかけらなら「長方形の 2 本＋かけらの辺の法線」。
 	const int kMaxAxisNumber = kAxesPerBox + WallPiece::kMaxCorners;
-
-	// 水平成分だけにする（y を 0 に）。
-	Vector3 flatten( const Vector3& v ) {
-		return Vector3( v.x, 0.f, v.z );
-	}
 
 	// 0 は正として扱う符号（押し出す向きを必ずどちらかに決めるため）。
 	float signOf( float value ) {
@@ -56,7 +52,7 @@ namespace{
 		boxAxes( other, otherAxis );
 		Vector3 offset;
 		offset.setSub( box.center, other.center );
-		offset = flatten( offset );
+		offset = FlatMath::flatten( offset );
 		SeparatingAxes result;
 		result.number = kAxesPerBox * 2;
 		for ( int i = 0; i < kAxesPerBox; ++i ) {
@@ -75,7 +71,7 @@ namespace{
 	SeparatingAxes separatingAxes( const BoxCollider& box, const WallPiece& piece ) {
 		Vector3 boxAxis[ kAxesPerBox ];
 		boxAxes( box, boxAxis );
-		Vector3 boxCenter = flatten( box.center );
+		Vector3 boxCenter = FlatMath::flatten( box.center );
 		SeparatingAxes result;
 		result.number = kAxesPerBox + piece.edgeNormalNumber;
 		for ( int i = 0; i < kAxesPerBox; ++i ) {
@@ -174,7 +170,7 @@ namespace{
 }
 
 bool SweepMath::sweepBox( const BoxCollider& box, const Vector3& delta, const BoxCollider& other, SweepHit* hit ) {
-	return sweepAlongAxes( separatingAxes( box, other ), flatten( delta ), hit );
+	return sweepAlongAxes( separatingAxes( box, other ), FlatMath::flatten( delta ), hit );
 }
 
 bool SweepMath::penetrateBox( const BoxCollider& box, const BoxCollider& other, Vector3* push ) {
@@ -182,7 +178,7 @@ bool SweepMath::penetrateBox( const BoxCollider& box, const BoxCollider& other, 
 }
 
 bool SweepMath::sweepPiece( const BoxCollider& box, const Vector3& delta, const WallPiece& piece, SweepHit* hit ) {
-	return sweepAlongAxes( separatingAxes( box, piece ), flatten( delta ), hit );
+	return sweepAlongAxes( separatingAxes( box, piece ), FlatMath::flatten( delta ), hit );
 }
 
 bool SweepMath::penetratePiece( const BoxCollider& box, const WallPiece& piece, Vector3* push ) {

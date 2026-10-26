@@ -17,8 +17,8 @@ namespace{
 	// 同時に残す数（2026-10-14 ユーザー指定）。超えたら一番古い物から消す。
 	const int kCapacity = 16;
 	// 残す時間と、薄くし始めるまでの時間（ティック。2026-10-15 ユーザー指定）。5 秒を過ぎたら少しずつ薄くし、10 秒で消す。
-	const int kLifeTicks = static_cast< int >( 10.f * GameTime::kTicksPerSecond );
-	const int kFadeStartTicks = static_cast< int >( 5.f * GameTime::kTicksPerSecond );
+	const int kLifeTicks = GameTime::secondsToTicks( 10.f );
+	const int kFadeStartTicks = GameTime::secondsToTicks( 5.f );
 	const int kFadeTicks = kLifeTicks - kFadeStartTicks; // 薄くしていく長さ
 
 	// 板の幅の半分（m）。穴そのもの（7.62mm）では小さくて見えないので、周りの欠けを含めた大きさにする。見た目を確かめる前の初期値。
@@ -37,7 +37,7 @@ namespace{
 
 BulletHoleList::BulletHoleList() :
 	mNextTurnDegree( 0.f ),
-	mTexture( Graphics::Texture::create( kTextureFile ) ),
+	mTexture( Graphics::Texture::create( kTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mQuads( kCapacity ) {
 	mHoles.reserve( kCapacity );
 }

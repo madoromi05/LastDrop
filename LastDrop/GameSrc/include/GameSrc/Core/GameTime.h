@@ -13,6 +13,13 @@ namespace GameTime{
 	// 1回の描画で進めてよいティック数の上限。これを超えた遅れは捨てる（ゲームが少し遅く進む）。
 	// 捨てないと、重いフレーム → 更新が増える → さらに重くなる、と遅れが膨らみ続けて止まってしまうため。
 	const int kMaxTicksPerFrame = 5;
+
+	// 秒をティック数へ直す、ただ1か所。一番近い整数へ丸める。
+	// 切り捨てにしないのは、float の誤差で 2.1 秒が 125.99999 ティックになり、1 ティック短くなるため
+	// （SummaryPlan/個別仕様/MathHelpers_Plan.txt の 2 章）。負の秒は来ない前提（来たら負のティックを返す）。
+	int secondsToTicks( float seconds );
+	// ティック数を秒へ直す。
+	float ticksToSeconds( int ticks );
 }
 
 #endif

@@ -14,3 +14,7 @@ Matrix34 PlacementMatrix::make( const Vector3& position, float angleY, float sca
 	world.scale( scale );
 	return world;
 }
+
+Vector3 PlacementMatrix::translationOf( const Matrix34& m ) {
+	return Vector3( m.m03, m.m13, m.m23 );
+}

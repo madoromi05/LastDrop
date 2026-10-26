@@ -258,6 +258,7 @@
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
+    <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameSettings.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp" />
@@ -329,6 +330,9 @@
     <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieAttackSounds.cpp" />
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
+    <ClCompile Include="GameSrc\src\Math\AngleMath.cpp" />
+    <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp" />
+    <ClCompile Include="GameSrc\src\Math\FlatMath.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp" />
@@ -618,6 +622,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameSettings.h" />
@@ -699,6 +704,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieAttackSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\AngleMath.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\ScalarMath.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\FlatMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h" />
@@ -753,6 +761,8 @@
     <ClInclude Include="GameLib\include\GameLib\WindowCreator\WindowCreator.h" />
     <ClInclude Include="GameLib\src\Graphics\ManagerImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\TextureImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\ColorSpace.h" />
+    <ClInclude Include="GameLib\src\Graphics\ColorSpaceHlsl.h" />
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\RenderTargetImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\DepthTargetImpl.h" />

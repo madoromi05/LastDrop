@@ -1,5 +1,6 @@
 #include "GameSrc/Audio/FootstepEmitter.h"
 #include "GameSrc/Audio/AudioEngine.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 using namespace GameLib::Math;
 
@@ -35,25 +36,12 @@ namespace{
 	};
 	static_assert( sizeof( kMaterialSounds ) / sizeof( kMaterialSounds[ 0 ] ) == GROUND_NUM, "kMaterialSounds must list every GroundMaterial" );
 
-	const float kFullCycle = 1.f;
-
 	// 位相が previous から current へ進む間に target をまたいだか。1周して 0 に戻った場合（current < previous）も数える。
 	bool crossed( float previous, float current, float target ) {
 		if ( current >= previous ) {
 			return previous < target && target <= current;
 		}
 		return target > previous || target <= current;
-	}
-
-	// 位相を 0〜1 に収める（オフセットを足して 1 を超えた・0 を下回ったとき用）。
-	float wrapPhase( float phase ) {
-		while ( phase >= kFullCycle ) {
-			phase -= kFullCycle;
-		}
-		while ( phase < 0.f ) {
-			phase += kFullCycle;
-		}
-		return phase;
 	}
 }
 
@@ -75,7 +63,7 @@ bool FootstepEmitter::update( Gait gait, float phase, const Vector3& feet, const
 	}
 	bool stepped = false;
 	for ( float contact : kContactPhases ) {
-		if ( crossed( previousPhase, phase, wrapPhase( contact + kContactPhaseOffset ) ) ) {
+		if ( crossed( previousPhase, phase, ScalarMath::wrapUnit( contact + kContactPhaseOffset ) ) ) {
 			stepped = true;
 		}
 	}

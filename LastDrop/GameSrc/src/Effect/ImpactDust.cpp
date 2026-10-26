@@ -8,7 +8,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// 出てから消えるまで（ティック）。見た目を確かめる前の初期値。
-	const int kLifeTicks = static_cast< int >( 0.5f * GameTime::kTicksPerSecond );
+	const int kLifeTicks = GameTime::secondsToTicks( 0.5f );
 	// 粒を出す所を面から浮かせる量（m）。出たばかりの板が壁に半分めり込んで、切れて見えないように。
 	const float kStartLift = 0.05f;
 	// 粒の出る速さの範囲　飛ぶ距離）。

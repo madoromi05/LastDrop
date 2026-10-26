@@ -19,6 +19,7 @@
 #include "GameLib/Threading/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
 #include "Graphics/TextureImpl.h"
+#include "Graphics/ColorSpace.h"
 #include "Graphics/VertexBufferImpl.h"
 #include "Graphics/IndexBufferImpl.h"
 #include "Graphics/RenderTargetImpl.h"
@@ -46,7 +47,8 @@ struct VSCBufferData {
 	float lightPosY[4];       // c13
 	float lightPosZ[4];       // c14
 	float lightColor[4][4];   // c15-c18
-	// Total: 304 bytes
+	float colorParams[4];     // c19 (x: 1 なら頂点色をリニアへ直す。enableLinearColor  yzw: 未使用)
+	// Total: 320 bytes
 };
 struct PSCBufferData {
 	float ambient[4];         // c0
@@ -124,6 +126,7 @@ public:
 		mEmissionColor.set( 0.f, 0.f, 0.f, 0.f );
 		mAmbientColor.set( 1.f, 1.f, 1.f, 1.f );
 		mNormalMapStrength = 1.f; // 標準の凹凸。モデルごとの値は MeshMaterial 側から渡す
+		mLinearColor = false;     // 今までどおり、選んだ色のまま計算する
 		ZeroMemory( &mViewport, sizeof( mViewport ) );
 		ZeroMemory( mRSStates,   sizeof( mRSStates ) );
 		ZeroMemory( mDSSStates,  sizeof( mDSSStates ) );
@@ -904,43 +907,59 @@ public:
 		mMatricesChanged = false;
 	}
 
+	// enableLinearColor の間は、選んだ色（画面の色）をリニアへ直して渡す。アルファ・鋭さ（w）は色ではないのでそのまま。
+	Vector4 toSceneColor( const Vector4& c ) const {
+		if ( !mLinearColor ) return c;
+		Vector3 linear = ColorSpace::srgbToLinear( Vector3( c.x, c.y, c.z ) );
+		return Vector4( linear.x, linear.y, linear.z, c.w );
+	}
+	Vector3 toSceneColor( const Vector3& c ) const {
+		return mLinearColor ? ColorSpace::srgbToLinear( c ) : c;
+	}
+
 	void sendLightingParameters(){
-		// Compute light color * intensity
+		// 色だけを直してから強さを掛ける（強さ込みで直すと、強さの意味が変わるため）。
 		Vector4 lc[4];
 		for ( int i = 0; i < 4; ++i ){
-			lc[ i ].x = mLightColors[ i ].x * mLightIntensities[ i ];
-			lc[ i ].y = mLightColors[ i ].y * mLightIntensities[ i ];
-			lc[ i ].z = mLightColors[ i ].z * mLightIntensities[ i ];
+			Vector3 color = toSceneColor( mLightColors[ i ] );
+			lc[ i ].x = color.x * mLightIntensities[ i ];
+			lc[ i ].y = color.y * mLightIntensities[ i ];
+			lc[ i ].z = color.z * mLightIntensities[ i ];
 			lc[ i ].w = 0.f;
 		}
+		const Vector4 diffuse  = toSceneColor( mDiffuseColor );
+		const Vector4 ambient  = toSceneColor( mAmbientColor );
+		const Vector4 specular = toSceneColor( mSpecularColor );
+		const Vector4 emission = toSceneColor( mEmissionColor );
 
 		// --- VS cbuffer ---
-		memcpy( mVSCBData.diffuseColor, &mDiffuseColor.x, 16 );
-		memcpy( mVSCBData.ambientColor, &mAmbientColor.x, 16 );
+		memcpy( mVSCBData.diffuseColor, &diffuse.x, 16 );
+		memcpy( mVSCBData.ambientColor, &ambient.x, 16 );
 		memcpy( mVSCBData.lightPosX,    &mLightPositionXs.x, 16 );
 		memcpy( mVSCBData.lightPosY,    &mLightPositionYs.x, 16 );
 		memcpy( mVSCBData.lightPosZ,    &mLightPositionZs.x, 16 );
 		for ( int i = 0; i < 4; ++i ) memcpy( mVSCBData.lightColor[ i ], &lc[ i ].x, 16 );
+		mVSCBData.colorParams[ 0 ] = mLinearColor ? 1.f : 0.f;
 		mVSCBDirty = true;
 
 		// --- PS cbuffer (for pixel lighting) ---
-		memcpy( mPSCBData.ambient,      &mAmbientColor.x,    16 );
+		memcpy( mPSCBData.ambient,      &ambient.x,          16 );
 		memcpy( mPSCBData.lightPosX,    &mLightPositionXs.x, 16 );
 		memcpy( mPSCBData.lightPosY,    &mLightPositionYs.x, 16 );
 		memcpy( mPSCBData.lightPosZ,    &mLightPositionZs.x, 16 );
 		memcpy( mPSCBData.eyePosition,  &mEyePosition.x,     16 );
 		{
 			const float rcpPi2 = 1.f / ( 3.14159265f * 2.f );
-			float f = ( 2.f + mSpecularColor.w ) * rcpPi2;
+			float f = ( 2.f + specular.w ) * rcpPi2;
 			Vector4 sc;
-			sc.x = mSpecularColor.x * f;
-			sc.y = mSpecularColor.y * f;
-			sc.z = mSpecularColor.z * f;
-			sc.w = mSpecularColor.w;
+			sc.x = specular.x * f;
+			sc.y = specular.y * f;
+			sc.z = specular.z * f;
+			sc.w = specular.w;
 			memcpy( mPSCBData.specularColor, &sc.x, 16 );
 		}
 		for ( int i = 0; i < 4; ++i ) memcpy( mPSCBData.lightColor[ i ], &lc[ i ].x, 16 );
-		memcpy( mPSCBData.emissionColor, &mEmissionColor.x, 16 );
+		memcpy( mPSCBData.emissionColor, &emission.x, 16 );
 		mPSCBData.materialParams[ 0 ] = mNormalMapStrength;
 		mPSCBDirty = true;
 
@@ -1137,6 +1156,12 @@ public:
 	void setNormalMapStrength( float s ){
 		mNormalMapStrength = s;
 		mLightChanged = true; // PS定数バッファは sendLightingParameters でまとめて詰める
+	}
+	void enableLinearColor( bool f ){
+		if ( f != mLinearColor ){
+			mLinearColor  = f;
+			mLightChanged = true; // 色の定数を直し直す（sendLightingParameters）
+		}
 	}
 	void setLightingMode( LightingMode lm ){
 		if ( lm != mLightingMode ){
@@ -1397,6 +1422,7 @@ public:
 	Vector4  mEmissionColor;
 	Vector4  mAmbientColor;
 	float    mNormalMapStrength; // 法線マップの凹凸の強さ(0で無効、1で標準)
+	bool     mLinearColor;       // 色をリニアへ直して計算するか（enableLinearColor）。HUD など画面へ直接描く間は false
 };
 
 extern ManagerImpl* gManagerImpl;

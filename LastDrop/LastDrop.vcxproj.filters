@@ -648,6 +648,9 @@
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp">
       <Filter>GameSrc\Core</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Core\GameTime.cpp">
+      <Filter>GameSrc\Core</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Core\GameSettings.cpp">
       <Filter>GameSrc\Core</Filter>
     </ClCompile>
@@ -849,6 +852,15 @@
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp">
       <Filter>GameSrc\Math</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Math\AngleMath.cpp">
+      <Filter>GameSrc\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Math\FlatMath.cpp">
+      <Filter>GameSrc\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp">
+      <Filter>GameSrc\Math</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieHealth.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
@@ -906,6 +918,12 @@
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\TextureImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ColorSpace.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ColorSpaceHlsl.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h">
@@ -1439,6 +1457,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1677,6 +1698,15 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h">
+      <Filter>GameSrc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\AngleMath.h">
+      <Filter>GameSrc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\FlatMath.h">
+      <Filter>GameSrc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\ScalarMath.h">
       <Filter>GameSrc\Math</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealth.h">
