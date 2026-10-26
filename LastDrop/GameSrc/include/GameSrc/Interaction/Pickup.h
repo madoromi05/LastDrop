@@ -6,6 +6,7 @@
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Interaction/IInteractable.h"
 #include "GameSrc/World/IWorldMember.h"
+#include "GameSrc/World/Component.h"
 #include "GameSrc/Collision/ICollisionBody.h"
 #include "GameSrc/Interaction/ItemCatalog.h"
 
@@ -18,8 +19,9 @@ class StaticMeshData;
 // 視線で見つけられるよう、命中の名簿（HitWorld）に「弾を止める物」として載る（見た目の三角形で当たる）。
 // 移動の名簿（CollisionWorld）にも、頂点を囲む箱1つで載る（ユーザー指定。小さな物は載せないこともできる＝blocksMovement）。
 // 動かない物だが、拾うと消えるので外せない「動かない箱」（addBox）ではなく、外せる相手（ICollisionBody）として載せる。
-// 途中で消えるので ActorList で持つ。拾われたら isTaken が true になり、持ち主（シーン）が destroyLater で消す。
-class Pickup : public IRayBlocker, public IInteractable, public IWorldMember, public ICollisionBody{
+// 途中で消えるので、物（GameObject。タグ Fuel・AmmoDrop）の部品として GameObjectWorld が持つ。
+// 拾われたら isTaken が true になり、持ち主（GameWorld）が付いている物に destroyLater で消す印を付ける。
+class Pickup : public Component, public IRayBlocker, public IInteractable, public IWorldMember, public ICollisionBody{
 public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること（箱の大きさを頂点から求めるため）。この物より長く生きていること（MeshCache が持つ）。
 	// position / angleY: 置き場所（地面の上）と向き（度）。item: 拾うと増えるアイテム。amount: いくつ増えるか（1 以上）。

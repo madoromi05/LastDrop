@@ -22,14 +22,21 @@ namespace DebugUi{
 namespace{
 	// エディタを開け閉めするキー（2026-10-23 決定。F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）。
 	const ImGuiKey kToggleKey = ImGuiKey_F6;
+	// 開いている間、押している間だけマウスをエディタに渡すキー（2026-10-26 決定。ゲームの操作に Alt は使っていない）。
+	const ImGuiKey kEditKey = ImGuiMod_Alt;
 
 	bool gCreated = false;
 	bool gOpen = false;
 
-	// 閉じている間は、ImGui にマウスを使わせず、カーソルの形も変えさせない（カーソルロックとの取り合いを起こさない）。
-	void applyMouseFlags( ImGuiIO& io ){
+	// エディタの窓を触っている間（開いていて、Alt を押している）。それ以外はマウスもゲームのまま。
+	bool isEditing(){
+		return gOpen && ImGui::IsKeyDown( kEditKey );
+	}
+
+	// 触っていない間は、ImGui にマウスを使わせず、カーソルの形も変えさせない（カーソルロックとの取り合いを起こさない）。
+	void applyMouseFlags( ImGuiIO& io, bool editing ){
 		const ImGuiConfigFlags kMouseFlags = ImGuiConfigFlags_NoMouse | ImGuiConfigFlags_NoMouseCursorChange;
-		if ( gOpen ){
+		if ( editing ){
 			io.ConfigFlags &= ~kMouseFlags;
 		}else{
 			io.ConfigFlags |= kMouseFlags;
@@ -50,7 +57,7 @@ void create( void* windowHandle ){
 	ImGui::StyleColorsDark();
 	ImGui_ImplWin32_Init( windowHandle );
 	ImGui_ImplDX11_Init( graphics->dxDevice(), graphics->dxContext() );
-	applyMouseFlags( io );
+	applyMouseFlags( io, false );
 	gCreated = true;
 }
 
@@ -82,13 +89,15 @@ void beginFrame(){
 	ImGuiIO& io = ImGui::GetIO();
 	if ( ImGui::IsKeyPressed( kToggleKey, false ) ){
 		gOpen = !gOpen;
-		applyMouseFlags( io );
 	}
+	// Alt は押したり離したりするので毎フレーム決め直す（ImGui に効くのは次の NewFrame から）。
+	const bool editing = isEditing();
+	applyMouseFlags( io, editing );
 	// どちらが入力を使うかは、ImGui の前のフレームの判定で決める（ImGui のふつうの使い方）。
 	// 反映されるのは次に入力を読むとき（1 フレーム遅れ）。
 	// キーボードは「文字を打っている間」だけ止める（WantTextInput）。WantCaptureKeyboard はボタンを押している間なども
 	// 真になり、キーを押している途中で止まったり戻ったりして、1 回の F7 が 2 回に数えられた（2026-10-24 確認）。
-	Input::Manager().setUiCapture( gOpen, gOpen && io.WantTextInput );
+	Input::Manager().setUiCapture( editing, gOpen && io.WantTextInput );
 }
 
 void render(){

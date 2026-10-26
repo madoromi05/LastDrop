@@ -172,7 +172,17 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mCrawlCenter( position ),
 	mCrawlChestOffset( 0.f, 0.f, 0.f ),
 	mCrawlYawOffset( 0.f ),
-	mAttackClock( 0.f ) {
+	mAttackClock( 0.f ),
+	mAttackRootMotion( model->rootMotion( animations.attack ) ),
+	mStaggerRootMotion( model->rootMotion( animations.stagger ) ),
+	mDeathRootMotion( model->rootMotion( animations.death ) ),
+	mDownedRootMotion( model->rootMotion( animations.downed ? animations.downed : animations.death ) ), // startDowned と同じ選び方
+	mRootMotion( nullptr ),
+	mRootPass( RootPass::None ),
+	mRootAnchor( position ),
+	mRootStartOffset( 0.f, 0.f, 0.f ),
+	mRootLastTime( 0.f ),
+	mMeshOffset( 0.f, 0.f, 0.f ) {
 	ASSERT( streets && "Zombie : streets is null." );
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
@@ -202,11 +212,13 @@ void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld, const 
 	}
 	// 足元を地面（歩道の段差）の高さへ合わせる。歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
 	// 倒れた後は動かないので、倒れた場所の高さのまま（沈む演出は見た目の位置だけを下げる）。
-	if ( mState == State::Alive ) {
+	// 根の動きの区間の間は、置き場所を動かした後に合わせる（applyRootMotion）。
+	if ( mState == State::Alive && !mRootMotion ) {
 		mPosition.y = mMover.followGround( mPosition );
 		mMesh.setPosition( mPosition );
 	}
 	mMesh.update();
+	applyRootMotion( target );
 	if ( mState == State::Alive ) {
 		updateStagger();
 	} else if ( mState != State::Downed ) { // Downed は倒れるアニメの最後の姿勢のまま（動かすのは腕と置き場所だけ）
@@ -328,6 +340,7 @@ void Zombie::startAttack() {
 		return;
 	}
 	mMesh.crossFadeTo( mAttackAnimation, kAttackStartTime, kAttackFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+	startRootMotion( mAttackRootMotion, kAttackStartTime, RootPass::Target );
 	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）。
 	mWalking = false;
 }
@@ -337,11 +350,12 @@ void Zombie::approachDuringAttack( const ChaseTarget* target ) {
 		return;
 	}
 	turnToward( target->position );
+	// 寄る距離は、踏み込む前の足元（根の動きのアンカー＝bodyCenter）から測る。寄るのもアンカーごと（踏み込みは別に足す）。
 	float remaining = flatDistanceTo( target->position ) - kGrabCloseDistance;
 	if ( mAttack.phase() == ZombieAttack::Phase::Reach && remaining > 0.f ) {
 		float distance = Math::min( kReachApproachSpeed, remaining );
 		Vector3 step( Math::sin( mAngleY ) * distance, 0.f, Math::cos( mAngleY ) * distance );
-		mPosition += mMover.move( step ); // 相手の体・銃の箱に当たったら、そこで止まる
+		moveFooting( mMover.move( step ) ); // 相手の体・銃の箱に当たったら、そこで止まる
 	}
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );
@@ -375,8 +389,9 @@ void Zombie::updateAttack( const ChaseTarget* target ) {
 	if ( mAttack.isActive() ) {
 		mMesh.setPlaybackRate( mAttack.playbackRate() );
 	} else if ( wasActive ) {
-		// 攻撃のアニメの最後（元の立ち姿）から、立つアニメへ戻す。
+		// 攻撃のアニメの最後（元の立ち姿）から、立つアニメへ戻す。腰は始めた所へ戻っているので、置き場所も絵の根へ戻す。
 		mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
+		endRootMotion();
 	}
 }
 
@@ -494,6 +509,7 @@ void Zombie::shakeOff() {
 		startStagger();
 	} else {
 		mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
+		endRootMotion();
 	}
 }
 
@@ -510,8 +526,10 @@ void Zombie::severIfBroken( BodyPart part ) {
 void Zombie::startFalling() {
 	// 撃たれた瞬間に見えていた姿勢から繋ぐ（歩き・よろけのどの瞬間に倒れても、姿勢が飛ばない）。
 	// Downed は同じ死亡アニメで倒れている途中・倒れ終わりなので、繋ぎ直さずそのまま続ける（倒れ終わっていれば次の update で Corpse）。
+	// 根の動きも、立っていたときだけ始め直す（Downed は倒れる区間をそのまま続ける。引きずり始めた後は区間が無い）。
 	if ( mState == State::Alive ) {
 		mMesh.crossFadeTo( mDeathAnimation, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+		startRootMotion( mDeathRootMotion, kDeathStartTime, RootPass::AllBodies );
 	}
 	mState = State::Falling;
 	mAttack.cancel(); // つかんでいたら離す
@@ -524,6 +542,7 @@ void Zombie::startDowned() {
 	// 倒れ終わったら、その姿勢のまま腕で体を引きずる（ZombieCrawl_Plan.txt の 2 章）。
 	Scene::Animation fall = mDownedAnimation ? mDownedAnimation : mDeathAnimation;
 	mMesh.crossFadeTo( fall, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+	startRootMotion( mDownedRootMotion, kDeathStartTime, RootPass::AllBodies );
 	mState = State::Downed;
 	mAttack.cancel();
 	mStaggering = false;
@@ -534,6 +553,7 @@ void Zombie::updateDowned( const ChaseTarget* target, const HitWorld& hitWorld )
 		if ( !canStartCrawling() ) {
 			return; // まだ倒れている途中（または引きずれない体）。倒れた場所の姿勢のまま
 		}
+		endRootMotion(); // ここから先は胸の位置で動かす（足元は絵の根から測り直す）
 		startCrawling();
 	}
 	float pace = kStillPace;
@@ -664,7 +684,85 @@ bool Zombie::isCrawling() const {
 }
 
 Vector3 Zombie::bodyCenter() const {
-	return isCrawling() ? mCrawlCenter : mPosition;
+	if ( isCrawling() ) {
+		return mCrawlCenter;
+	}
+	return mRootMotion ? mRootAnchor : mPosition;
+}
+
+void Zombie::startRootMotion( const ZombieRootMotion* table, float startTime, RootPass pass ) {
+	// 前の区間は閉じ、置き場所を今見えている絵の根へ戻してから、そこをアンカーにする。
+	endRootMotion();
+	if ( !table ) {
+		return;
+	}
+	mRootMotion = table;
+	mRootPass = pass;
+	mRootAnchor = mPosition;
+	mRootStartOffset = table->offsetAt( startTime );
+	mRootLastTime = -1.f; // 最初の applyRootMotion で必ず当たり直す（アニメ時刻は 0 以上）
+}
+
+void Zombie::applyRootMotion( const ChaseTarget* target ) {
+	if ( !mRootMotion ) {
+		return;
+	}
+	float time = mMesh.animationTime();
+	if ( time != mRootLastTime ) {
+		// 始めた時刻からの根の水平の動きを、今の向きでワールドへ（攻撃中は相手の方へ向きを変えるので、毎回回し直す）。
+		Vector3 rootDelta = mRootMotion->offsetAt( time );
+		rootDelta -= mRootStartOffset;
+		Vector3 wanted;
+		mMesh.rootMatrix().mul33( &wanted, rootDelta );
+		wanted.y = 0.f;
+		// 移動の箱はアンカーにある（bodyCenter）ので、毎回アンカーから当たり直す。1 ティックごとの差を足していくと、
+		// 踏み込みを壁で止められた後の戻りで、始めた所より後ろへ下がってしまう。
+		Vector3 moved( 0.f, 0.f, 0.f );
+		switch ( mRootPass ) {
+			case RootPass::Target:    moved = mMover.movePassingThrough( wanted, target ? target->body : nullptr ); break;
+			case RootPass::AllBodies: moved = mMover.moveIgnoringBodies( wanted ); break;
+			case RootPass::None:      moved = mMover.move( wanted ); break;
+		}
+		mPosition.x = mRootAnchor.x + moved.x;
+		mPosition.z = mRootAnchor.z + moved.z;
+		// 絵の根は、置き場所から根の動きの分だけ戻した所。当たらなければアンカーのまま（今までと同じ見た目）で、
+		// 当たって進めなかった分だけ手前へ戻る。
+		mMeshOffset.set( -wanted.x, 0.f, -wanted.z );
+		mRootLastTime = time;
+	}
+	// 足元の高さは、腰の下（置き場所）の地面に合わせる（歩道の端で倒れても浮かない）。
+	mPosition.y = mMover.followGround( mPosition );
+	mRootAnchor.y = mPosition.y;
+	mMesh.setPosition( meshRoot() );
+}
+
+void Zombie::endRootMotion() {
+	if ( !mRootMotion ) {
+		return;
+	}
+	Vector3 root = meshRoot();
+	mPosition.x = root.x;
+	mPosition.z = root.z;
+	mMeshOffset.set( 0.f, 0.f, 0.f );
+	mRootMotion = nullptr;
+	mMesh.setPosition( mPosition );
+}
+
+void Zombie::freezeRootMotion() {
+	mRootMotion = nullptr;
+}
+
+Vector3 Zombie::meshRoot() const {
+	Vector3 root;
+	root.setAdd( mPosition, mMeshOffset );
+	return root;
+}
+
+void Zombie::moveFooting( const Vector3& moved ) {
+	if ( mRootMotion ) {
+		mRootAnchor += moved;
+	}
+	mPosition += moved;
 }
 
 const std::vector< BodyPart >& Zombie::severedByLastDamage() const {
@@ -691,6 +789,7 @@ bool Zombie::canStagger( BodyPart part ) const {
 
 void Zombie::startStagger() {
 	mMesh.crossFadeTo( mStaggerAnimation, kStaggerStartTime, kStaggerFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
+	startRootMotion( mStaggerRootMotion, kStaggerStartTime, RootPass::None );
 	mStaggering = true;
 }
 
@@ -699,6 +798,7 @@ void Zombie::updateStagger() {
 		if ( mMesh.isAnimationFinished() ) {
 			// よろける前に歩いていたか立っていたかに戻す（次の update で追う先を考え直し、要れば切り替える）。
 			mMesh.crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
+			endRootMotion(); // 腰は下がった後に元の所へ戻っている
 			mStaggering = false;
 			mStaggerCooldownTicks = kStaggerCooldownTicks;
 		}
@@ -714,6 +814,7 @@ void Zombie::updateAfterDeath() {
 			if ( mMesh.isAnimationFinished() ) {
 				mState = State::Corpse;
 				mStateTicks = 0;
+				freezeRootMotion(); // 置き場所は死体の腰の下・絵の根はそのまま（もう動かない）
 			}
 			break;
 		case State::Corpse:
@@ -728,7 +829,7 @@ void Zombie::updateAfterDeath() {
 			if ( progress > 1.f ) {
 				progress = 1.f;
 			}
-			Vector3 shown = mPosition;
+			Vector3 shown = meshRoot();
 			shown.y -= kSinkDepth * progress;
 			mMesh.setPosition( shown );
 			break;

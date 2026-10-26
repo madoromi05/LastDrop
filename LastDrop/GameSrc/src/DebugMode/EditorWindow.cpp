@@ -73,6 +73,8 @@ void draw() {
 	const ImGuiWindowFlags kFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
 	if ( ImGui::Begin( "Editor (F6)", nullptr, kFlags ) ) {
+		// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）。
+		ImGui::TextDisabled( "Hold Alt to use the mouse here." );
 		if ( ImGui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
 			drawScene();
 		}

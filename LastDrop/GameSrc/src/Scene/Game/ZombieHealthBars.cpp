@@ -130,9 +130,9 @@ namespace{
 void ZombieHealthBars::add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
 	ASSERT( renderer && "ZombieHealthBars : renderer is null." );
 	Matrix44 projectionView = camera.projectionViewMatrix();
-	for ( const auto& zombie : world.zombies() ) {
-		addZombie( *zombie, world, camera, projectionView, renderer );
-	}
+	world.objects().forEach< Zombie >( [ & ]( const Zombie& zombie ) {
+		addZombie( zombie, world, camera, projectionView, renderer );
+	} );
 }
 
 void ZombieHealthBars::addZombie( const Zombie& zombie, const GameWorld& world, const FirstPersonCamera& camera,

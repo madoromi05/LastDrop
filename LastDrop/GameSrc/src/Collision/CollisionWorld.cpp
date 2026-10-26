@@ -86,7 +86,19 @@ bool CollisionWorld::groundHeight( const Vector3& position, float* height ) cons
 	return mGround->heightBelow( position, height );
 }
 
+bool CollisionWorld::BodyFilter::skips( const ICollisionBody* body ) const {
+	return skipAllBodies || body == self || ( passThrough && body == passThrough );
+}
+
 bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, const ICollisionBody* ignore, SweepHit* hit ) const {
+	return sweep( moving, delta, BodyFilter{ ignore, nullptr, false }, hit );
+}
+
+bool CollisionWorld::findPenetration( const BoxCollider& moving, const ICollisionBody* ignore, Vector3* push ) const {
+	return findPenetration( moving, BodyFilter{ ignore, nullptr, false }, push );
+}
+
+bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, const BodyFilter& filter, SweepHit* hit ) const {
 	SweepHit candidate;
 	bool found = false;
 	for ( const BoxCollider& wall : mBoxes ) {
@@ -109,7 +121,7 @@ bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, con
 		}
 	}
 	for ( const ICollisionBody* body : mBodies ) {
-		if ( body == ignore ) {
+		if ( filter.skips( body ) ) {
 			continue;
 		}
 		if ( SweepMath::sweepBox( moving, delta, body->collider(), &candidate ) ) {
@@ -131,7 +143,7 @@ const std::vector< const ICollisionBody* >& CollisionWorld::bodies() const {
 	return mBodies;
 }
 
-bool CollisionWorld::findPenetration( const BoxCollider& moving, const ICollisionBody* ignore, Vector3* push ) const {
+bool CollisionWorld::findPenetration( const BoxCollider& moving, const BodyFilter& filter, Vector3* push ) const {
 	Vector3 candidate;
 	bool found = false;
 	for ( const BoxCollider& wall : mBoxes ) {
@@ -154,7 +166,7 @@ bool CollisionWorld::findPenetration( const BoxCollider& moving, const ICollisio
 		}
 	}
 	for ( const ICollisionBody* body : mBodies ) {
-		if ( body == ignore ) {
+		if ( filter.skips( body ) ) {
 			continue;
 		}
 		if ( SweepMath::penetrateBox( moving, body->collider(), &candidate ) ) {

@@ -7,6 +7,7 @@
 #include "GameSrc/Hit/IHittable.h"
 #include "GameSrc/Hit/IDamageable.h"
 #include "GameSrc/World/IWorldMember.h"
+#include "GameSrc/World/Component.h"
 #include "GameSrc/Hit/HitboxSet.h"
 #include "GameSrc/Zombie/ZombieHealth.h"
 #include "GameSrc/Zombie/ZombieFlinch.h"
@@ -22,6 +23,7 @@
 #include <vector>
 
 class ZombieModel;
+class ZombieRootMotion;
 class CollisionWorld;
 class HitWorld;
 class StreetGraph;
@@ -50,8 +52,13 @@ struct ChaseTarget;
 // SummaryPlan/個別仕様/ZombieAttack_Plan.txt）。相手に何が起きるか（動けない・体力が減る）は知らない。
 // 「つかんでいるか」「このティックに噛んだか」を答えるだけで、相手へ伝えるのは持ち主（GameWorld）。
 // つかんでいる間に決まった量のダメージを受けると離して、よろける。攻撃の途中は、撃たれてもよろけない（のけぞりだけ）。
+// 攻撃・よろけ・倒れるアニメは腰が前後へ動く（攻撃で踏み込む・倒れて体がずれる）ので、その動きを置き場所へ移す（ルートモーション。
+// 表は ZombieRootMotion。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。アニメの間、移動の箱と考える所（bodyCenter）は
+// 始めた所（アンカー）に残し、置き場所（position）だけを、壁・車に当たりながら根に付いて行かせる。絵はその分だけ戻して置くので、
+// 何にも当たらなければ見た目は変わらず、当たったときだけ体が手前で止まる。
 // 名簿から外す・消すのは持ち主（GameWorld）。ここは「もう移動を止めないか（blocksMovement）」「もう消えてよいか（isGone）」を答えるだけ。
-class Zombie : public ICollisionBody, public IHittable, public IDamageable, public IWorldMember{
+// 物（GameObject。タグ Zombie）の部品として GameObjectWorld が持つ（SummaryPlan/個別仕様/ComponentSystem_Plan.txt。中身は分けずに 1 つの部品）。
+class Zombie : public Component, public ICollisionBody, public IHittable, public IDamageable, public IWorldMember{
 public:
 	// 生きているか・倒れているか。並びは時間の順。
 	enum class State{
@@ -114,12 +121,14 @@ public:
 	void shownWorldPose( std::vector< GameLib::Math::Matrix34 >* out ) const;
 
 	State state() const;
-	const GameLib::Math::Vector3& position() const; // 足元の位置（ワールド）
+	// 足元の位置（ワールド）。攻撃・よろけ・倒れる間は腰に付いて動く（倒れた後は死体の腰の下）。
+	const GameLib::Math::Vector3& position() const;
 	// 生きているか（Alive か Downed）。
 	bool isAlive() const;
 	// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）。噛む所を脚にするのに持ち主が読む。
 	bool isCrawling() const;
 	// 体の中心（ワールド）。立っている間は足元、体を引きずっている間は胸。追う・回り込む・壁に当たるのはこの位置。
+	// 攻撃・よろけ・倒れるアニメの間は、始めた所（根の動きのアンカー。つかめる距離もここから測る）。
 	GameLib::Math::Vector3 bodyCenter() const;
 	// 追ってくる AI の今の考え（Wander / Chase / Search）。確認用の表示に使う。
 	ZombieChase::Mode chaseMode() const;
@@ -142,7 +151,7 @@ public:
 	// 他のキャラの移動を止めるか（立っている間だけ。Downed も止めない＝立ち姿の長方形が倒れた体と合わないため）。
 	// false になったら、持ち主が移動の名簿から外す（死体・倒れたゾンビの上を歩ける）。
 	bool blocksMovement() const;
-	// 沈み終わって、消してよいか（持ち主が ActorList::destroyLater する）。
+	// 沈み終わって、消してよいか（持ち主が付いている物に GameObjectWorld::destroyLater する）。
 	bool isGone() const;
 	// 消えるまでの残り秒（死体・沈んでいる間だけ。それ以外は 0）。確認用の表示に使う。
 	float secondsUntilGone() const;
@@ -157,6 +166,26 @@ public:
 	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
+	// 根の動きで置き場所を動かすとき、ほかの動くもの（キャラ・拾える物）のどれを通り抜けるか。
+	enum class RootPass{
+		None,      // どれにも当たる（よろけ）
+		Target,    // 追う先（自キャラ）だけ通り抜ける（攻撃の踏み込み。止めると手が届かない）
+		AllBodies, // 全部通り抜ける（倒れる体。死体はほかを止めないので、ほかにも止められない）
+	};
+	// ── 根の動き（SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）──
+	// table のアニメを startTime から流し始めたので、根の動きの区間を始める（table が nullptr なら区間を閉じるだけ）。
+	// 前の区間の途中でも、今見えている絵の根から始める（踏み込みの途中で倒れても、絵が飛ばない）。
+	void startRootMotion( const ZombieRootMotion* table, float startTime, RootPass pass );
+	// 見えているアニメ時刻の根の動きの分だけ、アンカーから当たりながら置き場所を動かし、絵の根をその分だけ戻して置く。
+	// mMesh.update の後、部位の箱を置く前に呼ぶ。target: 攻撃の踏み込みで通り抜ける相手（nullptr 可）。
+	void applyRootMotion( const ChaseTarget* target );
+	// 区間を閉じる（アニメが歩き・立つへ戻った・体を引きずり始める）。置き場所を絵の根へ戻す。
+	void endRootMotion();
+	// 区間を閉じ、置き場所と絵の根のずれはそのまま残す（倒れ終わった死体。もう動かない）。
+	void freezeRootMotion();
+	GameLib::Math::Vector3 meshRoot() const; // 絵の根（メッシュを置く所。ワールド）
+	// 攻撃中に寄るなど、足元そのものを moved だけ動かした（区間の間はアンカーも同じだけ動かす）。
+	void moveFooting( const GameLib::Math::Vector3& moved );
 	void startFalling();      // 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする
 	void startDowned();       // 前へ倒れるアニメ（無ければ死亡アニメ）へ繋ぎ、Downed にする（倒れたまま生きている）
 	// ── 体を引きずる（Downed の間。SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）──
@@ -250,6 +279,19 @@ private:
 	float mCrawlYawOffset;                    // 見た目の向きから進む向き（腰 → 首）までの角度（度）
 	float mAttackClock;                       // 攻撃のアニメの代わりに進める時刻（フレーム）
 	std::vector< BodyPart > mSeveredByLastDamage; // 最後の applyDamage で切れた部位
+	// ── 根の動き（攻撃・よろけ・倒れる間）──
+	// アニメごとの根の動きの表（ZombieModel が持つ。借りているだけ）。nullptr なら、そのアニメは根の動きを移さない。
+	const ZombieRootMotion* mAttackRootMotion;
+	const ZombieRootMotion* mStaggerRootMotion;
+	const ZombieRootMotion* mDeathRootMotion;
+	const ZombieRootMotion* mDownedRootMotion;
+	const ZombieRootMotion* mRootMotion;       // 今の区間の表。nullptr なら区間の外
+	RootPass mRootPass;                        // 今の区間で通り抜ける相手
+	GameLib::Math::Vector3 mRootAnchor;        // 区間を始めた所（ワールド）。移動の箱と bodyCenter はここ
+	GameLib::Math::Vector3 mRootStartOffset;   // 区間を始めた時刻の根の水平の位置（骨格の根の空間）
+	float mRootLastTime;                       // 最後に置き場所を動かしたアニメ時刻（同じなら当たり直さない。止まった死体）
+	// 絵の根 − 置き場所（ワールド。水平だけ。区間の間は −根の動き）。区間の外は 0。ただし倒れ終わった死体は最後の値のまま。
+	GameLib::Math::Vector3 mMeshOffset;
 };
 
 #endif

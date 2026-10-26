@@ -18,6 +18,9 @@ struct AimSwayParams{
 	float walkPitch = 0.8f;         // 上下の振れ幅（度）
 	float walkRiseSeconds = 0.3f;   // 歩き出してから強さが 1 になるまで（秒）
 	float walkFallSeconds = 0.6f;   // 止まってから強さが 0 になるまで（秒）。タルコフも止まった後に揺れが残る
+	// 位相はぶれの側で進め、アニメの位相へは少しずつ寄せる（アニメは止まる⇔歩くで頭から始まり、位相が跳ぶため）。
+	float walkCycleSeconds = 1.37f; // 歩きの 1 周（秒。rifle_walk と同じ）。速さの割合を掛けて位相を進める
+	float walkSyncHalfLife = 0.3f;  // アニメの位相とのずれが半分になるまで（秒）
 
 	// ── c. 振り向きの遅れ（慣性。マウスで回すと、銃が少し遅れて付いてくる）──
 	float lagRate = 0.25f;          // 回した角度の何倍だけ、銃を逆へ残すか
@@ -45,6 +48,8 @@ struct AimSwayParams{
 		v( "walkPitch", walkPitch, 0.f, 5.f, "deg" );
 		v( "walkRiseSeconds", walkRiseSeconds, 0.02f, 3.f, "s" );
 		v( "walkFallSeconds", walkFallSeconds, 0.02f, 3.f, "s" );
+		v( "walkCycleSeconds", walkCycleSeconds, 0.2f, 5.f, "s" );
+		v( "walkSyncHalfLife", walkSyncHalfLife, 0.02f, 3.f, "s" );
 		v( "lagRate", lagRate, 0.f, 1.f, "x" );
 		v( "lagLimit", lagLimit, 0.f, 10.f, "deg" );
 		v( "lagHalfLife", lagHalfLife, 0.01f, 1.f, "s" );

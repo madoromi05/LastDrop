@@ -40,6 +40,16 @@ public:
 	// box が一番深くめり込んでいる相手から、外へ出す移動量を push に書く。どれにもめり込んでいなければ false。
 	// ignore: sweep と同じ。push: 出力先。nullptr 不可。
 	bool findPenetration( const BoxCollider& box, const ICollisionBody* ignore, GameLib::Math::Vector3* push ) const;
+	// 問い合わせで調べない動くもの（addBody で載せた物）。動かない形・建物は、いつも調べる。
+	struct BodyFilter{
+		const ICollisionBody* self;        // 動かしている本人。nullptr なら除かない
+		const ICollisionBody* passThrough; // 本人のほかに通り抜けてよい相手。nullptr なら無し
+		bool skipAllBodies;                // true なら動くもの（キャラ・拾える物）を全部調べない
+		bool skips( const ICollisionBody* body ) const;
+	};
+	// sweep・findPenetration と同じだが、調べない相手を filter で決める。
+	bool sweep( const BoxCollider& box, const GameLib::Math::Vector3& delta, const BodyFilter& filter, SweepHit* hit ) const;
+	bool findPenetration( const BoxCollider& box, const BodyFilter& filter, GameLib::Math::Vector3* push ) const;
 	// position（キャラの足元）の真下の地面の高さを height に書く。地面が登録されていない・足元に面が無ければ false。
 	// height: 出力先。nullptr 不可。
 	bool groundHeight( const GameLib::Math::Vector3& position, float* height ) const;

@@ -12,6 +12,8 @@
 #include "GameLib/Math/Random.h"
 #include "GameLib/Profiling/Profiler.h"
 
+#include <iterator>
+
 using namespace GameLib;
 using namespace GameLib::Math;
 
@@ -98,10 +100,8 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mAmmoDropData( nullptr ),
 	mGround( meshes ),
 	mBullets( mBulletData ),
-	mZombies( &mCollisionWorld, &mHitWorld ),
-	mZombieNumber( 0 ),
-	mPickups( &mCollisionWorld, &mHitWorld ),
-	mAmmoDrops( &mCollisionWorld, &mHitWorld ) {
+	mObjects( &mCollisionWorld, &mHitWorld ),
+	mZombieNumber( 0 ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
 	// 読み込みを頼むだけ（非同期）。構築が終わったら place で並べる。
 	mPlayerData = meshes->skinnedMesh( kPlayerFile );
@@ -129,7 +129,11 @@ void GameWorld::place() {
 		mPlayer->addTo( &mCollisionWorld, &mHitWorld );
 	}
 	if ( mZombieData->isReady() ) {
-		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation );
+		// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
+		std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
+		rootMotionAnimations.push_back( kZombieStaggerAnimation );
+		rootMotionAnimations.push_back( kZombieAttackAnimation );
+		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, rootMotionAnimations );
 		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
 		mZombieRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
 		// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）。
@@ -166,7 +170,7 @@ void GameWorld::place() {
 }
 
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
-	if ( !mZombieModel || mZombies.size() >= kMaxZombies ) {
+	if ( !mZombieModel || mObjects.count< Zombie >() >= kMaxZombies ) {
 		return false;
 	}
 	Zombie::Animations animations;
@@ -182,11 +186,11 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 }
 
 void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombie::Animations& animations ) {
-	// 移動・命中の両方の当たり判定への登録は ActorList が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
+	// 移動・命中の両方の当たり判定への登録は GameObjectWorld が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
 	// うろつき方の乱数の種も体ごとに変える（同じ種だと全員が同じ向き・同じ間で歩き出す）。
 	int randomSeed = mZombieRandom.getInt();
-	mZombies.spawn( std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mStreets, position, yawDegree, animations,
-		mZombieNumber, randomSeed ) );
+	mObjects.spawn( GameObjectTag::Zombie, std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mStreets,
+		position, yawDegree, animations, mZombieNumber, randomSeed ) );
 	++mZombieNumber;
 }
 
@@ -221,7 +225,8 @@ void GameWorld::placeMissionObjects() {
 		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
 		for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kRequiredFuel, seed ) ) {
 			const TownPlacement& p = spawnPoints[ index ];
-			mPickups.spawn( std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL, kFuelPerCan, kBlocksMovement ) );
+			mObjects.spawn( GameObjectTag::Fuel,
+				std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL, kFuelPerCan, kBlocksMovement ) );
 		}
 	}
 }
@@ -275,22 +280,20 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		updateZombies();
 	}
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
-	mZombies.flush();
-	mPickups.flush();
-	mAmmoDrops.flush();
+	mObjects.flush();
 	// 名簿をたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
 	spawnZombiesFromSpawner( cameraYaw );
 }
 
 void GameWorld::alertZombiesToGunshot( const Vector3& position ) {
-	for ( auto& zombie : mZombies ) {
+	mObjects.forEach< Zombie >( [ &position ]( Zombie& zombie ) {
 		Vector3 toZombie;
-		toZombie.setSub( zombie->position(), position );
+		toZombie.setSub( zombie.position(), position );
 		toZombie.y = 0.f;
 		if ( toZombie.squareLength() <= kGunshotHearingRange * kGunshotHearingRange ) {
-			zombie->hearNoise( position ); // 聞くかどうか（倒れている・よろけている等）はゾンビが決める
+			zombie.hearNoise( position ); // 聞くかどうか（倒れている・よろけている等）はゾンビが決める
 		}
-	}
+	} );
 }
 
 void GameWorld::updateZombies() {
@@ -302,57 +305,57 @@ void GameWorld::updateZombies() {
 		target.eyePosition = mPlayer->eyePosition();
 		target.grabbable = mPlayer->canBeGrabbed();
 		target.attackTaken = false;
+		target.body = mPlayer.get();
 		chaseTarget = &target;
 	}
 	// 攻撃に行っているゾンビ（前のティックから続いている 1 体）。名簿をたどる途中で攻撃を始めた体も、ここへ入れて
 	// 後の体に attackTaken を渡す（同じティックに 2 体が攻撃を始めないように）。
 	const Zombie* attacker = nullptr;
-	for ( const auto& zombie : mZombies ) {
-		if ( zombie->isAttacking() ) {
-			attacker = zombie.get();
-			break;
+	mObjects.forEach< Zombie >( [ &attacker ]( const Zombie& zombie ) {
+		if ( !attacker && zombie.isAttacking() ) {
+			attacker = &zombie;
 		}
-	}
+	} );
 	// 立って歩ける体の位置（このティックに動く前）。近くの仲間を避けるのに全員が読む（倒れた体・這う体・死体は数えない）。
 	mCrowd.clear();
-	for ( const auto& zombie : mZombies ) {
-		if ( zombie->state() == Zombie::State::Alive ) {
-			mCrowd.add( zombie.get(), zombie->bodyCenter() );
+	mObjects.forEach< Zombie >( [ this ]( const Zombie& zombie ) {
+		if ( zombie.state() == Zombie::State::Alive ) {
+			mCrowd.add( &zombie, zombie.bodyCenter() );
 		}
-	}
+	} );
 	const Zombie* holder = nullptr;
-	for ( auto& zombie : mZombies ) {
-		target.attackTaken = ( attacker != nullptr && attacker != zombie.get() );
-		zombie->update( chaseTarget, mHitWorld, &mCrowd );
-		if ( !attacker && zombie->isAttacking() ) {
-			attacker = zombie.get();
+	mObjects.forEach< Zombie >( [ & ]( Zombie& zombie ) {
+		target.attackTaken = ( attacker != nullptr && attacker != &zombie );
+		zombie.update( chaseTarget, mHitWorld, &mCrowd );
+		if ( !attacker && zombie.isAttacking() ) {
+			attacker = &zombie;
 		}
-		if ( zombie->isHoldingTarget() ) {
-			holder = zombie.get();
+		if ( zombie.isHoldingTarget() ) {
+			holder = &zombie;
 		}
-		if ( zombie->grabbedThisTick() ) {
+		if ( zombie.grabbedThisTick() ) {
 			ZombieAttackEvent event;
 			event.kind = ZombieAttackEvent::Kind::Grab;
-			event.point = zombie->headPosition();
+			event.point = zombie.headPosition();
 			mZombieAttacks.push_back( event );
 		}
-		if ( zombie->bitThisTick() && mPlayer ) {
+		if ( zombie.bitThisTick() && mPlayer ) {
 			// 体を引きずっているゾンビは足元から噛むので、脚だけ（ZombieCrawl_Plan.txt の 5 章）。
-			if ( zombie->isCrawling() ) {
+			if ( zombie.isCrawling() ) {
 				mPlayer->applyLegBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
 			} else {
 				mPlayer->applyBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
 			}
 			ZombieAttackEvent event;
 			event.kind = ZombieAttackEvent::Kind::Bite;
-			event.point = zombie->headPosition();
+			event.point = zombie.headPosition();
 			mZombieAttacks.push_back( event );
 		}
 		// 沈み終わった死体は、全員の更新が済んでから消す（update の flush）。
-		if ( zombie->isGone() ) {
-			mZombies.destroyLater( zombie.get() );
+		if ( zombie.isGone() ) {
+			mObjects.destroyLater( zombie.gameObject() );
 		}
-	}
+	} );
 	// つかんでいるゾンビが倒れた・振りほどかれた・噛み終えたら、次の update から動ける。
 	if ( mPlayer ) {
 		mPlayer->setHeld( holder != nullptr );
@@ -367,13 +370,13 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 	view.playerEye = mPlayer->eyePosition();
 	view.viewYaw = cameraYaw;
 	view.standingZombies = 0;
-	for ( const auto& zombie : mZombies ) {
-		if ( zombie->state() == Zombie::State::Alive ) {
+	mObjects.forEach< Zombie >( [ &view ]( const Zombie& zombie ) {
+		if ( zombie.state() == Zombie::State::Alive ) {
 			++view.standingZombies;
 		}
-	}
+	} );
 	view.fuelDelivered = mEscapeCar ? mEscapeCar->fuelDelivered() : 0;
-	view.hasRoom = mZombies.size() < kMaxZombies;
+	view.hasRoom = mObjects.count< Zombie >() < kMaxZombies;
 	mSpawnOrders.clear();
 	mZombieSpawner->update( view, &mSpawnOrders );
 	for ( const ZombieSpawner::Order& order : mSpawnOrders ) {
@@ -384,7 +387,7 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 
 void GameWorld::hitZombie( const BulletList::Impact& impact ) {
 	const HitWorld::Hit& hit = impact.hit;
-	Zombie* zombie = mZombies.find( hit.target );
+	Zombie* zombie = mObjects.find< Zombie >( hit.target );
 	if ( !zombie ) {
 		return; // ゾンビでない的（今は無いが、自キャラを撃つ相手が増えたとき）
 	}
@@ -429,10 +432,10 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 	if ( !mAmmoDropData->isReady() || mZombieRandom.getFloat() >= kAmmoDropChance ) {
 		return; // 形の構築に失敗した（理由は MeshCache が出力済み）・外れた
 	}
-	if ( mAmmoDrops.size() >= kMaxAmmoDrops ) {
-		const Pickup* oldest = mAmmoDrops.begin()->get();
-		mBulletHoles.removeAttachedTo( oldest ); // 物が消える前に外す
-		mAmmoDrops.destroyLater( oldest );
+	if ( mObjects.countTagged( GameObjectTag::AmmoDrop ) >= kMaxAmmoDrops ) {
+		GameObject* oldest = mObjects.oldestTagged( GameObjectTag::AmmoDrop );
+		mBulletHoles.removeAttachedTo( oldest->component< Pickup >() ); // 物が消える前に外す
+		mObjects.destroyLater( oldest );
 	}
 	Vector3 position = zombie.position();
 	if ( mPlayer ) {
@@ -445,7 +448,7 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 		}
 	}
 	float yaw = mZombieRandom.getFloat( kFullTurnDegree );
-	mAmmoDrops.spawn( std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
+	mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
 }
 
 void GameWorld::draw( const ViewFrustum& frustum ) const {
@@ -454,9 +457,7 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 		mPlayer->draw();
 	}
 	mBullets.draw();
-	for ( const auto& zombie : mZombies ) {
-		zombie->draw();
-	}
+	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
 	mSeveredLimbs.draw();
 	for ( const Building& building : mBuildings ) {
 		building.draw( frustum );
@@ -467,12 +468,8 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 	if ( mEndlessFuel ) {
 		mEndlessFuel->draw( frustum );
 	}
-	for ( const auto& pickup : mPickups ) {
-		pickup->draw( frustum );
-	}
-	for ( const auto& drop : mAmmoDrops ) {
-		drop->draw( frustum );
-	}
+	// 落ちているガソリンと、ゾンビが落とした弾（どちらも Pickup の部品）。
+	mObjects.forEach< Pickup >( [ &frustum ]( const Pickup& pickup ) { pickup.draw( frustum ); } );
 }
 
 void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
@@ -507,28 +504,21 @@ bool GameWorld::muzzleLight( MuzzleFlash::Light* out ) const {
 }
 
 void GameWorld::removeTakenPickups() {
-	removeTaken( &mPickups );
-	removeTaken( &mAmmoDrops );
-}
-
-void GameWorld::removeTaken( ActorList< Pickup >* list ) {
-	for ( const auto& pickup : *list ) {
-		if ( pickup->isTaken() ) {
-			mBulletHoles.removeAttachedTo( pickup.get() ); // 物が消える前に外す
-			list->destroyLater( pickup.get() );
+	// ガソリンも弾も同じ手順（どちらも Pickup の部品）。
+	mObjects.forEach< Pickup >( [ this ]( Pickup& pickup ) {
+		if ( pickup.isTaken() ) {
+			mBulletHoles.removeAttachedTo( &pickup ); // 物が消える前に外す
+			mObjects.destroyLater( pickup.gameObject() );
 		}
-	}
+	} );
 }
 
 IInteractable* GameWorld::resolveInteractable( const HitWorld::Hit& hit ) {
 	if ( !hit.blocker ) {
 		return nullptr; // キャラ（ゾンビ）は使えない
 	}
-	if ( Pickup* pickup = mPickups.find( hit.blocker ) ) {
-		return pickup;
-	}
-	if ( Pickup* drop = mAmmoDrops.find( hit.blocker ) ) {
-		return drop;
+	if ( Pickup* pickup = mObjects.find< Pickup >( hit.blocker ) ) {
+		return pickup; // 落ちているガソリン・落ちた弾
 	}
 	if ( mEndlessFuel && mEndlessFuel->isBody( hit.blocker ) ) {
 		return mEndlessFuel.get();
@@ -575,8 +565,8 @@ bool GameWorld::isEscapeReady() const {
 	return mEscapeCar && mEscapeCar->isFueled();
 }
 
-const ActorList< Zombie >& GameWorld::zombies() const {
-	return mZombies;
+const GameObjectWorld& GameWorld::objects() const {
+	return mObjects;
 }
 
 const std::vector< GameWorld::ZombieHit >& GameWorld::zombieHitsThisTick() const {
@@ -592,11 +582,12 @@ const ZombieSpawner* GameWorld::zombieSpawner() const {
 }
 
 void GameWorld::appendPickupColliders( std::vector< BoxCollider >* out ) const {
-	for ( const auto& pickup : mPickups ) {
-		if ( !pickup->isTaken() ) {
-			out->push_back( pickup->collider() );
+	// 見せるのはガソリンだけ（落ちた弾は足元に小さく落ちているだけで、運ぶ物ではない）。
+	mObjects.forEach< Pickup >( [ out ]( const Pickup& pickup ) {
+		if ( pickup.gameObject()->tag() == GameObjectTag::Fuel && !pickup.isTaken() ) {
+			out->push_back( pickup.collider() );
 		}
-	}
+	} );
 }
 
 const std::vector< GameWorld::ZombieAttackEvent >& GameWorld::zombieAttacksThisTick() const {

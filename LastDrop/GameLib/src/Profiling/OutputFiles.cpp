@@ -30,6 +30,15 @@ std::string timestamp(){
 	return buffer;
 }
 
+std::string dateTime(){
+	SYSTEMTIME t;
+	GetLocalTime( &t );
+	char buffer[ kTimestampBufferSize ];
+	snprintf( buffer, sizeof( buffer ), "%04u/%02u/%02u %02u:%02u:%02u",
+		t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond );
+	return buffer;
+}
+
 std::string pathOf( const std::string& fileName ){
 	// 既にあれば失敗するだけなので、毎回呼んでよい。
 	CreateDirectoryA( kDirectory, nullptr );

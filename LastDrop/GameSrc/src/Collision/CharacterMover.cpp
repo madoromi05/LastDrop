@@ -33,9 +33,21 @@ CharacterMover::CharacterMover( const CollisionWorld* world, const ICollisionBod
 }
 
 Vector3 CharacterMover::move( const Vector3& delta ) const {
+	return move( delta, CollisionWorld::BodyFilter{ mSelf, nullptr, false } );
+}
+
+Vector3 CharacterMover::movePassingThrough( const Vector3& delta, const ICollisionBody* passThrough ) const {
+	return move( delta, CollisionWorld::BodyFilter{ mSelf, passThrough, false } );
+}
+
+Vector3 CharacterMover::moveIgnoringBodies( const Vector3& delta ) const {
+	return move( delta, CollisionWorld::BodyFilter{ mSelf, nullptr, true } );
+}
+
+Vector3 CharacterMover::move( const Vector3& delta, const CollisionWorld::BodyFilter& filter ) const {
 	BoxCollider box = mSelf->collider();
 	Vector3 start = box.center;
-	depenetrate( &box );
+	depenetrate( &box, filter );
 
 	Vector3 remaining( delta.x, 0.f, delta.z );
 	Vector3 previousNormal( 0.f, 0.f, 0.f );
@@ -46,7 +58,7 @@ Vector3 CharacterMover::move( const Vector3& delta ) const {
 			break;
 		}
 		SweepHit hit;
-		if ( !mWorld->sweep( box, remaining, mSelf, &hit ) ) {
+		if ( !mWorld->sweep( box, remaining, filter, &hit ) ) {
 			box.center += remaining;
 			break;
 		}
@@ -80,10 +92,10 @@ float CharacterMover::followGround( const Vector3& position ) const {
 	return position.y + step;
 }
 
-void CharacterMover::depenetrate( BoxCollider* box ) const {
+void CharacterMover::depenetrate( BoxCollider* box, const CollisionWorld::BodyFilter& filter ) const {
 	for ( int i = 0; i < kMaxDepenetrationIterations; ++i ) {
 		Vector3 push;
-		if ( !mWorld->findPenetration( *box, mSelf, &push ) ) {
+		if ( !mWorld->findPenetration( *box, filter, &push ) ) {
 			break;
 		}
 		box->center += push;

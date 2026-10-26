@@ -493,6 +493,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SYSCOMMAND:
 		//最大化（SC_MAXIMIZE）は通常のウィンドウの最大化にするので DefWindowProc に任せる。
 		//フルスクリーンは alt+enter で切り替える。
+		//Alt だけを押して離すと（lParam が 0）、メニューを選ぶ状態に入り、次のキーでビープが鳴ってゲームに届かない。
+		//エディタ（F6）は Alt を押している間だけ触るので、ここで止める（Alt+Space のシステムメニューは残す）。
+		if ( ( wParam & 0xfff0 ) == SC_KEYMENU && lParam == 0 ){
+			break;
+		}
 		if ( wParam == SC_MINIMIZE ){
 			gImpl->mMinimized = true;
 			gImpl->mActive = false;

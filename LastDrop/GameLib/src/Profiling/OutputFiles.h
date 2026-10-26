@@ -13,6 +13,8 @@ namespace OutputFiles{
 
 // 今の時刻を、ファイル名に使える形にする（例：20261024_153000）。
 std::string timestamp();
+// 今の日時を、人と Excel が読める形にする（例：2026/10/24 15:30:00）。
+std::string dateTime();
 // Profiling/ の中のパスにする（フォルダが無ければ作る）。
 std::string pathOf( const std::string& fileName );
 // 一時ファイルに書いてから置き換える（書いている途中で落ちても、壊れたファイルを残さない）。

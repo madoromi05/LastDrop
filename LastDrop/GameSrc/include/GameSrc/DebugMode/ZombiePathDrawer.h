@@ -4,10 +4,9 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Scene/PrimitiveRenderer.h"
-#include "GameSrc/World/ActorList.h"
 #include <vector>
 
-class Zombie;
+class GameObjectWorld;
 class StreetGraph;
 
 // ゾンビが建物を回り込む通り道を、足元から通り道の点を結ぶ水色の線で描く（開発中の確認用。ZombiePath が通り道を持つ間だけ）。
@@ -17,10 +16,10 @@ class StreetGraph;
 // 描くだけで、ゾンビを変えない。ON/OFF はこのクラスを呼ぶか呼ばないか（GameDebugOverlay の F3）。
 class ZombiePathDrawer{
 public:
-	// zombies のうち通り道を持つものと、streets に足した障害物の角を描く。1フレームに1回まで（PrimitiveRenderer の約束）。
-	// 他のものを描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
+	// objects のゾンビ（Zombie の部品）のうち通り道を持つものと、streets に足した障害物の角を描く。
+	// 1フレームに1回まで（PrimitiveRenderer の約束）。他のものを描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
 	// projectionView: カメラの射影×ビュー行列。容量を超えた分は描かない。
-	void draw( const ActorList< Zombie >& zombies, const StreetGraph& streets, const GameLib::Math::Matrix44& projectionView );
+	void draw( const GameObjectWorld& objects, const StreetGraph& streets, const GameLib::Math::Matrix44& projectionView );
 
 private:
 	GameLib::Scene::PrimitiveRenderer mRenderer; // 最初の draw で作る（それまでは空）

@@ -17,6 +17,7 @@ struct FrameRecord;
 // 区間（PROFILE_SCOPE）は名前ごとに列を作り、そのフレームの合計を入れる。列は止めた時点で全部分かっている。
 // 同じ名前で PC の情報を JSON にして並べて保存する（CSV の先頭に書くと Excel で開きにくくなるため。計画書 6-5）。
 //   例：Profiling/perf_20261024_153000.csv と perf_20261024_153000_system.json
+// CSV の 1 行目だけは記録した日時（startedAt,2026/10/24 15:30:00,stoppedAt,…）。列名は 2 行目から。
 class FrameRecorder{
 public:
 	FrameRecorder();
@@ -49,10 +50,11 @@ private:
 		std::vector< ScopeTotal > scopes;
 	};
 	int columnOf( const char* name );
-	std::string csvText() const;
+	std::string csvText( const std::string& stoppedDateTime ) const;
 
 	bool mRecording;
 	std::string mStartedAt; // ファイル名に使う、始めた時刻
+	std::string mStartedDateTime; // CSV の 1 行目に書く、始めた日時
 	std::vector< Row > mRows;
 	std::vector< std::string > mColumns;          // 区間の列の名前（見つけた順）
 	std::map< std::string, int > mColumnOfName;

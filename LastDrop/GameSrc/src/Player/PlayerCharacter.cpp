@@ -420,6 +420,7 @@ AimSwayBody PlayerCharacter::aimSwayBody() const {
 	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）。
 	body.walkRate = mSpeed / kRifleWalkSpeed;
 	body.gaitPhase = gaitPhase();
+	body.gaitCycling = gait() != GAIT_STILL;
 	body.carryWeight = mCarryWeight;
 	body.brokenArms = ( mHealth.isBroken( PlayerBodyZone::LeftArm ) ? 1 : 0 ) + ( mHealth.isBroken( PlayerBodyZone::RightArm ) ? 1 : 0 );
 	return body;

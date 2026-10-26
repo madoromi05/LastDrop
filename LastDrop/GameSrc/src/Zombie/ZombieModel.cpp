@@ -2,6 +2,9 @@
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Render/SkinnedMesh/BoneNamePattern.h"
 
+#include "GameLib/GameLib.h"
+#include "GameLib/Base/DebugStream.h"
+
 namespace{
 	// 骨の名前の頭の共通部分（Resource/character.txt の骨は "Zombie_Head" のような名前）。
 	const char* kBoneNamePrefix = "Zombie_";
@@ -11,9 +14,11 @@ namespace{
 	// 歩くときに地面についているかを比べる足先の骨（ZombieStride）。
 	const char* kLeftToeBone = "LeftToeBase";
 	const char* kRightToeBone = "RightToeBase";
+	// 骨格の根の骨（腰）。1回だけ流すアニメでは、この骨が前後へ動く（ZombieRootMotion）。
+	const char* kRootBone = "Hips";
 }
 
-ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation ) :
+ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation, const std::vector< const char* >& rootMotionAnimations ) :
 	mData( data ),
 	mHitboxLayout( data, kBoneNamePrefix ),
 	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
@@ -22,6 +27,29 @@ ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation
 	mStride( data, data->animation( walkAnimation ),
 		BoneNamePattern::find( data, kBoneNamePrefix, kLeftToeBone ), BoneNamePattern::find( data, kBoneNamePrefix, kRightToeBone ) ),
 	mCrawlLayout( data, kBoneNamePrefix ) {
+	int rootBone = BoneNamePattern::find( data, kBoneNamePrefix, kRootBone );
+	for ( const char* name : rootMotionAnimations ) {
+		mRootMotions.push_back( NamedRootMotion{ name, ZombieRootMotion( data, data->animation( name ), rootBone ) } );
+		// 起動時のデバッグ出力で表が作れたかを見る（atack3 約 0.48m・gethit 約 0.18m・death1 約 0.88m・death2 約 1.2m）。
+		const ZombieRootMotion& table = mRootMotions.back().table;
+		if ( table.isValid() ) {
+			GameLib::cout << "ZombieRootMotion: " << name << " " << table.farthestDistance() << " m" << GameLib::endl;
+		} else {
+			GameLib::cout << "ZombieRootMotion: no table for " << name << GameLib::endl;
+		}
+	}
+}
+
+const ZombieRootMotion* ZombieModel::rootMotion( const char* name ) const {
+	if ( !name ) {
+		return nullptr;
+	}
+	for ( const NamedRootMotion& entry : mRootMotions ) {
+		if ( entry.name == name ) {
+			return entry.table.isValid() ? &entry.table : nullptr;
+		}
+	}
+	return nullptr;
 }
 
 const SkinnedMeshData* ZombieModel::data() const {

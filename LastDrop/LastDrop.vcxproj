@@ -315,7 +315,9 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombiePath.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieCrowd.cpp" />
+    <ClCompile Include="GameSrc\src\World\GameObjectWorld.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotion.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieAttack.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerHealth.cpp" />
@@ -608,7 +610,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\SceneManager.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinningPipeline.h" />
     <ClInclude Include="GameSrc\include\GameSrc\World\IWorldMember.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\World\ActorList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\Component.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\ComponentTypeId.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObject.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectTag.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
@@ -678,6 +684,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotion.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttack.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealth.h" />

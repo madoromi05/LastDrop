@@ -11,10 +11,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ── 何体（SummaryPlan/個別仕様/ZombieSpawn_Plan.txt の 2 章）──
-	const int kStartCount = 20;   // 給油する前の目標の数
-	const int kCountPerFuel = 4; // 給油 1 回ごとに増やす数
-	const int kMaxCount = 32;    // 目標の数の上限（立っているゾンビ。給油 3 回でちょうどここに届く）
+	const int kStartCount = 30;		// 初期ゾンビ数
+	const int kCountPerFuel = 5;	// 給油 1 回ごとに増やす数
+	const int kMaxCount = 50;		// 目標の数の上限（立っているゾンビ。給油 3 回でちょうどここに届く）
 	// 減ったら、これだけ待って 1 体補う（秒）。倒した直後に湧かないように。
 	const float kRefillSeconds = 10.f;
 	const int kRefillTicks = static_cast< int >( kRefillSeconds * GameTime::kTicksPerSecond );

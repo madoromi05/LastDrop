@@ -17,6 +17,7 @@ struct AimSwayBody{
 	float aimWeight = 0.f;     // 覗き具合（0〜1）
 	float walkRate = 0.f;      // 今の速さ ÷ 銃を持った歩きの速さ（0〜1。走っても 1 で止める）
 	float gaitPhase = 0.f;     // 歩きのアニメの位相（0〜1）
+	bool gaitCycling = false;  // 歩き・走りのアニメ中か（止まるアニメの位相には寄せない）
 	float carryWeight = 0.f;   // 走って胸元に抱えている割合（0〜1）
 	int brokenArms = 0;        // 体力が 0 の腕の数（0〜2）
 };
@@ -37,7 +38,7 @@ private:
 	float mBreathYawPhase;
 	float mBreathPitchPhase;
 	float mWalkStrength; // 歩きの強さ（0〜1）
-	float mWalkPhase;    // 最後に歩いていたときの歩きの位相（止まった後は形を止めたまま、強さだけ下げる）
+	float mWalkPhase;    // ぶれの側で進める歩きの位相（止まると進まないので、形を止めたまま強さだけ下げる）
 	float mLagYaw;       // 振り向きの遅れで残っているずれ（度）
 	float mLagPitch;
 	float mYaw;          // 最後に求めたぶれ（度）

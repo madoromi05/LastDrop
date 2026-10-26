@@ -17,7 +17,10 @@ namespace{
 	const int kCellBufferSize = 64;
 	// events 列は印の名前を ; でつなぐ（, は列の区切りなので使わない）。Excel の絞り込みで「Fire を含む」行だけを見られる。
 	// gpuMs は GPU の時間が読めたフレームだけ（数フレーム遅れて届き、間に合わなければ捨てるので空のこともある）。
-	const char* const kHeader = "frame,frameMs,cpuMs,presentMs,sleepMs,otherMs,gpuMs,ticks,state,wroteFile,events";
+	// 1 行目は記録した日時（Excel が日時として読む形）。列名は 2 行目から。
+	const char* const kStartedAtKey = "startedAt,";
+	const char* const kStoppedAtKey = ",stoppedAt,";
+	const char* const kHeader ="frame,frameMs,cpuMs,presentMs,sleepMs,otherMs,gpuMs,ticks,state,wroteFile,events";
 	const char kEventSeparator = ';';
 	const float kNoGpu = -1.f; // GPU の時間がまだ・読めなかった
 	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと（計画書 6-6 ②）。
@@ -40,6 +43,7 @@ mRecording( false ){
 void FrameRecorder::start(){
 	mRecording = true;
 	mStartedAt = OutputFiles::timestamp();
+	mStartedDateTime = OutputFiles::dateTime();
 	mRows.clear();
 	mColumns.clear();
 	mColumnOfName.clear();
@@ -51,7 +55,7 @@ void FrameRecorder::stop(){
 	}
 	mRecording = false;
 	std::string baseName = "perf_" + mStartedAt;
-	OutputFiles::write( OutputFiles::pathOf( baseName + ".csv" ), csvText() );
+	OutputFiles::write( OutputFiles::pathOf( baseName + ".csv" ), csvText( OutputFiles::dateTime() ) );
 	JsonWriter json;
 	json.beginObject( nullptr );
 	json.integer( "frames", static_cast< long long >( mRows.size() ) );
@@ -135,8 +139,9 @@ int FrameRecorder::columnOf( const char* name ){
 	return column;
 }
 
-std::string FrameRecorder::csvText() const {
-	std::string text = kHeader;
+std::string FrameRecorder::csvText( const std::string& stoppedDateTime ) const {
+	std::string text = kStartedAtKey + mStartedDateTime + kStoppedAtKey + stoppedDateTime + '\n';
+	text += kHeader;
 	for ( const std::string& column : mColumns ){
 		text += ',';
 		text += column;

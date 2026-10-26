@@ -1,6 +1,7 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
 #include "GameSrc/Zombie/Zombie.h"
 #include "GameSrc/Map/StreetGraph.h"
+#include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"
@@ -28,7 +29,7 @@ namespace{
 	}
 }
 
-void ZombiePathDrawer::draw( const ActorList< Zombie >& zombies, const StreetGraph& streets, const Matrix44& projectionView ) {
+void ZombiePathDrawer::draw( const GameObjectWorld& objects, const StreetGraph& streets, const Matrix44& projectionView ) {
 	if ( !mRenderer ) {
 		mRenderer = Scene::PrimitiveRenderer::create( kLineCapacity * kVerticesPerLine, kBatchCapacity );
 	}
@@ -48,20 +49,20 @@ void ZombiePathDrawer::draw( const ActorList< Zombie >& zombies, const StreetGra
 		mRenderer.addLine( Vector3( center.x, center.y, center.z - kCornerMarkSize ), Vector3( center.x, center.y, center.z + kCornerMarkSize ), kRouteColor, kRouteColor );
 		lineNumber += 2;
 	}
-	for ( const auto& zombie : zombies ) {
-		if ( zombie->state() != Zombie::State::Alive && !zombie->isCrawling() ) {
-			continue;
+	objects.forEach< Zombie >( [ this, &lineNumber ]( const Zombie& zombie ) {
+		if ( zombie.state() != Zombie::State::Alive && !zombie.isCrawling() ) {
+			return;
 		}
-		Vector3 from = lifted( zombie->bodyCenter() ); // 体を引きずっている体は胸から
+		Vector3 from = lifted( zombie.bodyCenter() ); // 体を引きずっている体は胸から
 		// 仲間を避けて混ぜた向き（混ぜていなければ描かない）。
-		const Vector3& separation = zombie->separation();
+		const Vector3& separation = zombie.separation();
 		if ( ( separation.x != 0.f || separation.z != 0.f ) && lineNumber < kLineCapacity ) {
 			Vector3 to;
 			to.setMadd( from, separation, kSeparationLineLength );
 			mRenderer.addLine( from, to, kSeparationColor, kSeparationColor );
 			++lineNumber;
 		}
-		zombie->path().remainingRoute( &mRoute );
+		zombie.path().remainingRoute( &mRoute );
 		for ( const Vector3& point : mRoute ) {
 			if ( lineNumber >= kLineCapacity ) {
 				break; // 容量を超えると止まるので、描かずに終える
@@ -71,6 +72,6 @@ void ZombiePathDrawer::draw( const ActorList< Zombie >& zombies, const StreetGra
 			from = to;
 			++lineNumber;
 		}
-	}
+	} );
 	mRenderer.draw();
 }

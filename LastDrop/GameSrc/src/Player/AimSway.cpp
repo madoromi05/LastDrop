@@ -13,8 +13,6 @@ namespace{
 	const float kFullTurn = 360.f;     // 波の 1 往復（度。GameLib の sin は度で受ける）
 	const float kStepsPerCycle = 2.f;  // 歩きのアニメ 1 周の歩数（上下は 1 歩ごとに 1 回沈む）
 	const float kHalf = 0.5f;
-	// これより遅ければ「歩いていない」とみなし、歩きの位相を止める（止まった後も形がアニメの位相で動き続けないように）。
-	const float kMovingRate = 0.05f;
 	// これより小さくなった遅れは 0 にする（いつまでも小さな値で狙いを動かし続けないため）。
 	const float kMinLag = 0.001f;
 	const int kOneArm = 1;
@@ -24,6 +22,19 @@ namespace{
 	float advance( float phase, float step ) {
 		phase += step;
 		return ( phase >= 1.f ) ? phase - 1.f : phase;
+	}
+
+	// 位相を -1〜2 の範囲から 0〜1 へ戻す（1 ティックに進む・寄せる量は 1 周より小さい）。
+	float wrapPhase( float phase ) {
+		if ( phase >= 1.f ) {
+			return phase - 1.f;
+		}
+		return ( phase < 0.f ) ? phase + 1.f : phase;
+	}
+
+	// from から to への近い方の差（-0.5〜0.5）。0.95 → 0.05 なら +0.1（逆向きに 0.9 戻らない）。
+	float phaseGap( float from, float to ) {
+		return wrapPhase( to - from + kHalf ) - kHalf;
 	}
 
 	// seconds 秒で 0 → 1 進むときの、1 ティックあたりの量。
@@ -83,8 +94,12 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 	} else {
 		mWalkStrength = Math::max( target, mWalkStrength - perTick( gParams.walkFallSeconds ) );
 	}
-	if ( body.walkRate > kMovingRate ) {
-		mWalkPhase = body.gaitPhase;
+	// 位相は速さの割合で自分で進め（止まれば止まる）、歩き・走りのアニメ中だけその位相へ少しずつ寄せる。
+	// アニメの位相をそのまま使うと、A・D を素早く押し替えたときに止まる⇔歩くでアニメが頭から始まり、銃が 1 ティックで跳ぶ。
+	mWalkPhase = wrapPhase( mWalkPhase + target * perTick( gParams.walkCycleSeconds ) );
+	if ( body.gaitCycling ) {
+		float pull = 1.f - remainPerTick( gParams.walkSyncHalfLife );
+		mWalkPhase = wrapPhase( mWalkPhase + phaseGap( mWalkPhase, body.gaitPhase ) * pull );
 	}
 	// 上下は 1 歩ごとに 1 往復、左右は 1 周（2 歩）で 1 往復（足を着くたびに沈み、体重が左右へ移るのに合わせて振れる）。
 	yaw += gParams.walkYaw * mWalkStrength * Math::sin( kFullTurn * mWalkPhase );

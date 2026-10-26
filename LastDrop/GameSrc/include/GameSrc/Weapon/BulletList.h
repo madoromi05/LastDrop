@@ -9,7 +9,7 @@ class StaticMeshData;
 class IHittable;
 
 // 飛んでいる弾の持ち主。撃つ（fire）と1発増え、進めて（update）終わった弾を消し、残りを描く（draw）。
-// 弾は名簿（CollisionWorld・HitWorld）に載らないので、ActorList ではなくここで持つ（載せる・外す相手がいない）。
+// 弾は名簿（CollisionWorld・HitWorld）に載らないので、GameObjectWorld ではなくここで持つ（載せる・外す相手がいない）。
 // 弾を外から指すポインタは渡さない（弾は値で持ち、消すと並びが詰まるため）。
 // いつ撃つか（連射の間隔）は知らない（FireControl）。当たった後どうするかも知らない（Bullet と同じ）。
 class BulletList{

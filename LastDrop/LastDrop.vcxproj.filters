@@ -807,7 +807,13 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieCrowd.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\World\GameObjectWorld.cpp">
+      <Filter>GameSrc\World</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotion.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp">
@@ -1409,7 +1415,19 @@
     <ClInclude Include="GameSrc\include\GameSrc\World\IWorldMember.h">
       <Filter>GameSrc\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\World\ActorList.h">
+    <ClInclude Include="GameSrc\include\GameSrc\World\Component.h">
+      <Filter>GameSrc\World</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\World\ComponentTypeId.h">
+      <Filter>GameSrc\World</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObject.h">
+      <Filter>GameSrc\World</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectTag.h">
+      <Filter>GameSrc\World</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectWorld.h">
       <Filter>GameSrc\World</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h">
@@ -1614,6 +1632,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotion.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h">

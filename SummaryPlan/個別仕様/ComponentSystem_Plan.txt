@@ -1,0 +1,190 @@
+================================================================================
+ ComponentSystem（ActorList を置き換える、物と部品の仕組み）の計画メモ
+ 作成日：2026-10-25
+ 状態：2026-10-25 ★1〜4 はすべておすすめのとおりに決定（ユーザー「★は全部おすすめのとおりで実装して」）し、実装した。
+       Debug・Profile・Release のビルドが警告なしで通過。GameObjectWorld の約束は使い捨てのテスト（13 項目）で確かめた。遊んでの確認はまだ
+       仕様からの細かい違い：
+        ・GameObject は .cpp を持たない（中身がテンプレートと短い関数だけなので、ヘッダだけ）
+        ・5 章の 2〜4（落ちた弾・ガソリン・ゾンビ）は段階ごとに止めず、まとめて移してからビルドした（3 つとも同じ GameWorld の中で、
+          途中の形でビルドを通すと ActorList と GameObjectWorld の両方を一時的に持つことになるため）
+        ・GameWorld::zombies() は objects()（GameObjectWorld を返す）に替え、読む側が forEach< Zombie > でたどる
+        ・forEach の最中の spawn・flush は ASSERT で止める（たどっている並びが動かないように）
+ 依頼：「ComponentSystem は作って欲しいです」（main.txt ③【未】ComponentSystem）
+================================================================================
+
+目次
+  0. 決定事項と未決事項（まずここを見る）
+  1. タルコフでは（Unity の作り）
+  2. 今の作り（ActorList）と困っている所
+  3. 新しい作りの全体像
+  4. 約束（ActorList から引き継ぐ物・新しく足す物）
+  5. 移す順番
+  6. 作るクラスと変えるクラス
+  7. 懸念点
+  8. 後回しにする物
+
+================================================================================
+ 0. 決定事項と未決事項
+================================================================================
+
+--------------------------------------------------------------------------------
+ ★ ユーザーに決めてもらうこと（おすすめを先に書く）
+--------------------------------------------------------------------------------
+ ★1 作り方
+     （おすすめ）案A：Unity の GameObject ＋ Component と同じ考え方
+       ・「物」（GameObject）が部品（Component）を持つ。部品は今のクラス（Zombie・Pickup …）をそのまま使える
+       ・設計思想.md の「委譲を積極的に使う。Unity の Component システムはこの思想の実践なので、それに沿った設計を心がける」に合う
+       ・タルコフも Unity 製なので、同じ考え方（1 章）
+     （別案）案B：ECS（Entity ＋ データだけの Component ＋ System）
+       ・データをメモリに並べるので数百〜数千体で速いが、今のクラス（振る舞いとデータが一緒）を全部データと処理に分け直すことになる。
+         Unity の資料でも、作り方そのものが変わると書かれている（1 章）。今のゾンビ 30 体では速さの差は出ない
+
+ ★2 更新の順番の決め方
+     （おすすめ）部品は「全員を同じ順で update する」仕組みを持たず、GameWorld が「この種類の部品を全部」と順に呼ぶ（forEach<T>）
+       ・今の順番（弾 → 自キャラ → 群れを作る → ゾンビ → 湧かせる → 消す）をそのまま書ける。どこで何が動くかを GameWorld だけ読めば言える
+       ・Unity の Update は順番が決まらず、Script Execution Order で後から決める。それより順番がコードに見える方がよい
+     （別案）部品に update を持たせ、GameObjectWorld が全部をまとめて呼ぶ（Unity の Update と同じ）。順番は部品の種類ごとの番号で決める
+
+ ★3 移す範囲
+     （おすすめ）今 ActorList で持っている 3 つ（ゾンビ・落ちているガソリン・ゾンビが落とした弾）を GameObjectWorld へ移す
+       ・自キャラ・車・何度でも拾えるガソリンの置き場・建物は、途中で増えも消えもしないので今のまま（GameWorld の持ち物）
+       ・千切れた部位（SeveredLimbList）は、当たり判定の名簿に載らず、自分で落ちて消えるだけなので今のまま
+     （別案）全部を GameObject にする（自キャラ・車・建物も）。Unity にはより近いが、作業が大きく、遊びは変わらない
+
+ ★4 ゾンビの中身を部品に分けるか
+     （おすすめ）今回は分けない。Zombie を 1 つの部品として載せる（中の ZombieChase・ZombiePath・ZombieAttack … は今のまま Zombie が持つ）
+       ・中身は既に役割ごとのクラスに分けてあり（委譲）、今分け直しても動きは変わらず、壊れる所が増えるだけ
+       ・敵の種類が増えたとき（走るゾンビ・人の敵）に、共有する所から部品に切り出す（8 章）
+     （別案）今回、追い方・通り道・攻撃・体力などを部品に分ける
+
+--------------------------------------------------------------------------------
+ 決まりごと（Claude の判断。確かめてもらう）
+--------------------------------------------------------------------------------
+ ・部品を探すのは、部品の種類ごとの番号で行う（RTTI・dynamic_cast を使わない。今のビルドの設定のまま）
+ ・1 つの物に、同じ種類の部品は 1 つまで
+ ・部品は物を作るときにまとめて付け、途中で付け外ししない（付け外しは要るようになったら足す。8 章）
+ ・物を持つのは GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ、の約束は今と同じ）
+ ・名簿（移動の CollisionWorld・命中の HitWorld）へ載せる・外すのは、今と同じく IWorldMember を実装した部品が自分で行う。
+   GameObjectWorld は spawn で全部の部品の addTo、flush で removeFrom を呼ぶ（呼ぶのは IWorldMember の部品だけ）
+ ・「名簿から返ってきた IHittable・IRayBlocker から、どの部品か探す」（今の ActorList::find）は、GameObjectWorld::find<部品>( 基底 ) で行う
+ ・物には「何の物か」を表す種類（タグ。Zombie・Fuel・AmmoDrop）を付ける。今は落ちているガソリンと落ちた弾が同じ Pickup のクラスで、
+   別々のリストで見分けているので、その代わり
+ ・Release でも同じ作り（開発用だけの物ではない）
+
+================================================================================
+ 1. タルコフでは（Unity の作り）
+================================================================================
+ 調べて分かったこと
+ ・タルコフ（Battlestate Games）は Unity で作られている（Unity 5 から作り始め、2023 年に Unity 2021 へ移すと発表）。
+   シェーダ・アニメの仕組み・エフェクト・音は自分たちで作り足した
+ ・Unity のふつうの作りは GameObject（物）に Component（部品。MonoBehaviour）を付ける形。
+   Unity の ECS（DOTS）は「GameObject でしていたことを Entity でする。一番違うのはデータの並べ方」で、
+   データは ECS の Component に、処理は System に書く（MonoBehaviour にデータと処理を一緒に書かない）。
+   多くの ECS のプロジェクトは GameObject と混ぜて使う
+ 調べても分からなかったこと（推測で埋めない）
+ ・タルコフの中で、敵・アイテムをどう部品に分けているか（公開されていない）
+ 合わせる所
+ ・Unity のふつうの作り（GameObject ＋ Component）に合わせる（★1 案A）
+ あえて変える所
+ ・Update を全部の部品へ自動で呼ばない（★2）。順番が大事な所（自キャラ → 群れ → ゾンビ）が多いので、呼ぶ順をコードに書く
+
+================================================================================
+ 2. 今の作り（ActorList）と困っている所
+================================================================================
+ 今
+ ・途中で増えたり消えたりする物は、種類ごとの ActorList<T>（ゾンビ・落ちているガソリン・落ちた弾の 3 つ）。
+   spawn（持って名簿へ載せる）／destroyLater（消す印）／flush（ティックの最後に外して消す）／find（基底のポインタから探す）
+ ・1 体の中身は、役割ごとのクラスを持つ形（委譲）。ゾンビは ZombieChase・ZombiePath・ZombieAttack・ZombieHealth・CharacterMover …
+ 困っている所（今は小さいが、物が増えると大きくなる）
+ ・同じ Pickup のクラスを、落ちているガソリンと落ちた弾で 2 つの ActorList に分けて持っている。
+   拾う・消す・探す・描く を 2 回ずつ書いている（removeTaken・resolveInteractable・draw）
+ ・「撃たれる物を全部」「描く物を全部」のような、種類をまたいだ見方ができない。物の種類を足すたびに GameWorld に
+   ActorList とループが 1 つずつ増える
+ ・新しい敵（別の動きのゾンビ・人の敵）を足すとき、Zombie クラスを丸ごと写すか、継承するしかない
+
+================================================================================
+ 3. 新しい作りの全体像
+================================================================================
+  GameObjectWorld（GameWorld が 1 つ持つ。ActorList 3 つの代わり）
+    ├ GameObject（物。種類のタグと、部品の並び）
+    │   └ Component（部品。今のクラスが Component を継承する：Zombie・Pickup）
+    ├ spawn / destroyLater / flush / find / forEach<部品> / count<部品>
+    └ 名簿（CollisionWorld・HitWorld）へ載せる・外す（IWorldMember の部品だけ）
+
+  例：ゾンビ 1 体     ＝ GameObject（タグ Zombie）＋ 部品 Zombie
+      落ちているガソリン ＝ GameObject（タグ Fuel）＋ 部品 Pickup
+      落ちた弾           ＝ GameObject（タグ AmmoDrop）＋ 部品 Pickup
+
+  GameWorld の更新（今と同じ順。forEach で部品の種類ごとに呼ぶ）
+    弾 → 自キャラ → 群れを作る（forEach<Zombie>）→ ゾンビ（forEach<Zombie>）→ 湧かせる → 拾われた物に消す印 → flush
+
+================================================================================
+ 4. 約束
+================================================================================
+ ActorList から引き継ぐ物（変えない）
+ ・spawn で名簿へ載せ、flush で外して消す。destroyLater は印だけ。消えるのは必ず flush の中だけ
+   （update の途中で相手が消えて、ほかの人の持つポインタや名簿が消えた物を指さないように）
+ ・たどっている間に spawn しない（並びが動く）。spawn は update の外（湧かせるのはティックの最後）か、たどり終えてから
+ ・GameObjectWorld が消えるときは、残っている物も名簿から外してから消す
+ 新しく足す物
+ ・GameObject::component<T>()：その物の T の部品（無ければ nullptr）
+ ・GameObjectWorld::forEach<T>( 関数 )：T の部品を持つ物を、作った順に全部。T の部品と物を渡す
+ ・GameObjectWorld::count<T>() / countTagged( タグ )：数（消す印が付いていて、まだ flush していない物も数える。今の size と同じ）
+ ・GameObjectWorld::find<T>( 基底のポインタ )：名簿から返ってきた IHittable* などが、どの物の T の部品か
+ ・部品の種類の番号：ComponentTypeId<T>::value（初めて使ったときに 0, 1, 2 … と振る。番号の並びに意味は無い）
+ ・同じ種類の部品が多い forEach を速くするため、GameObjectWorld は部品の種類ごとに「その部品を持つ物の並び」も持つ
+   （作った順。flush で消した物は外す）
+
+================================================================================
+ 5. 移す順番（1 つずつビルドと動きを確かめる）
+================================================================================
+  1. 土台：Component・ComponentTypeId・GameObject・GameObjectWorld を作る（まだ誰も使わない）
+  2. 落ちた弾（ActorList<Pickup> mAmmoDrops）を移す。一番小さい
+  3. 落ちているガソリン（mPickups）を移す。拾う・探す・描くを 1 か所にまとめる
+  4. ゾンビ（mZombies）を移す。GameWorld の forEach と、zombies() を使う所（確認用の表示 3 つ・湧かせる係）を直す
+  5. ActorList を消す（もう誰も使っていない）。ActorList のコメントの「ComponentSystem へ置き換える」も消す
+  ・各段階で Debug・Profile・Release のビルドが警告なしで通ることを確かめる
+
+================================================================================
+ 6. 作るクラスと変えるクラス
+================================================================================
+ 新：GameSrc/World/Component.h          ── 部品の元（持ち主の GameObject を知る。仮想デストラクタだけ）
+     GameSrc/World/ComponentTypeId.h    ── 部品の種類の番号
+     GameSrc/World/GameObject.h/.cpp    ── 物（タグ・部品の並び・component<T>）
+     GameSrc/World/GameObjectTag.h      ── 物の種類（Zombie・Fuel・AmmoDrop）
+     GameSrc/World/GameObjectWorld.h/.cpp ── 持ち主（spawn・destroyLater・flush・find・forEach・count）
+ 直：Zombie・Pickup                     ── Component も継承する（中身は変えない）
+     GameWorld                           ── ActorList 3 つを GameObjectWorld 1 つへ。ループを forEach へ。zombies() の返し方
+     DebugMode/ZombiePathDrawer・CollisionDebugDrawer（使っていれば）・GameDebugOverlay ── ゾンビのたどり方
+     World/ActorList.h                   ── 消す
+     vcxproj と filters
+   GameLib は触らない。
+ 確かめ方
+   ・Debug・Profile・Release のビルドが警告なしで通る
+   ・遊んで今と同じに動く：ゾンビが湧く・追う・撃たれて倒れて沈んで消える・弾を落とす・拾う・ガソリンを運んで車に入れる・Retry
+   ・F9 でゾンビを出す（上限 30 体）・F3 の表示が出る
+   ・F6 の Perf で、ゾンビ 30 体のときの時間が今と変わらない（部品を探す分が増えるので、前後で測る）
+
+================================================================================
+ 7. 懸念点
+================================================================================
+ ・ゾンビを探すとき、今は ActorList が Zombie を直接持っているが、新しい作りでは「物 → 部品」を 1 段たどる。
+   数十体なので速さは変わらない見込み（6 章の確かめ方で測る）
+ ・部品の種類の番号は「初めて使った順」なので、起動ごとに番号が変わることがある。番号をファイルに保存しないこと
+ ・移している途中（5 章の 2〜4）は、ActorList と GameObjectWorld が両方ある。段階ごとにビルドが通る形で止める
+ ・今は遊びが何も変わらない作業。良さが出るのは、物の種類・敵の種類を足すとき（2 章の困っている所）
+
+================================================================================
+ 8. 後回しにする物
+================================================================================
+ ・ゾンビの中身（追い方・通り道・攻撃・体力・移動）を部品に分ける（★4）。2 種類目の敵を作るときに、共有する所から
+ ・途中で部品を付け外しする（例：拾ったら光る部品を外す）
+ ・自キャラ・車・建物・千切れた部位を GameObject にする（★3 の別案）
+ ・ECS（★1 案B）。ゾンビを数百体にして、計測で更新が重いと出たとき
+
+ 出典
+  ・Wikipedia「Escape from Tarkov」 https://en.wikipedia.org/wiki/Escape_from_Tarkov
+  ・80 Level「Escape from Tarkov takes Unity to the next level」 https://80.lv/articles/escape-from-tarkov-takes-unity-to-the-next-level
+  ・Unity Blog「On DOTS: Entity Component System」 https://blog.unity.com/technology/on-dots-entity-component-system
+  ・Unity Entities manual「Creating gameplay」 https://docs.unity3d.com/Packages/com.unity.entities@0.9/manual/gp_overview.html
+  ・Unity Entities manual「DOTS Hybrid Components」 https://docs.unity3d.com/Packages/com.unity.entities@0.17/manual/hybrid_component.html

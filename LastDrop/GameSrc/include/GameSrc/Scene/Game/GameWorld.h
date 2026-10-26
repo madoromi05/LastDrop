@@ -11,7 +11,7 @@
 #include "GameSrc/Zombie/SeveredLimbList.h"
 #include "GameSrc/Zombie/ZombieSpawner.h"
 #include "GameSrc/Zombie/ZombieCrowd.h"
-#include "GameSrc/World/ActorList.h"
+#include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Interaction/Pickup.h"
 #include "GameSrc/Interaction/EscapeCar.h"
@@ -134,8 +134,9 @@ public:
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す。
 	// 確認用の表示が、物の場所を壁越しに見せるのに使う。out: 出力先。nullptr 不可。
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
-	// ゾンビ全員（倒れている途中・死体も含む）。確認用の表示が体力を読むのに使う。
-	const ActorList< Zombie >& zombies() const;
+	// 途中で増えたり消えたりする物（ゾンビ・落ちているガソリン・落ちた弾）。確認用の表示が forEach< Zombie > で
+	// ゾンビ全員（倒れている途中・死体も含む）の体力・通り道を読むのに使う。
+	const GameObjectWorld& objects() const;
 	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる。
 	const std::vector< ZombieHit >& zombieHitsThisTick() const;
 	// 最後の update で弾が物に当たった出来事（当たった順）。次の update で入れ替わる。
@@ -155,10 +156,8 @@ private:
 	// direction: 弾の進む向き（長さ1）。
 	void severLimb( const Zombie& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
 	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とす（hitZombie から）。
-	// 落ちている弾が多すぎたら、一番古い物を消す。
+	// 落ちている弾（タグ AmmoDrop）が多すぎたら、一番古い物を消す。数の上限があるのは弾だけ（ガソリンは数が決まっている）。
 	void dropAmmo( const Zombie& zombie );
-	// list の拾われた物に、消す印を付ける（removeTakenPickups から。ガソリンと弾で同じ手順）。
-	void removeTaken( ActorList< Pickup >* list );
 
 	// position（撃った瞬間の自キャラの足元）で銃声がした。届く距離の内のゾンビへ知らせる（update で撃ったティックに）。
 	void alertZombiesToGunshot( const GameLib::Math::Vector3& position );
@@ -215,8 +214,10 @@ private:
 	MuzzleFlash mMuzzleFlash;
 	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
 	std::unique_ptr< ZombieModel > mZombieModel;
-	// ゾンビ。途中で消せるよう ActorList で持つ（名簿への登録・解除もここが行う）。
-	ActorList< Zombie > mZombies;
+	// 途中で増えたり消えたりする物（ゾンビ・落ちているガソリン・ゾンビが落とした弾）。物（GameObject）に部品を付けて持つ
+	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem_Plan.txt）。
+	// ゾンビが mZombieModel・mStreets を、物が名簿を借りるので、それらより後に宣言する（＝先に破棄される）。
+	GameObjectWorld mObjects;
 	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、全員の update へ渡す。毎回確保し直さないために持つ）。
 	ZombieCrowd mCrowd;
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）を選ぶ（place で種を決める）
@@ -230,10 +231,6 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mSeverPose;
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
-	ActorList< Pickup > mPickups;            // 落ちているガソリン（拾うと消える）
-	// ゾンビが落とした予備の弾。ガソリンと分けて持つのは、数の上限（古い物から消す）があるのは弾だけで、
-	// 確認用の表示（appendPickupColliders）に出すのはガソリンだけのため。
-	ActorList< Pickup > mAmmoDrops;
 	std::unique_ptr< EscapeCar > mEscapeCar; // 名簿が自分の箱を指すので、置いた後は動かさない（unique_ptr で持つ）
 	std::unique_ptr< ItemSource > mEndlessFuel; // 車の近くの、何度でも拾えるガソリン（同上）
 };
