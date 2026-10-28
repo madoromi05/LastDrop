@@ -25,7 +25,16 @@ bool ZombieDismemberment::sever( BodyPart part ) {
 		mLost[ static_cast< int >( lostPart ) ] = true;
 	}
 	mCutParts.push_back( part );
+	mSeveredThisHit.push_back( part );
 	return true;
+}
+
+void ZombieDismemberment::clearSeveredThisHit() {
+	mSeveredThisHit.clear();
+}
+
+const std::vector< BodyPart >& ZombieDismemberment::severedThisHit() const {
+	return mSeveredThisHit;
 }
 
 bool ZombieDismemberment::isLost( BodyPart part ) const {

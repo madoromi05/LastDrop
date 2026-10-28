@@ -100,3 +100,15 @@ bool HitboxSet::boxMatrix( int index, Matrix34* out ) const {
 BodyPart HitboxSet::boxPart( int index ) const {
 	return mLayout->boxes()[ index ].part;
 }
+
+bool HitboxSet::partCenter( BodyPart part, Vector3* out ) const {
+	ASSERT( out && "HitboxSet : out is null." );
+	for ( int i = 0; i < boxNumber(); ++i ) {
+		Matrix34 box;
+		if ( boxPart( i ) == part && boxMatrix( i, &box ) ) {
+			out->set( box.m03, box.m13, box.m23 ); // -1〜1 の立方体の中心が置かれた所
+			return true;
+		}
+	}
+	return false;
+}

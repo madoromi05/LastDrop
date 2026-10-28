@@ -77,8 +77,16 @@ public:
 	// （体の書き換え setBodyPoseModifier は掛けた後）。
 	// 部位の当たり判定に使う（一人称で頭を潰した・視点に合わせて曲げた見た目ではなく、体の本来の位置で判定するため）。
 	bool animatedBoneMatrix( int boneIndex, GameLib::Math::Matrix34* out ) const;
+	// 全部の骨の boneMatrix（見えている姿勢・ワールド）を、骨の番号の順に out へ書く（前の中身は捨てる）。
+	// まだ update していなければ、全部を根の位置（rootMatrix）に置く。体から千切れた部位を、切れた瞬間の姿勢で写すのに使う。
+	// out: nullptr 不可。
+	void shownWorldPose( std::vector< GameLib::Math::Matrix34 >* out ) const;
 	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける。
 	GameLib::Math::Matrix34 rootMatrix() const;
+	// ワールドの向き（移動を含まない）・点を、骨格の根の空間（置き場所と向きを掛ける前）へ直す（rootMatrix の逆を掛ける）。
+	// 弾の向きでのけぞらせる・相手の方へ顔を向けるなど、骨を曲げる書き換え（BonePoseModifier）へ渡す向き・点を作るのに使う。
+	GameLib::Math::Vector3 toRootDirection( const GameLib::Math::Vector3& worldDirection ) const;
+	GameLib::Math::Vector3 toRootPoint( const GameLib::Math::Vector3& worldPoint ) const;
 
 private:
 	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。

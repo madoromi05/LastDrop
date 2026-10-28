@@ -50,6 +50,10 @@ public:
 	bool boxMatrix( int index, GameLib::Math::Matrix34* out ) const;
 	// 箱が受け持つ部位（体力の表示で、箱の所に部位の体力を出すのに使う）。
 	BodyPart boxPart( int index ) const;
+	// part の箱が置かれていれば、その中心（ワールド）を out へ書いて true。置いていない・外した部位なら false（out は変えない）。
+	// part の箱が複数あれば、並びの先の物。ゾンビの頭の位置（つかまれた相手が顔を向ける先・噛む音の所）に使う。
+	// out: nullptr 不可。
+	bool partCenter( BodyPart part, GameLib::Math::Vector3* out ) const;
 
 private:
 	// 箱1つの置き場所。並びは HitboxLayout::boxes と同じ。

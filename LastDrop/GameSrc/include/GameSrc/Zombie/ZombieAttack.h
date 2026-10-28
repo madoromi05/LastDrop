@@ -30,6 +30,10 @@ public:
 	// animationFinished: 攻撃のアニメが最後まで来たか。
 	// targetInReach: 今つかめる所に相手が居るか（手を伸ばし切ったときだけ使う）。
 	void update( float animationTime, bool animationFinished, bool targetInReach );
+	// update と同じだが、攻撃のアニメを流さない体（体を引きずるゾンビ）のために、アニメの代わりに自分の時計で段階を進める。
+	// 時計はアニメと同じく「見えている時刻」を渡してから、再生の速さの分だけ進める（つかんでいる間は同じ速さでゆっくり進む）。
+	// animationPeriod: 攻撃のアニメの長さ（フレーム）。時計がここまで来たら、アニメが最後まで来たとみなす。
+	void updateWithoutAnimation( float animationPeriod, bool targetInReach );
 	// つかんでいる間に受けたダメージ（部位の倍率を掛けた後）を数える。つかんでいなければ何もしない。
 	// 合計が決まった量に届いたら振りほどかれて Ready になり、true を返す（呼ぶ側が、よろけのアニメなどへ替える）。
 	bool takeShakeDamage( float amount );
@@ -47,6 +51,8 @@ public:
 
 	// 1回噛んだときのダメージ。
 	static float biteDamage();
+	// 攻撃のアニメを流し始める時刻（フレーム）。段階の時刻はこのアニメの時刻なので、流す側もここから流す。
+	static float startTime();
 
 private:
 	void finish(); // 待ち時間を付けて Ready にする
@@ -54,6 +60,7 @@ private:
 	Phase mPhase;
 	int mCooldownTicks;    // 次の攻撃を始められるまでの残り（ティック。Ready の間だけ減る）
 	float mShakeDamage;    // つかんでいる間に受けたダメージの合計
+	float mClock;          // updateWithoutAnimation で進める、アニメの代わりの時刻（フレーム）
 	bool mGrabbedThisTick;
 	bool mBitThisTick;
 };

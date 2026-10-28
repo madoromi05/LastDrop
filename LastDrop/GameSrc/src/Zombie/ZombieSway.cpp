@@ -55,6 +55,19 @@ float ZombieSway::lean() const {
 	return mLean;
 }
 
+float ZombieSway::weaveDegree( float maxDegree ) const {
+	return mLean * maxDegree;
+}
+
+float ZombieSway::strengthAt( float distance, float startDistance, float fullDistance ) {
+	float range = startDistance - fullDistance;
+	if ( range <= 0.f ) {
+		return ( distance <= fullDistance ) ? 1.f : 0.f;
+	}
+	float t = ScalarMath::clamp( ( startDistance - distance ) / range, 0.f, 1.f );
+	return ScalarMath::smoothStep( t );
+}
+
 void ZombieSway::apply( std::vector< Matrix34 >* pose ) {
 	if ( Math::abs( mDegree ) < kNegligibleDegree ) {
 		return;

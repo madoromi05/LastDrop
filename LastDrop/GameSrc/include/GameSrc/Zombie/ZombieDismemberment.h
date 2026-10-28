@@ -19,8 +19,11 @@ public:
 	// layout: 切り方の設計図。所有権は受け取らない。nullptr 不可。この部位欠損より長く生きていること（ZombieModel が持つ）。
 	explicit ZombieDismemberment( const ZombieSeverLayout* layout );
 
-	// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。
+	// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。切れたら severedThisHit へ足す。
 	bool sever( BodyPart part );
+	// 1 発ごとに切れた部位の一覧（持ち主が千切れた部位を飛ばすのに読む）。弾が当たるたびに、持ち主が先に空にする。
+	void clearSeveredThisHit();
+	const std::vector< BodyPart >& severedThisHit() const;
 	// part がもう無いか（切った部位の先の部位も、無い）。
 	bool isLost( BodyPart part ) const;
 	// 立っていられない部位（脚）を失ったか。
@@ -36,6 +39,7 @@ private:
 	const ZombieSeverLayout* mLayout; // 借りているだけ
 	bool mLost[ static_cast< int >( BodyPart::Count ) ]; // BodyPart の番号で引く
 	std::vector< BodyPart > mCutParts; // 切った部位（切った順。前腕の後に上腕を切ったら、肩の点で潰し直す）
+	std::vector< BodyPart > mSeveredThisHit; // 最後に clearSeveredThisHit してから切れた部位
 };
 
 #endif

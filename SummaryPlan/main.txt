@@ -195,6 +195,14 @@ C++(directX11)
   ゾンビ・落ちているガソリン・落ちた弾が部品。個別仕様/ComponentSystem_Plan.txt。遊んでの確認はまだ)
 ・【済】秒→ティックの丸め(切り捨て→一番近い整数。GameTime::secondsToTicks)と、重複した小さな計算の共通化
   (AngleMath・FlatMath・ScalarMath・PlacementMatrix::translationOf。10/26 の設計の見直しの 1・2。個別仕様/MathHelpers_Plan.txt。遊んでの確認はまだ)
+・【済】Zombie を小さく分ける(ZombieRootMotionSpan・ZombieStagger・ZombieCrawlBody。動きは変えない。988 → 862 行。
+  10/26 の設計の見直しの 3。10/28 実装。個別仕様/ZombieSplit_Plan.txt。遊んでの確認はまだ)
+・【済】Zombie の 2 回目の分割(追う・歩くと這う追い方を ZombieLocomotion、倒れてから消えるまでを ZombieCorpse へ。動きは変えない。
+  862 → 736 行。10/28 実装。個別仕様/ZombieSplit2_Plan.txt。遊んでの確認はまだ)
+・【済】Zombie の 3 回目の分割(アニメの切り替えを ZombieAnimationSet、攻撃の間合いを ZombieAttackReach へ。頭の箱・骨の写し・這う間の攻撃の時計は
+  HitboxSet・SkinnedMeshInstance・ZombieAttack へ。動きは変えない。736 → 606 行。10/28 実装。個別仕様/ZombieSplit3_Plan.txt。遊んでの確認はまだ)
+・【済】Zombie の 4 回目の分割(判断に混ざった計算を出す：F6 の調整値と体ごとの値・フラつきの曲線・骨格の空間へ直す計算・首の突き出し・
+  引きずる体 ZombieCrawler・撃たれた反応を選ぶ ZombieDamageReaction。動きは変えない。606 → 549 行。10/28 実装。個別仕様/ZombieSplit4_Plan.txt。遊んでの確認はまだ)
 
 ④グラフィック(個別仕様/Graphics_Spec.txt 15 章の段階の順。2026/10/25 に最適化より先にすると決定)
  → は、その段階で一緒にやる最適化(個別仕様/Optimization_Plan.txt 8 章の A。後から入れると描く経路を作り直すため)

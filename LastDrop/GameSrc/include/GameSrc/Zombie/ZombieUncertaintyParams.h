@@ -1,8 +1,15 @@
 #ifndef INCLUDED_ZOMBIE_UNCERTAINTY_PARAMS_H
 #define INCLUDED_ZOMBIE_UNCERTAINTY_PARAMS_H
 
+namespace GameLib{
+	namespace Math{
+		class Random;
+	}
+}
+
 // ゾンビの「倒れるまでが読めない」「狙いにくい」ための値（仕様は SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt）。
 // 起動中に F6 のエディタで動かせる。どれも画面で確かめる前の初期値。
+// 湧く体ごとの値（丈夫さ・揺れの長さ）を、この幅から選ぶ関数も持つ（SummaryPlan/個別仕様/ZombieSplit4_Plan.txt の 4 章）。
 struct ZombieUncertaintyParams{
 	// ── 体力の個体差（3 章）──
 	// 湧くときに、この間から一様に丈夫さを選び、全体と全部の部位の最大体力に掛ける。
@@ -34,9 +41,15 @@ struct ZombieUncertaintyParams{
 		v( "swayPeriodMax", swayPeriodMax, 0.1f, 5.f, "s" );
 		v( "weaveDegree", weaveDegree, 0.f, 30.f, "deg" );
 	}
+
+	// 湧く体の丈夫さ・揺れの 1 往復の長さ（秒）を、それぞれの幅から一様に選ぶ。
+	// F6 で幅を逆にしても（max <= min）min を使い、乱数を引かない（引く回数が変わると、うろつく先などがずれるため）。
+	// random: 体ごとの乱数。nullptr 不可。
+	float pickToughness( GameLib::Math::Random* random ) const;
+	float pickSwayPeriod( GameLib::Math::Random* random ) const;
 };
 
-// 起動中ずっと 1 つだけの調整値（Zombie.cpp が持つ）。
+// 起動中ずっと 1 つだけの調整値（ZombieUncertaintyParams.cpp が持つ）。
 ZombieUncertaintyParams& zombieUncertaintyParams();
 
 #endif

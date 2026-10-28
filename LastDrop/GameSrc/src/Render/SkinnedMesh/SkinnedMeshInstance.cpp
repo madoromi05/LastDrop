@@ -141,6 +141,22 @@ Matrix34 SkinnedMeshInstance::rootMatrix() const {
 	return PlacementMatrix::make( mPosition, mAngleY );
 }
 
+Vector3 SkinnedMeshInstance::toRootDirection( const Vector3& worldDirection ) const {
+	Matrix34 worldToRoot;
+	worldToRoot.setInverse( rootMatrix() );
+	Vector3 rootDirection;
+	worldToRoot.mul33( &rootDirection, worldDirection );
+	return rootDirection;
+}
+
+Vector3 SkinnedMeshInstance::toRootPoint( const Vector3& worldPoint ) const {
+	Matrix34 worldToRoot;
+	worldToRoot.setInverse( rootMatrix() );
+	Vector3 rootPoint;
+	worldToRoot.mul( &rootPoint, worldPoint );
+	return rootPoint;
+}
+
 bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
 	if ( !mHasPose || boneIndex < 0 || boneIndex >= static_cast< int >( mShownPose.size() ) ) {
 		return false;
@@ -157,6 +173,17 @@ bool SkinnedMeshInstance::animatedBoneMatrix( int boneIndex, Matrix34* out ) con
 	}
 	out->setMul( rootMatrix(), pose[ boneIndex ] );
 	return true;
+}
+
+void SkinnedMeshInstance::shownWorldPose( std::vector< Matrix34 >* out ) const {
+	ASSERT( out && "SkinnedMeshInstance : out is null." );
+	int boneNumber = mData->boneNumber();
+	out->resize( boneNumber );
+	for ( int b = 0; b < boneNumber; ++b ) {
+		if ( !boneMatrix( b, &( *out )[ b ] ) ) {
+			( *out )[ b ] = rootMatrix(); // まだ update していない（置いた直後）。根の位置に置く
+		}
+	}
 }
 
 void SkinnedMeshInstance::blendFadingPose() {

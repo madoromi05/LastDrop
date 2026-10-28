@@ -3,6 +3,7 @@
 
 namespace{
 	// ── 攻撃のアニメ（atack3）の時刻（フレーム。変換で 0 起点になっている。Blender の 2 フレーム目が 0）──
+	const float kStartTime = 0.f; // 攻撃のアニメは頭から再生する
 	// 両手を伸ばし切る時刻。ここでつかめるかを決める（Blender で手が一番前へ出た 47 フレーム目）。
 	const float kGrabTime = 45.f;
 	// 噛む時刻。つかんで止まっている区間（Blender の 56〜92）の終わり近く。この後は元の姿勢へ戻っていく。
@@ -25,6 +26,7 @@ ZombieAttack::ZombieAttack() :
 	mPhase( Phase::Ready ),
 	mCooldownTicks( 0 ),
 	mShakeDamage( 0.f ),
+	mClock( kStartTime ),
 	mGrabbedThisTick( false ),
 	mBitThisTick( false ) {
 }
@@ -36,6 +38,15 @@ bool ZombieAttack::canStart() const {
 void ZombieAttack::start() {
 	mPhase = Phase::Reach;
 	mShakeDamage = 0.f;
+	mClock = kStartTime;
+}
+
+void ZombieAttack::updateWithoutAnimation( float animationPeriod, bool targetInReach ) {
+	bool finished = isActive() && mClock >= animationPeriod;
+	update( mClock, finished, targetInReach );
+	if ( isActive() ) {
+		mClock += playbackRate(); // 段階が変わった後の速さで進める（つかんだ次のティックからゆっくり）
+	}
 }
 
 void ZombieAttack::update( float animationTime, bool animationFinished, bool targetInReach ) {
@@ -122,4 +133,8 @@ float ZombieAttack::playbackRate() const {
 
 float ZombieAttack::biteDamage() {
 	return kBiteDamage;
+}
+
+float ZombieAttack::startTime() {
+	return kStartTime;
 }
