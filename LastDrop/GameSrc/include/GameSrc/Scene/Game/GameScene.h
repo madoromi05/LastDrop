@@ -14,6 +14,8 @@
 #include "GameSrc/Scene/Game/GameHud.h"
 #include "GameSrc/Scene/Game/PauseMenu.h"
 #include "GameSrc/Render/PostProcess.h"
+#include "GameSrc/Render/GBuffer.h"
+#include "GameSrc/Render/DeferredLighting.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
 #ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
@@ -91,6 +93,8 @@ private:
 	GameHud mHud;
 	PauseMenu mPauseMenu;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
+	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
+	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;

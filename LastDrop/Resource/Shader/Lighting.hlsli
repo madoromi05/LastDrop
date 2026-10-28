@@ -48,12 +48,13 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
     return any(isnan(r)) ? normal : r; // 退化（UV面積0など）のときは元の法線へ
 }
 
-// 4灯のディフューズ・スペキュラ＋環境光＋発光で、1画素の色を求める。color: 頂点色×ディフューズ色。
-float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNormal)
+// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）と
+// ディファードのライティングのパス（DeferredLighting.hlsl）が同じこの関数を呼ぶ（GBuffer_Plan.txt 7 章。式を 2 回書かない）。
+// albedo: 頂点色×ディフューズ色×画像（リニア）  nv: 法線（長さ 1・法線マップ済み）
+// specularColor: (2+鋭さ)/2π を掛けた後のスペキュラの色（b0 の gSpecularColor.xyz と同じ形）  sharpness: 鋭さ
+float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specularColor, float sharpness)
 {
     float3 ev = gEyePosition.xyz - worldPosition;
-    float3 nv = normalize(worldNormal);
-    nv = perturbNormal(nv, worldPosition, uv);
     float3 rv = 2.0f * nv * dot(nv, ev) - ev;
     float4 lvX = gPsLightPosX - worldPosition.xxxx;
     float4 lvY = gPsLightPosY - worldPosition.yyyy;
@@ -64,7 +65,7 @@ float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNor
     float4 rvL2 = dot(rv, rv);
     s *= rsqrt(lvL2 * rvL2);
     s = max(0, s);
-    s = pow(s, gSpecularColor.w);
+    s = pow(s, sharpness);
     s *= rcpLvL;
     float4 d = (lvX * nv.xxxx + lvY * nv.yyyy + lvZ * nv.zzzz) * rcpLvL * rcpLvL;
     d = max(0, d);
@@ -78,9 +79,16 @@ float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNor
     sc += gPsLightColor[1].xyz * s.y;
     sc += gPsLightColor[2].xyz * s.z;
     sc += gPsLightColor[3].xyz * s.w;
+    return albedo * dc + sc * specularColor;
+}
+
+// 4灯のディフューズ・スペキュラ＋環境光＋発光で、1画素の色を求める。color: 頂点色×ディフューズ色。
+float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNormal)
+{
+    float3 nv = normalize(worldNormal);
+    nv = perturbNormal(nv, worldPosition, uv);
     float4 c = color * gAlbedo.Sample(gWrapSampler, uv);
-    c.xyz *= dc;
-    c.xyz += sc * gSpecularColor.xyz;
+    c.xyz = lightSurface(c.xyz, nv, worldPosition, gSpecularColor.xyz, gSpecularColor.w);
     c.xyz += gEmissionColor.xyz;
     return c;
 }

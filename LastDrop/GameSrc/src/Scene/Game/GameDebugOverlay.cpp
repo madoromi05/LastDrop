@@ -5,7 +5,6 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/UI/UiScreen.h"
 #ifdef ZF_EDITOR
-#include "GameSrc/Scene/Game/PlayerBodyFigure.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Render/VertexColor.h"
 #endif
@@ -34,9 +33,9 @@ namespace{
 	const int kRayLine = 2;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
 	const int kSpawnerLine = 3; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
-	// 自キャラの部位ごとの体力の数字（F3）。体の図の右に、上から PlayerBodyZone の順に並べる。
-	const float kPlayerHealthGap = 8.f;         // 体の図の右端から数字までの間（画素）
-	const float kPlayerHealthLineHeight = 18.f; // 1 行の高さ（画素）
+	// 自キャラの体力の数字と状態（F3）。画面の左上に 1 行（普段の画面には体力を出さないので、確認用にだけ見せる）。
+	const float kPlayerHealthLeft = 16.f; // 画面の左端からの間（画素）
+	const float kPlayerHealthTop = 16.f;  // 画面の上端からの間（画素）
 	const unsigned kPlayerHealthColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
 #endif
 
@@ -171,14 +170,8 @@ void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* rend
 		return;
 	}
 	const PlayerHealth& health = player->health();
-	UiRect figure = PlayerBodyFigure::bounds();
-	Vector2 position( figure.right() + kPlayerHealthGap, figure.top );
 	char text[ kDebugTextSize ];
-	for ( int i = 0; i < static_cast< int >( PlayerBodyZone::Count ); ++i ) {
-		PlayerBodyZone zone = static_cast< PlayerBodyZone >( i );
-		std::snprintf( text, sizeof( text ), "%s %.0f/%.0f", playerBodyZoneName( zone ), health.part( zone ), health.maxPart( zone ) );
-		renderer->addText( text, position, UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );
-		position.y += kPlayerHealthLineHeight;
-	}
+	std::snprintf( text, sizeof( text ), "Health %.0f/%.0f %s", health.current(), health.maxHealth(), playerConditionName( health.condition() ) );
+	renderer->addText( text, Vector2( kPlayerHealthLeft, kPlayerHealthTop ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );
 }
 #endif

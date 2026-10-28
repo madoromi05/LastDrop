@@ -12,7 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const char* kTextureFile = "Resource/bullet_hole.tga"; // tools/bullet_hole_gen.py で作る
+	const char* kTextureFile = "Resource/bullet_hole.dds"; // tools/bullet_hole_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 で DDS にする）
 
 	// 同時に残す数（2026-10-14 ユーザー指定）。超えたら一番古い物から消す。
 	const int kCapacity = 16;

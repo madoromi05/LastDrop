@@ -388,13 +388,20 @@ def emit_animation(armature, action, anim_name, in_place=False):
 PART_PATH_KEYS = ("texture", "normalmap")  # parts の値のうち、材質値ではなく画像パスの項目
 
 
+def game_texture_path(path):
+    # 設定に書く画像のパスは、このツールが書き出す TGA（圧縮する前の元の画像）。
+    # ゲームが読むのは、それを tools/texture_to_dds.ps1 が横に作る同じ名前の .dds（LinearToneMap_Plan.txt 8-5）。
+    root, ext = os.path.splitext(path)
+    return root + ".dds" if ext.lower() == ".tga" else path
+
+
 def material_attrs(texture, normalmap, params):
     # 見た目1つ分の属性文字列（ゲーム側 MeshLoaderUtil::loadMaterial が読む）。
     attrs = ''
     if texture:
-        attrs += ' texture="%s"' % texture
+        attrs += ' texture="%s"' % game_texture_path(texture)
     if normalmap:
-        attrs += ' normalmap="%s"' % normalmap
+        attrs += ' normalmap="%s"' % game_texture_path(normalmap)
     # 材質値は書いたものだけ出す（無ければゲーム側 MeshMaterial の既定値）。
     for name, value in params.items():
         if isinstance(value, (tuple, list)):

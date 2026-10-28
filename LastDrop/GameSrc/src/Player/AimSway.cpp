@@ -16,8 +16,6 @@ namespace{
 	const float kHalf = 0.5f;
 	// これより小さくなった遅れは 0 にする（いつまでも小さな値で狙いを動かし続けないため）。
 	const float kMinLag = 0.001f;
-	const int kOneArm = 1;
-	const int kTwoArms = 2;
 
 	// 進み具合 phase（0〜1）を step だけ進め、1 を超えたら折り返す。
 	float advance( float phase, float step ) {
@@ -45,12 +43,9 @@ namespace{
 		return ( Math::abs( value ) < kMinLag ) ? 0.f : value;
 	}
 
-	// 腕の壊れ方に合わせた倍率。
-	float armScale( int brokenArms ) {
-		if ( brokenArms >= kTwoArms ) {
-			return gParams.twoArmScale;
-		}
-		return ( brokenArms == kOneArm ) ? gParams.oneArmScale : 1.f;
+	// 体力の状態に合わせた倍率。
+	float conditionScale( bool danger ) {
+		return danger ? gParams.dangerScale : 1.f;
 	}
 }
 
@@ -103,7 +98,7 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 
 	// 腰だめは大きく（覗き具合で 1 倍との間を取る）、腕が壊れていれば大きく、抱えている間・しまっている間は 0。
 	float scale = gParams.hipScale + ( 1.f - gParams.hipScale ) * body.aimWeight;
-	scale *= armScale( body.brokenArms ) * ( 1.f - body.carryWeight );
+	scale *= conditionScale( body.danger ) * ( 1.f - body.carryWeight );
 	if ( !body.weaponDrawn ) {
 		scale = 0.f;
 	}

@@ -54,6 +54,10 @@ const StaticMeshData* StaticMeshInstance::data() const {
 	return mData;
 }
 
+const Vector3& StaticMeshInstance::position() const {
+	return mPosition;
+}
+
 float StaticMeshInstance::angleY() const {
 	return mAngleY;
 }

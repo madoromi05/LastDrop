@@ -56,8 +56,8 @@ class Inventory;
 // リロード中は撃てない・覗けない・走れない（歩ける）。武器をしまうとリロードをやめる（弾は込めない）。
 // リロード中の腕は、リロードのアニメ（"rifle_reload"）のポーズを AnimationPoseSampler で求め、FirstPersonBody が腕だけ差し替える（脚は歩き・静止のまま）。
 //
-// 体力は 7 部位（PlayerHealth）。ゾンビに噛まれると減る（applyBite）。ゾンビにつかまれている間（setHeld）は動けない（撃つ・覗く・向きを変えるはできる）。
-// 脚が壊れたら走れず、歩くのも遅い。頭か胸が 0 で死に、それからは操作を受け付けない（その場で止まる）。
+// 体力は体全体で 1 つ（PlayerHealth。バイオハザード式）。ゾンビに噛まれると減る（applyBite）。ゾンビにつかまれている間（setHeld）は動けない（撃つ・覗く・向きを変えるはできる）。
+// 傷つくほど（Caution・Danger）歩く・走るのが遅い。0 で死に、それからは操作を受け付けない（その場で止まる）。
 // 誰がつかんでいるか・死んだ後どうするか（暗転・ゲームオーバー）は知らない（GameWorld・シーンが決める）。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプはまだ持たない。
@@ -114,10 +114,8 @@ public:
 	void setWeaponSway( float yawDegree, float pitchDegree );
 
 	// ── 体力とつかまれている間（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 2・4 章）──
-	// ゾンビに噛まれた。damage: ダメージの量。roll: 噛まれる所を選ぶ 0 以上 1 未満の乱数（PlayerHealth::biteZone）。死んだ後は何もしない。
-	void applyBite( float damage, float roll );
-	// 脚を失って体を引きずるゾンビに、足元から噛まれた（噛まれる所は脚だけ。PlayerHealth::legBiteZone）。ほかは applyBite と同じ。
-	void applyLegBite( float damage, float roll );
+	// ゾンビに噛まれた（立っているゾンビも、足元から噛む這うゾンビも同じ）。damage: ダメージの量。死んだ後は何もしない。
+	void applyBite( float damage );
 	// ゾンビにつかまれているか。1ティックに1回、update の後に呼ぶ（次の update から動けなくなる・動けるようになる）。
 	// 離されてから少しの間は、canBeGrabbed が false のまま（続けてつかまれて抜け出せなくならないように）。
 	void setHeld( bool held );

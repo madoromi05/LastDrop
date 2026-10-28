@@ -29,8 +29,7 @@ struct AimSwayParams{
 
 	// ── 全体に掛ける倍率 ──
 	float hipScale = 2.0f;          // 腰だめ（覗き具合 0）のとき。覗き具合に合わせて 1 倍との間を取る
-	float oneArmScale = 1.8f;       // 片腕の体力が 0 のとき（タルコフの腕の骨折）
-	float twoArmScale = 2.5f;       // 両腕とも 0 のとき
+	float dangerScale = 1.8f;       // 体力が Danger のとき（タルコフ式だった頃の片腕の骨折と同じ量）
 
 	// ── 銃を回す中心 ──
 	// 目のこれだけ後ろ（肩の付け根あたり。銃床を当てている所）を中心に、両腕と銃を回す（m）。
@@ -54,8 +53,7 @@ struct AimSwayParams{
 		v( "lagLimit", lagLimit, 0.f, 10.f, "deg" );
 		v( "lagHalfLife", lagHalfLife, 0.01f, 1.f, "s" );
 		v( "hipScale", hipScale, 0.f, 5.f, "x" );
-		v( "oneArmScale", oneArmScale, 0.f, 5.f, "x" );
-		v( "twoArmScale", twoArmScale, 0.f, 5.f, "x" );
+		v( "dangerScale", dangerScale, 0.f, 5.f, "x" );
 		v( "pivotBehindEye", pivotBehindEye, 0.f, 0.5f, "m" );
 	}
 };

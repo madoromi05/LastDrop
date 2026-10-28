@@ -8,7 +8,7 @@
 //
 // 1 フレームの時間は次のように分けて測る（計画書 2 章）。
 //   frame = sleep（フレーム制限の待ち）+ cpu（ゲームの処理と描画命令）+ present（Present で待たされた時間）+ other（窓のメッセージ処理）
-// 画面の右上に数字を出し、F7 で CSV に記録する。書き出し先は Profiling/（.gitignore 済み）。
+// 画面の右上に数字を出し、F7 で CSV に記録する。書き出し先は Profiling/<起動時刻>/（.gitignore 済み）。
 namespace GameLib{
 namespace Profiling{
 
@@ -48,7 +48,7 @@ void beginBootLoad();
 // シーンの切り替えなどでロードを始める。既にロード中なら何もしない（続けて 1 つのロードとして数える）。
 // name は文字列リテラル。
 void beginLoad( const char* name );
-// 操作できる最初の絵を描いた。次の Present の後でロードを閉じ、Profiling/load_*.json を書き出す。ロード中でなければ何もしない。
+// 操作できる最初の絵を描いた。次の Present の後でロードを閉じ、Profiling/<起動時刻>/load_*.json を書き出す。ロード中でなければ何もしない。
 void endLoad();
 bool isLoading();
 // 別スレッドの読み込みを待った時間（requestedAt に頼んで、今届いたと分かった）。ファイルごとに 1 回呼ぶ。

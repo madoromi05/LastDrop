@@ -46,7 +46,7 @@ public:
 	// 表示中なら（F3）、ゾンビの体力を renderer に積む。PostProcess::endScene の後、HUD を描く前に呼ぶ
 	// （積むだけ。HUD の描画の UiRenderer::draw でまとめて描かれ、HUD の文字の下になる）。renderer: nullptr 不可。
 	void addZombieHealth( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
-	// 表示中なら（F3）、左上の体の図（PlayerBodyFigure）の右に、自キャラの部位ごとの体力の数字を renderer に積む。
+	// 表示中なら（F3）、画面の左上に、自キャラの体力の数字と状態（Fine など）を renderer に積む。
 	// 呼ぶ場所の決まりは addZombieHealth と同じ。renderer: nullptr 不可。
 	void addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const;
 

@@ -256,6 +256,9 @@
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinningPipeline.cpp" />
     <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp" />
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
+    <ClCompile Include="GameSrc\src\Render\GBuffer.cpp" />
+    <ClCompile Include="GameSrc\src\Render\DeferredLighting.cpp" />
+    <ClCompile Include="GameSrc\src\Render\RenderPass.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
@@ -327,7 +330,6 @@
     <ClCompile Include="GameSrc\src\Player\AimPunch.cpp" />
     <ClCompile Include="GameSrc\src\Player\AimSway.cpp" />
     <ClCompile Include="GameSrc\src\Render\Flipbook.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Game\PlayerBodyFigure.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieAttackSounds.cpp" />
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
@@ -623,6 +625,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\GBuffer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\DeferredLighting.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
@@ -701,8 +706,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\AimSway.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\AimSwayParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Flipbook.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodyZone.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerBodyFigure.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerDamageView.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieAttackSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h" />
@@ -766,6 +769,7 @@
     <ClInclude Include="GameLib\src\Graphics\TextureImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\ColorSpace.h" />
     <ClInclude Include="GameLib\src\Graphics\ColorSpaceHlsl.h" />
+    <ClInclude Include="GameLib\src\Graphics\DdsReader.h" />
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\RenderTargetImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\DepthTargetImpl.h" />
@@ -788,6 +792,11 @@
     <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
+    <None Include="Resource\Shader\Skinning.hlsli" />
+    <None Include="Resource\Shader\GBuffer.hlsli" />
+    <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\DeferredLighting.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

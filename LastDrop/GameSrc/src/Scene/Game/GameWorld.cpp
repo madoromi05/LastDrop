@@ -12,6 +12,7 @@
 #include "GameLib/Math/Random.h"
 #include "GameLib/Profiling/Profiler.h"
 
+#include <algorithm>
 #include <iterator>
 
 using namespace GameLib;
@@ -340,12 +341,8 @@ void GameWorld::updateZombies() {
 			mZombieAttacks.push_back( event );
 		}
 		if ( zombie.bitThisTick() && mPlayer ) {
-			// 体を引きずっているゾンビは足元から噛むので、脚だけ（ZombieCrawl_Plan.txt の 5 章）。
-			if ( zombie.isCrawling() ) {
-				mPlayer->applyLegBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
-			} else {
-				mPlayer->applyBite( ZombieAttack::biteDamage(), mZombieRandom.getFloat() );
-			}
+			// 体力は体全体で 1 つなので、体を引きずって足元から噛むゾンビも同じダメージ。
+			mPlayer->applyBite( ZombieAttack::biteDamage() );
 			ZombieAttackEvent event;
 			event.kind = ZombieAttackEvent::Kind::Bite;
 			event.point = zombie.headPosition();
@@ -451,17 +448,29 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 	mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
 }
 
-void GameWorld::draw( const ViewFrustum& frustum ) const {
-	mGround.draw( frustum );
+void GameWorld::draw( const ViewFrustum& frustum, const Vector3& eye ) const {
+	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので最初に描く。
 	if ( mPlayer ) {
 		mPlayer->draw();
 	}
 	mBullets.draw();
+	Profiling::gpuMark( "Player" );
 	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
 	mSeveredLimbs.draw();
+	Profiling::gpuMark( "Zombies" );
+	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる。
+	mBuildingDrawOrder.clear();
 	for ( const Building& building : mBuildings ) {
-		building.draw( frustum );
+		Vector3 toBuilding;
+		toBuilding.setSub( building.position(), eye );
+		mBuildingDrawOrder.emplace_back( toBuilding.squareLength(), &building );
 	}
+	std::sort( mBuildingDrawOrder.begin(), mBuildingDrawOrder.end(),
+		[]( const std::pair< float, const Building* >& a, const std::pair< float, const Building* >& b ) { return a.first < b.first; } );
+	for ( const auto& entry : mBuildingDrawOrder ) {
+		entry.second->draw( frustum );
+	}
+	Profiling::gpuMark( "Buildings" );
 	if ( mEscapeCar ) {
 		mEscapeCar->draw( frustum );
 	}
@@ -470,6 +479,10 @@ void GameWorld::draw( const ViewFrustum& frustum ) const {
 	}
 	// 落ちているガソリンと、ゾンビが落とした弾（どちらも Pickup の部品）。
 	mObjects.forEach< Pickup >( [ &frustum ]( const Pickup& pickup ) { pickup.draw( frustum ); } );
+	Profiling::gpuMark( "Props" );
+	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。
+	mGround.draw( frustum );
+	Profiling::gpuMark( "Ground" );
 }
 
 void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {

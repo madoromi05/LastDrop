@@ -40,7 +40,15 @@ std::string dateTime(){
 }
 
 std::string pathOf( const std::string& fileName ){
-	// 既にあれば失敗するだけなので、毎回呼んでよい。
+	// 最初に呼ばれたときの時刻で 1 回だけ決める（起動中に書くファイルが全部同じフォルダに入る）。
+	static const std::string launchDirectory = std::string( kDirectory ) + "/" + timestamp();
+	// 既にあれば失敗するだけなので、毎回呼んでよい。親から順に作る。
+	CreateDirectoryA( kDirectory, nullptr );
+	CreateDirectoryA( launchDirectory.c_str(), nullptr );
+	return launchDirectory + "/" + fileName;
+}
+
+std::string rootPathOf( const std::string& fileName ){
 	CreateDirectoryA( kDirectory, nullptr );
 	return std::string( kDirectory ) + "/" + fileName;
 }

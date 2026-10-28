@@ -237,10 +237,28 @@ void GameScene::draw() {
 	mPostProcess.setFade( mDamageView.fade() );
 	mPostProcess.beginScene();
 	setupLights();
+	// 不透明な物は G-Buffer へ描き、全画面 1 回でライティングする（GBuffer_Plan.txt 5 章）。
+	// F6 の Render でフォワードを選んだ間は、描いたその場で色を出す（見比べ・計測用。G-Buffer の中身を見るときだけは G-Buffer へ描く）。
+	const GBufferView view = gbufferView();
+	const bool showsGBuffer = ( view != GBufferView::Final );
+	const bool lightsDeferred = ( renderPath() == RenderPath::Deferred ) && !showsGBuffer;
+	const bool drawsGBuffer = lightsDeferred || showsGBuffer;
+	if ( drawsGBuffer ) {
+		mGBuffer.begin( mPostProcess.sceneDepth() );
+	}
 	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない。
 	{
 		PROFILE_SCOPE( "World.draw" );
-		mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ) );
+		mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ), camera.eyePosition() );
+	}
+	if ( drawsGBuffer ) {
+		mGBuffer.end();
+		if ( lightsDeferred ) {
+			mPostProcess.bindSceneColor(); // 深度はシェーダから読むので、描画先からは外す
+			mDeferredLighting.drawLighting( mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+			Profiling::gpuMark( "Lighting" );
+		}
+		mPostProcess.resumeScene(); // 弾痕などの板は、G-Buffer と同じ深度で隠れるようシーンへ描く
 	}
 	mWorld.drawBulletHoles( camera.projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
 	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
@@ -249,9 +267,14 @@ void GameScene::draw() {
 #ifdef ZF_EDITOR
 	mDebug.drawCollision( mWorld, camera );
 #endif
-	// GPU の時間の区切り（Perf の欄の GPU）。ここまでが世界を描く分、次の印までが画面全体の処理（ブルームなど）。
-	Profiling::gpuMark( "Scene" );
+	// GPU の時間の区切り（Perf の欄の GPU）。世界の物ごとの印は GameWorld::draw の中（Player〜Ground）。
+	// ここまでが弾痕・砂ぼこり・血・マズルフラッシュ・当たり判定の表示、次の印までが画面全体の処理（ブルームなど）。
+	Profiling::gpuMark( "Effects" );
 	mPostProcess.endScene();
+	if ( showsGBuffer ) {
+		// ToneMap を通さず中身の数のまま見るので、画面へ写した後に上から描く。
+		mDeferredLighting.drawView( view, mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+	}
 	Profiling::gpuMark( "PostProcess" );
 	// UiRenderer は 1 回の描画に 1 回しか描けない（中の PrimitiveRenderer が 2 回目の draw で ASSERT）。
 	// 止めている間は HUD を出さず、メニューがまとめて描く（2026-10-23。HUD とメニューの両方が描いて止まっていた）。
@@ -264,15 +287,25 @@ void GameScene::draw() {
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory, player ? &player->health() : nullptr );
+		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory );
 	}
 
 	GameDebugOverlay::TextState text;
 	text.cursorLocked = mControl.isCursorLocked();
-	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）の順に、先に見つかった方を出す。
-	text.shaderError = mPostProcess.errorMessage();
-	if ( text.shaderError[ 0 ] == '\0' ) {
-		text.shaderError = mResources->meshes().skinning().errorMessage();
+	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）→ G-Buffer → G-Buffer の表示の順に、
+	// 先に見つかったものを出す。
+	const char* const shaderErrors[] = {
+		mPostProcess.errorMessage(),
+		mResources->meshes().skinning().errorMessage(),
+		mGBuffer.errorMessage(),
+		mDeferredLighting.errorMessage(),
+	};
+	text.shaderError = "";
+	for ( const char* message : shaderErrors ) {
+		if ( message[ 0 ] != '\0' ) {
+			text.shaderError = message;
+			break;
+		}
 	}
 	mDebug.drawText( text );
 }
@@ -281,7 +314,8 @@ void GameScene::setupLights() const {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.enableDepthTest( true );
 	gm.enableDepthWrite( true );
-	gm.setCullMode( Graphics::CULL_NONE ); // 裏返っても見えるように両面描画
+	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てる（2026-10-27）ので、これが効くのはそれ以外の物だけ。
+	gm.setCullMode( Graphics::CULL_NONE );
 	gm.setAmbientColor( kAmbientColor );
 	gm.setLightColor( kSunLight, kSunColor );
 	gm.setLightPosition( kSunLight, kSunPosition );
@@ -361,7 +395,10 @@ void GameScene::updatePlayerDamage() {
 	}
 	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
 	mControl.updateLookPull();
-	mDamageView.update( bitten, mWorld.isPlayerDead() );
+	const PlayerCharacter* player = mWorld.player();
+	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
+	float healthRatio = player ? player->health().current() / player->health().maxHealth() : kFullHealthRatio;
+	mDamageView.update( bitten, healthRatio, mWorld.isPlayerDead() );
 	if ( mDamageView.isFadedOut() ) {
 		SceneManager::instance().requestChange( SceneManager::SCENE_GAME_OVER );
 	}

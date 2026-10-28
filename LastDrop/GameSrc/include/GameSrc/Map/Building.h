@@ -29,6 +29,8 @@ public:
 	void addCollidersTo( CollisionWorld* world ) const;
 	// frustum: カメラに映る範囲。映らなければ描かない。
 	void draw( const ViewFrustum& frustum ) const;
+	// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う。
+	const GameLib::Math::Vector3& position() const;
 	// 弾の当たり判定（見た目の三角形で判定する）。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;

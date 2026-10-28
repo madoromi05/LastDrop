@@ -5,6 +5,7 @@
 #include "GameSrc/DebugMode/TuningPanel.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Core/FixedStepClock.h"
+#include "GameSrc/Render/DeferredLighting.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -63,6 +64,25 @@ namespace{
 			graphics.setVSync( vsync );
 		}
 		ImGui::TextDisabled( "Turn VSync off to see CPU / GPU bound." );
+		// いつもの絵の描き方（GBuffer_Plan.txt 8-1）。同じ場面で切り替えて、絵と GPU の時間を見比べる。
+		RenderPath& path = renderPath();
+		bool deferred = ( path == RenderPath::Deferred );
+		if ( ImGui::Checkbox( "Deferred", &deferred ) ) {
+			path = deferred ? RenderPath::Deferred : RenderPath::Forward;
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled( deferred ? "(G-Buffer + lighting pass)" : "(forward)" );
+		// G-Buffer の中身の表示（GBuffer_Plan.txt 8-2）。Final 以外を選ぶと、描き方に関わらず G-Buffer へ描いて中身を画面に出す。
+		GBufferView& view = gbufferView();
+		if ( ImGui::BeginCombo( "G-Buffer", gbufferViewName( view ) ) ) {
+			for ( int i = 0; i < static_cast< int >( GBufferView::Count ); ++i ) {
+				GBufferView candidate = static_cast< GBufferView >( i );
+				if ( ImGui::Selectable( gbufferViewName( candidate ), candidate == view ) ) {
+					view = candidate;
+				}
+			}
+			ImGui::EndCombo();
+		}
 	}
 
 	// 手順 5（調整値の構造体）で中身を入れる見出し。開けないよう灰色にして、予定だけ見せる。

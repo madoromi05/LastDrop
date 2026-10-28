@@ -43,7 +43,7 @@ private:
 	void operator=( const SceneManager& );
 	// 種別 id のシーンを作る。作ったシーンは mResources を借りる。
 	std::unique_ptr< IScene > createScene( SceneId id ) const;
-	// ロードの計測で使う、シーンの名前（Profiling/load_<名前>_*.json）。
+	// ロードの計測で使う、シーンの名前（Profiling/<起動時刻>/load_<名前>_*.json）。
 	static const char* loadName( SceneId id );
 	// 種別 id のシーンへその場で切り替える。新しいシーンを作ってから、前のシーンを消す。
 	// シーンの関数の途中では呼ばない（requestChange を使う）。

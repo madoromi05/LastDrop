@@ -80,6 +80,9 @@ void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& m
 	if ( ( a = findAttribute( meshElement, "normalstrength" ) ) ) {
 		material->setNormalMapStrength( a.getFloatValue() );
 	}
+	if ( ( a = findAttribute( meshElement, "doublesided" ) ) ) {
+		material->setDoubleSided( a.getIntValue() != 0 );
+	}
 }
 
 void MeshLoaderUtil::readVertex(

@@ -19,7 +19,8 @@ MeshMaterial::MeshMaterial() :
 	mDiffuseColor( kDefaultDiffuse, kDefaultDiffuse, kDefaultDiffuse ),
 	mSpecularColor( kDefaultSpecular, kDefaultSpecular, kDefaultSpecular ),
 	mSpecularSharpness( kDefaultSpecularSharpness ),
-	mNormalMapStrength( kDefaultNormalMapStrength ) {
+	mNormalMapStrength( kDefaultNormalMapStrength ),
+	mDoubleSided( false ) {
 }
 
 void MeshMaterial::setTexture( Graphics::Texture texture ) {
@@ -44,6 +45,10 @@ void MeshMaterial::setSpecularSharpness( float sharpness ) {
 
 void MeshMaterial::setNormalMapStrength( float strength ) {
 	mNormalMapStrength = strength;
+}
+
+void MeshMaterial::setDoubleSided( bool doubleSided ) {
+	mDoubleSided = doubleSided;
 }
 
 bool MeshMaterial::updateLoading() {
@@ -74,6 +79,8 @@ void MeshMaterial::apply() const {
 	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
 	m.setSpecularSharpness( mSpecularSharpness );
 	m.setTransparency( kOpaque );
+	// 2026-10-27 に全部のメッシュの三角形の向きを調べ、99.9% 以上が法線と同じ側を向いていた（表が反時計回り）ので、既定で裏を捨てる。
+	m.setCullMode( mDoubleSided ? Graphics::CULL_NONE : Graphics::CULL_BACK );
 }
 
 bool MeshMaterial::hasNormalMap() const {

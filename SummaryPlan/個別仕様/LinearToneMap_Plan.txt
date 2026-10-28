@@ -2,8 +2,9 @@
  リニア化 ＋ ToneMap ＋ テクスチャの圧縮の見直し（グラフィック段階1）の計画メモ
  作成日：2026-10-26
  状態：仕様をユーザーが承認（2026-10-26。未決の 4 問ともおすすめ案のとおり）。
-       1-a 実装済み・Debug x64 ビルド通過・シェーダは fxc で全部コンパイル確認（2026-10-26）。画面での確認と値の調整はまだ。1-b は未着手
-       実装で仕様から変えた所は 13 章
+       1-a 実装済み・Debug x64 ビルド通過・シェーダは fxc で全部コンパイル確認（2026-10-26）。画面確認済み（2026-10-27 ユーザー）
+       1-b 実装済み・Debug x64 ビルド通過・DDS 22 枚の頭と大きさを確認（2026-10-27）。画面での確認とロード時間の計測はまだ
+       実装で仕様から変えた所は 13 章（1-a）と 14 章（1-b）
  元の仕様：Graphics_Spec.txt 3 章（リニアワークフロー）・10-5（ToneMap と露出）・15 章（段階 1）
            Bloom_Plan.txt 6 章（トーンマップは段階 1 で入れる）
            Optimization_Plan.txt 7-3（テクスチャの圧縮と大きさの見直し。A-3）
@@ -333,3 +334,34 @@
     ブルームのしきい値と強さも Bloom.cpp・PostProcess.cpp の定数からここへ移した（初期値は同じ 1.0・0.5）
   ・ミップの平均は 8bit → 16bit のリニアの表と、リニアの上 12bit → 8bit の表で引く（TextureImpl.h の SrgbTables）
   ・PostProcess を通らない SkinTestScene（テスト用）はアルベドだけリニアで読まれて暗く見える。直さない（11 章のとおり）
+
+================================================================================
+ 14. 1-b の実装メモ（2026-10-27。仕様から変えた所と、測った数字）
+================================================================================
+  ・変換のツールは .bat ではなく tools/texture_to_dds.ps1（画像ごとに 色 / 法線・縮める大きさ を表で書けるため）
+      pwsh -File tools/texture_to_dds.ps1 [名前の一部]
+    texconv.exe の置き場所は %USERPROFILE%\Tools\DirectXTex\texconv.exe（環境変数 TEXCONV で変えられる）
+    2026-10-27 に GitHub の Microsoft/DirectXTex の最新版（2026.5.8.1）を置いた。署名は Microsoft で有効
+    -dx10 を必ず付ける（GameLib は DX10 の頭の DDS だけを圧縮の DDS として読む）
+    GPU（DirectCompute）で圧縮され、22 枚で約 9 秒
+  ・BC5 の z を作り直す処理は足さなかった。シェーダはもともと法線マップの x と y だけを読み、z を作り直していた
+    （PixelLightingNormalMapPsHlsl.h・Lighting.hlsli の perturbNormal）
+  ・GameLib：GameLib/src/Graphics/DdsReader.h（ファイルを読むだけ。BC1 / BC5 / BC7 とその _SRGB、ミップ）
+    TextureImpl::readDDS が DX10 の頭を見て readCompressedDds へ分ける。古い形（圧縮していない DDS）は今までどおり
+    DDS が _SRGB かどうかと、読むときの指定（TextureColorSpace）が食い違えば ASSERT
+    圧縮した絵は write（デバッグの書き出し）で読み戻さない（createStagingReadback が nullptr を返す）
+  ・画像を GPU へ送るたびに、出力ウィンドウへ「Texture: upload <名前> <大きさ> BC|BGRA8 <KiB> (total <MiB>)」を出す
+  ・メッシュのファイル（Resource/*.txt 19 個）の画像の名前を .dds にした。tools/fbx_to_gamelib.py は
+    設定の .tga（書き出す元の画像）をそのまま書き出し、メッシュのファイルには .dds の名前を書く（game_texture_path）
+  ・エフェクト 5 枚も DDS にした。tools/*_gen.py で作り直したら、texture_to_dds.ps1 も走らせ直す
+  ・大きさ：ゾンビの 2 枚だけ 4096² → 2048²。建物・道路の 4096² はまだそのまま（画面で見比べて決める）
+
+  数字（計算値。DDS は BC 圧縮なので、ファイルの大きさ＝GPU のメモリ）
+    ファイル  ：TGA 372MB → DDS 112MB
+    GPU メモリ：約 600MB（BGRA8 ＋ ミップ）→ 112MB
+    ロード時間（2026-10-27 実測。Profile 構成・load_Game_*.json。前＝1-a の TGA（10:23・10:25）、後＝DDS（17:53・17:54））
+      ゲームのロード全体       ：1,246〜1,349ms → 629〜644ms
+      メインスレッドの texture ：522〜541ms → 21〜23ms（CPU でミップを作らなくなった）
+      ・1-a で texture が 約 300ms（10-26 の昼）→ 約 530ms に増えていた（色の画像のミップをリニアで平均する表引き。
+        DDS では通らないので、もう効かない。TGA を読む所が残る限りは、その画像だけ遅い）
+      ・残りの大きい物は parse 約 293ms（メッシュのテキストの解析）と build 約 218ms。次に縮めるならメッシュのバイナリ化（Optimization_Plan 7-9）

@@ -130,7 +130,7 @@ void beginPresent(){
 	GpuTimer::Result result;
 	if ( s.gpu.endFrame( &result ) ){
 		s.gpuHistory.add( result );
-		s.recorder.setGpu( result.frame, result.totalSeconds );
+		s.recorder.setGpu( result );
 	}
 	FrameRecord* frame = s.timeline.current();
 	if ( frame ){

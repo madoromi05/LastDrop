@@ -642,6 +642,15 @@
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\GBuffer.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\DeferredLighting.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\RenderPass.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -843,9 +852,6 @@
     <ClCompile Include="GameSrc\src\Render\Flipbook.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\PlayerBodyFigure.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
-    </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
@@ -927,6 +933,9 @@
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\ColorSpaceHlsl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\DdsReader.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\VertexBufferImpl.h">
@@ -1460,6 +1469,15 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\GBuffer.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\DeferredLighting.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1691,12 +1709,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\Flipbook.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodyZone.h">
-      <Filter>GameSrc\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerBodyFigure.h">
-      <Filter>GameSrc\Scene\Game</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerDamageView.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
@@ -1815,6 +1827,11 @@
     <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
+    <None Include="Resource\Shader\Skinning.hlsli" />
+    <None Include="Resource\Shader\GBuffer.hlsli" />
+    <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\DeferredLighting.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

@@ -19,7 +19,7 @@ struct AimSwayBody{
 	float gaitPhase = 0.f;     // 歩きのアニメの位相（0〜1）
 	bool gaitCycling = false;  // 歩き・走りのアニメ中か（止まるアニメの位相には寄せない）
 	float carryWeight = 0.f;   // 走って胸元に抱えている割合（0〜1）
-	int brokenArms = 0;        // 体力が 0 の腕の数（0〜2）
+	bool danger = false;       // 体力が Danger か（PlayerCondition）
 };
 
 class AimSway{

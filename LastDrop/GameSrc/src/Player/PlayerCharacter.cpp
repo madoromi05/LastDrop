@@ -410,7 +410,7 @@ AimSwayBody PlayerCharacter::aimSwayBody() const {
 	body.gaitPhase = gaitPhase();
 	body.gaitCycling = gait() != GAIT_STILL;
 	body.carryWeight = mCarryWeight;
-	body.brokenArms = ( mHealth.isBroken( PlayerBodyZone::LeftArm ) ? 1 : 0 ) + ( mHealth.isBroken( PlayerBodyZone::RightArm ) ? 1 : 0 );
+	body.danger = mHealth.condition() == PlayerCondition::Danger;
 	return body;
 }
 
@@ -503,20 +503,12 @@ PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) co
 		allowed.strafe = 0.f;
 		allowed.run = false;
 	}
-	if ( !mHealth.canRun() ) {
-		allowed.run = false;
-	}
 	return allowed;
 }
 
-void PlayerCharacter::applyBite( float damage, float roll ) {
+void PlayerCharacter::applyBite( float damage ) {
 	if (mInvincible) return;
-	mHealth.takeDamage( PlayerHealth::biteZone( roll ), damage );
-}
-
-void PlayerCharacter::applyLegBite( float damage, float roll ) {
-	if (mInvincible) return;
-	mHealth.takeDamage( PlayerHealth::legBiteZone( roll ), damage );
+	mHealth.takeDamage( damage );
 }
 
 void PlayerCharacter::setHeld( bool held ) {

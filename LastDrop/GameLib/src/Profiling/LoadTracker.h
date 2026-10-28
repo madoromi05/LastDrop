@@ -22,7 +22,7 @@ struct LoadItem{
 };
 
 // ロードの時間を測る（計画書 6-6）。
-// 始めてから「操作できる最初の絵」の Present までを 1 回のロードとし、終わったら Profiling/load_*.json を書き出す。
+// 始めてから「操作できる最初の絵」の Present までを 1 回のロードとし、終わったら Profiling/<起動時刻>/load_*.json を書き出す。
 // ロード中でなくても、読み込みの件は直近のものを残しておく（プレイ中のひっかかりの原因を、スパイクの JSON に出すため）。
 class LoadTracker{
 public:

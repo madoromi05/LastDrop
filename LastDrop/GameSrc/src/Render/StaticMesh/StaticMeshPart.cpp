@@ -1,13 +1,16 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshPart.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Render/RenderPass.h"
 
 #include "GameLib/Graphics/Manager.h"
+#include "GameLib/Graphics/Shader.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
 	const int kVerticesPerTriangle = 3;
+	const float kNoNormalMap = 0.f; // 法線マップの強さ（効かない）
 }
 
 StaticMeshPart::StaticMeshPart() :
@@ -109,6 +112,15 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	}
 	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
 	Graphics::Manager m = Graphics::Manager::instance();
+	// G-Buffer へ描く間は、固定パイプラインの代わりに G-Buffer へ書くシェーダで描く（材質の値は apply が渡した物をそのまま読む）。
+	// シェーダは MeshMaterial::apply では選ばない（キャラも apply を通り、キャラのシェーダを上書きしてしまうため）。
+	if ( RenderPass::current() == RenderPassKind::GBuffer ) {
+		m.setShader( RenderPass::staticMeshShader() );
+		if ( !mMaterial.hasNormalMap() ) {
+			// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）。
+			m.setNormalMapStrength( kNoNormalMap );
+		}
+	}
 	m.setWorldMatrix( world );
 	m.setVertexBuffer( mVertexBuffer );
 	m.setIndexBuffer( mIndexBuffer );

@@ -51,6 +51,9 @@ enum RenderTargetFormat{
 	RENDER_TARGET_RGBA16F, ///16bit浮動小数×4。1を超える明るさを持てる色（トーンマップ前の画面など）
 	RENDER_TARGET_R32F,    ///32bit浮動小数×1。深度・距離など1つの値
 	RENDER_TARGET_RG16F,   ///16bit浮動小数×2。分散シャドウマップ（深度と深度の2乗）など2つの値
+	///8bit×4 を sRGB で持つ。シェーダはリニアの数で書き、読むとリニアへ戻る（GPU が直す）。
+	///暗い色を細かく持てるので、8bit に入れる色（G-Buffer のアルベドなど）に使う
+	RENDER_TARGET_RGBA8_SRGB,
 };
 
 ///頂点の1要素の種類（VertexFormat で並べる）。HLSL 側のセマンティクスは各行のとおり

@@ -12,7 +12,7 @@ namespace{
 	const float kHoldPlaybackRate = ( kBiteTime - kGrabTime ) / ( kHoldSeconds * GameTime::kTicksPerSecond );
 	const float kNormalPlaybackRate = 1.f;
 
-	// 1回噛んだときのダメージ。何もしないと、だいたい 7〜9 回噛まれると死ぬ（PlayerHealth の体力と噛まれる所から）。
+	// 1回噛んだときのダメージ。満タンから 5 回噛まれると死ぬ（PlayerHealth の最大の体力 100 から）。
 	const float kBiteDamage = 20.f;
 	// つかんでいる間にこれだけダメージ（倍率を掛けた後）を受けたら離す。胴なら 2 発、頭なら 1 発（Bullet の 40 × 倍率）。
 	const float kShakeOffDamage = 60.f;

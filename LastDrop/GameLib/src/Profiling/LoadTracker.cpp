@@ -160,7 +160,7 @@ void LoadTracker::finish( long long at ){
 }
 
 int LoadTracker::countLaunch(){
-	std::string path = OutputFiles::pathOf( kLaunchCountFile );
+	std::string path = OutputFiles::rootPathOf( kLaunchCountFile );
 	std::string text;
 	int launch = 1;
 	if ( OutputFiles::read( path, &text ) ){

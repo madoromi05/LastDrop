@@ -3,6 +3,8 @@
 
 #ifdef ZF_EDITOR
 
+#include "Profiling/GpuTimer.h"
+
 #include <map>
 #include <string>
 #include <vector>
@@ -16,7 +18,7 @@ struct FrameRecord;
 // 記録中はメモリに貯めるだけで、ファイルへは止めたときにまとめて書く（記録中のフレームを重くしないため）。
 // 区間（PROFILE_SCOPE）は名前ごとに列を作り、そのフレームの合計を入れる。列は止めた時点で全部分かっている。
 // 同じ名前で PC の情報を JSON にして並べて保存する（CSV の先頭に書くと Excel で開きにくくなるため。計画書 6-5）。
-//   例：Profiling/perf_20261024_153000.csv と perf_20261024_153000_system.json
+//   例：Profiling/20261024_150000/perf_20261024_153000.csv と perf_20261024_153000_system.json
 // CSV の 1 行目だけは記録した日時（startedAt,2026/10/24 15:30:00,stoppedAt,…）。列名は 2 行目から。
 class FrameRecorder{
 public:
@@ -29,7 +31,8 @@ public:
 	// 閉じたフレームを 1 行足す。
 	void add( const FrameRecord& frame );
 	// 数フレーム遅れて届いた GPU の時間を、その行に入れる（無い行なら何もしない）。
-	void setGpu( long long frame, double seconds );
+	// 全体（gpuMs 列）と、印（gpuMark）で分けた区間ごとの時間（"gpu.<区間の名前>" の列）の両方を入れる。
+	void setGpu( const GpuTimer::Result& result );
 private:
 	struct ScopeTotal{
 		int column;

@@ -23,6 +23,7 @@ namespace{
 	const char* const kHeader ="frame,frameMs,cpuMs,presentMs,sleepMs,otherMs,gpuMs,ticks,state,wroteFile,events";
 	const char kEventSeparator = ';';
 	const float kNoGpu = -1.f; // GPU の時間がまだ・読めなかった
+	const char* const kGpuColumnPrefix = "gpu."; // GPU の区間の列の名前の頭（例：gpu.Buildings）
 	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと（計画書 6-6 ②）。
 	const char* const kStatePlaying = "playing";
 	const char* const kStateLoading = "loading";
@@ -115,14 +116,20 @@ void FrameRecorder::add( const FrameRecord& frame ){
 	mRows.push_back( row );
 }
 
-void FrameRecorder::setGpu( long long frame, double seconds ){
+void FrameRecorder::setGpu( const GpuTimer::Result& result ){
 	// 届くのは数フレーム前の分なので、後ろから探す。
 	for ( auto it = mRows.rbegin(); it != mRows.rend(); ++it ){
-		if ( it->frame == frame ){
-			it->gpuMs = static_cast< float >( seconds * kMillisecondsPerSecond );
+		if ( it->frame == result.frame ){
+			it->gpuMs = static_cast< float >( result.totalSeconds * kMillisecondsPerSecond );
+			// 区間は区間の列（CPU の区間と同じ並び）に、名前の前に gpu. を付けて足す（CPU の区間と同じ名前でも混ざらない）。
+			for ( int i = 0; i < result.segmentCount; ++i ){
+				int column = columnOf( ( std::string( kGpuColumnPrefix ) + result.names[ i ] ).c_str() );
+				float ms = static_cast< float >( result.segmentSeconds[ i ] * kMillisecondsPerSecond );
+				it->scopes.push_back( { column, ms } );
+			}
 			return;
 		}
-		if ( it->frame < frame ){
+		if ( it->frame < result.frame ){
 			return; // 記録を始める前のフレーム
 		}
 	}

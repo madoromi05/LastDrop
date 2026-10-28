@@ -9,6 +9,8 @@
 #include "GameLib/Base/RefString.h"
 #include "GameLib/Profiling/Profiler.h"
 #include "Graphics/ColorSpace.h"
+#include "Graphics/DdsReader.h"
+#include "GameLib/Base/DebugStream.h"
 #include <string>
 #include <vector>
 #include <algorithm>
@@ -160,26 +162,38 @@ public:
 	// Upload CPU staging data to GPU (called lazily before first use)
 	void ensureGpuUploaded(){
 		if ( !mNeedsUpload && mGpuTexture ) return;
-		if ( mMips.empty() ) return;
+		if ( mMips.empty() && mCompressed.levels.empty() ) return;
 
 		if ( mSRV       ){ mSRV->Release();        mSRV = 0; }
 		if ( mGpuTexture){ mGpuTexture->Release(); mGpuTexture = 0; }
 
-		int mipLevels = static_cast< int >( mMips.size() );
+		// 送る中身は、圧縮した DDS（ブロックのまま）か、CPU で展開した画素（TGA・古い形の DDS・lock で書いた物）のどちらか。
+		const bool compressed = !mCompressed.levels.empty();
+		int mipLevels = static_cast< int >( compressed ? mCompressed.levels.size() : mMips.size() );
 		vector< D3D11_SUBRESOURCE_DATA > initData( mipLevels );
 		for ( int i = 0; i < mipLevels; ++i ){
-			initData[ i ].pSysMem          = mMips[ i ].pixels.data();
-			initData[ i ].SysMemPitch      = mMips[ i ].width * 4;
+			if ( compressed ){
+				initData[ i ].pSysMem     = mCompressed.levels[ i ].bytes.data();
+				initData[ i ].SysMemPitch = mCompressed.levels[ i ].rowPitch;
+			}else{
+				initData[ i ].pSysMem     = mMips[ i ].pixels.data();
+				initData[ i ].SysMemPitch = mMips[ i ].width * 4;
+			}
 			initData[ i ].SysMemSlicePitch = 0;
 		}
 
 		D3D11_TEXTURE2D_DESC desc = {};
-		desc.Width          = static_cast< UINT >( mMips[ 0 ].width );
-		desc.Height         = static_cast< UINT >( mMips[ 0 ].height );
+		desc.Width          = static_cast< UINT >( compressed ? mCompressed.levels[ 0 ].width : mMips[ 0 ].width );
+		desc.Height         = static_cast< UINT >( compressed ? mCompressed.levels[ 0 ].height : mMips[ 0 ].height );
 		desc.MipLevels      = static_cast< UINT >( mipLevels );
 		desc.ArraySize      = 1;
 		// 色の画像は _SRGB にして、シェーダが読むときに GPU がリニアへ直す（線形のフィルタもリニアで掛かる）。
-		desc.Format         = ( mColorSpace == TEXTURE_COLOR_SPACE_SRGB ) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
+		// 圧縮した DDS は、ファイルに書いてある形式のまま（_SRGB かどうかも texconv が決めた。readCompressedDds で指定と比べてある）。
+		if ( compressed ){
+			desc.Format = mCompressed.format;
+		}else{
+			desc.Format = ( mColorSpace == TEXTURE_COLOR_SPACE_SRGB ) ? DXGI_FORMAT_B8G8R8A8_UNORM_SRGB : DXGI_FORMAT_B8G8R8A8_UNORM;
+		}
 		desc.SampleDesc.Count = 1;
 		desc.Usage          = D3D11_USAGE_DEFAULT;
 		desc.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
@@ -201,7 +215,26 @@ public:
 		hr = mDevice->CreateShaderResourceView( mGpuTexture, &srvDesc, &mSRV );
 		ASSERT( SUCCEEDED( hr ) && "CreateShaderResourceView failed" );
 
+		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる。LinearToneMap_Plan.txt 10 章）。
+		// 名前のある画像（ファイルから読んだ物）だけ。lock で書く画像は書き直すたびに来るので数えない。
+		if ( !mProfileName.empty() ){
+			size_t bytes = 0;
+			for ( int i = 0; i < mipLevels; ++i ){
+				int rows = compressed ? ( mCompressed.levels[ i ].height + DdsReader::kBlockPixels - 1 ) / DdsReader::kBlockPixels : mMips[ i ].height;
+				bytes += static_cast< size_t >( initData[ i ].SysMemPitch ) * rows;
+			}
+			// 起動中に読んだ画像の合計。消した画像は引かない（読み込みの量を見る数で、今あるメモリの量ではない）。
+			static size_t sUploadedBytes = 0;
+			sUploadedBytes += bytes;
+			const size_t kKiB = 1024;
+			GameLib::cout << "Texture: upload " << mProfileName.c_str() << " " << static_cast< int >( desc.Width ) << "x" << static_cast< int >( desc.Height )
+				<< ( compressed ? " BC" : " BGRA8" ) << " " << static_cast< int >( bytes / kKiB ) << " KiB (total "
+				<< static_cast< int >( sUploadedBytes / ( kKiB * kKiB ) ) << " MiB)" << GameLib::endl;
+		}
+
 		mMips.clear();
+		mCompressed.levels.clear();
+		mCompressed.levels.shrink_to_fit(); // GPU へ送った後は CPU に残さない（4096² の BC7 で 22MB）
 		mNeedsUpload = false;
 	}
 
@@ -511,7 +544,33 @@ public:
 		unlock( 0 );
 	}
 
+	// tools/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）。
+	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる（LinearToneMap_Plan.txt 8-4）。
+	void readCompressedDds( const char* data, int size ){
+		std::string error;
+		if ( !DdsReader::read( data, size, &mCompressed, &error ) ){
+			GameLib::cout << "Texture: cannot read " << mProfileName.c_str() << " : " << error.c_str() << GameLib::endl;
+			ASSERT( 0 && "Texture : unsupported DDS. See the output window." );
+			mIsError = true;
+			return;
+		}
+		bool srgbFile = DdsReader::isSrgb( mCompressed.format );
+		bool srgbRequested = ( mColorSpace == TEXTURE_COLOR_SPACE_SRGB );
+		if ( srgbFile != srgbRequested ){
+			GameLib::cout << "Texture: " << mProfileName.c_str() << ( srgbFile ? " is sRGB but requested as non-color" : " is not sRGB but requested as color" ) << GameLib::endl;
+			ASSERT( 0 && "Texture : the DDS format and the requested color space differ. See the output window." );
+		}
+		mWidth = mOriginalWidth = mCompressed.levels[ 0 ].width;
+		mHeight = mOriginalHeight = mCompressed.levels[ 0 ].height;
+		mNeedsUpload = true;
+	}
+
 	void readDDS( const char* data, int size ){
+		if ( DdsReader::hasDx10Header( data, size ) ){
+			readCompressedDds( data, size );
+			return;
+		}
+		// ここから下は古い形の、圧縮していない DDS（Texture::write が書く物）。
 		int sh = getUnsigned( data + 12 );
 		int sw = getUnsigned( data + 16 );
 		mOriginalWidth  = sw;
@@ -651,6 +710,8 @@ public:
 		if ( !mGpuTexture ) return nullptr;
 		D3D11_TEXTURE2D_DESC desc;
 		mGpuTexture->GetDesc( &desc );
+		// 圧縮した絵は 1 画素 4 バイトとして読み戻せない（write はデバッグ用なので、TGA から読んだ絵だけ書ければよい）。
+		if ( DdsReader::blockBytes( desc.Format ) > 0 ) return nullptr;
 		D3D11_TEXTURE2D_DESC sd = desc;
 		sd.Usage          = D3D11_USAGE_STAGING;
 		sd.BindFlags      = 0;
@@ -682,6 +743,8 @@ public:
 	long long                 mRequestedAt;
 	string                    mProfileName;
 	TextureColorSpace         mColorSpace; // 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
+	// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）。
+	DdsReader::Image          mCompressed;
 };
 
 } //namespace Graphics

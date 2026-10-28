@@ -26,6 +26,7 @@
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Math/Random.h"
 #include <memory>
+#include <utility>
 #include <vector>
 
 class MeshCache;
@@ -88,8 +89,12 @@ public:
 	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection,
 		Inventory* inventory );
 	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
+	// 手前に来やすい物から描く：自キャラ・弾 → ゾンビ・千切れた部位 → 建物（目に近い順）→ 車・置物 → 地面。
+	// 先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる（Early-Z。Optimization_Plan.txt 2-3）。
+	// 奥行きで隠すので、順番を変えても絵は変わらない。物ごとの GPU の時間を印（Profiling::gpuMark）で分ける。
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
-	void draw( const ViewFrustum& frustum ) const;
+	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
+	void draw( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
 	// 弾痕を描く。draw の後、同じ描画先で呼ぶ（壁の奥行きで隠すため）。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
@@ -231,6 +236,9 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mSeverPose;
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
+	// 建物を目に近い順に描くための並び（目からの距離の 2 乗と建物）。draw の中でだけ書く作業領域で、
+	// 絵の中身ではないので const の draw からも書けるようにしてある（毎フレーム確保し直さないために持つ）。
+	mutable std::vector< std::pair< float, const Building* > > mBuildingDrawOrder;
 	std::unique_ptr< EscapeCar > mEscapeCar; // 名簿が自分の箱を指すので、置いた後は動かさない（unique_ptr で持つ）
 	std::unique_ptr< ItemSource > mEndlessFuel; // 車の近くの、何度でも拾えるガソリン（同上）
 };

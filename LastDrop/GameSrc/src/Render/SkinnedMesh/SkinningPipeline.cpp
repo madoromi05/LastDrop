@@ -1,4 +1,5 @@
 #include "GameSrc/Render/SkinnedMesh/SkinningPipeline.h"
+#include "GameSrc/Render/RenderPass.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -8,7 +9,8 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kShaderFile = "Resource/Shader/SkinnedMesh.hlsl";
-	const int kBonePaletteSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // SkinnedMesh.hlsl の b1
+	const char* kGBufferShaderFile = "Resource/Shader/SkinnedMeshGBuffer.hlsl";
+	const int kBonePaletteSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // Skinning.hlsli の b1
 	const int kRowsPerBone = 3;   // 3x4 行列 = float4 が3行
 	const int kFloatsPerRow = 4;
 	const int kFloatsPerBone = kRowsPerBone * kFloatsPerRow;
@@ -28,6 +30,7 @@ namespace{
 SkinningPipeline::SkinningPipeline() :
 	mBoneRows( kMaxBones * kFloatsPerBone, 0.f ) {
 	mShader = Graphics::Shader::create( kShaderFile, vertexFormat() );
+	mGBufferShader = Graphics::Shader::create( kGBufferShaderFile, vertexFormat() );
 	mBonePalette = Graphics::ConstantBuffer::create( static_cast< int >( mBoneRows.size() * sizeof( float ) ) );
 }
 
@@ -37,11 +40,19 @@ const Graphics::VertexFormat& SkinningPipeline::vertexFormat() {
 }
 
 bool SkinningPipeline::isReady() const {
-	return !mShader.isError();
+	return !currentShader().isError();
 }
 
 const char* SkinningPipeline::errorMessage() const {
-	return mShader.errorMessage();
+	const char* message = mShader.errorMessage();
+	if ( message[ 0 ] != '\0' ) {
+		return message;
+	}
+	return mGBufferShader.errorMessage();
+}
+
+const Graphics::Shader& SkinningPipeline::currentShader() const {
+	return ( RenderPass::current() == RenderPassKind::GBuffer ) ? mGBufferShader : mShader;
 }
 
 void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
@@ -59,7 +70,7 @@ void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
 	mBonePalette.set( mBoneRows.data(), boneNumber * kFloatsPerBone * static_cast< int >( sizeof( float ) ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();
-	gm.setShader( mShader );
+	gm.setShader( currentShader() );
 	gm.setConstantBuffer( kBonePaletteSlot, mBonePalette );
 }
 

@@ -20,6 +20,10 @@ void Building::draw( const ViewFrustum& frustum ) const {
 	mMesh.draw( frustum );
 }
 
+const Vector3& Building::position() const {
+	return mMesh.position();
+}
+
 bool Building::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
 	return mMesh.raycast( origin, delta, time, normal );
 }

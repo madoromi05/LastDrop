@@ -17,7 +17,9 @@ namespace Profiling{
 class GpuTimer{
 public:
 	static const int kLatency = 5;   // 何フレーム分のクエリを輪にして回すか
-	static const int kMaxMarks = 8;  // 1 フレームに打てる印の数（始めと終わりは別）
+	// 1 フレームに打てる印の数（始めと終わりは別）。超えた印は黙って捨てる。
+	// 2026-10-27 に世界を描く所を物ごとに分けて 9 個になったので、足す余地を残して 12。
+	static const int kMaxMarks = 12;
 
 	// 読めた 1 フレームぶんの結果。
 	struct Result{

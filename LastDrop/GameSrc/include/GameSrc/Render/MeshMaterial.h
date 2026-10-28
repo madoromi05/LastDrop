@@ -18,6 +18,10 @@ public:
 	void setSpecularColor( const GameLib::Math::Vector3& );		// ツヤの色と強さ
 	void setSpecularSharpness( float );							// ツヤの鋭さ（大きいほど小さく鋭いハイライト）
 	void setNormalMapStrength( float );							// 凹凸の強さ（0で無効、1で標準）
+	// 裏の面も描くか。既定は描かない（背面カリング。Optimization_Plan.txt 2-1）。
+	// 閉じた形なら裏の面はいつも表の面に隠れるので、描くのは無駄になる。板 1 枚の物・裏返った面がある物だけ true にする
+	// （メッシュのファイルに doublesided="1" と書く。変換ツールの設定の material_params / parts にも書ける）。
+	void setDoubleSided( bool );
 
 	// 非同期ロード中のテクスチャの読み込みを進める。完了するまで毎フレーム呼ぶ。
 	// 貼る絵が全部展開済みなら true（読めなかった絵も「終わった」に含める。ずっと待ち続けないように）。
@@ -34,6 +38,7 @@ private:
 	GameLib::Math::Vector3 mSpecularColor;
 	float mSpecularSharpness;
 	float mNormalMapStrength;
+	bool mDoubleSided;
 };
 
 #endif

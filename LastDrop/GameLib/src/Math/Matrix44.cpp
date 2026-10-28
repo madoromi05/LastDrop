@@ -203,6 +203,48 @@ void Matrix44::setMul( const Matrix44& a, const Matrix34& b ){
 	m33 = tx * b.m03 + ty * b.m13 + tz * b.m23 + a.m33;
 }
 
+void Matrix44::setInverse( const Matrix44& in ){
+	const Matrix44 a = in; // 自分自身を渡されても書き換えながら読まないよう写す
+	//上2行の 2x2 の行列式（s）と下2行の 2x2 の行列式（c）を先に作り、余因子をその組み合わせで書く
+	float s0 = a.m00 * a.m11 - a.m10 * a.m01;
+	float s1 = a.m00 * a.m12 - a.m10 * a.m02;
+	float s2 = a.m00 * a.m13 - a.m10 * a.m03;
+	float s3 = a.m01 * a.m12 - a.m11 * a.m02;
+	float s4 = a.m01 * a.m13 - a.m11 * a.m03;
+	float s5 = a.m02 * a.m13 - a.m12 * a.m03;
+
+	float c0 = a.m20 * a.m31 - a.m30 * a.m21;
+	float c1 = a.m20 * a.m32 - a.m30 * a.m22;
+	float c2 = a.m20 * a.m33 - a.m30 * a.m23;
+	float c3 = a.m21 * a.m32 - a.m31 * a.m22;
+	float c4 = a.m21 * a.m33 - a.m31 * a.m23;
+	float c5 = a.m22 * a.m33 - a.m32 * a.m23;
+
+	float det = s0 * c5 - s1 * c4 + s2 * c3 + s3 * c2 - s4 * c1 + s5 * c0;
+	ASSERT( det != 0.f && "Matrix44 : no inverse." );
+	float r = 1.f / det;
+
+	m00 = (  a.m11 * c5 - a.m12 * c4 + a.m13 * c3 ) * r;
+	m01 = ( -a.m01 * c5 + a.m02 * c4 - a.m03 * c3 ) * r;
+	m02 = (  a.m31 * s5 - a.m32 * s4 + a.m33 * s3 ) * r;
+	m03 = ( -a.m21 * s5 + a.m22 * s4 - a.m23 * s3 ) * r;
+
+	m10 = ( -a.m10 * c5 + a.m12 * c2 - a.m13 * c1 ) * r;
+	m11 = (  a.m00 * c5 - a.m02 * c2 + a.m03 * c1 ) * r;
+	m12 = ( -a.m30 * s5 + a.m32 * s2 - a.m33 * s1 ) * r;
+	m13 = (  a.m20 * s5 - a.m22 * s2 + a.m23 * s1 ) * r;
+
+	m20 = (  a.m10 * c4 - a.m11 * c2 + a.m13 * c0 ) * r;
+	m21 = ( -a.m00 * c4 + a.m01 * c2 - a.m03 * c0 ) * r;
+	m22 = (  a.m30 * s4 - a.m31 * s2 + a.m33 * s0 ) * r;
+	m23 = ( -a.m20 * s4 + a.m21 * s2 - a.m23 * s0 ) * r;
+
+	m30 = ( -a.m10 * c3 + a.m11 * c1 - a.m12 * c0 ) * r;
+	m31 = (  a.m00 * c3 - a.m01 * c1 + a.m02 * c0 ) * r;
+	m32 = ( -a.m30 * s3 + a.m31 * s1 - a.m32 * s0 ) * r;
+	m33 = (  a.m20 * s3 - a.m21 * s1 + a.m22 * s0 ) * r;
+}
+
 float& Matrix44::operator()( int r, int c ){
 	ASSERT( r >= 0 && r < 4 );
 	ASSERT( c >= 0 && c < 4 );

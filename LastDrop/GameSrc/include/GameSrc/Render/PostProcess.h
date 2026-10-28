@@ -27,6 +27,13 @@ public:
 	// 描画先を中間の描画先へ切り替え、色と深度を消す。シーンを描く前に呼ぶ。
 	// ここから endScene までは、材質・ライト・頂点の色がリニアへ直される（Graphics::Manager::enableLinearColor）。
 	void beginScene();
+	// 描画先を中間の描画先（色と深度）へ付け直す（消さない）。beginScene の後に別の描画先（G-Buffer）へ描いたとき、
+	// 続きをシーンへ描く前に呼ぶ。
+	void resumeScene();
+	// 描画先をシーンの色だけにする（深度は外す）。深度をシェーダから読みながらシーンの色へ描くとき（ディファードのライティング）に呼ぶ。
+	void bindSceneColor();
+	// シーンの深度。G-Buffer へ描くときに一緒に使い、ライティングと G-Buffer の中身を見るときに読む。
+	GameLib::Graphics::DepthTarget sceneDepth() const;
 	// 噛まれた瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く。
 	void setDamageFlash( float amount );
 	// 噛まれた瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く。

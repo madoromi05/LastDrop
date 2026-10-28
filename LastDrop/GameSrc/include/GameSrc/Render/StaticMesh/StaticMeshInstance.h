@@ -28,6 +28,7 @@ public:
 	void setScale( float );								// 全体の拡大率（1で等倍）
 
 	const StaticMeshData* data() const;					// 借りている形と見た目
+	const GameLib::Math::Vector3& position() const;		// 置き場所（ワールド座標）
 	float angleY() const;								// 向き（度）
 	float scale() const;								// 拡大率
 	// 置き場所・向き・大きさの行列（モデルの空間 → ワールド）。描画・raycast・当たり判定づくりが同じものを使う。
