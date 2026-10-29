@@ -120,6 +120,8 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 			// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）。
 			m.setNormalMapStrength( kNoNormalMap );
 		}
+	} else if ( RenderPass::current() == RenderPassKind::Shadow ) {
+		m.setShader( RenderPass::staticMeshShader() ); // 影のマップへ深度だけ（Shadow_Plan.txt 4 章）
 	}
 	m.setWorldMatrix( world );
 	m.setVertexBuffer( mVertexBuffer );

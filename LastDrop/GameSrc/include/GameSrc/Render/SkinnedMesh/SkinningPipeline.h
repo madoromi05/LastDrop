@@ -8,7 +8,8 @@
 #include <vector>
 
 // スキンメッシュを GPU で変形して描く道具一式（シェーダと、骨の行列を渡す定数バッファ）。
-// シェーダは 2 つ：その場で色を出す Resource/Shader/SkinnedMesh.hlsl と、G-Buffer へ描く SkinnedMeshGBuffer.hlsl。
+// シェーダは 3 つ：その場で色を出す Resource/Shader/SkinnedMesh.hlsl、G-Buffer へ描く SkinnedMeshGBuffer.hlsl、
+// 影のマップへ深度だけ描く SkinnedMeshShadow.hlsl（Shadow_Plan.txt 4 章）。
 // どちらで描くかは begin のときの RenderPass で選ぶ（GBuffer_Plan.txt 6-2）。
 // 全スキンメッシュで1つを共有する（MeshCache が1つ作り、SkinnedMeshData へ貸す）。同じシェーダを何度もコンパイルしないため。
 // 使い方: begin( 骨の行列 ) → いつも通りパーツを描く（MeshMaterial::apply → drawIndexed）→ end
@@ -40,6 +41,7 @@ private:
 	const GameLib::Graphics::Shader& currentShader() const;
 	GameLib::Graphics::Shader mShader;        // その場で色を出す（RenderPass が Forward のとき）
 	GameLib::Graphics::Shader mGBufferShader; // G-Buffer へ描く（RenderPass が GBuffer のとき）
+	GameLib::Graphics::Shader mShadowShader;  // 影のマップへ深度だけ描く（RenderPass が Shadow のとき）
 	GameLib::Graphics::ConstantBuffer mBonePalette;
 	std::vector< float > mBoneRows; // 定数バッファへ送る前の詰め直し（骨1本 = 3行 × float4）
 };

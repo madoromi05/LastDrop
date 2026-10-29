@@ -8,6 +8,8 @@
     "mesh_texture": "Resource/building_albedo.tga",
     "mesh_normalmap": "Resource/building_normal.tga",
     "material_params": {
+        "roughness": 0.8,
+        "metallic": 0.0,
         "diffuse": [0.55, 0.55, 0.55],
         "specular": [0.02, 0.02, 0.02],
         "sharpness": 8.0,

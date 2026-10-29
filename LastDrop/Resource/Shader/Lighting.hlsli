@@ -48,8 +48,8 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
     return any(isnan(r)) ? normal : r; // 退化（UV面積0など）のときは元の法線へ
 }
 
-// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）と
-// ディファードのライティングのパス（DeferredLighting.hlsl）が同じこの関数を呼ぶ（GBuffer_Plan.txt 7 章。式を 2 回書かない）。
+// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）が呼ぶ。
+// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使うのはテスト用のシーン（SkinTestScene）だけ（PbrNightLighting_Plan.txt Q1）。
 // albedo: 頂点色×ディフューズ色×画像（リニア）  nv: 法線（長さ 1・法線マップ済み）
 // specularColor: (2+鋭さ)/2π を掛けた後のスペキュラの色（b0 の gSpecularColor.xyz と同じ形）  sharpness: 鋭さ
 float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specularColor, float sharpness)

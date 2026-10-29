@@ -80,6 +80,15 @@ void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& m
 	if ( ( a = findAttribute( meshElement, "normalstrength" ) ) ) {
 		material->setNormalMapStrength( a.getFloatValue() );
 	}
+	if ( ( a = findAttribute( meshElement, "roughness" ) ) ) {
+		material->setRoughness( a.getFloatValue() );
+	}
+	if ( ( a = findAttribute( meshElement, "metallic" ) ) ) {
+		material->setMetallic( a.getFloatValue() );
+	}
+	if ( ( a = findAttribute( meshElement, "emission" ) ) ) {
+		material->setEmission( a.getFloatValue() );
+	}
 	if ( ( a = findAttribute( meshElement, "doublesided" ) ) ) {
 		material->setDoubleSided( a.getIntValue() != 0 );
 	}

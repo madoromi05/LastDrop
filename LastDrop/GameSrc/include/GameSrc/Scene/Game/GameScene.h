@@ -16,6 +16,10 @@
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Render/GBuffer.h"
 #include "GameSrc/Render/DeferredLighting.h"
+#include "GameSrc/Render/LightList.h"
+#include "GameSrc/Render/ShadowMap.h"
+#include "GameSrc/Render/CascadedShadowMap.h"
+#include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
 #ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
@@ -62,7 +66,15 @@ private:
 	void resume();
 	// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない。
 	void handlePausedInput();
-	void setupLights() const;
+	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。
+	// camera：描くカメラ（目の位置はライトを選ぶ順番、目・向き・画角は月の影の枚の範囲に使う）。
+	void setupLights( const FirstPersonCamera& camera );
+	// 月（平行光）を一覧へ足す。強さがあれば、影の 3 枚（CSM）の行列を決めて影のマップを付ける（Shadow_Plan.txt 6 章）。
+	void addMoon( const LightingParams& params, const FirstPersonCamera& camera );
+	// 自キャラの懐中電灯が付いていて銃を持っていれば、銃口の前から銃の向きへ照らすスポットを一覧へ足す（PbrNightLighting_Plan.txt 9 章）。
+	void addFlashlight( const LightingParams& params );
+	// 影のマップを描く（懐中電灯・月の 3 枚）。setupLights の後、G-Buffer の前に呼ぶ。終わったら描く行列を camera へ戻す。
+	void drawShadowMaps( const FirstPersonCamera& camera );
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
 	// ゾンビがつかんだ・噛んだ出来事を読み、音を鳴らし、つかまれたら視点をその顔へ向け、噛まれた・死んだ後の見せ方を進める。
@@ -95,6 +107,12 @@ private:
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
 	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
+	LightList mLights;                  // 今のフレームのライト（setupLights で作り直す）
+	ShadowMap mFlashlightShadow;        // 懐中電灯の影のマップ（Shadow_Plan.txt 5 章）
+	bool mFlashlightCastsShadow;        // このフレームに懐中電灯の影を描くか（付いていて銃を持っている間。addFlashlight が決める）
+	GameLib::Math::Matrix44 mFlashlightShadowMatrix; // 懐中電灯の影のマップの、光の側の射影×ビュー
+	CascadedShadowMap mMoonShadow;      // 月の影の 3 枚（Shadow_Plan.txt 6 章）
+	bool mMoonCastsShadow;              // このフレームに月の影を描くか（月に強さがある間。addMoon が決める）
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;

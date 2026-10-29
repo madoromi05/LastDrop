@@ -40,6 +40,7 @@ namespace{
 		{ "Aim",            { WorkId::Aim } },
 		{ "Draw / Holster", { WorkId::Holster } },
 		{ "Reload",         { WorkId::Reload } },
+		{ "Flashlight",     { WorkId::Flashlight } },
 		{ "Interact",       { WorkId::Interact } },
 		{ "Pause",          { WorkId::Menu } },
 	};

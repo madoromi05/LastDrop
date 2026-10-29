@@ -485,6 +485,25 @@ void GameWorld::draw( const ViewFrustum& frustum, const Vector3& eye ) const {
 	Profiling::gpuMark( "Ground" );
 }
 
+void GameWorld::drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const {
+	// 深度だけなので、draw のような近い順の並べ替えはしない（速さにほとんど効かない）。
+	if ( includesPlayer && mPlayer ) {
+		mPlayer->draw();
+	}
+	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
+	mSeveredLimbs.draw();
+	for ( const Building& building : mBuildings ) {
+		building.draw( frustum );
+	}
+	if ( mEscapeCar ) {
+		mEscapeCar->draw( frustum );
+	}
+	if ( mEndlessFuel ) {
+		mEndlessFuel->draw( frustum );
+	}
+	mObjects.forEach< Pickup >( [ &frustum ]( const Pickup& pickup ) { pickup.draw( frustum ); } );
+}
+
 void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
 	mBulletHoles.draw( projectionView );
 }
@@ -507,7 +526,7 @@ void GameWorld::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& 
 	mMuzzleFlash.draw( projectionView, viewDirection, muzzlePosition, muzzleDirection, mPlayer->aimWeight() );
 }
 
-bool GameWorld::muzzleLight( MuzzleFlash::Light* out ) const {
+bool GameWorld::muzzleLight( LightSource* out ) const {
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
 	if ( !mPlayer || !mPlayer->muzzle( &muzzlePosition, &muzzleDirection ) ) {

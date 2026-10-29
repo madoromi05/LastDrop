@@ -13,6 +13,7 @@ struct PlayerCommand{
 	bool aimHeld;        // 覗く（押されている間。短押し・長押しの判定は WeaponStance）
 	bool fireHeld;       // 撃つ（押されている間。連射の間隔は FireControl）
 	bool reloadPressed;  // 弾を込める（押した瞬間。込める時間は WeaponReload）
+	bool flashlightPressed; // 銃の懐中電灯を付ける／消す（押した瞬間）
 };
 
 #endif

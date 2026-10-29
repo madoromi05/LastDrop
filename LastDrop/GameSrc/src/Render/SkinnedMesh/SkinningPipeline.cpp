@@ -10,6 +10,7 @@ using namespace GameLib::Math;
 namespace{
 	const char* kShaderFile = "Resource/Shader/SkinnedMesh.hlsl";
 	const char* kGBufferShaderFile = "Resource/Shader/SkinnedMeshGBuffer.hlsl";
+	const char* kShadowShaderFile = "Resource/Shader/SkinnedMeshShadow.hlsl";
 	const int kBonePaletteSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // Skinning.hlsli の b1
 	const int kRowsPerBone = 3;   // 3x4 行列 = float4 が3行
 	const int kFloatsPerRow = 4;
@@ -31,6 +32,7 @@ SkinningPipeline::SkinningPipeline() :
 	mBoneRows( kMaxBones * kFloatsPerBone, 0.f ) {
 	mShader = Graphics::Shader::create( kShaderFile, vertexFormat() );
 	mGBufferShader = Graphics::Shader::create( kGBufferShaderFile, vertexFormat() );
+	mShadowShader = Graphics::Shader::create( kShadowShaderFile, vertexFormat() );
 	mBonePalette = Graphics::ConstantBuffer::create( static_cast< int >( mBoneRows.size() * sizeof( float ) ) );
 }
 
@@ -48,11 +50,19 @@ const char* SkinningPipeline::errorMessage() const {
 	if ( message[ 0 ] != '\0' ) {
 		return message;
 	}
-	return mGBufferShader.errorMessage();
+	message = mGBufferShader.errorMessage();
+	if ( message[ 0 ] != '\0' ) {
+		return message;
+	}
+	return mShadowShader.errorMessage();
 }
 
 const Graphics::Shader& SkinningPipeline::currentShader() const {
-	return ( RenderPass::current() == RenderPassKind::GBuffer ) ? mGBufferShader : mShader;
+	switch ( RenderPass::current() ) {
+	case RenderPassKind::GBuffer: return mGBufferShader;
+	case RenderPassKind::Shadow:  return mShadowShader;
+	default:                      return mShader;
+	}
 }
 
 void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {

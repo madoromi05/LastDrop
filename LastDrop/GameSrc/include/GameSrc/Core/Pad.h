@@ -119,5 +119,6 @@ bool InputUiLeft     (int playerId = 0);   // 選んでいる部品の値を下�
 bool InputUiRight    (int playerId = 0);   // 選んでいる部品の値を上げる（押した瞬間）
 bool InputInteract    (int playerId = 0);   // 見ている物を使う（拾う・給油する。押した瞬間）
 bool InputReload      (int playerId = 0);   // 弾を込める（押した瞬間）
+bool InputFlashlight  (int playerId = 0);   // 銃の懐中電灯を付ける／消す（押した瞬間）
 bool InputDebugInvincible(int playerId = 0);// 自キャラの無敵を切り替える（押した瞬間。Debug・Profile ビルドだけで効く）
 bool InputDebugRecordPerf(int playerId = 0);// 計測の CSV の記録を始める／止める（押した瞬間。Debug・Profile ビルドだけで効く）

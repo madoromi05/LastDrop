@@ -42,10 +42,12 @@ namespace{
 	const float kAimGlowOpacity = 0.4f;
 
 	// ── 点光源 ── 光の主役。色はにじみの板と同じ（炎の赤みより白に寄せた暖色）。見た目を確かめる前の初期値。
-	// 今のライトの式（強さ × cos / 距離）は届く距離に上限が無いので、上げすぎると遠くまで明るくなる（1m 先で 1.5、5m 先で 0.3）。
+	// 強さは段階 3-a まで（強さ / 距離）と 1m 先で同じ明るさになる値のまま。今は距離の 2 乗で弱まり、届く距離で 0 になる
+	// （PbrNightLighting_Plan.txt 6 章。1m 先で 1.5、2m 先で 0.37）。
 	const Vector3 kLightColor( 1.f, 0.75f, 0.45f );
 	const float kLightOffset = 0.05f;   // 銃口の少し前に置く（銃身の中から照らして、銃が真っ暗にならないように）
 	const float kLightIntensity = 1.5f;
+	const float kLightRange = 8.f;      // 届く距離（m）。撃った瞬間に照らされて見えるのは、ふつう目の前の壁・ゾンビ・地面まで
 
 	const float kHalf = 0.5f;           // 幅から、板の中心から辺までの長さにする
 
@@ -103,14 +105,14 @@ bool MuzzleFlash::isLit() const {
 	return mAge < kLifeTicks;
 }
 
-bool MuzzleFlash::light( const Vector3& muzzlePosition, const Vector3& muzzleDirection, Light* out ) const {
+bool MuzzleFlash::light( const Vector3& muzzlePosition, const Vector3& muzzleDirection, LightSource* out ) const {
 	ASSERT( out && "MuzzleFlash : out is null." );
 	if ( !isLit() ) {
 		return false;
 	}
-	out->position.setMadd( muzzlePosition, muzzleDirection, kLightOffset );
-	out->color = kLightColor;
-	out->intensity = kLightIntensity;
+	Vector3 position;
+	position.setMadd( muzzlePosition, muzzleDirection, kLightOffset );
+	*out = pointLight( position, kLightColor, kLightIntensity, kLightRange );
 	return true;
 }
 

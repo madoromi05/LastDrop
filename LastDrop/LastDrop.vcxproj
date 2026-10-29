@@ -221,6 +221,7 @@
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\EditorWindow.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\TuningVisitors.cpp" />
@@ -259,6 +260,10 @@
     <ClCompile Include="GameSrc\src\Render\GBuffer.cpp" />
     <ClCompile Include="GameSrc\src\Render\DeferredLighting.cpp" />
     <ClCompile Include="GameSrc\src\Render\RenderPass.cpp" />
+    <ClCompile Include="GameSrc\src\Render\LightList.cpp" />
+    <ClCompile Include="GameSrc\src\Render\LightingParams.cpp" />
+    <ClCompile Include="GameSrc\src\Render\ShadowMap.cpp" />
+    <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
@@ -613,6 +618,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />
@@ -638,6 +644,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\GBuffer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\DeferredLighting.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LightList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LightingParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowMap.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\CascadedShadowMap.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
@@ -813,9 +824,18 @@
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
     <None Include="Resource\Shader\Skinning.hlsli" />
     <None Include="Resource\Shader\GBuffer.hlsli" />
+    <None Include="Resource\Shader\Pbr.hlsli" />
+    <None Include="Resource\Shader\LightList.hlsli" />
+    <None Include="Resource\Shader\LitQuad.hlsl" />
+    <None Include="Resource\Shader\StaticMeshShadow.hlsl" />
+    <None Include="Resource\Shader\SkinnedMeshShadow.hlsl" />
     <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\DeferredLighting.hlsl" />
+    <None Include="Resource\Shader\DeferredConstants.hlsli" />
+    <None Include="Resource\Shader\Fog.hlsli" />
+    <None Include="Resource\Shader\Fog.hlsl" />
+    <None Include="Resource\Shader\Fxaa.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

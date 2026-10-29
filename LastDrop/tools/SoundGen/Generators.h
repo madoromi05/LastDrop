@@ -16,6 +16,8 @@ Synth::Buffer makeWeaponDraw( Synth::Random* random );
 Synth::Buffer makeWeaponHolster( Synth::Random* random );
 Synth::Buffer makeAimIn( Synth::Random* random );
 Synth::Buffer makeAimOut( Synth::Random* random );
+// 銃の懐中電灯のスイッチ「カチッ」（押す音と戻る音）。
+Synth::Buffer makeFlashlightClick( Synth::Random* random );
 
 // 環境音（AmbienceSynth.cpp）。今はサイレンだけ。
 Synth::Buffer makeSiren( Synth::Random* random );

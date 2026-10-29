@@ -59,6 +59,7 @@ namespace
         case WorkId::DebugRecordPerf: return "DebugRecordPerf";
         case WorkId::UiLeft:   return "UiLeft";
         case WorkId::UiRight:  return "UiRight";
+        case WorkId::Flashlight: return "Flashlight";
         default:            return "";
         }
     }
@@ -177,6 +178,8 @@ namespace
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
         // R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）。
         { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
+        // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）。
+        { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },
         // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
         { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
         { CollectorId::InGame, WorkId::DebugPickupCollision, DeviceKind::Keyboard, Keyboard::KEY_F2 },

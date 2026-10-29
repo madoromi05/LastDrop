@@ -43,6 +43,7 @@ namespace{
 		case SOUND_IMPACT_CONCRETE:
 		case SOUND_IMPACT_DIRT:
 		case SOUND_IMPACT_METAL:	return makeImpact( id, random );
+		case SOUND_FLASHLIGHT_CLICK:	return makeFlashlightClick( random );
 		case SOUND_NUM:				break;
 		}
 		return Synth::Buffer(); // 目録に足したのにレシピが無い（main で知らせる）

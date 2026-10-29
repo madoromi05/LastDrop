@@ -28,6 +28,7 @@ public:
 	//   texture / normalmap : 画像ファイルのパス（空・無しなら設定しない）。同じパスは textures が1枚にまとめる
 	//   diffuse / specular  : RGB（無ければ MeshMaterial の既定値のまま）
 	//   sharpness / normalstrength : 数値（同上）
+	//   roughness / metallic / emission : PBR の材質値（同上。PbrNightLighting_Plan.txt 5 章）
 	// material: 出力先。nullptr 不可。所有権は受け取らない。
 	// textures: 画像を借りる倉庫。nullptr 不可。所有権は受け取らない。
 	static void loadMaterial( MeshMaterial* material, const GameLib::PseudoXml::ConstElement& meshElement, TextureCache* textures );

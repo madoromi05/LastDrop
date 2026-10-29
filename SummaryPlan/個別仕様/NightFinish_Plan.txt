@@ -1,0 +1,375 @@
+================================================================================
+ 霧・カラーグレーディング・ディザ・FXAA（グラフィック段階5：夜の絵の仕上げ）の計画メモ
+ 作成日：2026-10-29
+ 状態：Q1〜Q8 ともおすすめ案（★）でユーザーが承認（2026-10-29）。
+       5-a 実装済み・ユーザーが画面確認済み（2026-10-29）。変えた所は 13 章
+       5-b 実装済み・ユーザーが画面確認済み（2026-10-29）。変えた所は 14 章
+       5-c 実装済み・ユーザーが画面確認済み（2026-10-30）。変えた所は 15 章
+       5-d 計測済み（2026-10-30。11 章）。霧 0.034ms・FXAA 0.048ms・グレーディング＋ディザ 約 0.02ms。段階 5 完了
+ 元の仕様：Graphics_Spec.txt 2 章（パスの順番 (7)(10)(11)）・10-3（霧）・10-6（カラーグレーディング）・
+           10-7（ディザ）・11 章（FXAA）・13 章（予算）・15 章（段階 5）
+           LinearToneMap_Plan.txt（段階 1。露出・ACES・Present.hlsl の順番）
+           PbrNightLighting_Plan.txt（段階 3。空の色・夜の暗さの基準 Q2「明かりが無くても 15m 先の輪郭が分かる」）
+           Shadow_Plan.txt（段階 4。月の影は 80m まで）
+================================================================================
+
+ 目次
+  0. 決めること（Q1〜Q8）
+  1. タルコフでは
+  2. 今のコードで関係するところ
+  3. ゴールと、段階5 でやらないこと
+  4. 全体の順番（変えた後の流れ）
+  5. 霧（5-a）
+  6. カラーグレーディング（5-b）
+  7. ディザ（5-b）
+  8. FXAA（5-c）
+  9. 調整（F6）と表示
+ 10. 進め方（5-a〜5-d）
+ 11. 計測
+ 12. 参考
+ 13. 実装で仕様から変えた所（5-a）
+ 14. 実装で仕様から変えた所（5-b）
+ 15. 実装で仕様から変えた所（5-c）
+
+================================================================================
+ 0. 決めること（★はおすすめ）
+================================================================================
+ Q1. 霧をどこで混ぜるか
+     ★A：ライティングの直後に、全画面のパスを 1 つ足す（Fog.hlsl）。深度だけを読み、霧の色と量を出して
+          ブレンド（BLEND_LINEAR）でシーンの色に混ぜる。シーンの色は読まない（写し直しが要らない）
+          ・F6 で霧だけを ON/OFF でき、GPU の印も分かれるので、見比べと計測がしやすい
+          ・Graphics_Spec.txt 2 章の順番（SSR → 霧 → 半透明）を段階 7 でもそのまま守れる
+      B：ライティングのパス（DeferredLighting.hlsl）の最後で混ぜる。パスが増えない分だけ軽いが、
+          霧だけの時間が測れず、段階 7 の SSR を霧の前に入れられない
+
+ Q2. 霧の濃さの基準
+     ★A：夜の暗さの基準（段階 3 の Q2）を崩さない濃さにする。距離の霧は「2 乗の指数」（5-2）で、
+          15m 先で約 1 割・40m 先（銃声でゾンビが寄ってくる距離）で半分・80m 先（月の影が消える所）でほぼ隠れる
+          → 近くの戦う距離はほとんど変わらず、町の奥と端の建物だけが空へ溶ける
+      B：薄い霧（遠くの建物が少しかすむ程度）。雰囲気は弱いが、遊びには全く効かない
+
+ Q3. 高さの霧（地面の近くほど濃い霧）を入れるか
+     ★A：入れる。ただし薄く（地面から 1m 上がると濃さが半分）。膝から下がうっすら霞む夜の町にする。
+          這うゾンビ（足をつかむ）が 10m 先で見えなくならないこと、を濃さの上限にする
+      B：距離の霧だけにする（作りは少し小さい）
+
+ Q4. 霧でゾンビの見え方を変えるか（タルコフは霧が濃いほど AI の見える距離が縮む。1 章）
+     ★A：変えない（段階 5 は見た目だけ）。霧の濃さは 1 つに決めて変わらないので、ゾンビの見通しは今のまま。
+          霧の濃さが場面ごとに変わるようになったら、そのときに考える
+      B：霧の濃さからゾンビの見える距離を決める（ZombieChase の見通しに上限を足す）
+
+ Q5. カラーグレーディングで動かす値
+     ★A：色温度・彩度・コントラスト・暗部／中間／明部の色（Unity URP の Shadows Midtones Highlights と同じ考え）・
+          暗い所ほど彩度を下げる量（人の目が夜に色を感じにくくなるのに似せる）。Graphics_Spec.txt 10-6 のとおり
+      B：色温度・彩度・コントラストだけ（値が少ないが、暗部を青緑・明部を暖色、ができない）
+
+ Q6. フィルムグレイン（画面のざらつき）を入れるか
+     ★A：入れない。ディザ（8bit の縞を消すだけの、見えないほど弱いノイズ）だけにする。
+          タルコフでは Noise を切る人が多く（1 章）、15m 先の輪郭（段階 3 の Q2）も見えにくくなるため
+      B：ディザと兼ねて、弱いグレインを入れる（強さは F6。初期値は弱め）
+
+ Q7. FXAA をどう用意するか
+     ★A：自分で書く。FXAA 3.11 の Quality 版（Timothy Lottes, NVIDIA）の手順（輪郭を見つける → 輪郭に沿って端を探す →
+          混ぜる量を決める）を、自分の言葉のコメントで書く。調べる回数は少なめから始める
+          ・中身を説明できる（就活で「何をしているか」を話せる）
+      B：NVIDIA の FXAA 3.11 のヘッダ（Fxaa3_11.h）をそのまま入れる（早いが、ほぼ読まずに使うことになる）
+
+ Q8. 遊ぶ人の設定（Options）に足すか
+     ★A：段階 5 では足さない。値は F6 だけで動かし、決まった値をコードの初期値にする
+          ・タルコフでは遊ぶ人が明るさを上げて暗い所を見やすくするのが普通（1 章）。このゲームでは夜の暗さが怖さなので、
+            明るさの設定を作るなら「画面の明るさ合わせ（範囲を狭く）」として別のタスクで考える
+      B：Options に「明るさ」「FXAA の ON/OFF」を足す（settings.xml に保存）
+
+================================================================================
+ 1. タルコフでは
+================================================================================
+ 霧
+  ・霧は天気の 1 つで、レイドごとに濃さが変わる。2024-05 の技術アップデートで「全マップの霧と薄もやの濃さを下げた
+    （天気としての霧は残る）」（公式の X）。遠くの敵を見つけやすくなり、遠距離の撃ち合いが楽になった、という受け止め（Forbes）
+  ・それより前に、Interchange の屋内の霧（倍率の高いスコープでも遠くが見えない）を消している（NME）
+  ・0.16.1.3（2025-02）で、霧と雨が濃いほど AI が気付くまでの時間が延び、見える最大距離が縮むようにした（屋内は対象外）。
+    1.0.2.0（2026-02）で、霧の濃さと AI の見え方の関係を調整し直した（Changelog・SteamDB）
+  ・遊ぶ人へのアンケートでは、4 割が霧にいら立つと答えた（Insider Gaming）
+ 色味
+  ・PostFX（0.12.5、2020-04 で追加。「光が白っぽく見える」という不満への対策）：明るさ・彩度・Clarity・Colorfulness・
+    Luma sharpen・Adaptive sharpen・カラーグレーディング（Cognac・Montreal・Boost などの型と強さ）・色覚の補助
+  ・遊ぶ人は暗い所を見やすくするために明るさ・Clarity を上げる。攻略記事の推奨値は人ごとにばらばら
+  ・グラフィックの設定に Noise（グレイン）・Chromatic aberrations・Z-Blur の ON/OFF があり、攻略はどれも OFF を勧める（見づらくなるため）
+ アンチエイリアス
+  ・選べるのは Off / FXAA / TAA / TAA High。DLSS・FSR を使うと AA の欄は使わない（アップスケーラが AA も兼ねる）
+  ・攻略では TAA が主流。FXAA は軽いが、ぼける・ギザギザが残る。TAA は動くとぼけるので、Sharpness（0.5〜0.7 が多い）で戻す
+ このゲームへの当てはめ
+  ・霧は見た目だけでなく遊びを変える（濃すぎて不満が出て、薄めた）→ 濃さは「見つけられる距離」で決める（Q2・Q3）。F6 で動かす
+  ・霧と AI の見え方を連動させるのは、霧の濃さが変わる作りになってから（Q4）
+  ・遊ぶ人に色の調整を渡すと、夜の暗さ（怖さ）が消される → Options には足さない（Q8）
+  ・グレイン・色収差は見づらいと嫌われる → 入れない（Q6）。モーションブラーは Graphics_Spec.txt 10-7 で入れないと決め済み
+  ・FXAA のぼけ → 細かい模様をぼかす量（8-3 の subpixel）を F6 で動かし、ぼけすぎない値から始める。TAA は段階 8
+
+================================================================================
+ 2. 今のコードで関係するところ
+================================================================================
+  ・GameScene::draw の順番
+      beginScene → 影のマップ → G-Buffer → ライティング（bindSceneColor の後。gpu.Lighting）→ resumeScene →
+      弾痕・砂ぼこり・血（LitQuadBatch。BLEND_LINEAR）→ マズルフラッシュ（加算）→ gpu.Effects →
+      PostProcess::endScene（ブルーム → Present.hlsl でバックバッファへ）→ gpu.PostProcess → HUD・文字（UiRenderer）
+  ・PostProcess：シーンの色は RENDER_TARGET_RGBA16F、深度は sceneDepth()。ブルームは画面の 1/2
+  ・Present.hlsl の順番：痛みのぼかし → ブルームを足す → 露出 → ACES → ビネット（＋痛みの暗さ）→ 噛まれた赤み → 暗転 → linearToSrgb
+    バックバッファは UNORM（8bit）のまま。HUD・文字は endScene の後にバックバッファへ直接描く（ポストプロセスは掛からない）
+  ・DeferredLighting.hlsl：深度とカメラの逆行列から位置を戻す reconstructWorldPosition がある。
+    何も描かれていない画素（深度 1）には空を描く（LightList.hlsli の skyColor。地平線の色 → 天頂の色）
+  ・LightList（b2）：目の位置・空の色・ライトの一覧。ライティングのパスと半透明の板（LitQuad.hlsl）の両方が読む。
+    mLights.unbind() までは付いている
+  ・LightingParams：skyZenithColor・skyHorizonColor・skyIntensity。コメントに「後で霧の色を地平線の色と揃える」と書いてある
+  ・PostProcessParams：exposure・bloomThreshold・bloomIntensity（F6 → Tuning）
+  ・GameLib：RENDER_TARGET_RGBA8 がある。ブレンドは BLEND_LINEAR（アルファで混ぜる）・BLEND_ADDITIVE
+  ・F6 → Render：Shadows の ON/OFF（shadowsEnabled()）と G-Buffer の表示
+  ・町の大きさは約 110m 四方（交差点の間 33m × 3 ＋ 外周）。カメラの遠い面は 1000m
+
+================================================================================
+ 3. ゴールと、段階5 でやらないこと
+================================================================================
+  ゴール：町の奥が夜の空へ溶け、足元がうっすら霞み、色が夜らしく（暗部は青緑・街灯は暖色）、夜空と霧のなだらかな所に縞が無く、
+          建物と車の輪郭のギザギザが減る。近くの戦う距離の見え方（15m 先の輪郭）は今と変わらない
+          （Graphics_Spec.txt 15 章の確認すること：夜の絵が仕上がる）
+  やらない
+  ・ボリュームフォグ（街灯の下の光の筋・懐中電灯の光の柱）。重い。Graphics_Spec.txt 10-3 の発展のまま
+  ・天気で霧の濃さが変わる（遊びごとに違う霧）。Q4 と一緒に後で
+  ・霧で描くのを止める距離カリング（町が 110m 四方なので、80m の先で消せる物がほとんど無い）
+  ・LUT 画像（作りは置き換えられる形にしておくだけ。6-3）
+  ・TAA・シャープ（段階 8）
+  ・Options の明るさ（Q8）・色覚の補助
+  ・噛まれた赤み・痛み・暗転の作り直し（場所が変わるだけで、見た目は今のまま）
+
+================================================================================
+ 4. 全体の順番（変えた後の流れ）
+================================================================================
+  影 → G-Buffer → ライティング → ★霧（5-a）→ 弾痕・砂ぼこり・血（自分で霧を掛ける。5-4）→ マズルフラッシュ →
+  endScene：ブルーム → Present.hlsl
+      痛みのぼかし → ブルームを足す → 露出 → ACES → ★カラーグレーディング（5-b）→ ビネット・赤み・暗転 →
+      linearToSrgb → ★ディザ（5-b）→（FXAA が ON なら）8bit の中間へ／（OFF なら）バックバッファへ
+  → ★FXAA（5-c）：8bit の中間を読んでバックバッファへ → HUD・文字
+  順番の理由
+  ・霧は半透明の前（近くのエフェクトに霧を二重に掛けない。Graphics_Spec.txt 2 章）
+  ・グレーディングは ACES の後（0〜1 になった色に掛ける。Graphics_Spec.txt 10-6）。ビネット・赤みより前
+    （噛まれた赤みを青寄りの色温度で濁らせない）
+  ・ディザは 8bit に落とす直前。FXAA の中間も 8bit なので、中間へ書く時点で掛ける（FXAA は平らな所を触らないので、ディザは残る）
+  ・FXAA は ToneMap の後（明るさの差で輪郭を探すので、画面の色になってから）。HUD・文字より前（文字をにじませない）
+
+================================================================================
+ 5. 霧（5-a）
+================================================================================
+ 5-1. 作り（Q1 の A）
+  ・Resource/Shader/Fog.hlsl（全画面）。ライティングの直後、bindSceneColor のまま（深度はシェーダから読む）描く
+  ・画素ごとに深度から位置を戻し、目からの距離と高さで霧の量 a（0〜1）を出す。出力は（霧の色, a）、BLEND_LINEAR で混ぜる
+  ・空の画素（深度 1）は触らない（空は地平線へ向かって地平線の色になるので、霧の色を同じにすれば建物が空へ溶ける）
+  ・霧の式は Fog.hlsli に置き、Fog.hlsl と LitQuad.hlsl が同じ関数を呼ぶ（5-4）
+  ・霧の値（5-3）は LightList の定数（b2）へ足す。空の色と同じ所にあり、ライティングと半透明の板がもう読んでいるため
+  ・位置を戻す reconstructWorldPosition は DeferredLighting.hlsl から共通の hlsli へ移して、霧と共有する
+
+ 5-2. 式
+  距離の霧（2 乗の指数。Direct3D 9 の FOG_EXP2 と同じ形）
+      τd = ( d × k )²        d：目からの距離（m）、k = √(ln 2) / fogHalfDistance
+      → fogHalfDistance の所でちょうど半分。手前はゆっくり、奥で急に濃くなる（近くを残して奥を隠せる。Q2）
+      fogHalfDistance = 40m のとき：15m 9%・25m 24%・40m 50%・60m 79%・80m 94%
+      （ふつうの指数だと、40m で半分にすると 15m で 23% になり、近くまで霞む）
+  高さの霧（地面の近くほど濃い。Inigo Quilez「Better Fog」の式）
+      濃さ ρ(y) = fogGroundDensity × exp( −b × y )        b = ln 2 / fogHeightHalf（y は車道の面からの高さ）
+      目（高さ ye）から画素（高さ yp）まで距離 d の線の上で足し合わせると
+      τh = fogGroundDensity × d × ( exp(−b×ye) − exp(−b×yp) ) / ( b × ( yp − ye ) )
+      ほぼ水平（| yp − ye | が小さい）のときは割り算を避けて τh = fogGroundDensity × d × exp(−b×ye)
+  合わせ方
+      a = 1 − exp( −( τd + τh ) )
+  霧の色
+      空の地平線の色をそのまま使う：srgbToLinear( skyHorizonColor ) × skyIntensity（描いている空と同じ数）。
+      霧の色の値は別に持たない（揃え忘れて、建物の輪郭が空との境目に浮かないように）
+
+ 5-3. 値（LightingParams に足す。昼は dayLightingParams で別の値）
+  ・fogHalfDistance   霧が半分になる距離（m）       初期値 40（昼 200）
+  ・fogGroundDensity  地面での高さの霧の濃さ（1/m）  初期値 0.015（昼 0）。Q3 で B なら作らない
+  ・fogHeightHalf     高さの霧が半分になる高さ（m）  初期値 1.0
+  LightingParams に置く理由：霧の色は空の色そのもので、昼と夜で値を切り替える仕組み（Day ボタン）がもうあるため
+  どれも見た目を確かめる前の初期値。画面で決めて Copy as C++ で戻す
+
+ 5-4. 半透明の板と霧
+  ・弾痕・砂ぼこり・血（LitQuad.hlsl）は霧のパスの後に描くので、霧が掛からない。40m 先の壁の弾痕だけが霧の中で黒く浮く
+  → LitQuad.hlsl の最後で、同じ Fog.hlsli の関数で霧の色へ寄せる（板は霧のパスの後なので、二重には掛からない）
+  ・マズルフラッシュ（加算）は掛けない（目の前で光る物で、霧はほぼ 0）
+
+================================================================================
+ 6. カラーグレーディング（5-b）
+================================================================================
+ 6-1. 場所
+  Present.hlsl の ACES の直後に gradeColor( 色 ) を 1 つ足す。中身は 0〜1 のリニアの色に順に掛ける
+
+ 6-2. 値と式（Q5 の A。PostProcessParams に足す。初期値はどれも「何も変えない」値）
+  ・temperature（−1〜1。負で青、正で黄）：r に (1 + t × kTemperatureScale)、b に (1 − t × kTemperatureScale) を掛け、
+    明るさ（輝度）が変わらないように割り戻す
+  ・saturation（0〜2。1 でそのまま）：輝度との間を lerp
+  ・contrast（0.5〜2。1 でそのまま）：中間の灰色 0.18 を中心に、0.18 × pow( 色 / 0.18, contrast )
+    （0〜1 の真ん中 0.5 ではなく、リニアの中間の灰色を中心にする。暗い夜の絵が全部つぶれないように）
+  ・shadowsColor / midtonesColor / highlightsColor（色。白でそのまま）：輝度から暗部・中間・明部の重みを出して色に掛ける
+    shadowsEnd（暗部の重みが 0 になる輝度）・highlightsStart（明部の重みが付き始める輝度）の 2 つで境目を決める
+    暗部を青緑・明部を暖色へ寄せる（Graphics_Spec.txt 10-6）
+  ・nightDesaturation（0〜1。0 で無し）：輝度が kNightLuminance より暗い所ほど、彩度を下げる量
+    （人の目は暗い所で色を感じにくくなる。暗部の色ムラを抑え、街灯の暖色だけが色として残る）
+  ・決める順番：色温度 → 彩度 → コントラスト → 暗部・中間・明部 → nightDesaturation（前の値で全体を決めてから細部）
+
+ 6-3. LUT へ置き換えられる作り
+  ・gradeColor は「色 → 色」の関数 1 つにしておく。後で LUT（32³ の色の表）にするときは、gradeColor を表に焼いて、
+    Present.hlsl の呼び出しを「表を読む」に替えるだけ（Graphics_Spec.txt 10-6）
+
+================================================================================
+ 7. ディザ（5-b）
+================================================================================
+  ・linearToSrgb の後（8bit に落とす直前）に、±0.5 段（1/255 の半分）のノイズを足す
+  ・ノイズは Interleaved Gradient Noise（画素の位置だけで決まる式。テクスチャ不要。Jimenez 2014）。フレームごとには動かさない
+    （TAA が無いので、動かすとかえって暗い所がちらつく）
+  ・夜空・霧のなだらかな暗い色の縞（バンディング）を消す。強さは固定（段の大きさで決まる数なので、調整しない）。F6 で ON/OFF だけ
+  ・グレインは入れない（Q6 の A）
+
+================================================================================
+ 8. FXAA（5-c）
+================================================================================
+ 8-1. 作り
+  ・PostProcess に 8bit の中間（RENDER_TARGET_RGBA8・画面の大きさ）を足す。FXAA が ON のとき Present.hlsl はここへ書き、
+    a には輝度（画面の色の rgb から）を入れる（FXAA が近くの輝度を何度も読むので、1 回で済ませる）
+  ・Resource/Shader/Fxaa.hlsl（全画面）が中間を読んでバックバッファへ書く。OFF のときは今と同じく Present.hlsl が直接バックバッファへ
+    （OFF の時間がそのまま「FXAA 無し」の比べる元になる）
+  ・中間はバックバッファと同じ 8bit の画面の色（sRGB の数）のまま持つ。FXAA の中で直さない
+
+ 8-2. 手順（Q7 の A。FXAA 3.11 の Quality 版と同じ流れ）
+  1) 真ん中と上下左右の輝度を読み、一番明るい − 一番暗い（差）を出す。
+     差が max( edgeThresholdMin, 一番明るい × edgeThreshold ) より小さければ、そのまま返す（平らな所。画面の大半はここで終わる）
+  2) 斜めの 4 つも読み、輪郭が横向きか縦向きかを決める
+  3) 輪郭に沿って両方向へ、輝度の差が半分を超える所（輪郭の端）まで探す（探す回数は kSearchSteps。歩幅は先へ行くほど広げる）
+  4) 端までの距離から、輪郭を横切る向きにどれだけずらして読むかを決める（近い方の端ほど大きくずらす）
+  5) 細かい模様（1 画素の点や線）は、周りの輝度の平均との差から別にずらす量を出す（subpixel）。4) と大きい方を使う
+  6) ずらした位置を線形で読んで返す（隣の画素と混ざって、ギザギザがなだらかになる）
+
+ 8-3. 値（PostProcessParams に足す）
+  ・edgeThreshold      輪郭とみなす輝度の差の割合                 初期値 0.125（FXAA の推奨の高い品質）
+  ・edgeThresholdMin   暗い所で輪郭とみなす差の下限                初期値 0.0312（FXAA の推奨で一番細かい値。
+                                                                   夜の絵は暗いので、0.0833 の初期値だと暗い建物の輪郭を飛ばす）
+  ・subpixel           細かい模様をぼかす量（0 で無し、1 で一番強い）  初期値 0.5（FXAA の初期値 0.75 より弱く。1 章のぼけ対策）
+
+================================================================================
+ 9. 調整（F6）と表示
+================================================================================
+  ・F6 → Render：Fog・Color grading・Dither・FXAA の ON/OFF（見比べと計測用。Shadows と同じ並び）
+  ・F6 → Tuning：LightingParams に霧の 3 つ、PostProcessParams にグレーディングと FXAA の値
+  ・G-Buffer の表示に「Fog」（霧の量 a を白黒で。0 が黒）を足す。15m・40m でどれだけ掛かっているかを目で見る
+
+================================================================================
+ 10. 進め方（5-a〜5-d）
+================================================================================
+  5-a  霧（Fog.hlsl・Fog.hlsli・LitQuad.hlsl に霧・LightingParams に 3 つ・F6 の Fog と表示）
+       確かめること：町の奥と端の建物が空へ溶ける（境目に線が出ない）・15m 先のゾンビの輪郭は今と同じに見える・
+       這うゾンビが 10m 先で見える・40m 先の壁の弾痕が霧の中で浮かない
+  5-b  カラーグレーディングとディザ（Present.hlsl・PostProcessParams・F6）
+       確かめること：暗部が青緑・街灯は暖色のまま・夜空と霧のなだらかな所に縞が無い（Dither の ON/OFF で見比べ）・
+       噛まれた赤みは今と同じ赤
+  5-c  FXAA（8bit の中間・Fxaa.hlsl・F6）
+       確かめること：建物の輪郭・車の縁のギザギザが減る・HUD と文字はにじまない・壁の絵がぼけすぎない（subpixel）
+  5-d  計測（11 章）
+  各段の終わりに Debug・Release・Profile の x64 ビルドと、シェーダを fxc で全部コンパイルして確かめる。
+  前の段の画面確認が済んでから次へ進む（Graphics_Spec.txt 15 章）
+
+================================================================================
+ 11. 計測
+================================================================================
+  ・Profile・VSync なし・夜・懐中電灯 ON・F7。同じ起動・同じ場所・同じ向きで、F6 の ON/OFF を続けて録る（段階 4 と同じ）
+  ・GPU の印を足す：「Fog」（霧のパスの後）・「FXAA」（FXAA の後）。グレーディングとディザは gpu.PostProcess の増え方で見る
+  ・Graphics_Spec.txt 13 章の目標（霧・半透明 0.5ms、ToneMap・FXAA 0.5ms。1920×1080）と比べ、技術まとめ 8 章に足す
+  ・手順（2026-10-30。ユーザーが録る。1 本の記録の中で切り替える）
+      Profile・VSync なし・夜・懐中電灯 ON。同じ場所・同じ向き（町の奥が見える向き）で F7 を押し、次の 3 つを約 30 秒ずつ続けて録る
+        A：全部 ON（Fog・Color grading・Dither・FXAA）
+        B：Fog だけ OFF
+        C：Fog を ON に戻し、FXAA だけ OFF
+      分け方：gpu.Fog と gpu.FXAA が ON のときだけ時間が付くので、それぞれの値の大小でフレームを A・B・C に分ける（段階 4 と同じ）
+      霧の重さ   ＝ A と B の差（gpu.Fog と gpuMs。半透明の板の霧の分は gpu.Effects の差）
+      FXAA の重さ ＝ A と C の差（gpu.FXAA と gpuMs）
+      グレーディングとディザの重さ：OFF でも同じ式を通す（何も変えない値を渡すだけ）ので、ON/OFF では測れない。
+        画面全体の固定の処理なので、gpu.PostProcess を段階 4 の記録（20261029_133116。影 ON のフレームの中央値 0.059ms）と比べる
+        （起動も場面も違うが、画面の大きさが同じなら場面にほとんどよらない）
+  ・結果（2026-10-30。Profile・VSync なし・2560×1369・夜・懐中電灯 ON。Profiling/20261030_005938/perf_20261030_010028.csv。
+    gpu.Fog・gpu.FXAA > 0.01ms で分けた。A 34,095・B 39,565・C 39,113 フレーム。B と C の間にあった A の 819 フレームは切り替え中として使わない。
+    同じフォルダの perf_20261030_010235.csv は 1 秒も無い記録なので使わない）
+      霧のパス gpu.Fog 中央値 0.034ms（99% 0.34ms）。FXAA gpu.FXAA 0.048ms（99% 0.19ms）
+      gpu.PostProcess 0.075ms（段階 4 の 0.059ms から +0.016ms ＝ グレーディング＋ディザ＋a に輝度を書く分）
+      GPU 全体の中央値 A 1.040・B 0.982・C 1.000ms（段階 4 の影 ON 0.926ms から +0.11ms。3 つの和 約 0.1ms とほぼ合う）
+      CPU の中央値は A 0.480・B 0.496・C 0.495ms で変わらない（全画面を 1 回描くだけ）
+      霧と関係の無い gpu.Lighting も区間で 0.552〜0.615ms と揺れたので、重さは区間の差ではなく、そのパスの印の時間で言う
+      目標（霧・半透明 0.5ms、ToneMap・FXAA 0.5ms）に余裕あり。技術まとめ 8 章⑨に書いた
+
+================================================================================
+ 12. 参考
+================================================================================
+  ・Inigo Quilez「Better Fog」（高さの霧の式） https://iquilezles.org/articles/fog/
+  ・Microsoft Learn「Fog Formulas (Direct3D 9)」（EXP / EXP2 の形） https://learn.microsoft.com/windows/win32/direct3d9/fog-formulas
+  ・Unity「Shadows Midtones Highlights」（URP） https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@14.0/manual/Post-Processing-Shadows-Midtones-Highlights.html
+  ・Jorge Jimenez「Next Generation Post Processing in Call of Duty: Advanced Warfare」（Interleaved Gradient Noise。SIGGRAPH 2014）
+      https://www.iryoku.com/next-generation-post-processing-in-call-of-duty-advanced-warfare
+  ・Timothy Lottes「FXAA」白書（NVIDIA） https://developer.download.nvidia.com/assets/gamedev/files/sdk/11/FXAA_WhitePaper.pdf
+  ・Simon Rodriguez「Implementing FXAA」（FXAA 3.11 の手順の解説） https://blog.simonrodriguez.fr/articles/2016/07/implementing_fxaa.html
+  ・Krzysztof Narkowicz「ACES Filmic Tone Mapping Curve」（今の ToneMap） https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+  ・タルコフ
+      公式 X（2024-05 霧と薄もやを薄く） https://x.com/tarkov/status/1793653771656155244
+      Forbes「Escape From Tarkov Patch Notes Overhaul Visuals With Fog Removal」
+        https://www.forbes.com/sites/mikestubbs/2024/05/23/escape-from-tarkov-patch-notes-overhaul-visuals-with-fog-removal/
+      NME（Interchange の屋内の霧） https://www.nme.com/news/escape-from-tarkov-patch-fixes-a-long-running-problem-with-interchange-3426371
+      Escape from Tarkov Wiki「Changelog」（0.16.1.3 の霧と AI） https://escapefromtarkov.fandom.com/wiki/Changelog
+      SteamDB「Patch 1.0.2.0」 https://steamdb.info/patchnotes/21864557/
+      Insider Gaming（霧のアンケート） https://insider-gaming.com/escape-from-tarkov-rain-volume-adjust/
+      GGRecon「Escape from Tarkov best settings」（AA・PostFX・Noise の項目） https://www.ggrecon.com/guides/escape-from-tarkov-best-settings-improve-fps-visibility/
+      GamesLikeFinder「Escape From Tarkov Best PostFX & Colour Grading」 https://gameslikefinder.com/article/tarkov-best-postfx-settings-visibility/
+      BetterFPS「Tarkov 1.0.5.0 Best Settings」（TAA と Sharpness） https://betterfps.com/blog/tarkov-1-0-5-0-45464-icebreaker-best-settings-2026
+
+================================================================================
+ 13. 実装で仕様から変えた所（5-a）
+================================================================================
+  ・作ったもの
+      Resource/Shader/Fog.hlsli：fogAmount（霧の量）・fogColor（地平線の色 × 空の明るさ）・applyFog
+      Resource/Shader/Fog.hlsl：霧のパス。空の画素は霧の量 0 を出す（BLEND_LINEAR なので何も変わらない）
+      Resource/Shader/DeferredConstants.hlsli：b1 の定数・kFarDepth・reconstructWorldPosition を DeferredLighting.hlsl から移した（霧と共有）
+      DeferredLighting::drawFog：霧のパスを描く物は別のクラスにせず、DeferredLighting に置いた。
+        深度から位置を戻す定数（射影×ビューの逆）と深度の番号（t5）がライティングと同じで、定数を作る所（setConstants）を共有できるため
+      LightingParams：fogHalfDistance 40m・fogGroundDensity 0.015/m・fogHeightHalf 1m（昼は 200m・0）と fogEnabled()（F6 → Render の Fog）
+      EnvironmentLight に霧の 3 つ。LightList が係数（k = √ln2 / 半分の距離、b = ln2 / 半分の高さ）に直して b2 の gFog（gGround の次）へ
+      G-Buffer の表示に「Fog」（霧の量を白黒で）
+      LitQuad.hlsl：照らした色に applyFog
+  ・霧の ON/OFF は「霧の値を 0 のままライトの一覧へ渡す」で消す。霧のパスは描かず、半透明の板の霧も同じ値なので一緒に消える（板に別の印は要らない）
+  ・高さの霧の高さは、ワールドの y = 0（車道の面。TownMap の kRoadHeight = 0）から測る
+  ・GPU の印「Fog」は Lighting の直後（霧を切っていても打つ。計測の列を揃えるため）
+  ・確かめたこと：シェーダを fxc で全部（最適化あり。警告なし）、Debug / Release / Profile のビルド。画面はユーザーの確認待ち
+
+================================================================================
+ 14. 実装で仕様から変えた所（5-b）
+================================================================================
+  ・作ったもの
+      Present.hlsl：gradeColor（ACES の直後）と interleavedGradientNoise（linearToSrgb の後に ±半段）。PresentConstants の後ろに 20 個足した
+      PostProcessParams：temperature・saturation・nightDesaturation・contrast・shadowsColor / midtonesColor / highlightsColor・
+        shadowsEnd 0.3・highlightsStart 0.55（Unity URP の初期値）。初期値はどれも「何も変えない」
+      colorGradingEnabled()・ditherEnabled()（F6 → Render の Color grading・Dither）
+      PostProcess.cpp の whiteBalance：色温度から r・g・b の倍率を作る（赤 ×(1 + 0.2t)・青 ×(1 − 0.2t) を Rec.709 の輝度で割り戻す）
+  ・グレーディングの ON/OFF は「何も変えない値（PostProcessParams の初期値）を渡す」で切る。シェーダに分かれ道を作らない。
+    ディザの OFF は幅 0
+  ・暗部／中間／明部の重みと、夜の彩度の下げ方は、リニアの輝度ではなく画面の明るさ（輝度を linearToSrgb した数）で測る。
+    夜の絵はリニアの数だとほとんど 0.05 より下で、境目の値が使いにくいため
+  ・彩度の後は負にならないよう 0 で止め、最後に saturate（コントラストを上げると明るい所が 1 を超えるため）
+  ・決める順番（6-2）と値は画面で。決まったら Copy as C++ で PostProcessParams の初期値へ
+  ・確かめたこと：シェーダを fxc で全部（最適化ありで警告なし。-Od の警告 3 件は段階 4 からある物）、Debug / Release / Profile のビルド。
+    初期値のままなら式の上で今と同じ色（白の色・倍率 1・重みの和が 1）。画面はユーザーの確認待ち
+
+================================================================================
+ 15. 実装で仕様から変えた所（5-c）
+================================================================================
+  ・作ったもの
+      Resource/Shader/Fxaa.hlsl：FXAA 3.11 Quality の手順を自分で書いた物（8-2 の 1)〜6)）。輪郭に沿って探すのは 5 回
+        （歩幅 1・1.5・2・4・12 画素。FXAA_QUALITY__PRESET 12 と同じ）
+      PostProcess：8bit の中間 mFxaaInput（RENDER_TARGET_RGBA8・画面の大きさ）・mFxaaShader・drawFxaa。
+        FXAA が ON のときだけ Present.hlsl が中間へ書き、drawFxaa が画面へ写す。OFF のときは今までどおり画面へ直接
+      Present.hlsl：a に画面の色の輝度（Rec.601。ディザを足した後の色から）
+      PostProcessParams：fxaaEdgeThreshold 0.125・fxaaEdgeThresholdMin 0.0312・fxaaSubpixel 0.5 と fxaaEnabled()（F6 → Render の FXAA）
+  ・GPU の印：「PostProcess」と「FXAA」は PostProcess::endScene の中で打つ（写すまで → FXAA）。gpu.PostProcess の意味（ブルームと写す処理）は
+    今までと同じ。GameScene が endScene の後に打っていた印は「GBufferView」に名前を変えた（F6 の G-Buffer の表示の時間。ふだんはほぼ 0）
+  ・確かめたこと：シェーダを fxc で全部（Fxaa.hlsl は最適化あり・-Od とも警告なし）、Debug / Release / Profile のビルド。画面はユーザーの確認待ち

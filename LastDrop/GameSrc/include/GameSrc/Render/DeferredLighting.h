@@ -10,13 +10,17 @@ class GBuffer;
 
 // G-Buffer に描いた中身のどれを画面に出すか（GBuffer_Plan.txt 8-2）。番号は Resource/Shader/DeferredLighting.hlsl と揃える。
 enum class GBufferView{
-	Final,     // いつもの絵（描き方は RenderPath で決まる）
+	Final,     // いつもの絵（ライティングした色）
 	Albedo,    // RT0 の色
 	Normal,    // RT1 の法線（-1〜1 を 0〜1 の色に）
-	Specular,  // RT2 のスペキュラの色
-	Sharpness, // RT1 a の鋭さ（灰色。kSharpnessViewMax で白）
+	Roughness, // RT2 g の粗さ（灰色。0 黒＝つるつる・1 白＝ざらざら）
+	Metallic,  // RT2 b の金属（0 黒・1 白）
+	Emission,  // RT2 a の発光の強さ（0〜1 のまま）
 	Depth,     // 目からの距離（灰色。kDepthViewRange で白）
 	Position,  // 深度から戻したワールドの位置の小数部（1m の格子）
+	Cascade,   // 月の影のどの枚を使っているか（1 枚目 赤・2 枚目 緑・3 枚目 青・範囲の外は色なし。Shadow_Plan.txt 9 章）
+	ShadowMaps, // 影のマップ 4 枚を画面を 4 つに分けて（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目。光に近いほど黒）
+	Fog,       // 霧の量（0 黒〜1 白。空は黒。NightFinish_Plan.txt 9 章）
 	Count,
 };
 // エディタ（F6 の Render）に出す名前。
@@ -24,16 +28,10 @@ const char* gbufferViewName( GBufferView );
 // 起動中ずっと 1 つの表示の選択（F6 で書き換える。Release では Final のまま）。
 GBufferView& gbufferView();
 
-// いつもの絵をどちらの描き方で描くか（GBuffer_Plan.txt 8-1）。フォワードは段階 3 の画面確認まで、見比べと計測のために残す。
-enum class RenderPath{
-	Deferred, // G-Buffer へ描いてから、全画面 1 回でライティングする
-	Forward,  // 描いたその場で色を出す（2-a までの描き方）
-};
-// 起動中ずっと 1 つの描き方の選択（F6 で書き換える。Release では Deferred のまま）。
-RenderPath& renderPath();
-
-// G-Buffer を読んで画面を作る全画面のパス（シェーダは Resource/Shader/DeferredLighting.hlsl）。仕様は GBuffer_Plan.txt 7・8 章。
-// ライティング（drawLighting。今の描き方と同じ式でシーンの色を出す）と、G-Buffer の中身の表示（drawView）の 2 つ。
+// G-Buffer と深度を読んで画面を作る全画面のパス（シェーダは Resource/Shader/DeferredLighting.hlsl・Fog.hlsl）。
+// 仕様は GBuffer_Plan.txt 7・8 章、PBR の式は PbrNightLighting_Plan.txt 4 章、霧は NightFinish_Plan.txt 5 章。
+// ライティング（drawLighting。PBR の式でシーンの色を出す）・霧（drawFog）・G-Buffer の中身の表示（drawView）の 3 つ。
+// 霧もここに置くのは、深度から位置を戻す定数（射影×ビューの逆）と深度の番号がライティングと同じだから。
 // 作るのは Graphics::Manager ができた後（シーンの中）。
 class DeferredLighting{
 public:
@@ -41,22 +39,28 @@ public:
 	DeferredLighting( const DeferredLighting& ) = delete;
 	DeferredLighting& operator=( const DeferredLighting& ) = delete;
 
-	// G-Buffer と深度を読み、今と同じ式で照らした色を今の描画先（シーンの色）へ描く。何も描かれていない画素は触らない。
+	// G-Buffer と深度を読み、PBR の式で照らした色を今の描画先（シーンの色）へ描く。何も描かれていない画素には空を描く（ライトの一覧の空の色）。
 	// 描画先に depth を付けたまま呼ばないこと（同じ深度を描画先とシェーダの両方には付けられない。PostProcess::bindSceneColor）。
-	// ライト・目の位置は Graphics::Manager に設定済みの物（GameScene::setupLights・カメラ）をそのまま読む。
+	// ライト・空・環境光は付けてあるライトの一覧（LightList::bind。b2）、目の位置は Graphics::Manager に設定済みの物（カメラ）を読む。
 	void drawLighting( const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+	// 深度を読み、霧の色を霧の量の割合で今の描画先（シーンの色）へ混ぜる。drawLighting の直後、同じ描画先のまま呼ぶ。
+	// 霧の値と色は付けてあるライトの一覧（b2）から読む。空の画素は変えない。
+	void drawFog( GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	// view（Final 以外）を、今の描画先へ全画面で写す。ToneMap を通さず中身の数のまま見るため、PostProcess::endScene の後
 	// （描画先が画面に戻った後）に呼ぶ。depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
 	void drawView( GBufferView view, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& projectionView );
-	// シェーダのコンパイルエラー。問題が無ければ空文字列。
+	// シェーダのコンパイルエラー（ライティングのシェーダ → 霧のシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
 	const char* errorMessage() const;
 
 private:
+	// view と、深度から位置を戻す逆行列を定数に入れて b1 に付ける（3 つのパスの共通部分）。
+	void setConstants( GBufferView view, const GameLib::Math::Matrix44& projectionView );
 	// view を定数に入れ、G-Buffer と深度を付けて全画面を 1 回描く（drawLighting と drawView の共通部分）。
 	void drawFullScreen( GBufferView view, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& projectionView );
-	GameLib::Graphics::Shader mShader;
+	GameLib::Graphics::Shader mShader;    // ライティングと G-Buffer の表示（DeferredLighting.hlsl）
+	GameLib::Graphics::Shader mFogShader; // 霧（Fog.hlsl）
 	GameLib::Graphics::ConstantBuffer mConstants;
 };
 

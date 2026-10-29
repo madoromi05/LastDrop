@@ -7,6 +7,8 @@
     "center_origin": true,
     "mesh_texture": "Resource/road_albedo.tga",
     "material_params": {
+        "roughness": 0.9,
+        "metallic": 0.0,
         "specular": [0.02, 0.02, 0.02],
         "sharpness": 8.0
     }

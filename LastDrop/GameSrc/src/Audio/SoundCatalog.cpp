@@ -97,6 +97,7 @@ namespace{
 		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
+		{ "flashlight_click",  kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

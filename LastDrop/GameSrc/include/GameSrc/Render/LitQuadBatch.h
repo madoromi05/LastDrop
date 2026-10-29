@@ -6,6 +6,7 @@
 #include "GameLib/Graphics/Texture.h"
 #include "GameLib/Graphics/Vertex.h"
 #include "GameLib/Graphics/VertexBuffer.h"
+#include "GameLib/Graphics/Shader.h"
 #include <vector>
 
 // 板に貼る絵の範囲（UV。絵の左上が 0,0、右下が 1,1）。既定は絵 1 枚まるごと。
@@ -18,13 +19,14 @@ struct QuadUv{
 };
 
 // 絵を貼った四角い板を決まった数までためて、1回で描く。照らし方は作るときに決める（Mode）。
-// MODE_LIT: 壁や地面と同じライティング（ピクセル単位）で、半透明（絵のアルファ×頂点の色のアルファ）で描く。
-//           弾痕（面に貼る板）と着弾の砂ぼこり・血しぶき（画面に平行な板）が使う。反射のツヤは付けない（粉や穴は光らないため）。
+// MODE_LIT: 壁や地面と同じライトの一覧（LightList。b2）で照らし、半透明（絵のアルファ×頂点の色のアルファ）で描く。
+//           シェーダは Resource/Shader/LitQuad.hlsl（粗さ 1・金属 0 の面。粉や穴は光らないため）。
+//           弾痕（面に貼る板）と着弾の砂ぼこり・血しぶき（画面に平行な板）が使う。
 // MODE_GLOW: ライト無しで、後ろに足して（加算）描く。自分で光る物（マズルフラッシュ）が使う。
 //            明るさは 絵の色×頂点の色×アルファ×明るさの倍率（setBrightness）。足すだけなので、黒は透明と同じになり、
 //            板どうしの描く順番も気にしなくてよい。
 // どちらも奥行きは読むが書かない。PrimitiveRenderer はライトを必ず切って描くので、照らす板には使えない（光る板もここで揃える）。
-// ライト（環境光・太陽・補助光）の値は持たない。シーンが先に設定した値（GameScene::setupLights）でそのまま照らされる。
+// ライトの値は持たない。シーンが先に付けたライトの一覧（GameScene::setupLights → LightList::bind）でそのまま照らされる。
 // 半透明の板は、目の位置を渡して描くと奥から順に並べ替えて描く（Z ソート。EffectFlipbook_Plan.txt の 3 章）。
 // 奥行きを書かないので、手前の板を先に描くと、後から描いた奥の板が手前の板の上に重なって見えるため。
 // 使い方: add を何回か → draw を、1フレームに1回。
@@ -52,7 +54,7 @@ public:
 	// ブルーム（Graphics_Spec.txt 10-4）が入ると、1 を超えた所が光としてにじむ。0 以上。
 	void setBrightness( float brightness );
 	// ためた板を texture で描き、ためた板を捨てる。板が無ければ何もしない。
-	// 物を描いた後、ライトを設定した後に、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
+	// 物を描いた後、ライトの一覧を付けた後（LightList::bind〜unbind の間）に、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
 	// texture: 読み込み済み（isReady）であること。projectionView: カメラの射影×ビュー行列。
 	// eye: 目の位置（ワールド）。渡すと板を目から遠い順に並べ替えて描く（半透明の板どうしの重なりを正しくする）。
 	//      nullptr ならためた順のまま（加算の板・壁に貼った弾痕のように、順番が見た目に効かない物）。
@@ -66,6 +68,7 @@ private:
 	void copySortedFromBack( const GameLib::Math::Vector3& eye, GameLib::Graphics::Vertex* locked );
 
 	GameLib::Graphics::VertexBuffer mVertexBuffer;       // 描くときに mVertices を写す先（毎フレーム中身を入れ替える）
+	GameLib::Graphics::Shader mLitShader;                // MODE_LIT だけ（Resource/Shader/LitQuad.hlsl）。MODE_GLOW は固定パイプラインのまま
 	std::vector< GameLib::Graphics::Vertex > mVertices;  // ためた板の頂点（ワールド座標）。draw で空になる
 	std::vector< GameLib::Math::Vector3 > mCenters;      // ためた板の中心（並べ替えの奥行きに使う）。mVertices と同じく draw で空になる
 	std::vector< int > mOrder;                           // 並べ替えた板の番号（毎回作り直す。確保し直さないよう持っておく）

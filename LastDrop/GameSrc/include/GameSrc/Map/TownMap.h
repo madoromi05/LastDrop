@@ -70,6 +70,9 @@ public:
 	// 東西・南北に隣り合って道でつながった交差点の組。
 	const std::vector< TownPlacement >& junctions() const;
 	const std::vector< StreetLink >& streetLinks() const;
+	// 街灯の置き場所（足元。高さ 0 の道の中心。向きは使わない）。今は交差点ごとに 1 本（PbrNightLighting_Plan.txt 8 章・Q4）。
+	// 光の高さ・届く距離・色・強さは LightingParams が決め、光を作るのはシーン（柱の模型はまだ無い）。
+	const std::vector< TownPlacement >& streetLights() const;
 
 private:
 	std::vector< TownTile > mGroundTiles;
@@ -84,6 +87,7 @@ private:
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;
 	std::vector< StreetLink > mStreetLinks;
+	std::vector< TownPlacement > mStreetLights;
 };
 
 #endif

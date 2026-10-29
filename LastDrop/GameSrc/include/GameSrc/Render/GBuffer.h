@@ -4,6 +4,7 @@
 #include "GameLib/Graphics/RenderTarget.h"
 #include "GameLib/Graphics/DepthTarget.h"
 #include "GameLib/Graphics/Shader.h"
+#include "GameLib/Graphics/ConstantBuffer.h"
 
 // G-Buffer（ディファードで、色を出す前の面の情報を画面ぶん持つ描画先）。仕様は SummaryPlan/個別仕様/GBuffer_Plan.txt 4・6 章。
 // 3 枚の並び（何をどの形式で持つか）は Resource/Shader/GBuffer.hlsli に書いてあり、形式はここと揃える。
@@ -25,14 +26,15 @@ public:
 
 	const GameLib::Graphics::RenderTarget& albedo() const;   // RT0
 	const GameLib::Graphics::RenderTarget& normal() const;   // RT1
-	const GameLib::Graphics::RenderTarget& specular() const; // RT2
+	const GameLib::Graphics::RenderTarget& material() const; // RT2（AO・粗さ・金属・発光）
 	// 静的メッシュのシェーダのコンパイルエラー。問題が無ければ空文字列。
 	const char* errorMessage() const;
 
 private:
 	static const int kTargetNumber = 3;
-	GameLib::Graphics::RenderTarget mTargets[ kTargetNumber ]; // RT0 色・RT1 法線と鋭さ・RT2 スペキュラの色
+	GameLib::Graphics::RenderTarget mTargets[ kTargetNumber ]; // RT0 色・RT1 法線・RT2 AO と粗さと金属と発光
 	GameLib::Graphics::Shader mStaticMeshShader;               // Resource/Shader/StaticMeshGBuffer.hlsl
+	GameLib::Graphics::ConstantBuffer mSurfaceConstants;       // 次に描く物の材質値（RenderPass::setSurface が書き換える）
 };
 
 #endif

@@ -102,6 +102,10 @@ public:
 	bool dryFiredThisTick() const;	// 直前の update で、弾倉が空のまま引き金を引いたか（空撃ちの音を鳴らす側が読む）
 	bool isReloading() const;		// リロード中か
 	WeaponReload::Cue reloadCueThisTick() const;	// 直前の update で来たリロードの合図（弾倉を抜く・挿す・槓桿。音を鳴らす側が読む）
+	// 銃の懐中電灯（PbrNightLighting_Plan.txt 9 章）。T で付ける／消す。銃に付いているので、照らす位置と向きは muzzle の値。
+	// 付けたまま銃をしまうと、muzzle が false の間は照らさない（付けた状態は残り、出すとまた照らす）。
+	bool isFlashlightOn() const;
+	bool flashlightToggledThisTick() const; // 直前の update で付けた／消したか（スイッチの音を鳴らす側が読む）
 	int magazineRounds() const;	// 弾倉に入っている弾の数
 	// 銃口の今の位置（ワールド）と向き（長さ1）。マズルフラッシュを描く側が描くたびに読む。
 	// 銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）。
@@ -172,6 +176,8 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mReloadPose; // 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
 	bool mDryFiredThisTick;    // 直前の update で空撃ちしたか
 	bool mDryFireLatched;      // 空撃ちした後、まだ引き金を離していないか（離すまで次の空撃ちをしない）
+	bool mFlashlightOn;        // 銃の懐中電灯が付いているか（始めは消えている）
+	bool mFlashlightToggledThisTick; // 直前の update で付けた／消したか
 	//無敵モードの判定
 	bool mInvincible = false;
 	CharacterMover mMover;    // 当たりながら滑って進む移動

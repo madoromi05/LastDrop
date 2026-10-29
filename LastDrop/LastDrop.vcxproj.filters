@@ -609,6 +609,9 @@
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
@@ -649,6 +652,18 @@
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\RenderPass.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\LightList.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\LightingParams.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\ShadowMap.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
@@ -1433,6 +1448,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
@@ -1506,6 +1524,21 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LightList.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LightingParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowMap.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\CascadedShadowMap.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
@@ -1886,9 +1919,18 @@
     <None Include="Resource\Shader\SkinnedMesh.hlsl" />
     <None Include="Resource\Shader\Skinning.hlsli" />
     <None Include="Resource\Shader\GBuffer.hlsli" />
+    <None Include="Resource\Shader\Pbr.hlsli" />
+    <None Include="Resource\Shader\LightList.hlsli" />
+    <None Include="Resource\Shader\LitQuad.hlsl" />
+    <None Include="Resource\Shader\StaticMeshShadow.hlsl" />
+    <None Include="Resource\Shader\SkinnedMeshShadow.hlsl" />
     <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\DeferredLighting.hlsl" />
+    <None Include="Resource\Shader\DeferredConstants.hlsli" />
+    <None Include="Resource\Shader\Fog.hlsli" />
+    <None Include="Resource\Shader\Fog.hlsl" />
+    <None Include="Resource\Shader\Fxaa.hlsl" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

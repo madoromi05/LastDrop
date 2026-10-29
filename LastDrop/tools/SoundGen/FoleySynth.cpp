@@ -50,6 +50,25 @@ namespace{
 	const float kAimInPeak = 0.5f;
 	const float kAimOutPeak = 0.4f;
 
+	// ── 銃の懐中電灯のスイッチ ──
+	// 押しボタンのスイッチ「カチッ」。押し込む音と、指を離して戻る音の 2 つ（戻る方が小さく少し高い）。
+	// どちらも高い帯域の短いノイズ（樹脂がはじける）と、小さな樹脂の筐体の短い響きでできている。
+	// 金属の響き（着弾音の kMetalModes）より高く短く、空撃ちの「カチッ」（録音）より軽い音にする。
+	const float kClickLength = 0.12f;
+	const float kReleaseDelay = 0.045f;		// 押してから戻るまで（秒）。揺らぎごとに少し変える
+	const float kReleaseDelayJitter = 0.01f;
+	struct ClickRecipe{ float centerHz, q, attack, decay, gain, modeGain; };
+	const ClickRecipe kPressClick = { 4500.f, 1.2f, 0.0005f, 0.004f, 1.0f, 0.35f };
+	const ClickRecipe kReleaseClick = { 5500.f, 1.2f, 0.0005f, 0.003f, 0.55f, 0.2f };
+	const Mode kSwitchModes[] = { { 2300.f, 0.012f, 1.0f }, { 3700.f, 0.008f, 0.6f } };
+	const int kSwitchModeCount = sizeof( kSwitchModes ) / sizeof( kSwitchModes[ 0 ] );
+	const float kClickPeak = 0.6f;
+
+	void addClick( Buffer* buffer, float start, const ClickRecipe& recipe, Random* random ) {
+		addNoiseHit( buffer, start, recipe.attack, recipe.decay, recipe.centerHz, recipe.q, recipe.gain, random );
+		addModes( buffer, start, kSwitchModes, kSwitchModeCount, recipe.modeGain );
+	}
+
 	void addSwish( Buffer* buffer, const SwishRecipe& recipe, Random* random ) {
 		addNoiseSweep( buffer, recipe.start, recipe.duration, recipe.fromHz, recipe.toHz, recipe.q, recipe.gain, random );
 	}
@@ -94,4 +113,12 @@ Buffer makeAimOut( Random* random ) {
 	Buffer buffer = makeBuffer( kAimLength );
 	addSwish( &buffer, kAimOutSwish, random );
 	return finish( buffer, kAimOutPeak );
+}
+
+Buffer makeFlashlightClick( Random* random ) {
+	Buffer buffer = makeBuffer( kClickLength );
+	addClick( &buffer, 0.f, kPressClick, random );
+	float release = kReleaseDelay + random->range( -kReleaseDelayJitter, kReleaseDelayJitter );
+	addClick( &buffer, release, kReleaseClick, random );
+	return finish( buffer, kClickPeak );
 }

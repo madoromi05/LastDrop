@@ -6,6 +6,9 @@
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Core/FixedStepClock.h"
 #include "GameSrc/Render/DeferredLighting.h"
+#include "GameSrc/Render/LightingParams.h"
+#include "GameSrc/Render/PostProcessParams.h"
+#include "GameSrc/Render/ShadowParams.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -64,15 +67,34 @@ namespace{
 			graphics.setVSync( vsync );
 		}
 		ImGui::TextDisabled( "Turn VSync off to see CPU / GPU bound." );
-		// いつもの絵の描き方（GBuffer_Plan.txt 8-1）。同じ場面で切り替えて、絵と GPU の時間を見比べる。
-		RenderPath& path = renderPath();
-		bool deferred = ( path == RenderPath::Deferred );
-		if ( ImGui::Checkbox( "Deferred", &deferred ) ) {
-			path = deferred ? RenderPath::Deferred : RenderPath::Forward;
+		// 町全体の光を昼・夜の値へ入れ替える（PbrNightLighting_Plan.txt 11 章。見比べ・不具合探し用。遊びは夜）。
+		// 細かい値は Tuning の LightingParams で動かす。
+		if ( ImGui::Button( "Night" ) ) {
+			lightingParams() = LightingParams();
 		}
 		ImGui::SameLine();
-		ImGui::TextDisabled( deferred ? "(G-Buffer + lighting pass)" : "(forward)" );
-		// G-Buffer の中身の表示（GBuffer_Plan.txt 8-2）。Final 以外を選ぶと、描き方に関わらず G-Buffer へ描いて中身を画面に出す。
+		if ( ImGui::Button( "Day" ) ) {
+			lightingParams() = dayLightingParams();
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(lighting preset)" );
+		// 影を描くか（Shadow_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Shadow）を見比べる。
+		ImGui::Checkbox( "Shadows", &shadowsEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(flashlight + moon cascades)" );
+		// 霧を掛けるか（NightFinish_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる。
+		ImGui::Checkbox( "Fog", &fogEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(distance + height)" );
+		// カラーグレーディングとディザ（NightFinish_Plan.txt 9 章）。値は Tuning の PostProcessParams。縞は Dither を切ると見える。
+		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
+		ImGui::SameLine();
+		ImGui::Checkbox( "Dither", &ditherEnabled() );
+		// FXAA（NightFinish_Plan.txt 8・9 章）。値は Tuning の PostProcessParams（fxaa〜）。切ると今までどおり画面へ直接写す。
+		ImGui::Checkbox( "FXAA", &fxaaEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(edges: buildings, car)" );
+		// G-Buffer の中身の表示（GBuffer_Plan.txt 8-2）。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す。
 		GBufferView& view = gbufferView();
 		if ( ImGui::BeginCombo( "G-Buffer", gbufferViewName( view ) ) ) {
 			for ( int i = 0; i < static_cast< int >( GBufferView::Count ); ++i ) {

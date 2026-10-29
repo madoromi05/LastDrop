@@ -361,6 +361,8 @@ TownMap::TownMap() :
 
 	addZombieSpawnPoints( &mZombieSpawnPoints );
 	addStreetGraph( &mJunctions, &mStreetLinks );
+	// 街灯は交差点ごとに 1 本（道の途中にも置くと明るくなりすぎ、選ぶ数も増える。PbrNightLighting_Plan.txt Q4）。
+	mStreetLights = mJunctions;
 	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
 		mFuelSpawnPoints.push_back( toPlacement( spot ) );
 	}
@@ -412,4 +414,8 @@ const std::vector< TownPlacement >& TownMap::junctions() const {
 
 const std::vector< StreetLink >& TownMap::streetLinks() const {
 	return mStreetLinks;
+}
+
+const std::vector< TownPlacement >& TownMap::streetLights() const {
+	return mStreetLights;
 }

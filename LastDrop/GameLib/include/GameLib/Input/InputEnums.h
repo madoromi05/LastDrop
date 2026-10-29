@@ -52,11 +52,12 @@ enum class WorkId
     DebugRecordPerf, // 計測の CSV の記録を始める／止める（押した瞬間。Debug・Profile ビルドだけで効く）
     UiLeft,   // 選んでいる部品（音量のスライダーなど）の値を下げる（押した瞬間）
     UiRight,  // 選んでいる部品の値を上げる（押した瞬間）
+    Flashlight, // 銃の懐中電灯を付ける／消す（押した瞬間。Escape from Tarkov のタクティカルデバイスと同じ T）
 };
 
 // WorkId の数（全部の操作を順に見るとき用。計測の印など）。
 // WorkId を末尾に足したら、ここの最後の WorkId も足した物に直すこと。
-constexpr int kWorkIdCount = static_cast< int >( WorkId::UiRight ) + 1;
+constexpr int kWorkIdCount = static_cast< int >( WorkId::Flashlight ) + 1;
 
 // コレクター（シーン別の入力割り当てグループ）種別
 enum class CollectorId

@@ -25,6 +25,8 @@
     "mesh_texture": "Resource/rifle_albedo.tga",
     "mesh_normalmap": "Resource/rifle_normal.tga",
     "material_params": {
+        "roughness": 0.5,
+        "metallic": 0.0,
         "specular": [
             0.15,
             0.15,

@@ -13,6 +13,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
+	const char* kLitShaderFile = "Resource/Shader/LitQuad.hlsl";
+
 	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか。
 	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）。
 	const int kQuadCorners = 4;
@@ -47,6 +49,9 @@ LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode ) :
 	mMode( mode ),
 	mBrightness( kDefaultBrightness ) {
 	ASSERT( quadCapacity > 0 && "LitQuadBatch : quadCapacity must be positive." );
+	if ( mode == MODE_LIT ) {
+		mLitShader = Graphics::Shader::create( kLitShaderFile );
+	}
 	mVertices.reserve( mVertexCapacity );
 	mCenters.reserve( quadCapacity );
 	mOrder.reserve( quadCapacity );
@@ -117,7 +122,7 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 		m.setLightingMode( Graphics::LIGHTING_NONE );   // 自分で光るので、ライトの当たり方で暗くしない
 		m.setBlendMode( Graphics::BLEND_ADDITIVE );     // 後ろの色に、絵の色×アルファを足す
 	} else {
-		m.setLightingMode( Graphics::LIGHTING_PER_PIXEL ); // 壁や地面（MeshMaterial）と同じ照らし方
+		m.setShader( mLitShader );                         // 壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）
 		m.setBlendMode( Graphics::BLEND_LINEAR );          // 絵のアルファで後ろと混ぜる
 	}
 	Vector3 diffuse;
@@ -133,6 +138,7 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.draw( 0, static_cast< int >( mVertices.size() ) / kVerticesPerTriangle );
 
 	// 物を描くときの設定へ戻す（GameScene::setupLights と同じ）。
+	m.setShader( Graphics::Shader() ); // 後から描く物（固定パイプライン）に残さない
 	m.setBlendMode( Graphics::BLEND_OPAQUE );
 	m.enableDepthWrite( true );
 	mVertices.clear();

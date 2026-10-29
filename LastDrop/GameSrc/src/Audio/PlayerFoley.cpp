@@ -33,6 +33,7 @@ namespace{
 	const float kMagazineOutVolume = 0.45f;
 	const float kMagazineInVolume = 0.5f;
 	const float kBoltPullVolume = 0.5f;
+	const float kFlashlightClickVolume = 0.4f; // 空撃ちの「カチッ」（0.6）より小さい。手元の小さなスイッチ
 
 	// ── 一歩ごとの音の大きさ（Gait の順）──
 	// 装備（銃を持っている間だけ）は走ると大きく揺れる。
@@ -93,6 +94,9 @@ void PlayerFoley::playWeaponHandling( const FoleyState& state ) {
 	}
 	if ( state.boltPulled ) {
 		mAudio->play( SOUND_BOLT_PULL, AudioEngine::BUS_EFFECT, state.bodyPosition, kBoltPullVolume );
+	}
+	if ( state.flashlightToggled ) {
+		mAudio->play( SOUND_FLASHLIGHT_CLICK, AudioEngine::BUS_EFFECT, state.bodyPosition, kFlashlightClickVolume );
 	}
 }
 

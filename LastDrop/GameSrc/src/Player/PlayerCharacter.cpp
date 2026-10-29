@@ -121,9 +121,11 @@ namespace{
 	// 骨格は cm（根に 0.01 倍が入っている）、銃は m なので、骨の空間では銃を100倍して等倍に戻す。
 	const float kWeaponScaleInBone = 100.f;
 	// 覗いたときに目を置く点（銃のモデル座標。m）。AKM のサイト線（リアサイト z≈0.05 → フロントサイト z≈0.43、
-	// どちらも上端 y≈1.597）を、頂点の上端の並びから求め、ほお付けの位置まで後ろへ延ばした所。
-	// 目の前のリアサイトが大きく見えすぎる・機関部が視界を塞ぐなら z を、サイトが上下にずれるなら y を調整する。
-	const Vector3 kSightEyeOnWeapon( 0.f, 1.600f, -0.12f );
+	// どちらも上端 y≈1.597）を、頂点の上端の並びから求め、ほお付けの位置（銃床の上）まで後ろへ延ばした所。
+	// z は、カメラの近い方の面（目の 5cm 先。FirstPersonCamera の kNearClip）が機関部（上端 y≈1.59）に掛からない所にする。
+	// 掛かると面で切れて銃の中が見える。-0.28 なら面は z=-0.23（上端 y≈1.545）で、覗いた視野角 45 度の面の下端（y≈1.579）より 3.4cm 低い。
+	// サイトが上下にずれるなら y を調整する（z を前へ戻すと、また機関部が切れる）。
+	const Vector3 kSightEyeOnWeapon( 0.f, 1.600f, -0.28f );
 	// 銃を支える手。どのアニメでも、この手の骨が銃の上の決まった点に来るよう右手首を曲げる（FirstPersonBody）。
 	const char* kSupportHandBone = "mixamorig:LeftHand";
 	// 持ち方（kGripInHand など）を合わせたアニメと時刻。このポーズで左手が銃のどこにあるかを「左手の来るべき点」にする。
@@ -191,6 +193,8 @@ const Vector3& position, float angleY ) :
 	mReloadArms( data, kReloadAnimation ),
 	mDryFiredThisTick( false ),
 	mDryFireLatched( false ),
+	mFlashlightOn( false ),
+	mFlashlightToggledThisTick( false ),
 	mMover( world, this ), // this は覚えるだけ（位置を読むのは move のとき＝構築の後）
 	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
 	mHitboxLayout( data, kBoneNamePrefix ),
@@ -273,6 +277,11 @@ void PlayerCharacter::update( const PlayerCommand& requested, float cameraYaw, f
 	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）。
 	mStance.update( command.holsterPressed, command.aimHeld && !mReload.isActive(), wantsRun );
 	updateReload( command, inventory );
+	// 懐中電灯は銃に付いているので、銃を持っていれば（しまっていても・リロード中でも）付け外しできる。
+	mFlashlightToggledThisTick = command.flashlightPressed && mWeapon;
+	if ( mFlashlightToggledThisTick ) {
+		mFlashlightOn = !mFlashlightOn;
+	}
 	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る。
 	// リロード中も走らない（弾倉を替えながら歩くだけ。バイオハザードと同じ）。
 	bool running = wantsRun && !mStance.isAiming() && !mReload.isActive();
@@ -438,6 +447,14 @@ WeaponReload::Cue PlayerCharacter::reloadCueThisTick() const {
 	return mReload.cueThisTick();
 }
 
+bool PlayerCharacter::isFlashlightOn() const {
+	return mFlashlightOn;
+}
+
+bool PlayerCharacter::flashlightToggledThisTick() const {
+	return mFlashlightToggledThisTick;
+}
+
 int PlayerCharacter::magazineRounds() const {
 	return mMagazine.rounds();
 }
@@ -496,6 +513,7 @@ PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) co
 		allowed.aimHeld = false;
 		allowed.fireHeld = false;
 		allowed.reloadPressed = false;
+		allowed.flashlightPressed = false;
 		return allowed;
 	}
 	if ( mHeld ) {

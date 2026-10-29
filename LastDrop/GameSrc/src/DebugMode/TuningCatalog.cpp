@@ -10,6 +10,8 @@
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
+#include "GameSrc/Render/LightingParams.h"
+#include "GameSrc/Render/ShadowParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -80,6 +82,12 @@ namespace{
 		// 露出・ブルーム（リニア化の後に合わせ直す値。LinearToneMap_Plan.txt 7 章）。
 		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
 			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );
+		// 月・空・環境光（夜の暗さ。PbrNightLighting_Plan.txt 7・11 章）。昼との切り替えは F6 → Render の Day / Night。
+		groups.push_back( std::make_unique< TuningGroup< LightingParams > >(
+			"Lighting", "LightingParams", "GameSrc/Render/LightingParams.h", &lightingParams ) );
+		// 影を読む位置のずらし・影の濃さ（Shadow_Plan.txt 7・9 章）。
+		groups.push_back( std::make_unique< TuningGroup< ShadowParams > >(
+			"Shadow", "ShadowParams", "GameSrc/Render/ShadowParams.h", &shadowParams ) );
 		return groups;
 	}
 

@@ -189,5 +189,6 @@ bool InputUiLeft(int playerId)   { return Pad::instance()->isTriggered(WorkId::U
 bool InputUiRight(int playerId)  { return Pad::instance()->isTriggered(WorkId::UiRight, playerId); }
 bool InputInteract(int playerId) { return Pad::instance()->isTriggered(WorkId::Interact, playerId); }
 bool InputReload(int playerId)   { return Pad::instance()->isTriggered(WorkId::Reload, playerId); }
+bool InputFlashlight(int playerId) { return Pad::instance()->isTriggered(WorkId::Flashlight, playerId); }
 bool InputDebugInvincible(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugInvincible, playerId); }
 bool InputDebugRecordPerf(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugRecordPerf, playerId); }

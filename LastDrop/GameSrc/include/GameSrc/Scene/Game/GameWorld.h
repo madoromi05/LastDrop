@@ -95,6 +95,10 @@ public:
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
 	void draw( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
+	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
+	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。frustum：光の側から見た映る範囲（建物・置物を間引く）。
+	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
+	void drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const;
 	// 弾痕を描く。draw の後、同じ描画先で呼ぶ（壁の奥行きで隠すため）。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
@@ -110,8 +114,8 @@ public:
 	// 銃口の位置は、描くたびに自キャラの今の銃から取り直す。引数は drawImpactDust と同じ。
 	void drawMuzzleFlash( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection );
 	// 撃った瞬間に銃口の前に灯す点光源。光っていない・自キャラが銃を構えていなければ false（out は変えない）。
-	// シーンがライトを設定するときに読む。out: nullptr 不可。
-	bool muzzleLight( MuzzleFlash::Light* out ) const;
+	// シーンがライトの一覧（LightList）を作るときに読む。out: nullptr 不可。
+	bool muzzleLight( LightSource* out ) const;
 
 	// 歩いて追ってくるゾンビを1体出す（place で町に置くのと同じ決まり。倒れ方は体ごとにランダム）。
 	// update の外（ティックの間）で呼ぶ（ゾンビの名簿をたどっている最中に増やさない）。

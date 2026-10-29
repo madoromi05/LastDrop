@@ -19,6 +19,8 @@
     "resource_root": "../..",
     "texture_export_size": 2048,
     "material_params": {
+        "roughness": 0.7,
+        "metallic": 0.0,
         "specular": [0.04, 0.04, 0.04],
         "sharpness": 16.0,
         "normalstrength": 0.6

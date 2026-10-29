@@ -160,6 +160,12 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 	}
 	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
 }
+
+void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCamera& camera ) {
+	if ( mShowZombieHealth ) {
+		mLightDrawer.draw( lights, camera.projectionViewMatrix() );
+	}
+}
 #endif
 
 #ifdef ZF_EDITOR

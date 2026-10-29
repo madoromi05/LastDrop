@@ -29,6 +29,7 @@ public:
 		bool magazineOut;	// このフレームに弾倉を抜いたか（リロード）
 		bool magazineIn;	// このフレームに弾倉を挿したか（リロード）
 		bool boltPulled;	// このフレームに槓桿を引いたか（リロード）
+		bool flashlightToggled;	// このフレームに銃の懐中電灯を付けた／消したか
 	};
 
 	// audio: 鳴らす先。所有権は受け取らない。この係より長く生きていること。
@@ -40,7 +41,7 @@ public:
 private:
 	// 状態の切り替わりで鳴らす音（出し入れ・覗く）。
 	void playTransitions( const FoleyState& state );
-	// 空撃ち・リロードの音（合図の来たフレームに1回）。
+	// 空撃ち・リロード・懐中電灯のスイッチの音（合図の来たフレームに1回）。
 	void playWeaponHandling( const FoleyState& state );
 	// 一歩ごとの音（装備）。
 	void playStep( const FoleyState& state );

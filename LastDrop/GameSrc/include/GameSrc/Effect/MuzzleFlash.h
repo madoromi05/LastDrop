@@ -3,6 +3,7 @@
 
 #include "GameSrc/Render/LitQuadBatch.h"
 #include "GameSrc/Render/Flipbook.h"
+#include "GameSrc/Render/LightList.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Graphics/Texture.h"
@@ -14,7 +15,7 @@
 // 見た目は3つ。
 //   光の芯     … 銃口の前の、小さくとても明るい丸（画面に平行な板1枚。加算・1 を超える明るさで描く）
 //   にじみの板 … 芯のまわりの空気が光って見える、大きく柔らかい板1枚（面は照らさない。面は点光源が照らす）
-//   点光源     … 周りの壁・地面と自分の腕・銃を一瞬照らす（主役）。置き場所と強さを答えるだけで、ライトを設定するのはシーン
+//   点光源     … 周りの壁・地面と自分の腕・銃を一瞬照らす（主役）。ライトを答えるだけで、一覧（LightList）に足すのはシーン
 // 芯の形（4 つの絵から 1 つ。EffectFlipbook_Plan.txt の 4 章）と大きさを1発ごとに乱数で変える（同じ光が続くと機械的に見えるため）。
 // 形はとげにはせず、光のふちの出方が少し違うだけ（炎の形は描かない、の決まりのまま）。
 // 覗いているときは、照準のすぐ先が白く埋まらないよう、覗き具合に合わせて小さく・薄くする。
@@ -22,13 +23,6 @@
 // 計画は SummaryPlan/個別仕様/MuzzleFlash_Plan.txt。
 class MuzzleFlash{
 public:
-	// 点光源の設定（GameLib のライト1つ分）。
-	struct Light{
-		GameLib::Math::Vector3 position; // ワールド
-		GameLib::Math::Vector3 color;
-		float intensity;                 // Graphics::Manager::setLightIntensity へそのまま渡す値
-	};
-
 	MuzzleFlash();
 	MuzzleFlash( const MuzzleFlash& ) = delete;
 	MuzzleFlash& operator=( const MuzzleFlash& ) = delete;
@@ -41,9 +35,9 @@ public:
 	// 光っているか。
 	bool isLit() const;
 
-	// 点光源の設定。消えていれば false（out は変えない）。
+	// 点光源（LightList に足すライト）。消えていれば false（out は変えない）。
 	// muzzlePosition / muzzleDirection: 銃口の今の位置（ワールド）と向き（長さ1）。PlayerCharacter::muzzle の値。out: nullptr 不可。
-	bool light( const GameLib::Math::Vector3& muzzlePosition, const GameLib::Math::Vector3& muzzleDirection, Light* out ) const;
+	bool light( const GameLib::Math::Vector3& muzzlePosition, const GameLib::Math::Vector3& muzzleDirection, LightSource* out ) const;
 	// 光の芯とにじみの板を描く。消えていれば何もしない。1フレームに1回まで。呼ぶ場所の決まりは LitQuadBatch::draw と同じ。
 	// 絵の読み込みが終わるまでは描かない。
 	// projectionView: カメラの射影×ビュー行列。viewDirection: 視線の向き（長さ1）。板を画面に平行にするため。
