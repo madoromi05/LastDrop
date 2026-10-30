@@ -5,6 +5,7 @@
     "mesh_names": ["modular kit63"],
     "split_vertices": true,
     "center_origin": true,
+    "scale": [1.0, 1.00487, 1.0],
     "mesh_texture": "Resource/road_albedo.tga",
     "mesh_normalmap": "Resource/road_normal.tga",
     "mesh_orm": "Resource/road_orm.tga",

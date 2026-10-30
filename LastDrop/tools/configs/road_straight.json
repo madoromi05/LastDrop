@@ -7,6 +7,7 @@
     "center_origin": true,
     "resource_root": "../..",
     "texture_export_size": 4096,
+    "fill_island_padding": true,
     "texture_sources": {
         "mesh_texture": "C:/Users/mador/Downloads/ゾンビゲーム/道路/textures/modularkit.png",
         "mesh_normalmap": "C:/Users/mador/Downloads/ゾンビゲーム/道路/textures/low_modular_kit_Normal.png",

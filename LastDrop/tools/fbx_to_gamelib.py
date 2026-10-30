@@ -106,6 +106,10 @@ CONFIG = {
     # FBX の中の画像の参照が切れているモデル用（作者の PC のパスが入っていて、読み込んでも画像が空になる）。
     # 例: {"mesh_texture": "textures/a.png", "mesh_normalmap": "textures/a_n.png"}
     "texture_sources": {},
+    # static モードのみ。True なら、書き出す mesh_texture の真っ黒な所と mesh_orm の粗さ 0 の所を「絵と絵のすき間」とみなし、
+    # 隣の絵の値で埋める（fill_island_padding）。元の画像のすき間が黒・粗さ 0 のままだと、ミップで部品の端に混ざって
+    # 暗い線・光る線（鏡）になるため。道路キットのように、1 枚の画像に部品の絵を並べた元画像に使う。
+    "fill_island_padding": False,
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -797,7 +801,9 @@ def export_mesh_textures(mesh_objs):
             continue
         source = CONFIG["texture_sources"].get(key)
         image = bpy.data.images.load(source) if source else material_image(mesh_objs, key, bsdf_input, via_normal_map)
-        save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]))
+        # 法線のすき間は元から「平ら」なので埋めない（にじんでも線にならない）。
+        fills_padding = CONFIG["fill_island_padding"] and key == "mesh_texture"
+        save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]), fills_padding)
     if CONFIG["mesh_orm"]:
         save_orm_tga(size, os.path.join(CONFIG["resource_root"], CONFIG["mesh_orm"]))
 
@@ -822,6 +828,8 @@ def save_orm_tga(size, path):
         image.pixels.foreach_get(pixels)
         orm[:, channel] = pixels.reshape(-1, 4)[:, 0]
         bpy.data.images.remove(image)
+    if CONFIG["fill_island_padding"]:
+        fill_island_padding(orm, size, orm[:, 1] == 0.0)
     out = bpy.data.images.new(os.path.basename(path), size, size, alpha=False)
     out.colorspace_settings.name = "Non-Color"
     out.pixels.foreach_set(orm.ravel())
@@ -857,14 +865,51 @@ def linked_image(mat, bsdf_input, via_normal_map):
     return node.image if node.type == "TEX_IMAGE" else None
 
 
-def save_scaled_tga(image, size, path):
+PADDING_FILL_STEPS = 16  # すき間を何画素まで隣の値で広げるか。16 あれば 4096px の絵のミップ 4 段目（256px）まですき間の値が混ざらない
+PADDING_RIM_WIDTH = 2  # 絵の縁の何画素を、すき間と一緒に埋め直すか（元の画像の絵の縁は、すき間の黒と混ざって黒に近い）
+PADDING_NEIGHBORS = ((1, 0), (-1, 0), (0, 1), (0, -1))  # 1 回に広げる向き（上下左右）
+
+
+def fill_island_padding(pixels, size, empty):
+    # 絵と絵のすき間（empty が True の画素）を、隣の絵の値で 1 画素ずつ外へ広げて埋める（エッジパディング）。
+    # 絵の縁の PADDING_RIM_WIDTH 画素もすき間に含める（縁の黒に近い色から広げると、すき間が黒いまま残るため）。
+    # 広げきれずに残った広い空きは、絵全体の平均で埋める（もっと小さいミップで、すき間の値が混ざらないように）。
+    # pixels は size×size×4 の画素の配列（形は問わない）で、その場で書き換える。
+    image = pixels.reshape(size, size, 4)
+    hole = empty.reshape(size, size).copy()
+    for _ in range(PADDING_RIM_WIDTH):
+        rim = hole.copy()
+        for shift in PADDING_NEIGHBORS:
+            rim |= numpy.roll(hole, shift, axis=(0, 1))
+        hole = rim
+    for _ in range(PADDING_FILL_STEPS):
+        total = numpy.zeros_like(image)
+        count = numpy.zeros((size, size), dtype=numpy.float32)
+        for shift in PADDING_NEIGHBORS:
+            # 絵は繰り返して貼れるので、端は反対側とつながっているとして扱う（numpy.roll）。
+            neighbor = numpy.roll(~hole, shift, axis=(0, 1))
+            total += numpy.roll(image, shift, axis=(0, 1)) * neighbor[:, :, None]
+            count += neighbor
+        grow = hole & (count > 0)
+        if not grow.any():
+            break
+        image[grow] = total[grow] / count[grow][:, None]
+        hole &= ~grow
+    if hole.any() and not hole.all():
+        image[hole] = image[~hole].mean(axis=0)
+
+
+def save_scaled_tga(image, size, path, fills_padding=False):
     # 元画像を壊さないよう複製を縮小し、画素をそのまま（色変換なしで）新しい画像へ移して保存する。
     # save_render は表示用の色管理(AgX 等)が掛かり色が変わるので使わない。
+    # fills_padding が True なら、真っ黒な所を絵と絵のすき間として埋める（fill_island_padding）。
     scaled = image.copy()
     scaled.scale(size, size)
     # Python のリストだと 4096px で 2GB を超えるので、numpy の配列で受け渡す（値は同じ）。
     pixels = numpy.empty(size * size * 4, dtype=numpy.float32)
     scaled.pixels.foreach_get(pixels)
+    if fills_padding:
+        fill_island_padding(pixels, size, numpy.all(pixels.reshape(-1, 4)[:, 0:3] == 0.0, axis=1))
     out = bpy.data.images.new(os.path.basename(path), size, size, alpha=False)
     out.colorspace_settings.name = image.colorspace_settings.name
     out.pixels.foreach_set(pixels)
