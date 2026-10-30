@@ -14,6 +14,7 @@ public:
 	Impl( int width, int height, float screenScale, ID3D11Device* device ) :
 	mTexture( 0 ),
 	mDSV( 0 ),
+	mReadOnlyDSV( 0 ),
 	mSRV( 0 ),
 	mWidth( 0 ),
 	mHeight( 0 ),
@@ -45,6 +46,7 @@ public:
 
 	ID3D11Texture2D*          mTexture;
 	ID3D11DepthStencilView*   mDSV;
+	ID3D11DepthStencilView*   mReadOnlyDSV; // 奥行きの判定だけに使い、書き込まない（付けている間も mSRV から読める）
 	ID3D11ShaderResourceView* mSRV;
 	int mWidth;
 	int mHeight;
@@ -69,6 +71,10 @@ private:
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mDSV );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView failed" );
+		// 読み取り専用の付け方（半透明の板が、奥行きで隠れながら同じ深度を読む。SsaoTranslucent_Plan.txt 7-1）。
+		dsvDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
+		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mReadOnlyDSV );
+		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView (read only) failed" );
 
 		D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Format              = DXGI_FORMAT_R32_FLOAT;
@@ -81,6 +87,7 @@ private:
 	}
 	void releaseDxObjects(){
 		if ( mSRV ){ mSRV->Release(); mSRV = 0; }
+		if ( mReadOnlyDSV ){ mReadOnlyDSV->Release(); mReadOnlyDSV = 0; }
 		if ( mDSV ){ mDSV->Release(); mDSV = 0; }
 		if ( mTexture ){ mTexture->Release(); mTexture = 0; }
 	}

@@ -4,6 +4,7 @@
 #include "GameLib/Graphics/Shader.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
 #include "GameLib/Graphics/DepthTarget.h"
+#include "GameLib/Graphics/RenderTarget.h"
 #include "GameLib/Math/Matrix44.h"
 
 class GBuffer;
@@ -21,6 +22,7 @@ enum class GBufferView{
 	Cascade,   // 月の影のどの枚を使っているか（1 枚目 赤・2 枚目 緑・3 枚目 青・範囲の外は色なし。Shadow_Plan.txt 9 章）
 	ShadowMaps, // 影のマップ 4 枚を画面を 4 つに分けて（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目。光に近いほど黒）
 	Fog,       // 霧の量（0 黒〜1 白。空は黒。NightFinish_Plan.txt 9 章）
+	Ssao,      // SSAO の AO（0 黒＝遮られた〜1 白。空は黒。SsaoTranslucent_Plan.txt 8 章）
 	Count,
 };
 // エディタ（F6 の Render）に出す名前。
@@ -42,23 +44,26 @@ public:
 	// G-Buffer と深度を読み、PBR の式で照らした色を今の描画先（シーンの色）へ描く。何も描かれていない画素には空を描く（ライトの一覧の空の色）。
 	// 描画先に depth を付けたまま呼ばないこと（同じ深度を描画先とシェーダの両方には付けられない。PostProcess::bindSceneColor）。
 	// ライト・空・環境光は付けてあるライトの一覧（LightList::bind。b2）、目の位置は Graphics::Manager に設定済みの物（カメラ）を読む。
-	void drawLighting( const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+	// occlusion：SSAO の結果（AmbientOcclusion::result）。元の大きさへ拡大して、環境光にだけ掛ける（SsaoTranslucent_Plan.txt 6-4）。
+	void drawLighting( const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion, GameLib::Graphics::DepthTarget depth,
+		const GameLib::Math::Matrix44& projectionView );
 	// 深度を読み、霧の色を霧の量の割合で今の描画先（シーンの色）へ混ぜる。drawLighting の直後、同じ描画先のまま呼ぶ。
 	// 霧の値と色は付けてあるライトの一覧（b2）から読む。空の画素は変えない。
 	void drawFog( GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	// view（Final 以外）を、今の描画先へ全画面で写す。ToneMap を通さず中身の数のまま見るため、PostProcess::endScene の後
-	// （描画先が画面に戻った後）に呼ぶ。depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
-	void drawView( GBufferView view, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
-		const GameLib::Math::Matrix44& projectionView );
+	// （描画先が画面に戻った後）に呼ぶ。occlusion：SSAO の結果（AmbientOcclusion::result。表示の SSAO が読む）。
+	// depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
+	void drawView( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
+		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	// シェーダのコンパイルエラー（ライティングのシェーダ → 霧のシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
 	const char* errorMessage() const;
 
 private:
 	// view と、深度から位置を戻す逆行列を定数に入れて b1 に付ける（3 つのパスの共通部分）。
 	void setConstants( GBufferView view, const GameLib::Math::Matrix44& projectionView );
-	// view を定数に入れ、G-Buffer と深度を付けて全画面を 1 回描く（drawLighting と drawView の共通部分）。
-	void drawFullScreen( GBufferView view, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
-		const GameLib::Math::Matrix44& projectionView );
+	// view を定数に入れ、G-Buffer と SSAO の結果と深度を付けて全画面を 1 回描く（drawLighting と drawView の共通部分）。
+	void drawFullScreen( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
+		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	GameLib::Graphics::Shader mShader;    // ライティングと G-Buffer の表示（DeferredLighting.hlsl）
 	GameLib::Graphics::Shader mFogShader; // 霧（Fog.hlsl）
 	GameLib::Graphics::ConstantBuffer mConstants;

@@ -12,6 +12,7 @@
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/ShadowParams.h"
+#include "GameSrc/Render/SsaoParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -88,6 +89,9 @@ namespace{
 		// 影を読む位置のずらし・影の濃さ（Shadow_Plan.txt 7・9 章）。
 		groups.push_back( std::make_unique< TuningGroup< ShadowParams > >(
 			"Shadow", "ShadowParams", "GameSrc/Render/ShadowParams.h", &shadowParams ) );
+		// 物の隙間の暗がり（SsaoTranslucent_Plan.txt 5-4）。絵は F6 → Render の G-Buffer の SSAO で見る。
+		groups.push_back( std::make_unique< TuningGroup< SsaoParams > >(
+			"SSAO", "SsaoParams", "GameSrc/Render/SsaoParams.h", &ssaoParams ) );
 		return groups;
 	}
 

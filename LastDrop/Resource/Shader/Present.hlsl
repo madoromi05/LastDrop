@@ -6,6 +6,7 @@
 // トーンマップの直後にカラーグレーディング（夜の色）を掛け、画面の色（8bit）へ落とす直前にディザ（縞を消す弱いノイズ）を足す
 // （NightFinish_Plan.txt 4・6・7 章）。グレーディングはビネット・赤みより前（噛まれた赤みを青寄りの色温度で濁らせない）。
 #include "Common.hlsli"
+#include "Noise.hlsli" // ディザの interleavedGradientNoise（SSAO と共有）
 
 Texture2D gSceneColor : register(t2); // PostProcess.cpp の kSceneColorSlot
 Texture2D gBloom      : register(t3); // PostProcess.cpp の kBloomSlot（画面の 1/2 の大きさ）
@@ -110,14 +111,6 @@ float3 gradeColor(float3 color)
 static const float3 kScreenLumaWeights = float3(0.299, 0.587, 0.114);
 
 // ── ディザ（NightFinish_Plan.txt 7 章）──
-// Interleaved Gradient Noise（Jorge Jimenez, 2014）。画素の位置だけで決まる 0〜1 のノイズ（テクスチャ不要）。
-// 隣の画素と値が大きく違い、なだらかな色の上でも模様が目立たない。フレームごとには動かさない（TAA が無いので、動かすとちらつく）。
-static const float3 kNoiseScale = float3(0.06711056, 0.00583715, 52.9829189);
-float interleavedGradientNoise(float2 pixel)
-{
-    return frac(kNoiseScale.z * frac(dot(pixel, kNoiseScale.xy)));
-}
-
 FullScreenVertex VSMain(uint id : SV_VertexID)
 {
     return fullScreenVertex(id);

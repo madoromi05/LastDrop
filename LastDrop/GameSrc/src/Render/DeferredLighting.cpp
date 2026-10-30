@@ -17,23 +17,27 @@ namespace{
 	const int kNormalSlot = kAlbedoSlot + 1;
 	const int kMaterialSlot = kNormalSlot + 1;
 	const int kDepthSlot = kMaterialSlot + 1;
+	// SSAO の結果（t10。t6〜t9 は影のマップ。LightList.hlsli）。AmbientOcclusion::result。
+	const int kOcclusionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 8;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）。
 	const float kDepthViewRange = 60.f;
 
 	const int kMatrixFloats = 16;
-	const int kParamFloats = 4;
+	const int kRowFloats = 4;
+	const int kParamFloats = 4 + kRowFloats;
 	// DeferredConstants.hlsli の cbuffer DeferredConstants と同じ並び（16 バイトずつの区切りに合わせる）。
 	struct DeferredConstants{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float view;                                   // 表示する物（GBufferView の番号）
 		float depthViewRange;
 		float unused[ 2 ];
+		float viewDepthRow[ kRowFloats ];             // 射影×ビューの 4 行目（位置との内積が目からの奥行き。SSAO の拡大に使う）
 	};
 	static_assert( sizeof( DeferredConstants ) == sizeof( float ) * ( kMatrixFloats + kParamFloats ), "DeferredConstants : keep the HLSL layout." );
 
-	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog" };
+	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO" };
 	static_assert( sizeof( kViewNames ) / sizeof( kViewNames[ 0 ] ) == static_cast< int >( GBufferView::Count ), "GBufferView : one name per view." );
 }
 
@@ -52,8 +56,9 @@ DeferredLighting::DeferredLighting() {
 	mConstants = Graphics::ConstantBuffer::create( sizeof( DeferredConstants ) );
 }
 
-void DeferredLighting::drawLighting( const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
-	drawFullScreen( GBufferView::Final, gbuffer, depth, projectionView );
+void DeferredLighting::drawLighting( const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion, Graphics::DepthTarget depth,
+	const Matrix44& projectionView ) {
+	drawFullScreen( GBufferView::Final, gbuffer, occlusion, depth, projectionView );
 }
 
 void DeferredLighting::drawFog( Graphics::DepthTarget depth, const Matrix44& projectionView ) {
@@ -70,9 +75,10 @@ void DeferredLighting::drawFog( Graphics::DepthTarget depth, const Matrix44& pro
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }
 
-void DeferredLighting::drawView( GBufferView view, const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+void DeferredLighting::drawView( GBufferView view, const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion,
+	Graphics::DepthTarget depth, const Matrix44& projectionView ) {
 	ASSERT( view != GBufferView::Final && "DeferredLighting : Final is not a G-Buffer view (use drawLighting)." );
-	drawFullScreen( view, gbuffer, depth, projectionView );
+	drawFullScreen( view, gbuffer, occlusion, depth, projectionView );
 }
 
 void DeferredLighting::setConstants( GBufferView view, const Matrix44& projectionView ) {
@@ -86,11 +92,16 @@ void DeferredLighting::setConstants( GBufferView view, const Matrix44& projectio
 	constants.depthViewRange = kDepthViewRange;
 	constants.unused[ 0 ] = 0.f;
 	constants.unused[ 1 ] = 0.f;
+	const int kDepthRowStart = kMatrixFloats - kRowFloats; // m30..m33
+	for ( int i = 0; i < kRowFloats; ++i ) {
+		constants.viewDepthRow[ i ] = ( &projectionView.m00 )[ kDepthRowStart + i ];
+	}
 	mConstants.set( &constants, sizeof( constants ) );
 	Graphics::Manager::instance().setConstantBuffer( kConstantSlot, mConstants );
 }
 
-void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion,
+	Graphics::DepthTarget depth, const Matrix44& projectionView ) {
 	setConstants( view, projectionView );
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // 照らした色・中身の数をそのまま書く。下の絵とは混ぜない
@@ -99,6 +110,7 @@ void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer,
 	gm.setShaderResource( kNormalSlot, gbuffer.normal() );
 	gm.setShaderResource( kMaterialSlot, gbuffer.material() );
 	gm.setShaderResource( kDepthSlot, depth );
+	gm.setShaderResource( kOcclusionSlot, occlusion ); // ライティング（環境光）と表示の SSAO が読む
 	gm.drawFullScreen();
 	// 後から描く物（固定パイプライン）に残さない。
 	gm.setShader( Graphics::Shader() );
@@ -106,6 +118,7 @@ void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer,
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
+	gm.setShaderResource( kOcclusionSlot, Graphics::RenderTarget() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }
 

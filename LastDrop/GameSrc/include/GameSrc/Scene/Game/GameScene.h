@@ -16,6 +16,7 @@
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Render/GBuffer.h"
 #include "GameSrc/Render/DeferredLighting.h"
+#include "GameSrc/Render/AmbientOcclusion.h"
 #include "GameSrc/Render/LightList.h"
 #include "GameSrc/Render/ShadowMap.h"
 #include "GameSrc/Render/CascadedShadowMap.h"
@@ -107,6 +108,7 @@ private:
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
 	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
+	AmbientOcclusion mAmbientOcclusion; // SSAO（G-Buffer の後に作る。SsaoTranslucent_Plan.txt 5 章）
 	LightList mLights;                  // 今のフレームのライト（setupLights で作り直す）
 	ShadowMap mFlashlightShadow;        // 懐中電灯の影のマップ（Shadow_Plan.txt 5 章）
 	bool mFlashlightCastsShadow;        // このフレームに懐中電灯の影を描くか（付いていて銃を持っている間。addFlashlight が決める）

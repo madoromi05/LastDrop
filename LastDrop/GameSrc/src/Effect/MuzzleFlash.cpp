@@ -28,12 +28,14 @@ namespace{
 	// 今は画面に出すときに 1 で切られるので、真ん中は白く飛んで見える。
 	const float kCoreBrightness = 4.f;
 	const int kCoreQuadNumber = 1;
+	const float kCoreSoftDistance = 0.1f; // 壁に刺さった所で薄くし始める奥行きの差（m。SsaoTranslucent_Plan.txt 7-2）
 
 	// ── にじみの板 ── 見た目を確かめる前の初期値。
 	const float kGlowWidth = 0.8f;      // 幅（m）
 	const float kGlowOpacity = 0.45f;   // 濃さ
 	const float kGlowBrightness = 1.2f;  // 明るさの倍率（芯と違い、1 のまま）
 	const int kGlowQuadNumber = 1;
+	const float kGlowSoftDistance = 0.4f; // 同上。板が大きいので、幅の半分にする
 
 	// ── 覗いているとき ── 覗き具合 1 での倍率。照準のすぐ先が埋まらないように。にじみの板は大きいので強く絞る。
 	const float kAimCoreSize = 0.6f;
@@ -81,8 +83,8 @@ MuzzleFlash::MuzzleFlash() :
 	mCoreTexture( Graphics::Texture::create( kCoreTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
 	mCoreFrames( kCoreShapeColumns, kCoreShapeRows, kCoreShapeNumber ),
 	mGlowTexture( Graphics::Texture::create( kGlowTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
-	mCoreQuads( kCoreQuadNumber, LitQuadBatch::MODE_GLOW ),
-	mGlowQuads( kGlowQuadNumber, LitQuadBatch::MODE_GLOW ) {
+	mCoreQuads( kCoreQuadNumber, LitQuadBatch::MODE_GLOW, kCoreSoftDistance ),
+	mGlowQuads( kGlowQuadNumber, LitQuadBatch::MODE_GLOW, kGlowSoftDistance ) {
 	mCoreQuads.setBrightness( kCoreBrightness );
 	mGlowQuads.setBrightness( kGlowBrightness );
 }

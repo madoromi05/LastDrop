@@ -21,6 +21,8 @@ namespace{
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 	// Fxaa.hlsl の番号と揃える（t2 / b1）。
 	const int kFxaaInputSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
+	// 半透明の板が読むシーンの深度（SoftQuad.hlsli の t5。G-Buffer の並びの深度と同じ番号）。
+	const int kSoftQuadDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kFxaaConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// Fxaa.hlsl の cbuffer FxaaConstants と同じ並び（float 4 個）。
@@ -145,6 +147,12 @@ void PostProcess::beginScene() {
 
 void PostProcess::resumeScene() {
 	Graphics::Manager::instance().setRenderTargets( &mSceneColor, 1, mSceneDepth );
+}
+
+void PostProcess::resumeSceneReadOnlyDepth() {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setRenderTargets( &mSceneColor, 1, mSceneDepth, true );
+	gm.setShaderResource( kSoftQuadDepthSlot, mSceneDepth ); // 描画先の切り替えで外れるので、切り替えた後に付ける
 }
 
 void PostProcess::bindSceneColor() {

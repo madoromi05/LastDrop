@@ -666,6 +666,9 @@
     <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -1541,6 +1544,12 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\AmbientOcclusion.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1931,6 +1940,13 @@
     <None Include="Resource\Shader\Fog.hlsli" />
     <None Include="Resource\Shader\Fog.hlsl" />
     <None Include="Resource\Shader\Fxaa.hlsl" />
+    <None Include="Resource\Shader\Ssao.hlsl" />
+    <None Include="Resource\Shader\SsaoBlur.hlsl" />
+    <None Include="Resource\Shader\SsaoUpsample.hlsli" />
+    <None Include="Resource\Shader\SoftQuad.hlsli" />
+    <None Include="Resource\Shader\GlowQuad.hlsl" />
+    <None Include="Resource\Shader\Noise.hlsli" />
+    <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

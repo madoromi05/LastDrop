@@ -231,12 +231,17 @@ void Manager::enableLinearColor( bool f ){
 }
 
 void Manager::setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth ){
+	setRenderTargets( colors, count, depth, false );
+}
+
+void Manager::setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth, bool readOnlyDepth ){
 	ASSERT( count >= 0 && count <= MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
+	ASSERT( ( !readOnlyDepth || depth.mImpl ) && "Graphics::Manager : read only depth needs a DepthTarget." );
 	RenderTarget::Impl* impls[ MAX_RENDER_TARGET ] = {};
 	for ( int i = 0; i < count; ++i ){
 		impls[ i ] = colors[ i ].mImpl;
 	}
-	gManagerImpl->setRenderTargets( impls, count, depth.mImpl );
+	gManagerImpl->setRenderTargets( impls, count, depth.mImpl, readOnlyDepth );
 }
 
 void Manager::resetRenderTargets(){

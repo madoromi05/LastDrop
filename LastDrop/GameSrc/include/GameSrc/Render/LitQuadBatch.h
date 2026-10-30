@@ -7,6 +7,7 @@
 #include "GameLib/Graphics/Vertex.h"
 #include "GameLib/Graphics/VertexBuffer.h"
 #include "GameLib/Graphics/Shader.h"
+#include "GameLib/Graphics/ConstantBuffer.h"
 #include <vector>
 
 // 板に貼る絵の範囲（UV。絵の左上が 0,0、右下が 1,1）。既定は絵 1 枚まるごと。
@@ -24,8 +25,11 @@ struct QuadUv{
 //           弾痕（面に貼る板）と着弾の砂ぼこり・血しぶき（画面に平行な板）が使う。
 // MODE_GLOW: ライト無しで、後ろに足して（加算）描く。自分で光る物（マズルフラッシュ）が使う。
 //            明るさは 絵の色×頂点の色×アルファ×明るさの倍率（setBrightness）。足すだけなので、黒は透明と同じになり、
-//            板どうしの描く順番も気にしなくてよい。
+//            板どうしの描く順番も気にしなくてよい。シェーダは Resource/Shader/GlowQuad.hlsl（固定パイプラインのライト無しと同じ色）。
 // どちらも奥行きは読むが書かない。PrimitiveRenderer はライトを必ず切って描くので、照らす板には使えない（光る板もここで揃える）。
+// 作るときに「薄くし始める奥行きの差」（softDistance）を決めると、壁・地面に刺さった所で板を薄くする（ソフトパーティクル。
+// SsaoTranslucent_Plan.txt 7 章）。そのときは PostProcess::resumeSceneReadOnlyDepth の間に描くこと（深度を読むため）。
+// 面に貼る板（弾痕）は 0（薄くしない。薄くすると貼った面で消える）。
 // ライトの値は持たない。シーンが先に付けたライトの一覧（GameScene::setupLights → LightList::bind）でそのまま照らされる。
 // 半透明の板は、目の位置を渡して描くと奥から順に並べ替えて描く（Z ソート。EffectFlipbook_Plan.txt の 3 章）。
 // 奥行きを書かないので、手前の板を先に描くと、後から描いた奥の板が手前の板の上に重なって見えるため。
@@ -38,7 +42,8 @@ public:
 	};
 
 	// quadCapacity: 1回に描ける板の数。1以上。mode: 照らし方と混ぜ方（作った後は変えない）。
-	explicit LitQuadBatch( int quadCapacity, Mode mode = MODE_LIT );
+	// softDistance: 後ろの物との奥行きの差がこれ（m）より小さい所を薄くする。0 なら薄くしない（作った後は変えない）。
+	explicit LitQuadBatch( int quadCapacity, Mode mode = MODE_LIT, float softDistance = 0.f );
 	LitQuadBatch( const LitQuadBatch& ) = delete;
 	LitQuadBatch& operator=( const LitQuadBatch& ) = delete;
 
@@ -66,15 +71,23 @@ public:
 private:
 	// mVertices を、目から遠い板が先になる順に locked へ写す。
 	void copySortedFromBack( const GameLib::Math::Vector3& eye, GameLib::Graphics::Vertex* locked );
+	// 薄くする距離と、深度から位置を戻す行列を定数に入れて b1 に付ける（SoftQuad.hlsli）。
+	void setSoftConstants( const GameLib::Math::Matrix44& projectionView );
 
 	GameLib::Graphics::VertexBuffer mVertexBuffer;       // 描くときに mVertices を写す先（毎フレーム中身を入れ替える）
-	GameLib::Graphics::Shader mLitShader;                // MODE_LIT だけ（Resource/Shader/LitQuad.hlsl）。MODE_GLOW は固定パイプラインのまま
+	GameLib::Graphics::Shader mShader;                   // MODE_LIT は LitQuad.hlsl、MODE_GLOW は GlowQuad.hlsl
+	GameLib::Graphics::ConstantBuffer mSoftConstants;    // 薄くする距離と行列（SoftQuad.hlsli の b1）
 	std::vector< GameLib::Graphics::Vertex > mVertices;  // ためた板の頂点（ワールド座標）。draw で空になる
 	std::vector< GameLib::Math::Vector3 > mCenters;      // ためた板の中心（並べ替えの奥行きに使う）。mVertices と同じく draw で空になる
 	std::vector< int > mOrder;                           // 並べ替えた板の番号（毎回作り直す。確保し直さないよう持っておく）
 	int mVertexCapacity;
 	Mode mMode;
-	float mBrightness; // 色に掛ける明るさの倍率
+	float mBrightness;   // 色に掛ける明るさの倍率
+	float mSoftDistance; // 薄くし始める奥行きの差（m。0 で薄くしない）
 };
+
+// 板を物の近くで薄くするか（F6 → Render の Soft particles。見比べ用。SsaoTranslucent_Plan.txt 8 章）。false の間はどの板も薄くしない。
+// 起動中ずっと 1 つ（LitQuadBatch.cpp が持つ。初期値 true。Release では true のまま）。
+bool& softParticlesEnabled();
 
 #endif

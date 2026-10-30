@@ -24,12 +24,15 @@ namespace{
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
+
+	// 壁・地面に刺さった所で滴を薄くし始める奥行きの差（m。SsaoTranslucent_Plan.txt 7-2）。見た目を確かめる前の初期値。
+	const float kSoftDistance = 0.15f;
 }
 
 BloodSprayList::BloodSprayList() :
 	mRandom( kRandomSeed ),
 	mTexture( Graphics::Texture::create( kTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ) ),
-	mQuads( kCapacity * BloodSpray::kMaxDropNumber ) {
+	mQuads( kCapacity * BloodSpray::kMaxDropNumber, LitQuadBatch::MODE_LIT, kSoftDistance ) {
 	mSprays.reserve( kCapacity );
 }
 

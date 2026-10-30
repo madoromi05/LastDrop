@@ -1189,7 +1189,8 @@ public:
 	}
 
 	// colors（count 枚、0枚可）と depth（nullptr 可）へ描く。描画範囲は描画先の全体にする。
-	void setRenderTargets( RenderTarget::Impl* const* colors, int count, DepthTarget::Impl* depth ){
+	// readOnlyDepth が true なら、depth は奥行きの判定だけに使い書き込まない（その間も depth をシェーダから読める）。
+	void setRenderTargets( RenderTarget::Impl* const* colors, int count, DepthTarget::Impl* depth, bool readOnlyDepth ){
 		ASSERT( count >= 0 && count <= Manager::MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
 		ASSERT( ( count > 0 || depth ) && "Graphics::Manager : no render target." );
 		unbindUserShaderResources();
@@ -1209,7 +1210,7 @@ public:
 		ID3D11DepthStencilView* dsv = 0;
 		if ( depth ){
 			depth->fitToScreen( mBackBufferWidth, mBackBufferHeight );
-			dsv = depth->mDSV;
+			dsv = readOnlyDepth ? depth->mReadOnlyDSV : depth->mDSV;
 			if ( count == 0 ){
 				w = depth->mWidth;
 				h = depth->mHeight;

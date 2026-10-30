@@ -9,6 +9,8 @@
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/Render/ShadowParams.h"
+#include "GameSrc/Render/SsaoParams.h"
+#include "GameSrc/Render/LitQuadBatch.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -86,6 +88,17 @@ namespace{
 		ImGui::Checkbox( "Fog", &fogEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(distance + height)" );
+		// SSAO を作るか（SsaoTranslucent_Plan.txt 8・10 章）。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO。
+		ImGui::Checkbox( "SSAO", &ssaoEnabled() );
+		ImGui::SameLine();
+		// ぼかしを切ると、点の並びを回したざらつきがそのまま見える（調整用）。
+		ImGui::Checkbox( "SSAO blur", &ssaoBlurEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(view: G-Buffer > SSAO)" );
+		// 半透明の板を壁・地面に刺さった所で薄くするか（SsaoTranslucent_Plan.txt 7・8 章）。切ると板の縁の線が見える。
+		ImGui::Checkbox( "Soft particles", &softParticlesEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(dust, blood, muzzle flash)" );
 		// カラーグレーディングとディザ（NightFinish_Plan.txt 9 章）。値は Tuning の PostProcessParams。縞は Dither を切ると見える。
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();

@@ -125,6 +125,9 @@ public:
 	///colors（count 枚。0枚なら深度だけ）と depth（空なら深度なし）へ描く。描画範囲は描画先の全体になる。
 	///大きさはすべて揃っていること。t2 以降のテクスチャはここで外れる（描画先を読みながら書かないように）
 	void setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth );
+	///上と同じ。readOnlyDepth が true なら depth（空は不可）を奥行きの判定だけに使い、書き込まない（深度の書き込みの設定は無視される）。
+	///その間も depth を setShaderResource で読める（半透明の板を物の近くで薄くする・デカール）
+	void setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth, bool readOnlyDepth );
 	///画面（バックバッファ）へ描く状態に戻す。描画範囲は setViewport で決めた範囲に戻る
 	void resetRenderTargets();
 	///描画先を色で塗りつぶす

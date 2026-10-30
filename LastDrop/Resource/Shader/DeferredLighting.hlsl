@@ -7,6 +7,7 @@
 #include "Pbr.hlsli"
 #include "DeferredConstants.hlsli"
 #include "Fog.hlsli"
+#include "SsaoUpsample.hlsli"
 
 // DeferredLighting.h の GBufferView と同じ番号。
 static const uint kViewFinal     = 0;
@@ -20,6 +21,11 @@ static const uint kViewPosition  = 7;
 static const uint kViewCascade   = 8;
 static const uint kViewShadowMaps = 9;
 static const uint kViewFog       = 10;
+static const uint kViewSsao      = 11;
+
+// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き。SsaoTranslucent_Plan.txt 5 章）。番号は DeferredLighting.cpp の kOcclusionSlot。
+// ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）。
+Texture2D gOcclusion : register(t10);
 
 static const float3 kNothingColor = float3(0.0, 0.0, 0.0);
 
@@ -94,7 +100,8 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         s.position = reconstructWorldPosition(p.uv, depth);
         s.normal = gGBufferNormal.Load(pixel).xyz;
         s.albedo = gGBufferAlbedo.Load(pixel).rgb;
-        s.occlusion = material.r;
+        // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない。SsaoTranslucent_Plan.txt Q4）。
+        s.occlusion = material.r * upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(s.position));
         s.roughness = material.g;
         s.metallic = material.b;
         c = shadeSurface(s) + s.albedo * material.a * kEmissionScale;
@@ -137,6 +144,11 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     {
         // 霧の量（0 黒〜1 白）。空の画素は上で黒にしている（霧のパスも空には掛けない）。
         c = fogAmount(reconstructWorldPosition(p.uv, depth));
+    }
+    else if (view == kViewSsao)
+    {
+        // SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）。
+        c = upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(reconstructWorldPosition(p.uv, depth)));
     }
     return float4(c, 1.0);
 }

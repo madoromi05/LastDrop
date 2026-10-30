@@ -14,6 +14,20 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kLitShaderFile = "Resource/Shader/LitQuad.hlsl";
+	const char* kGlowShaderFile = "Resource/Shader/GlowQuad.hlsl";
+	const int kSoftConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // SoftQuad.hlsli の b1
+	const float kNoSoftDistance = 0.f; // 薄くしない（SoftQuad.hlsli は深度を読まない）
+
+	const int kMatrixFloats = 16;
+	const int kRowFloats = 4;
+	// SoftQuad.hlsli の cbuffer SoftQuadConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	struct SoftQuadConstants{
+		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
+		float viewDepthRow[ kRowFloats ];             // 射影×ビューの 4 行目（m30..m33）
+		float softDistance;
+		float unused[ 3 ];
+	};
+	static_assert( sizeof( SoftQuadConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * 2 ), "SoftQuadConstants : keep the HLSL layout." );
 
 	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか。
 	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）。
@@ -43,15 +57,21 @@ namespace{
 	}
 }
 
-LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode ) :
+bool& softParticlesEnabled() {
+	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sEnabled;
+}
+
+LitQuadBatch::LitQuadBatch( int quadCapacity, Mode mode, float softDistance ) :
 	mVertexBuffer( Graphics::VertexBuffer::create( quadCapacity * kVerticesPerQuad ) ),
 	mVertexCapacity( quadCapacity * kVerticesPerQuad ),
 	mMode( mode ),
-	mBrightness( kDefaultBrightness ) {
+	mBrightness( kDefaultBrightness ),
+	mSoftDistance( softDistance ) {
 	ASSERT( quadCapacity > 0 && "LitQuadBatch : quadCapacity must be positive." );
-	if ( mode == MODE_LIT ) {
-		mLitShader = Graphics::Shader::create( kLitShaderFile );
-	}
+	ASSERT( softDistance >= 0.f && "LitQuadBatch : softDistance must not be negative." );
+	mShader = Graphics::Shader::create( ( mode == MODE_LIT ) ? kLitShaderFile : kGlowShaderFile );
+	mSoftConstants = Graphics::ConstantBuffer::create( sizeof( SoftQuadConstants ) );
 	mVertices.reserve( mVertexCapacity );
 	mCenters.reserve( quadCapacity );
 	mOrder.reserve( quadCapacity );
@@ -118,13 +138,11 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.setProjectionViewMatrix( projectionView );
 	m.setWorldMatrix( world );
 	m.setTexture( texture ); // 法線マップも外れる（setTexture の決まり）
-	if ( mMode == MODE_GLOW ) {
-		m.setLightingMode( Graphics::LIGHTING_NONE );   // 自分で光るので、ライトの当たり方で暗くしない
-		m.setBlendMode( Graphics::BLEND_ADDITIVE );     // 後ろの色に、絵の色×アルファを足す
-	} else {
-		m.setShader( mLitShader );                         // 壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）
-		m.setBlendMode( Graphics::BLEND_LINEAR );          // 絵のアルファで後ろと混ぜる
-	}
+	// MODE_LIT は壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）。MODE_GLOW は自分で光るのでライト無し（GlowQuad.hlsl）。
+	m.setShader( mShader );
+	// MODE_GLOW は後ろの色に絵の色×アルファを足し、MODE_LIT は絵のアルファで後ろと混ぜる。
+	m.setBlendMode( ( mMode == MODE_GLOW ) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_LINEAR );
+	setSoftConstants( projectionView );
 	Vector3 diffuse;
 	diffuse.setMul( kWhite, mBrightness ); // 頂点の色に掛かる（1 を超えると、1 より明るく描ける）
 	m.setDiffuseColor( diffuse );
@@ -139,8 +157,28 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 
 	// 物を描くときの設定へ戻す（GameScene::setupLights と同じ）。
 	m.setShader( Graphics::Shader() ); // 後から描く物（固定パイプライン）に残さない
+	m.setConstantBuffer( kSoftConstantSlot, Graphics::ConstantBuffer() );
 	m.setBlendMode( Graphics::BLEND_OPAQUE );
 	m.enableDepthWrite( true );
 	mVertices.clear();
 	mCenters.clear();
+}
+
+void LitQuadBatch::setSoftConstants( const Matrix44& projectionView ) {
+	SoftQuadConstants constants;
+	Matrix44 inverse;
+	inverse.setInverse( projectionView );
+	for ( int i = 0; i < kMatrixFloats; ++i ) {
+		constants.inverseProjectionView[ i ] = ( &inverse.m00 )[ i ];
+	}
+	const int kDepthRowStart = kMatrixFloats - kRowFloats; // m30..m33
+	for ( int i = 0; i < kRowFloats; ++i ) {
+		constants.viewDepthRow[ i ] = ( &projectionView.m00 )[ kDepthRowStart + i ];
+	}
+	constants.softDistance = softParticlesEnabled() ? mSoftDistance : kNoSoftDistance;
+	constants.unused[ 0 ] = 0.f;
+	constants.unused[ 1 ] = 0.f;
+	constants.unused[ 2 ] = 0.f;
+	mSoftConstants.set( &constants, sizeof( constants ) );
+	Graphics::Manager::instance().setConstantBuffer( kSoftConstantSlot, mSoftConstants );
 }

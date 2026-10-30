@@ -33,6 +33,10 @@ public:
 	// 描画先を中間の描画先（色と深度）へ付け直す（消さない）。beginScene の後に別の描画先（G-Buffer）へ描いたとき、
 	// 続きをシーンへ描く前に呼ぶ。
 	void resumeScene();
+	// resumeScene と同じだが、深度は奥行きの判定だけに使い（書き込まない）、同じ深度を t5 から読めるようにも付ける。
+	// 半透明の板（LitQuadBatch）を、物の近くで薄くしながら描く間に使う（SsaoTranslucent_Plan.txt 7 章）。
+	// 深度を書く物（当たり判定の表示など）を描く前に resumeScene へ戻すこと。
+	void resumeSceneReadOnlyDepth();
 	// 描画先をシーンの色だけにする（深度は外す）。深度をシェーダから読みながらシーンの色へ描くとき（ディファードのライティング）に呼ぶ。
 	void bindSceneColor();
 	// シーンの深度。G-Buffer へ描くときに一緒に使い、ライティングと G-Buffer の中身を見るときに読む。

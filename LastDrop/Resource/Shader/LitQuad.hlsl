@@ -4,8 +4,10 @@
 // 頂点の計算は StaticMeshGBuffer.hlsl と同じ（固定パイプラインの「ピクセルごとのライティング」と同じ）。
 // 板は霧のパス（Fog.hlsl）の後に描くので、照らした色に自分で同じ式の霧を掛ける（遠くの壁の弾痕だけが霧の中で黒く浮かないように。
 // NightFinish_Plan.txt 5-4）。
+// 壁・地面に刺さった所では不透明度を下げて、板の縁が線にならないようにする（SoftQuad.hlsli。弾痕は薄くしない）。
 #include "Pbr.hlsli"
 #include "Fog.hlsli"
+#include "SoftQuad.hlsli"
 
 static const float kRoughSurface = 1.0;
 static const float kNotMetal = 0.0;
@@ -41,5 +43,5 @@ float4 PSMain(PixelInput p) : SV_Target
     s.roughness = kRoughSurface;
     s.metallic = kNotMetal;
     s.occlusion = kNoOcclusion;
-    return float4(applyFog(shadeSurface(s), s.position), c.a);
+    return float4(applyFog(shadeSurface(s), s.position), c.a * softFade(p.position, p.worldPosition));
 }

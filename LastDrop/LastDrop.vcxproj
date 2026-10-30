@@ -264,6 +264,7 @@
     <ClCompile Include="GameSrc\src\Render\LightingParams.cpp" />
     <ClCompile Include="GameSrc\src\Render\ShadowMap.cpp" />
     <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp" />
+    <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
@@ -649,6 +650,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowMap.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\CascadedShadowMap.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\AmbientOcclusion.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
@@ -836,6 +839,13 @@
     <None Include="Resource\Shader\Fog.hlsli" />
     <None Include="Resource\Shader\Fog.hlsl" />
     <None Include="Resource\Shader\Fxaa.hlsl" />
+    <None Include="Resource\Shader\Ssao.hlsl" />
+    <None Include="Resource\Shader\SsaoBlur.hlsl" />
+    <None Include="Resource\Shader\SsaoUpsample.hlsli" />
+    <None Include="Resource\Shader\SoftQuad.hlsli" />
+    <None Include="Resource\Shader\GlowQuad.hlsl" />
+    <None Include="Resource\Shader\Noise.hlsli" />
+    <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

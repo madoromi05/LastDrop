@@ -254,10 +254,13 @@ void GameScene::draw() {
 		mWorld.draw( ViewFrustum( camera.projectionViewMatrix() ), camera.eyePosition() );
 	}
 	mGBuffer.end();
+	// SSAO は G-Buffer の後・ライティングの前（SsaoTranslucent_Plan.txt 4 章）。G-Buffer の表示（SSAO）でも見るので、表示中も作る。
+	mAmbientOcclusion.draw( mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+	Profiling::gpuMark( "SSAO" );
 	if ( !showsGBuffer ) {
 		mPostProcess.bindSceneColor(); // 深度はシェーダから読むので、描画先からは外す
 		mLights.bindShadowMaps(); // 描画先を変えると t2 以降が外れるので、付け直す（LightList::bindShadowMaps）
-		mDeferredLighting.drawLighting( mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+		mDeferredLighting.drawLighting( mGBuffer, mAmbientOcclusion.result(), mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
 		Profiling::gpuMark( "Lighting" );
 		// 霧は半透明の板より前（板は自分で同じ霧を掛けるので、二重に掛けない。NightFinish_Plan.txt 4 章）。
 		if ( fogEnabled() ) {
@@ -265,7 +268,9 @@ void GameScene::draw() {
 		}
 		Profiling::gpuMark( "Fog" );
 	}
-	mPostProcess.resumeScene(); // 弾痕などの板は、G-Buffer と同じ深度で隠れるようシーンへ描く
+	// 弾痕などの板は、G-Buffer と同じ深度で隠れるようシーンへ描く。板は深度を書かないので読み取り専用で付け、
+	// 同じ深度を読んで壁・地面に刺さった所を薄くする（SsaoTranslucent_Plan.txt 7 章）。
+	mPostProcess.resumeSceneReadOnlyDepth();
 	mLights.bindShadowMaps();   // 板も懐中電灯の影を受ける（同じ evaluateLight を通る）
 	mWorld.drawBulletHoles( camera.projectionViewMatrix() ); // 壁・地面を描いた後（奥行きで隠すため）
 	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
@@ -273,6 +278,7 @@ void GameScene::draw() {
 	mWorld.drawMuzzleFlash( camera.projectionViewMatrix(), camera.viewDirection() ); // 加算なので順番は問わない
 	mLights.unbind(); // ライトの一覧を読むのは、ここまで（ライティングのパスと半透明の板）
 #ifdef ZF_EDITOR
+	mPostProcess.resumeScene(); // 当たり判定の表示は深度を書くことがあるので、書ける付け方へ戻す
 	mDebug.drawCollision( mWorld, camera );
 	mDebug.drawLights( mLights, camera );
 #endif
@@ -285,7 +291,7 @@ void GameScene::draw() {
 		// 影の表示（Cascade・Shadow maps）はライトの一覧の定数と影のマップを読むので、外した物をもう一度付けて描く。
 		mLights.rebindConstants();
 		mLights.bindShadowMaps();
-		mDeferredLighting.drawView( view, mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+		mDeferredLighting.drawView( view, mGBuffer, mAmbientOcclusion.result(), mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
 		mLights.unbind();
 	}
 	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）。
@@ -313,6 +319,7 @@ void GameScene::draw() {
 		mResources->meshes().skinning().errorMessage(),
 		mGBuffer.errorMessage(),
 		mDeferredLighting.errorMessage(),
+		mAmbientOcclusion.errorMessage(),
 		mFlashlightShadow.errorMessage(),
 		mMoonShadow.errorMessage(),
 	};
