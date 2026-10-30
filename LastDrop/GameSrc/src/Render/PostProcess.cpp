@@ -159,6 +159,10 @@ void PostProcess::bindSceneColor() {
 	Graphics::Manager::instance().setRenderTargets( &mSceneColor, 1, Graphics::DepthTarget() );
 }
 
+const Graphics::RenderTarget& PostProcess::sceneColor() const {
+	return mSceneColor;
+}
+
 Graphics::DepthTarget PostProcess::sceneDepth() const {
 	return mSceneDepth;
 }

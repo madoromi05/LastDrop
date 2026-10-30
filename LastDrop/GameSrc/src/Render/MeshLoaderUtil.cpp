@@ -66,6 +66,9 @@ void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& m
 	if ( hasValue( a = findAttribute( meshElement, "normalmap" ) ) ) {
 		material->setNormalMap( textures->load( a.value(), Graphics::TEXTURE_COLOR_SPACE_LINEAR ) ); // 法線の向き（色ではない）
 	}
+	if ( hasValue( a = findAttribute( meshElement, "ormmap" ) ) ) {
+		material->setOrmMap( textures->load( a.value(), Graphics::TEXTURE_COLOR_SPACE_LINEAR ) ); // AO・粗さ・金属（色ではない）
+	}
 	// 材質値は書いてあるものだけ上書きする（無ければ MeshMaterial の既定値）。
 	Vector3 color;
 	if ( readColor( meshElement, "diffuse", &color ) ) {
@@ -88,6 +91,9 @@ void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& m
 	}
 	if ( ( a = findAttribute( meshElement, "emission" ) ) ) {
 		material->setEmission( a.getFloatValue() );
+	}
+	if ( ( a = findAttribute( meshElement, "puddle" ) ) ) {
+		material->setPuddle( a.getIntValue() != 0 );
 	}
 	if ( ( a = findAttribute( meshElement, "doublesided" ) ) ) {
 		material->setDoubleSided( a.getIntValue() != 0 );

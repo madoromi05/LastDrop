@@ -19,7 +19,9 @@ public:
 	static const int kLatency = 5;   // 何フレーム分のクエリを輪にして回すか
 	// 1 フレームに打てる印の数（始めと終わりは別）。超えた印は黙って捨てる。
 	// 2026-10-27 に世界を描く所を物ごとに分けて 9 個になったので、足す余地を残して 12。
-	static const int kMaxMarks = 12;
+	// 2026-10-30 にグラフィック段階 6・7 の印（SSAO・SSR・SSR composite・Decals）で 16 個になり、後ろの 4 つ（Effects・PostProcess・
+	// FXAA・GBufferView）が捨てられて CSV の列から消えていた（Rest にまとめられていた）ので、足す余地を残して 20。
+	static const int kMaxMarks = 20;
 
 	// 読めた 1 フレームぶんの結果。
 	struct Result{

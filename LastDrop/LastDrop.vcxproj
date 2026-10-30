@@ -265,6 +265,8 @@
     <ClCompile Include="GameSrc\src\Render\ShadowMap.cpp" />
     <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp" />
     <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp" />
+    <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp" />
+    <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
@@ -652,6 +654,10 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\AmbientOcclusion.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PuddleParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
@@ -844,6 +850,11 @@
     <None Include="Resource\Shader\SsaoUpsample.hlsli" />
     <None Include="Resource\Shader\SoftQuad.hlsli" />
     <None Include="Resource\Shader\GlowQuad.hlsl" />
+    <None Include="Resource\Shader\Ssr.hlsl" />
+    <None Include="Resource\Shader\SsrBlur.hlsl" />
+    <None Include="Resource\Shader\SsrComposite.hlsl" />
+    <None Include="Resource\Shader\SsrCommon.hlsli" />
+    <None Include="Resource\Shader\Decal.hlsl" />
     <None Include="Resource\Shader\Noise.hlsli" />
     <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>

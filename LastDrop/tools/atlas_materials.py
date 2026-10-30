@@ -7,8 +7,9 @@
 #   3. マテリアルを1つにまとめた FBX を書き出す。
 #   書き出した FBX は fbx_to_gamelib.py の static モード（テクスチャ1組）でそのまま変換できる。
 #
-#   エンジンが使う画像は albedo と normal だけなので、Roughness / Metallic / Height は扱わない。
-#   AO（凹みの陰）がある区画は、albedo に掛け合わせて焼き込む。
+#   orm_path を書くと、材質の画像（r：AO・g：粗さ・b：金属。SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 5 章）も
+#   同じ区画の並びで書き出す。そのときの AO は ORM の r へ入れる（albedo に焼かない。SSAO と二重に暗くならないように）。
+#   orm_path が無ければ今までどおり、AO（凹みの陰）がある区画は albedo に掛け合わせて焼き込む。Height は扱わない。
 #
 # モデルごとの設定は tools/configs/*_atlas.json に書く（スクリプト本体はモデルごとに書き換えない）。
 #
@@ -16,6 +17,8 @@
 #   blender -b --factory-startup --python tools/atlas_materials.py -- tools/configs/uaz_atlas.json
 #   その後、出力した FBX を fbx_to_gamelib.py で変換する（mesh_texture / mesh_normalmap に書き出した TGA を指定し、
 #   texture_export_size は 0 のままにする）。
+#   画像だけ作り直すとき（区画の並びは同じなので、FBX とメッシュの txt は今のまま使える）:
+#   blender -b --factory-startup --python tools/atlas_materials.py -- tools/configs/uaz_atlas.json --textures-only
 #
 # 前提: 各マテリアルの UV が 0〜1 に収まっていること（繰り返し貼るテクスチャは区画からはみ出すので使えない）。
 # =====================================================================
@@ -36,6 +39,7 @@ CONFIG = {
     "texture_dir": "",     # cells の画像ファイル名の基準フォルダ
     "albedo_path": "",     # 書き出す albedo の TGA
     "normal_path": "",     # 書き出す normal の TGA
+    "orm_path": "",        # 書き出す材質の画像（r AO・g 粗さ・b 金属）の TGA。空なら書き出さない
     "atlas_size": 2048,    # アトラス全体の一辺の画素数
     "grid": 2,             # 1辺に並べる区画の数（grid x grid 区画）
     # 区画の内側に空ける画素数。境目で縮小版（ミップマップ）が隣の区画の色を拾ってにじむのを防ぐ。
@@ -44,7 +48,8 @@ CONFIG = {
     # マテリアル名 → 区画と画像。
     #   cell: [列, 行]（左上が [0, 0]）
     #   albedo / normal: 画像ファイル名（必須）
-    #   ao: 画像ファイル名（任意。albedo に掛け合わせる）
+    #   ao: 画像ファイル名（任意。orm_path があれば ORM の r へ、無ければ albedo に掛け合わせる）
+    #   roughness / metallic: 画像ファイル名（任意。orm_path があるときだけ使う。無い区画は粗さ 1・金属 0）
     #   flip_normal_green: true なら normal の緑（Y）を反転する（DirectX 式の法線マップを OpenGL 式へ揃える）
     "cells": {},
 }
@@ -69,7 +74,7 @@ def load_config(path):
     def resolve(p):
         return os.path.normpath(os.path.join(base, p)) if p and not os.path.isabs(p) else p
 
-    for key in ("fbx_path", "out_fbx", "texture_dir", "albedo_path", "normal_path"):
+    for key in ("fbx_path", "out_fbx", "texture_dir", "albedo_path", "normal_path", "orm_path"):
         CONFIG[key] = resolve(CONFIG[key])
 
 
@@ -107,19 +112,34 @@ def load_scaled_pixels(file_name, size):
     return pixels.reshape(size, size, 4)
 
 
+def build_cell_orm(cell, inner):
+    # 1 区画ぶんの材質の画像（r AO・g 粗さ・b 金属。どれも灰色画像なので R だけ使う）。無い画像は AO 1・粗さ 1・金属 0。
+    orm = np.ones((inner, inner, 4), dtype=np.float32)
+    orm[:, :, 2] = 0.0
+    for key, channel in (("ao", 0), ("roughness", 1), ("metallic", 2)):
+        if cell.get(key):
+            orm[:, :, channel] = load_scaled_pixels(cell[key], inner)[:, :, 0]
+    return orm
+
+
 def build_atlas_images():
-    # マテリアルごとの画像を区画へ並べた albedo / normal の画素を返す。
+    # マテリアルごとの画像を区画へ並べた albedo / normal / orm の画素を返す（orm_path が無ければ orm は None）。
     size = CONFIG["atlas_size"]
     _, inner = cell_inner_size()
     pad = CONFIG["padding"]
+    writes_orm = bool(CONFIG["orm_path"])
     albedo = np.ones((size, size, 4), dtype=np.float32)
     normal = np.ones((size, size, 4), dtype=np.float32)
     normal[:, :, 0:3] = (0.5, 0.5, 1.0)  # どの区画にも使われない所は「平ら」な法線にしておく
+    orm = None
+    if writes_orm:
+        orm = np.ones((size, size, 4), dtype=np.float32)
+        orm[:, :, 2] = 0.0  # 使われない所は AO 1・粗さ 1・金属 0
 
     for mat_name, cell in CONFIG["cells"].items():
         x, y = cell_origin(cell["cell"])
         color = load_scaled_pixels(cell["albedo"], inner)
-        if cell.get("ao"):
+        if cell.get("ao") and not writes_orm:
             ao = load_scaled_pixels(cell["ao"], inner)
             color[:, :, 0:3] *= ao[:, :, 0:1]  # AO は灰色画像なので R だけ使う
         bump = load_scaled_pixels(cell["normal"], inner)
@@ -129,8 +149,10 @@ def build_atlas_images():
         edge = ((pad, pad), (pad, pad), (0, 0))
         albedo[y:y + inner + 2 * pad, x:x + inner + 2 * pad] = np.pad(color, edge, mode="edge")
         normal[y:y + inner + 2 * pad, x:x + inner + 2 * pad] = np.pad(bump, edge, mode="edge")
+        if writes_orm:
+            orm[y:y + inner + 2 * pad, x:x + inner + 2 * pad] = np.pad(build_cell_orm(cell, inner), edge, mode="edge")
         print("CELL", mat_name, "->", cell["cell"])
-    return albedo, normal
+    return albedo, normal, orm
 
 
 def save_tga(pixels, path):
@@ -196,14 +218,18 @@ def main():
         raise RuntimeError("cells が空です。")
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    albedo, normal, orm = build_atlas_images()
+    save_tga(albedo, CONFIG["albedo_path"])
+    save_tga(normal, CONFIG["normal_path"])
+    if orm is not None:
+        save_tga(orm, CONFIG["orm_path"])
+    if "--textures-only" in sys.argv:
+        return  # 区画の並びは設定で決まるので、前に書き出した FBX の UV はそのまま合う
+
     bpy.ops.import_scene.fbx(filepath=CONFIG["fbx_path"])
     mesh_objs = [o for o in bpy.data.objects if o.type == "MESH"]
     if not mesh_objs:
         raise RuntimeError("Mesh が見つかりません。")
-
-    albedo, normal = build_atlas_images()
-    save_tga(albedo, CONFIG["albedo_path"])
-    save_tga(normal, CONFIG["normal_path"])
 
     remap_uvs(mesh_objs)
     merge_materials(mesh_objs)

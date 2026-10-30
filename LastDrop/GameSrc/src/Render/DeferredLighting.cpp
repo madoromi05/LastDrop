@@ -11,6 +11,7 @@ using namespace GameLib::Math;
 namespace{
 	const char* kShaderFile = "Resource/Shader/DeferredLighting.hlsl";
 	const char* kFogShaderFile = "Resource/Shader/Fog.hlsl";
+	const char* kReflectionShaderFile = "Resource/Shader/SsrComposite.hlsl";
 
 	// DeferredLighting.hlsl / GBuffer.hlsli の番号と揃える（t2〜t5 / b1）。
 	const int kAlbedoSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
@@ -19,6 +20,8 @@ namespace{
 	const int kDepthSlot = kMaterialSlot + 1;
 	// SSAO の結果（t10。t6〜t9 は影のマップ。LightList.hlsli）。AmbientOcclusion::result。
 	const int kOcclusionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 8;
+	// SSR の結果（t13。t11・t12 は G-Buffer へ書く側の ORM と水たまりの模様）。ScreenSpaceReflection::result。
+	const int kReflectionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 11;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）。
@@ -37,7 +40,7 @@ namespace{
 	};
 	static_assert( sizeof( DeferredConstants ) == sizeof( float ) * ( kMatrixFloats + kParamFloats ), "DeferredConstants : keep the HLSL layout." );
 
-	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO" };
+	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO", "SSR", "SSR color" };
 	static_assert( sizeof( kViewNames ) / sizeof( kViewNames[ 0 ] ) == static_cast< int >( GBufferView::Count ), "GBufferView : one name per view." );
 }
 
@@ -53,6 +56,7 @@ GBufferView& gbufferView() {
 DeferredLighting::DeferredLighting() {
 	mShader = Graphics::Shader::create( kShaderFile );
 	mFogShader = Graphics::Shader::create( kFogShaderFile );
+	mReflectionShader = Graphics::Shader::create( kReflectionShaderFile );
 	mConstants = Graphics::ConstantBuffer::create( sizeof( DeferredConstants ) );
 }
 
@@ -75,10 +79,38 @@ void DeferredLighting::drawFog( Graphics::DepthTarget depth, const Matrix44& pro
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }
 
+void DeferredLighting::drawReflection( const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion,
+	const Graphics::RenderTarget& reflection, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+	setConstants( GBufferView::Final, projectionView );
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setBlendMode( Graphics::BLEND_ADDITIVE ); // アルファ 1 で足す（空の分を引く負の数も、RGBA16F なのでそのまま足せる）
+	gm.setShader( mReflectionShader );
+	gm.setShaderResource( kAlbedoSlot, gbuffer.albedo() );
+	gm.setShaderResource( kNormalSlot, gbuffer.normal() );
+	gm.setShaderResource( kMaterialSlot, gbuffer.material() );
+	gm.setShaderResource( kDepthSlot, depth );
+	gm.setShaderResource( kOcclusionSlot, occlusion );
+	gm.setShaderResource( kReflectionSlot, reflection );
+	gm.drawFullScreen();
+	// 後から描く物（固定パイプライン）に残さない。混ぜ方もライティングの後と同じ（不透明）へ戻す。
+	gm.setBlendMode( Graphics::BLEND_OPAQUE );
+	gm.setShader( Graphics::Shader() );
+	gm.setShaderResource( kAlbedoSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
+	gm.setShaderResource( kOcclusionSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kReflectionSlot, Graphics::RenderTarget() );
+	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
+}
+
 void DeferredLighting::drawView( GBufferView view, const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion,
-	Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+	const Graphics::RenderTarget& reflection, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
 	ASSERT( view != GBufferView::Final && "DeferredLighting : Final is not a G-Buffer view (use drawLighting)." );
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setShaderResource( kReflectionSlot, reflection ); // 表示の SSR・SSR color が読む
 	drawFullScreen( view, gbuffer, occlusion, depth, projectionView );
+	gm.setShaderResource( kReflectionSlot, Graphics::RenderTarget() );
 }
 
 void DeferredLighting::setConstants( GBufferView view, const Matrix44& projectionView ) {
@@ -127,5 +159,9 @@ const char* DeferredLighting::errorMessage() const {
 	if ( message[ 0 ] != '\0' ) {
 		return message;
 	}
-	return mFogShader.errorMessage();
+	message = mFogShader.errorMessage();
+	if ( message[ 0 ] != '\0' ) {
+		return message;
+	}
+	return mReflectionShader.errorMessage();
 }

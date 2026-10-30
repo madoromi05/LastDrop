@@ -7,9 +7,10 @@
     "center_origin": true,
     "mesh_texture": "Resource/uaz_albedo.tga",
     "mesh_normalmap": "Resource/uaz_normal.tga",
+    "mesh_orm": "Resource/uaz_orm.tga",
     "material_params": {
-        "roughness": 0.4,
-        "metallic": 0.0,
+        "roughness": 1.0,
+        "metallic": 1.0,
         "specular": [0.05, 0.05, 0.05],
         "sharpness": 16.0,
         "normalstrength": 0.6

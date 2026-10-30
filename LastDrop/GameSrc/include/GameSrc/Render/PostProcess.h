@@ -41,6 +41,8 @@ public:
 	void bindSceneColor();
 	// シーンの深度。G-Buffer へ描くときに一緒に使い、ライティングと G-Buffer の中身を見るときに読む。
 	GameLib::Graphics::DepthTarget sceneDepth() const;
+	// シーンの色（HDR・リニア）。照らした後の色を読むパス（映り込み。ScreenSpaceReflection）が、描画先から外した後に読む。
+	const GameLib::Graphics::RenderTarget& sceneColor() const;
 	// 噛まれた瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く。
 	void setDamageFlash( float amount );
 	// 噛まれた瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く。

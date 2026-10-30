@@ -101,7 +101,11 @@ float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance)
 //   鏡面：反射の向きに見える空・地面の色を、粗さでならす（キューブマップは作らない。Graphics_Spec.txt 8 章）。
 //         映り込みの強さは Karis の近似（EnvBRDFApprox。「Physically Based Shading on Mobile」）で、反射の積分を粗さと N・V の式で置き換える。
 // 金属は拡散しないので、これが無いと環境光だけの所で真っ黒になる。
-float3 ambientLighting(Surface s, float3 v)
+// 映り込み（SSR。SsrComposite.hlsl）は、鏡面の「空と地面の色」を画面に映っている物の色へ入れ替える（SsrDecalMaterial_Plan.txt 7-3）。
+// 映り込みの強さ（environmentSpecularWeight）はここと SSR で同じ式を使う。
+
+// 映り込みの強さ（Karis の EnvBRDFApprox）。v：面から目への向き（長さ 1）。
+float3 environmentSpecularWeight(Surface s, float3 v)
 {
     static const float4 kEnvC0 = float4(-1.0, -0.0275, -0.572, 0.022);
     static const float4 kEnvC1 = float4(1.0, 0.0425, 1.04, -0.04);
@@ -111,7 +115,12 @@ float3 ambientLighting(Surface s, float3 v)
     float4 r = s.roughness * kEnvC0 + kEnvC1;
     float a004 = min(r.x * r.x, exp2(kEnvFalloff * nov)) * r.x + r.y;
     float2 ab = kEnvScaleBias * a004 + r.zw;
-    float3 specularWeight = f0Of(s) * ab.x + ab.y;
+    return f0Of(s) * ab.x + ab.y;
+}
+
+float3 ambientLighting(Surface s, float3 v)
+{
+    float3 specularWeight = environmentSpecularWeight(s, v);
     float3 reflected = reflect(-v, s.normal);
     float3 diffuse = diffuseColorOf(s) * environmentLight(s.normal, kFullyRough);
     float3 specular = specularWeight * environmentLight(reflected, s.roughness);

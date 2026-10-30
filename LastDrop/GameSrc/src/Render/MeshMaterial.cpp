@@ -18,6 +18,8 @@ namespace{
 	const float kDefaultRoughness         = 0.8f;
 	const float kDefaultMetallic          = 0.f;
 	const float kDefaultEmission          = 0.f;
+	const float kNoPuddle                 = 0.f; // 水たまりは道路だけ（材質の txt に puddle="1"）
+	const float kPuddle                   = 1.f;
 }
 
 MeshMaterial::MeshMaterial() :
@@ -28,6 +30,7 @@ MeshMaterial::MeshMaterial() :
 	mRoughness( kDefaultRoughness ),
 	mMetallic( kDefaultMetallic ),
 	mEmission( kDefaultEmission ),
+	mPuddle( kNoPuddle ),
 	mDoubleSided( false ) {
 }
 
@@ -37,6 +40,14 @@ void MeshMaterial::setTexture( Graphics::Texture texture ) {
 
 void MeshMaterial::setNormalMap( Graphics::Texture texture ) {
 	mNormalMap = texture;
+}
+
+void MeshMaterial::setOrmMap( Graphics::Texture texture ) {
+	mOrmMap = texture;
+}
+
+void MeshMaterial::setPuddle( bool puddle ) {
+	mPuddle = puddle ? kPuddle : kNoPuddle;
 }
 
 void MeshMaterial::setDiffuseColor( const Vector3& color ) {
@@ -81,6 +92,9 @@ bool MeshMaterial::updateLoading() {
 	if ( mNormalMap && !mNormalMap.isReady() ) {
 		ready = false;
 	}
+	if ( mOrmMap && !mOrmMap.isReady() ) {
+		ready = false;
+	}
 	return ready;
 }
 
@@ -103,7 +117,7 @@ void MeshMaterial::apply() const {
 	m.setCullMode( mDoubleSided ? Graphics::CULL_NONE : Graphics::CULL_BACK );
 	// G-Buffer へ描く間は、PBR の材質値を G-Buffer のシェーダへ渡す（静的メッシュもキャラもここを通る）。
 	if ( RenderPass::current() == RenderPassKind::GBuffer ) {
-		RenderPass::setSurface( SurfaceParams{ mRoughness, mMetallic, mEmission } );
+		RenderPass::setSurface( SurfaceParams{ mRoughness, mMetallic, mEmission, mPuddle }, mOrmMap );
 	}
 }
 

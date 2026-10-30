@@ -669,6 +669,12 @@
     <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -1550,6 +1556,18 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PuddleParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1945,6 +1963,11 @@
     <None Include="Resource\Shader\SsaoUpsample.hlsli" />
     <None Include="Resource\Shader\SoftQuad.hlsli" />
     <None Include="Resource\Shader\GlowQuad.hlsl" />
+    <None Include="Resource\Shader\Ssr.hlsl" />
+    <None Include="Resource\Shader\SsrBlur.hlsl" />
+    <None Include="Resource\Shader\SsrComposite.hlsl" />
+    <None Include="Resource\Shader\SsrCommon.hlsli" />
+    <None Include="Resource\Shader\Decal.hlsl" />
     <None Include="Resource\Shader\Noise.hlsli" />
     <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>

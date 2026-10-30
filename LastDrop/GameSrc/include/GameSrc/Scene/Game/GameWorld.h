@@ -88,18 +88,22 @@ public:
 	//                （画面の中央から、照準のぶれの分だけずれた所＝銃が向いている所へ飛ぶ）。
 	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection,
 		Inventory* inventory );
-	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。
-	// 手前に来やすい物から描く：自キャラ・弾 → ゾンビ・千切れた部位 → 建物（目に近い順）→ 車・置物 → 地面。
-	// 先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる（Early-Z。Optimization_Plan.txt 2-3）。
-	// 奥行きで隠すので、順番を変えても絵は変わらない。物ごとの GPU の時間を印（Profiling::gpuMark）で分ける。
+	// 町・キャラ・物を描くだけ（何回呼んでも同じ絵になる）。物ごとの GPU の時間を印（Profiling::gpuMark）で分ける。
+	// 動かない物は手前に来やすい物から描く：建物（目に近い順）→ 車・置物 → 地面。先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる
+	// （Early-Z。Optimization_Plan.txt 2-3）。自キャラ（腕と銃）を一番先に描いていたのは同じ理由だが、デカールのために後へ回した
+	// （G-Buffer のパスは 1 画素が軽いので、重さは段階 7 の計測で確かめる）。
+	// 動かない物（建物・車・置物・地面）と動く物（自キャラ・弾・ゾンビ・千切れた部位）に分けて描く。間にデカール（弾痕）を描き、
+	// 後から描く動く物がデカールを上書きして、キャラに弾痕が乗らないようにする（SsrDecalMaterial_Plan.txt Q7）。
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
-	void draw( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
+	void drawStatic( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
+	// 動く物を描く。drawStatic とデカールの後に呼ぶ。
+	void drawDynamic() const;
 	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
 	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。frustum：光の側から見た映る範囲（建物・置物を間引く）。
 	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
 	void drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const;
-	// 弾痕を描く。draw の後、同じ描画先で呼ぶ（壁の奥行きで隠すため）。1フレームに1回まで。
+	// 弾痕を G-Buffer へデカールとして描く。drawStatic の後・drawDynamic の前に、GBuffer::beginDecals〜endDecals の間で呼ぶ。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
 	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。

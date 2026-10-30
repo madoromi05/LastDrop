@@ -23,6 +23,8 @@ enum class GBufferView{
 	ShadowMaps, // 影のマップ 4 枚を画面を 4 つに分けて（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目。光に近いほど黒）
 	Fog,       // 霧の量（0 黒〜1 白。空は黒。NightFinish_Plan.txt 9 章）
 	Ssao,      // SSAO の AO（0 黒＝遮られた〜1 白。空は黒。SsaoTranslucent_Plan.txt 8 章）
+	Ssr,       // 映り込みの確からしさ（0 黒〜1 白。SsrDecalMaterial_Plan.txt 9 章）
+	SsrColor,  // 映り込みの色（確からしさで割った、映る物の色そのもの。ToneMap を通さないので暗い）
 	Count,
 };
 // エディタ（F6 の Render）に出す名前。
@@ -32,8 +34,9 @@ GBufferView& gbufferView();
 
 // G-Buffer と深度を読んで画面を作る全画面のパス（シェーダは Resource/Shader/DeferredLighting.hlsl・Fog.hlsl）。
 // 仕様は GBuffer_Plan.txt 7・8 章、PBR の式は PbrNightLighting_Plan.txt 4 章、霧は NightFinish_Plan.txt 5 章。
-// ライティング（drawLighting。PBR の式でシーンの色を出す）・霧（drawFog）・G-Buffer の中身の表示（drawView）の 3 つ。
-// 霧もここに置くのは、深度から位置を戻す定数（射影×ビューの逆）と深度の番号がライティングと同じだから。
+// ライティング（drawLighting。PBR の式でシーンの色を出す）・映り込みを混ぜる（drawReflection）・霧（drawFog）・
+// G-Buffer の中身の表示（drawView）の 4 つ。
+// 霧と映り込みを混ぜるパスもここに置くのは、深度から位置を戻す定数（射影×ビューの逆）と G-Buffer・深度の番号がライティングと同じだから。
 // 作るのは Graphics::Manager ができた後（シーンの中）。
 class DeferredLighting{
 public:
@@ -50,12 +53,18 @@ public:
 	// 深度を読み、霧の色を霧の量の割合で今の描画先（シーンの色）へ混ぜる。drawLighting の直後、同じ描画先のまま呼ぶ。
 	// 霧の値と色は付けてあるライトの一覧（b2）から読む。空の画素は変えない。
 	void drawFog( GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+	// 映り込み（SSR の結果 reflection。ScreenSpaceReflection::result）を、今の描画先（シーンの色）へ混ぜる。ライティングの後・霧の前に、
+	// 描画先をシーンの色だけにして呼ぶ。環境光の鏡面（空と地面の色）を、映り込みの確からしさの分だけ SSR の色へ入れ替える
+	// （SsrDecalMaterial_Plan.txt 7-3。BLEND_ADDITIVE）。occlusion：SSAO の結果（環境光の鏡面と同じ AO を掛けるため）。
+	void drawReflection( const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion, const GameLib::Graphics::RenderTarget& reflection,
+		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	// view（Final 以外）を、今の描画先へ全画面で写す。ToneMap を通さず中身の数のまま見るため、PostProcess::endScene の後
 	// （描画先が画面に戻った後）に呼ぶ。occlusion：SSAO の結果（AmbientOcclusion::result。表示の SSAO が読む）。
+	// reflection：SSR の結果（表示の SSR・SSR color が読む）。
 	// depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
 	void drawView( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
-		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
-	// シェーダのコンパイルエラー（ライティングのシェーダ → 霧のシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
+		const GameLib::Graphics::RenderTarget& reflection, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+	// シェーダのコンパイルエラー（ライティング → 霧 → 映り込みを混ぜるシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
 	const char* errorMessage() const;
 
 private:
@@ -66,6 +75,7 @@ private:
 		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	GameLib::Graphics::Shader mShader;    // ライティングと G-Buffer の表示（DeferredLighting.hlsl）
 	GameLib::Graphics::Shader mFogShader; // 霧（Fog.hlsl）
+	GameLib::Graphics::Shader mReflectionShader; // 映り込みを混ぜる（SsrComposite.hlsl）
 	GameLib::Graphics::ConstantBuffer mConstants;
 };
 

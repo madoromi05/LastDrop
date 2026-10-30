@@ -7,9 +7,13 @@
     "center_origin": true,
     "scale": [1.0, 1.35215, 1.0],
     "mesh_texture": "Resource/road_albedo.tga",
+    "mesh_normalmap": "Resource/road_normal.tga",
+    "mesh_orm": "Resource/road_orm.tga",
     "material_params": {
-        "roughness": 0.9,
-        "metallic": 0.0,
+        "roughness": 1.0,
+        "metallic": 1.0,
+        "normalstrength": 0.6,
+        "puddle": 1,
         "specular": [0.02, 0.02, 0.02],
         "sharpness": 8.0
     }

@@ -4,16 +4,17 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Graphics/Texture.h"
-#include "GameSrc/Render/LitQuadBatch.h"
+#include "GameSrc/Render/DecalBatch.h"
 #include <vector>
 
 class IRayBlocker;
 
-// 弾が物（建物・車・地面・拾える物）に当たった跡。当たった面に貼った小さな四角い板として描く（SummaryPlan/BulletHole_Plan.txt の案1）。
+// 弾が物（建物・車・地面・拾える物）に当たった跡。G-Buffer へデカール（DecalBatch）として、当たった面そのものに色と凹みの法線を書く
+// （SsrDecalMaterial_Plan.txt 8 章。2026-10-15 から段階 7 までは、面に貼った小さな四角い板だった：BulletHole_Plan.txt の案1）。
 // 同時に残すのは決まった数まで。超えたら古い物から消し、超えなくても決まった時間で消す（途中から少しずつ薄くなる）。
 // どこに足すか（ゾンビには付けない、など）は持ち主（GameWorld）が決める。ここは「足す・古くする・描く」だけ。
-// 板は面の上に浮かせて置くだけなので、角や窓枠の端に当たると板がはみ出す（気になったら案2：面に沿って切り取る）。
-// 壁や地面と同じライトで照らす（LitQuadBatch。2026-10-15 ユーザー指定）。当たった面の法線で照らすので、壁と同じ明るさになる。
+// 面そのものに書くので、角や窓枠の端に当たってもはみ出さない（案2 の「面に沿って切り取る」を作らずに済んだ）。
+// G-Buffer に書くので、壁や地面と同じライト・影・霧・SSAO がそのまま掛かる（2026-10-15 ユーザー指定の「壁と同じライト」のまま）。
 class BulletHoleList{
 public:
 	BulletHoleList();
@@ -27,27 +28,27 @@ public:
 	void update();
 	// attachedTo に付いた跡を全部消す。物を消す前に呼ぶ（消した後だと、同じ場所に作られた別の物と見分けられないため）。
 	void removeAttachedTo( const IRayBlocker* attachedTo );
-	// 全部の跡を1回で描く。1フレームに1回まで。ライトを設定した後に呼ぶ（LitQuadBatch::draw と同じ）。
-	// 物を描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ（壁の向こうの跡を、壁の奥行きで隠すため）。
-	// 絵の読み込みが終わるまでは描かない。projectionView: カメラの射影×ビュー行列。
+	// 全部の跡を描く。1フレームに1回まで。GBuffer::beginDecals〜endDecals の間に呼ぶ（動かない物を描いた後・動く物の前）。
+	// 絵の読み込みが終わるまでは描かない。F6 の Decals を切っている間も描かない。projectionView: カメラの射影×ビュー行列。
 	void draw( const GameLib::Math::Matrix44& projectionView );
 
 private:
 	struct Hole{
-		GameLib::Math::Vector3 center; // 板の中心（当たった位置から法線の向きへ浮かせた所）
-		GameLib::Math::Vector3 right;  // 板の横の半分（中心から右の辺まで。ワールド）
-		GameLib::Math::Vector3 up;     // 板の縦の半分（中心から上の辺まで。ワールド）
-		GameLib::Math::Vector3 normal; // 当たった面の外向きの法線（照らす向き）
+		GameLib::Math::Vector3 center; // 当たった位置（面の上）
+		GameLib::Math::Vector3 right;  // 絵の横の半分（中心から右の辺まで。ワールド）
+		GameLib::Math::Vector3 up;     // 絵の縦の半分（中心から上の辺まで。ワールド）
+		GameLib::Math::Vector3 normal; // 当たった面の外向きの法線（デカールの箱の厚さの向き）
 		const IRayBlocker* attachedTo; // 目印だけ（読まない）
 		int age;                       // 付いてからのティック数
 	};
-	// 板1枚を、古さに合わせた不透明度で mQuads へためる。
-	void addQuad( const Hole& hole );
+	// 1 つを、古さに合わせた不透明度で mDecals へためる。
+	void addDecal( const Hole& hole );
 
 	std::vector< Hole > mHoles;           // 古い順
 	float mNextTurnDegree;                // 次に足す板を、法線まわりに回す角度（度）
-	GameLib::Graphics::Texture mTexture;  // 弾痕の絵（Resource/bullet_hole.tga）
-	LitQuadBatch mQuads;                  // 板をためて、ライトを当てて描く
+	GameLib::Graphics::Texture mTexture;  // 弾痕の絵（Resource/bullet_hole。色とアルファ）
+	GameLib::Graphics::Texture mNormalMap; // 弾痕の凹みの法線（Resource/bullet_hole_normal）
+	DecalBatch mDecals;                   // 跡をためて、G-Buffer へ描く
 };
 
 #endif

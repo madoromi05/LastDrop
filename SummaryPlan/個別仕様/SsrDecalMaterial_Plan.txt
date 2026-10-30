@@ -1,0 +1,450 @@
+================================================================================
+ SSR・デカール（弾痕）・材質テクスチャ（グラフィック段階7）の計画メモ
+ 作成日：2026-10-30
+ 状態：Q1〜Q10 ともおすすめ案（★）でユーザーが承認（2026-10-30）。
+       7-a 実装済み・ユーザーが画面確認済み（2026-10-30）。変えた所は 13 章
+       7-b 実装済み・ユーザーが画面確認済み（2026-10-30）。変えた所は 14 章
+       7-c 実装済み・ユーザーが画面確認済み（2026-10-30）。変えた所は 15 章
+       7-d 計測済み（2026-10-30。11 章。SSR 約 0.21ms・デカール 0.002ms・CPU 変わらず）。段階 7 完了
+ 元の仕様：Graphics_Spec.txt 2 章（パスの順番 (3) デカール・(6) SSR）・5-2（材質のデータの段階 2）・9 章（デカール）・
+           10-2（SSR）・12 章（GameLib に足す物）・13 章（予算 SSR 1.5ms）・15 章（段階 7）
+           GBuffer_Plan.txt（G-Buffer の並び。RT2 の r が AO）
+           PbrNightLighting_Plan.txt（環境光の鏡面 ambientLighting・夜の暗さの基準 Q2「明かりが無くても 15m 先の輪郭が分かる」）
+           SsaoTranslucent_Plan.txt（段階 6。読み取り専用の深度・奥行きを見た拡大 SsaoUpsample.hlsli・計測の録り方）
+           BulletHole_Plan.txt（今の弾痕。案1 の板・案2 の面に沿って切る）
+           ZombieHitFeedback_Plan.txt 4 章（血の跡は案として残す）
+================================================================================
+
+ 目次
+  0. 決めること（Q1〜Q10）
+  1. タルコフでは
+  2. 今のコードで関係するところ
+  3. ゴールと、段階7 でやらないこと
+  4. 全体の順番（変えた後の流れ）
+  5. 材質テクスチャ（7-a）
+  6. 雨上がりの水たまり（7-a）
+  7. SSR（7-b）
+  8. デカール（弾痕。7-c）
+  9. 調整（F6）と表示
+ 10. 進め方（7-a〜7-d）
+ 11. 計測
+ 12. 参考
+ 13. 実装で仕様から変えた所（7-a）
+ 14. 実装で仕様から変えた所（7-b）
+ 15. 実装で仕様から変えた所（7-c）
+
+================================================================================
+ 0. 決めること（★はおすすめ）
+================================================================================
+ Q1. 進める順番
+     ★A：材質テクスチャと水たまり（7-a）→ SSR（7-b）→ デカール（7-c）→ 計測（7-d）
+          ・SSR が映すのは粗さの低い面だけ（Graphics_Spec.txt 10-2）。今の路面は粗さ 0.9 で一様なので、先に SSR を作っても
+            映る所が車（0.4）しか無く、画面で確かめられない。水たまりを先に作れば、SSR を作った日に見せ場（濡れた路面に街灯）で確かめられる
+          ・デカールは他の 2 つと関係が無いので最後
+      B：Graphics_Spec.txt 15 章の並び（SSR → デカール → 材質テクスチャ）
+
+ Q2. 路面を濡らすか（今は雨も天気も無い）
+     ★A：雨上がりにする。雨は降らせず、道路に水たまりを散らし、水たまりの周りだけ少し濡らす（暗く・つやを上げる）
+          ・街灯と懐中電灯が水たまりに映り込むのが SSR の一番の見せ場（Graphics_Spec.txt 10-2）
+          ・雨（降る粒・音・霧の変化）は別のタスク。雨上がりなら今の夜の絵・音を変えずに済む
+      B：路面全体を一様に濡らす（粗さ 0.3）。どこも映り込むが、遠くまで同じつやで単調になり、SSR の重さも画面全体に掛かる
+      C：濡らさない。SSR が映るのは車の塗装（とガソリン缶）だけ
+
+ Q3. 水たまりの形をどう決めるか
+     ★A：ワールドの位置（x・z）で読む白黒の模様の画像を 1 枚作り（tools の python で生成。tools/blood_gen.py などと同じ作り方）、
+          道路の材質だけが読む（材質の txt に puddle="1"。G-Buffer の b3 の空いている w に入れる）
+          ・道路はタイル（道路キット）の並びなので、タイルの画像に焼くと同じ形の水たまりがタイルごとに繰り返す。
+            ワールドの位置で読めば、模様の 1 枚（例：16m 四方）ごとにしか繰り返さない
+      B：道路の ORM 画像（5 章）に水たまりの形を焼く（作りは小さいが、タイルごとに同じ水たまりが並ぶ）
+      C：シェーダの中で式のノイズ（fBm）を作る（画像は要らないが、形を目で決めにくい）
+
+ Q4. 材質テクスチャ（ORM）を作る物
+     ★A：元の画像に Roughness・Metallic があるものだけ：車（UAZ）・道路キット・ガソリン缶。
+          建物・銃・ゾンビ・自キャラは今の数値（材質ごとに一様）のまま
+          ・建物の元の画像は Albedo と Normal だけ、銃も同じ（2026-10-30 に元のフォルダを確認）。手で描くと作業が大きい
+          ・道路キットは Normal の画像もあるのに今は使っていない。ORM と一緒に法線マップも付ける
+      B：全部（無い物は albedo から作る・手で描く）
+
+ Q5. SSR の進み方（反射の向きへ当たる所を探す）
+     ★A：直線で進む ＋ 二分探索。反射の向きへ決まった歩数（初期値 24 歩。先ほど歩幅を広げる）進み、深度より奥へ入った所から
+          4 回の二分探索で当たった所を詰める。歩き始めは画素ごとに IGN でずらす（段々の模様を消し、6 章のぼかしで均す）
+          ・中身を全部説明できる。McGuire・Mara（2014）の画面上を進む方法は、速いが式が長い
+      B：Hi-Z（深度の縮小の段を作り、空いている所を大きく飛ばす。Uludag 2014）。速いが、深度の縮小の段を作るパスが要る
+
+ Q6. 映り込みをどう掛けるか
+     ★A：今の環境光の鏡面（空・地面の色。ambientLighting）と入れ替える。当たった画素の色に、確からしさ（画面の端・粗さ・当たらなかった）を
+          掛けて混ぜる。全画面のパスで「（SSR の色 − 空の色）× 鏡面の重み × 確からしさ」をシーンの色に足す（RGBA16F なので負の数も足せる）
+          ・空の映り込みと SSR を両方足すと、映り込みが二重に明るくなるため
+      B：SSR の色を足すだけ（作りは小さいが、空と二重になる）
+
+ Q7. デカールをゾンビ・自キャラに付けない方法
+     ★A：G-Buffer へ描く順番を「動かない物（建物・車・置物・地面）→ デカール → 動く物（自キャラ・ゾンビ・ちぎれた手足・弾）」にする。
+          デカールは「その画素に見えている面」へ書くので、後から描くキャラがデカールを上書きして消す
+          ・G-Buffer に印を足さなくてよい。タルコフにも「道路のデカールが落ちている物に重なる」不具合があった（1 章）
+          ・自キャラを最初に描いていたのは、奥の物の画素を早く捨てるため（④最適化）。G-Buffer のパスは 1 画素が軽いので、
+            順番を変えた分の重さは 7-d の計測で確かめる（gpu.Player 〜 gpu.Ground の合計）
+      B：G-Buffer に「デカールを受ける面」の印を書く（RT0 / RT1 の a は予備だが、デカールが RT0・RT1 に書きながら読むことはできないので、
+          4 枚目の描画先か RT2 の詰め直しが要る）
+
+ Q8. 弾痕の凹み（法線）
+     ★A：bullet_hole_gen.py で凹みの高さから法線の画像も作り、G-Buffer の色と法線の両方に書く。懐中電灯を斜めに当てると穴の縁が光る
+      B：色だけ書く（今の板と同じ見え方。作りは小さい）
+
+ Q9. 血の跡（壁・地面に付く血）
+     ★A：段階 7 では作らない。デカールの作り（DecalBatch）だけ、血にも使える形にしておく（ZombieHitFeedback_Plan.txt 4 章の案のまま）
+      B：作る（ゾンビを撃ったとき、後ろの壁・足元に血のデカールを付ける）
+
+ Q10. 遊ぶ人の設定（Options）に足すか
+     ★A：段階 7 では足さない（F6 だけ）。SSR の ON/OFF を含む画質の設定（Graphics_Spec.txt 13 章「重いときに落とす順番」）は、
+          段階 6 の Q8 で決めたとおり別のタスクにする（段階 7 の後に、SSR・影・SSAO・解像度をまとめて）
+      B：Options に「SSR の ON/OFF」だけ足す
+
+================================================================================
+ 1. タルコフでは
+================================================================================
+ SSR
+  ・グラフィックの設定に SSR（Off・Low・Medium）がある。攻略はどれも Off を勧める（「FPS を下げる」「見た目だけで遊びに効かない」。
+    GGRecon・TarkovForge・TarkovKit。段階 6 の 1 章と同じ記事）
+  ・画面のアップデートで「SSR を良くした」（目の慣れ・色補正・材質とテクスチャの作り直しと同時。DSOGaming。時期は記事から読み取れなかった）
+ 雨・濡れた路面
+  ・0.13（Streets of Tarkov を足した版）で、天気の設定に雲・霧・雨・風が入った（ClutchPoints の 0.13 のパッチノート）
+  ・濡れた路面・水たまりの見え方を書いた資料は見つからなかった
+ デカール
+  ・0.13.1.0 で「道路のデカールが、落ちている物・装備・武器に重ならないようにした」（ClutchPoints の 0.13.1.0 のパッチノート）
+    → 地面に投げるデカールが、上に置かれた動く物にまで乗る不具合があった
+  ・「全マップのデカール・弾道・カリング・ライティングの表示の不具合を直した」という修正もある（Escape from Tarkov Wiki の Changelog）
+  ・Arena 0.4.1.0 で「デカールを最適化して全マップの重さを改善」。0.13 でもデカールの描き方を最適化している
+    → デカールは数が増えると重くなる物として扱われている
+  ・弾痕がいくつ残るか・いつ消えるかを書いた資料は見つからなかった
+ 血
+  ・0.12.8 で「重い出血は、ほかの人にも見える血の跡を残す」（GameSpot・Dexerto）。血の跡は見た目だけでなく、追跡の手がかり（遊び）になっている
+ このゲームへの当てはめ
+  ・SSR は見た目だけで重いと嫌われる → 半分の大きさで作り、粗さの低い画素（水たまり・車）だけ計算する。F6 で切れる（Q10）
+  ・SSR を見せるには、映る面が要る。雨は無いので雨上がりの水たまり（Q2）。天気（雨）は別のタスク
+  ・デカールが動く物に乗る不具合は、描く順番で起きないようにする（Q7）
+  ・デカールの数は今の弾痕と同じ上限（16 個）のまま。重さは 7-d で測る
+  ・血の跡は遊び（追跡）にも関わるので、見た目だけ先に作らない（Q9）
+
+================================================================================
+ 2. 今のコードで関係するところ
+================================================================================
+  ・GameScene::draw の順番（2026-10-30）
+      影 → G-Buffer（GameWorld::draw：Player → Zombies → Buildings → Props → Ground の順で GPU の印）→ SSAO → ライティング → 霧 →
+      resumeSceneReadOnlyDepth → 弾痕（LitQuadBatch。薄くしない）→ 砂ぼこり → 血しぶき → マズルフラッシュ → 当たり判定の表示 → endScene
+  ・GameWorld::draw：自キャラ（腕と銃）を最初に描く（画面の大きな所を占めるので、奥の物を早く捨てる）。建物は目に近い順
+  ・G-Buffer（GBuffer.hlsli）：RT0 RGBA8_SRGB 色・a 予備 / RT1 RGBA16F 法線（ワールド）・a 予備 / RT2 RGBA8 r AO（今は 1）g 粗さ b 金属 a 発光 / t5 深度
+    書くのは writeGBuffer（StaticMeshGBuffer.hlsl・SkinnedMeshGBuffer.hlsl）。粗さ・金属・発光は b3 の gSurface.xyz、w は使っていない
+  ・ライティング（DeferredLighting.hlsl）：s.normal は RT1 をそのまま使う（長さ 1 に直していない。デカールで法線を混ぜるなら直す）
+    s.occlusion = RT2 の r × SSAO。ambientLighting が「拡散 ＋ 鏡面（空と地面の色）」× s.occlusion
+  ・材質：メッシュの txt の <StaticMesh texture= normalmap= roughness= metallic= ...>（MeshLoaderUtil.cpp・MeshMaterial）。
+    MeshMaterial::apply が t0 に色、t1 に法線マップ、b3 に粗さ・金属・発光を渡す
+    今の値：道路 0.9・建物 0.8・車 0.4・ガソリン缶 0.5・銃 0.5（どれも金属 0）
+  ・画像の道具：tools/atlas_materials.py（材質ごとの画像を 1 枚にまとめる。albedo と normal だけ。AO は albedo に焼き込む）、
+    tools/fbx_to_gamelib.py（texture_sources で元の画像を書き出す）、tools/texture_to_dds.ps1（色は BC7_UNORM_SRGB、法線は BC5_UNORM）
+  ・元の画像（C:/Users/mador/Downloads/ゾンビゲーム/。2026-10-30 に確認）
+      車（Post_Apocalyptic_UAZ_textures/textures）：BaseColor・Normal・Roughness・Metallic・Height（1 区画だけ AO）
+      道路キット（道路/textures）：modularkit（色）・Normal・Roughness・Metallic・Height
+      ガソリン缶（Oil+Tank/Textures）：BaseColor・Normal・Roughness・Metallic・Displacement
+      建物（Red Brick Building/Baked）：Albedo・Normal だけ　銃（AKM）：色・法線だけ
+  ・弾痕：BulletHoleList（同時に 16 個・10 秒で消える・終わりに薄くなる・板の半分の大きさ 6cm・面から 1cm 浮かせる）。
+    絵は tools/bullet_hole_gen.py の bullet_hole.tga（色とアルファ）。拾える物が消えるときは removeAttachedTo で一緒に消す
+  ・段階 6 で足した物：Manager::setRenderTargets の readOnlyDepth・SsaoUpsample.hlsli（奥行きを見た拡大）・DepthPosition.hlsli・Noise.hlsli
+  ・GameLib：CULL_FRONT（裏だけ描く）がある。テクスチャは TEXTURE_COLOR_SPACE_LINEAR（数のまま読む）で読める
+
+================================================================================
+ 3. ゴールと、段階7 でやらないこと
+================================================================================
+  ゴール：雨上がりの夜。道路の水たまりに街灯・懐中電灯・車が映り込み、車の塗装にも町が映る。車の金属の所・ガソリン缶の錆が
+          画素ごとのつやで見える。弾痕は壁の角や窓枠からはみ出さず、懐中電灯を当てると穴の縁に陰が付く。
+          近くの戦う距離の見え方（15m 先の輪郭）と、ゾンビ・自キャラの見た目は今と変わらない
+  やらない
+  ・雨（降る粒・雨の音・霧の変化）・天気が変わる仕組み（Q2）
+  ・血の跡のデカール（Q9）
+  ・建物・銃・キャラの材質テクスチャ（Q4）
+  ・Hi-Z（Q5 の B）・SSR の粗さに合わせたぼかし（つやの低い面のぼけた映り込み。粗さ 0.4 より上は空の色のまま）
+  ・画質の設定・Options（Q10）
+  ・TAA（段階 8。SSR のざらつきが気になったら）
+
+================================================================================
+ 4. 全体の順番（変えた後の流れ）
+================================================================================
+  影 → G-Buffer：★動かない物（建物 → 車・置物 → 地面。★道路は水たまりと ORM を書く。7-a）→ ★デカール（弾痕。7-c）→
+         ★動く物（自キャラ・弾 → ゾンビ・ちぎれた手足）→ SSAO → ライティング → ★SSR（半分の大きさ）→ ★SSR を混ぜる（7-b）→ 霧 →
+  半透明（砂ぼこり・血しぶき・マズルフラッシュ。弾痕はここから無くなる）→ endScene
+  順番の理由
+  ・デカールは動かない物の後・動く物の前（Q7）
+  ・SSR はライティングの後（照らした色を映す）・霧の前（映り込みにも霧が掛かる。Graphics_Spec.txt 2 章）
+  ・SSR はシーンの色を読みながらシーンの色へは書けないので、半分の大きさの描画先へ作ってから、別の全画面のパスで混ぜる（SSAO と同じ形）
+
+================================================================================
+ 5. 材質テクスチャ（7-a）
+================================================================================
+ 5-1. 形式
+  ・xxx_orm.dds：r AO・g 粗さ・b 金属（glTF・Unreal と同じ並び。Graphics_Spec.txt 5-2）。数のまま読む（_SRGB にしない）。
+    BC7_UNORM（texture_to_dds.ps1 に「数のまま」の種類を足す）
+  ・材質の txt に ormmap="Resource/xxx_orm.dds"。読み込みは normalmap と同じ所（MeshLoaderUtil.cpp）
+  ・ORM が無い材質は「白 1 画素の画像」を付ける。シェーダは 粗さ = txt の数値 × ORM の g、金属 = txt の数値 × ORM の b、AO = ORM の r。
+    分かれ道を作らずに、今の材質（ORM 無し）は今と同じ値になる。ORM がある材質は txt の数値を 1 にする
+  ・シェーダ：StaticMeshGBuffer.hlsl の writeGBuffer が ORM を読む（キャラの SkinnedMeshGBuffer.hlsl は今の数値のまま）。
+    ORM の番号は実装で決める（G-Buffer へ描く間は t2 以降を使っていないが、GBuffer.hlsli が読む側の t2〜t5 を宣言しているので、
+    同じシェーダの中で重ならない番号にする）
+
+ 5-2. 作り方（道具）
+  ・atlas_materials.py：cells に roughness・metallic・ao を書けるようにし、orm_path に ORM の TGA を書き出す（albedo・normal と同じ区画に並べる）。
+    今 albedo に焼き込んでいる AO は、ORM の r へ移す（色に陰を焼かない。SSAO と二重にならない）
+  ・fbx_to_gamelib.py：texture_sources に mesh_orm（元の Roughness・Metallic を 1 枚にして書き出す）
+  ・作る物：uaz_orm（atlas）・road_orm ＋ road_normal（道路キット 9 種類が同じ画像を使う）・fuelcan_orm（atlas）
+  ・金属の画像は 0 か 1（境目だけ中間）。車の塗装が剥げた所・ガソリン缶の錆の所が金属になる
+
+================================================================================
+ 6. 雨上がりの水たまり（7-a。Q2・Q3 の A）
+================================================================================
+ 6-1. 模様
+  ・tools/puddle_gen.py（新しく作る）：白黒の 1 枚（1024²。白が水たまり）。いくつかの大きさのノイズを重ねて、しきい値でなめらかに切る。
+    つながり過ぎない・道の端（縁石の近く）に寄る、は狙わない（模様 1 枚は道路の形を知らない）
+  ・Resource/puddle_mask.dds（BC4 か BC7。数のまま）
+
+ 6-2. 書き方（StaticMeshGBuffer.hlsl。道路の材質だけ。gSurface.w = 1）
+  ・m = 模様( ワールドの xz / kPuddleTileSize )。kPuddleTileSize 16m（初期値）
+  ・水たまりの中（m が 1 に近い）：粗さ 0.05・法線は真上へ寄せる（水面は平ら）・色は少し暗く（濡れると暗く見える）
+  ・周り（m が中間）：粗さを下げ、色を少し暗く（濡れた路面）
+  ・値（LightingParams ではなく、新しい SurfaceParams か MaterialParams。F6 → Tuning）
+      puddleCoverage   模様のしきい値（大きいほど水たまりが多い）  初期値 0.35
+      puddleRoughness  水たまりの粗さ                            0.05
+      wetRoughness     濡れた路面の粗さ                          0.4
+      wetDarkening     濡れた所の色に掛ける数                    0.6
+      kPuddleTileSize  模様 1 枚の大きさ（m）                    16
+    どれも見た目を確かめる前の初期値
+  ・確かめる絵：F6 の G-Buffer の表示 Roughness で、水たまりが黒い形で散って見える
+
+================================================================================
+ 7. SSR（7-b）
+================================================================================
+ 7-1. 作り
+  ・GameSrc/Render/ScreenSpaceReflection.h / .cpp（新しく作る）：半分の大きさの描画先（RGBA16F。rgb 映る色・a 確からしさ）2 枚
+    （作る ↔ ぼかし）と、Ssr.hlsl・SsrComposite.hlsl。SSAO（AmbientOcclusion）と同じ形
+  ・作るパス（Ssr.hlsl）：G-Buffer の法線・粗さ（RT1・RT2）・深度・ライティングした後のシーンの色を読む
+  ・混ぜるパス（SsrComposite.hlsl）：元の大きさの全画面。BLEND_ADDITIVE（ONE・ONE を足す）で、シーンの色に Q6 の差を足す。
+    結果は奥行きを見て拡大して読む（段階 6 の SsaoUpsample.hlsli と同じ考え。式は共通にする）
+
+ 7-2. 式（Q5 の A）
+  1) 粗さ r が kSsrMaxRoughness（0.4）以上、または空の画素なら、確からしさ 0 で終わる
+  2) 目から画素への向きを法線で反射した向き R。R が目の方を向いている（画面の手前へ戻る）なら、確からしさ 0
+  3) 画素の位置 P から R へ、kSsrSteps（24）歩進む。歩幅は先ほど広げる（近くは細かく、遠くは粗く）。最大の長さ kSsrMaxDistance（30m）。
+     歩き始めは IGN でずらす
+  4) 歩くたびに点を画面へ戻し、その画素の深度の奥行き dq と点の奥行き ds を比べる。ds > dq（点が物の奥へ入った）かつ
+     ds − dq < 厚さ kSsrThickness（0.5m。薄い物の裏まで当たったことにしない）なら当たり
+  5) 当たった歩と前の歩の間を 4 回の二分探索で詰め、その画素のシーンの色を読む
+  6) 確からしさ ＝ 画面の端で薄く（端から 10%）× 粗さで薄く（0.3 → 0.4 で 1 → 0）× 歩いた長さで薄く（最大の長さに近いほど）
+  ・当たらなかったら確からしさ 0（混ぜるパスで空の色のまま）
+
+ 7-3. 混ぜ方（Q6 の A）
+  ・鏡面の重み：ambientLighting と同じ EnvBRDFApprox（Karis）で、f0・粗さ・N・V から出す（式は Pbr.hlsli から共有する）
+  ・足す量 ＝（SSR の色 − 空と地面の色 environmentLight( R, 粗さ )）× 鏡面の重み × s.occlusion × 確からしさ
+  ・環境光の鏡面は「映る物が何も無ければ空」の近似なので、確からしさが 1 なら空の分がそっくり SSR に入れ替わる
+
+ 7-4. ぼかし
+  ・半分の大きさで、奥行きを見たぼかしを横 → 縦（SSAO と同じ）。歩き始めのずらしのざらつきを均す。確からしさも一緒にぼかす
+
+ 7-5. 値（SsrParams。F6 → Tuning）
+  ・maxRoughness 0.4・steps 24・maxDistance 30m・thickness 0.5m・edgeFade 0.1・intensity 1（全体の強さ。見比べ用）
+  ・ssrEnabled()（F6 → Render の SSR。OFF の間は作らず、混ぜるパスも描かない）
+
+================================================================================
+ 8. デカール（弾痕。7-c）
+================================================================================
+ 8-1. 作り
+  ・GameSrc/Render/DecalBatch.h / .cpp（新しく作る）：箱（1 辺 1 の立方体）を、デカール 1 つごとの行列（位置・向き・大きさ）で描く。
+    シェーダは Resource/Shader/Decal.hlsl。血など別の絵にも使える形（Q9）
+  ・BulletHoleList は「足す・古くする・消す」をそのまま持ち、描くのを LitQuadBatch から DecalBatch へ替える
+  ・描く所：GBuffer に「デカールを描く間」を足す（beginDecals / endDecals）。描画先は RT0（色）と RT1（法線）だけ、深度は付けずに t5 で読む。
+    箱は裏だけ描き（CULL_FRONT）、奥行きの判定はしない（目が箱の中にあっても描けるように。当たっているかはシェーダが決める）
+
+ 8-2. 式（Decal.hlsl）
+  1) 画素の深度からワールドの位置 W を戻す（DepthPosition.hlsli）
+  2) W をデカールの箱の中の座標へ（行列の逆）。箱の外なら捨てる
+  3) 箱の中の x・y が絵の uv。z（面からの離れ具合）の端と、面の向きで薄くする：
+     画面の位置の差分（ddx・ddy）から面の法線 n を作り、デカールの向きとの内積が kDecalMinFacing（0.5）より小さい所は消す
+     （壁の角をまたいだ横の面に、引き伸ばされた弾痕が付かない）
+  4) 色：絵の色をアルファで混ぜる（BLEND_LINEAR）。古くなったら薄くする（今の BulletHoleList と同じ）
+  5) 法線（Q8 の A）：凹みの法線画像を、デカールの向き（横・縦・面の法線）でワールドへ回し、同じアルファで混ぜる。
+     混ぜた法線は長さが 1 でなくなるので、ライティングで長さ 1 に直す（DeferredLighting.hlsl。s.normal = normalize）
+  ・RT2（粗さ・金属・AO）には書かない（デカールの描画先に付けない）
+
+ 8-3. 大きさ
+  ・箱の大きさ：横・縦は今の板と同じ（12cm）、厚さは面の前後 5cm ずつ（薄くして、角の奥の別の面まで届かないように）
+  ・面から浮かせる 1cm（kLift）は要らなくなる（G-Buffer の面そのものに書くので、ずれも Z ファイトも無い）
+
+ 8-4. 絵
+  ・bullet_hole_gen.py：今の色とアルファに加えて、凹みの高さから法線の画像（bullet_hole_normal.tga → BC5）も書き出す
+
+ 8-5. 拾える物・ゾンビ
+  ・拾える物（ガソリン缶・弾）に付いた弾痕は今と同じく removeAttachedTo で消す。拾える物は「動かない物」の側で描く（拾うまで動かない）
+  ・ゾンビには今と同じく付けない（GameWorld が決める）。もし弾痕の箱がゾンビと重なっても、ゾンビは後から描くので乗らない（Q7）
+
+================================================================================
+ 9. 調整（F6）と表示
+================================================================================
+  ・F6 → Render：SSR・Puddles・Decals の ON/OFF（Decals を切ると、今の板の弾痕に戻すのではなく弾痕が描かれない。見比べと計測用）
+  ・F6 → Tuning：SsrParams（7-5）・水たまりの値（6-2）
+  ・G-Buffer の表示に「SSR」（確からしさを白黒で。1 が白）と「SSR color」（映る色）を足す。水たまりは今ある Roughness の表示で見る
+
+================================================================================
+ 10. 進め方（7-a〜7-d）
+================================================================================
+  7-a  材質テクスチャと水たまり（道具：atlas_materials.py・fbx_to_gamelib.py・texture_to_dds.ps1・puddle_gen.py、
+       MeshLoaderUtil の ormmap・MeshMaterial・StaticMeshGBuffer.hlsl・水たまりの値・F6 の Puddles）
+       確かめること：表示の Roughness / Metallic で、車の塗装が剥げた所・ガソリン缶の錆が画素ごとに違う・建物と銃は今と同じ一様な値・
+       道路に水たまりの形が散る（タイルごとの繰り返しが見えない）・ふだんの絵で、懐中電灯を当てた水たまりに鋭い光の点が出る
+  7-b  SSR（ScreenSpaceReflection・Ssr.hlsl・SsrComposite.hlsl・SsrParams・F6 の SSR と表示）
+       確かめること：水たまりに街灯と車が映る・映り込みが画面の端でなめらかに消える（ぷつっと切れない）・
+       SSR を切ると今と同じ空の映り込みに戻る・粗い壁（0.8）は今と同じ・15m 先の輪郭が今と同じ
+  7-c  デカール（DecalBatch・Decal.hlsl・GBuffer の beginDecals・GameWorld::draw を動かない物と動く物に分ける・bullet_hole_gen.py の法線・
+       F6 の Decals）
+       確かめること：壁の角・窓枠の端を撃っても弾痕がはみ出さない・角の横の面に引き伸ばされた跡が付かない・懐中電灯を斜めに当てると縁に陰・
+       弾痕のすぐ前に立つ（目が箱の中）と消えない・ゾンビ・自キャラ・腕に弾痕が乗らない・拾うと一緒に消える・10 秒で薄れて消える
+  7-d  計測（11 章）
+  各段の終わりに Debug・Release・Profile の x64 ビルドと、シェーダを fxc で全部コンパイルして確かめる。
+  前の段の画面確認が済んでから次へ進む（Graphics_Spec.txt 15 章）
+
+================================================================================
+ 11. 計測
+================================================================================
+  ・Profile・VSync なし・夜・懐中電灯 ON・F7。同じ起動・同じ場所・同じ向きで、F6 の ON/OFF を続けて録る（段階 4〜6 と同じ）
+  ・GPU の印を足す：「SSR」（作る＋ぼかし。Lighting の後）・「SSR composite」（混ぜる）・「Decals」（G-Buffer の動かない物の後）
+  ・録る物
+      記録 1（SSR）：水たまりと車が映る所で、A 全部 ON → B SSR だけ OFF。gpu.SSR に時間が付くかで分ける
+      記録 2（G-Buffer の順番とデカール）：壁を撃って弾痕を 16 個付けた後、撃つのを止めて A Decals ON → B OFF。
+        gpu.Decals の時間と、G-Buffer の物ごとの印の合計を、段階 6 の記録（Profiling/20261030_142955）と比べる（順番を変えた分）
+      材質テクスチャ・水たまりは G-Buffer のパスで画像を 1〜2 枚多く読むだけなので、gpu.Ground・gpu.Props の増え方で見る
+  ・Graphics_Spec.txt 13 章の目標（SSR 1.5ms・G-Buffer 2.0ms。1920×1080）と比べ、技術まとめ 8 章⑪に足す
+  ・手順（2026-10-30。ユーザーが録る。F7 は押すたびに記録の開始／停止で、開始ごとに別の CSV になる）。上の「録る物」から変えた所：
+    記録 2 は弾痕が 10 秒で消えるので、撃ち止めてからの ON/OFF ではなく、撃ち続けた記録の gpu.Decals をそのまま使う。
+    材質テクスチャ・水たまりは印で分けられないので、記録 1 の G-Buffer の印の合計を段階 6 と並べる参考だけにする
+      準備：Profile・F6 → Render の VSync を切る（切ってから F7）・夜（Night）・懐中電灯 ON・ほかは全部 ON のまま
+      記録 1（SSR）：水たまりと車と街灯が映る所で立ち止まり、向きを変えずに F7。
+        A：全部 ON のまま約 30 秒 → B：F6 で SSR だけ OFF にして約 30 秒 → F7 で止める
+        分け方：gpu.SSR > 0.01ms を A、それ以外を B。切り替えの前後 1 秒と、最初・最後の 1 秒は使わない
+        SSR の重さ ＝ gpu.SSR（作る＋ぼかし）＋ gpu.SSR composite（混ぜる）。gpuMs・cpuMs の A と B も比べる
+        同じ記録の A で、G-Buffer の物ごとの印（gpu.Buildings・gpu.Props・gpu.Ground・gpu.Decals・gpu.Player・gpu.Zombies）の合計も取り、
+        段階 6 の記録（Profiling/20261030_142955 の A）と並べる（場所が違うので参考。順番を変えた分と ORM・水たまりの分を合わせた目安）
+      記録 2（デカール）：壁から 3〜5m の所で壁を向き、F7 → 壁をフルオートで約 15 秒撃ち続ける（リロードの間も録ってよい）→ F7
+        分け方：gpu.Decals > 0.001ms のフレーム（弾痕がある間）。gpu.Decals の中央値・99% を、弾痕が 16 個までのデカールの重さとして残す
+        （デカールは G-Buffer の中の印なので、撃った板の gpu.Effects とは分かれる）
+      録ったら CSV のフォルダ（Profiling/<日時>/）を教えてもらい、こちらで集計する
+  ・結果（2026-10-30。記録 1。Profile・VSync なし・2560×1369・夜・懐中電灯 ON。Profiling/20261030_173059/perf_20261030_173706.csv。
+    gpu.SSR > 0.01ms で分けた。切り替え（約 41 秒）の前後と最初・最後の 1 秒は使わない。A 24,320・B 18,830 フレーム）
+      gpu.SSR 中央値 0.105ms（99% 0.66ms）・gpu.SSR composite 0.101ms（99% 0.41ms）→ SSR 約 0.21ms
+      GPU 全体の中央値 A 1.483・B 1.228ms（+0.255ms。残りの約 0.05ms は gpu.Lighting の揺れ A 0.674・B 0.621ms と同じくらい）
+      CPU の中央値 A 0.572・B 0.576ms で変わらない
+      G-Buffer の物ごとの印の合計（Buildings・Props・Ground・Decals・Player・Zombies）A 0.144ms（段階 6 の記録の A は 0.123ms。場所が違うので参考）
+      gpu.Decals：弾痕があったフレーム（> 0.001ms）22,816 フレームで中央値 0.002ms（99% 0.011ms）
+    記録 2（デカールを撃ち続けて録る）は録れていない（同じフォルダの perf_20261030_173818.csv は 2 秒だけ）。デカールは記録 1 の値で代えた
+    （弾痕の数は数えていない）。目標（SSR 1.5ms・G-Buffer 2.0ms）に余裕あり。技術まとめ 8 章⑪に書いた
+  ・計測の道具の不具合：GPU の印が 1 フレーム 12 個まで（GpuTimer::kMaxMarks）で、段階 6・7 の印で 16 個になり、後ろの 4 つ（Effects・PostProcess・
+    FXAA・GBufferView）が捨てられて CSV の列から消えていた。上限を 20 にした（2026-10-30）。この記録の SSR・Decals・G-Buffer の列は 12 個の中なので正しい
+
+================================================================================
+ 12. 参考
+ 13. 実装で仕様から変えた所（7-a）
+================================================================================
+  ・Morgan McGuire, Michael Mara「Efficient GPU Screen-Space Ray Tracing」（JCGT 2014。画面上を進む SSR） https://jcgt.org/published/0003/04/04/
+  ・Yasin Uludag「Hi-Z Screen-Space Cone-Traced Reflections」（GPU Pro 5, 2014。Q5 の B）
+  ・Tomasz Stachowiak「Stochastic Screen-Space Reflections」（SIGGRAPH 2015 Advances。Frostbite の SSR）
+  ・Brian Karis「Physically Based Shading on Mobile」（EnvBRDFApprox。今の ambientLighting） https://www.unrealengine.com/blog/physically-based-shading-on-mobile
+  ・Emil Persson「Volume Decals」（GPU Pro 2, 2011。箱を描いて深度から位置を戻すデカール）
+  ・Pope Kim「Screen Space Decals in Warhammer 40,000: Space Marine」（SIGGRAPH 2012 Talks。面の向きで薄くする）
+  ・Khronos「glTF 2.0 Specification」（メタリック・ラフネスの画像の並び：g 粗さ・b 金属） https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html
+  ・Sébastien Lagarde「Water drop 3b – Physically based wet surfaces」（濡れると暗く・つやが出る） https://seblagarde.wordpress.com/2013/04/14/water-drop-3b-physically-based-wet-surfaces/
+  ・タルコフ
+      ClutchPoints「Escape from Tarkov 0.13 patch notes」（天気の設定に雨） https://clutchpoints.com/gaming/escape-from-tarkov-0-13-patch-notes
+      ClutchPoints「Escape from Tarkov 0.13.1.0 patch notes」（道路のデカールが落ちている物に重なる不具合） https://clutchpoints.com/gaming/escape-from-tarkov-0-13-1-0-patch-notes
+      Escape from Tarkov Wiki「Changelog」（デカール・弾道・カリング・ライティングの表示の修正） https://escapefromtarkov.fandom.com/wiki/Changelog
+      Escape from Tarkov Wiki「Arena Changelog」（Arena 0.4.1.0 デカールの最適化） https://escapefromtarkov.fandom.com/wiki/Arena_Changelog
+      DSOGaming「Escape from Tarkov new gorgeous screenshots released」（SSR の改善） https://www.dsogaming.com/screenshot-news/escape-from-tarkov-new-gorgeous-screenshots-released/
+      GameSpot「Escape From Tarkov Update 12.8 Is Here」（重い出血の血の跡） https://gamespot.com/articles/escape-from-tarkov-update-128-is-here-full-patch-notes/1100-6483461/
+      GGRecon「Escape from Tarkov best settings」（SSR を Off） https://www.ggrecon.com/guides/escape-from-tarkov-best-settings-improve-fps-visibility/
+      TarkovForge「Best Escape from Tarkov Graphics Settings 2026」（SSR は FPS を下げる） https://tarkovforge.com/blog/best-tarkov-graphics-settings-2025
+      lovec.wtf「Tarkov Graphics Settings 1.1.0」（SSR の欄 Off・Low・Medium） https://lovec.wtf/en/tarkov-guides/graphics-settings-guide
+
+================================================================================
+ 13. 実装で仕様から変えた所（7-a）
+================================================================================
+  ・作ったもの（道具）
+      tools/atlas_materials.py：cells に roughness・metallic を書けるようにし、orm_path に ORM を書き出す。orm_path があるときは AO を ORM の r へ
+        入れ、albedo に焼かない。--textures-only で画像だけ作り直せる（区画の並びは設定で決まるので、前の FBX・メッシュの txt はそのまま合う）
+      tools/fbx_to_gamelib.py：mesh_orm（texture_sources の mesh_orm_roughness・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す）と、
+        <StaticMesh ormmap="..."> の属性
+      tools/puddle_gen.py：水たまりの模様（1024²・端がつながる値ノイズを重ねる・乱数の種は固定）
+      tools/texture_to_dds.ps1：Kind = Data（BC7_UNORM。数のまま）
+      作り直した物：uaz_albedo（AO を抜いた）・uaz_orm・fuelcan_orm・road_normal・road_orm・puddle_mask と、メッシュの txt（道路 9 種類・uaz・fuelcan）。
+        txt はどれも <StaticMesh> の行だけが変わった（git diff で確認。形は同じ）
+  ・作ったもの（ゲーム）
+      MeshMaterial：setOrmMap・setPuddle。MeshLoaderUtil が ormmap・puddle を読む。ORM も読み込み待ちに入る（updateLoading）
+      RenderPass：SurfaceParams に puddle（b3 の w）。setSurface が ORM を t11 に付ける（無い材質は GBuffer が持つ白 1 画素）
+      GBuffer：白 1 画素の画像・水たまりの模様（t12）・水たまりの定数（b4）。PuddleParams・puddlesEnabled()（F6 → Render の Puddles・Tuning の Puddle）
+      GBuffer.hlsli の writeGBuffer：粗さ = 数値 × ORM の g、金属 = 数値 × ORM の b、AO = ORM の r。道路は applyPuddle
+  ・道路キットの金属の画像は使わない。アスファルトの所が 0.5（灰色）で描かれていて、半分金属だと拡散の色が半分消えて黒くなるため
+    （2026-10-30 に画像を縮小して確認。白い所＝金属は、今の 9 種類の道路が使わない区画）。道路の金属は 0
+  ・道路の粗さは画像のまま（アスファルトは絵で見て 0.6〜0.7。今までの 0.9 より少しつやが出る）。車の粗さの平均は 0.74（今までは一様に 0.4）
+  ・道路の法線マップ（low_modular_kit_Normal）の緑の向き（DirectX 式か OpenGL 式か）は画像だけでは決められなかった。画面で、懐中電灯を当てた
+    縁石の凹凸が逆に見えたら、fbx_to_gamelib の書き出しで緑を反転する
+  ・水たまりの模様：格子 4 個から始めると 1 つが 6m ほどの池になったので、格子 12〜192 個にした（16m の 1 枚で、1 つが 0.5〜2m）。
+    模様の値は「それより暗い画素の割合」に並べ直してある（ヒストグラムの平坦化）ので、coverage がそのまま水たまりの面積の割合になる。
+    初期値の面積は 0.2（0.35 だと水たまりどうしがつながった）
+  ・6-2 の kPuddleTileSize（16m）は、ほかの値と一緒に動かせるよう PuddleParams の tileSize にした
+  ・水たまりの法線は「真上」ではなく「その面の向き（法線マップを掛ける前）」にした。道路は水平なので同じで、坂があっても水面が面に沿う
+  ・水平な面だけ（法線の y が 0.9 より上）に水を溜める。縁石の側面・壁の足元には付かない
+  ・水たまりを書かないとき（Puddles OFF・模様の読み込み前）は、しきい値を 2（模様の値 0〜1 が届かない）にする。1 − 0 = 1 だと一番白い画素だけ濡れた縁が残る
+  ・確かめたこと：シェーダを fxc で全部（最適化あり・-Od とも警告なし）、Debug / Release / Profile のビルド。画面はユーザーの確認待ち（10 章の 7-a）
+
+================================================================================
+ 14. 実装で仕様から変えた所（7-b）
+================================================================================
+  ・作ったもの
+      Resource/Shader/Ssr.hlsl：作るパス（直線で進む＋二分探索 4 回。b1 は自分の定数 SsrConstants。シーンの色は t6）
+      Resource/Shader/SsrBlur.hlsl：ぼかし（横 → 縦。左右 4 画素・ガウス 2 画素 × 奥行きの近さ）
+      Resource/Shader/SsrComposite.hlsl：混ぜるパス（BLEND_ADDITIVE）
+      Resource/Shader/SsrCommon.hlsli：画面へ戻す式・深度から奥行きを読む式・奥行きを見た拡大 upsampleReflection
+      Pbr.hlsli：映り込みの強さ（EnvBRDFApprox）を environmentSpecularWeight に切り出し、ambientLighting と混ぜるパスで共有
+      ScreenSpaceReflection（GameSrc/Render）：半分の大きさの RGBA16F 2 枚・作る・ぼかす・clear。SsrParams・ssrEnabled()（F6 → Render の SSR・Tuning の SSR）
+      DeferredLighting::drawReflection：混ぜるパス（t13 に SSR の結果）。G-Buffer の表示に「SSR」（確からしさ）・「SSR color」（映る色）
+      PostProcess::sceneColor()
+      GameScene::draw：ライティング → 映り込みを作る（gpu.SSR）→ シーンの色へ付け直して混ぜる（gpu.SSR composite）→ 霧
+  ・SSR の結果は「映る色 × 確からしさ」と「確からしさ」で持つ（7-1 では rgb 映る色・a 確からしさ）。確からしさを掛けた色で持てば、
+    ぼかしや拡大で当たらなかった画素（0）と混ぜても、映る色が黒くにじまない。混ぜる式は（rgb − 空と地面の色 × a）× 鏡面の重み × AO
+  ・7-3 の式に AO（材質の AO × SSAO）も掛けた。今の環境光の鏡面に掛かっている物と同じにして、入れ替えた分だけが変わるようにする
+  ・混ぜるパスは ScreenSpaceReflection ではなく DeferredLighting に置いた（drawReflection）。G-Buffer・深度・SSAO の番号と、深度から位置を戻す定数が
+    ライティングと同じで、霧を DeferredLighting に置いたのと同じ理由。ScreenSpaceReflection は作る・ぼかすだけ（SSAO の AmbientOcclusion と同じ形）
+  ・SSR の結果は奥行きを持たない（4 つとも色と確からしさで使う）ので、ぼかしと拡大はシーンの深度から奥行きを読む（半分の画素 i は元の画素 2i）
+  ・目から画素への向きは、目の位置を定数で渡さず「同じ画素の深度 0 の位置 → 画素の位置」から出す
+  ・7-2 の 2)「目の方を向く反射は計算しない」は、内積 0 で切ると水たまりを 45° より下向きに見たときの映り込みが全部消えるので、
+    「60° より目の方へ戻る反射だけ」にした（kTowardEyeLimit 0.5）
+  ・一歩目は（1 + ずらし）/（歩数 + 1）の割合から始める（自分の面に当たらないように。24 歩・30m で約 5cm 先から）
+  ・intensity は作るパスの出力（色と確からしさの両方）に掛ける（混ぜる差がそのまま倍になる）
+  ・拡大で 4 画素とも奥行きが大きく違うときは、映り込み無し（空と地面の色のまま）にする
+  ・G-Buffer の表示が SSR・SSR color のときは、照らした色が要るので、表示中もライティングと映り込みまで描く
+  ・GPU の印「SSR」「SSR composite」は SSR を切っていても打つ（計測の列を揃えるため）。切っている間は結果を 0 で消すだけ
+  ・確かめたこと：シェーダを fxc で全部（最適化あり・-Od とも新しい警告なし。-Od の警告 3 件は段階 4 からある物）、Debug / Release / Profile のビルド。
+    画面はユーザーの確認待ち（10 章の 7-b）
+
+================================================================================
+ 15. 実装で仕様から変えた所（7-c）
+================================================================================
+  ・作ったもの
+      Resource/Shader/Decal.hlsl：深度から位置を戻し、箱の中の座標（−0.5〜0.5）にある面にだけ、絵の色と凹みの法線をアルファで混ぜる
+      DecalBatch（GameSrc/Render）：1 辺 1 の箱の頂点（6 面・三角形 12 枚）を持ち、デカールごとに行列と定数を書いて描く。decalsEnabled()（F6 → Render の Decals）
+      GBuffer::beginDecals / endDecals：描画先を RT0・RT1 だけにして深度を t5 へ / 3 枚と深度へ付け直し、水たまりの模様も付け直す
+      GameWorld::draw を drawStatic（建物 → 車・置物 → 地面）と drawDynamic（自キャラ・弾 → ゾンビ・千切れた部位）に分けた
+      GameScene::draw：drawStatic → beginDecals → 弾痕 → GPU の印「Decals」→ endDecals → drawDynamic。半透明の板から弾痕を外した
+      BulletHoleList：LitQuadBatch の板から DecalBatch へ。面から浮かせる 1cm（kLift）をやめ、箱の厚さの半分 kHalfDepth 5cm
+      bullet_hole_gen.py：凹みの法線の絵（bullet_hole_normal.tga → BC5）。穴・欠け・ヒビの深さを高さにして、隣のピクセルとの差から作る
+      DeferredLighting.hlsl：s.normal を長さ 1 に直す（デカールが混ぜた法線は長さが 1 でない）
+  ・箱の行列は「箱の中の 1 が何 m か」の 3 本の軸。箱の中の座標へ戻すのは、軸どうしが直交しているので逆行列を作らず、軸の向きとの内積で出す
+  ・8-2 の 3) の面の向きは、深度から戻した位置の ddx・ddy の外積を目の方へ向けた物。差分は discard の前に取る（2×2 の画素で一緒に計算するため）。
+    面の向きとデカールの向きの内積 0.5 → 0.7 で 0 → 1（ぷつっと切れない）。厚さの端（箱の中の座標で 0.25）でも薄くする
+  ・裏だけ描く（CULL_FRONT）は、箱の面の三角形をメッシュと同じ向き（外が表）で並べてあるのが前提。画面で、弾痕の前に立って（目が箱の外）
+    弾痕が消えたり 2 重に濃くなったりしたら、箱の三角形の向きが逆なので、kFaceU と kFaceV を入れ替える
+  ・自キャラ（腕と銃）は一番最初ではなく、動く物の中で最初に描く（Q7）。G-Buffer の重さの変化は 7-d で見る（gpu.Player 〜 gpu.Ground ＋ gpu.Decals）
+  ・DecalBatch のシェーダのエラーは画面の 1 行には出していない（LitQuadBatch と同じ。Debug ではシェーダを読み直すので、直せば効く）
+  ・確かめたこと：シェーダを fxc で全部（最適化あり・-Od とも新しい警告なし）、Debug / Release / Profile のビルド。画面はユーザーの確認待ち（10 章の 7-c）

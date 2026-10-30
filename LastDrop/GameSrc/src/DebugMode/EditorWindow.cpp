@@ -10,7 +10,10 @@
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/Render/ShadowParams.h"
 #include "GameSrc/Render/SsaoParams.h"
+#include "GameSrc/Render/PuddleParams.h"
+#include "GameSrc/Render/SsrParams.h"
 #include "GameSrc/Render/LitQuadBatch.h"
+#include "GameSrc/Render/DecalBatch.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -95,6 +98,18 @@ namespace{
 		ImGui::Checkbox( "SSAO blur", &ssaoBlurEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > SSAO)" );
+		// 映り込み（SsrDecalMaterial_Plan.txt 7・9 章）。値は Tuning の SSR。切ると空と地面の色の映り込みに戻る。時間は gpu.SSR・gpu.SSR composite。
+		ImGui::Checkbox( "SSR", &ssrEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(view: G-Buffer > SSR / SSR color)" );
+		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6・9 章）。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える。
+		ImGui::Checkbox( "Puddles", &puddlesEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(road only, view: G-Buffer > Roughness)" );
+		// 弾痕のデカール（SsrDecalMaterial_Plan.txt 8・9 章）。切ると弾痕が描かれない（板の弾痕に戻すのではない）。時間は gpu.Decals。
+		ImGui::Checkbox( "Decals", &decalsEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(bullet holes)" );
 		// 半透明の板を壁・地面に刺さった所で薄くするか（SsaoTranslucent_Plan.txt 7・8 章）。切ると板の縁の線が見える。
 		ImGui::Checkbox( "Soft particles", &softParticlesEnabled() );
 		ImGui::SameLine();

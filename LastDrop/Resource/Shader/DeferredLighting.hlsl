@@ -22,6 +22,13 @@ static const uint kViewCascade   = 8;
 static const uint kViewShadowMaps = 9;
 static const uint kViewFog       = 10;
 static const uint kViewSsao      = 11;
+static const uint kViewSsr       = 12;
+static const uint kViewSsrColor  = 13;
+
+// SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ。SsrDecalMaterial_Plan.txt 7 章）。
+// 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl。
+Texture2D gReflection : register(t13);
+static const float kMinConfidence = 1e-3; // SSR color の表示で、これより確からしさが小さい所は黒（0 で割らない）
 
 // SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き。SsaoTranslucent_Plan.txt 5 章）。番号は DeferredLighting.cpp の kOcclusionSlot。
 // ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）。
@@ -98,7 +105,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     {
         Surface s;
         s.position = reconstructWorldPosition(p.uv, depth);
-        s.normal = gGBufferNormal.Load(pixel).xyz;
+        s.normal = normalize(gGBufferNormal.Load(pixel).xyz); // デカールが混ぜた法線は長さが 1 でない（SsrDecalMaterial_Plan.txt 8-2）
         s.albedo = gGBufferAlbedo.Load(pixel).rgb;
         // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない。SsaoTranslucent_Plan.txt Q4）。
         s.occlusion = material.r * upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(s.position));
@@ -149,6 +156,15 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     {
         // SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）。
         c = upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(reconstructWorldPosition(p.uv, depth)));
+    }
+    else if (view == kViewSsr || view == kViewSsrColor)
+    {
+        // 半分の大きさなので、この画素が入っている画素をそのまま読む（ぼかした後の結果）。
+        uint reflectionWidth, reflectionHeight;
+        gReflection.GetDimensions(reflectionWidth, reflectionHeight);
+        float4 reflection = gReflection.Load(int3(p.uv * float2(reflectionWidth, reflectionHeight), 0));
+        c = (view == kViewSsr) ? reflection.aaa
+                               : ((reflection.a > kMinConfidence) ? reflection.rgb / reflection.a : kNothingColor);
     }
     return float4(c, 1.0);
 }

@@ -1,0 +1,51 @@
+// 映り込み（SSR）のぼかし（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-4）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く。
+// 歩き始めを画素ごとにずらした（Ssr.hlsl）ざらつきを均す。重みはガウス × 奥行きの近さ（SSAO のぼかしと同じ考え）。
+// SSR の結果は奥行きを持たないので、奥行きはシーンの深度から読む（半分の大きさの画素 i は元の画面の画素 2i）。
+// 色は確からしさを掛けた物（SsrCommon.hlsli）なので、そのまま 4 つとも同じ重みで混ぜてよい。
+#include "Common.hlsli"
+#include "SsrCommon.hlsli"
+
+Texture2D        gSource     : register(t2); // ScreenSpaceReflection.cpp の kBlurSourceSlot（半分の大きさ）
+Texture2D<float> gSceneDepth : register(t5); // 同 kDepthSlot（シーンの深度。元の大きさ）
+
+// ScreenSpaceReflection.cpp の SsrBlurConstants と同じ並び。
+cbuffer SsrBlurConstants : register(b1)
+{
+    float4 gBlurInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）
+    float4 gBlurViewDepthRow;             // 射影×ビューの 4 行目（位置との内積が奥行き）
+    float4 gBlurDirection;                // xy: 1 画素ずつ進む向き（横 (1,0)・縦 (0,1)）  zw: 使わない
+};
+
+static const int kBlurRadius = 4;     // 真ん中から片側に読む画素の数（SsaoBlur.hlsl と同じ）
+static const float kBlurSigma = 2.0;  // ガウスの広がり（画素）
+
+FullScreenVertex VSMain(uint id : SV_VertexID)
+{
+    return fullScreenVertex(id);
+}
+
+float4 PSMain(FullScreenVertex p) : SV_Target
+{
+    uint width, height;
+    gSource.GetDimensions(width, height);
+    uint depthWidth, depthHeight;
+    gSceneDepth.GetDimensions(depthWidth, depthHeight);
+    uint2 depthSize = uint2(depthWidth, depthHeight);
+    int2 last = int2(width, height) - 1;
+    int2 pixel = (int2)p.position.xy;
+    int2 direction = (int2)gBlurDirection.xy;
+    float centerDepth = ssrViewDepthAt(gSceneDepth, gBlurInverseProjectionView, gBlurViewDepthRow, pixel * kSsrHalfStep, depthSize);
+    float weightSum = 0.0;
+    float4 sum = 0.0;
+    [unroll]
+    for (int i = -kBlurRadius; i <= kBlurRadius; ++i)
+    {
+        int2 neighbor = clamp(pixel + direction * i, int2(0, 0), last);
+        float neighborDepth = ssrViewDepthAt(gSceneDepth, gBlurInverseProjectionView, gBlurViewDepthRow, neighbor * kSsrHalfStep, depthSize);
+        float weight = exp(-(i * i) / (2.0 * kBlurSigma * kBlurSigma)) * ssaoDepthWeight(neighborDepth, centerDepth);
+        weightSum += weight;
+        sum += gSource.Load(int3(neighbor, 0)) * weight;
+    }
+    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上。
+    return sum / weightSum;
+}

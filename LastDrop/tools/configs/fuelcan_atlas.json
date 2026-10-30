@@ -4,10 +4,12 @@
     "texture_dir": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Textures",
     "albedo_path": "../../Resource/fuelcan_albedo.tga",
     "normal_path": "../../Resource/fuelcan_normal.tga",
+    "orm_path": "../../Resource/fuelcan_orm.tga",
     "atlas_size": 1024,
     "grid": 1,
     "padding": 0,
     "cells": {
-        "Material.004": { "cell": [0, 0], "albedo": "DefaultMaterial_BaseColor.png", "normal": "DefaultMaterial_Normal.png" }
+        "Material.004": { "cell": [0, 0], "albedo": "DefaultMaterial_BaseColor.png", "normal": "DefaultMaterial_Normal.png",
+                          "roughness": "DefaultMaterial_Roughness.png", "metallic": "DefaultMaterial_Metallic.png" }
     }
 }

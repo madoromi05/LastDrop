@@ -2,7 +2,7 @@
 // SkinnedMeshGBuffer.hlsl）と読む側（DeferredLighting.hlsl）が、並びをここだけで知る。並びを変えるときは、ここと GBuffer.cpp の形式を一緒に直す。
 //   t2 / RT0  RGBA8_SRGB : rgb 色（頂点色×材質の色×画像。リニアで書くと GPU が sRGB にして入れる）  a 予備
 //   t3 / RT1  RGBA16F    : xyz 法線（ワールド・長さ 1・法線マップ済み）                          a 予備
-//   t4 / RT2  RGBA8      : r AO（今は 1）  g 粗さ  b 金属  a 発光の強さ（0〜1。色は「色 × 強さ × kEmissionScale」）
+//   t4 / RT2  RGBA8      : r AO（材質の画像の r。無ければ 1）  g 粗さ  b 金属  a 発光の強さ（0〜1。色は「色 × 強さ × kEmissionScale」）
 //   t5        深度       : PostProcess の深度（位置は深度から戻す）
 #ifndef INCLUDED_GBUFFER_HLSLI
 #define INCLUDED_GBUFFER_HLSLI
@@ -10,7 +10,6 @@
 #include "Lighting.hlsli"
 
 static const float kSpare = 0.0;     // 予備のチャンネルに書く値
-static const float kNoOcclusion = 1.0; // AO（隙間の暗がり）。段階 6 の SSAO まで、どの面も遮られていない
 // 発光の強さ 1 のときの明るさ（色に掛ける）。HDR なので 1 を超えてよい（ブルームで光る）。画面で見て決めた値ではない初期値。
 static const float kEmissionScale = 8.0;
 
@@ -18,8 +17,36 @@ static const float kEmissionScale = 8.0;
 // b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使うので空けておく。
 cbuffer GBufferMaterial : register(b3)
 {
-    float4 gSurface; // x: 粗さ  y: 金属  z: 発光の強さ  w: 使わない
+    float4 gSurface; // x: 粗さ  y: 金属  z: 発光の強さ  w: 水たまりを書くか（0 か 1。道路だけ 1）
 };
+
+// 書く側だけが読む物（SsrDecalMaterial_Plan.txt 5・6 章）。番号は読む側（t2〜t5・SSAO の t10）と重ならない所。
+// 材質の画像（r AO・g 粗さ・b 金属）。無い材質には白 1 画素が付く（RenderPass::setSurface）ので、数値 × 画像 = 数値のまま。
+Texture2D gOrmMap     : register(t11);
+// 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/puddle_gen.py）。ワールドの x・z で読む。
+Texture2D gPuddleMask : register(t12);
+// b4：水たまりの値（GBuffer.cpp の PuddleConstants。PuddleParams から）。
+cbuffer PuddleConstants : register(b4)
+{
+    float4 gPuddleShape;   // x: しきい値（模様の値がこれより大きい所が水たまり）  y: 濡れた縁の幅  z: 1 / 模様 1 枚の大きさ（m）  w: 使わない
+    float4 gPuddleSurface; // x: 水たまりの粗さ  y: 濡れた路面の粗さ  z: 濡れた所の色に掛ける数  w: 使わない
+};
+static const float kPuddleEdge = 0.02;  // 濡れた路面から水たまりへ変わる幅（模様の値で。狭いほど水面の縁がくっきり）
+static const float kPuddleMinUp = 0.9;  // 面の上向きの度合い（法線の y）がこれより小さい面（縁石の側面・壁）には水が溜まらない
+
+// 道路に雨上がりの水たまりを書き込む（SsrDecalMaterial_Plan.txt 6-2）。水たまりの周りは濡れて暗く・つやが出て、
+// 水たまりの中は鏡に近いつやで、法線は面の向きそのまま（水面は平ら。凹凸の法線マップを消す）。
+void applyPuddle(float3 worldPosition, float3 geometricNormal, inout float3 albedo, inout float3 n, inout float roughness)
+{
+    float mask = gPuddleMask.Sample(gWrapSampler, worldPosition.xz * gPuddleShape.z).r;
+    float level = saturate((geometricNormal.y - kPuddleMinUp) / (1.0 - kPuddleMinUp));
+    float wet = smoothstep(gPuddleShape.x - gPuddleShape.y, gPuddleShape.x, mask) * level;
+    float puddle = smoothstep(gPuddleShape.x, gPuddleShape.x + kPuddleEdge, mask) * level;
+    roughness = lerp(roughness, min(roughness, gPuddleSurface.y), wet);
+    roughness = lerp(roughness, gPuddleSurface.x, puddle);
+    albedo *= lerp(1.0, gPuddleSurface.z, wet);
+    n = normalize(lerp(n, geometricNormal, puddle));
+}
 
 struct GBufferOutput
 {
@@ -30,15 +57,24 @@ struct GBufferOutput
 
 // 1 画素ぶんの面の情報を G-Buffer の並びにする。color: 頂点色×ディフューズ色（リニア）。
 // 法線マップは今の描き方（Lighting.hlsli の shadePixel）と同じ方法で掛ける。
+// 材質の画像（ORM）は粗さ・金属に掛け、AO はそのまま r へ（ライティングで SSAO と掛け合わせる）。
 GBufferOutput writeGBuffer(float4 color, float2 uv, float3 worldPosition, float3 worldNormal, bool isFrontFace)
 {
-    float3 n = normalize(worldNormal);
-    n = isFrontFace ? n : -n; // 裏を描いたとき（doublesided="1" の材質）は、見ている側へ法線を向ける
-    n = perturbNormal(n, worldPosition, uv);
+    float3 geometric = normalize(worldNormal);
+    geometric = isFrontFace ? geometric : -geometric; // 裏を描いたとき（doublesided="1" の材質）は、見ている側へ法線を向ける
+    float3 n = perturbNormal(geometric, worldPosition, uv);
+    float3 albedo = (color * gAlbedo.Sample(gWrapSampler, uv)).rgb;
+    float3 orm = gOrmMap.Sample(gWrapSampler, uv).rgb;
+    float roughness = saturate(gSurface.x * orm.g);
+    float metallic = saturate(gSurface.y * orm.b);
+    if (gSurface.w > 0.0)
+    {
+        applyPuddle(worldPosition, geometric, albedo, n, roughness);
+    }
     GBufferOutput o;
-    o.albedo = float4((color * gAlbedo.Sample(gWrapSampler, uv)).rgb, kSpare);
+    o.albedo = float4(albedo, kSpare);
     o.normal = float4(n, kSpare);
-    o.material = float4(kNoOcclusion, saturate(gSurface.xyz));
+    o.material = float4(orm.r, roughness, metallic, saturate(gSurface.z));
     return o;
 }
 

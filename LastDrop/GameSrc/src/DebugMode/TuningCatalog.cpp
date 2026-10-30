@@ -13,6 +13,8 @@
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/ShadowParams.h"
 #include "GameSrc/Render/SsaoParams.h"
+#include "GameSrc/Render/PuddleParams.h"
+#include "GameSrc/Render/SsrParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -92,6 +94,12 @@ namespace{
 		// 物の隙間の暗がり（SsaoTranslucent_Plan.txt 5-4）。絵は F6 → Render の G-Buffer の SSAO で見る。
 		groups.push_back( std::make_unique< TuningGroup< SsaoParams > >(
 			"SSAO", "SsaoParams", "GameSrc/Render/SsaoParams.h", &ssaoParams ) );
+		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6-2）。道路の材質だけに効く。
+		groups.push_back( std::make_unique< TuningGroup< PuddleParams > >(
+			"Puddle", "PuddleParams", "GameSrc/Render/PuddleParams.h", &puddleParams ) );
+		// 映り込み（SsrDecalMaterial_Plan.txt 7-5）。絵は F6 → Render の G-Buffer の SSR で見る。
+		groups.push_back( std::make_unique< TuningGroup< SsrParams > >(
+			"SSR", "SsrParams", "GameSrc/Render/SsrParams.h", &ssrParams ) );
 		return groups;
 	}
 

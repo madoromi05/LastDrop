@@ -448,16 +448,7 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 	mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
 }
 
-void GameWorld::draw( const ViewFrustum& frustum, const Vector3& eye ) const {
-	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので最初に描く。
-	if ( mPlayer ) {
-		mPlayer->draw();
-	}
-	mBullets.draw();
-	Profiling::gpuMark( "Player" );
-	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
-	mSeveredLimbs.draw();
-	Profiling::gpuMark( "Zombies" );
+void GameWorld::drawStatic( const ViewFrustum& frustum, const Vector3& eye ) const {
 	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる。
 	mBuildingDrawOrder.clear();
 	for ( const Building& building : mBuildings ) {
@@ -483,6 +474,18 @@ void GameWorld::draw( const ViewFrustum& frustum, const Vector3& eye ) const {
 	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。
 	mGround.draw( frustum );
 	Profiling::gpuMark( "Ground" );
+}
+
+void GameWorld::drawDynamic() const {
+	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので、動く物の中では最初に描く。
+	if ( mPlayer ) {
+		mPlayer->draw();
+	}
+	mBullets.draw();
+	Profiling::gpuMark( "Player" );
+	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
+	mSeveredLimbs.draw();
+	Profiling::gpuMark( "Zombies" );
 }
 
 void GameWorld::drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const {

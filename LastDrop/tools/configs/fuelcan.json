@@ -7,9 +7,10 @@
     "center_origin": true,
     "mesh_texture": "Resource/fuelcan_albedo.tga",
     "mesh_normalmap": "Resource/fuelcan_normal.tga",
+    "mesh_orm": "Resource/fuelcan_orm.tga",
     "material_params": {
-        "roughness": 0.5,
-        "metallic": 0.0,
+        "roughness": 1.0,
+        "metallic": 1.0,
         "specular": [0.1, 0.1, 0.1],
         "sharpness": 20.0,
         "normalstrength": 0.6

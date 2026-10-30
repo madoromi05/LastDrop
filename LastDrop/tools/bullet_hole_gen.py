@@ -7,10 +7,12 @@
 #   材質（コンクリート・金属・地面）で絵は分けない（2026-10-15 ユーザー指定）。
 #   乱数の種を固定しているので、何度作っても同じ絵になる。
 #   Python の標準ライブラリだけで動く。この PC には Python 単体が入っていないので、Blender に入っている Python で動かす。
+#   凹みの法線の絵も一緒に作る（デカールが G-Buffer の法線に書く。SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 8-4）。
+#   穴・欠け・ヒビの深さで高さを作り、隣のピクセルとの差から法線を出す。並びは r 横（右が正）・g 縦（絵の上が正）・b 面の外向き。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/bullet_hole_gen.py [出力.tga]
-#   出力を省くと Resource/bullet_hole.tga に書く。
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/bullet_hole_gen.py [出力.tga] [法線の出力.tga]
+#   出力を省くと Resource/bullet_hole.tga と Resource/bullet_hole_normal.tga に書く。その後 tools/texture_to_dds.ps1 bullet_hole で DDS にする。
 # =====================================================================
 
 import math
@@ -20,6 +22,7 @@ import sys
 from tga_image import over, smooth_step, to_byte, write_tga
 
 DEFAULT_OUTPUT = "Resource/bullet_hole.tga"
+DEFAULT_NORMAL_OUTPUT = "Resource/bullet_hole_normal.tga"
 
 # 絵の大きさ（ピクセル）。GameLib は 2 の累乗でない絵を 2 の累乗へ広げて読み、UV がずれるので 2 の累乗にする。
 SIZE = 64
@@ -44,6 +47,13 @@ CHIP_SHADE = 0.30
 CHIP_OPACITY = 0.85
 CRACK_SHADE = 0.15
 CRACK_OPACITY = 0.7
+
+# 凹みの深さ（面を 0 とした下向きの深さ。絵の半分を 1 とした割合）。法線の絵だけに使う。
+HOLE_DEPTH = 0.5
+CHIP_DEPTH = 0.12
+CRACK_DEPTH = 0.04
+# 法線の傾きの強さ（高さの差に掛ける）。大きいほど縁が立って見える。見た目を確かめる前の初期値。
+NORMAL_STRENGTH = 2.0
 
 
 def make_chip_edge(rng):
@@ -88,14 +98,46 @@ def shade_pixel(x, y, chip_edge, cracks):
     return over(hole, over(chip, crack))
 
 
+def height_pixel(x, y, chip_edge, cracks):
+    """点 (x, y) の高さ（面が 0、凹むほど負）。shade_pixel と同じ形の穴・欠け・ヒビを、深さとして足す。"""
+    radius = math.hypot(x, y)
+    edge = chip_edge(math.atan2(y, x))
+    hole = 1.0 - smooth_step(HOLE_RADIUS - EDGE_SOFTNESS, HOLE_RADIUS, radius)
+    chip = 1.0 - smooth_step(edge - EDGE_SOFTNESS, edge, radius)
+    crack = crack_opacity(x, y, cracks)
+    return -(HOLE_DEPTH * hole + CHIP_DEPTH * chip + CRACK_DEPTH * crack)
+
+
+def normal_body(heights):
+    """高さの表（行は上から）から、法線の絵（B,G,R,A の並び）を作る。端は隣が無いので、端の値をそのまま使う。"""
+    body = bytearray()
+    step = 2.0 / SIZE  # 1 ピクセルの幅（絵の半分を 1 とした割合）
+    for row in range(SIZE):
+        for column in range(SIZE):
+            left = heights[row][max(column - 1, 0)]
+            right = heights[row][min(column + 1, SIZE - 1)]
+            above = heights[max(row - 1, 0)][column]
+            below = heights[min(row + 1, SIZE - 1)][column]
+            # 高さが右へ上がるほど法線は左へ、絵の上へ上がるほど法線は下へ傾く（行は下へ数えるので、上向きの差は above − below）。
+            nx = -(right - left) / (2.0 * step) * NORMAL_STRENGTH
+            ny = -(above - below) / (2.0 * step) * NORMAL_STRENGTH
+            length = math.sqrt(nx * nx + ny * ny + 1.0)
+            r, g, b = (nx / length * 0.5 + 0.5, ny / length * 0.5 + 0.5, 1.0 / length * 0.5 + 0.5)
+            body += bytes((to_byte(b), to_byte(g), to_byte(r), 255))
+    return body
+
+
 def main():
     output = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_OUTPUT
+    normal_output = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_NORMAL_OUTPUT
     rng = random.Random(SEED)
     chip_edge = make_chip_edge(rng)
     cracks = make_cracks(rng)
     half = SIZE / 2.0
     body = bytearray()
+    heights = []
     for row in range(SIZE):
+        height_row = []
         for column in range(SIZE):
             # ピクセルの中心を、絵の中心が原点・半分が 1 の座標へ直す。
             x = (column + 0.5 - half) / half
@@ -103,8 +145,12 @@ def main():
             shade, opacity = shade_pixel(x, y, chip_edge, cracks)
             gray = to_byte(shade)
             body += bytes((gray, gray, gray, to_byte(opacity)))
+            height_row.append(height_pixel(x, y, chip_edge, cracks))
+        heights.append(height_row)
     write_tga(output, SIZE, body)
     print("wrote", output)
+    write_tga(normal_output, SIZE, normal_body(heights))
+    print("wrote", normal_output)
 
 
 if __name__ == "__main__":

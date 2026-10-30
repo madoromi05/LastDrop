@@ -50,6 +50,10 @@ CONFIG = {
     "tree_name": "skel",       # <Tree name>。ゲーム側 createTree(この名前)
     "mesh_texture": "",         # <SkinnedMesh texture>。空なら無地
     "mesh_normalmap": "",       # <SkinnedMesh normalmap>。空なら法線マップ無し
+    # <StaticMesh ormmap>（材質の画像。r AO・g 粗さ・b 金属。SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 5 章）。空なら無し。
+    # texture_export_size > 0 なら、texture_sources の mesh_orm_roughness（必須）・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す。
+    # ORM を付けた材質は、material_params の roughness / metallic を 1 にする（ゲームは「数値 × 画像」で読む）。
+    "mesh_orm": "",
     # 材質値（任意）。書いたものだけ出力し、無ければゲーム側 MeshMaterial の既定値になる。
     # 例: {"specular": (0.01, 0.01, 0.01), "sharpness": 8.0, "normalstrength": 0.3, "diffuse": (1, 1, 1)}
     "material_params": {},
@@ -395,13 +399,15 @@ def game_texture_path(path):
     return root + ".dds" if ext.lower() == ".tga" else path
 
 
-def material_attrs(texture, normalmap, params):
+def material_attrs(texture, normalmap, params, ormmap=""):
     # 見た目1つ分の属性文字列（ゲーム側 MeshLoaderUtil::loadMaterial が読む）。
     attrs = ''
     if texture:
         attrs += ' texture="%s"' % game_texture_path(texture)
     if normalmap:
         attrs += ' normalmap="%s"' % game_texture_path(normalmap)
+    if ormmap:
+        attrs += ' ormmap="%s"' % game_texture_path(ormmap)
     # 材質値は書いたものだけ出す（無ければゲーム側 MeshMaterial の既定値）。
     for name, value in params.items():
         if isinstance(value, (tuple, list)):
@@ -417,7 +423,8 @@ def mesh_element_attrs(textured):
     # textured=False のパーツ（UVの無い単色部品）にはテクスチャを付けない。
     return material_attrs(CONFIG["mesh_texture"] if textured else "",
                           CONFIG["mesh_normalmap"] if textured else "",
-                          CONFIG["material_params"])
+                          CONFIG["material_params"],
+                          CONFIG["mesh_orm"] if textured else "")
 
 
 def part_element_attrs(part):
@@ -791,6 +798,38 @@ def export_mesh_textures(mesh_objs):
         source = CONFIG["texture_sources"].get(key)
         image = bpy.data.images.load(source) if source else material_image(mesh_objs, key, bsdf_input, via_normal_map)
         save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]))
+    if CONFIG["mesh_orm"]:
+        save_orm_tga(size, os.path.join(CONFIG["resource_root"], CONFIG["mesh_orm"]))
+
+
+ORM_SOURCES = (("mesh_orm_ao", 0, 1.0), ("mesh_orm_roughness", 1, 1.0), ("mesh_orm_metallic", 2, 0.0))  # (texture_sources の項目, チャンネル, 無いときの値)
+
+
+def save_orm_tga(size, path):
+    # texture_sources の粗さ・金属・AO の画像（どれも灰色。R だけ使う）を size×size に縮め、r AO・g 粗さ・b 金属の 1 枚にして書き出す。
+    if not CONFIG["texture_sources"].get("mesh_orm_roughness"):
+        raise RuntimeError("mesh_orm を書き出すには texture_sources に mesh_orm_roughness が要ります。")
+    orm = numpy.ones((size * size, 4), dtype=numpy.float32)
+    for key, channel, missing in ORM_SOURCES:
+        source = CONFIG["texture_sources"].get(key)
+        if not source:
+            orm[:, channel] = missing
+            continue
+        image = bpy.data.images.load(source)
+        image.colorspace_settings.name = "Non-Color"  # 色ではない数なので、色の変換をしない
+        image.scale(size, size)
+        pixels = numpy.empty(size * size * 4, dtype=numpy.float32)
+        image.pixels.foreach_get(pixels)
+        orm[:, channel] = pixels.reshape(-1, 4)[:, 0]
+        bpy.data.images.remove(image)
+    out = bpy.data.images.new(os.path.basename(path), size, size, alpha=False)
+    out.colorspace_settings.name = "Non-Color"
+    out.pixels.foreach_set(orm.ravel())
+    out.filepath_raw = path
+    out.file_format = "TARGA_RAW"
+    out.save()
+    bpy.data.images.remove(out)
+    print("TEXTURE orm ->", path)
 
 
 def material_image(mesh_objs, key, bsdf_input, via_normal_map):

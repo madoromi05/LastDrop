@@ -1,5 +1,6 @@
 #include "GameSrc/Render/GBuffer.h"
 #include "GameSrc/Render/RenderPass.h"
+#include "GameSrc/Render/PuddleParams.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Enum.h"
@@ -24,8 +25,53 @@ namespace{
 	};
 	// GBuffer.hlsli の cbuffer GBufferMaterial の番号（b3）。b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使う。
 	const int kSurfaceSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 2;
+	// デカールが書く描画先の数（RT0 色・RT1 法線。並びの先頭から）と、深度を読む番号（Decal.hlsl の t5）。
+	const int kDecalTargetNumber = 2;
+	const int kDecalDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）。
 	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
+
+	// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6 章）。GBuffer.hlsli の gPuddleMask（t12）と cbuffer PuddleConstants（b4）。
+	const char* kPuddleMaskFile = "Resource/puddle_mask.dds";
+	const int kPuddleMaskSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 10;
+	const int kPuddleSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
+	const float kNoCoverage = 0.f;
+	const float kWhole = 1.f;
+	// 水たまりを書かないときのしきい値。模様の値（0〜1）が届かないので、水たまりも濡れた縁もできない
+	// （1 − 0 = 1 だと、模様の一番白い画素だけ濡れた縁が残る）。
+	const float kUnreachableThreshold = 2.f;
+	// GBuffer.hlsli の cbuffer PuddleConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	struct PuddleConstants{
+		float threshold;       // 模様の値がこれより大きい所が水たまり（1 − 面積の割合）
+		float wetBand;
+		float inverseTileSize; // ワールドの x・z に掛けて、模様を読む位置にする
+		float puddleRoughness;
+		float wetRoughness;
+		float wetDarkening;
+		float unused[ 2 ];
+	};
+
+	// 材質の画像（ORM）が無い材質に付ける白 1 画素（AO 1・粗さ 1・金属 1。シェーダは数値に掛けるので、数値がそのまま使われる）。
+	const unsigned kWhitePixel = 0xffffffff;
+	Graphics::Texture createWhiteTexture() {
+		Graphics::Texture texture = Graphics::Texture::create( 1, 1, false );
+		unsigned* pixels = nullptr;
+		int pitch = 0;
+		texture.lock( &pixels, &pitch );
+		*pixels = kWhitePixel;
+		texture.unlock( &pixels );
+		return texture;
+	}
+}
+
+PuddleParams& puddleParams() {
+	static PuddleParams sParams; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sParams;
+}
+
+bool& puddlesEnabled() {
+	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sEnabled;
 }
 
 GBuffer::GBuffer() {
@@ -35,6 +81,9 @@ GBuffer::GBuffer() {
 	}
 	mStaticMeshShader = Graphics::Shader::create( kStaticMeshShaderFile );
 	mSurfaceConstants = Graphics::ConstantBuffer::create( sizeof( SurfaceParams ) );
+	mDefaultOrm = createWhiteTexture();
+	mPuddleMask = Graphics::Texture::create( kPuddleMaskFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR ); // 色ではない数
+	mPuddleConstants = Graphics::ConstantBuffer::create( sizeof( PuddleConstants ) );
 }
 
 void GBuffer::begin( Graphics::DepthTarget depth ) {
@@ -48,7 +97,22 @@ void GBuffer::begin( Graphics::DepthTarget depth ) {
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	// 材質値の入れ物は描く間ずっと付けておき、中身だけ MeshMaterial::apply（RenderPass::setSurface）が物ごとに書き換える。
 	gm.setConstantBuffer( kSurfaceSlot, mSurfaceConstants );
-	RenderPass::beginGBuffer( mStaticMeshShader, &mSurfaceConstants );
+	setPuddleConstants();
+	RenderPass::beginGBuffer( mStaticMeshShader, &mSurfaceConstants, &mDefaultOrm );
+}
+
+void GBuffer::beginDecals( Graphics::DepthTarget depth ) {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setRenderTargets( mTargets, kDecalTargetNumber, Graphics::DepthTarget() ); // RT0・RT1 だけ（RT2 の粗さ・金属・AO は面のまま）
+	gm.setShaderResource( kDecalDepthSlot, depth ); // 描画先の切り替えで外れるので、切り替えた後に付ける
+}
+
+void GBuffer::endDecals( Graphics::DepthTarget depth ) {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	gm.setShaderResource( kDecalDepthSlot, Graphics::DepthTarget() ); // 深度を描画先へ戻す前に、読み込み元から外す
+	gm.setRenderTargets( mTargets, kTargetNumber, depth );
+	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // begin と同じ（G-Buffer のアルファはデータなので混ぜない）
+	setPuddleConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す（材質の画像は物ごとに付く）
 }
 
 void GBuffer::end() {
@@ -57,6 +121,30 @@ void GBuffer::end() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setShader( Graphics::Shader() );
 	gm.setConstantBuffer( kSurfaceSlot, Graphics::ConstantBuffer() );
+	gm.setConstantBuffer( kPuddleSlot, Graphics::ConstantBuffer() );
+	gm.setShaderResource( kPuddleMaskSlot, Graphics::Texture() );
+}
+
+void GBuffer::setPuddleConstants() {
+	Graphics::Manager gm = Graphics::Manager::instance();
+	// 模様の読み込みが終わるまでは、面積 0（どこも水たまりにならない）として書く。isReady は読み込みを進めるので毎回呼ぶ。
+	const bool maskReady = mPuddleMask.isReady();
+	const PuddleParams& params = puddleParams();
+	const float coverage = ( puddlesEnabled() && maskReady ) ? params.coverage : kNoCoverage;
+	PuddleConstants constants;
+	constants.threshold = ( coverage > kNoCoverage ) ? kWhole - coverage : kUnreachableThreshold;
+	constants.wetBand = params.wetBand;
+	constants.inverseTileSize = kWhole / params.tileSize;
+	constants.puddleRoughness = params.puddleRoughness;
+	constants.wetRoughness = params.wetRoughness;
+	constants.wetDarkening = params.wetDarkening;
+	constants.unused[ 0 ] = 0.f;
+	constants.unused[ 1 ] = 0.f;
+	mPuddleConstants.set( &constants, sizeof( constants ) );
+	gm.setConstantBuffer( kPuddleSlot, mPuddleConstants );
+	if ( maskReady ) {
+		gm.setShaderResource( kPuddleMaskSlot, mPuddleMask ); // 描画先を付けた後に付ける（setRenderTargets が t2 以降を外すため）
+	}
 }
 
 const Graphics::RenderTarget& GBuffer::albedo() const {
