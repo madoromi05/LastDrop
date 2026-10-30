@@ -14,7 +14,7 @@ cbuffer SsrConstants : register(b1)
     float4 gSsrInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
     float4 gSsrProjectionView[4];        // 射影×ビュー（行ごと）。進んだ点を画面へ戻す
     float4 gSsrMarch;                    // x: 計算する粗さの上限  y: 歩数  z: 一番遠くまで進む長さ（m）  w: 当たったとみなす厚さ（m）
-    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  zw: 使わない
+    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  z: ノイズのフレームの番号（TAA。Taa_Plan.txt 8 章）  w: 使わない
 };
 
 static const float kRoughnessFadeRange = 0.1; // 粗さの上限の手前この幅で、確からしさを 1 → 0 へ（つやの境目で映り込みがぷつっと切れない）
@@ -69,7 +69,8 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         {
             uint steps = max((uint)gSsrMarch.y, 1u);
             float maxDistance = gSsrMarch.z;
-            float jitter = interleavedGradientNoise(halfPixel); // 歩き始めを画素ごとにずらす（段々の模様を消し、ぼかしで均す）
+            // 歩き始めを画素ごとにずらす（段々の模様を消し、ぼかしで均す）。TAA のときはフレームごとにも変える（TAA が均す）。
+            float jitter = interleavedGradientNoise(halfPixel, gSsrFade.z);
             float previous = 0.0;
             float hitDistance = -1.0;
             [loop]

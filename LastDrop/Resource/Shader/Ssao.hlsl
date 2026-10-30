@@ -14,7 +14,7 @@ cbuffer SsaoConstants : register(b1)
     float4 gSsaoInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
     float4 gSsaoProjectionView[4];        // 射影×ビュー（行ごと）。半球の点を画面へ戻す
     float4 gSsaoShape;                    // x: 半径（m）  y: 遮られたとみなす差の下限（m）  z: 遮られた量の倍率  w: AO の曲がり
-    float4 gSsaoCount;                    // x: 調べる点の数  y: 画面の上の半径の上限（画面の高さに対する割合）  zw: 使わない
+    float4 gSsaoCount;                    // x: 調べる点の数  y: 画面の上の半径の上限（画面の高さに対する割合）  z: ノイズのフレームの番号（TAA。Taa_Plan.txt 8 章）  w: 使わない
 };
 
 static const float kPi = 3.14159265;
@@ -118,7 +118,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     float2 uv = (pixel.xy + 0.5) / float2(depthSize);
     float3 position = worldPositionFromDepth(gSsaoInverseProjectionView, uv, depth);
     float3 normal = normalize(gGBufferNormal.Load(pixel).xyz);
-    float angle = interleavedGradientNoise(halfPixel) * 2.0 * kPi;
+    float angle = interleavedGradientNoise(halfPixel, gSsaoCount.z) * 2.0 * kPi; // TAA のときはフレームごとに回し方を変える（TAA が均す）
     float occluded = occlusionAt(position, normal, angle, depthSize);
     float ao = pow(saturate(1.0 - occluded * gSsaoShape.z), gSsaoShape.w);
     return float4(ao, viewDepthOf(position), 0.0, 1.0);

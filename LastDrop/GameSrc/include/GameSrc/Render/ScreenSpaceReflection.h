@@ -23,8 +23,9 @@ public:
 	// ライティングの後、霧の前に呼ぶ。描画先を自分の描画先へ切り替えて描く（終わった後の描画先は呼んだ側で付け直す）。
 	// sceneColor：ライティングした後のシーンの色（描画先から外してあること）。depth：G-Buffer と一緒に描いた深度。
 	// projectionView：描いたときのカメラの射影×ビュー。
+	// noiseFrame：歩き始めをずらすノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0。Taa_Plan.txt 8 章）。
 	void draw( const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& sceneColor, GameLib::Graphics::DepthTarget depth,
-		const GameLib::Math::Matrix44& projectionView );
+		const GameLib::Math::Matrix44& projectionView, int noiseFrame );
 	// 映り込みを作らなかったフレーム（SSR を切っている間）に、結果を「映り込み無し」で消す（G-Buffer の表示が古い絵を出さないように）。
 	void clear();
 	// 最後に draw した結果。

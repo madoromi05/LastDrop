@@ -16,7 +16,7 @@
 // ビネットの所に赤を足す強さ・周りのぼかしと暗さ（噛まれた瞬間）と、全体を暗くする量（死んだ後）を外から動かせる。
 // 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）。
 // トーンマップの後にカラーグレーディング、画面の色へ戻した後にディザを掛ける（NightFinish_Plan.txt 6・7 章）。
-// FXAA が ON（fxaaEnabled）のときは、写した結果をいったん 8bit の中間（a に輝度）へ置き、Resource/Shader/Fxaa.hlsl で輪郭を
+// アンチエイリアスが FXAA（antiAliasingMode）のときは、写した結果をいったん 8bit の中間（a に輝度）へ置き、Resource/Shader/Fxaa.hlsl で輪郭を
 // なめらかにしながら画面へ写す（NightFinish_Plan.txt 8 章）。OFF のときは今までどおり画面へ直接写す。
 //
 // 写した後の画面には、文字（DebugScreen）など Framework が後から描く物がそのまま重なる（ポストプロセスは掛からない）。
@@ -49,6 +49,8 @@ public:
 	void setPain( float amount );
 	// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く。
 	void setFade( float amount );
+	// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0。Taa_Plan.txt 8 章）。次の endScene から効く。
+	void setNoiseFrame( int frame );
 	// 中間の描画先を画面へ写す。シーンを描き終わった後に呼ぶ。描画先は画面に戻る。
 	// GPU の印を中で打つ：「PostProcess」（ブルームと写すまで）・「FXAA」（FXAA。OFF なら区間はほぼ 0）。
 	void endScene();
@@ -73,6 +75,7 @@ private:
 	float mDamageFlash; // setDamageFlash の値
 	float mPain;        // setPain の値
 	float mFade;        // setFade の値
+	int mNoiseFrame;    // setNoiseFrame の値
 };
 
 #endif

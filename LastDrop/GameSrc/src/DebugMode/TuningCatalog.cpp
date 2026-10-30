@@ -15,6 +15,7 @@
 #include "GameSrc/Render/SsaoParams.h"
 #include "GameSrc/Render/PuddleParams.h"
 #include "GameSrc/Render/SsrParams.h"
+#include "GameSrc/Render/TaaParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -100,6 +101,9 @@ namespace{
 		// 映り込み（SsrDecalMaterial_Plan.txt 7-5）。絵は F6 → Render の G-Buffer の SSR で見る。
 		groups.push_back( std::make_unique< TuningGroup< SsrParams > >(
 			"SSR", "SsrParams", "GameSrc/Render/SsrParams.h", &ssrParams ) );
+		// TAA（Taa_Plan.txt 7-5）。F6 → Render のアンチエイリアスが TAA のときだけ効く。
+		groups.push_back( std::make_unique< TuningGroup< TaaParams > >(
+			"TAA", "TaaParams", "GameSrc/Render/TaaParams.h", &taaParams ) );
 		return groups;
 	}
 

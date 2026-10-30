@@ -267,6 +267,8 @@
     <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp" />
     <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp" />
     <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp" />
+    <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp" />
+    <ClCompile Include="GameSrc\src\Render\TemporalAntiAliasing.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
@@ -658,6 +660,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalAntiAliasing.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TaaParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
@@ -855,6 +860,8 @@
     <None Include="Resource\Shader\SsrComposite.hlsl" />
     <None Include="Resource\Shader\SsrCommon.hlsli" />
     <None Include="Resource\Shader\Decal.hlsl" />
+    <None Include="Resource\Shader\Taa.hlsl" />
+    <None Include="Resource\Shader\TaaCopy.hlsl" />
     <None Include="Resource\Shader\Noise.hlsli" />
     <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>

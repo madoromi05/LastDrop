@@ -31,17 +31,19 @@ namespace{
 	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）。
 	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
 
-	// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6 章）。GBuffer.hlsli の gPuddleMask（t12）と cbuffer PuddleConstants（b4）。
+	// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6 章）。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）。
 	const char* kPuddleMaskFile = "Resource/puddle_mask.dds";
 	const int kPuddleMaskSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 10;
-	const int kPuddleSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
+	const int kPassSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
+	// 動きの種類を RT1 の a に書く数（Taa_Plan.txt 6 章。MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）。
+	const float kMotionValues[] = { 0.f, 0.5f, 1.f };
 	const float kNoCoverage = 0.f;
 	const float kWhole = 1.f;
 	// 水たまりを書かないときのしきい値。模様の値（0〜1）が届かないので、水たまりも濡れた縁もできない
 	// （1 − 0 = 1 だと、模様の一番白い画素だけ濡れた縁が残る）。
 	const float kUnreachableThreshold = 2.f;
-	// GBuffer.hlsli の cbuffer PuddleConstants と同じ並び（16 バイトずつの区切りに合わせる）。
-	struct PuddleConstants{
+	// GBuffer.hlsli の cbuffer GBufferPassConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	struct PassConstants{
 		float threshold;       // 模様の値がこれより大きい所が水たまり（1 − 面積の割合）
 		float wetBand;
 		float inverseTileSize; // ワールドの x・z に掛けて、模様を読む位置にする
@@ -49,6 +51,8 @@ namespace{
 		float wetRoughness;
 		float wetDarkening;
 		float unused[ 2 ];
+		float motion;          // 動きの種類（kMotionValues）
+		float unusedMotion[ 3 ];
 	};
 
 	// 材質の画像（ORM）が無い材質に付ける白 1 画素（AO 1・粗さ 1・金属 1。シェーダは数値に掛けるので、数値がそのまま使われる）。
@@ -74,8 +78,11 @@ bool& puddlesEnabled() {
 	return sEnabled;
 }
 
-GBuffer::GBuffer() {
+GBuffer::GBuffer() :
+	mMotion( MotionKind::Static ) {
 	static_assert( sizeof( kFormats ) / sizeof( kFormats[ 0 ] ) == kTargetNumber, "GBuffer : one format per target." );
+	static_assert( sizeof( kMotionValues ) / sizeof( kMotionValues[ 0 ] ) == static_cast< int >( MotionKind::FirstPerson ) + 1,
+		"GBuffer : one value per MotionKind." );
 	for ( int i = 0; i < kTargetNumber; ++i ) {
 		mTargets[ i ] = Graphics::RenderTarget::createScreenSized( kScreenScale, kFormats[ i ] );
 	}
@@ -83,7 +90,7 @@ GBuffer::GBuffer() {
 	mSurfaceConstants = Graphics::ConstantBuffer::create( sizeof( SurfaceParams ) );
 	mDefaultOrm = createWhiteTexture();
 	mPuddleMask = Graphics::Texture::create( kPuddleMaskFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR ); // 色ではない数
-	mPuddleConstants = Graphics::ConstantBuffer::create( sizeof( PuddleConstants ) );
+	mPassConstants = Graphics::ConstantBuffer::create( sizeof( PassConstants ) );
 }
 
 void GBuffer::begin( Graphics::DepthTarget depth ) {
@@ -97,8 +104,14 @@ void GBuffer::begin( Graphics::DepthTarget depth ) {
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	// 材質値の入れ物は描く間ずっと付けておき、中身だけ MeshMaterial::apply（RenderPass::setSurface）が物ごとに書き換える。
 	gm.setConstantBuffer( kSurfaceSlot, mSurfaceConstants );
-	setPuddleConstants();
+	mMotion = MotionKind::Static;
+	setPassConstants();
 	RenderPass::beginGBuffer( mStaticMeshShader, &mSurfaceConstants, &mDefaultOrm );
+}
+
+void GBuffer::setMotion( MotionKind motion ) {
+	mMotion = motion;
+	setPassConstants();
 }
 
 void GBuffer::beginDecals( Graphics::DepthTarget depth ) {
@@ -112,7 +125,7 @@ void GBuffer::endDecals( Graphics::DepthTarget depth ) {
 	gm.setShaderResource( kDecalDepthSlot, Graphics::DepthTarget() ); // 深度を描画先へ戻す前に、読み込み元から外す
 	gm.setRenderTargets( mTargets, kTargetNumber, depth );
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // begin と同じ（G-Buffer のアルファはデータなので混ぜない）
-	setPuddleConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す（材質の画像は物ごとに付く）
+	setPassConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す（材質の画像は物ごとに付く）
 }
 
 void GBuffer::end() {
@@ -121,17 +134,17 @@ void GBuffer::end() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setShader( Graphics::Shader() );
 	gm.setConstantBuffer( kSurfaceSlot, Graphics::ConstantBuffer() );
-	gm.setConstantBuffer( kPuddleSlot, Graphics::ConstantBuffer() );
+	gm.setConstantBuffer( kPassSlot, Graphics::ConstantBuffer() );
 	gm.setShaderResource( kPuddleMaskSlot, Graphics::Texture() );
 }
 
-void GBuffer::setPuddleConstants() {
+void GBuffer::setPassConstants() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	// 模様の読み込みが終わるまでは、面積 0（どこも水たまりにならない）として書く。isReady は読み込みを進めるので毎回呼ぶ。
 	const bool maskReady = mPuddleMask.isReady();
 	const PuddleParams& params = puddleParams();
 	const float coverage = ( puddlesEnabled() && maskReady ) ? params.coverage : kNoCoverage;
-	PuddleConstants constants;
+	PassConstants constants;
 	constants.threshold = ( coverage > kNoCoverage ) ? kWhole - coverage : kUnreachableThreshold;
 	constants.wetBand = params.wetBand;
 	constants.inverseTileSize = kWhole / params.tileSize;
@@ -140,8 +153,12 @@ void GBuffer::setPuddleConstants() {
 	constants.wetDarkening = params.wetDarkening;
 	constants.unused[ 0 ] = 0.f;
 	constants.unused[ 1 ] = 0.f;
-	mPuddleConstants.set( &constants, sizeof( constants ) );
-	gm.setConstantBuffer( kPuddleSlot, mPuddleConstants );
+	constants.motion = kMotionValues[ static_cast< int >( mMotion ) ];
+	constants.unusedMotion[ 0 ] = 0.f;
+	constants.unusedMotion[ 1 ] = 0.f;
+	constants.unusedMotion[ 2 ] = 0.f;
+	mPassConstants.set( &constants, sizeof( constants ) );
+	gm.setConstantBuffer( kPassSlot, mPassConstants );
 	if ( maskReady ) {
 		gm.setShaderResource( kPuddleMaskSlot, mPuddleMask ); // 描画先を付けた後に付ける（setRenderTargets が t2 以降を外すため）
 	}

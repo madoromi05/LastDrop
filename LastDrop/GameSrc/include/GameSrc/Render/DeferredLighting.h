@@ -25,6 +25,7 @@ enum class GBufferView{
 	Ssao,      // SSAO の AO（0 黒＝遮られた〜1 白。空は黒。SsaoTranslucent_Plan.txt 8 章）
 	Ssr,       // 映り込みの確からしさ（0 黒〜1 白。SsrDecalMaterial_Plan.txt 9 章）
 	SsrColor,  // 映り込みの色（確からしさで割った、映る物の色そのもの。ToneMap を通さないので暗い）
+	Motion,    // 動きの種類（RT1 の a。黒 動かない物・青 ゾンビなど動く物・赤 手元。Taa_Plan.txt 6 章）
 	Count,
 };
 // エディタ（F6 の Render）に出す名前。

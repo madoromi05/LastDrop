@@ -40,7 +40,7 @@ namespace{
 	};
 	static_assert( sizeof( DeferredConstants ) == sizeof( float ) * ( kMatrixFloats + kParamFloats ), "DeferredConstants : keep the HLSL layout." );
 
-	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO", "SSR", "SSR color" };
+	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO", "SSR", "SSR color", "Motion" };
 	static_assert( sizeof( kViewNames ) / sizeof( kViewNames[ 0 ] ) == static_cast< int >( GBufferView::Count ), "GBufferView : one name per view." );
 }
 

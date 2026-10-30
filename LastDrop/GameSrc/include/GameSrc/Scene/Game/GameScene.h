@@ -18,6 +18,8 @@
 #include "GameSrc/Render/DeferredLighting.h"
 #include "GameSrc/Render/AmbientOcclusion.h"
 #include "GameSrc/Render/ScreenSpaceReflection.h"
+#include "GameSrc/Render/TemporalJitter.h"
+#include "GameSrc/Render/TemporalAntiAliasing.h"
 #include "GameSrc/Render/LightList.h"
 #include "GameSrc/Render/ShadowMap.h"
 #include "GameSrc/Render/CascadedShadowMap.h"
@@ -111,6 +113,9 @@ private:
 	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
 	AmbientOcclusion mAmbientOcclusion; // SSAO（G-Buffer の後に作る。SsaoTranslucent_Plan.txt 5 章）
 	ScreenSpaceReflection mReflection;  // 映り込み（ライティングの後に作る。SsrDecalMaterial_Plan.txt 7 章）
+	TemporalJitter mJitter;             // TAA の画面のずらし（描くたびに進める。Taa_Plan.txt 5 章）
+	TemporalAntiAliasing mTaa;          // TAA（霧の後に混ぜる。Taa_Plan.txt 7 章）
+	const FirstPersonCamera* mTaaCamera = nullptr; // 前のフレームに見ていたカメラ（替わったら TAA の履歴を捨てる）。目印だけで読まない
 	LightList mLights;                  // 今のフレームのライト（setupLights で作り直す）
 	ShadowMap mFlashlightShadow;        // 懐中電灯の影のマップ（Shadow_Plan.txt 5 章）
 	bool mFlashlightCastsShadow;        // このフレームに懐中電灯の影を描くか（付いていて銃を持っている間。addFlashlight が決める）

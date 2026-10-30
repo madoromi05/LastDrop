@@ -24,6 +24,13 @@ static const uint kViewFog       = 10;
 static const uint kViewSsao      = 11;
 static const uint kViewSsr       = 12;
 static const uint kViewSsrColor  = 13;
+static const uint kViewMotion    = 14;
+
+// 動きの種類の表示の色（RT1 の a。GBuffer.cpp の kMotionValues：0 動かない物・0.5 動く物・1 手元）。
+static const float3 kMotionMovingColor = float3(0.2, 0.4, 1.0);
+static const float3 kMotionFirstPersonColor = float3(1.0, 0.25, 0.25);
+static const float kMotionMovingThreshold = 0.25;      // これより大きければ動く物
+static const float kMotionFirstPersonThreshold = 0.75; // これより大きければ手元
 
 // SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ。SsrDecalMaterial_Plan.txt 7 章）。
 // 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl。
@@ -165,6 +172,12 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         float4 reflection = gReflection.Load(int3(p.uv * float2(reflectionWidth, reflectionHeight), 0));
         c = (view == kViewSsr) ? reflection.aaa
                                : ((reflection.a > kMinConfidence) ? reflection.rgb / reflection.a : kNothingColor);
+    }
+    else if (view == kViewMotion)
+    {
+        float motion = gGBufferNormal.Load(pixel).a;
+        c = (motion > kMotionFirstPersonThreshold) ? kMotionFirstPersonColor
+          : ((motion > kMotionMovingThreshold) ? kMotionMovingColor : kNothingColor);
     }
     return float4(c, 1.0);
 }

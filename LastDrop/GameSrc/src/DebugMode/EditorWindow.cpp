@@ -118,10 +118,18 @@ namespace{
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();
 		ImGui::Checkbox( "Dither", &ditherEnabled() );
-		// FXAA（NightFinish_Plan.txt 8・9 章）。値は Tuning の PostProcessParams（fxaa〜）。切ると今までどおり画面へ直接写す。
-		ImGui::Checkbox( "FXAA", &fxaaEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(edges: buildings, car)" );
+		// アンチエイリアス（Taa_Plan.txt Q4・9 章）。Off / FXAA / TAA から 1 つ。FXAA の値は Tuning の PostProcessParams（fxaa〜）。
+		// TAA は描く行列を毎フレームずらし、霧の後に履歴と混ぜる（値は Tuning の TAA。時間は gpu.TAA）。
+		AntiAliasing& antiAliasing = antiAliasingMode();
+		if ( ImGui::BeginCombo( "Anti-aliasing", antiAliasingName( antiAliasing ) ) ) {
+			for ( int i = 0; i < static_cast< int >( AntiAliasing::Count ); ++i ) {
+				AntiAliasing candidate = static_cast< AntiAliasing >( i );
+				if ( ImGui::Selectable( antiAliasingName( candidate ), candidate == antiAliasing ) ) {
+					antiAliasing = candidate;
+				}
+			}
+			ImGui::EndCombo();
+		}
 		// G-Buffer の中身の表示（GBuffer_Plan.txt 8-2）。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す。
 		GBufferView& view = gbufferView();
 		if ( ImGui::BeginCombo( "G-Buffer", gbufferViewName( view ) ) ) {

@@ -97,13 +97,15 @@ public:
 	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
 	void drawStatic( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
-	// 動く物を描く。drawStatic とデカールの後に呼ぶ。
-	void drawDynamic() const;
+	// 動く物を描く。drawStatic とデカールの後に、この順に呼ぶ。TAA のために動きの種類を分けて描く（Taa_Plan.txt 6 章。
+	// 呼ぶ側が間で GBuffer::setMotion を切り替える）。drawFirstPerson：手元（自キャラ・弾）、drawCharacters：ゾンビ・千切れた部位。
+	void drawFirstPerson() const;
+	void drawCharacters() const;
 	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
 	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。frustum：光の側から見た映る範囲（建物・置物を間引く）。
 	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
 	void drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const;
-	// 弾痕を G-Buffer へデカールとして描く。drawStatic の後・drawDynamic の前に、GBuffer::beginDecals〜endDecals の間で呼ぶ。1フレームに1回まで。
+	// 弾痕を G-Buffer へデカールとして描く。drawStatic の後・drawFirstPerson の前に、GBuffer::beginDecals〜endDecals の間で呼ぶ。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
 	// 着弾の砂ぼこりを描く。呼ぶ場所の決まりは drawBulletHoles と同じ（弾痕の後に呼ぶ）。

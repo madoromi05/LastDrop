@@ -24,7 +24,8 @@ public:
 	// G-Buffer を描いた後、ライティングの前に呼ぶ。描画先を自分の描画先へ切り替えて描く（終わった後の描画先は呼んだ側で付け直す）。
 	// depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
 	// SSAO を切っている間（ssaoEnabled が false）は、結果を AO 1（遮られていない）で消すだけ。
-	void draw( const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+	// noiseFrame：点の並びを回すノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0。Taa_Plan.txt 8 章）。
+	void draw( const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView, int noiseFrame );
 	// 最後に draw した結果（r に AO、g に目からの奥行き m）。
 	const GameLib::Graphics::RenderTarget& result() const;
 	// シェーダのコンパイルエラー（作るシェーダ → ぼかしのシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。

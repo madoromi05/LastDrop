@@ -300,7 +300,7 @@ public:
 		}
 
 		// --- Create blend states ---
-		// [0]=Opaque, [1]=Linear, [2]=Add
+		// [0]=Opaque, [1]=Linear, [2]=Add, [3]=Linear（描画先のアルファを残す）
 		// 0 番の設定を 8 枚分すべてに入れる。IndependentBlendEnable が FALSE なら 1〜7 番は使われないはずだが、
 		// 0 埋めのままだと SrcBlend などが不正な値（0）になるので、ドライバーに不正な設定を渡さないようにしておく。
 		D3D11_RENDER_TARGET_BLEND_DESC rtBlend = {};
@@ -322,6 +322,11 @@ public:
 		// Additive
 		rtBlend.DestBlend = D3D11_BLEND_ONE;
 		createBlendState( rtBlend, &mBlendStates[2], "BlendState(ADDITIVE)" );
+		// Linear（色だけ。描画先のアルファはそのまま残す）
+		rtBlend.DestBlend      = D3D11_BLEND_INV_SRC_ALPHA;
+		rtBlend.SrcBlendAlpha  = D3D11_BLEND_ZERO;
+		rtBlend.DestBlendAlpha = D3D11_BLEND_ONE;
+		createBlendState( rtBlend, &mBlendStates[3], "BlendState(LINEAR_KEEP_ALPHA)" );
 
 		// --- Create sampler states ---
 		D3D11_SAMPLER_DESC sampDesc = {};
@@ -423,7 +428,7 @@ public:
 
 		for ( int i = 0; i < 3; ++i ) if ( mRSStates[i] )    { mRSStates[i]->Release();    mRSStates[i] = 0; }
 		for ( int i = 0; i < 4; ++i ) if ( mDSSStates[i] )   { mDSSStates[i]->Release();   mDSSStates[i] = 0; }
-		for ( int i = 0; i < 3; ++i ) if ( mBlendStates[i] ) { mBlendStates[i]->Release(); mBlendStates[i] = 0; }
+		for ( int i = 0; i < kBlendStateNumber; ++i ) if ( mBlendStates[i] ) { mBlendStates[i]->Release(); mBlendStates[i] = 0; }
 		for ( int i = 0; i < 2; ++i ) if ( mSamplerStates[i]){ mSamplerStates[i]->Release(); mSamplerStates[i] = 0; }
 
 		if ( mInputLayout )       { mInputLayout->Release();       mInputLayout = 0; }
@@ -852,6 +857,7 @@ public:
 		int idx = 0;
 		if ( b == BLEND_OPAQUE )        idx = 0;
 		else if ( b == BLEND_LINEAR )   idx = 1;
+		else if ( b == BLEND_LINEAR_KEEP_ALPHA ) idx = 3;
 		else                            idx = 2;
 		if ( mCurrentBlendMode == idx ) return;
 		mCurrentBlendMode = idx;
@@ -1363,7 +1369,8 @@ public:
 
 	ID3D11RasterizerState*   mRSStates[3];
 	ID3D11DepthStencilState* mDSSStates[4];
-	ID3D11BlendState*        mBlendStates[3];
+	static const int kBlendStateNumber = 4; // Opaque・Linear・Add・Linear（アルファを残す）
+	ID3D11BlendState*        mBlendStates[ kBlendStateNumber ];
 	ID3D11SamplerState*      mSamplerStates[2];
 
 	ID3D11Buffer* mVSCB;

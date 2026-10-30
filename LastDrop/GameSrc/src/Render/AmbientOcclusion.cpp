@@ -50,7 +50,8 @@ namespace{
 		float power;
 		float sampleCount;
 		float maxScreenRadius;
-		float unused[ 2 ];
+		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
+		float unused;
 	};
 	static_assert( sizeof( SsaoConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kParamFloats ), "SsaoConstants : keep the HLSL layout." );
 
@@ -88,7 +89,7 @@ AmbientOcclusion::AmbientOcclusion() {
 	mBlurVertical.set( &kVertical, sizeof( kVertical ) );
 }
 
-void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& projectionView, int noiseFrame ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	if ( !ssaoEnabled() ) {
 		gm.clear( mOcclusion, kNoOcclusionColor );
@@ -106,8 +107,8 @@ void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth
 	constants.power = params.power;
 	constants.sampleCount = std::floor( params.sampleCount + 0.5f ); // 点の数は整数（F6 のスライダーは小数で動くため丸める）
 	constants.maxScreenRadius = kMaxScreenRadius;
-	constants.unused[ 0 ] = 0.f;
-	constants.unused[ 1 ] = 0.f;
+	constants.noiseFrame = static_cast< float >( noiseFrame );
+	constants.unused = 0.f;
 	mConstants.set( &constants, sizeof( constants ) );
 
 	gm.setRenderTargets( &mOcclusion, 1, Graphics::DepthTarget() ); // 描画範囲が半分の大きさになる

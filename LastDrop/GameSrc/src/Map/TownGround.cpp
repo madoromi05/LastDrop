@@ -12,6 +12,7 @@ using namespace GameLib::Math;
 namespace{
 	// 部品のファイル。並びは TownPiece と同じ。
 	// 道路キットの部品は tools/configs/road_*.json で変換（原点は真上から見た中心・一番下）。earth.txt は 1m 四方の無地の板（手書き）。
+	// 土の色はアスファルトの平均に合わせてある。部品のつなぎ目には数 mm のすき間があり、そこから見える土が明るいと路面に光る線が出るため。
 	const char* const kPieceFiles[ TOWN_PIECE_NUM ] = {
 		"Resource/road_straight.txt",
 		"Resource/road_center.txt",

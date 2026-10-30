@@ -59,7 +59,19 @@ PostProcessParams& postProcessParams();
 // false の間は「何も変えない」値をシェーダへ渡す。起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値 true。Release では true のまま）。
 bool& colorGradingEnabled();
 bool& ditherEnabled();
-// FXAA を掛けるか（F6 → Render。同上）。false の間は 8bit の中間を通さず、今までどおり画面へ直接写す（gpu.FXAA はほぼ 0 になる）。
-bool& fxaaEnabled();
+// アンチエイリアスの方式（F6 → Render。タルコフと同じく 1 つから選ぶ。Taa_Plan.txt Q4）。
+//   Off  … 何も掛けない
+//   Fxaa … 写した後に FXAA（NightFinish_Plan.txt 8 章）。Fxaa 以外の間は 8bit の中間を通さず、画面へ直接写す（gpu.FXAA はほぼ 0 になる）
+//   Taa  … 描く行列を毎フレームずらし（TemporalJitter）、TAA で混ぜる（Taa_Plan.txt）。FXAA は通さない（ぼけが重なるため）
+enum class AntiAliasing{
+	Off,
+	Fxaa,
+	Taa,
+	Count,
+};
+// エディタ（F6 の Render）に出す名前。
+const char* antiAliasingName( AntiAliasing );
+// 起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値は Taa。Release では初期値のまま）。
+AntiAliasing& antiAliasingMode();
 
 #endif

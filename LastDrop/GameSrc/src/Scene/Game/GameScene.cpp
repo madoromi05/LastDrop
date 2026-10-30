@@ -7,6 +7,7 @@
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/ShadowParams.h"
 #include "GameSrc/Render/SsrParams.h"
+#include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/DebugMode/EditorWindow.h"
 
 #include "GameLib/GameLib.h"
@@ -233,6 +234,13 @@ void GameScene::draw() {
 	}
 #endif
 	const FirstPersonCamera& camera = viewCamera();
+	// TAA のときは、描く行列を 1 画素より細かく毎フレームずらす（Taa_Plan.txt 5 章）。カメラが置いた行列を、ずらした物で上書きし、
+	// 下の G-Buffer・SSAO・SSR・霧・デカール・半透明の板にも同じ行列を渡す（全部のパスが同じずれで揃う）。
+	// 映る範囲（ViewFrustum）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）。
+	mJitter.advance( antiAliasingMode() == AntiAliasing::Taa );
+	const Matrix44 projectionView = mJitter.apply( camera.projectionViewMatrix(),
+		mPostProcess.sceneDepth().width(), mPostProcess.sceneDepth().height() );
+	Graphics::Manager::instance().setProjectionViewMatrix( projectionView );
 	{
 		PROFILE_SCOPE( "Audio" );
 		updateListener();
@@ -241,6 +249,8 @@ void GameScene::draw() {
 	mPostProcess.setDamageFlash( mDamageView.damageFlash() );
 	mPostProcess.setPain( mDamageView.pain() );
 	mPostProcess.setFade( mDamageView.fade() );
+	// SSAO・SSR・ディザのノイズは、TAA のときだけフレームごとに動かす（TAA が均す。Taa_Plan.txt 8 章）。TAA でないときは番号が 0 のまま。
+	mPostProcess.setNoiseFrame( mJitter.frameIndex() );
 	mPostProcess.beginScene();
 	setupLights( camera );
 	drawShadowMaps( camera );
@@ -259,28 +269,32 @@ void GameScene::draw() {
 		PROFILE_SCOPE( "World.draw" );
 		mWorld.drawStatic( ViewFrustum( camera.projectionViewMatrix() ), camera.eyePosition() );
 		mGBuffer.beginDecals( mPostProcess.sceneDepth() );
-		mWorld.drawBulletHoles( camera.projectionViewMatrix() );
+		mWorld.drawBulletHoles( projectionView );
 		Profiling::gpuMark( "Decals" );
 		mGBuffer.endDecals( mPostProcess.sceneDepth() );
-		mWorld.drawDynamic();
+		// 動く物は動きの種類を G-Buffer へ書き分ける（TAA が前のフレームのどこを読むかを分ける。Taa_Plan.txt 6 章）。
+		mGBuffer.setMotion( MotionKind::FirstPerson );
+		mWorld.drawFirstPerson();
+		mGBuffer.setMotion( MotionKind::Moving );
+		mWorld.drawCharacters();
 	}
 	mGBuffer.end();
 	// SSAO は G-Buffer の後・ライティングの前（SsaoTranslucent_Plan.txt 4 章）。G-Buffer の表示（SSAO）でも見るので、表示中も作る。
-	mAmbientOcclusion.draw( mGBuffer, mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+	mAmbientOcclusion.draw( mGBuffer, mPostProcess.sceneDepth(), projectionView, mJitter.frameIndex() );
 	Profiling::gpuMark( "SSAO" );
 	if ( drawsLighting ) {
 		mPostProcess.bindSceneColor(); // 深度はシェーダから読むので、描画先からは外す
 		mLights.bindShadowMaps(); // 描画先を変えると t2 以降が外れるので、付け直す（LightList::bindShadowMaps）
-		mDeferredLighting.drawLighting( mGBuffer, mAmbientOcclusion.result(), mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+		mDeferredLighting.drawLighting( mGBuffer, mAmbientOcclusion.result(), mPostProcess.sceneDepth(), projectionView );
 		Profiling::gpuMark( "Lighting" );
 		// 映り込みはライティングの後・霧の前（照らした色を映し、映り込みにも霧が掛かる。SsrDecalMaterial_Plan.txt 4 章）。
 		// 作るパスはシーンの色を読むので、自分の描画先へ描いてから、シーンの色へ付け直して混ぜる。
 		if ( ssrEnabled() ) {
-			mReflection.draw( mGBuffer, mPostProcess.sceneColor(), mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+			mReflection.draw( mGBuffer, mPostProcess.sceneColor(), mPostProcess.sceneDepth(), projectionView, mJitter.frameIndex() );
 			Profiling::gpuMark( "SSR" );
 			mPostProcess.bindSceneColor();
 			mDeferredLighting.drawReflection( mGBuffer, mAmbientOcclusion.result(), mReflection.result(), mPostProcess.sceneDepth(),
-				camera.projectionViewMatrix() );
+				projectionView );
 		} else {
 			mReflection.clear(); // 表示（SSR）が前の絵を出さないように
 			Profiling::gpuMark( "SSR" ); // 切っていても打つ（計測の列を揃えるため）
@@ -288,17 +302,31 @@ void GameScene::draw() {
 		Profiling::gpuMark( "SSR composite" );
 		// 霧は半透明の板より前（板は自分で同じ霧を掛けるので、二重に掛けない。NightFinish_Plan.txt 4 章）。
 		if ( fogEnabled() ) {
-			mDeferredLighting.drawFog( mPostProcess.sceneDepth(), camera.projectionViewMatrix() );
+			mDeferredLighting.drawFog( mPostProcess.sceneDepth(), projectionView );
 		}
 		Profiling::gpuMark( "Fog" );
+		// TAA は霧の後・半透明の板の前（板は動きが取れず、マズルフラッシュに光の尾が出るため。Taa_Plan.txt Q3）。
+		// 見ているカメラが替わった（観察用カメラ F4 の切り替え）フレームは、前の履歴が別の場所の絵なので捨てる（Q7）。
+		if ( &camera != mTaaCamera ) {
+			mTaa.invalidate();
+		}
+		if ( antiAliasingMode() == AntiAliasing::Taa ) {
+			mTaa.resolve( mPostProcess.sceneColor(), mGBuffer, mPostProcess.sceneDepth(), projectionView, camera.projectionViewMatrix() );
+		} else {
+			mTaa.invalidate(); // TAA に戻したとき、古い履歴を混ぜないように
+		}
+		Profiling::gpuMark( "TAA" );
+	} else {
+		mTaa.invalidate(); // G-Buffer の表示の間は照らした色が無いので、履歴も続かない
 	}
+	mTaaCamera = &camera;
 	// 砂ぼこりなどの半透明の板は、G-Buffer と同じ深度で隠れるようシーンへ描く。板は深度を書かないので読み取り専用で付け、
 	// 同じ深度を読んで壁・地面に刺さった所を薄くする（SsaoTranslucent_Plan.txt 7 章）。弾痕は G-Buffer のデカールになった（上）。
 	mPostProcess.resumeSceneReadOnlyDepth();
 	mLights.bindShadowMaps();   // 板も懐中電灯の影を受ける（同じ evaluateLight を通る）
-	mWorld.drawImpactDust( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
-	mWorld.drawBloodSpray( camera.projectionViewMatrix(), camera.viewDirection(), camera.eyePosition() ); // 砂ぼこりの後（同じ作り）
-	mWorld.drawMuzzleFlash( camera.projectionViewMatrix(), camera.viewDirection() ); // 加算なので順番は問わない
+	mWorld.drawImpactDust( projectionView, camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
+	mWorld.drawBloodSpray( projectionView, camera.viewDirection(), camera.eyePosition() ); // 砂ぼこりの後（同じ作り）
+	mWorld.drawMuzzleFlash( projectionView, camera.viewDirection() ); // 加算なので順番は問わない
 	mLights.unbind(); // ライトの一覧を読むのは、ここまで（ライティングのパスと半透明の板）
 #ifdef ZF_EDITOR
 	mPostProcess.resumeScene(); // 当たり判定の表示は深度を書くことがあるので、書ける付け方へ戻す
@@ -315,7 +343,7 @@ void GameScene::draw() {
 		mLights.rebindConstants();
 		mLights.bindShadowMaps();
 		mDeferredLighting.drawView( view, mGBuffer, mAmbientOcclusion.result(), mReflection.result(), mPostProcess.sceneDepth(),
-			camera.projectionViewMatrix() );
+			projectionView );
 		mLights.unbind();
 	}
 	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）。
@@ -345,6 +373,7 @@ void GameScene::draw() {
 		mDeferredLighting.errorMessage(),
 		mAmbientOcclusion.errorMessage(),
 		mReflection.errorMessage(),
+		mTaa.errorMessage(),
 		mFlashlightShadow.errorMessage(),
 		mMoonShadow.errorMessage(),
 	};

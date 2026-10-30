@@ -60,7 +60,7 @@ namespace{
 		float shadowsColor[ kColorChannels ];   // sRGB（シェーダでリニアへ直す）
 		float ditherAmount;                     // 足すノイズの幅（画面の色の 1 段＝1/255。0 で無し）
 		float midtonesColor[ kColorChannels ];
-		float unused0;
+		float noiseFrame;                       // ディザのノイズのフレームの番号（Taa_Plan.txt 8 章）
 		float highlightsColor[ kColorChannels ];
 		float unused1;
 	};
@@ -117,15 +117,22 @@ bool& ditherEnabled() {
 	return sEnabled;
 }
 
-bool& fxaaEnabled() {
-	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
-	return sEnabled;
+const char* antiAliasingName( AntiAliasing mode ) {
+	static const char* const kNames[] = { "Off", "FXAA", "TAA" };
+	static_assert( sizeof( kNames ) / sizeof( kNames[ 0 ] ) == static_cast< int >( AntiAliasing::Count ), "AntiAliasing : one name per mode." );
+	return kNames[ static_cast< int >( mode ) ];
+}
+
+AntiAliasing& antiAliasingMode() {
+	static AntiAliasing sMode = AntiAliasing::Taa; // 起動中ずっと 1 つ（F6 で書き換える。Taa_Plan.txt Q4）
+	return sMode;
 }
 
 PostProcess::PostProcess() :
 	mDamageFlash( kNoEffect ),
 	mPain( kNoEffect ),
-	mFade( kNoEffect ) {
+	mFade( kNoEffect ),
+	mNoiseFrame( 0 ) {
 	mSceneColor = Graphics::RenderTarget::createScreenSized( kSceneScale, Graphics::RENDER_TARGET_RGBA16F );
 	mSceneDepth = Graphics::DepthTarget::createScreenSized( kSceneScale );
 	mPresentShader = Graphics::Shader::create( kPresentShaderFile );
@@ -174,7 +181,7 @@ void PostProcess::endScene() {
 	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）。
 	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );
 	// FXAA を掛けるなら、写した結果をいったん 8bit の中間へ置く（Present.hlsl は a に輝度も書く）。掛けないなら画面へ直接。
-	const bool usesFxaa = fxaaEnabled();
+	const bool usesFxaa = ( antiAliasingMode() == AntiAliasing::Fxaa );
 	if ( usesFxaa ) {
 		gm.setRenderTargets( &mFxaaInput, 1, Graphics::DepthTarget() );
 	} else {
@@ -245,6 +252,10 @@ void PostProcess::setFade( float amount ) {
 	mFade = amount;
 }
 
+void PostProcess::setNoiseFrame( int frame ) {
+	mNoiseFrame = frame;
+}
+
 void PostProcess::updateConstants() {
 	PresentConstants constants;
 	constants.vignetteStrength = kVignetteStrength;
@@ -275,7 +286,7 @@ void PostProcess::updateConstants() {
 	setColor( constants.shadowsColor, grade.shadowsColor );
 	constants.ditherAmount = ditherEnabled() ? kDitherStep : kNoEffect;
 	setColor( constants.midtonesColor, grade.midtonesColor );
-	constants.unused0 = 0.f;
+	constants.noiseFrame = static_cast< float >( mNoiseFrame );
 	setColor( constants.highlightsColor, grade.highlightsColor );
 	constants.unused1 = 0.f;
 	mPresentConstants.set( &constants, sizeof( constants ) );

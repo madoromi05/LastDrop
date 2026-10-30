@@ -1,7 +1,7 @@
 // G-Buffer の並び（SummaryPlan/個別仕様/GBuffer_Plan.txt 4 章・PbrNightLighting_Plan.txt 5 章）。書く側（StaticMeshGBuffer.hlsl・
 // SkinnedMeshGBuffer.hlsl）と読む側（DeferredLighting.hlsl）が、並びをここだけで知る。並びを変えるときは、ここと GBuffer.cpp の形式を一緒に直す。
 //   t2 / RT0  RGBA8_SRGB : rgb 色（頂点色×材質の色×画像。リニアで書くと GPU が sRGB にして入れる）  a 予備
-//   t3 / RT1  RGBA16F    : xyz 法線（ワールド・長さ 1・法線マップ済み）                          a 予備
+//   t3 / RT1  RGBA16F    : xyz 法線（ワールド・長さ 1・法線マップ済み）                          a 動きの種類（0 町・0.5 ゾンビ・1 手元。TAA）
 //   t4 / RT2  RGBA8      : r AO（材質の画像の r。無ければ 1）  g 粗さ  b 金属  a 発光の強さ（0〜1。色は「色 × 強さ × kEmissionScale」）
 //   t5        深度       : PostProcess の深度（位置は深度から戻す）
 #ifndef INCLUDED_GBUFFER_HLSLI
@@ -25,11 +25,12 @@ cbuffer GBufferMaterial : register(b3)
 Texture2D gOrmMap     : register(t11);
 // 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/puddle_gen.py）。ワールドの x・z で読む。
 Texture2D gPuddleMask : register(t12);
-// b4：水たまりの値（GBuffer.cpp の PuddleConstants。PuddleParams から）。
-cbuffer PuddleConstants : register(b4)
+// b4：G-Buffer へ描く間ずっと同じ値（GBuffer.cpp の PassConstants）。水たまりの値（PuddleParams から）と、今描いている物の動きの種類。
+cbuffer GBufferPassConstants : register(b4)
 {
     float4 gPuddleShape;   // x: しきい値（模様の値がこれより大きい所が水たまり）  y: 濡れた縁の幅  z: 1 / 模様 1 枚の大きさ（m）  w: 使わない
     float4 gPuddleSurface; // x: 水たまりの粗さ  y: 濡れた路面の粗さ  z: 濡れた所の色に掛ける数  w: 使わない
+    float4 gMotion;        // x: 動きの種類（0 動かない物・0.5 ゾンビなど動く物・1 手元。Taa_Plan.txt 6 章）。RT1 の a に書く  yzw: 使わない
 };
 static const float kPuddleEdge = 0.02;  // 濡れた路面から水たまりへ変わる幅（模様の値で。狭いほど水面の縁がくっきり）
 static const float kPuddleMinUp = 0.9;  // 面の上向きの度合い（法線の y）がこれより小さい面（縁石の側面・壁）には水が溜まらない
@@ -73,7 +74,7 @@ GBufferOutput writeGBuffer(float4 color, float2 uv, float3 worldPosition, float3
     }
     GBufferOutput o;
     o.albedo = float4(albedo, kSpare);
-    o.normal = float4(n, kSpare);
+    o.normal = float4(n, gMotion.x); // a は動きの種類（TAA が前のフレームのどこを読むかを分ける）
     o.material = float4(orm.r, roughness, metallic, saturate(gSurface.z));
     return o;
 }

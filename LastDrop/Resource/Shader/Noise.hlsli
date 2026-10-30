@@ -11,4 +11,13 @@ float interleavedGradientNoise(float2 pixel)
     return frac(kNoiseScale.z * frac(dot(pixel, kNoiseScale.xy)));
 }
 
+// フレームごとに動かす版（TAA のとき。SummaryPlan/個別仕様/Taa_Plan.txt 8 章）。画素の位置をフレームの番号 × 5.588238 だけずらす
+// （Jimenez 2014 の方法。この歩幅だと、続くフレームで同じ画素の値が重ならずに散る）。TAA が何フレームかを均すので、同じ点の数でざらつきが減る。
+// frame：TemporalJitter::frameIndex（TAA でないときは 0 で、上の版と同じ値）。
+static const float kNoiseFrameStep = 5.588238;
+float interleavedGradientNoise(float2 pixel, float frame)
+{
+    return interleavedGradientNoise(pixel + frame * kNoiseFrameStep);
+}
+
 #endif

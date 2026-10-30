@@ -64,7 +64,8 @@ DecalOutput PSMain(float4 position : SV_Position)
     float bumpZ = sqrt(saturate(1.0 - dot(bumpXy, bumpXy)));
     float3 normal = normalize(gDecalRight.xyz * bumpXy.x + gDecalUp.xyz * bumpXy.y + gDecalFacing.xyz * bumpZ);
 
-    // どちらもアルファで混ぜる（BLEND_LINEAR）。混ぜた法線は長さが 1 でなくなるので、読む側（ライティング）で直す。
+    // どちらもアルファで混ぜる（BLEND_LINEAR_KEEP_ALPHA。G-Buffer のアルファは書き換えない）。混ぜた法線は長さが 1 でなくなるので、
+    // 読む側（ライティング）で直す。
     DecalOutput o;
     o.albedo = float4(color.rgb, alpha);
     o.normal = float4(normal, alpha);

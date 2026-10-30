@@ -9,6 +9,9 @@ enum BlendMode{
 	BLEND_OPAQUE,
 	BLEND_LINEAR,
 	BLEND_ADDITIVE,
+	///色は BLEND_LINEAR と同じくアルファで混ぜ、描画先のアルファは書き換えない（アルファにデータを持つ描画先へ混ぜて描くとき。
+	///G-Buffer のデカール。RT1 の a は動きの種類）。BLEND_LINEAR は描画先のアルファを描いた物のアルファで上書きする
+	BLEND_LINEAR_KEEP_ALPHA,
 
 	BLEND_MAX,
 };

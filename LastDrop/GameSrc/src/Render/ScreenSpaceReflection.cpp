@@ -44,7 +44,8 @@ namespace{
 		float thickness;
 		float edgeFade;
 		float intensity;
-		float unused[ 2 ];
+		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
+		float unused;
 	};
 	static_assert( sizeof( SsrConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kRowFloats * 2 ), "SsrConstants : keep the HLSL layout." );
 	// SsrBlur.hlsl の cbuffer SsrBlurConstants と同じ並び。
@@ -83,7 +84,7 @@ ScreenSpaceReflection::ScreenSpaceReflection() {
 }
 
 void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::RenderTarget& sceneColor, Graphics::DepthTarget depth,
-	const Matrix44& projectionView ) {
+	const Matrix44& projectionView, int noiseFrame ) {
 	const SsrParams& params = ssrParams();
 	SsrConstants constants;
 	Matrix44 inverse;
@@ -96,8 +97,8 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	constants.thickness = params.thickness;
 	constants.edgeFade = params.edgeFade;
 	constants.intensity = params.intensity;
-	constants.unused[ 0 ] = 0.f;
-	constants.unused[ 1 ] = 0.f;
+	constants.noiseFrame = static_cast< float >( noiseFrame );
+	constants.unused = 0.f;
 	mConstants.set( &constants, sizeof( constants ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();

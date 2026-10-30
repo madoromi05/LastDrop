@@ -675,6 +675,12 @@
     <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\TemporalAntiAliasing.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -1568,6 +1574,15 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalAntiAliasing.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\TaaParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
@@ -1968,6 +1983,8 @@
     <None Include="Resource\Shader\SsrComposite.hlsl" />
     <None Include="Resource\Shader\SsrCommon.hlsli" />
     <None Include="Resource\Shader\Decal.hlsl" />
+    <None Include="Resource\Shader\Taa.hlsl" />
+    <None Include="Resource\Shader\TaaCopy.hlsl" />
     <None Include="Resource\Shader\Noise.hlsli" />
     <None Include="Resource\Shader\DepthPosition.hlsli" />
   </ItemGroup>

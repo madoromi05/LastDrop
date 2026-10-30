@@ -37,7 +37,7 @@ cbuffer PresentConstants : register(b1) // PostProcess.cpp の PresentConstants 
     float3 gShadowsColor;    // 暗部に掛ける色（sRGB。白でそのまま）
     float gDitherAmount;     // 足すノイズの幅（画面の色の 1 段。0 で無し）
     float3 gMidtonesColor;   // 中間に掛ける色
-    float gUnused0;
+    float gNoiseFrame;       // ディザのノイズのフレームの番号（TAA のとき毎フレーム変わる。それ以外は 0。Taa_Plan.txt 8 章）
     float3 gHighlightsColor; // 明部に掛ける色
     float gUnused1;
 };
@@ -131,7 +131,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     color *= 1.0 - saturate(gFade);
     // バックバッファは UNORM のまま（HUD・文字を今の色で描くため）なので、画面の色へは自分で戻す。
     // 8bit に落とす直前に ±半段のノイズを足し、夜空・霧のなだらかな暗い色の縞（バンディング）を消す。
-    float dither = (interleavedGradientNoise(v.position.xy) - 0.5) * gDitherAmount;
+    float dither = (interleavedGradientNoise(v.position.xy, gNoiseFrame) - 0.5) * gDitherAmount;
     float3 screenColor = linearToSrgb(color) + dither;
     // a には画面の色の輝度を入れる。FXAA（Fxaa.hlsl）が近くの輝度を何度も読むので、ここで 1 回だけ計算しておく
     // （FXAA を切って画面へ直接写すときは、画面の a は使われない）。

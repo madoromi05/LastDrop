@@ -476,13 +476,16 @@ void GameWorld::drawStatic( const ViewFrustum& frustum, const Vector3& eye ) con
 	Profiling::gpuMark( "Ground" );
 }
 
-void GameWorld::drawDynamic() const {
+void GameWorld::drawFirstPerson() const {
 	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので、動く物の中では最初に描く。
 	if ( mPlayer ) {
 		mPlayer->draw();
 	}
 	mBullets.draw();
 	Profiling::gpuMark( "Player" );
+}
+
+void GameWorld::drawCharacters() const {
 	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
 	mSeveredLimbs.draw();
 	Profiling::gpuMark( "Zombies" );
