@@ -19,6 +19,9 @@ public:
 	int width() const;
 	int height() const;
 	RenderTargetFormat format() const;
+	///今の中身を GPU から読み戻して TGA（24 ビット・アルファなし）に書く。RGBA8 / RGBA8_SRGB の物だけ（数は描画先の 8 ビットのまま）。
+	///GPU が描き終わるのを待つので重い。ボタンを押したときなど、1 回きりの書き出しに使う（毎フレーム呼ばない）
+	void writeTga( const char* filename ) const;
 
 	//以下ユーザは意識しない関数群
 	RenderTarget();

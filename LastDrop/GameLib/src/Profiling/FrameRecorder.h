@@ -36,7 +36,7 @@ public:
 private:
 	struct ScopeTotal{
 		int column;
-		float milliseconds;
+		float milliseconds; // 回数（count. の列）のときは、その値のまま
 	};
 	struct Row{
 		long long frame;

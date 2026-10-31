@@ -110,6 +110,10 @@ CONFIG = {
     # 隣の絵の値で埋める（fill_island_padding）。元の画像のすき間が黒・粗さ 0 のままだと、ミップで部品の端に混ざって
     # 暗い線・光る線（鏡）になるため。道路キットのように、1 枚の画像に部品の絵を並べた元画像に使う。
     "fill_island_padding": False,
+    # >0 なら、書き出すメッシュ全部の三角形の数がこの数を超えたとき、Blender の Decimate（Collapse）で減らしてから書き出す
+    # （SummaryPlan/個別仕様/OptimizationS246_Plan.txt 2 章）。全メッシュを同じ割合で減らす。0 なら減らさない。
+    # 形のかどは法線マップが補う。スキンのあるモデルもウェイト（頂点グループ）を保ったまま減る。
+    "max_triangles": 0,
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -233,6 +237,38 @@ def filter_islands(mesh_objs):
         bm.to_mesh(obj.data)
         bm.free()
         print("ISLANDS", obj.name, "removed verts", len(doomed), "left", len(obj.data.vertices))
+
+
+def triangle_count(mesh_objs):
+    total = 0
+    for obj in mesh_objs:
+        obj.data.calc_loop_triangles()
+        total += len(obj.data.loop_triangles)
+    return total
+
+
+def decimate_meshes(mesh_objs):
+    # max_triangles を超えていたら、全メッシュを同じ割合で減らす。Decimate を一番上の段に置いてから適用する
+    # （Armature より下の段のまま適用すると、それより上の段の変形（今の姿勢）まで頂点に焼き付いてしまうため）。
+    limit = CONFIG["max_triangles"]
+    if limit <= 0:
+        return
+    before = triangle_count(mesh_objs)
+    if before <= limit:
+        print("DECIMATE skipped", before, "<=", limit)
+        return
+    ratio = float(limit) / before
+    for obj in mesh_objs:
+        if obj.data.shape_keys:
+            raise RuntimeError("シェイプキーのあるメッシュは Decimate を適用できません: %s" % obj.name)
+        bpy.context.view_layer.objects.active = obj
+        modifier = obj.modifiers.new(name="GameLibDecimate", type="DECIMATE")
+        modifier.decimate_type = "COLLAPSE"
+        modifier.ratio = ratio
+        modifier.use_collapse_triangulate = True
+        bpy.ops.object.modifier_move_to_index(modifier=modifier.name, index=0)
+        bpy.ops.object.modifier_apply(modifier=modifier.name)
+    print("DECIMATE", before, "->", triangle_count(mesh_objs), "ratio", f(ratio))
 
 
 def find_meshes():
@@ -954,10 +990,12 @@ def main():
     out = "<Container>\n"
     if CONFIG["mode"] == "static":
         filter_islands(mesh_objs)
+        decimate_meshes(mesh_objs)  # 島を除いた後の、書き出す形で数える
         adjust_static_transform(mesh_objs)
         out += emit_static_mesh(mesh_objs)
         export_mesh_textures(mesh_objs)
     else:
+        decimate_meshes(mesh_objs)
         out += build_skinned(mesh_objs)
     out += "</Container>\n"
 

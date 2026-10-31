@@ -27,6 +27,12 @@ struct LightingParams{
 	GameLib::Math::Vector3 skyHorizonColor = GameLib::Math::Vector3( 0.09f, 0.11f, 0.17f );
 	float skyIntensity = 1.f;  // 描く空の明るさ（環境光には効かない）
 
+	// ── 月の絵（MoonStarsLut_Plan.txt 4 章。星は 2026-10-31 に削除）── 空に足す絵だけ。町を照らす月の光（上の moon〜）の強さは変えない
+	// 月は月の光の来る方（moonElevation・moonAzimuth）に描く（影の向きとずれない）。色は moonColor
+	float moonRadius = 0.75f;        // 見かけの半径（度。本物の 0.25° は画面で小さすぎるので大きく）
+	float moonDiscIntensity = 3.f;   // 円板の明るさ（トーンマップの前の数。ブルームのしきい値 1 を少し超えて、少しにじむ）
+	float moonHaloIntensity = 0.05f; // 周りのにじみの明るさ（円板の明るさに対する割合。夜の薄い霧で光が散ったように見せる）
+	float moonHaloFalloff = 8.f;     // にじみの広がり（月の半径の何倍で 1/e まで薄まるか）
 	// ── 環境光 ── 上からは空の色、下からは地面の色（半球ライト）。金属に映る色も同じ空と地面
 	GameLib::Math::Vector3 groundColor = GameLib::Math::Vector3( 0.05f, 0.05f, 0.06f );
 	float ambientIntensity = 1.f;
@@ -66,7 +72,10 @@ struct LightingParams{
 		v( "skyZenithColor", skyZenithColor, 0.f, 1.f, "" );
 		v( "skyHorizonColor", skyHorizonColor, 0.f, 1.f, "" );
 		v( "skyIntensity", skyIntensity, 0.f, 8.f, "x" );
-		v( "groundColor", groundColor, 0.f, 1.f, "" );
+		v( "moonRadius", moonRadius, 0.1f, 5.f, "deg" );            // 0 は不可（半径で割るため）
+		v( "moonDiscIntensity", moonDiscIntensity, 0.f, 20.f, "x" );
+		v( "moonHaloIntensity", moonHaloIntensity, 0.f, 1.f, "x" );
+		v( "moonHaloFalloff", moonHaloFalloff, 1.f, 32.f, "x" );     // 0 は不可（広がりで割るため）		v( "groundColor", groundColor, 0.f, 1.f, "" );
 		v( "ambientIntensity", ambientIntensity, 0.f, 8.f, "x" );
 		v( "fogHalfDistance", fogHalfDistance, 5.f, 1000.f, "m" );    // 0 は不可（半分の距離で割るため）
 		v( "fogGroundDensity", fogGroundDensity, 0.f, 0.2f, "/m" );
@@ -91,6 +100,9 @@ LightingParams dayLightingParams();
 // 霧を掛けるか（F6 → Render の Fog。見比べと計測用。NightFinish_Plan.txt 9・11 章）。false の間は霧のパスを描かず、半透明の板にも掛けない。
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）。
 bool& fogEnabled();
+// 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用。MoonStarsLut_Plan.txt 8・10 章）。false の間は今までの空のグラデーションだけ。
+// 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）。
+bool& skyDetailEnabled();
 // 高さと方位（度）から、その方から来る光の進む向き（長さ 1。LightList の平行光に渡す形）。
 GameLib::Math::Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree );
 

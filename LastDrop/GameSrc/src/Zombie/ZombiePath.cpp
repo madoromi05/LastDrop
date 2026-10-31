@@ -1,6 +1,6 @@
 #include "GameSrc/Zombie/ZombiePath.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
-#include "GameSrc/Map/StreetGraph.h"
+#include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/FlatMath.h"
 
@@ -41,8 +41,8 @@ ZombiePath::ZombiePath( int probePhase ) :
 	mStuck( false ) {
 }
 
-const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const StreetGraph& streets,
-const HitWorld& hitWorld, bool walking ) {
+const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const NavMesh& navMesh,
+bool walking ) {
 	const ZombieCrowdParams& params = zombieCrowdParams();
 	if ( mHasLastDestination && FlatMath::distance( mLastDestination, destination ) > kDestinationJumpDistance ) {
 		mProbeTicks = 0; // 新しい行き先へ通れるかを、このティックに調べる（古い通り道は探し直すか捨てる）
@@ -63,7 +63,7 @@ const HitWorld& hitWorld, bool walking ) {
 	}
 	if ( --mProbeTicks <= 0 ) {
 		mProbeTicks = kProbeIntervalTicks;
-		probe( self, destination, streets, hitWorld );
+		probe( self, destination, navMesh );
 	}
 	if ( !mRoute.empty() ) {
 		mRoute.back() = destination; // 最後の点は、動いていく行き先（自キャラ）に付いていく
@@ -100,13 +100,13 @@ const HitWorld& hitWorld, bool walking ) {
 		if ( mSidestepCount > 0 ) {
 			mStuck = true;
 		}
-		startSidestep( self, point, streets, hitWorld );
+		startSidestep( self, point, navMesh );
 		return mSidestepPoint;
 	}
 	return point;
 }
 
-void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const StreetGraph& streets, const HitWorld& hitWorld ) {
+void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const NavMesh& navMesh ) {
 	const ZombieCrowdParams& params = zombieCrowdParams();
 	Vector3 forward( point.x - self.x, 0.f, point.z - self.z );
 	float length = forward.length();
@@ -122,8 +122,8 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	pointA.setMadd( self, sideA, params.sidestepDistance );
 	Vector3 pointB;
 	pointB.setMadd( self, sideB, params.sidestepDistance );
-	bool openA = streets.isWalkable( self, pointA, hitWorld );
-	bool openB = streets.isWalkable( self, pointB, hitWorld );
+	bool openA = navMesh.isWalkable( self, pointA );
+	bool openB = navMesh.isWalkable( self, pointB );
 	if ( openA && openB ) {
 		mSidestepPoint = ( FlatMath::distance( pointA, point ) <= FlatMath::distance( pointB, point ) ) ? pointA : pointB;
 	} else if ( openA ) {
@@ -138,8 +138,8 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	mStallTicks = 0;
 }
 
-void ZombiePath::probe( const Vector3& self, const Vector3& destination, const StreetGraph& streets, const HitWorld& hitWorld ) {
-	if ( streets.isWalkable( self, destination, hitWorld ) ) {
+void ZombiePath::probe( const Vector3& self, const Vector3& destination, const NavMesh& navMesh ) {
+	if ( navMesh.isWalkable( self, destination ) ) {
 		if ( !mRoute.empty() ) {
 			mRoute.clear();
 			resetProgress();
@@ -148,14 +148,14 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const S
 	}
 	if ( mRoute.empty() || FlatMath::distance( mRouteGoal, destination ) > kReplanDistance ) {
 		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる。
-		streets.findPath( self, destination, hitWorld, &mRoute );
+		navMesh.findPath( self, destination, &mRoute );
 		mNext = 0;
 		mRouteGoal = destination;
 		resetProgress();
 		return;
 	}
 	// 次の次の点が見えていれば、今の点は飛ばす（角を斜めに曲がる）。
-	if ( mNext + 1 < static_cast< int >( mRoute.size() ) && streets.isWalkable( self, mRoute[ mNext + 1 ], hitWorld ) ) {
+	if ( mNext + 1 < static_cast< int >( mRoute.size() ) && navMesh.isWalkable( self, mRoute[ mNext + 1 ] ) ) {
 		++mNext;
 		resetProgress();
 	}

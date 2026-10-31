@@ -18,11 +18,6 @@ struct ZombieCrowdParams{
 	float sidestepReach = 0.5f;        // よける点にこれより近づいたら終わり（m）
 	float backstepDistance = 1.f;      // 左右どちらも通れないときに下がる距離（m）
 
-	// ── 動かない障害物（車・ガソリンの置き場）を道の図に足すとき ──
-	// 箱をこれだけ広げた四隅を図の点にする（m。体の幅の半分＋余白。角を回るときに体が車にこすらないように）。
-	// 図は町を置くときに 1 回だけ作るので、変えたら Retry で作り直したときに効く。
-	float obstacleMargin = 0.6f;
-
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（WeaponPoseParams と同じ約束）。時間の下限を 0 にしないのは割り算に使うため。
 	template< class V > void visit( V& v ) {
 		v( "separationRadius", separationRadius, 0.1f, 5.f, "m" );
@@ -34,7 +29,6 @@ struct ZombieCrowdParams{
 		v( "sidestepSeconds", sidestepSeconds, 0.1f, 5.f, "s" );
 		v( "sidestepReach", sidestepReach, 0.05f, 2.f, "m" );
 		v( "backstepDistance", backstepDistance, 0.1f, 5.f, "m" );
-		v( "obstacleMargin", obstacleMargin, 0.f, 2.f, "m" );
 	}
 };
 

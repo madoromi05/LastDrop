@@ -45,6 +45,9 @@ public:
 	void setTexture( Texture );
 	///法線マップをセット（スロットt1）。セットするとノーマルマップ用シェーダで描く。
 	void setNormalMap( Texture );
+	///色の画像と法線マップ（空なら無し）を一度にセット。今と同じ物は付け直さない。
+	///setTexture → setNormalMap は同じ材質でも毎回付け直すので、パーツごとに材質を設定する所はこちらを使う。
+	void setTextures( Texture texture, Texture normalMap );
 
 	void enableDepthTest( bool );
 	void enableDepthWrite( bool );

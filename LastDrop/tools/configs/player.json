@@ -3,6 +3,7 @@
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Idle.fbx",
     "out_path": "../../Resource/player.txt",
     "split_vertices": true,
+    "max_triangles": 20000,
     "mesh_names": ["Ch15"],
     "tree_name": "skel",
     "fbx_animations": false,

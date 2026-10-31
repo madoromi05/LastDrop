@@ -7,6 +7,7 @@
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Audio/IGroundSurface.h"
 #include "GameSrc/Collision/IGroundHeight.h"
+#include "GameSrc/Hit/GroundGrid.h"
 #include <memory>
 #include <vector>
 
@@ -33,7 +34,7 @@ public:
 	void place( const TownMap& map );
 	// 部品の種類ごとに、まとめた物を1回で描く。frustum: カメラに映る範囲（まとめた物がまるごと映らなければ描かない）。
 	void draw( const ViewFrustum& frustum ) const;
-	// 弾の当たり判定（見た目の三角形で判定する）。置いた部品を全部調べるので、部品の数に比例して重くなる。
+	// 弾の当たり判定（見た目の三角形で判定する）。線分が上から見て通るますにかかる部品だけを調べる（GroundGrid）。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
 	// 弾が当たった所の材質。足元の材質（materialBelow）と同じ答え。部品のすき間なら町の外の土と同じ材質。
@@ -54,9 +55,14 @@ private:
 	// time / normal: 当たったときだけ書く出力先（意味は IRayBlocker::raycast と同じ）。nullptr 不可。
 	const Tile* nearestTile( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
+	// tile が線分に当たり、今までの一番早い当たり（nearest・time・normal）より早ければ書き換える。
+	void keepNearer( const Tile& tile, const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		const Tile** nearest, float* time, GameLib::Math::Vector3* normal ) const;
 
 	const StaticMeshData* mPieceData[ TOWN_PIECE_NUM ]; // MeshCache から借りる。添え字は TownPiece
 	std::vector< Tile > mTiles;
+	GroundGrid mGrid; // mTiles の添え字を、上から見たますに分けた物（place で 1 回作る）
+	mutable std::vector< int > mCandidates; // nearestTile が使う置き場（聞くたびに確保し直さないため）
 	// 描く用に、同じ種類の部品を1つへまとめたメッシュ（種類ごとに1つ。置けた種類のぶんだけ）。
 	// mMergedMeshes が借りるので、先に宣言する（＝後に破棄される）。
 	std::vector< std::unique_ptr< StaticMeshData > > mMergedData;

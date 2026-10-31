@@ -52,6 +52,9 @@
     <Filter Include="GameLib\ThirdParty\imgui">
       <UniqueIdentifier>{4B8D1F26-7C3A-4E95-B0D2-8A6E1C5F3B70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameLib\ThirdParty\recastnavigation">
+      <UniqueIdentifier>{6E2F9A41-3D7C-4B58-9E16-C0A5B8D4F273}</UniqueIdentifier>
+    </Filter>
     <Filter Include="GameLib\WindowCreator">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
     </Filter>
@@ -397,6 +400,60 @@
     <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
       <Filter>GameLib\ThirdParty\imgui</Filter>
     </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClCompile>
     <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_draw.cpp">
       <Filter>GameLib\ThirdParty\imgui</Filter>
     </ClCompile>
@@ -417,6 +474,42 @@
     </ClInclude>
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h">
       <Filter>GameLib\ThirdParty\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourMath.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourStatus.h">
+      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h">
       <Filter>GameLib\ThirdParty\imgui</Filter>
@@ -576,7 +669,7 @@
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Map\StreetGraph.cpp">
+    <ClCompile Include="GameSrc\src\Map\NavMesh.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Map\TownGround.cpp">
@@ -642,6 +735,9 @@
     <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp">
       <Filter>GameSrc\Hit</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Hit\GroundGrid.cpp">
+      <Filter>GameSrc\Hit</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -676,6 +772,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\ColorLut.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\TemporalAntiAliasing.cpp">
@@ -1412,7 +1511,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Map\StreetGraph.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Map\NavMesh.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h">
@@ -1526,6 +1625,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\GroundGrid.h">
+      <Filter>GameSrc\Hit</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
@@ -1575,6 +1677,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ColorLut.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalAntiAliasing.h">

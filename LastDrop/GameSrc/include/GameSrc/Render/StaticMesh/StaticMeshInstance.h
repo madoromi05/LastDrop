@@ -33,6 +33,9 @@ public:
 	float scale() const;								// 拡大率
 	// 置き場所・向き・大きさの行列（モデルの空間 → ワールド）。描画・raycast・当たり判定づくりが同じものを使う。
 	const GameLib::Math::Matrix34& worldMatrix() const;
+	// 全頂点をワールドで囲む、軸に沿った箱（少し広げてある）。ますに分けて絞り込む側（TownGround）が使う。
+	const GameLib::Math::Vector3& boundsMin() const;
+	const GameLib::Math::Vector3& boundsMax() const;
 
 	// 置き場所・向き・大きさを反映して描く。
 	void draw() const;

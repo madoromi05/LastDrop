@@ -91,6 +91,11 @@ namespace{
 		ImGui::Checkbox( "Fog", &fogEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(distance + height)" );
+		// 空の月の絵（MoonStarsLut_Plan.txt 8・10 章）。値は Tuning の LightingParams（moonRadius〜moonHaloFalloff）。
+		// 切ると今までのグラデーションだけの空（水たまりの月も消える）。時間は gpu.Lighting。
+		ImGui::Checkbox( "Sky detail", &skyDetailEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(moon)" );
 		// SSAO を作るか（SsaoTranslucent_Plan.txt 8・10 章）。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO。
 		ImGui::Checkbox( "SSAO", &ssaoEnabled() );
 		ImGui::SameLine();
@@ -118,6 +123,21 @@ namespace{
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();
 		ImGui::Checkbox( "Dither", &ditherEnabled() );
+		// 色の表（LUT。MoonStarsLut_Plan.txt 7・8 章）。Export で今の調整を Resource/lut_export.tga に焼き、外の道具で直して
+		// Resource/lut.tga の名前で置き、Reload で読む。強さは Tuning の PostProcessParams の lutStrength と同じ値。
+		ColorLutControl& lut = colorLutControl();
+		if ( ImGui::Button( "Export LUT" ) ) {
+			lut.exportRequested = true;
+		}
+		ImGui::SameLine();
+		if ( ImGui::Button( "Reload LUT" ) ) {
+			lut.reloadRequested = true;
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled( lut.loaded ? "(LUT: lut.tga 1024x32)" : "(LUT: none)" );
+		ImGui::BeginDisabled( !lut.loaded );
+		ImGui::SliderFloat( "LUT strength", &postProcessParams().lutStrength, 0.f, 1.f );
+		ImGui::EndDisabled();
 		// アンチエイリアス（Taa_Plan.txt Q4・9 章）。Off / FXAA / TAA から 1 つ。FXAA の値は Tuning の PostProcessParams（fxaa〜）。
 		// TAA は描く行列を毎フレームずらし、霧の後に履歴と混ぜる（値は Tuning の TAA。時間は gpu.TAA）。
 		AntiAliasing& antiAliasing = antiAliasingMode();

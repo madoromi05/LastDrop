@@ -22,6 +22,9 @@ namespace{
 	const int kOcclusionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 8;
 	// SSR の結果（t13。t11・t12 は G-Buffer へ書く側の ORM と水たまりの模様）。ScreenSpaceReflection::result。
 	const int kReflectionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 11;
+	// 月の模様（t14。SkyDetail.hlsli の gMoonTexture）。空を描くライティングのパスでだけ付ける。
+	const int kMoonTextureSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 12;
+	const char* kMoonTextureFile = "Resource/moon.dds";
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）。
@@ -58,6 +61,7 @@ DeferredLighting::DeferredLighting() {
 	mFogShader = Graphics::Shader::create( kFogShaderFile );
 	mReflectionShader = Graphics::Shader::create( kReflectionShaderFile );
 	mConstants = Graphics::ConstantBuffer::create( sizeof( DeferredConstants ) );
+	mMoonTexture = Graphics::Texture::create( kMoonTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ); // 画像の色（tools/moon_gen.py）
 }
 
 void DeferredLighting::drawLighting( const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion, Graphics::DepthTarget depth,
@@ -143,6 +147,9 @@ void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer,
 	gm.setShaderResource( kMaterialSlot, gbuffer.material() );
 	gm.setShaderResource( kDepthSlot, depth );
 	gm.setShaderResource( kOcclusionSlot, occlusion ); // ライティング（環境光）と表示の SSAO が読む
+	if ( mMoonTexture.isReady() ) {
+		gm.setShaderResource( kMoonTextureSlot, mMoonTexture ); // 読み込みが終わるまでは付けない（月は形が無いので描かれない）
+	}
 	gm.drawFullScreen();
 	// 後から描く物（固定パイプライン）に残さない。
 	gm.setShader( Graphics::Shader() );
@@ -150,6 +157,7 @@ void DeferredLighting::drawFullScreen( GBufferView view, const GBuffer& gbuffer,
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
+	gm.setShaderResource( kMoonTextureSlot, Graphics::Texture() );
 	gm.setShaderResource( kOcclusionSlot, Graphics::RenderTarget() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }

@@ -324,24 +324,14 @@ namespace{
 		}
 	}
 
-	// 交差点の番号（北の行から、西から順に数える）。
-	int junctionIndex( int column, int row ) {
-		return row * kColumnNumber + column;
-	}
 
-	// 道探しの図の材料を、道の本数から作る（町の形を変えても直さなくてよい）。外周の道もつなぐ（囲いの建物の内側は歩ける）。
-	void addStreetGraph( std::vector< TownPlacement >* junctions, std::vector< StreetLink >* links ) {
+	// 交差点の真ん中を、道の本数から並べる（町の形を変えても直さなくてよい）。外周の道の交差点も入れる。
+	void addJunctionCenters( std::vector< TownPlacement >* junctions ) {
 		const float kNoOffset = 0.f;
 		const float kNoYaw = 0.f; // 向きは使わない
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			for ( int column = 0; column < kColumnNumber; ++column ) {
 				junctions->push_back( toPlacement( { static_cast< float >( column ), static_cast< float >( row ), kNoOffset, kNoOffset, kNoYaw } ) );
-				if ( column + 1 < kColumnNumber ) {
-					links->push_back( { junctionIndex( column, row ), junctionIndex( column + 1, row ) } );
-				}
-				if ( row + 1 < kRowNumber ) {
-					links->push_back( { junctionIndex( column, row ), junctionIndex( column, row + 1 ) } );
-				}
 			}
 		}
 	}
@@ -360,7 +350,7 @@ TownMap::TownMap() :
 	addPerimeterFloor( &mGroundTiles );
 
 	addZombieSpawnPoints( &mZombieSpawnPoints );
-	addStreetGraph( &mJunctions, &mStreetLinks );
+	addJunctionCenters( &mJunctions );
 	// 街灯は交差点ごとに 1 本（道の途中にも置くと明るくなりすぎ、選ぶ数も増える。PbrNightLighting_Plan.txt Q4）。
 	mStreetLights = mJunctions;
 	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
@@ -412,9 +402,6 @@ const std::vector< TownPlacement >& TownMap::junctions() const {
 	return mJunctions;
 }
 
-const std::vector< StreetLink >& TownMap::streetLinks() const {
-	return mStreetLinks;
-}
 
 const std::vector< TownPlacement >& TownMap::streetLights() const {
 	return mStreetLights;

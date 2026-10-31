@@ -6,6 +6,7 @@
 #include "GameLib/Graphics/Shader.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
 #include "GameSrc/Render/Bloom.h"
+#include "GameSrc/Render/ColorLut.h"
 
 // 画面全体に掛ける処理（ポストプロセス）の入口。
 // beginScene と endScene の間に普段どおり描くと、画面ではなく中間の描画先（色と深度）へ描かれ、
@@ -54,19 +55,23 @@ public:
 	// 中間の描画先を画面へ写す。シーンを描き終わった後に呼ぶ。描画先は画面に戻る。
 	// GPU の印を中で打つ：「PostProcess」（ブルームと写すまで）・「FXAA」（FXAA。OFF なら区間はほぼ 0）。
 	void endScene();
-	// 写すシェーダ → FXAA → ブルームのシェーダの順に、最初に見つかったコンパイルエラー（複数行のことがある）。問題が無ければ空文字列。
+	// 写すシェーダ → FXAA → ブルーム → 色の表を焼くシェーダの順に、最初に見つかったコンパイルエラー（複数行のことがある）。問題が無ければ空文字列。
 	// エラーの間も直前に成功したシェーダで写し続ける（一度も成功していなければ画面に何も写らない）。
 	const char* errorMessage() const;
 
 private:
-	// 写すシェーダへ渡す値（ビネット・ブルーム・赤み・痛み・暗さ）を定数バッファへ書く（endScene のたび）。
-	void updateConstants();
+	// 写すシェーダへ渡す値（ビネット・ブルーム・赤み・痛み・暗さ・グレーディング・色の表の強さ）を定数バッファへ書く（endScene のたび）。
+	// gradingOn：false ならグレーディングに「何も変えない値」を入れる（F6 の Color grading を切った間）。表を焼くときは今の値を入れるため true。
+	void updateConstants( bool gradingOn );
+	// F6 の色の表のボタン（colorLutControl）の要求を行い、表の読み込みを進める（endScene の始め）。
+	void updateColorLut();
 	// 8bit の中間（mFxaaInput）を読み、FXAA を掛けて画面へ写す（endScene の最後。FXAA が ON のときだけ）。
 	void drawFxaa();
 
 	GameLib::Graphics::RenderTarget mSceneColor;   // シーンの色（1を超える明るさを持てる形式。後でトーンマップするため）
 	GameLib::Graphics::DepthTarget mSceneDepth;    // シーンの深度（後で位置の復元・霧などに読む）
 	Bloom mBloom;                                  // シーンの明るい所をにじませた絵を作る
+	ColorLut mColorLut;                            // 色の表（LUT）。読んでいれば写すときに t4 に付ける（MoonStarsLut_Plan.txt 6 章）
 	GameLib::Graphics::Shader mPresentShader;
 	GameLib::Graphics::ConstantBuffer mPresentConstants;
 	GameLib::Graphics::RenderTarget mFxaaInput;  // 写した結果（画面の色・8bit。a に輝度）。FXAA が ON のときだけ通す

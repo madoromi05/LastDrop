@@ -4,7 +4,6 @@
 #include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Zombie/ChaseTarget.h"
-#include "GameSrc/Zombie/ZombieCrowdParams.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -88,7 +87,6 @@ namespace{
 }
 
 GameWorld::GameWorld( MeshCache* meshes ) :
-	mStreets( mMap ),
 	mPlayerData( nullptr ),
 	mWeaponData( nullptr ),
 	mMagazineData( nullptr ),
@@ -168,6 +166,8 @@ void GameWorld::place() {
 		mHitWorld.addBlocker( &building );
 	}
 	placeMissionObjects();
+	// 建物・車・ガソリンの置き場を名簿へ載せ終えてから、それを材料に歩ける床の形を作る（ZombieNavMesh_Plan.txt）。
+	mNavMesh.build( mCollisionWorld );
 }
 
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
@@ -190,7 +190,7 @@ void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombi
 	// 移動・命中の両方の当たり判定への登録は GameObjectWorld が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
 	// うろつき方の乱数の種も体ごとに変える（同じ種だと全員が同じ向き・同じ間で歩き出す）。
 	int randomSeed = mZombieRandom.getInt();
-	mObjects.spawn( GameObjectTag::Zombie, std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mStreets,
+	mObjects.spawn( GameObjectTag::Zombie, std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mNavMesh,
 		position, yawDegree, animations, mZombieNumber, randomSeed ) );
 	++mZombieNumber;
 }
@@ -213,14 +213,11 @@ void GameWorld::placeMissionObjects() {
 		const TownPlacement& p = mMap.escapeCar();
 		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, toPosition( p ), p.yawDegree, kRequiredFuel );
 		mEscapeCar->addTo( &mCollisionWorld, &mHitWorld );
-		// 車は通りの途中にあり、交差点を結ぶ道が車を通り抜けるので、車の角を道の図に足す（ZombieCrowd_Plan.txt の 4 章）。
-		mStreets.addObstacle( mEscapeCar->collider(), zombieCrowdParams().obstacleMargin, mHitWorld );
 	}
 	if ( mFuelCanData->isReady() ) {
 		const TownPlacement& endless = mMap.endlessFuel();
 		mEndlessFuel = std::make_unique< ItemSource >( mFuelCanData, toPosition( endless ), endless.yawDegree, ITEM_FUEL );
 		mEndlessFuel->addTo( &mCollisionWorld, &mHitWorld );
-		mStreets.addObstacle( mEndlessFuel->collider(), zombieCrowdParams().obstacleMargin, mHitWorld );
 		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
 		unsigned seed = Framework::instance().time();
 		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
@@ -571,8 +568,8 @@ const TownMap& GameWorld::map() const {
 	return mMap;
 }
 
-const StreetGraph& GameWorld::streets() const {
-	return mStreets;
+const NavMesh& GameWorld::navMesh() const {
+	return mNavMesh;
 }
 
 const TownGround& GameWorld::ground() const {

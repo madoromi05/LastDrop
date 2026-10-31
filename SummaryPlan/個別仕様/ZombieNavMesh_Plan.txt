@@ -1,0 +1,70 @@
+ゾンビの道探しを Recast Navigation で作り直す（仕様案・2026-10-31）
+================================================================
+
+状態：2026-10-31 ★1〜5 はおすすめのとおりで承認・実装済み（Debug・Release ビルド通過）。画面確認と作る時間の計測はまだ。
+
+1. 目的
+--------
+今の道探しは「交差点の図（StreetGraph）＋ A*」。図に乗れるのは交差点と、手で足した車・ガソリン置き場の四隅だけなので、
+  ・建物のへこみの奥・ブロックの内側の床など、交差点から見えない所へは道が出ない（findPath が false）
+  ・図に無い物（ガソリン缶・後から置く物）は「詰まったら横へよける」（ZombiePath の startSidestep）に頼っている
+  ・物を増やすたびに addObstacle を手で足す必要がある
+Recast で「歩ける床の形（ナビメッシュ）」を町の当たり判定から自動で作り、Detour でその上の道を探す形に替える。
+物を置けば床の形に勝手に穴が開くので、手で図を直す所が無くなる。
+
+2. タルコフでは
+----------------
+調べたが、タルコフのボットが何で道を探しているか（Unity の NavMesh か自前か）を書いた一次資料は見つからなかった。分からなかった。
+（Unity の NavMesh 自体は Recast/Detour を元にしているが、タルコフがそれを使っているかは確かめられていない。推測では埋めない。）
+ゲームの見た目として合わせる所：ボットが建物の角を回り、扉・路地を通って寄ってくる動き。今の図ではこれが交差点経由に限られる。
+
+3. Recast Navigation について
+------------------------------
+・C++ の道探しの定番ライブラリ（Unity・Unreal・Godot などのナビメッシュの元）。ライセンスは zlib（クレジット表記の義務なし・改変可）。
+・Recast：三角形の集まり（床・壁）から、歩ける所の多角形（ナビメッシュ）を作る。
+・Detour：ナビメッシュの上で A*（findPath）と、角だけを結んだ通り道（findStraightPath）を出す。
+・DetourCrowd：群れの移動（分離・よけ合い）まで面倒を見る。ただし体を動かすのも DetourCrowd になる。
+
+4. 決めること
+--------------
+★1 ライブラリの入れ方
+  おすすめ：GameLib/src/ThirdParty/recastnavigation/ に Recast・Detour の .cpp/.h をそのまま置き、vcxproj に足す（imgui・miniaudio と同じ形）。
+  別案：vcpkg。→ 今のプロジェクトは外部のパッケージ管理を使っていないので揃えない。
+
+★2 ナビメッシュをいつ作るか
+  おすすめ：ゲーム開始時（GameWorld を作るとき）に 1 回作る。町は変わらないので 1 回でよい。作る時間を計測し、重ければ後でファイルに焼く。
+  材料：地面は高さ 0 の平らな板・建物は WallMesh の三角形・車とガソリン置き場は BoxCollider の箱。
+  （歩道の段差は今もキャラが高さ 0 のまま歩くので、ナビメッシュも高さ 0 の 1 枚として作る。）
+  別案：ツールで前もって焼いてファイルから読む。→ 町を直すたびに焼き直しが要るので、まずは開始時に作る。
+
+★3 どこまで置き換えるか
+  おすすめ：道を探す所だけ置き換える。
+    ・StreetGraph（交差点の図・A*・addObstacle）を消し、NavMesh（作る）と NavPathfinder（findPath＋findStraightPath）にする。
+    ・ZombiePath は「次に向く点を答える」役のまま、中で使う道探しを NavPathfinder に替える。
+      まっすぐ通れるかの確かめも、腰の線（HitWorld）ではなく Detour の raycast にする。
+    ・体を動かすのは今のまま CharacterMover（足に合わせた歩く速さ・ルートモーション・掃引の当たり判定をそのまま使うため）。
+  別案：DetourCrowd で群れの動きまで任せる。→ 体を動かすのが DetourCrowd になり、ZombieStride の速さ・ルートモーション・
+         CharacterMover の掃引とぶつかる。作り直しが大きいので今回はしない。分離は今の ZombieCrowd のまま。
+
+★4 詰まったら横へよける（ZombiePath の startSidestep）
+  おすすめ：残す。ナビメッシュで建物・車での詰まりは減るが、群れで押し合う詰まりは残るため。
+  ナビメッシュに乗ってから様子を見て、要らなければ後で消す。
+
+★5 うろつく先（Wander）
+  おすすめ：今のまま（腰の線で壁を避ける）。うろつきは前にユーザーが「今のまま」と決めているので変えない。
+  別案：ナビメッシュの上の点から選ぶ（findRandomPointAroundCircle）。建物の中に向かわなくなる。
+
+5. 確認用の表示
+----------------
+F3（ZombiePathDrawer）に、ナビメッシュの多角形の縁を薄い線で足す。通り道の水色の線は今のまま。
+
+6. 計測
+--------
+・ナビメッシュを作る時間（開始時に 1 回。ms をログへ）。
+・道探しの CPU（ImGui の Perf 欄。今の StreetGraph と比べる）。
+
+7. 参考
+--------
+・Recast Navigation（ライセンス zlib・dtCrowdAgentParams）https://recastnav.com/structdtCrowdAgentParams-members.html
+・GitHub https://github.com/recastnavigation/recastnavigation
+・Unity NavMesh の考え方（焼く・エージェント・群れ）https://www.gamedev.net/articles/programming/artificial-intelligence/implementing-pathfinding-for-ai-agents-with-navmesh-in-unity-r4903/

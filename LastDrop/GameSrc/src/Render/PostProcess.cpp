@@ -18,6 +18,8 @@ namespace{
 	// Present.hlsl の番号と揃える（t2・t3 / b1）。
 	const int kSceneColorSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 	const int kBloomSlot = kSceneColorSlot + 1;
+	// 色の表（Grading.hlsli の gLut。t4）。表を読んでいるときだけ付ける。
+	const int kLutSlot = kSceneColorSlot + 2;
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 	// Fxaa.hlsl の番号と揃える（t2 / b1）。
 	const int kFxaaInputSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
@@ -62,7 +64,7 @@ namespace{
 		float midtonesColor[ kColorChannels ];
 		float noiseFrame;                       // ディザのノイズのフレームの番号（Taa_Plan.txt 8 章）
 		float highlightsColor[ kColorChannels ];
-		float unused1;
+		float lutStrength;                      // 色の表を混ぜる強さ（表を読んでいなければ 0。MoonStarsLut_Plan.txt 6 章）
 	};
 	static_assert( sizeof( PresentConstants ) % 16 == 0, "PresentConstants : keep the HLSL 16-byte layout." );
 	// ビネット。角が少し暗くなる程度（確認用なので控えめ。見た目の調整はポストプロセスを作り込むときに行う）。
@@ -115,6 +117,11 @@ bool& colorGradingEnabled() {
 bool& ditherEnabled() {
 	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
 	return sEnabled;
+}
+
+ColorLutControl& colorLutControl() {
+	static ColorLutControl sControl; // 起動中ずっと 1 つ（F6 のボタンが書き、PostProcess が下ろす）
+	return sControl;
 }
 
 const char* antiAliasingName( AntiAliasing mode ) {
@@ -178,6 +185,7 @@ void PostProcess::endScene() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	// この後に画面へ直接描く HUD・文字は、画像の色のまま出す（今までと同じ色）。
 	gm.enableLinearColor( false );
+	updateColorLut();
 	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）。
 	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );
 	// FXAA を掛けるなら、写した結果をいったん 8bit の中間へ置く（Present.hlsl は a に輝度も書く）。掛けないなら画面へ直接。
@@ -188,16 +196,20 @@ void PostProcess::endScene() {
 		gm.resetRenderTargets();
 	}
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // 写すだけ。画面に元からある色とは混ぜない
-	updateConstants();
+	updateConstants( colorGradingEnabled() );
 	gm.setShader( mPresentShader );
 	gm.setShaderResource( kSceneColorSlot, mSceneColor );
 	gm.setShaderResource( kBloomSlot, bloom );
+	if ( mColorLut.isLoaded() ) {
+		gm.setShaderResource( kLutSlot, mColorLut.texture() );
+	}
 	gm.setConstantBuffer( kPresentConstantSlot, mPresentConstants );
 	gm.drawFullScreen();
 	// 後から描く物（固定パイプライン）に残さない。
 	gm.setShader( Graphics::Shader() );
 	gm.setShaderResource( kSceneColorSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kBloomSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kLutSlot, Graphics::Texture() );
 	gm.setConstantBuffer( kPresentConstantSlot, Graphics::ConstantBuffer() );
 	// GPU の時間の区切り。ここまでがブルームと写す処理（グレーディング・ディザ込み）、次の印までが FXAA。
 	Profiling::gpuMark( "PostProcess" );
@@ -228,6 +240,22 @@ void PostProcess::drawFxaa() {
 	gm.setConstantBuffer( kFxaaConstantSlot, Graphics::ConstantBuffer() );
 }
 
+void PostProcess::updateColorLut() {
+	ColorLutControl& control = colorLutControl();
+	if ( control.reloadRequested ) {
+		mColorLut.reload();
+		control.reloadRequested = false;
+	}
+	if ( control.exportRequested ) {
+		// F6 の Color grading を切っていても、今の調整の値で焼く（切った値で焼くと何も変えない表になるため）。
+		updateConstants( true );
+		mColorLut.exportBaked( mPresentConstants );
+		control.exportRequested = false;
+	}
+	mColorLut.update();
+	control.loaded = mColorLut.isLoaded();
+}
+
 const char* PostProcess::errorMessage() const {
 	const char* message = mPresentShader.errorMessage();
 	if ( message[ 0 ] != '\0' ) {
@@ -237,7 +265,11 @@ const char* PostProcess::errorMessage() const {
 	if ( message[ 0 ] != '\0' ) {
 		return message;
 	}
-	return mBloom.errorMessage();
+	message = mBloom.errorMessage();
+	if ( message[ 0 ] != '\0' ) {
+		return message;
+	}
+	return mColorLut.errorMessage();
 }
 
 void PostProcess::setDamageFlash( float amount ) {
@@ -256,7 +288,7 @@ void PostProcess::setNoiseFrame( int frame ) {
 	mNoiseFrame = frame;
 }
 
-void PostProcess::updateConstants() {
+void PostProcess::updateConstants( bool gradingOn ) {
 	PresentConstants constants;
 	constants.vignetteStrength = kVignetteStrength;
 	constants.vignetteInner = kVignetteInner;
@@ -276,7 +308,7 @@ void PostProcess::updateConstants() {
 	constants.painDarken = kPainDarken;
 	// グレーディングを切っている間は、初期値（何も変えない値）を渡す。シェーダは同じ式のまま（分かれ道を作らない）。
 	const PostProcessParams neutral;
-	const PostProcessParams& grade = colorGradingEnabled() ? postProcessParams() : neutral;
+	const PostProcessParams& grade = gradingOn ? postProcessParams() : neutral;
 	setColor( constants.whiteBalance, whiteBalance( grade.temperature ) );
 	constants.saturation = grade.saturation;
 	constants.contrast = grade.contrast;
@@ -288,6 +320,6 @@ void PostProcess::updateConstants() {
 	setColor( constants.midtonesColor, grade.midtonesColor );
 	constants.noiseFrame = static_cast< float >( mNoiseFrame );
 	setColor( constants.highlightsColor, grade.highlightsColor );
-	constants.unused1 = 0.f;
+	constants.lutStrength = mColorLut.isLoaded() ? postProcessParams().lutStrength : kNoEffect;
 	mPresentConstants.set( &constants, sizeof( constants ) );
 }

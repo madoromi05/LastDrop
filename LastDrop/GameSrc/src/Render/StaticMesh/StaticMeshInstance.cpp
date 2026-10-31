@@ -70,6 +70,14 @@ const Matrix34& StaticMeshInstance::worldMatrix() const {
 	return mWorld;
 }
 
+const Vector3& StaticMeshInstance::boundsMin() const {
+	return mBoundsMin;
+}
+
+const Vector3& StaticMeshInstance::boundsMax() const {
+	return mBoundsMax;
+}
+
 void StaticMeshInstance::updatePlacement() {
 	mWorld = PlacementMatrix::make( mPosition, mAngleY, mScale );
 	mToLocal.setInverse( mWorld );

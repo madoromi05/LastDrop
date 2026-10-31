@@ -33,7 +33,7 @@ namespace{
 	const float kFixedToughness = 1.f;
 }
 
-Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
+Zombie::Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const NavMesh* navMesh,
 const Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed ) :
 	mModel( model ),
 	mRandom( Random::create( randomSeed ) ),
@@ -49,7 +49,7 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 	mMover( collisionWorld, this ), // this は覚えるだけ（当たり判定を読むのは move のとき＝構築の後）
 	mRootSpan( &mMesh, &mMover ),
 	mAnimations( model, animations, &mMesh, &mRootSpan ),
-	mLocomotion( this, streets, &mMover, sightPhase, mRandom.getInt() ), // 丈夫さと同じ種のままだと、選ぶ値の並びが揃うので引き直す
+	mLocomotion( this, navMesh, &mMover, sightPhase, mRandom.getInt() ), // 丈夫さと同じ種のままだと、選ぶ値の並びが揃うので引き直す
 	mState( State::Alive ) {
 	mMesh.setPosition( mPosition );
 	mMesh.setAngleY( mAngleY );

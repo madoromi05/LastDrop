@@ -4,21 +4,20 @@
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
-class StreetGraph;
-class HitWorld;
+class NavMesh;
 
 // ゾンビ1体の通り道（建物を回り込むときだけ使う）。行き先（どこへ行きたいか）は ZombieChase が決め、
 // ここは「このティックにどこを向いて歩くか」だけを答える。自分では動かない（動くのは Zombie）。
-// 決まった間隔で、行き先へまっすぐ通れるかを調べる（体ごとに時刻をずらす）。
+// 決まった間隔で、行き先へ床（NavMesh）の上をまっすぐ通れるかを調べる（体ごとに時刻をずらす）。
 //   通る  ：通り道を捨てて、行き先へまっすぐ向かう（今までと同じ動き）
-//   当たる：通り道が無いか、行き先が前に探したときから大きく動いていたら StreetGraph に探し直させる
-// 通り道の点に近づいたら次の点へ。次の次の点が見えていれば、今の点を飛ばす（角で交差点の真ん中まで寄らない）。
+//   当たる：通り道が無いか、行き先が前に探したときから大きく動いていたら NavMesh に探し直させる
+// 通り道の点に近づいたら次の点へ。次の次の点が見えていれば、今の点を飛ばす（角を早めに斜めに曲がる）。
 // 向く点の向きへ自分が進めているかも数える（見失った後に着けない所で押し続けないため。あきらめるかは持ち主が決める）。
 // 点との距離では見ない（逃げる自キャラを追う間は、歩けていても距離が縮まらないため）。
 // 行き先が 1 ティックで大きく飛んだら（新しい銃声の所へ向かい直した）、すぐ調べ直して数え直す。
-// 歩いているのに向かう点の向きへ決まった時間進めなければ（群れ・図に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
+// 歩いているのに向かう点の向きへ決まった時間進めなければ（群れ・床の形に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
 // 向かい直す（SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
-// 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt。
+// 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt（道探しを NavMesh に替えたのは ZombieNavMesh_Plan.txt）。
 class ZombiePath{
 public:
 	// probePhase: まっすぐ通れるかを調べる時刻をずらす番号（何体目か）。同じティックに全員が線を引かないようにする。
@@ -28,7 +27,7 @@ public:
 	// walking: 歩こうとしているか（ZombieChase::wantsToWalk）。立ち止まっている間は「近づけない」を数えない。
 	// 毎ティック呼ぶ（間隔を数え、近づけているかを数えるため）。
 	const GameLib::Math::Vector3& steer( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
-		const StreetGraph& streets, const HitWorld& hitWorld, bool walking );
+		const NavMesh& navMesh, bool walking );
 	// 通り道を捨てる（うろつきに戻った・攻撃を始めた）。次の steer ですぐ、まっすぐ通れるかを調べる。
 	void clear();
 	// 一度よけても、まだ向く点へ近づけないか（見失った後、着けない所へ向かっているのを見分ける。あきらめるかは持ち主が決める）。
@@ -43,12 +42,12 @@ private:
 	// 詰まった。point（今向かっている点）への向きの左右のうち、まっすぐ通れる方（両方なら point に近い方）へよける点を決める。
 	// どちらも通れなければ、少し後ろへ下がる点にする。
 	void startSidestep( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& point,
-		const StreetGraph& streets, const HitWorld& hitWorld );
+		const NavMesh& navMesh );
 	// 近づけているかを数え直す（よけた回数・詰まった印は残す。よけ終わった後に使う）。
 	void restartProgress();
 	// 決まった間隔で、まっすぐ通れるか・探し直すか・点を飛ばせるかを決める。
 	void probe( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
-		const StreetGraph& streets, const HitWorld& hitWorld );
+		const NavMesh& navMesh );
 	// 今向かっている点（通り道が無ければ行き先）。
 	const GameLib::Math::Vector3& currentPoint( const GameLib::Math::Vector3& destination ) const;
 

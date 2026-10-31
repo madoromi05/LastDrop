@@ -428,6 +428,16 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 		environment.fogGroundDensity = params.fogGroundDensity;
 		environment.fogHeightHalf = params.fogHeightHalf;
 	}
+	// 月の絵（MoonStarsLut_Plan.txt 4 章）。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない。
+	if ( skyDetailEnabled() ) {
+		environment.moonDirection.setNeg( lightDirectionFrom( params.moonElevation, params.moonAzimuth ) ); // 光の進む向きの逆が、月のある方
+		environment.moonColor = params.moonColor;
+		environment.moonRadius = params.moonRadius;
+		environment.moonDiscIntensity = ( params.moonElevation > 0.f ) ? params.moonDiscIntensity : 0.f;
+		environment.moonHaloIntensity = params.moonHaloIntensity;
+		environment.moonHaloFalloff = params.moonHaloFalloff;
+		environment.pixelAngle = camera.fieldOfView() / static_cast< float >( gm.height() );
+	}
 	mLights.setEnvironment( environment );
 	mLights.bind( camera.eyePosition() );
 }

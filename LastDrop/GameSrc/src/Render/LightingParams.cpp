@@ -37,12 +37,19 @@ LightingParams dayLightingParams() {
 	day.skyHorizonColor = kDaySkyHorizon;
 	day.groundColor = kDayGround;
 	day.streetLightIntensity = 0.f; // 昼は街灯を消す（3-b までの昼の絵と同じにする）
+	day.moonDiscIntensity = 0.f;    // 「月」の枠は太陽なので、月の絵は描かない
+	day.moonHaloIntensity = 0.f;
 	day.fogHalfDistance = kDayFogHalfDistance;
 	day.fogGroundDensity = kDayFogGroundDensity;
 	return day;
 }
 
 bool& fogEnabled() {
+	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sEnabled;
+}
+
+bool& skyDetailEnabled() {
 	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
 	return sEnabled;
 }

@@ -573,6 +573,7 @@ public:
 	}
 
 	void applyShader(){
+		PROFILE_COUNT( "Gfx.shader", 1 );
 		// 自作シェーダが付いていればそれを使う（ライティングの種類・法線マップの有無より優先）。
 		if ( mCurrentShader && mCurrentShader->isValid() ){
 			mContext->IASetInputLayout( mCurrentShader->mLayout );
@@ -761,51 +762,46 @@ public:
 		cout << "Graphics::restore() : succeeded" << endl;
 	}
 
-	// 法線マップを解除して通常PSへ戻す（設定されていなければ何もしない）。
-	void clearNormalMap(){
-		if ( !mCurrentNormalMap ) return;
-		mCurrentNormalMap->release();
-		if ( mCurrentNormalMap->referenceCount() == 0 ) SAFE_DELETE( mCurrentNormalMap );
-		mCurrentNormalMap = 0;
-		ID3D11ShaderResourceView* nullSRV = nullptr;
-		mContext->PSSetShaderResources( 1, 1, &nullSRV );
-		applyShader();
-	}
-	// スロット t1 に法線マップをバインドし、ノーマルマップ用PSへ切り替える。
-	void setNormalMap( Texture::Impl* o ){
-		if ( mCurrentNormalMap == o ) return;
-		if ( mCurrentNormalMap ){
-			mCurrentNormalMap->release();
-			if ( mCurrentNormalMap->referenceCount() == 0 ) SAFE_DELETE( mCurrentNormalMap );
+	// スロット slot の画像を o に替える（*current が今付いている物）。同じなら何もせず false。
+	bool replaceTexture( Texture::Impl** current, Texture::Impl* o, UINT slot ){
+		if ( *current == o ) return false;
+		if ( *current ){
+			( *current )->release();
+			if ( ( *current )->referenceCount() == 0 ) SAFE_DELETE( *current );
 		}
-		mCurrentNormalMap = o;
+		*current = o;
+		PROFILE_COUNT( "Gfx.texture", 1 );
 		if ( o ){
 			o->refer();
 			o->ensureGpuUploaded();
-			mContext->PSSetShaderResources( 1, 1, &o->mSRV );
+			mContext->PSSetShaderResources( slot, 1, &o->mSRV );
 		}else{
 			ID3D11ShaderResourceView* nullSRV = nullptr;
-			mContext->PSSetShaderResources( 1, 1, &nullSRV );
+			mContext->PSSetShaderResources( slot, 1, &nullSRV );
 		}
-		applyShader();
+		return true;
+	}
+	// 法線マップを解除して通常PSへ戻す（設定されていなければ何もしない）。
+	void clearNormalMap(){
+		if ( replaceTexture( &mCurrentNormalMap, 0, 1 ) ) applyShader();
+	}
+	// スロット t1 に法線マップをバインドし、ノーマルマップ用PSへ切り替える。
+	void setNormalMap( Texture::Impl* o ){
+		if ( replaceTexture( &mCurrentNormalMap, o, 1 ) ) applyShader();
 	}
 
 	void setTexture( Texture::Impl* o ){
 		clearNormalMap(); // 既定で法線マップを解除。必要なら直後に setNormalMap する
-		if ( mCurrentTexture == o ) return;
-		if ( mCurrentTexture ){
-			mCurrentTexture->release();
-			if ( mCurrentTexture->referenceCount() == 0 ) SAFE_DELETE( mCurrentTexture );
-		}
-		mCurrentTexture = o;
-		if ( o ){
-			o->refer();
-			o->ensureGpuUploaded();
-			mContext->PSSetShaderResources( 0, 1, &o->mSRV );
-		}else{
-			ID3D11ShaderResourceView* nullSRV = nullptr;
-			mContext->PSSetShaderResources( 0, 1, &nullSRV );
-		}
+		replaceTexture( &mCurrentTexture, o, 0 );
+	}
+	// 色の画像（t0）と法線マップ（t1。0 なら無し）を一度に替える。どちらも、今と同じなら付け直さない。
+	// シェーダを選び直すのは、法線マップの有無が変わったときだけ（有無でノーマルマップ用PSかどうかが決まるため）。
+	// setTexture → setNormalMap の順で呼ぶと、同じ材質でも毎回「外して付け直す」が 2 回起きるので、材質はこちらを使う。
+	void setTextures( Texture::Impl* texture, Texture::Impl* normalMap ){
+		bool hadNormalMap = ( mCurrentNormalMap != 0 );
+		replaceTexture( &mCurrentTexture, texture, 0 );
+		replaceTexture( &mCurrentNormalMap, normalMap, 1 );
+		if ( hadNormalMap != ( normalMap != 0 ) ) applyShader();
 	}
 
 	void setVertexBuffer( VertexBuffer::Impl* o ){
@@ -974,6 +970,7 @@ public:
 
 	void flushConstantBuffers(){
 		if ( mVSCBDirty ){
+			PROFILE_COUNT( "Gfx.cbVS", 1 );
 			D3D11_MAPPED_SUBRESOURCE ms = {};
 			mContext->Map( mVSCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms );
 			memcpy( ms.pData, &mVSCBData, sizeof( mVSCBData ) );
@@ -981,6 +978,7 @@ public:
 			mVSCBDirty = false;
 		}
 		if ( mPSCBDirty ){
+			PROFILE_COUNT( "Gfx.cbPS", 1 );
 			D3D11_MAPPED_SUBRESOURCE ms = {};
 			mContext->Map( mPSCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms );
 			memcpy( ms.pData, &mPSCBData, sizeof( mPSCBData ) );
@@ -998,6 +996,7 @@ public:
 		mContext->IASetPrimitiveTopology( topo );
 		int vpp = vertsPerPrim( prim );
 		flushConstantBuffers();
+		PROFILE_COUNT( "Gfx.draw", 1 );
 		mContext->Draw( primitiveNumber * vpp, offset * vpp );
 	}
 
@@ -1011,6 +1010,7 @@ public:
 		mContext->IASetPrimitiveTopology( topo );
 		int vpp = vertsPerPrim( prim );
 		flushConstantBuffers();
+		PROFILE_COUNT( "Gfx.draw", 1 );
 		mContext->DrawIndexed( primitiveNumber * vpp, offset * vpp, 0 );
 	}
 
@@ -1135,33 +1135,38 @@ public:
 		mEyePosition.z = position.z;
 		mLightChanged = true;
 	}
+	// 材質の色・強さは、パーツを描くたびに MeshMaterial が設定し直す。値が同じなら定数を送り直さないよう、変わったときだけ印を立てる。
 	void setDiffuseColor( const Vector3& c ){
-		mDiffuseColor.x = c.x; mDiffuseColor.y = c.y; mDiffuseColor.z = c.z;
-		mLightChanged = true;
+		setColorIfChanged( &mDiffuseColor, c );
 	}
 	void setSpecularColor( const Vector3& c ){
-		mSpecularColor.x = c.x; mSpecularColor.y = c.y; mSpecularColor.z = c.z;
-		mLightChanged = true;
+		setColorIfChanged( &mSpecularColor, c );
 	}
 	void setEmissionColor( const Vector3& c ){
-		mEmissionColor.x = c.x; mEmissionColor.y = c.y; mEmissionColor.z = c.z;
-		mLightChanged = true;
+		setColorIfChanged( &mEmissionColor, c );
 	}
 	void setAmbientColor( const Vector3& c ){
-		mAmbientColor.x = c.x; mAmbientColor.y = c.y; mAmbientColor.z = c.z;
-		mLightChanged = true;
+		setColorIfChanged( &mAmbientColor, c );
 	}
 	void setTransparency( float t ){
-		mDiffuseColor.w = t;
-		mLightChanged = true;
+		setValueIfChanged( &mDiffuseColor.w, t );
 	}
 	void setSpecularSharpness( float e ){
-		mSpecularColor.w = e;
-		mLightChanged = true;
+		setValueIfChanged( &mSpecularColor.w, e );
 	}
 	void setNormalMapStrength( float s ){
-		mNormalMapStrength = s;
-		mLightChanged = true; // PS定数バッファは sendLightingParameters でまとめて詰める
+		setValueIfChanged( &mNormalMapStrength, s ); // PS定数バッファは sendLightingParameters でまとめて詰める
+	}
+	// color の xyz を c にする。違ったときだけ mLightChanged を立てる（w はそのまま）。
+	void setColorIfChanged( Vector4* color, const Vector3& c ){
+		if ( color->x == c.x && color->y == c.y && color->z == c.z ) return;
+		color->x = c.x; color->y = c.y; color->z = c.z;
+		mLightChanged = true;
+	}
+	void setValueIfChanged( float* value, float v ){
+		if ( *value == v ) return;
+		*value = v;
+		mLightChanged = true;
 	}
 	void enableLinearColor( bool f ){
 		if ( f != mLinearColor ){

@@ -1,6 +1,6 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
 #include "GameSrc/Zombie/Zombie.h"
-#include "GameSrc/Map/StreetGraph.h"
+#include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Render/VertexColor.h"
 
@@ -15,23 +15,33 @@ namespace{
 	const unsigned kSeparationColor = VertexColor::pack( 1.f, 0.55f, 0.15f, 1.f ); // 通り道の水色と見分けられる橙色
 	// 線を地面から浮かせる高さ（m）。車道の面（0）・歩道（0.15）に埋もれないように。
 	const float kLineLift = 0.3f;
-	// 障害物の角の十字の腕の長さ（m）。
-	const float kCornerMarkSize = 0.2f;
+	// 床の縁は通り道より低く浮かせる（歩道の面 0.15m より少し上）。
+	const float kOutlineLift = 0.2f;
+	// 床の縁の色。数が多いので、通り道の水色より暗く薄い緑で目立たせない。
+	const unsigned kOutlineColor = VertexColor::pack( 0.3f, 0.8f, 0.4f, 0.35f );
 	// 分離の向きを描く長さ（m。向きの長さ 1 のとき）。
 	const float kSeparationLineLength = 1.f;
 	const int kVerticesPerLine = 2;
-	// 一度に描ける線の数。ゾンビの上限（30 体）× 通り道の点（交差点 16 個＋角＋よける点＋行き先）と分離の線、角の十字に余裕を持たせた数。
-	const int kLineCapacity = 1024;
+	// 床の縁のほかに一度に描ける線の数。ゾンビの上限（30 体）× 通り道の点（曲がる角＋よける点＋行き先）と分離の線に余裕を持たせた数。
+	const int kRouteLineCapacity = 1024;
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
-	Vector3 lifted( const Vector3& ground ) {
-		return Vector3( ground.x, ground.y + kLineLift, ground.z );
+	Vector3 lifted( const Vector3& ground, float lift ) {
+		return Vector3( ground.x, ground.y + lift, ground.z );
 	}
 }
 
-void ZombiePathDrawer::draw( const GameObjectWorld& objects, const StreetGraph& streets, const Matrix44& projectionView ) {
-	if ( !mRenderer ) {
-		mRenderer = Scene::PrimitiveRenderer::create( kLineCapacity * kVerticesPerLine, kBatchCapacity );
+ZombiePathDrawer::ZombiePathDrawer() :
+	mLineCapacity( 0 ) {
+}
+
+void ZombiePathDrawer::draw( const GameObjectWorld& objects, const NavMesh& navMesh, const Matrix44& projectionView ) {
+	const std::vector< Vector3 >& outline = navMesh.outline();
+	// 床の縁の線の数は町の形で決まる。床ができる前（町の読み込み中）に作った器では足りないので、そのときは作り直す。
+	int lineCapacity = kRouteLineCapacity + static_cast< int >( outline.size() ) / kVerticesPerLine;
+	if ( !mRenderer || mLineCapacity < lineCapacity ) {
+		mRenderer = Scene::PrimitiveRenderer::create( lineCapacity * kVerticesPerLine, kBatchCapacity );
+		mLineCapacity = lineCapacity;
 	}
 	mRenderer.setTransform( projectionView );
 	mRenderer.enableDepthTest( false ); // 建物の向こうへ回り込む道も見せる
@@ -39,24 +49,19 @@ void ZombiePathDrawer::draw( const GameObjectWorld& objects, const StreetGraph& 
 	mRenderer.setBlendMode( Graphics::BLEND_LINEAR );
 	mRenderer.setCullMode( Graphics::CULL_NONE );
 	int lineNumber = 0;
-	// 道の図に足した障害物の角（地面に置いた十字）。
-	for ( const Vector3& corner : streets.obstacleCorners() ) {
-		if ( lineNumber + 2 > kLineCapacity ) {
-			break;
-		}
-		Vector3 center = lifted( corner );
-		mRenderer.addLine( Vector3( center.x - kCornerMarkSize, center.y, center.z ), Vector3( center.x + kCornerMarkSize, center.y, center.z ), kRouteColor, kRouteColor );
-		mRenderer.addLine( Vector3( center.x, center.y, center.z - kCornerMarkSize ), Vector3( center.x, center.y, center.z + kCornerMarkSize ), kRouteColor, kRouteColor );
-		lineNumber += 2;
+	// 歩ける床の多角形の縁（ゾンビが歩ける範囲。壁から体の半径だけ離れている）。
+	for ( size_t i = 0; i + 1 < outline.size(); i += kVerticesPerLine ) {
+		mRenderer.addLine( lifted( outline[ i ], kOutlineLift ), lifted( outline[ i + 1 ], kOutlineLift ), kOutlineColor, kOutlineColor );
+		++lineNumber;
 	}
 	objects.forEach< Zombie >( [ this, &lineNumber ]( const Zombie& zombie ) {
 		if ( zombie.state() != Zombie::State::Alive && !zombie.isCrawling() ) {
 			return;
 		}
-		Vector3 from = lifted( zombie.bodyCenter() ); // 体を引きずっている体は胸から
+		Vector3 from = lifted( zombie.bodyCenter(), kLineLift ); // 体を引きずっている体は胸から
 		// 仲間を避けて混ぜた向き（混ぜていなければ描かない）。
 		const Vector3& separation = zombie.separation();
-		if ( ( separation.x != 0.f || separation.z != 0.f ) && lineNumber < kLineCapacity ) {
+		if ( ( separation.x != 0.f || separation.z != 0.f ) && lineNumber < mLineCapacity ) {
 			Vector3 to;
 			to.setMadd( from, separation, kSeparationLineLength );
 			mRenderer.addLine( from, to, kSeparationColor, kSeparationColor );
@@ -64,10 +69,10 @@ void ZombiePathDrawer::draw( const GameObjectWorld& objects, const StreetGraph& 
 		}
 		zombie.path().remainingRoute( &mRoute );
 		for ( const Vector3& point : mRoute ) {
-			if ( lineNumber >= kLineCapacity ) {
+			if ( lineNumber >= mLineCapacity ) {
 				break; // 容量を超えると止まるので、描かずに終える
 			}
-			Vector3 to = lifted( point );
+			Vector3 to = lifted( point, kLineLift );
 			mRenderer.addLine( from, to, kRouteColor, kRouteColor );
 			from = to;
 			++lineNumber;

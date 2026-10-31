@@ -4,6 +4,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
+#include "GameLib/Profiling/Profiler.h"
 #include "Graphics/ConstantBufferImpl.h"
 #include "Graphics/ManagerImpl.h"
 
@@ -19,6 +20,7 @@ ConstantBuffer ConstantBuffer::create( int byteSize ){
 void ConstantBuffer::set( const void* data, int byteSize ){
 	ASSERT( mImpl && "Graphics::ConstantBuffer : This is empty object." );
 	ASSERT( data && "Graphics::ConstantBuffer : data is null." );
+	PROFILE_COUNT( "Gfx.cbUser", 1 );
 	mImpl->set( data, byteSize );
 }
 

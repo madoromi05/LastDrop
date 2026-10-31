@@ -25,6 +25,7 @@ namespace{
 	const char* const kBootLoadName = "Boot";
 	const char* const kWaitCategory = "wait";
 	const long long kFileTimeUnitsPerSecond = 10000000; // FILETIME は 100 ナノ秒単位
+	const double kMillisecondsPerSecond = 1000.0;
 
 	// 計測の部品をまとめて持つ。最初に使ったときに作り、終了まで持つ。
 	struct State{
@@ -240,6 +241,22 @@ void markEvent( const char* name ){
 		return;
 	}
 	state().timeline.addEvent( name );
+}
+
+void addCount( const char* name, double amount ){
+	if ( !WindowCreator::isMainThread() ){
+		return;
+	}
+	state().timeline.addCount( name, amount );
+}
+
+TotalScope::TotalScope( const char* name ) :
+mName( name ),
+mBegin( now() ){
+}
+
+TotalScope::~TotalScope(){
+	addCount( mName, secondsBetween( mBegin, now() ) * kMillisecondsPerSecond );
 }
 
 void gpuMark( const char* name ){

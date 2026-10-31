@@ -28,6 +28,8 @@ struct FrameRecord{
 	static const int kMaxScopes = 256;
 	// 1 フレームに残す印の上限。ボタンを同時にいくつか押し、弾が出てゾンビに当たっても足りる数。
 	static const int kMaxEvents = 16;
+	// 1 フレームに残す回数（addCount）の種類の上限。地面・描画の設定など、比べたい物の数より多めに。
+	static const int kMaxCounters = 24;
 	long long index;        // 起動してから何番目のフレームか
 	long long begin;        // beginFrame
 	long long sleepEnd;     // endLimiterSleep（呼ばれなければ begin と同じ）
@@ -44,6 +46,10 @@ struct FrameRecord{
 	int eventCount;
 	int droppedEvents;      // 上限を超えて残せなかった印の数
 	const char* events[ kMaxEvents ]; // このフレームに付いた印の名前（付いた順）
+	int counterCount;
+	int droppedCounters;    // 上限を超えて残せなかった回数の種類の数
+	const char* counterNames[ kMaxCounters ]; // 初めて足された順
+	double counterValues[ kMaxCounters ];
 };
 
 // 閉じたフレームの時間の内訳（秒）。frame = sleep + cpu + present + other。
@@ -77,6 +83,8 @@ public:
 	void addFinishedScope( const char* name, long long begin, long long end );
 	// 今のフレームに印を足す。フレームが始まっていなければ何もしない。
 	void addEvent( const char* name );
+	// 今のフレームの回数 name に amount を足す。フレームが始まっていなければ何もしない。
+	void addCount( const char* name, double amount );
 	// 閉じたフレームを新しい方から読む（ago = 0 が直前に閉じたフレーム）。無ければ nullptr。
 	const FrameRecord* closed( int ago ) const;
 private:

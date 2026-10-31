@@ -12,12 +12,6 @@ struct TownPlacement{
 	float yawDegree; // 上から見て反時計回りが正
 };
 
-// 道でつながった交差点2つ（TownMap::junctions の番号）。
-struct StreetLink{
-	int from;
-	int to;
-};
-
 // 地面に並べる部品の種類（道路キットから変換した物と、町の外の土）。
 enum TownPiece{
 	TOWN_PIECE_ROAD,			// 二車線の道路の直線（1枚ぶん）
@@ -66,10 +60,8 @@ public:
 	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
 	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
-	// 道探しの図（StreetGraph）の材料。交差点の真ん中（道の中心どうしが交わる所。向きは使わない）と、
-	// 東西・南北に隣り合って道でつながった交差点の組。
+	// 交差点の真ん中（道の中心どうしが交わる所。向きは使わない）。街灯の置き場所に使う。
 	const std::vector< TownPlacement >& junctions() const;
-	const std::vector< StreetLink >& streetLinks() const;
 	// 街灯の置き場所（足元。高さ 0 の道の中心。向きは使わない）。今は交差点ごとに 1 本（PbrNightLighting_Plan.txt 8 章・Q4）。
 	// 光の高さ・届く距離・色・強さは LightingParams が決め、光を作るのはシーン（柱の模型はまだ無い）。
 	const std::vector< TownPlacement >& streetLights() const;
@@ -86,7 +78,6 @@ private:
 	std::vector< TownPlacement > mFuelSpawnPoints;
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;
-	std::vector< StreetLink > mStreetLinks;
 	std::vector< TownPlacement > mStreetLights;
 };
 

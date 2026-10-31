@@ -188,6 +188,60 @@ namespace{
 		}
 	}
 
+	// 回数（addCount）ごとの 1 フレームあたりの平均と最大（直近 240 フレーム）。そのフレームに無い回数は 0 と数える。
+	void drawCounters( const FrameTimeline& timeline ){
+		struct CounterStat{
+			const char* name;
+			double sum;
+			double max;
+		};
+		std::vector< CounterStat > stats;
+		int frameCount = 0;
+		for ( int ago = 0; ago < FrameTimeline::kHistory - 1; ++ago ){
+			const FrameRecord* frame = timeline.closed( ago );
+			if ( !frame ){
+				break;
+			}
+			if ( frame->suspended ){
+				continue;
+			}
+			++frameCount;
+			for ( int i = 0; i < frame->counterCount; ++i ){
+				auto found = std::find_if( stats.begin(), stats.end(),
+					[ & ]( const CounterStat& s ){ return strcmp( s.name, frame->counterNames[ i ] ) == 0; } );
+				double value = frame->counterValues[ i ];
+				if ( found == stats.end() ){
+					stats.push_back( { frame->counterNames[ i ], value, value } );
+				}else{
+					found->sum += value;
+					found->max = std::max( found->max, value );
+				}
+			}
+		}
+		if ( stats.empty() ){
+			ImGui::TextDisabled( "No counters yet." );
+			return;
+		}
+		ImGui::TextDisabled( "per frame, last %d frames", frameCount );
+		const ImGuiTableFlags kFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp;
+		if ( ImGui::BeginTable( "counters", 3, kFlags ) ){
+			ImGui::TableSetupColumn( "counter" );
+			ImGui::TableSetupColumn( "avg" );
+			ImGui::TableSetupColumn( "max" );
+			ImGui::TableHeadersRow();
+			for ( const CounterStat& stat : stats ){
+				ImGui::TableNextRow();
+				ImGui::TableNextColumn();
+				ImGui::TextUnformatted( stat.name );
+				ImGui::TableNextColumn();
+				ImGui::Text( "%.2f", stat.sum / frameCount );
+				ImGui::TableNextColumn();
+				ImGui::Text( "%.2f", stat.max );
+			}
+			ImGui::EndTable();
+		}
+	}
+
 	void drawGpu( const GpuHistory& gpu ){
 		struct Segment{
 			const char* name;
@@ -275,6 +329,10 @@ void draw( const PerfSources& sources ){
 	drawRecording( sources );
 	if ( ImGui::TreeNodeEx( "Scopes", ImGuiTreeNodeFlags_DefaultOpen ) ){
 		drawScopes( *sources.timeline );
+		ImGui::TreePop();
+	}
+	if ( ImGui::TreeNodeEx( "Counters", ImGuiTreeNodeFlags_DefaultOpen ) ){
+		drawCounters( *sources.timeline );
 		ImGui::TreePop();
 	}
 	if ( ImGui::TreeNodeEx( "GPU", ImGuiTreeNodeFlags_DefaultOpen ) ){

@@ -76,6 +76,24 @@ private:
 // name は文字列リテラル（ポインタを持ち続ける）。1 フレームに残すのは FrameRecord::kMaxEvents 個まで。
 void markEvent( const char* name );
 
+// ── 回数（計画書 OptimizationS246_Plan.txt 1 章）──
+// 今のフレームの name の値に amount を足す（調べた部品の数・定数を送った回数 など）。CSV には "count.<name>" の列で出る。
+// 区間（PROFILE_SCOPE）と違い、何万回呼んでも 1 フレームに 1 つの値にまとまる。
+// name は文字列リテラル（ポインタを持ち続ける）。1 フレームに FrameRecord::kMaxCounters 種類まで。
+void addCount( const char* name, double amount );
+// 作ってから消えるまでのミリ秒を、addCount で name に足す。PROFILE_TOTAL マクロで使う。
+// 1 フレームに何度も呼ばれる小さい処理の時間を、区間の数を増やさずに合計で測る。
+class TotalScope{
+public:
+	explicit TotalScope( const char* name );
+	~TotalScope();
+private:
+	TotalScope( const TotalScope& );
+	void operator=( const TotalScope& );
+	const char* mName;
+	long long mBegin;
+};
+
 // ── GPU の時間（計画書 7 章）──
 // GPU に時刻を打つ。前の印からここまでが name の区間の GPU の時間になる（例："Scene" はシーンを描き終えるまで）。
 // フレームの始めと Present の前は自動で打つ。name は文字列リテラル。1 フレーム GpuTimer::kMaxMarks 個まで。
@@ -104,6 +122,7 @@ inline bool isLoading(){ return false; }
 inline void addLoadWait( const char*, long long ){}
 inline void addLoadWork( const char*, const char*, long long ){}
 inline void markEvent( const char* ){}
+inline void addCount( const char*, double ){}
 inline void gpuMark( const char* ){}
 inline void toggleRecording(){}
 inline void drawOverlay(){}
@@ -123,10 +142,16 @@ inline void drawPerfPanel(){}
 #define LOAD_SCOPE( category, name ) GameLib::Profiling::LoadScope GAMELIB_PROFILING_CONCAT( profilingLoadScope, __LINE__ )( category, name )
 // 今のフレームに name の印を付ける。
 #define PROFILE_EVENT( name ) GameLib::Profiling::markEvent( name )
+// この行から括弧の終わりまでのミリ秒を、回数の name に足す。
+#define PROFILE_TOTAL( name ) GameLib::Profiling::TotalScope GAMELIB_PROFILING_CONCAT( profilingTotal, __LINE__ )( name )
+// 今のフレームの回数の name に amount を足す。
+#define PROFILE_COUNT( name, amount ) GameLib::Profiling::addCount( name, amount )
 #else
 #define PROFILE_SCOPE( name ) ( ( void )0 )
 #define LOAD_SCOPE( category, name ) ( ( void )0 )
 #define PROFILE_EVENT( name ) ( ( void )0 )
+#define PROFILE_TOTAL( name ) ( ( void )0 )
+#define PROFILE_COUNT( name, amount ) ( ( void )0 )
 #endif
 
 #endif

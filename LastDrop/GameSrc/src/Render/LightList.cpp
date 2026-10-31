@@ -40,6 +40,9 @@ namespace{
 		float skyHorizon[ kVectorFloats ];      // xyz 地平線の色（sRGB）  w 環境光の強さ
 		float ground[ kVectorFloats ];          // xyz 地面の色（sRGB。下からの環境光）  w 使わない
 		float fog[ kVectorFloats ];             // x 距離の霧の係数  y 高さの霧の濃さ（1/m）  z 高さで薄まる係数  w 使わない（fogConstants）
+		float moonDirection[ kVectorFloats ];   // xyz 月の方への向き  w 見かけの半径（ラジアン）
+		float moonColor[ kVectorFloats ];       // xyz 月の色（sRGB）  w 円板の明るさ（0 なら描かない）
+		float moonHalo[ kVectorFloats ];        // x にじみの明るさ  y にじみの広がり（半径の倍数）  z 1 画素の角度（ラジアン）  w 使わない
 		float shadowSettings[ kVectorFloats ];  // x 法線のずらし（画素）  y 光の方へのずらし（画素）  z 影の濃さ  w 使わない
 		float cascadeEnds[ kVectorFloats ];     // xyz 月の CSM の各枚の奥の端（m）  w 次の枚と混ぜる割合
 		float cascadeView[ kVectorFloats ];     // xyz カメラの向き（奥行きを測る向き）  w 使わない
@@ -60,6 +63,8 @@ namespace{
 	//   x：距離 d に掛けて 2 乗すると濃さの合計になる係数 k = √(ln 2) / 半分の距離（半分の距離で exp(−1 × ln 2) = 0.5）
 	//   z：高さ y に掛けて exp( −z × y ) が高さの霧の薄まり方になる係数 b = ln 2 / 半分の高さ
 	const float kLn2 = 0.693147f;
+	// 月の半径・1 画素の角度は、シェーダが acos の角度と比べるのでラジアンで渡す（GameLib の三角関数は度）。
+	const float kRadiansPerDegree = 3.14159265f / 180.f;
 	Vector3 fogConstants( const EnvironmentLight& environment ) {
 		float distanceScale = ( environment.fogHalfDistance > 0.f ) ? sqrt( kLn2 ) / environment.fogHalfDistance : 0.f;
 		float heightFalloff = ( environment.fogHeightHalf > 0.f ) ? kLn2 / environment.fogHeightHalf : 0.f;
@@ -210,6 +215,10 @@ void LightList::bind( const Vector3& eye ) {
 	setVector( constants.skyHorizon, mEnvironment.skyHorizonColor, mEnvironment.ambientIntensity );
 	setVector( constants.ground, mEnvironment.groundColor, 0.f );
 	setVector( constants.fog, fogConstants( mEnvironment ), 0.f );
+	setVector( constants.moonDirection, mEnvironment.moonDirection, mEnvironment.moonRadius * kRadiansPerDegree );
+	setVector( constants.moonColor, mEnvironment.moonColor, mEnvironment.moonDiscIntensity );
+	setVector( constants.moonHalo,
+		Vector3( mEnvironment.moonHaloIntensity, mEnvironment.moonHaloFalloff, mEnvironment.pixelAngle * kRadiansPerDegree ), 0.f );
 	setVector( constants.shadowSettings, Vector3( mShadowNormalOffset, mShadowLightOffset, mShadowStrength ), 0.f );
 	static_assert( kCascadeCount == 3, "LightList : cascadeEnds holds three ends in xyz." );
 	setVector( constants.cascadeEnds, Vector3( mCascadeEnds[ 0 ], mCascadeEnds[ 1 ], mCascadeEnds[ 2 ] ), mCascadeBlendRatio );

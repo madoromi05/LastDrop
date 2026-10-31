@@ -48,6 +48,14 @@ struct EnvironmentLight{
 	float fogHalfDistance = 0.f;  // 距離の霧が半分になる距離（m）。0 以下なら距離の霧なし
 	float fogGroundDensity = 0.f; // 高さ 0 での高さの霧の濃さ（1/m）。0 なら高さの霧なし
 	float fogHeightHalf = 0.f;    // 高さの霧が半分に薄まる高さ（m）。0 以下なら高さで薄まらない
+	// 空に描く月の絵（MoonStarsLut_Plan.txt 4 章）。初期値は描かない。
+	GameLib::Math::Vector3 moonDirection; // 目から月の方への向き（長さ 1。光の進む向きの逆）
+	GameLib::Math::Vector3 moonColor;
+	float moonRadius = 0.f;        // 見かけの半径（度）
+	float moonDiscIntensity = 0.f; // 円板の明るさ。0 なら月を描かない（水たまりにも映らない）
+	float moonHaloIntensity = 0.f; // にじみの明るさ（円板の明るさに対する割合）
+	float moonHaloFalloff = 1.f;   // にじみの広がり（月の半径の何倍で 1/e）。0 より大きいこと
+	float pixelAngle = 0.f;        // 画面の 1 画素の角度（度。縦の画角 ÷ 画面の高さ）。月の模様を読む段（ミップ）を選ぶ
 };
 
 // 1 フレームに照らすライトと空・環境光を集めて、シェーダの定数（b2。Resource/Shader/LightList.hlsli）へ渡す。

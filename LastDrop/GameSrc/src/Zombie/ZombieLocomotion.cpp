@@ -22,15 +22,15 @@ namespace{
 	const float kMinTurnDistance = 0.05f;
 }
 
-ZombieLocomotion::ZombieLocomotion( const Zombie* self, const StreetGraph* streets, const CharacterMover* mover, int sightPhase, int randomSeed ) :
+ZombieLocomotion::ZombieLocomotion( const Zombie* self, const NavMesh* navMesh, const CharacterMover* mover, int sightPhase, int randomSeed ) :
 	mSelf( self ),
-	mStreets( streets ),
+	mNavMesh( navMesh ),
 	mMover( mover ),
 	mChase( sightPhase, randomSeed ),
 	mPath( sightPhase ),
 	mSeparation( 0.f, 0.f, 0.f ) {
 	ASSERT( self && "ZombieLocomotion : self is null." );
-	ASSERT( streets && "ZombieLocomotion : streets is null." );
+	ASSERT( navMesh && "ZombieLocomotion : navMesh is null." );
 	ASSERT( mover && "ZombieLocomotion : mover is null." );
 }
 
@@ -61,7 +61,7 @@ const HitWorld& hitWorld, const ZombieCrowd* crowd, float weaveDegree, float* an
 	// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）。
 	// 歩いている間は、近くの仲間から離れる向きを混ぜる（前の仲間を避けて横へ回り込む）。
 	// 揺れている間は、倒れている側へ少し流れる（追っている間だけ揺れるので、探す間は weaveDegree が 0）。
-	const Vector3& point = mPath.steer( center, mChase.destination(), *mStreets, hitWorld, intent.walking );
+	const Vector3& point = mPath.steer( center, mChase.destination(), *mNavMesh, intent.walking );
 	Vector3 facingPoint = intent.walking ? weave( center, avoidCrowd( center, point, crowd ), weaveDegree ) : point;
 	intent.facing = turnToward( center, facingPoint, Posture::Standing, angleY );
 	if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
@@ -82,7 +82,7 @@ const HitWorld& hitWorld, float* angleY ) {
 		mPath.clear(); // 気付いていない間はうろつかず、その場でもがくだけ
 		return intent;
 	}
-	intent.facing = turnToward( center, mPath.steer( center, mChase.destination(), *mStreets, hitWorld, mChase.wantsToWalk() ),
+	intent.facing = turnToward( center, mPath.steer( center, mChase.destination(), *mNavMesh, mChase.wantsToWalk() ),
 		Posture::Crawling, angleY );
 	if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
 		mChase.giveUpSearch();

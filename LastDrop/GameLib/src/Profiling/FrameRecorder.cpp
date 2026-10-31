@@ -24,6 +24,7 @@ namespace{
 	const char kEventSeparator = ';';
 	const float kNoGpu = -1.f; // GPU の時間がまだ・読めなかった
 	const char* const kGpuColumnPrefix = "gpu."; // GPU の区間の列の名前の頭（例：gpu.Buildings）
+	const char* const kCountColumnPrefix = "count."; // 回数（addCount）の列の名前の頭（例：count.Ground.tiles）
 	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと（計画書 6-6 ②）。
 	const char* const kStatePlaying = "playing";
 	const char* const kStateLoading = "loading";
@@ -112,6 +113,11 @@ void FrameRecorder::add( const FrameRecord& frame ){
 		if ( !merged ){
 			row.scopes.push_back( { column, ms } );
 		}
+	}
+	// 回数は区間の列と同じ並びに、名前の前に count. を付けて入れる（中身はミリ秒でなく、その値のまま）。
+	for ( int i = 0; i < frame.counterCount; ++i ){
+		int column = columnOf( ( std::string( kCountColumnPrefix ) + frame.counterNames[ i ] ).c_str() );
+		row.scopes.push_back( { column, static_cast< float >( frame.counterValues[ i ] ) } );
 	}
 	mRows.push_back( row );
 }

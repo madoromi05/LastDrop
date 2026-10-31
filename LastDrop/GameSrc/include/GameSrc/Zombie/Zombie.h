@@ -30,7 +30,7 @@
 class ZombieModel;
 class CollisionWorld;
 class HitWorld;
-class StreetGraph;
+class NavMesh;
 class ZombieCrowd;
 struct ChaseTarget;
 
@@ -81,11 +81,11 @@ public:
 	// model: 形・見た目・アニメと、当たり判定の設計図。所有権は受け取らない。nullptr 不可。
 	//        このゾンビより長く生きていること（持ち主の GameWorld が、ゾンビより後に破棄する）。
 	// collisionWorld: 歩くときに壁・他のキャラを聞く名簿。所有権は受け取らない。nullptr 不可。このゾンビより長く生きていること。
-	// streets: 建物を回り込む通り道を聞く道の図。所有権は受け取らない。nullptr 不可。寿命の決まりは collisionWorld と同じ。
+	// navMesh: 建物を回り込む通り道を聞く町の床の形。所有権は受け取らない。nullptr 不可。寿命の決まりは collisionWorld と同じ。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号（何体目か。ZombieChase・ZombiePath）。
 	// randomSeed: 体ごとの乱数の種（体ごとに違う値）。丈夫さを選び、うろつく先・立つ長さを選ぶ乱数（ZombieChase）の種もここから引く。
-	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const StreetGraph* streets,
+	Zombie( const ZombieModel* model, const CollisionWorld* collisionWorld, const NavMesh* navMesh,
 		const GameLib::Math::Vector3& position, float angleY, const Animations& animations, int sightPhase, int randomSeed );
 	Zombie( const Zombie& ) = delete;
 	Zombie& operator=( const Zombie& ) = delete;

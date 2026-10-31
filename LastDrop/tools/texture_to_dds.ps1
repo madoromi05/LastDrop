@@ -59,6 +59,7 @@ $Textures = @(
 	@{ Name = "muzzle_flash_sheet";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "muzzle_glow";          Kind = "Color";  MaxSize = 0 }
 	@{ Name = "puddle_mask";          Kind = "Data";   MaxSize = 0 }  # tools/puddle_gen.py
+	@{ Name = "moon";                 Kind = "Color";  MaxSize = 0 }  # tools/moon_gen.py（夜空の月。MoonStarsLut_Plan.txt 4 章）
 )
 
 if ( -not ( Test-Path $TexconvPath ) ) {

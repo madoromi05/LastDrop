@@ -210,7 +210,7 @@
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
-    <ClCompile Include="GameSrc\src\Map\StreetGraph.cpp" />
+    <ClCompile Include="GameSrc\src\Map\NavMesh.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownGround.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiInput.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
@@ -256,6 +256,7 @@
     <ClCompile Include="GameSrc\src\Scene\SceneManager.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinningPipeline.cpp" />
     <ClCompile Include="GameSrc\src\Hit\TriangleMesh.cpp" />
+    <ClCompile Include="GameSrc\src\Hit\GroundGrid.cpp" />
     <ClCompile Include="GameSrc\src\Render\PostProcess.cpp" />
     <ClCompile Include="GameSrc\src\Render\GBuffer.cpp" />
     <ClCompile Include="GameSrc\src\Render\DeferredLighting.cpp" />
@@ -268,6 +269,7 @@
     <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp" />
     <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp" />
     <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp" />
+    <ClCompile Include="GameSrc\src\Render\ColorLut.cpp" />
     <ClCompile Include="GameSrc\src\Render\TemporalAntiAliasing.cpp" />
     <ClCompile Include="GameSrc\src\Render\Bloom.cpp" />
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
@@ -299,6 +301,25 @@
     <ClCompile Include="GameSrc\src\Audio\AmbienceSystem.cpp" />
     <!-- miniaudio（同梱の単一ヘッダ。実装はこの1ファイルでだけコンパイルする） -->
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp" />
+    <!-- Recast Navigation v1.6.0（zlib。ゾンビの道探しのナビメッシュ。Recast で作り Detour で探す） -->
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerCharacter.cpp" />
     <ClCompile Include="GameSrc\src\Math\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\src\Main.cpp" />
@@ -556,6 +577,18 @@
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_rectpack.h" />
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourMath.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.h" />
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourStatus.h" />
     <ClInclude Include="GameLib\src\Profiling\FrameRecorder.h" />
     <ClInclude Include="GameLib\src\Profiling\FrameTimeline.h" />
     <ClInclude Include="GameLib\src\Profiling\JsonWriter.h" />
@@ -606,7 +639,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Map\StreetGraph.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\NavMesh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownGround.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRect.h" />
@@ -644,6 +677,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectTag.h" />
     <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\TriangleMesh.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Hit\GroundGrid.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\GBuffer.h" />
@@ -661,6 +695,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ColorLut.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalAntiAliasing.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\TaaParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h" />

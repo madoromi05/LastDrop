@@ -6,6 +6,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib::Math;
 
@@ -48,6 +49,9 @@ namespace{
 	const float kProbeBottom = -1.f;
 	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ。
 	const float kHeightProbeTop = MoveHeight::kStepOver;
+
+	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい（OptimizationS246_Plan.txt Q4）。
+	const float kGridCellSize = 4.f;
 }
 
 TownGround::TownGround( MeshCache* cache ) {
@@ -69,6 +73,19 @@ void TownGround::place( const TownMap& map ) {
 		instance.setScale( tile.scale );
 		mTiles.push_back( { instance, tile.piece } );
 		worlds[ tile.piece ].push_back( instance.worldMatrix() );
+	}
+	// 当たり判定のます。範囲は置いた部品の箱を全部囲む大きさ（町の外の土も入る）。
+	if ( !mTiles.empty() ) {
+		Vector3 boundsMin = mTiles.front().mesh.boundsMin();
+		Vector3 boundsMax = mTiles.front().mesh.boundsMax();
+		for ( const Tile& tile : mTiles ) {
+			boundsMin.min( tile.mesh.boundsMin() );
+			boundsMax.max( tile.mesh.boundsMax() );
+		}
+		mGrid.reset( boundsMin, boundsMax, kGridCellSize );
+		for ( size_t i = 0; i < mTiles.size(); ++i ) {
+			mGrid.add( static_cast< int >( i ), mTiles[ i ].mesh.boundsMin(), mTiles[ i ].mesh.boundsMax() );
+		}
 	}
 	// 種類ごとに、置いた全部を1つのメッシュへまとめる（描くのはこちら）。1枚も置けなかった種類は作らない。
 	for ( int piece = 0; piece < TOWN_PIECE_NUM; ++piece ) {
@@ -123,19 +140,30 @@ bool TownGround::heightBelow( const Vector3& position, float* height ) const {
 }
 
 const TownGround::Tile* TownGround::nearestTile( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
+	// 1 フレームに何十回も呼ばれるので、区間ではなく合計の時間と回数で測る（OptimizationS246_Plan.txt 1 章）。
+	PROFILE_TOTAL( "Ground.ms" );
+	PROFILE_COUNT( "Ground.query", 1 );
+	// 線分が上から見て通るますにかかる部品だけを調べる（足元の縦の線分なら 1 ますぶん）。
+	mGrid.collect( origin, delta, &mCandidates );
+	PROFILE_COUNT( "Ground.tiles", static_cast< double >( mCandidates.size() ) );
 	const Tile* nearest = nullptr;
-	for ( const Tile& tile : mTiles ) {
-		float t;
-		Vector3 n;
-		if ( !tile.mesh.raycast( origin, delta, &t, &n ) ) {
-			continue;
-		}
-		if ( nearest && t >= *time ) {
-			continue;
-		}
-		*time = t;
-		*normal = n;
-		nearest = &tile;
+	for ( int index : mCandidates ) {
+		keepNearer( mTiles[ static_cast< size_t >( index ) ], origin, delta, &nearest, time, normal );
 	}
 	return nearest;
+}
+
+void TownGround::keepNearer( const Tile& tile, const Vector3& origin, const Vector3& delta,
+	const Tile** nearest, float* time, Vector3* normal ) const {
+	float t;
+	Vector3 n;
+	if ( !tile.mesh.raycast( origin, delta, &t, &n ) ) {
+		return;
+	}
+	if ( *nearest && t >= *time ) {
+		return;
+	}
+	*time = t;
+	*normal = n;
+	*nearest = &tile;
 }

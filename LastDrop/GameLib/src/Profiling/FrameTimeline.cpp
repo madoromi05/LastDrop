@@ -3,6 +3,8 @@
 #include "Profiling/FrameTimeline.h"
 #include "GameLib/Profiling/Profiler.h"
 
+#include <cstring>
+
 namespace GameLib{
 namespace Profiling{
 
@@ -53,6 +55,8 @@ const FrameRecord* FrameTimeline::begin( long long at ){
 	frame.droppedScopes = 0;
 	frame.eventCount = 0;
 	frame.droppedEvents = 0;
+	frame.counterCount = 0;
+	frame.droppedCounters = 0;
 	mDepth = 0; // 前のフレームで閉じ忘れた区間は持ち越さない
 	return closedFrame;
 }
@@ -112,6 +116,27 @@ void FrameTimeline::addEvent( const char* name ){
 	}
 	frame->events[ frame->eventCount ] = name;
 	++frame->eventCount;
+}
+
+void FrameTimeline::addCount( const char* name, double amount ){
+	FrameRecord* frame = current();
+	if ( !frame ){
+		return;
+	}
+	// 別の翻訳単位の同じ文字列リテラルはポインタが違うことがあるので、ポインタが違えば中身でも比べる。
+	for ( int i = 0; i < frame->counterCount; ++i ){
+		if ( frame->counterNames[ i ] == name || strcmp( frame->counterNames[ i ], name ) == 0 ){
+			frame->counterValues[ i ] += amount;
+			return;
+		}
+	}
+	if ( frame->counterCount >= FrameRecord::kMaxCounters ){
+		++frame->droppedCounters;
+		return;
+	}
+	frame->counterNames[ frame->counterCount ] = name;
+	frame->counterValues[ frame->counterCount ] = amount;
+	++frame->counterCount;
 }
 
 const FrameRecord* FrameTimeline::closed( int ago ) const {

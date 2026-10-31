@@ -16,8 +16,8 @@ static const float kPi = 3.14159265;
 static const float3 kDielectricF0 = float3(0.04, 0.04, 0.04); // 金属でない物の正面の反射率（4%。水・プラスチック・石などの目安）
 // 粗さの下限。0 に近いと点光源のハイライトが 1 画素より小さくなり、ちらつく（Karis の資料でも下限を置く）。
 static const float kMinRoughness = 0.045;
-// N・V の下限。真横から見た面で 0 割りにならないように（見た目に効く大きさではない）。
-static const float kMinNoV = 1e-4;
+// N・V に足す小さな数。真横から見た面で 0 割りにならないように（見た目に効く大きさではない）。
+static const float kNoVBias = 1e-5;
 // 点光源・スポットの距離の下限（10cm）。距離の 2 乗で弱まるので、ライトのすぐ近くの面は何百倍にも明るくなる。
 // マズルフラッシュの光は銃口の 5cm 前にあり、銃そのものが真っ白にならないよう、これより近くは 10cm と同じ明るさにする。
 static const float kMinLightDistanceSquared = 0.01;
@@ -49,6 +49,14 @@ float3 diffuseColorOf(Surface s)
 float3 f0Of(Surface s)
 {
     return lerp(kDielectricF0, s.albedo, s.metallic);
+}
+
+// N・V（面から目への向き v と法線の内積）。補間した法線・法線マップでは、輪郭の近くで法線が目と反対を向く（内積が負の）画素ができる。
+// 負を下限で止めると「真横から見た」扱いになり、フレネルで鏡面が何十倍にもなって逆光の輪郭が光る（2026-10-31 ゾンビの体）。
+// 負は向きを裏返した値で計算する（Lagarde「Moving Frostbite to PBR」と同じ abs）。
+float viewCosine(float3 n, float3 v)
+{
+    return abs(dot(n, v)) + kNoVBias;
 }
 
 float distributionGgx(float noh, float alpha)
@@ -86,7 +94,7 @@ float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance)
     float roughness = max(s.roughness, kMinRoughness);
     float alpha = roughness * roughness;
     float3 h = normalize(l + v);
-    float nov = max(dot(s.normal, v), kMinNoV);
+    float nov = viewCosine(s.normal, v);
     float noh = saturate(dot(s.normal, h));
     float voh = saturate(dot(v, h));
     float3 f = fresnelSchlick(f0Of(s), voh);
@@ -111,7 +119,7 @@ float3 environmentSpecularWeight(Surface s, float3 v)
     static const float4 kEnvC1 = float4(1.0, 0.0425, 1.04, -0.04);
     static const float kEnvFalloff = -9.28;
     static const float2 kEnvScaleBias = float2(-1.04, 1.04);
-    float nov = max(dot(s.normal, v), kMinNoV);
+    float nov = viewCosine(s.normal, v);
     float4 r = s.roughness * kEnvC0 + kEnvC1;
     float a004 = min(r.x * r.x, exp2(kEnvFalloff * nov)) * r.x + r.y;
     float2 ab = kEnvScaleBias * a004 + r.zw;

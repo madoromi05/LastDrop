@@ -3,6 +3,7 @@
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Enum.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -99,11 +100,10 @@ bool MeshMaterial::updateLoading() {
 }
 
 void MeshMaterial::apply() const {
+	PROFILE_COUNT( "Material.apply", 1 );
 	Graphics::Manager m = Graphics::Manager::instance();
-	m.setTexture( mTexture );
-	if ( mNormalMap ) {
-		m.setNormalMap( mNormalMap ); // setTexture が法線マップを一旦解除するので、必ずこの順で呼ぶ
-	}
+	// 色の画像と法線マップを一度に渡す。同じ材質が続くとき、GameLib が付け直しを飛ばせる（OptimizationS246_Plan.txt 3 章）。
+	m.setTextures( mTexture, mNormalMap );
 	m.setNormalMapStrength( mNormalMapStrength );
 	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
 	// テクスチャを設定した場合はディフューズ色に乗算される（白なら素の色）。

@@ -3,7 +3,7 @@
 
 #include "GameSrc/Map/TownMap.h"
 #include "GameSrc/Map/TownGround.h"
-#include "GameSrc/Map/StreetGraph.h"
+#include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Zombie/Zombie.h"
@@ -135,7 +135,7 @@ public:
 	IInteractable* resolveInteractable( const HitWorld::Hit& hit );
 
 	const TownMap& map() const;							// 町のどこに何を置くか
-	const StreetGraph& streets() const;					// 町の道の図（確認用の表示が、足した障害物の角を描くのに使う）
+	const NavMesh& navMesh() const;					// 町の歩ける床の形（確認用の表示が、床の縁を描くのに使う）
 	const TownGround& ground() const;					// 道路と歩道（足元の材質を聞ける）
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
 	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
@@ -191,8 +191,9 @@ private:
 
 	// 町のどこに何を置くか。
 	TownMap mMap;
-	// 町の道の図（ゾンビが建物を回り込む通り道を聞く）。mMap から作るので mMap より後、ゾンビが借りるのでゾンビより先に宣言する。
-	StreetGraph mStreets;
+	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。place で建物・車を置き終えてから作る。
+	// ゾンビが借りるのでゾンビより先に宣言する（作った後は当たり判定の名簿を借りないので、名簿との順は問わない）。
+	NavMesh mNavMesh;
 	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
 	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃（弾倉を除いた形）
 	const StaticMeshData* mMagazineData;  // 銃の弾倉（リロードで外れる）
@@ -231,7 +232,7 @@ private:
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// 途中で増えたり消えたりする物（ゾンビ・落ちているガソリン・ゾンビが落とした弾）。物（GameObject）に部品を付けて持つ
 	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem_Plan.txt）。
-	// ゾンビが mZombieModel・mStreets を、物が名簿を借りるので、それらより後に宣言する（＝先に破棄される）。
+	// ゾンビが mZombieModel・mNavMesh を、物が名簿を借りるので、それらより後に宣言する（＝先に破棄される）。
 	GameObjectWorld mObjects;
 	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、全員の update へ渡す。毎回確保し直さないために持つ）。
 	ZombieCrowd mCrowd;

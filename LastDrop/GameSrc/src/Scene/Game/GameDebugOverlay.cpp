@@ -156,7 +156,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
 	if ( mShowZombieHealth ) {
-		mZombiePathDrawer.draw( world.objects(), world.streets(), camera.projectionViewMatrix() );
+		mZombiePathDrawer.draw( world.objects(), world.navMesh(), camera.projectionViewMatrix() );
 	}
 	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
 }

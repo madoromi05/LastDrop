@@ -29,6 +29,9 @@ cbuffer LightConstants : register(b2)
     float4 gSkyHorizon; // xyz 地平線の色（sRGB）  w 環境光の強さ
     float4 gGround;     // xyz 地面の色（sRGB。下からの環境光）
     float4 gFog;        // x 距離の霧の係数 k  y 高さ 0 での高さの霧の濃さ（1/m）  z 高さで薄まる係数 b（Fog.hlsli。LightList.cpp の fogConstants）
+    float4 gMoonDirection; // xyz 月の方への向き（長さ 1）  w 見かけの半径（ラジアン）。SkyDetail.hlsli
+    float4 gMoonColor;     // xyz 月の色（sRGB）  w 円板の明るさ（0 なら描かない）
+    float4 gMoonHalo;      // x にじみの明るさ（円板に対する割合）  y にじみの広がり（半径の倍数）  z 画面の 1 画素の角度（ラジアン。月の模様のミップを選ぶ）
     float4 gShadowSettings;                      // x 法線のずらし（画素）  y 光の方へのずらし（画素）  z 影の濃さ
     float4 gCascadeEnds;                         // xyz 月の CSM の各枚の奥の端（m）  w 次の枚と混ぜる割合
     float4 gCascadeView;                         // xyz カメラの向き（奥行きを測る向き）
@@ -140,21 +143,26 @@ float3 skyGradient(float3 dir)
     return lerp(srgbToLinear(gSkyHorizon.rgb), srgbToLinear(gSkyZenith.rgb), t);
 }
 
-// 描く空の色（向き dir。長さ 1）。
+#include "SkyDetail.hlsli"
+
+// 描く空の色（向き dir。長さ 1）。グラデーションに月の絵（模様つき）を足す（MoonStarsLut_Plan.txt 4 章）。
+// 月は空の明るさ（gSkyZenith.w）を掛けない：グラデーションを暗くしても、月の明るさは自分の値のまま。
 float3 skyColor(float3 dir)
 {
-    return skyGradient(dir) * gSkyZenith.w;
+    return skyGradient(dir) * gSkyZenith.w + moonWithTexture(dir);
 }
 
 // 向き dir から来る環境光（リニア。強さ込み）。上半分は空、下半分は地面。地平線をまたぐ所はなめらかにつなぐ。
 // roughness：0 なら dir の方の色そのもの、1 なら半球全体をならした色（粗い面の映り込み・拡散の環境光はこちら）。
+// つるつるの面には月の円板も映す（水たまり・車の塗装。MoonStarsLut_Plan.txt Q1）。
 float3 environmentLight(float3 dir, float roughness)
 {
     float3 ground = srgbToLinear(gGround.rgb);
     float3 skyAverage = lerp(srgbToLinear(gSkyHorizon.rgb), srgbToLinear(gSkyZenith.rgb), kSkyAverageBlend);
     float3 blurred = lerp(ground, skyAverage, dir.y * 0.5 + 0.5);    // 半球ライト（-1〜1 を 0〜1 へ。上を向くほど空）
     float3 sharp = (dir.y >= 0.0) ? skyGradient(dir) : ground;       // その向きにちょうど見える物
-    return lerp(sharp, blurred, roughness) * gSkyHorizon.w;
+    float3 moon = (dir.y >= 0.0) ? reflectedMoon(dir, roughness) : 0.0;
+    return lerp(sharp, blurred, roughness) * gSkyHorizon.w + moon;
 }
 
 #endif
