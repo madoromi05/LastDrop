@@ -72,11 +72,15 @@ namespace{
 	}
 }
 
-PlayerLocomotionComponent::PlayerLocomotionComponent( const SkinnedMeshData* data ) :
+PlayerLocomotionComponent::PlayerLocomotionComponent() :
 	mModel( nullptr ),
 	mMoveDirection( 0.f, 0.f, 0.f ),
 	mSpeed( 0.f ) {
-	ASSERT( data && "PlayerLocomotionComponent : data is null." );
+}
+
+void PlayerLocomotionComponent::awake() {
+	mModel = requireComponent< SkinnedModelComponent >();
+	const SkinnedMeshData* data = mModel->data();
 	// 状態にアニメを登録する。見つからないアニメは静止のアニメで代用する
 	// （レスト姿勢＝Tポーズのまま滑るより目立たない。変換し忘れはデバッグ出力で知らせる）。
 	Scene::Animation idle = data->animation( kStateAnimations[ 0 ].name );
@@ -91,10 +95,11 @@ PlayerLocomotionComponent::PlayerLocomotionComponent( const SkinnedMeshData* dat
 }
 
 void PlayerLocomotionComponent::start() {
-	mModel = requireComponent< SkinnedModelComponent >();
 	// Animator は静止状態から始まる（request は同じ状態への遷移を無視する）ので、最初のアニメはここで付ける。
 	// 武器を持って始まるなら、最初から持った静止のアニメにする（1フレーム目から素手→銃のフェードを見せない）。
-	mAnimator.request( chooseState( false, false, requireComponent< HoldComponent >()->isDrawn() ) );
+	// 持つ部品は外せる（無ければ素手）。
+	const HoldComponent* hold = getComponent< HoldComponent >();
+	mAnimator.request( chooseState( false, false, hold && hold->isDrawn() ) );
 	mModel->mesh().setAnimation( mAnimator.animation(), 0.f );
 }
 

@@ -4,18 +4,18 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Player/FirstPersonBody.h"
+#include <memory>
 
-class SkinnedMeshData;
 class SkinnedModelComponent;
 
 // 一人称の体の見せ方（視線に合わせた背骨の曲げ・覗くときに銃を目の前へ寄せる・撃った反動で銃を跳ねさせる・頭を消す）。
-// 中身は FirstPersonBody（委譲）。start で同じ物の見た目（SkinnedModelComponent）へ、描く直前の姿勢の書き換えとして付ける。
+// 中身は FirstPersonBody（委譲）。awake で同じ物の見た目（SkinnedModelComponent）の形から作り、描く直前の姿勢の書き換えとして付ける。
 // 何をどれだけ効かせるか（ピッチ・覗き具合・反動…）は、自キャラを動かす部品（PlayerComponent・HoldComponent）が毎ティック渡す。
 class FirstPersonBodyComponent : public Component{
 public:
-	// data: 骨を引く形。所有権は受け取らない。nullptr 不可。この部品より長く生きていること。
-	explicit FirstPersonBodyComponent( const SkinnedMeshData* data );
+	FirstPersonBodyComponent();
 
+	// awake で作る（隣の部品は start から借りる）。
 	FirstPersonBody& body();
 	const FirstPersonBody& body() const;
 	// 目の位置（ワールド座標。カメラの視点）。頭の骨に付いていくので、歩き・走りの揺れがそのまま出る。
@@ -25,10 +25,10 @@ public:
 	void setWeaponSway( float yawDegree, float pitchDegree );
 
 	// Component（SkinnedModelComponent が要る）
-	virtual void start();
+	virtual void awake();
 
 private:
-	FirstPersonBody mBody;
+	std::unique_ptr< FirstPersonBody > mBody; // 見た目の形（骨の番号）を借りるので awake で作る
 	const SkinnedModelComponent* mModel;
 };
 

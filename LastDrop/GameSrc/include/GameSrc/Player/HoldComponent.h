@@ -30,10 +30,10 @@ class FirstPersonBodyComponent;
 // 撃つ・リロードを始めるかを決めるのは PlayerComponent（ここは「持っている銃」と「構え」を答え、頼まれたら銃へ伝える）。
 class HoldComponent : public Component{
 public:
-	// holderData: 持つ側の形（右手・左手の骨を引き、持ち方を合わせたアニメ・リロードのアニメ "rifle_reload" を読む）。nullptr 不可。
-	// held: 持たせる物（銃）。nullptr なら素手。所有権は受け取らない（持ち主は GameObjectWorld）。
-	// どちらもこの部品より長く生きていること。
-	HoldComponent( const SkinnedMeshData* holderData, const GameObject* held );
+	// held: 持たせる物（銃）。nullptr なら素手。所有権は受け取らない（持ち主は GameObjectWorld）。この部品より長く生きていること。
+	// 持つ側の形（右手・左手の骨を引き、持ち方を合わせたアニメ・リロードのアニメ "rifle_reload" を読む）は、
+	// 同じ物の SkinnedModelComponent から awake で借りる。
+	explicit HoldComponent( const GameObject* held );
 	~HoldComponent();
 
 	// 手に持っている銃（持っていない・手の骨が無くて持てなかったら nullptr）。しまっていても返す。
@@ -64,7 +64,9 @@ public:
 	// 手に持って出している銃と弾倉を描く（持つ側の見た目を描いた後に呼ぶ）。
 	void draw() const;
 
-	// Component（SkinnedModelComponent・FirstPersonBodyComponent が要る。ここで銃を手に持たせる）
+	// Component（SkinnedModelComponent・FirstPersonBodyComponent が要る）
+	// awake：持つ側の形を借り、リロードの腕のポーズを求める物を作る。start：銃を手に持たせる（一人称の体へ持ち方を渡す）
+	virtual void awake();
 	virtual void start();
 
 private:
@@ -81,7 +83,7 @@ private:
 	std::unique_ptr< HeldItem > mHeldItem;     // 銃を右手に付ける（持っていなければ空）
 	std::unique_ptr< HeldMagazine > mMagazine; // 弾倉の見た目。銃・弾倉・支える手のどれかが無ければ空
 	WeaponStance mStance;
-	AnimationPoseSampler mReloadArms;          // リロードのアニメのポーズを求める（腕の差し替えに使う）
+	std::unique_ptr< AnimationPoseSampler > mReloadArms; // リロードのアニメのポーズを求める（腕の差し替えに使う。形を借りるので awake で作る）
 	std::vector< GameLib::Math::Matrix34 > mReloadPose; // 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
 	float mHoldWeight;                         // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
 	float mCarryWeight;                        // 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）

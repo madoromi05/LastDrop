@@ -23,6 +23,14 @@ struct ShadowParams{
 	float moonCascadeBlend = 0.1f;
 	// 枚の範囲より月の側へ、影を落とす物を拾う長さ（m）。枚の外にある高い建物の影も落ちるように
 	float moonCasterMargin = 40.f;
+	// ── 月の影の描き直しの間引き（OptimizationA_Plan.txt 7 章。Q4）── 手前の枚は毎フレーム描く
+	// 2 枚目・3 枚目を何フレームに 1 回描き直すか（整数に丸めて使う。1 で毎フレーム）。2・4 なら同じフレームに重ならない
+	float moonCascadeInterval1 = 2.f;
+	float moonCascadeInterval2 = 4.f;
+	// 前に描いた時からカメラの向きがこれ以上変わった（度）・目がこれ以上動いた（m）ら、間隔を待たずに描き直す
+	// （急に振り向くと、前に描いた範囲の外が映って影が欠けるため）
+	float moonRedrawAngle = 10.f;
+	float moonRedrawDistance = 2.f;
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）。
 	template< class V > void visit( V& v ) {
@@ -36,6 +44,10 @@ struct ShadowParams{
 		v( "moonCascadeEnd2", moonCascadeEnd2, 4.f, 200.f, "m" );
 		v( "moonCascadeBlend", moonCascadeBlend, 0.f, 0.5f, "" );
 		v( "moonCasterMargin", moonCasterMargin, 0.f, 100.f, "m" );
+		v( "moonCascadeInterval1", moonCascadeInterval1, 1.f, 8.f, "frame" );
+		v( "moonCascadeInterval2", moonCascadeInterval2, 1.f, 8.f, "frame" );
+		v( "moonRedrawAngle", moonRedrawAngle, 0.f, 90.f, "deg" );
+		v( "moonRedrawDistance", moonRedrawDistance, 0.f, 20.f, "m" );
 	}
 };
 

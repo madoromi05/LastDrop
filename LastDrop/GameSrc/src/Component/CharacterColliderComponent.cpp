@@ -1,13 +1,17 @@
 #include "GameSrc/Component/CharacterColliderComponent.h"
 #include "GameSrc/Collision/CollisionWorld.h"
+#include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
 
-CharacterColliderComponent::CharacterColliderComponent( const CollisionWorld* world ) :
+CharacterColliderComponent::CharacterColliderComponent() :
 	mShape( nullptr ),
-	mMover( world, this ), // this は覚えるだけ（長方形を読むのは動くとき＝作った後）
+	mMover( this ), // this は覚えるだけ（長方形を読むのは動くとき＝作った後）
 	mBlockingIn( nullptr ) {
-	ASSERT( world && "CharacterColliderComponent : world is null." );
+}
+
+void CharacterColliderComponent::awake() {
+	mMover.setWorld( shared< CollisionWorld >() );
 }
 
 void CharacterColliderComponent::setShape( const ICollisionBody* shape ) {

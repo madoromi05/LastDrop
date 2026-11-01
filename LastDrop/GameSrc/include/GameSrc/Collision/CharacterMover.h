@@ -15,10 +15,14 @@ class ICollisionBody;
 // 位置は持たない（持ち主が持つ）。持ち主はこのクラスを1つ持ち、移動を任せる（委譲）。
 class CharacterMover{
 public:
-	// world: 問い合わせ先。所有権は受け取らない。nullptr 不可。この Mover より長く生きていること。
 	// self: 動かす本人。今の当たり判定（位置・向き・大きさ）をここから読み、自分自身には当たらないよう除く。
 	//       所有権は受け取らない。nullptr 不可（持ち主が自分を渡す）。
-	CharacterMover( const CollisionWorld* world, const ICollisionBody* self );
+	// 問い合わせ先（CollisionWorld）は後から setWorld で渡す（持ち主の部品は、付けた後で共有の棚から引くため。
+	// SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）。渡す前に動かさないこと。
+	explicit CharacterMover( const ICollisionBody* self );
+
+	// world: 問い合わせ先。所有権は受け取らない。nullptr 不可。この Mover より長く生きていること。1 回だけ呼ぶ。
+	void setWorld( const CollisionWorld* world );
 
 	// 本人を今の位置から delta だけ動かそうとして、実際に動いた量を返す（めり込みを外へ出した分も含む）。
 	// 本人の位置は書き換えない（返した量を持ち主が自分の位置へ足す）。delta の y は無視する（地面を歩く）。

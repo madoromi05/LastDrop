@@ -24,16 +24,16 @@ PlayerBodySounds::PlayerBodySounds( AudioEngine* audio, const IGroundSurface* gr
 
 void PlayerBodySounds::update( const GameObject& player ) {
 	const PlayerLocomotionComponent* locomotion = player.getComponent< PlayerLocomotionComponent >();
-	const HoldComponent* hold = player.getComponent< HoldComponent >();
-	const GunComponent* gun = hold->gun();       // 素手なら nullptr
-	const LightComponent* light = hold->light(); // 同上
+	const HoldComponent* hold = player.getComponent< HoldComponent >(); // 外せる部品（無ければ素手）
+	const GunComponent* gun = hold ? hold->gun() : nullptr;       // 素手なら nullptr
+	const LightComponent* light = hold ? hold->light() : nullptr; // 同上
 	const Vector3& feet = player.getComponent< TransformComponent >()->position();
 	bool stepped = mFootsteps.update( locomotion->gait(), locomotion->gaitPhase(), feet, mGround );
 	PlayerFoley::FoleyState foley;
 	foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
 	foley.gait = locomotion->gait();
-	foley.weaponDrawn = hold->isDrawn();
-	foley.aiming = hold->isAiming();
+	foley.weaponDrawn = hold && hold->isDrawn();
+	foley.aiming = hold && hold->isAiming();
 	foley.fired = gun && gun->firedThisTick();
 	foley.dryFired = gun && gun->dryFiredThisTick();
 	WeaponReload::Cue cue = gun ? gun->reloadCueThisTick() : WeaponReload::CUE_NONE;

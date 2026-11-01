@@ -11,14 +11,14 @@ class CollisionWorld;
 // キャラの移動の当たり判定（体を真上から囲む長方形）と、壁・他のキャラに沿って滑る移動（CharacterMover。Collide-and-Slide）。
 // 自キャラ・ゾンビが持つ。移動の名簿（CollisionWorld）へ自分で載り、他のキャラの移動を止める（IWorldMember）。
 // 長方形の形はキャラごとに違う（自キャラは目と銃の先まで伸ばす、ゾンビは体を引きずる間は胸に置く）ので、
-// 形を知っている部品（PlayerComponent・ZombieBrainComponent）へその都度聞く。名簿に載るのはこの部品の方。
-// 形を知っている部品は、自分の start で setShape する（その部品は隣の部品を全部使うので最後に付ける。こちらは先に付けて、
-// 滑る移動を借りる部品（ZombieChaseComponent など）の start に間に合わせる）。
+// 形を知っている部品（PlayerComponent・ZombieStateComponent）へその都度聞く。名簿に載るのはこの部品の方。
+// 形を知っている部品は、自分の start で setShape する。
+// 滑る移動（mover）はこの部品と一緒に作られるので、借りる部品（ZombieChaseComponent など）は awake から借りてよい
+// （動かせるのは、この部品の awake で名簿を渡した後＝update から）。
 // 倒れたゾンビの上を歩けるように、途中で名簿から外せる（stopBlocking。外しても、自分が滑って動くのには使える）。
 class CharacterColliderComponent : public Component, public ICollisionBody, public IWorldMember{
 public:
-	// world: 動くときに壁・他のキャラを聞く名簿。所有権は受け取らない。nullptr 不可。この部品より長く生きていること。
-	explicit CharacterColliderComponent( const CollisionWorld* world );
+	CharacterColliderComponent();
 
 	// 長方形の形を答える部品（同じ物の部品）。spawn の中の start で 1 回だけ渡す（名簿に載るのはその後）。nullptr 不可。
 	void setShape( const ICollisionBody* shape );
@@ -29,6 +29,8 @@ public:
 	void stopBlocking();
 	bool isBlocking() const;
 
+	// Component（動くときに壁・他のキャラを聞く名簿を、共有の棚から引いて滑る移動へ渡す）
+	virtual void awake();
 	// ICollisionBody（shape に聞く）
 	virtual BoxCollider collider() const;
 	// IWorldMember（移動の名簿にだけ載る）

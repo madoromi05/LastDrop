@@ -16,8 +16,8 @@ class SkinnedModelComponent;
 // どの状態にするか（動いているか・走るか・銃を出しているか）は PlayerComponent が決めて渡す。
 class PlayerLocomotionComponent : public Component{
 public:
-	// data: 形・アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）。所有権は受け取らない。nullptr 不可。
-	explicit PlayerLocomotionComponent( const SkinnedMeshData* data );
+	// アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）は、同じ物の SkinnedModelComponent の形から awake で引く。
+	PlayerLocomotionComponent();
 
 	// 次の状態を選ぶ。武器を持っているか × 静止／歩き／走り の組み合わせを表から探す。
 	static Animator::State chooseState( bool moving, bool running, bool drawn );
@@ -44,7 +44,9 @@ public:
 	// 今の速さ ÷ 銃を持った歩きの速さ（照準のぶれの歩きの強さ。AimSway が 1 で止める）。
 	float walkRate() const;
 
-	// Component（SkinnedModelComponent・HoldComponent が要る。ここで最初のアニメを付ける）
+	// Component（SkinnedModelComponent が要る。HoldComponent は任意＝付いていて銃を出していれば、銃を持った姿で始める）
+	// awake：状態にアニメを登録する。start：最初のアニメを付ける
+	virtual void awake();
 	virtual void start();
 
 private:

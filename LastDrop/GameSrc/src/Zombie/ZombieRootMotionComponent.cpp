@@ -1,24 +1,22 @@
 #include "GameSrc/Zombie/ZombieRootMotionComponent.h"
+#include "GameSrc/Zombie/ZombieModelComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/CharacterColliderComponent.h"
 #include "GameSrc/World/GameObject.h"
 
-#include "GameLib/GameLib.h"
-
-ZombieRootMotionComponent::ZombieRootMotionComponent( const ZombieModel* model, const ZombieAnimationNames& names ) :
-	mModel( model ),
+ZombieRootMotionComponent::ZombieRootMotionComponent( const ZombieAnimationNames& names ) :
 	mNames( names ) {
-	ASSERT( model && "ZombieRootMotionComponent : model is null." );
 }
 
 ZombieRootMotionComponent::~ZombieRootMotionComponent() {
 }
 
-void ZombieRootMotionComponent::start() {
+void ZombieRootMotionComponent::awake() {
+	const ZombieModel* model = requireComponent< ZombieModelComponent >()->model();
 	SkinnedMeshInstance* mesh = &requireComponent< SkinnedModelComponent >()->mesh();
 	const CharacterMover* mover = &requireComponent< CharacterColliderComponent >()->mover();
 	mSpan = std::make_unique< ZombieRootMotionSpan >( mesh, mover );
-	mAnimations = std::make_unique< ZombieAnimationSet >( mModel, mNames, mesh, mSpan.get() );
+	mAnimations = std::make_unique< ZombieAnimationSet >( model, mNames, mesh, mSpan.get() );
 }
 
 ZombieRootMotionSpan& ZombieRootMotionComponent::span() {

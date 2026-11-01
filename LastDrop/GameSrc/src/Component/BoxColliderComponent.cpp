@@ -11,7 +11,7 @@ BoxColliderComponent::BoxColliderComponent( Mode mode ) :
 }
 
 void BoxColliderComponent::start() {
-	// 見た目は start で置き場所へ動いている（StaticModelComponent を先に付けるので、先に start している）。
+	// 見た目は StaticModelComponent の awake で置き場所へ動いている（全部の awake は start より前）。
 	mBox = MeshBoundsBox::make( requireComponent< StaticModelComponent >()->mesh() );
 }
 

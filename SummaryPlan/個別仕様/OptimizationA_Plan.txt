@@ -311,7 +311,7 @@
      a（影の枚ごとのゾンビのカリング）と b（遠い枚の間引き）が、回数では一番効く見込み
    ・GPU は S246 の「後」（1.543ms）とほぼ同じ。全画面のパス（ライティング 0.65ms など）が支配的なのは変わらない
 
- 12-2. a カリングの実装（2026-11-01。build 済み・画面確認待ち）
+ 12-2. a カリングの実装（2026-11-01。build 済み。ユーザーが遊んだビルド 67f5d81 に入っている・不具合の報告なし）
   ・DrawCulling（新規。Render）：ViewFrustum を持ち、shows( 箱, Target ) で映る範囲 → 描く距離 → 小ささの順に見る。
     Target は Large（建物・車・自キャラ）・Small（缶・Pickup・切れた腕や脚）・Zombie。
     作り方は 3 つ：forCamera（目。距離と画面の 2 画素）・forOrthographicShadow（月の影。影のマップ 2 画素）・映る範囲だけ（懐中電灯の影）
@@ -322,3 +322,20 @@
   ・地面はまとめて描くので映る範囲だけ（DrawCulling::frustum）
   ・StaticProp・Building・Pickup・ItemSource・EscapeCar の draw は ViewFrustum の代わりに DrawCulling を受け取る
   ・回数の印：Cull.zombie（間引いたゾンビ。映らない・遠い）・Cull.distance・Cull.small。映る範囲で消えた建物・置物は今まで通り数えない
+  ・2026-11-01 ComponentSystem2 で StaticProp・Pickup・ItemSource・EscapeCar は StaticModelComponent に、Zombie・PlayerCharacter は部品に
+    置き換わった。間引きは GameWorld が HitboxComponent・StaticModelComponent を見て行う（中身は同じ）
+
+ 12-3. b 影の更新の間引きの実装（2026-11-01。build 済み・画面確認待ち）
+  ・CascadeRefresh（新規。Render）：月の影の 1 枚を、このフレームに描き直すかを決める。
+    (frame + phase) が間隔で割り切れるフレーム・前に描いた時から向きが moonRedrawAngle（10°）以上変わった・目が moonRedrawDistance（2m）以上動いた・
+    強制（初回・影を Off から戻した・行列の作り方が変わった）のどれかで描く
+  ・CascadedShadowMap：枚ごとに CascadeRefresh を持ち、update で描き直す枚だけ行列を作り直す（描かない枚の行列と影は前のまま。LightList には毎フレーム渡す）。
+    光の向き・枚の端・casterMargin・画角・縦横比が前のフレームと違えば全部描き直す（F6 で影の調整値・月の向きを動かしたとき）。
+    invalidate（影を描かないフレームに GameScene が呼ぶ）で、次に全部描き直す。isDue( i ) の枚だけ GameScene::drawShadowMaps が描く
+  ・間隔：手前 1（固定）・2 枚目 moonCascadeInterval1 = 2・3 枚目 moonCascadeInterval2 = 4（ShadowParams。F6 で 1〜8、整数に丸める）。
+    ずらし（phase）は 2 枚目 0・3 枚目 1 で、2 枚目は偶数・3 枚目は 4 で割って 3 余るフレーム → 同じフレームに重ならない
+  ・懐中電灯の影は今まで通り毎フレーム
+  ・確かめ方：3 構成のビルドは警告なし。CascadeRefresh だけの使い捨てのテスト（400 フレームで 400・200・101 回、2 枚目と 3 枚目は重ならない、
+    1 フレームに描くのは最大 2 枚、12° 振り向く・2m 動くとすぐ描く、5° なら待つ）
+  ・画面で見てほしいこと：急に振り向いた・走ったときに、遠くの建物の影が欠ける・遅れて付いてくるのが見えるか（見えたら moonRedrawAngle を下げる）。
+    F7 の Shadow.cascades の平均が 3 → 約 1.75 になるか（4 フレームで 2・1・2・2 枚なので、中央値は 2）

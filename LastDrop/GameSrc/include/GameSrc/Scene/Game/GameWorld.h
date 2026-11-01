@@ -19,6 +19,7 @@
 #include "GameSrc/Component/BoxColliderComponent.h"
 #include "GameSrc/Render/DrawCulling.h"
 #include "GameSrc/Player/PlayerCommand.h"
+#include "GameSrc/Player/PlayerFactory.h"
 #include "GameSrc/Weapon/BulletList.h"
 #include "GameSrc/Weapon/BulletHoleList.h"
 #include "GameSrc/Effect/ImpactDustList.h"
@@ -37,11 +38,14 @@ class IInteractable;
 class Inventory;
 class PlayerComponent;
 class FuelTankComponent;
+class ZombieStateComponent;
+class SkinnedMeshInstance;
 struct LightSource;
 
 // 本編の世界。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・脱出用の車・
 // ガソリンの置き場）の持ち主、飛んでいる弾・エフェクトの並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
-// 「何をどこに置くか」は TownMap が決め、ここは物を部品から組み立てて置き（SummaryPlan/個別仕様/ComponentSystem2_Plan.txt）、
+// 「何をどこに置くか」は TownMap が決め、ここは物を部品から組み立てて置き（SummaryPlan/個別仕様/ComponentSystem2_Plan.txt。
+// 自キャラと銃は PlayerFactory、ゾンビは ZombieFactory が組み立てる）、
 // 1ティック進め、描く。名簿へ載せる・外すのは物の部品（IWorldMember）が GameObjectWorld の spawn・flush の中で行う。
 // 建物・地面・飛ぶ弾・エフェクトは GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため。★1）。
 //
@@ -156,7 +160,7 @@ public:
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す。
 	// 確認用の表示が、物の場所を壁越しに見せるのに使う。out: 出力先。nullptr 不可。
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
-	// 世界に置いた物（自キャラ・銃・ゾンビ・落ちている物・車…）。確認用の表示が forEach< ZombieBrainComponent > で
+	// 世界に置いた物（自キャラ・銃・ゾンビ・落ちている物・車…）。確認用の表示が forEach< ZombieStateComponent > で
 	// ゾンビ全員（倒れている途中・死体も含む）の体力・通り道を読む、F6 のエディタが物の一覧を出すのに使う。
 	const GameObjectWorld& objects() const;
 	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる。
@@ -171,17 +175,18 @@ public:
 	const ZombieSpawner* zombieSpawner() const;
 
 private:
-	// 自キャラが持つ銃 "AK47" と、自キャラを組み立てて置く（place から）。銃の形の構築に失敗していたら素手で出す。
+	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の ★6）。
+	// 自キャラ（と手に持つ銃）を町の出発点へ置く（place から。組み立ては mPlayerFactory）。
 	void placePlayer();
 	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。
 	// 部位が切れたら飛ばす（update から）。
 	void hitZombie( const BulletList::Impact& impact );
-	// zombie の part が今切れたので、切り口に血しぶきを出し、千切れた部位を飛ばす（hitZombie から）。
+	// zombieMesh（ゾンビの見た目）の part が今切れたので、切り口に血しぶきを出し、千切れた部位を飛ばす（hitZombie から）。
 	// direction: 弾の進む向き（長さ1）。
-	void severLimb( const ZombieBrainComponent& zombie, BodyPart part, const GameLib::Math::Vector3& direction );
+	void severLimb( const SkinnedMeshInstance& zombieMesh, BodyPart part, const GameLib::Math::Vector3& direction );
 	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とす（hitZombie から）。
 	// 落ちている弾（タグ AmmoDrop）が多すぎたら、一番古い物を消す。数の上限があるのは弾だけ（ガソリンは数が決まっている）。
-	void dropAmmo( const ZombieBrainComponent& zombie );
+	void dropAmmo( const ZombieStateComponent& zombie );
 	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。死体なら、その死体が落とした弾。
 	IInteractable* resolveInteractable( const HitWorld::Hit& hit );
 	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）。
@@ -203,6 +208,9 @@ private:
 	// data の建物を placements の場所へ建てる（place から。名簿へ載せるのは、全部建て終えた後）。data: nullptr 不可。
 	void placeBuildings( const StaticMeshData* data, const std::vector< TownPlacement >& placements );
 	void placeMissionObjects(); // 脱出用の車と、何度でも拾えるガソリン、候補点から選んだ場所のガソリンを置く（place から）
+	void placeEscapeCar();      // 脱出用の車（燃料タンク付き）を置く（placeMissionObjects から。車の形があること）
+	void placeFuelStation();    // 何度でも拾えるガソリンの置き場を置く（同上。缶の形があること）
+	void placeFuel( const TownPlacement& placement ); // 拾うと消えるガソリンを 1 つ置く（同上）
 	// 動かない置物の物を作り、見た目と箱の部品まで付けて返す（まだ spawn しない。呼ぶ側が残りの部品を付けて spawn する）。
 	GameObject* createProp( GameObjectTag tag, const char* name, const StaticMeshData* data, const GameLib::Math::Vector3& position,
 		float yawDegree, DrawCulling::Target cullTarget, BoxColliderComponent::Mode colliderMode );
@@ -212,10 +220,9 @@ private:
 	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。place で建物・車を置き終えてから作る。
 	// ゾンビが借りるのでゾンビより先に宣言する（作った後は当たり判定の名簿を借りないので、名簿との順は問わない）。
 	NavMesh mNavMesh;
-	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
-	const StaticMeshData* mWeaponData;    // 自キャラが右手に持つ銃（弾倉を除いた形）
-	const StaticMeshData* mMagazineData;  // 銃の弾倉（リロードで外れる）
-	const StaticMeshData* mBulletData;    // 飛ぶ弾（7.62 NATO の弾頭）
+	// 自キャラと銃を部品から組み立てる（形は MeshCache から借りる）。作った自キャラより長く生きるよう mObjects より先に宣言する。
+	PlayerFactory mPlayerFactory;
+	const StaticMeshData* mBulletData;    // どれも MeshCache から借りる。飛ぶ弾（7.62 NATO の弾頭）
 	const SkinnedMeshData* mZombieData;
 	const StaticMeshData* mBuildingData;
 	const StaticMeshData* mPerimeterBuildingData; // 町を囲む、足元の板の無い建物
@@ -250,7 +257,7 @@ private:
 	ChaseTarget mChaseTarget; // mZombieContext.target が指す（自キャラが居る間）
 	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、mZombieContext から全員が読む。毎回確保し直さないために持つ）。
 	ZombieCrowd mCrowd;
-	// ゾンビを部品から組み立てる。mZombieModel・mNavMesh・名簿・mZombieContext を借りる。
+	// ゾンビを部品から組み立てる。mZombieModel を借りる（mNavMesh・名簿・mZombieContext は部品が mObjects の共有の棚から引く）。
 	std::unique_ptr< ZombieFactory > mZombieFactory;
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車・置き場）。物（GameObject）に部品を付けて持つ
 	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt）。

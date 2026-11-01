@@ -41,6 +41,8 @@ namespace{
 	const int kMoonShadowFirstIndex = 1;    // ライトの一覧の影のマップの番号（1〜3 の 3 枚）
 	const bool kOrthographicShadow = false;
 	const bool kWithPlayer = true;          // 月の影には自キャラも描く（足元に自分の影が見える。Q4）
+	const int kEveryFrame = 1;              // 月の影の手前の枚は毎フレーム描き直す（遅れると足元の影がずれて見える）
+	const float kRoundToNearest = 0.5f;     // 調整値（float）の間隔を一番近い整数のフレームにする
 	const float kMinCascadeGap = 0.5f;      // F6 で端を逆に並べても枚の範囲が 0 にならないよう、前の端よりこれだけ奥へ揃える（m）
 	const float kNoDrawDistance = 0.f;      // 霧を切っている間は、距離で間引かない（DrawCulling::forCamera）
 
@@ -139,11 +141,14 @@ void GameScene::beginFrame() {
 	if (InputDebugInvincible()) {
 		GameObject* player = mWorld.player();
 		if (player) {
-			player->getComponent< PlayerHealthComponent >()->toggleInvincible();
+			if ( PlayerHealthComponent* health = player->getComponent< PlayerHealthComponent >() ) { // 外せる部品（無ければ元から死なない）
+				health->toggleInvincible();
+			}
 		}
 	}
 	// F6 のエディタの一番上に出す。
-	EditorWindow::setPlayerInvincible( mWorld.player() && mWorld.player()->getComponent< PlayerHealthComponent >()->isInvincible() );
+	const PlayerHealthComponent* playerHealth = mWorld.player() ? mWorld.player()->getComponent< PlayerHealthComponent >() : nullptr;
+	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setObjects( &mWorld.objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
 
 
@@ -206,7 +211,8 @@ void GameScene::update() {
 	mSurfaceHitSounds.play( mWorld.surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	GameObject* player = mWorld.player();
-	const GunComponent* gun = player ? player->getComponent< HoldComponent >()->gun() : nullptr; // 素手なら nullptr
+	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
+	const GunComponent* gun = hold ? hold->gun() : nullptr; // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
 	// 攻撃された怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
@@ -467,7 +473,15 @@ void GameScene::addMoon( const LightingParams& params, const FirstPersonCamera& 
 		}
 		Graphics::Manager gm = Graphics::Manager::instance();
 		float aspect = static_cast< float >( gm.width() ) / static_cast< float >( gm.height() );
-		mMoonShadow.update( camera.eyePosition(), camera.viewDirection(), camera.fieldOfView(), aspect, direction, ends, shadow.moonCasterMargin );
+		// 遠い枚ほど間を空けて描き直す（OptimizationA_Plan.txt 7 章）。手前の枚は毎フレーム、間隔は調整値を整数に丸める。
+		CascadedShadowMap::Refresh refresh;
+		refresh.intervals[ 0 ] = kEveryFrame;
+		refresh.intervals[ 1 ] = static_cast< int >( shadow.moonCascadeInterval1 + kRoundToNearest );
+		refresh.intervals[ 2 ] = static_cast< int >( shadow.moonCascadeInterval2 + kRoundToNearest );
+		refresh.redrawAngleDegree = shadow.moonRedrawAngle;
+		refresh.redrawDistance = shadow.moonRedrawDistance;
+		mMoonShadow.update( camera.eyePosition(), camera.viewDirection(), camera.fieldOfView(), aspect, direction, ends, shadow.moonCasterMargin,
+			refresh );
 		for ( int i = 0; i < CascadedShadowMap::kCascadeCount; ++i ) {
 			mLights.setShadowMap( kMoonShadowFirstIndex + i, mMoonShadow.map( i ).depth(), mMoonShadow.projectionView( i ),
 				mMoonShadow.texelSize( i ), kOrthographicShadow );
@@ -475,6 +489,8 @@ void GameScene::addMoon( const LightingParams& params, const FirstPersonCamera& 
 		mLights.setCascades( camera.viewDirection(), ends, shadow.moonCascadeBlend );
 		moon.shadowMap = kMoonShadowFirstIndex;
 		moon.shadowMapCount = CascadedShadowMap::kCascadeCount;
+	} else {
+		mMoonShadow.invalidate(); // 影を戻したときに、止めていた間の古い影を使わないよう全部描き直す
 	}
 	mLights.add( moon );
 }
@@ -516,11 +532,14 @@ void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 	}
 	if ( mMoonCastsShadow ) {
 		for ( int i = 0; i < CascadedShadowMap::kCascadeCount; ++i ) {
+			if ( !mMoonShadow.isDue( i ) ) {
+				continue; // このフレームは描き直さない（前に描いた影と行列をそのまま読む）
+			}
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
 			mWorld.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ) ), kWithPlayer );
 			mMoonShadow.map( i ).end();
-			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3）
+			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
 	}
 	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す。
@@ -562,7 +581,8 @@ void GameScene::updateListener() {
 
 float GameScene::aimWeight() const {
 	const GameObject* player = mWorld.player();
-	return player ? player->getComponent< HoldComponent >()->aimWeight() : 0.f;
+	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
+	return hold ? hold->aimWeight() : 0.f;
 }
 
 const FirstPersonCamera& GameScene::viewCamera() const {
@@ -590,7 +610,8 @@ void GameScene::updatePlayerDamage() {
 	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
 	const GameObject* player = mWorld.player();
 	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
-	const PlayerHealth* health = player ? &player->getComponent< PlayerHealthComponent >()->health() : nullptr;
+	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr; // 外せる部品
+	const PlayerHealth* health = healthComponent ? &healthComponent->health() : nullptr;
 	float healthRatio = health ? health->current() / health->maxHealth() : kFullHealthRatio;
 	mDamageView.update( hit, healthRatio, mWorld.isPlayerDead() );
 	if ( mDamageView.isFadedOut() ) {

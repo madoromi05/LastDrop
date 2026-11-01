@@ -1,0 +1,94 @@
+================================================================================
+ 部品の付け替えを簡単にする（画像の obj->AddComponent< T >() の形へ）の計画メモ
+ 作成日：2026-11-02
+ 状態：2026-11-02 ユーザー「お願いします」で ★1〜5 はおすすめどおり・★6 を足して決定。実装した。
+       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）
+       ★6（足した）：物を組み立てる関数は 1 つの関数で 1 つの物だけを作り、中の変数は画像と同じ obj にそろえる
+         （GameWorld::placeWeapon・placePlayer・placeEscapeCar・placeFuelStation・placeFuel・createProp・dropAmmo、ZombieFactory::spawn。
+          2026-11-02 自キャラと銃は PlayerFactory::spawn・spawnWeapon へ移した）
+       仕様からの違い：
+        ・ZombieDismember は外せない部品にした（ZombieState の体の中心・Brain の部位の箱の置き方が、引きずる体の胸を読むため）
+        ・PickupComponent は BoxColliderComponent を借りず、見た目から同じ箱を求める（start どうしの順番が残るため）
+        ・CharacterMover は名簿を後から setWorld で受け取る（CharacterCollider の滑る移動を、ほかの部品が awake から借りるため）
+        ・Brain の姿勢の書き換え（引きずる腕 → のけぞり → 失った部位）は毎ティック組み直す（のけぞりを持つ体力の部品を外せるため）
+        ・体力の部品を外したゾンビは、撃つと血と当たった出来事だけ出る・F3 の体力バーを出さない
+        ・体力の部品を外した自キャラも、ゾンビは襲う（当たっても減らない）
+ 依頼：画像みたいに、もっと簡単にコンポーネントの付け替えができるようにしたい（ZombieBrainComponent・PlayerComponent）
+ 前の段階：ComponentSystem2_Plan.txt（画像の形に作り直し）・ZombieBrainSplit_Plan.txt（Brain を分けた）
+================================================================================
+
+1. 今、付け替えが難しい理由（調べた結果）
+ ① 付けるときに引数が要る
+    addComponent< CharacterColliderComponent >( &mCollisionWorld )・addComponent< ZombieChaseComponent >( mNavMesh, … )・
+    addComponent< ZombieBrainComponent >( mContext ) のように、世界に 1 つの物（名簿・床の形・ティックの周り）を
+    付ける側が毎回渡している。付ける人がそれを手元に持っていないと付けられない。
+ ② 付ける順を間違えると動かない
+    start は付けた順に呼ばれ、部品は「前に付いた部品が start で作った物」を借りる
+    （例：ZombieChase の start で作る ZombieLocomotion を Attack・Health・Crawl が借りる）。
+    ZombieFactory・GameWorld::placePlayer のコメントで順番を守らせているだけ。
+ ③ 1 つ外すと全部止まる
+    ZombieBrainComponent は 12 部品、PlayerComponent は 8 部品を全部 requireComponent している。
+    例えば ZombieAttackComponent を付けないと ASSERT で止まるので「攻撃しないゾンビ」が作れない。
+    Health・Crawl も Attack を requireComponent している。
+ ④ 途中で外すと借りたポインタが残る
+    removeComponentLater で外せるが、隣の部品は start で覚えたポインタを持ち続けるので、外した後に触ると落ちる。
+
+2. 直し方（3 つ）
+ A. 付け順を気にしなくてよくする：awake と start の 2 段にする（Unity の Awake / Start と同じ）
+    ・awake：自分の物だけを作る（隣は見ない）。ZombieLocomotion・アニメの組・区間などはここで作る
+    ・start：隣の部品を借りる。全部の部品の awake が終わった後に呼ぶので、付けた順に関係なく借りられる
+    ・spawn：全部の awake → 全部の start → 名簿へ載せる。途中で付けた部品は awake → start
+    → ZombieFactory・placePlayer の「付ける順に意味がある」が無くなる
+
+ B. 世界に 1 つの物は引数で渡さない：GameObjectWorld に「共有の棚」を持たせる
+    ・GameWorld が起動時に棚へ置く：GameObjectWorld::provide( &mNavMesh ) など
+    ・部品は awake/start で引く：Component::shared< NavMesh >()（無ければ ASSERT）
+    ・置く物：CollisionWorld（今も GameObjectWorld が持っている）・HitWorld・NavMesh・ZombieBrainComponent::TickContext
+    ・物ごとに違う値（位置・どのモデルか・丈夫さ・乱数の種）は引数のまま残す（Unity のインスペクタで入れる値に当たる）
+    ・モデル（ZombieModel・自キャラの SkinnedMeshData）は「その物の見た目の部品」が持ち、ほかの部品はそこから聞く
+      （SkinnedModelComponent::data()・新しく ZombieModelComponent を足すか ★2）
+    → 引数なしで付けられる部品：CharacterCollider・ZombieState・ZombieAttack・ZombieCorpse・ZombieCrawl・ZombieBrain・
+      PlayerHealth・PlayerLocomotion・FirstPersonBody・PlayerComponent など（画像の AddComponent< T >() の形）
+
+ C. 外してもよい部品を決める：「必須」と「任意」を分ける
+    ・必須（無いとその物にならない）：requireComponent のまま・start で覚える
+      ゾンビ：Transform・SkinnedModel・Hitbox・CharacterCollider・ZombieRootMotion・ZombieState・ZombieChase
+      自キャラ：Transform・SkinnedModel・FirstPersonBody・PlayerLocomotion・CharacterCollider
+    ・任意（外すとその振る舞いだけ無くなる）：使う所で getComponent して、無ければ飛ばす（画像の Fire の中の GetComponent と同じ）
+      ゾンビ：ZombieAttack（攻撃しない）・ZombieCrawl（脚を失ったら這わずに倒れたまま）・ZombieCorpse（死体が消えない）・
+              ZombieHealth（撃っても死なない）・ZombieDismember（部位が千切れない）
+      自キャラ：Hold（素手）・PlayerHealth（死なない）・Hitbox（撃たれない）
+    ・任意の部品は毎回 getComponent で引くので、途中で removeComponentLater しても落ちない（④も直る）
+      引く手間：1 体の部品は十数個の並びを前から見るだけ。ゾンビ 20 体でも 1 ティック数百回の比較で、計測に出ない程度
+    ・必須の部品を removeComponentLater したら ASSERT で止める（Component に「外せない」の印を持たせる ★3）
+
+3. 付け方の見え方（変更後）
+    GameObject* zombie = world->create( GameObjectTag::Zombie, kZombieName );
+    zombie->addComponent< TransformComponent >( position, angleY );
+    zombie->addComponent< ZombieModelComponent >( mModel );          // ★2 の案
+    zombie->addComponent< SkinnedModelComponent >();
+    zombie->addComponent< HitboxComponent >();
+    zombie->addComponent< CharacterColliderComponent >();
+    zombie->addComponent< ZombieBrainComponent >();                   // 順番はどこでもよい
+    zombie->addComponent< ZombieAttackComponent >();                  // この行を消せば攻撃しないゾンビ
+    …
+    world->spawn( zombie );
+
+4. 進め方（段ごとにビルドと画面確認）
+ 段1 土台：Component に awake を足す・GameObjectWorld の棚（provide / shared）・必須の印
+ 段2 ゾンビ：引数を棚・見た目の部品へ移す・awake へ作る物を移す・任意の部品を getComponent に
+ 段3 自キャラ・銃・置物：同じことを PlayerComponent まわりにも
+ 確認：ZombieFactory から Attack の行を消して「攻撃しないゾンビ」になる・付ける順を入れ替えても動く
+
+5. 決めてほしいこと
+ ★1 方針 A・B・C を全部やるか（おすすめ：全部。A だけ・C だけでも付け替えは楽になる）
+ ★2 ゾンビのモデル（ZombieModel）を持つ所：新しい ZombieModelComponent（おすすめ）か、棚に置く（ゾンビが 1 種類の間は簡単）
+ ★3 必須の部品を外したら ASSERT で止めるか（おすすめ：止める）
+ ★4 任意の部品の表（2 章 C）はこれでよいか
+ ★5 自キャラ（PlayerComponent）も今回やるか（おすすめ：やる。段3）
+
+参考
+ ・Unity：MonoBehaviour.Awake / Start（https://docs.unity3d.com/ScriptReference/MonoBehaviour.Awake.html）
+ ・Unity：RequireComponent（https://docs.unity3d.com/ScriptReference/RequireComponent.html）
+ ・Game Programming Patterns：Component（https://gameprogrammingpatterns.com/component.html）
+ ・Game Programming Patterns：Service Locator（https://gameprogrammingpatterns.com/service-locator.html）

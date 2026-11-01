@@ -13,7 +13,7 @@ StaticModelComponent::StaticModelComponent( const StaticMeshData* data, GroundMa
 	mCullTarget( cullTarget ) {
 }
 
-void StaticModelComponent::start() {
+void StaticModelComponent::awake() {
 	const TransformComponent* transform = requireComponent< TransformComponent >();
 	mMesh.setPosition( transform->position() );
 	mMesh.setAngleY( transform->angleY() );

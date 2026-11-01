@@ -1,7 +1,8 @@
 #include "GameSrc/Interaction/PickupComponent.h"
 #include "GameSrc/Interaction/ItemComponent.h"
 #include "GameSrc/Interaction/Inventory.h"
-#include "GameSrc/Component/BoxColliderComponent.h"
+#include "GameSrc/Component/StaticModelComponent.h"
+#include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Hit/HitMath.h"
 #include "GameSrc/Math/PlacementMatrix.h"
@@ -35,8 +36,8 @@ PickupComponent::PickupComponent() :
 
 void PickupComponent::start() {
 	mItem = requireComponent< ItemComponent >();
-	// 箱は BoxColliderComponent の start で求めてある（先に付けるので、先に start している）。
-	mLookBoxToLocal = makeLookBoxToLocal( requireComponent< BoxColliderComponent >()->collider() );
+	// 頂点を囲む箱は、見た目から求める（BoxColliderComponent と同じ箱。見た目は awake で置き場所へ動いている）。
+	mLookBoxToLocal = makeLookBoxToLocal( MeshBoundsBox::make( requireComponent< StaticModelComponent >()->mesh() ) );
 }
 
 bool PickupComponent::isTaken() const {

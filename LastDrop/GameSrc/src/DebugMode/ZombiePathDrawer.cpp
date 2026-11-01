@@ -1,5 +1,5 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
-#include "GameSrc/Zombie/ZombieBrainComponent.h"
+#include "GameSrc/Zombie/ZombieStateComponent.h"
 #include "GameSrc/Zombie/ZombieChaseComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Map/NavMesh.h"
@@ -56,8 +56,8 @@ void ZombiePathDrawer::draw( const GameObjectWorld& objects, const NavMesh& navM
 		mRenderer.addLine( lifted( outline[ i ], kOutlineLift ), lifted( outline[ i + 1 ], kOutlineLift ), kOutlineColor, kOutlineColor );
 		++lineNumber;
 	}
-	objects.forEach< ZombieBrainComponent >( [ this, &lineNumber ]( const ZombieBrainComponent& zombie ) {
-		if ( zombie.state() != ZombieBrainComponent::State::Alive && !zombie.isCrawling() ) {
+	objects.forEach< ZombieStateComponent >( [ this, &lineNumber ]( const ZombieStateComponent& zombie ) {
+		if ( zombie.state() != ZombieStateComponent::State::Alive && !zombie.isCrawling() ) {
 			return;
 		}
 		Vector3 from = lifted( zombie.bodyCenter(), kLineLift ); // 体を引きずっている体は胸から

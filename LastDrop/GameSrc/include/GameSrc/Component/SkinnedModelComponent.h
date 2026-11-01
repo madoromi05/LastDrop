@@ -12,13 +12,17 @@ class SkinnedMeshData;
 class SkinnedModelComponent : public Component{
 public:
 	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。この部品より長く生きていること。
-	explicit SkinnedModelComponent( const SkinnedMeshData* data ) : mMesh( data ){}
+	explicit SkinnedModelComponent( const SkinnedMeshData* data ) : mData( data ), mMesh( data ){}
+
+	// 形・見た目・アニメ（隣の部品が骨・アニメを引くのに使う。付けたときから在るので awake から借りてよい）。
+	const SkinnedMeshData* data() const { return mData; }
 
 	SkinnedMeshInstance& mesh(){ return mMesh; }
 	const SkinnedMeshInstance& mesh() const { return mMesh; }
 	void draw() const { mMesh.draw(); }
 
 private:
+	const SkinnedMeshData* mData; // 借りているだけ
 	SkinnedMeshInstance mMesh;
 };
 

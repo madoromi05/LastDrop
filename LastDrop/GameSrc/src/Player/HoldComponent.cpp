@@ -69,18 +69,16 @@ namespace{
 	}
 }
 
-HoldComponent::HoldComponent( const SkinnedMeshData* holderData, const GameObject* held ) :
-	mHolderData( holderData ),
+HoldComponent::HoldComponent( const GameObject* held ) :
+	mHolderData( nullptr ),
 	mHeld( held ),
 	mGun( nullptr ),
 	mLight( nullptr ),
 	mWeaponModel( nullptr ),
 	mModel( nullptr ),
 	mBody( nullptr ),
-	mReloadArms( holderData, kReloadAnimation ),
 	mHoldWeight( 0.f ),
 	mCarryWeight( 0.f ) {
-	ASSERT( holderData && "HoldComponent : holderData is null." );
 	mHoldWeight = mStance.isDrawn() ? kFullWeight : kNoWeight;
 }
 
@@ -88,8 +86,13 @@ HoldComponent::HoldComponent( const SkinnedMeshData* holderData, const GameObjec
 HoldComponent::~HoldComponent() {
 }
 
-void HoldComponent::start() {
+void HoldComponent::awake() {
 	mModel = requireComponent< SkinnedModelComponent >();
+	mHolderData = mModel->data();
+	mReloadArms = std::make_unique< AnimationPoseSampler >( mHolderData, kReloadAnimation );
+}
+
+void HoldComponent::start() {
 	mBody = requireComponent< FirstPersonBodyComponent >();
 	GameObject* held = mHeld.get();
 	if ( !held ) {
@@ -175,7 +178,7 @@ void HoldComponent::updateArms( Animator::State next ) {
 	FirstPersonBody& body = mBody->body();
 	// リロード中は腕をアニメへ差し替える。アニメでは左手が銃を離れるので、その間は両手持ちの補正（右手首を左手へ向ける）を弱める。
 	float armWeight = 0.f;
-	if ( mGun && mGun->isReloading() && mReloadArms.sample( mGun->reload().animationFrame(), &mReloadPose ) ) {
+	if ( mGun && mGun->isReloading() && mReloadArms->sample( mGun->reload().animationFrame(), &mReloadPose ) ) {
 		armWeight = mGun->reload().armWeight();
 	}
 	body.setArmOverride( armWeight > 0.f ? &mReloadPose : nullptr, armWeight );

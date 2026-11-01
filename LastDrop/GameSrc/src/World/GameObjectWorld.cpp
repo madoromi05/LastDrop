@@ -17,6 +17,9 @@ GameObjectWorld::GameObjectWorld( CollisionWorld* collisionWorld, HitWorld* hitW
 	mNextId( kFirstId ),
 	mIterationDepth( 0 ) {
 	ASSERT( mCollisionWorld && mHitWorld && "GameObjectWorld : world is null." );
+	// 名簿は部品も引く（CharacterColliderComponent の滑る移動が壁・他のキャラを聞く）。
+	mShelf.provide( mCollisionWorld );
+	mShelf.provide( mHitWorld );
 }
 
 GameObjectWorld::~GameObjectWorld() {
@@ -41,7 +44,11 @@ void GameObjectWorld::spawn( GameObject* object ) {
 	ASSERT( object && object->world() == this && "GameObjectWorld : object is not mine." );
 	ASSERT( !object->isSpawned() && "GameObjectWorld : object is already spawned." );
 	ASSERT( mIterationDepth == 0 && "GameObjectWorld : spawn while iterating." );
-	// 先に全部の部品の start を呼ぶ（隣の部品を探して覚えさせる）。名簿へ載せるのはその後（載せた途端に当たり判定を聞かれるため）。
+	// 全部の部品の awake（自分の持ち物を作る）を済ませてから start（隣の部品が作った物を借りる）を呼ぶ。こうすると付けた順に関係しない。
+	// 名簿へ載せるのはその後（載せた途端に当たり判定を聞かれるため）。
+	for ( int i = 0; i < object->componentNumber(); ++i ) {
+		object->componentAt( i )->awake();
+	}
 	for ( int i = 0; i < object->componentNumber(); ++i ) {
 		object->componentAt( i )->start();
 	}
@@ -104,6 +111,7 @@ GameObject* GameObjectWorld::findById( unsigned id ) const {
 
 void GameObjectWorld::attachLate( GameObject* object, int index ) {
 	ASSERT( mIterationDepth == 0 && "GameObjectWorld : addComponent while iterating." );
+	object->componentAt( index )->awake();
 	object->componentAt( index )->start();
 	attach( object, index );
 }

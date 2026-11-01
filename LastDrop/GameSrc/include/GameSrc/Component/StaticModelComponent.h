@@ -10,7 +10,7 @@
 class StaticMeshData;
 
 // 動かない置物の見た目 1 つ（車・ガソリン缶・落ちた弾。前の StaticProp の見た目の側）。
-// 置き場所と向きは、同じ物の TransformComponent から start で写す（置いた後は動かない）。
+// 置き場所と向きは、同じ物の TransformComponent から awake で写す（置いた後は動かない。箱を求める部品が start で読む）。
 // 弾・視線は見た目の三角形そのもので止める（IRayBlocker）。命中の名簿（HitWorld）へは自分で載り、物が消えるときに外れる（IWorldMember）。
 // 移動の当たり判定の箱は BoxColliderComponent（この見た目の頂点から求める）。
 class StaticModelComponent : public Component, public IRayBlocker, public IWorldMember{
@@ -24,7 +24,7 @@ public:
 	const StaticMeshInstance& mesh() const;
 
 	// Component（TransformComponent が要る）
-	virtual void start();
+	virtual void awake();
 	// IRayBlocker
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;

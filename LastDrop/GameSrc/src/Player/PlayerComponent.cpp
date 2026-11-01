@@ -30,10 +30,11 @@ namespace{
 	// 銃口の少し前に置くもの（マズルフラッシュの光）まで壁の手前に収まるよう、目の余白と同じだけ取る。
 	const float kWeaponToWallMargin = 0.1f;
 	const float kNoRecoil = 0.f; // 銃を持っていないときの反動
+	const float kNoWeight = 0.f; // 持つ部品が無いときの覗き具合・抱えている割合（素手）
+	const float kFullSpeedScale = 1.f; // 体力の部品が無いときの歩く速さの倍率（傷ついていない）
 }
 
-PlayerComponent::PlayerComponent( const SkinnedMeshData* data ) :
-	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
+PlayerComponent::PlayerComponent() :
 	mCameraYaw( 0.f ),
 	mCameraPitch( 0.f ),
 	mInventory( nullptr ),
@@ -41,9 +42,6 @@ PlayerComponent::PlayerComponent( const SkinnedMeshData* data ) :
 	mModel( nullptr ),
 	mBody( nullptr ),
 	mLocomotion( nullptr ),
-	mHold( nullptr ),
-	mHealth( nullptr ),
-	mHitbox( nullptr ),
 	mCollider( nullptr ) {
 }
 
@@ -58,14 +56,15 @@ UpdatePhase PlayerComponent::updatePhase() const {
 	return UpdatePhase::Input;
 }
 
+void PlayerComponent::awake() {
+	mFootprint = std::make_unique< BodyFootprint >( requireComponent< SkinnedModelComponent >()->data(), kBoneNamePrefix, kFootprintPadding );
+}
+
 void PlayerComponent::start() {
 	mTransform = requireComponent< TransformComponent >();
 	mModel = requireComponent< SkinnedModelComponent >();
 	mBody = requireComponent< FirstPersonBodyComponent >();
 	mLocomotion = requireComponent< PlayerLocomotionComponent >();
-	mHold = requireComponent< HoldComponent >();
-	mHealth = requireComponent< PlayerHealthComponent >();
-	mHitbox = requireComponent< HitboxComponent >();
 	CharacterColliderComponent* collider = requireComponent< CharacterColliderComponent >();
 	collider->setShape( this ); // 移動の当たり判定の形はここが答える
 	mCollider = collider;
@@ -73,6 +72,9 @@ void PlayerComponent::start() {
 
 void PlayerComponent::update() {
 	ASSERT( mInventory && "PlayerComponent::update : inventory is null (setInput first)." );
+	// 持つ・体力・命中の部品は外せる（外すと素手・死なない・撃たれない）ので、使うたびに引く。
+	HoldComponent* hold = getComponent< HoldComponent >();
+	const PlayerHealthComponent* health = getComponent< PlayerHealthComponent >();
 	PlayerCommand command = allowedCommand( mCommand );
 	// 一人称では体の向き＝視線の向き。振り向きを遅らせると、視点と腕・銃の向きがずれて見えるため即座に合わせる。
 	float& angleY = mTransform->angleY();
@@ -85,27 +87,32 @@ void PlayerComponent::update() {
 	if ( moving ) {
 		mLocomotion->setMoveDirection( direction );
 	}
-	GunComponent* gun = mHold->gun();
+	GunComponent* gun = hold ? hold->gun() : nullptr;
 	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）。
 	bool reloading = gun && gun->isReloading();
-	mHold->updateStance( command.holsterPressed, command.aimHeld && !reloading, wantsRun );
-	mHold->updateReload( command.reloadPressed, mInventory );
-	// 懐中電灯は銃に付いているので、銃を持っていれば（しまっていても・リロード中でも）付け外しできる。
-	if ( LightComponent* light = mHold->light() ) {
-		light->update( command.flashlightPressed );
+	if ( hold ) {
+		hold->updateStance( command.holsterPressed, command.aimHeld && !reloading, wantsRun );
+		hold->updateReload( command.reloadPressed, mInventory );
+		// 懐中電灯は銃に付いているので、銃を持っていれば（しまっていても・リロード中でも）付け外しできる。
+		if ( LightComponent* light = hold->light() ) {
+			light->update( command.flashlightPressed );
+		}
 	}
 	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る。
 	// リロード中も走らない（弾倉を替えながら歩くだけ。バイオハザードと同じ）。
 	reloading = gun && gun->isReloading();
-	bool running = wantsRun && !mHold->isAiming() && !reloading;
-	Animator::State next = PlayerLocomotionComponent::chooseState( moving, running, mHold->isDrawn() );
+	bool running = wantsRun && !( hold && hold->isAiming() ) && !reloading;
+	Animator::State next = PlayerLocomotionComponent::chooseState( moving, running, hold && hold->isDrawn() );
 	// 撃てるのは、銃を手に持っていて、走っていない間だけ（走りでは銃口を下げて胸元に抱えている）。
 	// リロード中も撃てない（銃を下げて弾倉を替えている）。
-	fire( mHold->isWeaponInHand() && !running && !reloading, command.fireHeld );
+	fire( hold && hold->isWeaponInHand() && !running && !reloading, command.fireHeld );
 	mBody->body().setRecoil( gun ? gun->recoilKick() : kNoRecoil );
-	mHold->updateArms( next );
+	if ( hold ) {
+		hold->updateArms( next );
+	}
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
-	mLocomotion->approachSpeed( PlayerLocomotionComponent::speedOf( next ) * mHealth->health().walkSpeedScale() );
+	float speedScale = health ? health->health().walkSpeedScale() : kFullSpeedScale;
+	mLocomotion->approachSpeed( PlayerLocomotionComponent::speedOf( next ) * speedScale );
 	Vector3 step = mLocomotion->step();
 	mLocomotion->changeState( next );
 	// 移動より先に姿勢を進める。移動の当たり判定は今の目の位置まで伸ばす（collider）ので、
@@ -119,12 +126,17 @@ void PlayerComponent::update() {
 	position += mCollider->mover().move( step );
 	position.y = mCollider->mover().followGround( position ); // 歩道の段差に乗る
 	mesh.setPosition( position );
-	mHitbox->boxes().update( mesh );
-	mHold->takeOutMagazineIfCued();
+	if ( HitboxComponent* hitbox = getComponent< HitboxComponent >() ) {
+		hitbox->boxes().update( mesh );
+	}
+	if ( hold ) {
+		hold->takeOutMagazineIfCued();
+	}
 }
 
 void PlayerComponent::fire( bool canFire, bool triggerHeld ) {
-	GunComponent* gun = mHold->gun();
+	HoldComponent* hold = getComponent< HoldComponent >();
+	GunComponent* gun = hold ? hold->gun() : nullptr;
 	if ( !gun ) {
 		return;
 	}
@@ -134,14 +146,16 @@ void PlayerComponent::fire( bool canFire, bool triggerHeld ) {
 }
 
 AimSwayBody PlayerComponent::aimSwayBody() const {
+	const HoldComponent* hold = getComponent< HoldComponent >();
+	const PlayerHealthComponent* health = getComponent< PlayerHealthComponent >();
 	AimSwayBody body;
-	body.weaponDrawn = mHold->isWeaponInHand();
-	body.aimWeight = mHold->aimWeight();
+	body.weaponDrawn = hold && hold->isWeaponInHand();
+	body.aimWeight = hold ? hold->aimWeight() : kNoWeight;
 	body.walkRate = mLocomotion->walkRate();
 	body.gaitPhase = mLocomotion->gaitPhase();
 	body.gaitCycling = mLocomotion->gait() != GAIT_STILL;
-	body.carryWeight = mHold->carryWeight();
-	body.danger = mHealth->health().condition() == PlayerCondition::Danger;
+	body.carryWeight = hold ? hold->carryWeight() : kNoWeight;
+	body.danger = health && health->health().condition() == PlayerCondition::Danger;
 	return body;
 }
 
@@ -153,21 +167,23 @@ BoxCollider PlayerComponent::collider() const {
 	float eyeReach = mBody->body().eyePosition().z + kEyeToWallMargin;
 	// 持っている銃は体より前へ突き出ているので、銃を囲む箱（＋余白）も長方形に含める。銃口が壁に入らなくなる。
 	// 銃の箱は今のポーズ（覗く・抱える・反動）から求めたものなので、構えを変えると長方形の大きさも変わる。
+	const HoldComponent* hold = getComponent< HoldComponent >();
 	Vector3 low;
 	Vector3 high;
-	if ( !mHold->isWeaponInHand() || !mBody->body().weaponBounds( &low, &high ) ) {
-		return mFootprint.place( position, angleY, eyeReach );
+	if ( !hold || !hold->isWeaponInHand() || !mBody->body().weaponBounds( &low, &high ) ) {
+		return mFootprint->place( position, angleY, eyeReach );
 	}
 	low.x -= kWeaponToWallMargin;
 	low.z -= kWeaponToWallMargin;
 	high.x += kWeaponToWallMargin;
 	high.z = Math::max( high.z + kWeaponToWallMargin, eyeReach );
-	return mFootprint.place( position, angleY, low, high );
+	return mFootprint->place( position, angleY, low, high );
 }
 
 PlayerCommand PlayerComponent::allowedCommand( const PlayerCommand& command ) const {
 	PlayerCommand allowed = command;
-	if ( mHealth->isDead() ) {
+	const PlayerHealthComponent* health = getComponent< PlayerHealthComponent >();
+	if ( health && health->isDead() ) {
 		// 死んだら、その場で止まって何もしない（押した瞬間の入力も捨てる）。
 		allowed.forward = 0.f;
 		allowed.strafe = 0.f;

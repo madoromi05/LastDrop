@@ -25,11 +25,15 @@ namespace{
 	const float kGroundFollowSpeed = 1.5f / GameTime::kTicksPerSecond;
 }
 
-CharacterMover::CharacterMover( const CollisionWorld* world, const ICollisionBody* self ) :
-	mWorld( world ),
+CharacterMover::CharacterMover( const ICollisionBody* self ) :
+	mWorld( nullptr ),
 	mSelf( self ) {
-	ASSERT( mWorld && "CharacterMover : world is null." );
 	ASSERT( mSelf && "CharacterMover : self is null." );
+}
+
+void CharacterMover::setWorld( const CollisionWorld* world ) {
+	ASSERT( world && !mWorld && "CharacterMover : world is null or already set." );
+	mWorld = world;
 }
 
 Vector3 CharacterMover::move( const Vector3& delta ) const {
@@ -45,6 +49,7 @@ Vector3 CharacterMover::moveIgnoringBodies( const Vector3& delta ) const {
 }
 
 Vector3 CharacterMover::move( const Vector3& delta, const CollisionWorld::BodyFilter& filter ) const {
+	ASSERT( mWorld && "CharacterMover : world is not set." );
 	BoxCollider box = mSelf->collider();
 	Vector3 start = box.center;
 	depenetrate( &box, filter );
@@ -84,6 +89,7 @@ Vector3 CharacterMover::move( const Vector3& delta, const CollisionWorld::BodyFi
 }
 
 float CharacterMover::followGround( const Vector3& position ) const {
+	ASSERT( mWorld && "CharacterMover : world is not set." );
 	float ground;
 	if ( !mWorld->groundHeight( position, &ground ) ) {
 		return position.y;

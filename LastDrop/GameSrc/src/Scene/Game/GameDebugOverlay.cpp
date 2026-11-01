@@ -173,10 +173,11 @@ void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCam
 void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const {
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
 	const GameObject* player = world.player();
-	if ( !mShowZombieHealth || !player ) {
-		return;
+	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
+	if ( !mShowZombieHealth || !healthComponent ) {
+		return; // 自キャラが居ない・体力の部品を外した（死なない）
 	}
-	const PlayerHealth& health = player->getComponent< PlayerHealthComponent >()->health();
+	const PlayerHealth& health = healthComponent->health();
 	char text[ kDebugTextSize ];
 	std::snprintf( text, sizeof( text ), "Health %.0f/%.0f %s", health.current(), health.maxHealth(), playerConditionName( health.condition() ) );
 	renderer->addText( text, Vector2( kPlayerHealthLeft, kPlayerHealthTop ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );

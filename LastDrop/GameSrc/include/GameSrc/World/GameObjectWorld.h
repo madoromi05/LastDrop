@@ -2,6 +2,7 @@
 #define INCLUDED_GAME_OBJECT_WORLD_H
 
 #include "GameSrc/World/GameObject.h"
+#include "GameSrc/World/SharedShelf.h"
 #include "GameSrc/World/UpdatePhase.h"
 #include "GameLib/GameLib.h"
 #include <memory>
@@ -12,8 +13,10 @@ class CollisionWorld;
 class HitWorld;
 
 // 世界に置く物（GameObject）の持ち主（SummaryPlan/個別仕様/ComponentSystem2_Plan.txt。画像の obj_manager）。
+// ・provide：世界に 1 つの物を共有の棚へ置く（部品が Component::shared で引く。ComponentSystem3_Plan.txt の B）。
+//   載せる名簿（CollisionWorld・HitWorld）は作るときに自分で置く
 // ・create：物を作って持つ（まだ動かない）。部品を addComponent で付ける
-// ・spawn：全部の部品の start を呼び、名簿へ載る部品（IWorldMember）を当たり判定の名簿へ載せ、段の並びへ入れて動かし始める
+// ・spawn：全部の部品の awake → 全部の start を呼び、名簿へ載る部品（IWorldMember）を当たり判定の名簿へ載せ、段の並びへ入れて動かし始める
 // ・update( 段 )：その段の部品の update を、作った順に呼ぶ（段の順は GameWorld::update が決める）
 // ・destroyLater：消す印を付けるだけ。removeComponentLater（部品を外す印）も同じ
 // ・flush：印の付いた部品・物の onDestroy を呼び、名簿から外して消す。ティックの最後に1回呼ぶ
@@ -30,6 +33,18 @@ public:
 	~GameObjectWorld();
 	GameObjectWorld( const GameObjectWorld& ) = delete;
 	GameObjectWorld& operator=( const GameObjectWorld& ) = delete;
+
+	// 世界に 1 つの item を共有の棚へ置く（同じ型は 1 つだけ。所有権は受け取らない。この持ち主より長く生きていること）。
+	// 引く部品を付けた物を spawn する前に置くこと。
+	template< class T >
+	void provide( T* item ){
+		mShelf.provide( item );
+	}
+	// 棚に置いた T（置いていなければ nullptr）。
+	template< class T >
+	T* shared() const {
+		return mShelf.find< T >();
+	}
 
 	// 物を作って持つ（画像の obj_manager.Register( "AK47" )）。返すポインタは flush で消えるまで使える。
 	// name: 確認用の名前（写して持つ。nullptr 不可）。部品を付け終えたら spawn する。
@@ -106,7 +121,7 @@ public:
 	GameObject* findById( unsigned id ) const;
 
 	// ── GameObject が使う ──
-	// spawn した後に付けた部品（object の index 番目）を start させ、載せる。
+	// spawn した後に付けた部品（object の index 番目）を awake・start させ、載せる。
 	void attachLate( GameObject* object, int index );
 	// object に外す印の付いた部品がある（flush で外す）。
 	void requestRemoval( GameObject* object );
@@ -136,6 +151,7 @@ private:
 
 	CollisionWorld* mCollisionWorld;
 	HitWorld* mHitWorld;
+	SharedShelf mShelf;                                      // 世界に 1 つの物（部品が shared で引く）
 	std::vector< std::unique_ptr< GameObject > > mObjects;   // 作った順
 	std::unordered_map< unsigned, GameObject* > mObjectsById; // GameObjectHandle が引く
 	std::vector< std::vector< GameObject* > > mObjectsByType; // 部品の種類の番号で引く。中は作った順（spawn した物だけ）
@@ -145,5 +161,12 @@ private:
 	unsigned mNextId;                                        // 次に作る物の番号（使い回さない）
 	int mIterationDepth;                                     // たどっている入れ子の深さ（0 ならたどっていない）
 };
+
+template< class T >
+T* Component::shared() const {
+	T* item = mGameObject->world()->shared< T >();
+	ASSERT( item && "Component : a shared item is not provided." );
+	return item;
+}
 
 #endif

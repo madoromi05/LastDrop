@@ -4,32 +4,32 @@
 
 using namespace GameLib::Math;
 
-FirstPersonBodyComponent::FirstPersonBodyComponent( const SkinnedMeshData* data ) :
-	mBody( data ),
+FirstPersonBodyComponent::FirstPersonBodyComponent() :
 	mModel( nullptr ) {
 }
 
-void FirstPersonBodyComponent::start() {
+void FirstPersonBodyComponent::awake() {
 	SkinnedModelComponent* model = requireComponent< SkinnedModelComponent >();
-	model->mesh().setPoseModifier( &mBody );
+	mBody = std::make_unique< FirstPersonBody >( model->data() );
+	model->mesh().setPoseModifier( mBody.get() );
 	mModel = model;
 }
 
 FirstPersonBody& FirstPersonBodyComponent::body() {
-	return mBody;
+	return *mBody;
 }
 
 const FirstPersonBody& FirstPersonBodyComponent::body() const {
-	return mBody;
+	return *mBody;
 }
 
 Vector3 FirstPersonBodyComponent::eyePosition() const {
 	// FirstPersonBody が骨格の根の空間で求めた目を、置き場所・向きでワールドへ置く（頂点と同じ式）。
 	Vector3 eye;
-	mModel->mesh().rootMatrix().mul( &eye, mBody.eyePosition() );
+	mModel->mesh().rootMatrix().mul( &eye, mBody->eyePosition() );
 	return eye;
 }
 
 void FirstPersonBodyComponent::setWeaponSway( float yawDegree, float pitchDegree ) {
-	mBody.setSway( yawDegree, pitchDegree );
+	mBody->setSway( yawDegree, pitchDegree );
 }

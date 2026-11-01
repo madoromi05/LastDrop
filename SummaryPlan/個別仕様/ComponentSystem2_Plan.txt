@@ -3,7 +3,7 @@
  作成日：2026-11-01
  状態：2026-11-01 ★1〜7 はすべておすすめのとおりに決定（ユーザー「全部おすすめで」）し、5 章の 1〜5 を実装した。
        Debug・Profile・Release のビルドが警告なしで通過。土台（GameObjectWorld・GameObject・GameObjectHandle）は使い捨てのテスト 38 項目で確かめた。
-       遊んでの確認と、F6 の Perf の前後の計測（5 章の 0・6）はまだ
+       2026-11-01 ユーザーが遊んで確かめてコミットした（67f5d81「コンポーネントの基盤作成」）。F6 の Perf の前後の計測（5 章の 0・6）はしていない
        仕様からの違い：
         ・段は今使う Input・Think・Late の 3 つだけ（Move・Animate は動かす部品が無いので作らない。要る部品を足すときに足す）
         ・AK47 の部品は WeaponModel・Gun・Light・MuzzleFlash の 4 つ。Item（まだ拾い直さない）・Sound（8 章のとおり後回し）・
@@ -11,6 +11,8 @@
         ・部品の置き場所：どの物でも使う部品は GameSrc/Component/（Transform・StaticModel・SkinnedModel・BoxCollider・CharacterCollider・
           Hitbox・Light）、物ごとの部品はその物のフォルダ（Player/・Weapon/・Zombie/・Interaction/・Effect/）
         ・ゾンビの組み立ては ZombieFactory（Unity のプレハブの代わり）。自キャラ・銃・置物は GameWorld の中で組み立てる（短いので）
+          → 2026-11-02 ユーザー「GameWorld に Player の構成責任あるのおかしくない？」で、自キャラと銃は PlayerFactory へ分けた
+            （GameWorld は置く場所と置いた後に読むだけ）。置物は GameWorld のまま（部品が少なく、ゲームループの決まりと結びつくため）
         ・CharacterColliderComponent は、形を答える部品（PlayerComponent・ZombieBrainComponent）が自分の start で setShape する
           （形を答える部品は隣の部品を全部使うので最後に付けたいが、滑る移動を借りる部品より先に Collider を付けるため）
         ・removeComponentLater は作ってテストで確かめたが、ゲームの中ではまだ使っていない
