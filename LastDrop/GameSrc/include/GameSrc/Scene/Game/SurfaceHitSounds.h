@@ -1,7 +1,7 @@
 #ifndef INCLUDED_SURFACE_HIT_SOUNDS_H
 #define INCLUDED_SURFACE_HIT_SOUNDS_H
 
-#include "GameSrc/Scene/Game/GameWorld.h"
+#include "GameSrc/Scene/Game/CombatResolver.h"
 #include <vector>
 
 class AudioEngine;
@@ -17,8 +17,8 @@ public:
 	// audio: 鳴らす先。所有権は受け取らない。nullptr 不可。この係より長く生きていること。
 	explicit SurfaceHitSounds( AudioEngine* audio );
 
-	// hits の着弾1つにつき1回鳴らす。1ティックに1回、GameWorld::update の後に呼ぶ（GameWorld::surfaceHitsThisTick を渡す）。
-	void play( const std::vector< GameWorld::SurfaceHit >& hits );
+	// hits の着弾1つにつき1回鳴らす。1ティックに1回、GameWorld::update の後に呼ぶ（GameWorld::combat().surfaceHitsThisTick を渡す）。
+	void play( const std::vector< CombatResolver::SurfaceHit >& hits );
 
 private:
 	AudioEngine* mAudio; // 借りているだけ

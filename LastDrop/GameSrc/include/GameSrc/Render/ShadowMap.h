@@ -7,7 +7,7 @@
 #include "GameLib/Math/Vector3.h"
 
 // 影のマップ 1 枚（光の側から見た、一番手前の物までの深度）。仕様は SummaryPlan/個別仕様/Shadow_Plan.txt 4 章。
-// 使い方：begin( 光の側の射影×ビュー ) → 影を落とす物を描く（GameWorld::drawShadowCasters）→ end。
+// 使い方：begin( 光の側の射影×ビュー ) → 影を落とす物を描く（WorldRenderer::drawShadowCasters）→ end。
 // 間は RenderPass が Shadow になり、静的メッシュとキャラは深度だけを描くシェーダへ切り替わる（StaticMeshPart::draw・SkinningPipeline::begin）。
 // 描いた深度は、ライトの一覧（LightList::setShadowMap）に渡して、ライティングのパスで読む。
 // 作るのは Graphics::Manager ができた後（シーンの中）。

@@ -60,7 +60,8 @@ namespace{
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	mWorld( &resources->meshes() ),
-	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.findInteractable( origin, delta ); } ),
+	mRenderer( &mWorld, &mWorld.effects() ),
+	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
 	mControl( mWorld.map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
 	mZombieHitSounds( &resources->audio() ),
@@ -207,8 +208,8 @@ void GameScene::update() {
 	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる。
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
-	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
-	mSurfaceHitSounds.play( mWorld.surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
+	mZombieHitSounds.play( mWorld.combat().zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
+	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	GameObject* player = mWorld.player();
 	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
@@ -285,16 +286,16 @@ void GameScene::draw() {
 	{
 		PROFILE_SCOPE( "World.draw" );
 		const DrawCulling culling = cameraCulling( camera );
-		mWorld.drawStatic( culling, camera.eyePosition() );
+		mRenderer.drawStatic( culling, camera.eyePosition() );
 		mGBuffer.beginDecals( mPostProcess.sceneDepth() );
-		mWorld.drawBulletHoles( projectionView );
+		mRenderer.drawDecals( projectionView );
 		Profiling::gpuMark( "Decals" );
 		mGBuffer.endDecals( mPostProcess.sceneDepth() );
 		// 動く物は動きの種類を G-Buffer へ書き分ける（TAA が前のフレームのどこを読むかを分ける。Taa_Plan.txt 6 章）。
 		mGBuffer.setMotion( MotionKind::FirstPerson );
-		mWorld.drawFirstPerson();
+		mRenderer.drawFirstPerson();
 		mGBuffer.setMotion( MotionKind::Moving );
-		mWorld.drawCharacters( culling );
+		mRenderer.drawCharacters( culling );
 	}
 	mGBuffer.end();
 	// SSAO は G-Buffer の後・ライティングの前（SsaoTranslucent_Plan.txt 4 章）。G-Buffer の表示（SSAO）でも見るので、表示中も作る。
@@ -342,16 +343,16 @@ void GameScene::draw() {
 	// 同じ深度を読んで壁・地面に刺さった所を薄くする（SsaoTranslucent_Plan.txt 7 章）。弾痕は G-Buffer のデカールになった（上）。
 	mPostProcess.resumeSceneReadOnlyDepth();
 	mLights.bindShadowMaps();   // 板も懐中電灯の影を受ける（同じ evaluateLight を通る）
-	mWorld.drawImpactDust( projectionView, camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
-	mWorld.drawBloodSpray( projectionView, camera.viewDirection(), camera.eyePosition() ); // 砂ぼこりの後（同じ作り）
-	mWorld.drawMuzzleFlash( projectionView, camera.viewDirection() ); // 加算なので順番は問わない
+	mRenderer.drawImpactDust( projectionView, camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
+	mRenderer.drawBloodSpray( projectionView, camera.viewDirection(), camera.eyePosition() ); // 砂ぼこりの後（同じ作り）
+	mRenderer.drawMuzzleFlash( projectionView, camera.viewDirection() ); // 加算なので順番は問わない
 	mLights.unbind(); // ライトの一覧を読むのは、ここまで（ライティングのパスと半透明の板）
 #ifdef ZF_EDITOR
 	mPostProcess.resumeScene(); // 当たり判定の表示は深度を書くことがあるので、書ける付け方へ戻す
 	mDebug.drawCollision( mWorld, camera );
 	mDebug.drawLights( mLights, camera );
 #endif
-	// GPU の時間の区切り（Perf の欄の GPU）。世界の物ごとの印は GameWorld::draw の中（Player〜Ground）。
+	// GPU の時間の区切り（Perf の欄の GPU）。世界の物ごとの印は WorldRenderer の中（Player〜Ground）。
 	// ここまでが弾痕・砂ぼこり・血・マズルフラッシュ・当たり判定の表示、次の印までが画面全体の処理（ブルームなど）。
 	Profiling::gpuMark( "Effects" );
 	mPostProcess.endScene();
@@ -424,7 +425,7 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 	// 自分の手元の光（懐中電灯・マズルフラッシュ）は、街灯より先に足す（16 個を選ぶとき、目からの距離が同じなら足した順で残るため）。
 	addFlashlight( params );
 	LightSource muzzle;
-	if ( mWorld.muzzleLight( &muzzle ) ) {
+	if ( mRenderer.muzzleLight( &muzzle ) ) {
 		mLights.add( muzzle );
 	}
 	// 交差点の街灯。16 個を超えた分は、LightList が目から遠い物から外す（PbrNightLighting_Plan.txt 8 章）。
@@ -527,7 +528,7 @@ void GameScene::addFlashlight( const LightingParams& params ) {
 void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 	if ( mFlashlightCastsShadow ) {
 		mFlashlightShadow.begin( mFlashlightShadowMatrix );
-		mWorld.drawShadowCasters( DrawCulling( mFlashlightShadowMatrix ), kWithoutPlayer );
+		mRenderer.drawShadowCasters( DrawCulling( mFlashlightShadowMatrix ), kWithoutPlayer );
 		mFlashlightShadow.end();
 	}
 	if ( mMoonCastsShadow ) {
@@ -537,7 +538,7 @@ void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 			}
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
-			mWorld.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ) ), kWithPlayer );
+			mRenderer.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ) ), kWithPlayer );
 			mMoonShadow.map( i ).end();
 			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
@@ -565,7 +566,7 @@ void GameScene::updateInteraction() {
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。案内は今まで通り出す。
 	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
-	mWorld.removeTakenPickups();
+	mWorld.interaction().removeTakenPickups();
 	if ( mWorld.isEscapeReady() ) {
 		SceneManager::instance().requestChange( SceneManager::SCENE_CLEAR );
 	}
@@ -603,11 +604,11 @@ bool GameScene::isFreeCameraActive() const {
 }
 
 void GameScene::updatePlayerDamage() {
-	bool hit = !mWorld.zombieAttacksThisTick().empty();
+	bool hit = !mWorld.combat().zombieAttacksThisTick().empty();
 	if ( hit ) {
 		mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
 	}
-	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
+	mZombieAttackSounds.play( mWorld.combat().zombieAttacksThisTick() );
 	const GameObject* player = mWorld.player();
 	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
 	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr; // 外せる部品

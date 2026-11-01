@@ -15,8 +15,8 @@ ZombieAttackSounds::ZombieAttackSounds( AudioEngine* audio ) :
 	ASSERT( mAudio && "ZombieAttackSounds : audio is null." );
 }
 
-void ZombieAttackSounds::play( const std::vector< GameWorld::ZombieAttackEvent >& events ) {
-	for ( const GameWorld::ZombieAttackEvent& event : events ) {
+void ZombieAttackSounds::play( const std::vector< CombatResolver::ZombieAttackEvent >& events ) {
+	for ( const CombatResolver::ZombieAttackEvent& event : events ) {
 		mAudio->play( SOUND_HIT_FLESH, AudioEngine::BUS_EFFECT, event.point, kVolume, kHitPitch );
 	}
 }

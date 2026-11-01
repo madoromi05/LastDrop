@@ -5,7 +5,7 @@
 #include "GameSrc/Player/PlayerHealth.h"
 
 // 自キャラの体力（体全体で 1 つ。バイオハザード式。中身は PlayerHealth）と、デバッグ用の無敵。
-// ゾンビの腕が当たると減る（applyZombieHit。どのゾンビが攻撃したかは GameWorld が決める）。
+// ゾンビの腕が当たると減る（applyZombieHit。どのゾンビが攻撃したかは CombatResolver が決める）。
 // 傷つくほど歩く・走るのが遅く（walkSpeedScale）、0 で死に、それからは操作を受け付けない（PlayerComponent が止める）。
 class PlayerHealthComponent : public Component{
 public:

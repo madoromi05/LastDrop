@@ -201,6 +201,7 @@
     <ClCompile Include="GameSrc\src\Player\HoldComponent.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonBodyComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\PickupComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\PropFactory.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\ItemSourceComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\FuelTankComponent.cpp" />
     <ClCompile Include="GameSrc\src\Effect\MuzzleFlashComponent.cpp" />
@@ -350,6 +351,11 @@
     <ClCompile Include="GameSrc\src\Math\PlacementMatrix.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameWorld.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\WorldRenderer.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\WorldBuilder.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\EffectManager.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\CombatResolver.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\InteractionSystem.cpp" />
     <ClCompile Include="GameSrc\src\Player\FirstPersonControl.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp" />
@@ -540,6 +546,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\HoldComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBodyComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PickupComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\PropFactory.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\CorpseLootComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSourceComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\FuelTankComponent.h" />
@@ -790,6 +798,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Math\PlacementMatrix.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameWorld.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\WorldRenderer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\WorldBuilder.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\EffectManager.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\CombatResolver.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InteractionSystem.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\LookParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\WeaponPoseParams.h" />

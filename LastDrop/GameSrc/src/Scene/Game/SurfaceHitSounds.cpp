@@ -26,8 +26,8 @@ SurfaceHitSounds::SurfaceHitSounds( AudioEngine* audio ) :
 	ASSERT( mAudio && "SurfaceHitSounds : audio is null." );
 }
 
-void SurfaceHitSounds::play( const std::vector< GameWorld::SurfaceHit >& hits ) {
-	for ( const GameWorld::SurfaceHit& hit : hits ) {
+void SurfaceHitSounds::play( const std::vector< CombatResolver::SurfaceHit >& hits ) {
+	for ( const CombatResolver::SurfaceHit& hit : hits ) {
 		mAudio->play( kImpactSounds[ hit.material ], AudioEngine::BUS_EFFECT, hit.point, kImpactVolume );
 	}
 }

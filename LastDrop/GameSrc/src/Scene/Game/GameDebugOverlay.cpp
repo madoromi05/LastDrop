@@ -153,7 +153,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 	if ( mShowPickups ) {
 		// 落ちている物の箱を、手前の物に隠れない線で描く（壁の向こうの缶の場所が分かる）。拾われた物は世界が渡さない。
 		mPickupBoxes.clear();
-		world.appendPickupColliders( &mPickupBoxes );
+		world.interaction().appendPickupColliders( &mPickupBoxes );
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
 	if ( mShowZombieHealth ) {

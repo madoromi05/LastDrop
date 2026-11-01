@@ -8,7 +8,7 @@
 
 // 置物の移動の当たり判定（頂点を真上から囲む箱 1 つ。前の StaticProp の箱の側）。
 // 箱は同じ物の StaticModelComponent の頂点から start で求める（見た目は awake で置き場所へ動いている。置いた後は動かない）。
-// 移動の名簿（CollisionWorld）への載り方は 3 通り（Mode）。どれにするかは物を組み立てる側（GameWorld）が決める。
+// 移動の名簿（CollisionWorld）への載り方は 3 通り（Mode）。どれにするかは物を組み立てる側（PropFactory など）が決める。
 class BoxColliderComponent : public Component, public ICollisionBody, public IWorldMember{
 public:
 	enum class Mode{

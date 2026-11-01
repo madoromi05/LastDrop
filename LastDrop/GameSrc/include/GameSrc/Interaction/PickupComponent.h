@@ -10,10 +10,10 @@ class ItemComponent;
 
 // 地面に落ちている、拾える物（ガソリンの携行缶・ゾンビが落とした弾）の「拾う」部品。
 // 拾うと、同じ物の ItemComponent のアイテムが持ち物に増える。持ちきれない分は落ちたまま残る（全部拾われたら isTaken）。
-// 拾われた物は、持ち主（GameWorld）が付いている物に destroyLater で消す印を付ける。
+// 拾われた物は、InteractionSystem が付いている物に destroyLater で消す印を付ける。
 // 見た目（StaticModelComponent。弾を止める）と箱（BoxColliderComponent）は同じ物の別の部品。
 // 視線で見つけるときは、見た目の三角形ではなく、頂点を囲む箱より一回り大きい「見る箱」で当たる（lookRaycast。小さな弾薬を狙いやすくする）。
-// 見る箱は名簿に載せない（弾が見えない箱で止まらないように）。探すのは GameWorld::findInteractable。
+// 見る箱は名簿に載せない（弾が見えない箱で止まらないように）。探すのは InteractionSystem::findInteractable。
 class PickupComponent : public Component, public IInteractable{
 public:
 	PickupComponent();

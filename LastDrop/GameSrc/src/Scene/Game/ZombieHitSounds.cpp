@@ -13,8 +13,8 @@ ZombieHitSounds::ZombieHitSounds( AudioEngine* audio ) :
 	ASSERT( mAudio && "ZombieHitSounds : audio is null." );
 }
 
-void ZombieHitSounds::play( const std::vector< GameWorld::ZombieHit >& hits ) {
-	for ( const GameWorld::ZombieHit& hit : hits ) {
+void ZombieHitSounds::play( const std::vector< CombatResolver::ZombieHit >& hits ) {
+	for ( const CombatResolver::ZombieHit& hit : hits ) {
 		SoundId sound = ( hit.part == BodyPart::Head ) ? SOUND_HIT_HEAD : SOUND_HIT_FLESH;
 		mAudio->play( sound, AudioEngine::BUS_EFFECT, hit.point, kHitVolume );
 	}

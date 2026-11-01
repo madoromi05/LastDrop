@@ -3,6 +3,7 @@
 
 #include "GameSrc/Scene/IScene.h"
 #include "GameSrc/Scene/Game/GameWorld.h"
+#include "GameSrc/Scene/Game/WorldRenderer.h"
 #include "GameSrc/Interaction/Inventory.h"
 #include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Player/FirstPersonControl.h"
@@ -41,6 +42,7 @@ class DrawCulling;
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
+//   世界を描く                          … WorldRenderer
 //   入力と視点                          … FirstPersonControl
 //   見ている物を使う                    … Interactor（持ち物は Inventory）
 //   足音・装備の音                      … PlayerBodySounds
@@ -101,6 +103,8 @@ private:
 	GameResources* mResources;   // 借りているだけ
 	// 世界。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）。
 	GameWorld mWorld;
+	// 世界を描く（View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）。
+	WorldRenderer mRenderer;
 	Inventory mInventory;
 	Interactor mInteractor;
 	FirstPersonControl mControl;

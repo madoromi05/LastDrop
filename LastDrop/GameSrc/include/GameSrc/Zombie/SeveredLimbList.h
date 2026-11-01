@@ -8,7 +8,7 @@
 
 // 千切れた部位の持ち主。出す（spawn）と1つ増え、進めて（update）沈み終わった物を消し、全部を描く（draw）。
 // 同時に出しておけるのは決まった数まで。超えたら一番古い物から消す（1つにつきゾンビ1体ぶんの頂点を変形するため）。
-// どこで出すか（ゾンビの部位が 0 になったら）は持ち主（GameWorld）が決める。
+// どこで出すか（ゾンビの部位が 0 になったら）は頼む側（CombatResolver。EffectManager を通す）が決める。
 class SeveredLimbList{
 public:
 	SeveredLimbList();

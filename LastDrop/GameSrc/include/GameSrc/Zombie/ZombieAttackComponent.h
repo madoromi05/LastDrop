@@ -17,7 +17,7 @@ struct ChaseTarget;
 // ゾンビの腕で引っかく攻撃（段階は ZombieAttack、間合いは ZombieAttackReach。SummaryPlan/個別仕様/ZombieAttack_Plan.txt）。
 // 攻撃を始めるか決めて始め、腕を振る間は相手の方へ寄り、段階を進める。立っている体も、体を引きずっている体も同じ部品で攻撃する。
 // いつ「始めるか」を聞くか（考えた後・歩く前）は呼ぶ側（ZombieBrainComponent・ZombieCrawlComponent）が決める。
-// 相手に何が起きるかは知らない（「このティックに腕が当たったか」を答えるだけで、相手へ伝えるのは GameWorld）。
+// 相手に何が起きるかは知らない（「このティックに腕が当たったか」を答えるだけで、相手へ伝えるのは CombatResolver）。
 class ZombieAttackComponent : public Component{
 public:
 	ZombieAttackComponent();
