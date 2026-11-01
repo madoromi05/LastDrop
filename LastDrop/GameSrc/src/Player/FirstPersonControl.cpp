@@ -2,7 +2,6 @@
 #include "GameSrc/Player/LookParams.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Core/GameTime.h"
-#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Core/GameSettings.h"
 #include "Framework.h"
 
@@ -22,10 +21,6 @@ namespace{
 		return gLookParams.hipFieldOfView + ( gLookParams.aimFieldOfView - gLookParams.hipFieldOfView ) * aimWeight;
 	}
 
-	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
-	const float kLookPullSeconds = 0.25f;
-	const int kLookPullTicks = GameTime::secondsToTicks( kLookPullSeconds );
-
 	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
 	float axisValue( bool on ) {
 		return on ? 1.f : 0.f;
@@ -35,8 +30,7 @@ namespace{
 	// 射撃は 1 発ごとに足すが、射撃だけでは kFireTraumaLimit より揺らさない（連射しても揺れすぎない）。
 	const float kFireTrauma = 0.12f;
 	const float kFireTraumaLimit = 0.45f;
-	const float kBiteTrauma = 0.8f;
-	const float kGrabTrauma = 0.35f;
+	const float kZombieHitTrauma = 0.8f;
 	const float kTraumaFull = 1.f;
 
 	// 揺れ方・ぶれ方を遊ぶたびに変える種（起動からの時間）。部品ごとに足す数を変えて、同じ並びにならないようにする。
@@ -61,9 +55,6 @@ FirstPersonControl::FirstPersonControl( float startYaw, const GameSettings* sett
 	mPendingLookYaw( 0.f ),
 	mPendingLookPitch( 0.f ),
 	mFireSuppressed( true ),
-	mPullYaw( 0.f ),
-	mPullPitch( 0.f ),
-	mPullTicks( 0 ),
 	mEyeDrop( 0.f ) {
 	ASSERT( mSettings && "FirstPersonControl : settings is null." );
 	mCamera.rotate( startYaw, 0.f );
@@ -174,11 +165,7 @@ void FirstPersonControl::updateViewEffects( bool fired, const AimSwayBody& body 
 
 void FirstPersonControl::flinch() {
 	mAimPunch.punch();
-	mShake.addTrauma( kBiteTrauma, kTraumaFull );
-}
-
-void FirstPersonControl::shakeOnGrab() {
-	mShake.addTrauma( kGrabTrauma, kTraumaFull );
+	mShake.addTrauma( kZombieHitTrauma, kTraumaFull );
 }
 
 void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {
@@ -193,32 +180,6 @@ void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {
 
 const FirstPersonCamera& FirstPersonControl::camera() const {
 	return mCamera;
-}
-
-void FirstPersonControl::lookToward( const Vector3& target ) {
-	Vector3 toTarget;
-	toTarget.setSub( target, mCamera.eyePosition() );
-	float flat = Math::sqrt( toTarget.x * toTarget.x + toTarget.z * toTarget.z );
-	// ヨーは 0 で +Z を向き、左回りが正（FirstPersonCamera）。ピッチは見下ろしが正なので、下にある相手は正。
-	float yaw = AngleMath::headingOf( toTarget );
-	float pitch = Math::atan2( -toTarget.y, flat );
-	mPullYaw = AngleMath::difference( yaw, mCamera.yaw() );
-	mPullPitch = pitch - mCamera.pitch();
-	mPullTicks = kLookPullTicks;
-}
-
-void FirstPersonControl::updateLookPull() {
-	if ( mPullTicks <= 0 ) {
-		return;
-	}
-	// 残りを残りのティック数で割って回す（等速。最後のティックで残りを全部回し切る）。
-	float share = 1.f / static_cast< float >( mPullTicks );
-	float yawStep = mPullYaw * share;
-	float pitchStep = mPullPitch * share;
-	mCamera.rotate( yawStep, pitchStep );
-	mPullYaw -= yawStep;
-	mPullPitch -= pitchStep;
-	--mPullTicks;
 }
 
 void FirstPersonControl::setEyeDrop( float meters ) {

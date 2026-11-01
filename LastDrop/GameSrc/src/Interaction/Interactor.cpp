@@ -6,11 +6,10 @@
 
 using namespace GameLib::Math;
 
-Interactor::Interactor( const HitWorld* world, float reach, Resolver resolver ) :
-	mWorld( world ),
+Interactor::Interactor( float reach, Finder finder ) :
 	mReach( reach ),
-	mResolver( resolver ) {
-	ASSERT( mWorld && mReach > 0.f && mResolver && "Interactor : bad argument." );
+	mFinder( finder ) {
+	ASSERT( mReach > 0.f && mFinder && "Interactor : bad argument." );
 }
 
 void Interactor::update( const Vector3& eye, const Vector3& direction,
@@ -19,11 +18,7 @@ void Interactor::update( const Vector3& eye, const Vector3& direction,
 	mPrompt.clear();
 	Vector3 delta = direction;
 	delta *= mReach;
-	HitWorld::Hit hit;
-	if ( !mWorld->raycastBlockers( eye, delta, &hit ) ) {
-		return;
-	}
-	IInteractable* target = mResolver( hit );
+	IInteractable* target = mFinder( eye, delta );
 	if ( !target ) {
 		return;
 	}

@@ -34,7 +34,7 @@ class StaticMeshData;
 class SkinnedMeshData;
 class PlayerCharacter;
 class IInteractable;
-class ViewFrustum;
+class DrawCulling;
 class Inventory;
 
 // 本編の世界。町（道路・歩道・建物）、自キャラ、飛んでいる弾、ゾンビ、ゲームループの物（脱出用の車・落ちているガソリン）と、
@@ -59,14 +59,9 @@ public:
 		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
 		GroundMaterial material;      // 当たった物の、その位置の表面の材質
 	};
-	// ゾンビが自キャラをつかんだ・噛んだ出来事（音・画面の赤み・視点を向ける係が読む）。
+	// ゾンビの腕が自キャラに当たった出来事（音・画面の赤み・揺れの係が読む）。自キャラの体力はもう減らしてある。
 	struct ZombieAttackEvent{
-		enum class Kind{
-			Grab, // つかんだ
-			Bite, // 噛んだ（自キャラの体力はもう減らしてある）
-		};
-		Kind kind;
-		GameLib::Math::Vector3 point; // ゾンビの頭の位置（ワールド座標。顔を向ける先・音を鳴らす所）
+		GameLib::Math::Vector3 point; // ゾンビの頭の位置（ワールド座標。音を鳴らす所）
 	};
 
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから place を呼ぶ。
@@ -81,7 +76,7 @@ public:
 	void place();
 	// 1ティック進める: 自キャラを操作どおりに動かし、撃ったなら弾を出して銃口を光らせ、近くのゾンビに銃声を聞かせ、弾を飛ばし、物に当たった所に弾痕と砂ぼこりを出し、
 	// ゾンビに当たったらダメージを渡して血しぶきを出し、部位が千切れたら飛ばし、ゾンビに自キャラを追わせてアニメを進め、
-	// 追いついたゾンビが自キャラをつかんだら動けなくし、噛んだら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
+	// 追いついたゾンビの腕が自キャラに当たったら自キャラの体力を減らし（ZombieAttack_Plan.txt）、
 	// 沈み終わった死体・千切れた部位と、消す印の付いた物を消し、足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
 	// command / cameraYaw / cameraPitch / inventory: PlayerCharacter::update へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
 	// viewDirection: 弾を出す向き（長さ1。FirstPersonCamera::weaponDirection）。弾は自キャラの目からこの向きへ飛ぶ
@@ -94,17 +89,18 @@ public:
 	// （G-Buffer のパスは 1 画素が軽いので、重さは段階 7 の計測で確かめる）。
 	// 動かない物（建物・車・置物・地面）と動く物（自キャラ・弾・ゾンビ・千切れた部位）に分けて描く。間にデカール（弾痕）を描き、
 	// 後から描く動く物がデカールを上書きして、キャラに弾痕が乗らないようにする（SsrDecalMaterial_Plan.txt Q7）。
-	// frustum: カメラに映る範囲。地面・建物・置物は、映らない物を描かない（キャラは数が少ないので、いつも描く）。
+	// culling: 描くかどうか（DrawCulling::forCamera）。地面は映る範囲だけ、建物・置物は描く距離・小ささでも間引く（OptimizationA_Plan.txt 6 章）。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
-	void drawStatic( const ViewFrustum& frustum, const GameLib::Math::Vector3& eye ) const;
+	void drawStatic( const DrawCulling& culling, const GameLib::Math::Vector3& eye ) const;
 	// 動く物を描く。drawStatic とデカールの後に、この順に呼ぶ。TAA のために動きの種類を分けて描く（Taa_Plan.txt 6 章。
-	// 呼ぶ側が間で GBuffer::setMotion を切り替える）。drawFirstPerson：手元（自キャラ・弾）、drawCharacters：ゾンビ・千切れた部位。
+	// 呼ぶ側が間で GBuffer::setMotion を切り替える）。drawFirstPerson：手元（自キャラ・弾。いつも映るので間引かない）、
+	// drawCharacters：ゾンビ・千切れた部位（culling は drawStatic と同じ物）。
 	void drawFirstPerson() const;
-	void drawCharacters() const;
+	void drawCharacters( const DrawCulling& culling ) const;
 	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
-	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。frustum：光の側から見た映る範囲（建物・置物を間引く）。
+	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。culling：光の側から見た映る範囲と、月の影なら小ささ（全部の物を間引く）。
 	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
-	void drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const;
+	void drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) const;
 	// 弾痕を G-Buffer へデカールとして描く。drawStatic の後・drawFirstPerson の前に、GBuffer::beginDecals〜endDecals の間で呼ぶ。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawBulletHoles( const GameLib::Math::Matrix44& projectionView );
@@ -131,8 +127,11 @@ public:
 
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
-	// 視線が当たった物のうち、使える物（落ちている物・何度でも拾える置き場・車）。使える物でなければ nullptr（Interactor の resolver に使う）。
-	IInteractable* resolveInteractable( const HitWorld::Hit& hit );
+	// origin から delta だけ進む視線の先の、一番手前の使える物（落ちている物・死体が落とした弾・何度でも拾える置き場・車）。
+	// 視線はキャラ（自キャラを除く）にも当たる。死体に当たれば、その死体が落としてまだ残っている弾を返す。
+	// 落ちている物は一回り大きい見る箱（Pickup::lookRaycast）でも当たる。壁などの向こうの物は返さない。
+	// 使える物が無ければ nullptr（Interactor の finder に使う）。
+	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta );
 
 	const TownMap& map() const;							// 町のどこに何を置くか
 	const NavMesh& navMesh() const;					// 町の歩ける床の形（確認用の表示が、床の縁を描くのに使う）
@@ -156,7 +155,7 @@ public:
 	const std::vector< ZombieHit >& zombieHitsThisTick() const;
 	// 最後の update で弾が物に当たった出来事（当たった順）。次の update で入れ替わる。
 	const std::vector< SurfaceHit >& surfaceHitsThisTick() const;
-	// 最後の update でゾンビが自キャラをつかんだ・噛んだ出来事（起きた順）。次の update で入れ替わる。
+	// 最後の update でゾンビの腕が自キャラに当たった出来事（起きた順）。次の update で入れ替わる。
 	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;
 	// 自キャラが死んだか（自キャラが居なければ false）。
 	bool isPlayerDead() const;
@@ -173,10 +172,16 @@ private:
 	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とす（hitZombie から）。
 	// 落ちている弾（タグ AmmoDrop）が多すぎたら、一番古い物を消す。数の上限があるのは弾だけ（ガソリンは数が決まっている）。
 	void dropAmmo( const Zombie& zombie );
+	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。死体なら、その死体が落とした弾。
+	IInteractable* resolveInteractable( const HitWorld::Hit& hit );
+	// object（消す印を付けたゾンビか落ちた弾）の、死体と弾の組を忘れる（消えた物を指し続けないように。destroyLater と一緒に呼ぶ）。
+	void forgetCorpseDrop( const GameObject* object );
+	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）。
+	void drawZombies( const DrawCulling& culling ) const;
 
 	// position（撃った瞬間の自キャラの足元）で銃声がした。届く距離の内のゾンビへ知らせる（update で撃ったティックに）。
 	void alertZombiesToGunshot( const GameLib::Math::Vector3& position );
-	// ゾンビに自キャラを追わせ・攻撃させてアニメを進め、つかんでいるゾンビを自キャラへ伝え、噛まれたら自キャラの体力を減らす（update から）。
+	// ゾンビに自キャラを追わせ・攻撃させてアニメを進め、腕が当たったら自キャラの体力を減らす（update から）。
 	// 攻撃に行けるのは一度に 1 体だけ（攻撃に行ったゾンビが居る間、ほかのゾンビには attackTaken を渡す）。
 	void updateZombies();
 	// 立っているゾンビの数・給油の数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
@@ -222,7 +227,7 @@ private:
 	std::vector< ZombieHit > mZombieHits;
 	// このティックに弾が物へ当たった出来事（同上）。
 	std::vector< SurfaceHit > mSurfaceHits;
-	// このティックにゾンビが自キャラをつかんだ・噛んだ出来事（同上）。
+	// このティックにゾンビの腕が自キャラに当たった出来事（同上）。
 	std::vector< ZombieAttackEvent > mZombieAttacks;
 	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。
 	std::vector< BulletList::Impact > mImpacts;
@@ -236,6 +241,13 @@ private:
 	GameObjectWorld mObjects;
 	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、全員の update へ渡す。毎回確保し直さないために持つ）。
 	ZombieCrowd mCrowd;
+	// 死体と、その死体が落とした弾の組（2026-10-31 ユーザー指定：死体を見ても弾を拾える）。
+	// Zombie は落とした物を知らずに済むよう、組はここで持つ。どちらかが消えるときに forgetCorpseDrop で外す。
+	struct CorpseDrop{
+		const GameObject* corpse; // 弾を落としたゾンビの物
+		Pickup* drop;             // 落とした弾
+	};
+	std::vector< CorpseDrop > mCorpseDrops;
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）を選ぶ（place で種を決める）
 	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
 	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。

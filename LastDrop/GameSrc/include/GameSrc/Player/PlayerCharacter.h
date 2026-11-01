@@ -56,9 +56,9 @@ class Inventory;
 // リロード中は撃てない・覗けない・走れない（歩ける）。武器をしまうとリロードをやめる（弾は込めない）。
 // リロード中の腕は、リロードのアニメ（"rifle_reload"）のポーズを AnimationPoseSampler で求め、FirstPersonBody が腕だけ差し替える（脚は歩き・静止のまま）。
 //
-// 体力は体全体で 1 つ（PlayerHealth。バイオハザード式）。ゾンビに噛まれると減る（applyBite）。ゾンビにつかまれている間（setHeld）は動けない（撃つ・覗く・向きを変えるはできる）。
+// 体力は体全体で 1 つ（PlayerHealth。バイオハザード式）。ゾンビの腕が当たると減る（applyZombieHit）。
 // 傷つくほど（Caution・Danger）歩く・走るのが遅い。0 で死に、それからは操作を受け付けない（その場で止まる）。
-// 誰がつかんでいるか・死んだ後どうするか（暗転・ゲームオーバー）は知らない（GameWorld・シーンが決める）。
+// どのゾンビが攻撃したか・死んだ後どうするか（暗転・ゲームオーバー）は知らない（GameWorld・シーンが決める）。
 //
 // v4 アクション用の Player（ワイヤー・射撃）とは別物。ジャンプはまだ持たない。
 class PlayerCharacter : public ICollisionBody, public IHittable, public IWorldMember{
@@ -117,14 +117,10 @@ public:
 	// 照準のぶれ（度。FirstPersonCamera::setWeaponSway と同じ角度）。次の update で銃の見た目に入る（1 ティック遅れ。反動の見た目と同じ）。
 	void setWeaponSway( float yawDegree, float pitchDegree );
 
-	// ── 体力とつかまれている間（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 2・4 章）──
-	// ゾンビに噛まれた（立っているゾンビも、足元から噛む這うゾンビも同じ）。damage: ダメージの量。死んだ後は何もしない。
-	void applyBite( float damage );
-	// ゾンビにつかまれているか。1ティックに1回、update の後に呼ぶ（次の update から動けなくなる・動けるようになる）。
-	// 離されてから少しの間は、canBeGrabbed が false のまま（続けてつかまれて抜け出せなくならないように）。
-	void setHeld( bool held );
-	bool isHeld() const;			// つかまれているか
-	bool canBeGrabbed() const;		// つかんでよいか（生きている・つかまれていない・離されてから少したった）
+	// ── 体力（ゾンビの攻撃。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 8 章）──
+	// ゾンビの腕が当たった（立っているゾンビも、足元から腕を伸ばす這うゾンビも同じ）。damage: ダメージの量。死んだ後は何もしない。
+	void applyZombieHit( float damage );
+	bool canBeAttacked() const;		// ゾンビが攻撃してよいか（生きている）
 	bool isDead() const;			// 死んだか（PlayerHealth::isDead）
 	void toggleInvincible();      // 無敵を切り替える（デバッグ用。無敵の間は体力が減らない）
 	bool isInvincible() const;    // 無敵か（F6 のエディタに出すため）
@@ -139,7 +135,7 @@ public:
 	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
 
 private:
-	// 今できない操作を外した操作（死んだら何もしない・つかまれていたら動かない・脚が壊れていたら走らない）。
+	// 今できない操作を外した操作（死んだら何もしない・脚が壊れていたら走らない）。
 	PlayerCommand allowedCommand( const PlayerCommand& command ) const;
 	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false。
 	bool readMoveDirection( const PlayerCommand& command, float cameraYaw, GameLib::Math::Vector3* direction ) const;
@@ -191,8 +187,6 @@ private:
 	float mHoldWeight;                     // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
 	float mCarryWeight;                    // 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）
 	PlayerHealth mHealth;
-	bool mHeld;                            // ゾンビにつかまれているか（setHeld）
-	int mGrabCooldownTicks;                // 離されてから、またつかまれるようになるまでの残り（ティック）
 };
 
 #endif

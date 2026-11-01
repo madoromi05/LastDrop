@@ -22,7 +22,7 @@ namespace{
 	// 倒れた姿勢から決めた形へ移る長さ（秒）。
 	const float kFadeInSeconds = 0.4f;
 	const float kWeightPerTick = 1.f / ( kFadeInSeconds * GameTime::kTicksPerSecond );
-	// つかみに行くとき・やめるときに、腕を伸ばす ⇔ 戻すのにかける長さ（秒）。
+	// 攻撃するとき・やめるときに、腕を伸ばす ⇔ 戻すのにかける長さ（秒）。
 	const float kReachSeconds = 0.25f;
 	const float kReachPerTick = 1.f / ( kReachSeconds * GameTime::kTicksPerSecond );
 
@@ -51,9 +51,9 @@ namespace{
 	const float kKnuckleGroundHeight = 0.03f;
 	// 手を前へ運ぶ途中に地面から浮かせる高さ（m。運ぶ真ん中で一番高い）。地面をこする程度。
 	const float kHandCarryLift = 0.04f;
-	// つかみに行くとき：手を伸ばす所（肩の真下の地面から前へ）と、手首の高さ（足首をつかむ）。
-	const float kGrabForward = 0.6f;
-	const float kGrabWristHeight = 0.12f;
+	// 攻撃するとき：手を伸ばす所（肩の真下の地面から前へ）と、手首の高さ（足首を引っかく）。
+	const float kReachForward = 0.6f;
+	const float kReachWristHeight = 0.12f;
 	// 肘を向ける向き（外側・上・前 の重み）。前腕で這うときは、肘が外側の下へ張り出す。
 	const Vector3 kElbowPole( 0.7f, -0.7f, -0.2f );
 	// 肘の中心をこれより下へ行かせない高さ（m。地面から）。
@@ -390,9 +390,9 @@ void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forwar
 	} else {
 		forwardAmount = ScalarMath::lerp( kHandReachForward, kHandPulledForward, pulledShare( phase ) );
 	}
-	// つかみに行くときは、前へ伸ばして足首の高さで止める。
-	forwardAmount = ScalarMath::lerp( forwardAmount, kGrabForward, mReach );
-	height = ScalarMath::lerp( height, kGrabWristHeight, mReach );
+	// 攻撃するときは、前へ伸ばして足首の高さで止める。
+	forwardAmount = ScalarMath::lerp( forwardAmount, kReachForward, mReach );
+	height = ScalarMath::lerp( height, kReachWristHeight, mReach );
 	Vector3 target( shoulder.x, 0.f, shoulder.z );
 	target.madd( forward, forwardAmount );
 	target.madd( outward, kHandOutward );
@@ -435,7 +435,7 @@ void ZombieCrawl::sweepLeg( ZombieCrawlLayout::Side side, const Vector3& forward
 	std::vector< Matrix34 >* pose ) const {
 	const ZombieCrawlLayout::Leg& leg = mLayout->leg( side );
 	// 反対の側の腕が伸びていくのに合わせて開いて曲げ、その腕で引く間に伸ばす（左腕で引くとき右脚で地面を蹴る）。
-	// つかみに行っている間は伸ばして止める。失った脚は、この後の部位欠損で潰れるので気にしない。
+	// 攻撃している間は伸ばして止める。失った脚は、この後の部位欠損で潰れるので気にしない。
 	float bend = strokeExtend( armPhase( otherSide( side ) ) ) * ( 1.f - mReach ) * mWeight;
 	if ( bend <= 0.f ) {
 		return;

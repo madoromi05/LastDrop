@@ -4,6 +4,7 @@
 #include "GameSrc/Hit/HitMath.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -111,4 +112,34 @@ bool HitboxSet::partCenter( BodyPart part, Vector3* out ) const {
 		}
 	}
 	return false;
+}
+
+bool HitboxSet::bounds( Vector3* boundsMin, Vector3* boundsMax ) const {
+	ASSERT( boundsMin && boundsMax && "HitboxSet : bounds output is null." );
+	bool found = false;
+	for ( int i = 0; i < boxNumber(); ++i ) {
+		Matrix34 box;
+		if ( !boxMatrix( i, &box ) ) {
+			continue;
+		}
+		// -1〜1 の立方体を行列で置いた箱を、軸に沿って囲む：中心は移動の列、半分の幅は各行の 3 つの係数の絶対値の和。
+		Vector3 center( box.m03, box.m13, box.m23 );
+		Vector3 half(
+			Math::abs( box.m00 ) + Math::abs( box.m01 ) + Math::abs( box.m02 ),
+			Math::abs( box.m10 ) + Math::abs( box.m11 ) + Math::abs( box.m12 ),
+			Math::abs( box.m20 ) + Math::abs( box.m21 ) + Math::abs( box.m22 ) );
+		Vector3 low;
+		Vector3 high;
+		low.setSub( center, half );
+		high.setAdd( center, half );
+		if ( found ) {
+			boundsMin->min( low );
+			boundsMax->max( high );
+		} else {
+			*boundsMin = low;
+			*boundsMax = high;
+			found = true;
+		}
+	}
+	return found;
 }

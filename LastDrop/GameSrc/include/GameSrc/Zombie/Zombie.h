@@ -54,11 +54,11 @@ struct ChaseTarget;
 // 脚を失うと前へ倒れるアニメで倒れ、倒れたまま生きている（Downed。SummaryPlan/個別仕様/ZombieDismember_Plan.txt）。
 // 倒れ終わったら、腕で体を引きずって追ってくる（腕の動き・胸の置き場所は ZombieCrawler。這うアニメが無いので、倒れた姿勢のまま腕の骨を曲げる。
 // SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。追い方は立っている時と同じで、向きを変える中心・見る高さ・壁に当たる所は胸。
-// 頭が相手の足元に届いたら、足をつかんで噛む（攻撃のアニメの代わりに時計で ZombieAttack を進める）。
-// 追いついたら、つかんで噛む攻撃をする（段階は ZombieAttack が決め、ここが攻撃を始め（アニメは ZombieAnimationSet）、向きを変え、寄る（間合いは ZombieAttackReach）。
+// 頭が相手の足元に届いたら、腕を伸ばして足を引っかく（攻撃のアニメの代わりに時計で ZombieAttack を進める）。
+// 追いついたら、腕で引っかく攻撃をする（段階は ZombieAttack が決め、ここが攻撃を始め（アニメは ZombieAnimationSet）、向きを変え、寄る（間合いは ZombieAttackReach）。
 // SummaryPlan/個別仕様/ZombieAttack_Plan.txt）。相手に何が起きるか（動けない・体力が減る）は知らない。
-// 「つかんでいるか」「このティックに噛んだか」を答えるだけで、相手へ伝えるのは持ち主（GameWorld）。
-// つかんでいる間に決まった量のダメージを受けると離して、よろける。攻撃の途中は、撃たれてもよろけない（のけぞりだけ）。
+// 「このティックに腕が当たったか」を答えるだけで、相手へ伝えるのは持ち主（GameWorld）。
+// 攻撃の途中は、撃たれてもよろけない（のけぞりだけ）。
 // 攻撃・よろけ・倒れるアニメは腰が前後へ動く（攻撃で踏み込む・倒れて体がずれる）ので、その動きを置き場所へ移す（ルートモーション。
 // 表は ZombieRootMotion、区間を進めるのは ZombieRootMotionSpan。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
 // いつ区間を始め・閉じるかはここが、どのアニメにどの表と通り抜けの決まりを組むかは ZombieAnimationSet が決める（SummaryPlan/個別仕様/ZombieSplit3_Plan.txt）。
@@ -116,10 +116,10 @@ public:
 	const GameLib::Math::Vector3& position() const;
 	// 生きているか（Alive か Downed）。
 	bool isAlive() const;
-	// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）。噛む所を脚にするのに持ち主が読む。
+	// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）。攻撃の届く距離を頭から測るのに使う。
 	bool isCrawling() const;
 	// 体の中心（ワールド）。立っている間は足元、体を引きずっている間は胸。追う・回り込む・壁に当たるのはこの位置。
-	// 攻撃・よろけ・倒れるアニメの間は、始めた所（根の動きのアンカー。つかめる距離もここから測る）。
+	// 攻撃・よろけ・倒れるアニメの間は、始めた所（根の動きのアンカー。腕が届く距離もここから測る）。
 	GameLib::Math::Vector3 bodyCenter() const;
 	// 追ってくる AI の今の考え（Wander / Chase / Search）。確認用の表示に使う。
 	ZombieChase::Mode chaseMode() const;
@@ -131,12 +131,10 @@ public:
 	bool isStaggering() const;
 	// ── 攻撃（ZombieAttack）──
 	ZombieAttack::Phase attackPhase() const; // 今の攻撃の段階。確認用の表示に使う
-	// 相手を取りに行っている・つかんでいる間か。持ち主は、この間ほかのゾンビに攻撃を始めさせない（ChaseTarget::attackTaken）。
+	// 腕を振っている間か。持ち主は、この間ほかのゾンビに攻撃を始めさせない（ChaseTarget::attackTaken）。
 	bool isAttacking() const;
-	bool isHoldingTarget() const; // 相手をつかんでいるか
-	bool grabbedThisTick() const; // 直前の update で相手をつかんだか
-	bool bitThisTick() const;     // 直前の update で相手を噛んだか（ダメージの量は ZombieAttack::biteDamage）
-	// 頭の位置（ワールド。頭の部位の箱の中心）。つかまれた相手が顔を向ける先・噛む音を鳴らす所。頭を失っていれば目の高さ。
+	bool hitTargetThisTick() const; // 直前の update で相手に腕が当たったか（ダメージの量は ZombieAttack::hitDamage）
+	// 頭の位置（ワールド。頭の部位の箱の中心）。攻撃の音を鳴らす所。頭を失っていれば目の高さ。
 	GameLib::Math::Vector3 headPosition() const;
 	const ZombieHealth& health() const;
 	// 他のキャラの移動を止めるか（立っている間だけ。Downed も止めない＝立ち姿の長方形が倒れた体と合わないため）。
@@ -181,15 +179,14 @@ private:
 	// ── フラつき（SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 6 章）──
 	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて（よろけ・攻撃の最中でない）、近いほど強い。それ以外は 0。
 	float swayStrength( const ChaseTarget* target ) const;
-	// 追いついた相手へ攻撃を始めてよいか（追っている・近い・前に居る・つかんでよい・ほかのゾンビが攻撃に行っていない）。
+	// 追いついた相手へ攻撃を始めてよいか（追っている・近い・前に居る・攻撃してよい・ほかのゾンビが攻撃に行っていない）。
 	bool canStartAttack( const ChaseTarget* target ) const;
 	void startAttack();       // 攻撃のアニメへ繋ぐ
-	void shakeOff();          // 振りほどかれた。よろけて手を放す
-	// 攻撃の間、相手の方を向き、手を伸ばしている間は手が届く所まで寄る。
+	// 攻撃の間、相手の方を向き、腕を振っている間は手が届く所まで寄る。
 	void approachDuringAttack( const ChaseTarget* target );
-	// 攻撃の段階を1ティック進め、噛んだら首を突き出し、終わったら立つ・歩くのアニメへ戻す（立っている間は毎ティック）。
+	// 攻撃の段階を1ティック進め、終わったら立つ・歩くのアニメへ戻す（立っている間は毎ティック）。
 	void updateAttack( const ChaseTarget* target );
-	// 今つかめる所に相手が居るか（つかんでよい・近い・前に居る）。体を引きずっている間は、近いかを頭から測る。
+	// 今腕が届く所に相手が居るか（攻撃してよい・近い・前に居る）。体を引きずっている間は、近いかを頭から測る。
 	bool isTargetInReach( const ChaseTarget* target ) const;
 	// 攻撃の間合いを測る、今の体の形（ZombieAttackReach に渡す）。
 	ZombieAttackReach::Origin attackOrigin() const;
@@ -218,7 +215,7 @@ private:
 	ZombieStagger mStagger;           // よろけの最中か・次のよろけまでの間あけ
 	GameLib::Math::Vector3 mPosition; // 足元の位置（沈んでも変えない。沈む分は見た目の位置だけ下げる）
 	float mAngleY;                    // 向き（度）
-	ZombieAttack mAttack;             // つかんで噛む攻撃の段階
+	ZombieAttack mAttack;             // 腕で引っかく攻撃の段階
 	CharacterMover mMover;            // 壁・他のキャラに沿って滑る移動（自分を当たり判定として読む）
 	// 攻撃・よろけ・倒れる間の根の動きの区間。mMesh・mMover を借りるので、それらより後に宣言する。
 	ZombieRootMotionSpan mRootSpan;

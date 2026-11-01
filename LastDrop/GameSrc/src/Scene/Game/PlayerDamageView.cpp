@@ -7,16 +7,16 @@
 using namespace GameLib;
 
 namespace{
-	// 噛まれた瞬間の赤みが消えるまで（秒）。噛まれた瞬間が一番赤く、まっすぐ薄くなる。
+	// 攻撃された瞬間の赤みが消えるまで（秒）。攻撃された瞬間が一番赤く、まっすぐ薄くなる。
 	const float kFlashSeconds = 0.6f;
-	// 体力が減ったときに残し続ける赤み（0〜1。噛まれた瞬間の 1 より薄く）。2026-10-27 ユーザー指定。
+	// 体力が減ったときに残し続ける赤み（0〜1。攻撃された瞬間の 1 より薄く）。2026-10-27 ユーザー指定。
 	// 残りがこの割合以下で赤くし始め、その時は Min、0 の手前で Max。間はまっすぐ濃くなる。
-	// 噛まれた赤みが薄くなってこれを下回ると、ここで止まる。
+	// 攻撃された赤みが薄くなってこれを下回ると、ここで止まる。
 	const float kHurtStartRatio = 0.5f;
 	const float kHurtFlashMin = 0.15f;
 	const float kHurtFlashMax = 0.6f;
 	const float kNoFlash = 0.f;
-	// 噛まれた瞬間の痛み（周りのぼかし・暗さ）が消えるまで（秒）。赤みとは別に直せるよう分けておく。
+	// 攻撃された瞬間の痛み（周りのぼかし・暗さ）が消えるまで（秒）。赤みとは別に直せるよう分けておく。
 	const float kPainSeconds = 0.6f;
 	// 死んだ後、視点が下がり切るまで（秒）と下げる長さ（m。立った目の高さ約 1.6m から、膝をついた高さまで）。
 	const float kDropSeconds = 1.5f;
@@ -53,9 +53,9 @@ PlayerDamageView::PlayerDamageView() :
 	mDead( false ) {
 }
 
-void PlayerDamageView::update( bool bitten, float healthRatio, bool dead ) {
+void PlayerDamageView::update( bool attacked, float healthRatio, bool dead ) {
 	mHealthRatio = healthRatio;
-	if ( bitten ) {
+	if ( attacked ) {
 		mFlashTicks = kFlashTicks;
 		mPainTicks = kPainTicks;
 	} else {

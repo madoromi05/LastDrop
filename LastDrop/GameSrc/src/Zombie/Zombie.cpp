@@ -21,13 +21,6 @@ namespace{
 	// ── 追ってくるとき（SummaryPlan/個別仕様/ZombieChase_Plan.txt の 3 章）──
 	// 目の高さ（m。足元から）。ここから自キャラの目が見えているかを調べる。身長 1.82m の目の辺り。
 	const float kEyeHeight = 1.6f;
-	// ── 攻撃（SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章。間合いは ZombieAttackReach）──
-	// 噛むときに首・背骨を突き出す向き（骨格の根の空間で前。押し方は ZombieFlinch::lunge）。
-	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
-	// ── 脚を失って体を引きずる（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt。目の高さ・腕の速さは ZombieCrawler）──
-	// 噛むときに首・背骨を押す向き（骨格の根の空間で上）。寝ている体は頭が前を向いているので、頭を持ち上げて脚へ噛みつく。
-	const Vector3 kCrawlBiteLungeDirection( 0.f, 1.f, 0.f );
-
 	// ── 体力の個体差（SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 3 章。幅から選ぶのは ZombieUncertaintyParams）──
 	// T ポーズの確認用（歩くアニメが無い）の体の丈夫さ。表のままにして、部位ごとの減り方を確かめられるようにする。
 	const float kFixedToughness = 1.f;
@@ -64,7 +57,7 @@ const Vector3& position, float angleY, const Animations& animations, int sightPh
 
 void Zombie::update( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd ) {
 	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。攻撃の間は追う先を考え直さない（相手の方を向いて寄るだけ）。
-	// 攻撃に行っている体は仲間を避けない（つかみに行く動きを崩さない。ほかの体が、この体から離れる）。
+	// 攻撃に行っている体は仲間を避けない（攻撃に行く動きを崩さない。ほかの体が、この体から離れる）。
 	mLocomotion.beginTick();
 	if ( mState == State::Alive && !mStagger.isActive() && canChase() ) {
 		if ( mAttack.isActive() ) {
@@ -134,14 +127,14 @@ float Zombie::swayStrength( const ChaseTarget* target ) const {
 }
 
 bool Zombie::canStartAttack( const ChaseTarget* target ) const {
-	if ( !mAnimations.hasAttack() || !target || !target->grabbable || target->attackTaken || !mAttack.canStart() ) {
+	if ( !mAnimations.hasAttack() || !target || !target->attackable || target->attackTaken || !mAttack.canStart() ) {
 		return false;
 	}
 	if ( mLocomotion.mode() != ZombieChase::Mode::Chase ) {
 		return false; // 見えている相手だけを襲う（見失って探している間・うろついている間は襲わない）
 	}
 	if ( isCrawling() && !mCrawler.canPull() ) {
-		return false; // 両腕を失った体はつかめない
+		return false; // 両腕を失った体は攻撃できない
 	}
 	return ZombieAttackReach::canStart( attackOrigin(), target->position );
 }
@@ -161,7 +154,7 @@ void Zombie::approachDuringAttack( const ChaseTarget* target ) {
 	}
 	mLocomotion.turnToward( bodyCenter(), target->position, posture(), &mAngleY );
 	// 寄る距離は、踏み込む前の足元（根の動きのアンカー＝bodyCenter）から測る。寄るのもアンカーごと（踏み込みは別に足す）。
-	if ( mAttack.phase() == ZombieAttack::Phase::Reach ) {
+	if ( mAttack.phase() == ZombieAttack::Phase::Swing ) {
 		float distance = ZombieAttackReach::approachStep( bodyCenter(), target->position );
 		if ( distance > 0.f ) {
 			mRootSpan.moveFooting( mLocomotion.walkStep( distance, mAngleY ), &mPosition ); // 相手の体・銃の箱に当たったら、そこで止まる
@@ -173,32 +166,21 @@ void Zombie::approachDuringAttack( const ChaseTarget* target ) {
 
 void Zombie::updateAttack( const ChaseTarget* target ) {
 	bool wasActive = mAttack.isActive();
-	bool crawling = isCrawling();
-	if ( crawling ) {
+	if ( isCrawling() ) {
 		mAttack.updateWithoutAnimation( mAnimations.attackPeriod(), isTargetInReach( target ) );
-	} else {
-		mAttack.update( mMesh.animationTime(), mMesh.isAnimationFinished(), isTargetInReach( target ) );
-	}
-	if ( mAttack.bitThisTick() ) {
-		// 噛むアニメが無いので、首と背骨を突き出して顔を近づける。
-		// 立っている体は前へ、体を引きずっている体は上へ（頭を持ち上げて脚へ噛みつく）。
-		mFlinch.lunge( crawling ? kCrawlBiteLungeDirection : kBiteLungeDirection );
-	}
-	if ( crawling ) {
 		return; // 腕を伸ばす・戻すのは ZombieCrawl（updateDowned）。アニメは替えない
 	}
-	if ( mAttack.isActive() ) {
-		mMesh.setPlaybackRate( mAttack.playbackRate() );
-	} else if ( wasActive ) {
+	mAttack.update( mMesh.animationTime(), mMesh.isAnimationFinished(), isTargetInReach( target ) );
+	if ( wasActive && !mAttack.isActive() ) {
 		mAnimations.returnToLocomotion( &mPosition ); // 攻撃のアニメの最後（元の立ち姿）から、立つアニメへ戻す
 	}
 }
 
 bool Zombie::isTargetInReach( const ChaseTarget* target ) const {
-	if ( !target || !target->grabbable ) {
+	if ( !target || !target->attackable ) {
 		return false;
 	}
-	return ZombieAttackReach::canGrab( attackOrigin(), target->position );
+	return ZombieAttackReach::canHit( attackOrigin(), target->position );
 }
 
 ZombieAttackReach::Origin Zombie::attackOrigin() const {
@@ -229,17 +211,13 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 	if ( !isAlive() ) {
 		return;
 	}
-	// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）。
-	float totalBefore = mHealth.total();
 	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
-	float dealt = totalBefore - mHealth.total();
 	mLocomotion.alert(); // 撃たれたら、見えていなくても気付く
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。
 	mFlinch.push( damage.part, mMesh.toRootDirection( damage.direction ) );
 	// 倒れる 1 発で部位も 0 になったら、切れてから倒れる（頭を撃って倒したときは、頭が飛ぶ）。
 	severIfBroken( damage.part );
 	// どう反応するかを選び（ZombieDamageReaction）、ここで動かす。
-	// isAttacking は振りほどきを数える前に読むが、数えて値が変わるのは振りほどかれたとき（よろけを選ばない）だけなので同じ答えになる。
 	ZombieDamageReaction::Facts facts;
 	facts.canFall = mAnimations.hasDeath();
 	facts.isDead = mHealth.isDead();
@@ -252,20 +230,9 @@ void Zombie::applyDamage( const DamageInfo& damage ) {
 		case ZombieDamageReaction::Fall::Down: startDowned(); return;
 		case ZombieDamageReaction::Fall::None: break;
 	}
-	bool shakenOff = mAttack.takeShakeDamage( dealt ); // 倒れる 1 発では数えない
-	switch ( ZombieDamageReaction::chooseHit( facts, shakenOff ) ) {
-		case ZombieDamageReaction::Hit::ShakeOff: shakeOff(); break;
+	switch ( ZombieDamageReaction::chooseHit( facts ) ) {
 		case ZombieDamageReaction::Hit::Stagger: startStagger(); break;
 		case ZombieDamageReaction::Hit::None: break;
-	}
-}
-
-void Zombie::shakeOff() {
-	// 離すときは、よろけて手を放す（よろけのアニメが無ければ、立つアニメへ戻すだけ）。よろけの間あけは待たない。
-	if ( mAnimations.hasStagger() ) {
-		startStagger();
-	} else {
-		mAnimations.returnToLocomotion( &mPosition );
 	}
 }
 
@@ -286,7 +253,7 @@ void Zombie::startFalling() {
 		mAnimations.playDeath( &mPosition );
 	}
 	mState = State::Falling;
-	mAttack.cancel(); // つかんでいたら離す
+	mAttack.cancel(); // 腕を振っていたらやめる
 	mStagger.cancel();
 }
 
@@ -310,7 +277,7 @@ void Zombie::updateDowned( const ChaseTarget* target, const HitWorld& hitWorld )
 	bool moving = false;
 	if ( mAttack.isActive() ) {
 		if ( target ) {
-			mLocomotion.turnToward( bodyCenter(), target->position, posture(), &mAngleY ); // つかみに行く・つかんでいる間は、相手の方を向くだけ（寄らない）
+			mLocomotion.turnToward( bodyCenter(), target->position, posture(), &mAngleY ); // 腕を振っている間は、相手の方を向くだけ（寄らない）
 		}
 	} else {
 		effort = crawlChase( target, hitWorld, &moving );
@@ -321,7 +288,7 @@ void Zombie::updateDowned( const ChaseTarget* target, const HitWorld& hitWorld )
 		mCrawler.moveCenter( mLocomotion.walkStep( distance, mAngleY ) );
 	}
 	mCrawler.place( mAngleY, mMover, &mMesh, &mPosition ); // 胸の位置と進む向きから、見た目の向き・足元を決め直す
-	// 見えている相手（追っている・つかみに行っている間）へ顔を向ける。置き場所を決めた後の骨格の根の空間で渡す。
+	// 見えている相手（追っている・攻撃している間）へ顔を向ける。置き場所を決めた後の骨格の根の空間で渡す。
 	bool looking = target && ( mLocomotion.mode() == ZombieChase::Mode::Chase || mAttack.isActive() );
 	Vector3 lookPoint( 0.f, 0.f, 0.f );
 	if ( looking ) {
@@ -522,16 +489,8 @@ bool Zombie::isAttacking() const {
 	return isAlive() && mAttack.isAttacking();
 }
 
-bool Zombie::isHoldingTarget() const {
-	return isAlive() && mAttack.isHolding();
-}
-
-bool Zombie::grabbedThisTick() const {
-	return isAlive() && mAttack.grabbedThisTick();
-}
-
-bool Zombie::bitThisTick() const {
-	return isAlive() && mAttack.bitThisTick();
+bool Zombie::hitTargetThisTick() const {
+	return isAlive() && mAttack.hitThisTick();
 }
 
 Vector3 Zombie::headPosition() const {

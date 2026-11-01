@@ -13,7 +13,7 @@ namespace{
 	// 腕の往復の速さ（ZombieCrawl::update の pace）。追っている間は 1、気付いていない・追いついて待っている間はゆっくりもがく。
 	const float kCrawlPace = 1.f;
 	const float kStrugglePace = 0.3f;
-	const float kStillPace = 0.f; // つかみに行っている間・両腕を失った体は、往復を止める
+	const float kStillPace = 0.f; // 攻撃している間・両腕を失った体は、往復を止める
 
 	float paceOf( ZombieCrawler::Effort effort ) {
 		switch ( effort ) {

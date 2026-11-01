@@ -126,6 +126,7 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	m.setWorldMatrix( world );
 	m.setVertexBuffer( mVertexBuffer );
 	m.setIndexBuffer( mIndexBuffer );
+	RenderPass::countDraw();
 	m.drawIndexed( 0, mTriangleNumber );
 }
 

@@ -30,12 +30,13 @@
 #endif
 
 class GameResources;
+class DrawCulling;
 
 // ゲーム本編。自キャラを一人称(FPS)視点で動かし、ガソリンを集めて車で脱出する。
 // WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う・車に給油する。左クリックを押している間、銃を撃つ。R で弾を込める。
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
 // 車にガソリンを決まった数だけ入れるとクリア画面へ進む。
-// ゾンビに噛まれて頭か胸の体力が 0 になると、視点が下がって暗くなり、ゲームオーバー画面へ進む。
+// ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、ゲームオーバー画面へ進む。
 // ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
@@ -45,8 +46,8 @@ class GameResources;
 //   足音・装備の音                      … PlayerBodySounds
 //   弾がゾンビに当たった音              … ZombieHitSounds
 //   弾が物（建物・地面・車）に当たった音… SurfaceHitSounds
-//   ゾンビがつかんだ・噛んだ音          … ZombieAttackSounds
-//   噛まれた・死んだ後の見せ方の量      … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がり・顔を向けるのは FirstPersonControl へ渡す）
+//   ゾンビの腕が当たった音              … ZombieAttackSounds
+//   攻撃された・死んだ後の見せ方の量    … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
 //   HUD                                 … GameHud
 //   一時停止のメニュー                  … PauseMenu
 //   画面全体の処理                      … PostProcess
@@ -79,9 +80,11 @@ private:
 	void addFlashlight( const LightingParams& params );
 	// 影のマップを描く（懐中電灯・月の 3 枚）。setupLights の後、G-Buffer の前に呼ぶ。終わったら描く行列を camera へ戻す。
 	void drawShadowMaps( const FirstPersonCamera& camera );
+	// 目から見る絵の、描くかどうか（OptimizationA_Plan.txt 6 章）。描く距離は霧から決める（霧を切っている間は距離で間引かない）。
+	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
-	// ゾンビがつかんだ・噛んだ出来事を読み、音を鳴らし、つかまれたら視点をその顔へ向け、噛まれた・死んだ後の見せ方を進める。
+	// ゾンビの腕が当たった出来事を読み、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
 	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
 	void updatePlayerDamage();
 #ifdef ZF_EDITOR

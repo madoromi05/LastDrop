@@ -4,6 +4,7 @@
 #include "GameLib/Base/DebugStream.h"
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Render/SkinnedMesh/SkinningPipeline.h"
+#include "GameSrc/Render/RenderPass.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -304,6 +305,7 @@ void SkinnedMeshData::draw( const std::vector< Matrix34 >& skinMatrices ) const 
 			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）。
 			m.setNormalMapStrength( kNoNormalMap );
 		}
+		RenderPass::countDraw();
 		m.drawIndexed( part.mFirstTriangle, part.mTriangleNumber );
 	}
 	mSkinning->end();

@@ -31,7 +31,8 @@ class StringRenderer::Impl : public ReferenceType{
 public:
 	Impl( int charCapacity, int requestCapacity ) :
 	mCharCapacity( charCapacity ),
-	mRequests( requestCapacity ){ //リクエスト確保
+	mRequests( requestCapacity ), //リクエスト確保
+	mGlyphScale( 1.f ){
 		//TODO:ステート変更命令の最大数はとりあえず文字数分。過剰すぎる。
 		mPrimitiveRenderer = PrimitiveRenderer::create( charCapacity * 2, charCapacity + 4 );
 		//draw二回呼ぶのに対処するための変数
@@ -79,7 +80,7 @@ public:
 		while ( mRequests.size() > 0 ){
 			Request& r = *mRequests.get();
 			Vector2 pos = r.mPosition;
-			float charHeight = static_cast< float >( r.mFont.charHeight() );
+			float charHeight = static_cast< float >( r.mFont.charHeight() ) / mGlyphScale;
 			//一文字づつ取り出す。unsigned charにする必要あり
 			int n = static_cast< int >( r.mString.size() );
 			const unsigned char* s = reinterpret_cast< const unsigned char* >( r.mString.c_str() );
@@ -110,8 +111,8 @@ public:
 					//現在位置にピクセルを加えていく。
 					c.mSize.setSub( c.mUv1, c.mUv0 );
 					//テクスチャから幅と高さをもらって、ピクセルに直す比を求める。
-					c.mSize.x *= static_cast< float >( c.mTexture.width() );
-					c.mSize.y *= static_cast< float >( c.mTexture.height() );
+					c.mSize.x *= static_cast< float >( c.mTexture.width() ) / mGlyphScale;
+					c.mSize.y *= static_cast< float >( c.mTexture.height() ) / mGlyphScale;
 				}else{ //文字なかった。豆腐を出す
 					c.mSize.set( charHeight, charHeight ); //正方形
 				}
@@ -180,6 +181,9 @@ public:
 	void setFont( Font& font ){
 		mCurrentFont = font;
 	}
+	void setGlyphScale( float scale ){
+		mGlyphScale = scale;
+	}
 private:
 	struct Request{
 		Vector2 mPosition;
@@ -215,6 +219,7 @@ private:
 	PrimitiveRenderer mPrimitiveRenderer;
 	Font mCurrentFont;
 	unsigned mPreviousFrameId;
+	float mGlyphScale; //文字の絵の画素をこれで割って並べる
 };
 
 StringRenderer StringRenderer::create( int charCapacity, int requestCapacity ){
@@ -240,6 +245,11 @@ void StringRenderer::draw(){
 
 void StringRenderer::setFont( Font& font ){
 	mImpl->setFont( font );
+}
+
+void StringRenderer::setGlyphScale( float scale ){
+	ASSERT( scale > 0.f && "StringRenderer : glyph scale must be positive." );
+	mImpl->setGlyphScale( scale );
 }
 
 #define TYPE StringRenderer

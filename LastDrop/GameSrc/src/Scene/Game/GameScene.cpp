@@ -3,7 +3,7 @@
 #include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
-#include "GameSrc/Render/ViewFrustum.h"
+#include "GameSrc/Render/DrawCulling.h"
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/ShadowParams.h"
 #include "GameSrc/Render/SsrParams.h"
@@ -35,6 +35,7 @@ namespace{
 	const bool kOrthographicShadow = false;
 	const bool kWithPlayer = true;          // 月の影には自キャラも描く（足元に自分の影が見える。Q4）
 	const float kMinCascadeGap = 0.5f;      // F6 で端を逆に並べても枚の範囲が 0 にならないよう、前の端よりこれだけ奥へ揃える（m）
+	const float kNoDrawDistance = 0.f;      // 霧を切っている間は、距離で間引かない（DrawCulling::forCamera）
 
 #ifdef ZF_EDITOR
 	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
@@ -50,7 +51,7 @@ namespace{
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	mWorld( &resources->meshes() ),
-	mInteractor( &mWorld.hitWorld(), kInteractReach, [ this ]( const HitWorld::Hit& hit ) { return mWorld.resolveInteractable( hit ); } ),
+	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.findInteractable( origin, delta ); } ),
 	mControl( mWorld.map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
 	mZombieHitSounds( &resources->audio() ),
@@ -119,7 +120,7 @@ void GameScene::beginFrame() {
 		handlePausedInput();
 		return;
 	}
-	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら噛まれていた、とならないように）。
+	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）。
 	if ( InputMenu() || !GameLib::WindowCreator().isActive() ) {
 		pause();
 		return;
@@ -197,7 +198,7 @@ void GameScene::update() {
 	updatePlayerDamage();
 	PlayerCharacter* player = mWorld.player();
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
-	// 噛まれた怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
+	// 攻撃された怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
 	mControl.updateViewEffects( player && player->firedThisTick(), player ? player->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
@@ -236,7 +237,7 @@ void GameScene::draw() {
 	const FirstPersonCamera& camera = viewCamera();
 	// TAA のときは、描く行列を 1 画素より細かく毎フレームずらす（Taa_Plan.txt 5 章）。カメラが置いた行列を、ずらした物で上書きし、
 	// 下の G-Buffer・SSAO・SSR・霧・デカール・半透明の板にも同じ行列を渡す（全部のパスが同じずれで揃う）。
-	// 映る範囲（ViewFrustum）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）。
+	// 映る範囲（DrawCulling）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）。
 	mJitter.advance( antiAliasingMode() == AntiAliasing::Taa );
 	const Matrix44 projectionView = mJitter.apply( camera.projectionViewMatrix(),
 		mPostProcess.sceneDepth().width(), mPostProcess.sceneDepth().height() );
@@ -245,7 +246,7 @@ void GameScene::draw() {
 		PROFILE_SCOPE( "Audio" );
 		updateListener();
 	}
-	// 噛まれた瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く。
+	// 攻撃された瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く。
 	mPostProcess.setDamageFlash( mDamageView.damageFlash() );
 	mPostProcess.setPain( mDamageView.pain() );
 	mPostProcess.setFade( mDamageView.fade() );
@@ -267,7 +268,8 @@ void GameScene::draw() {
 	// 後から描くキャラがデカールを上書きして、キャラには弾痕が乗らない。
 	{
 		PROFILE_SCOPE( "World.draw" );
-		mWorld.drawStatic( ViewFrustum( camera.projectionViewMatrix() ), camera.eyePosition() );
+		const DrawCulling culling = cameraCulling( camera );
+		mWorld.drawStatic( culling, camera.eyePosition() );
 		mGBuffer.beginDecals( mPostProcess.sceneDepth() );
 		mWorld.drawBulletHoles( projectionView );
 		Profiling::gpuMark( "Decals" );
@@ -276,7 +278,7 @@ void GameScene::draw() {
 		mGBuffer.setMotion( MotionKind::FirstPerson );
 		mWorld.drawFirstPerson();
 		mGBuffer.setMotion( MotionKind::Moving );
-		mWorld.drawCharacters();
+		mWorld.drawCharacters( culling );
 	}
 	mGBuffer.end();
 	// SSAO は G-Buffer の後・ライティングの前（SsaoTranslucent_Plan.txt 4 章）。G-Buffer の表示（SSAO）でも見るので、表示中も作る。
@@ -497,21 +499,29 @@ void GameScene::addFlashlight( const LightingParams& params ) {
 void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 	if ( mFlashlightCastsShadow ) {
 		mFlashlightShadow.begin( mFlashlightShadowMatrix );
-		mWorld.drawShadowCasters( ViewFrustum( mFlashlightShadowMatrix ), kWithoutPlayer );
+		mWorld.drawShadowCasters( DrawCulling( mFlashlightShadowMatrix ), kWithoutPlayer );
 		mFlashlightShadow.end();
 	}
 	if ( mMoonCastsShadow ) {
 		for ( int i = 0; i < CascadedShadowMap::kCascadeCount; ++i ) {
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
-			mWorld.drawShadowCasters( ViewFrustum( matrix ), kWithPlayer );
+			mWorld.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ) ), kWithPlayer );
 			mMoonShadow.map( i ).end();
+			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3）
 		}
 	}
 	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す。
 	Graphics::Manager::instance().setProjectionViewMatrix( camera.projectionViewMatrix() );
 	// GPU の時間の区切り。ここまでが影のマップ（懐中電灯と月の 3 枚）。
 	Profiling::gpuMark( "Shadow" );
+}
+
+DrawCulling GameScene::cameraCulling( const FirstPersonCamera& camera ) const {
+	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( lightingParams().fogHalfDistance ) : kNoDrawDistance;
+	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える。
+	return DrawCulling::forCamera( camera.projectionViewMatrix(), camera.eyePosition(), drawDistance, camera.fieldOfView(),
+		mPostProcess.sceneDepth().height() );
 }
 
 void GameScene::updateInteraction() {
@@ -561,22 +571,15 @@ bool GameScene::isFreeCameraActive() const {
 }
 
 void GameScene::updatePlayerDamage() {
-	bool bitten = false;
-	for ( const GameWorld::ZombieAttackEvent& event : mWorld.zombieAttacksThisTick() ) {
-		if ( event.kind == GameWorld::ZombieAttackEvent::Kind::Grab ) {
-			mControl.lookToward( event.point ); // つかんだゾンビの顔を見る（その後はマウスで自由に回せる）
-			mControl.shakeOnGrab();
-		} else {
-			mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
-			bitten = true;
-		}
+	bool hit = !mWorld.zombieAttacksThisTick().empty();
+	if ( hit ) {
+		mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
 	}
 	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
-	mControl.updateLookPull();
 	const PlayerCharacter* player = mWorld.player();
 	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
 	float healthRatio = player ? player->health().current() / player->health().maxHealth() : kFullHealthRatio;
-	mDamageView.update( bitten, healthRatio, mWorld.isPlayerDead() );
+	mDamageView.update( hit, healthRatio, mWorld.isPlayerDead() );
 	if ( mDamageView.isFadedOut() ) {
 		SceneManager::instance().requestChange( SceneManager::SCENE_GAME_OVER );
 	}

@@ -26,7 +26,7 @@ public:
 	bool isStarted() const;
 	// 1ティック進める。始めていなければ何もしない。止める（死んだ）ときは呼ぶのをやめる（体はそのときの形のまま残る）。
 	// pace: 腕の往復の速さ（1 = 引きずって進む速さ。小さいほどゆっくりもがく。0 なら腕の往復を止める）。
-	// reaching: つかみに行っている・つかんでいる間（両腕とも前へ伸ばして足首の高さで手を止め、脚は伸ばして止める）。
+	// reaching: 腕を振っている間（両腕とも前へ伸ばして足首の高さで手を止め、脚は伸ばして止める）。
 	void update( float pace, bool reaching );
 	// 顔を向ける先（骨格の根の空間）。hasTarget が false なら前を見る。毎ティック、update と同じ頃に渡す（置き場所を決めた後）。
 	void setLookTarget( bool hasTarget, const GameLib::Math::Vector3& rootPoint );
@@ -43,7 +43,7 @@ private:
 	// 顔を相手（居なければ前）へ向ける。向きは少しずつ回す（mLookDirection を進める）。
 	void turnHead( const GameLib::Math::Vector3& forward, const GameLib::Math::Vector3& up,
 		std::vector< GameLib::Math::Matrix34 >* pose );
-	// side の腕の手を、今の往復の位置とつかみに行く量から決めた地面の点へ置く。
+	// side の腕の手を、今の往復の位置と攻撃で腕を伸ばす量から決めた地面の点へ置く。
 	void placeHand( ZombieCrawlLayout::Side side, const GameLib::Math::Vector3& forward, const GameLib::Math::Vector3& up,
 		std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// side の脚を、反対の側の腕の往復に合わせて地面に沿って曲げる（腕を伸ばす間に開いて曲げ、引く間に伸ばす）。
@@ -55,7 +55,7 @@ private:
 	bool mStarted;
 	float mWeight;  // 決めた形へ曲げる量（0 = 倒れた姿勢のまま、1 = 決めた形）。始めてから少しずつ 1 へ
 	float mPhase;   // 左腕の往復の位置（0 以上 1 未満。右腕は半周ずらす）
-	float mReach;   // つかみに行く量（0 = 往復の形、1 = 両腕とも前へ伸ばす）
+	float mReach;   // 攻撃で腕を伸ばす量（0 = 往復の形、1 = 両腕とも前へ伸ばす）
 	float mPulled[ ZombieCrawlLayout::SIDE_NUMBER ]; // 直前の update で、腕ごとに引いた長さ（m）
 	// ── 顔の向き ──
 	bool mHasLookTarget;

@@ -4,6 +4,7 @@
 #include "GameLib/Graphics/Shader.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
 #include "GameLib/Graphics/Manager.h"
+#include "GameLib/Profiling/Profiler.h"
 
 namespace{
 	// GBuffer.hlsli の gOrmMap の番号（t11）。t2〜t5 は G-Buffer を読む側、t10 は SSAO の結果が使うので重ならない所。
@@ -84,6 +85,19 @@ void setSurface( const SurfaceParams& params, GameLib::Graphics::Texture orm ) {
 		gSentOrm = shownOrm;
 	}
 	gHasSentSurface = true;
+}
+
+void forgetSentSurface() {
+	ASSERT( gCurrent == RenderPassKind::GBuffer && "RenderPass : forgetSentSurface is only for the G-Buffer pass." );
+	gHasSentSurface = false;
+}
+
+void countDraw() {
+	if ( gCurrent == RenderPassKind::GBuffer ) {
+		PROFILE_COUNT( "Draw.gbuffer", 1 );
+	} else if ( gCurrent == RenderPassKind::Shadow ) {
+		PROFILE_COUNT( "Draw.shadow", 1 );
+	}
 }
 
 } //namespace RenderPass

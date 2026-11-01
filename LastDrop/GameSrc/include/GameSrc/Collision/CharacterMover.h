@@ -25,7 +25,7 @@ public:
 	// 向きを変えるときは、向きを変えてから呼ぶ（変えた向きでめり込んだ分も、ここで外へ出す）。
 	GameLib::Math::Vector3 move( const GameLib::Math::Vector3& delta ) const;
 	// move と同じだが、passThrough（ほかの動くもの 1 つ。nullptr なら無し）には当たらずに通り抜ける。
-	// ゾンビの攻撃の踏み込みが、つかみに行く相手（自キャラ）の箱で止まらないようにするのに使う。
+	// ゾンビの攻撃の踏み込みが、攻撃する相手（自キャラ）の箱で止まらないようにするのに使う。
 	GameLib::Math::Vector3 movePassingThrough( const GameLib::Math::Vector3& delta, const ICollisionBody* passThrough ) const;
 	// move と同じだが、ほかの動くもの（キャラ・拾える物）には全部当たらず、動かない形・建物でだけ止まる。
 	// 倒れる体（死体はほかを止めないので、ほかにも止められない）に使う。

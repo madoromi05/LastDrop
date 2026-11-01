@@ -8,7 +8,7 @@
 using namespace GameLib;
 
 namespace{
-	// トラウマが 1 秒に減る量。1.6/秒なので、噛まれた 0.8 は 0.5 秒、射撃の 0.45 は約 0.3 秒で消える。
+	// トラウマが 1 秒に減る量。1.6/秒なので、攻撃された 0.8 は 0.5 秒、射撃の 0.45 は約 0.3 秒で消える。
 	const float kTraumaDecayPerSecond = 1.6f;
 	const float kTraumaDecayPerTick = kTraumaDecayPerSecond / GameTime::kTicksPerSecond;
 	// トラウマ 1 のときの一番大きな角度（度）。ロールは真ん中（照準）を動かさないので、上下・左右より大きくしてよい。

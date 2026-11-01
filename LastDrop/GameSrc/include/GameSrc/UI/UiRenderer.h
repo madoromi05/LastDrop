@@ -41,6 +41,10 @@ private:
 	// PrimitiveRenderer の描き方の設定は「設定した後に積んだもの」にだけ効く（積み終えた後で設定すると、空のまとまりに掛かるだけ）。
 	// そのため積む前（作った直後と、描き終えた直後）に呼ぶ。2026-10-21 まで draw の中で積んだ後に設定していて、半透明が効いていなかった。
 	void prepareRectState();
+	// 実際の画面（バックバッファ）がゲームの座標の何倍の細かさかを求め、変わっていたらフォントをその細かさで作り直す。
+	// 座標の高さ（480）の大きさで作った文字の絵を大きな画面へ引き伸ばすと、ドットのまま拡大されて縁がギザギザになるため。
+	// 置く位置と大きさは座標のままにし、絵だけを細かくする（StringRenderer::setGlyphScale で割って並べる）。
+	void fitFontsToScreen();
 	// font の英数字・記号の絵を、最初の描画より前にすべて作っておく（理由は UiRenderer.cpp）。
 	static void prepareGlyphs( GameLib::Scene::Font& font );
 	// text を size の文字で書いたときの幅（画素）。中央に揃えるのに使う。
@@ -49,6 +53,7 @@ private:
 	GameLib::Scene::PrimitiveRenderer mPrimitives;
 	GameLib::Scene::Font mFonts[ UI_TEXT_SIZE_NUMBER ];
 	GameLib::Scene::StringRenderer mStrings[ UI_TEXT_SIZE_NUMBER ]; // フォントごとに1つ（1つの StringRenderer はフォント1つ）
+	float mGlyphScale; // 今のフォントを作った細かさ（実際の画面の高さ / 座標の高さ）。0 はまだ作っていない
 };
 
 #endif

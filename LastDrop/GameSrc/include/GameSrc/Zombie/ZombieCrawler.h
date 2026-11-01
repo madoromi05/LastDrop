@@ -19,7 +19,7 @@ class ZombieCrawler{
 public:
 	// 腕の往復の速さの段階。
 	enum class Effort{
-		Still,    // 止める（つかみに行っている間・両腕を失った体）
+		Still,    // 止める（攻撃している間・両腕を失った体）
 		Struggle, // その場でゆっくりもがく（気付いていない・追いついて待っている）
 		Crawl,    // 引きずって進む（追っている）
 	};
@@ -33,7 +33,7 @@ public:
 	// 腕の骨の動き。持ち主が、メッシュの姿勢の書き換えの並び（BonePoseModifierChain）へ足すのに使う。
 	ZombieCrawl* arms();
 	bool isStarted() const; // 引きずり始めたか
-	bool canPull() const;   // 引きずれる腕（前腕から先）が 1 本でも残っているか（両腕を失ったら進まず、つかまない）
+	bool canPull() const;   // 引きずれる腕（前腕から先）が 1 本でも残っているか（両腕を失ったら進まず、攻撃しない）
 
 	// 倒れ終わった姿勢（mesh の今の骨）から胸と進む向きを測り、腕を動かし始める。見た目は動かさない。
 	// footing: 今の足元。angleY: 今の見た目の向き（度）。進む向きへ書き換える。nullptr 不可。
@@ -45,7 +45,7 @@ public:
 	GameLib::Math::Vector3 eye() const;
 
 	// 腕を 1 ティック動かす。moving なら、腕で引いて体が前へ進む長さ（m。残っている腕の分だけ）を返す。moving でなければ 0。
-	// reaching: つかみに行っている・つかんでいる間（両腕とも前へ伸ばす）。
+	// reaching: 腕を振っている間（両腕とも前へ伸ばす）。
 	float moveArms( Effort effort, bool reaching, bool moving );
 	// 胸を step だけ動かした（壁・車に沿って滑った後の量）。
 	void moveCenter( const GameLib::Math::Vector3& step );

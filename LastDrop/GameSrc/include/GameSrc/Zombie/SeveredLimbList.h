@@ -20,7 +20,8 @@ public:
 		const GameLib::Math::Vector3& direction );
 	// 全部を1ティック進め、沈み終わった物を消す。ground: SeveredLimb::update と同じ。
 	void update( const IRayBlocker* ground );
-	void draw() const;
+	// culling で描くと決まった物だけ描く。
+	void draw( const DrawCulling& culling ) const;
 
 private:
 	std::vector< std::unique_ptr< SeveredLimb > > mLimbs; // 古い順

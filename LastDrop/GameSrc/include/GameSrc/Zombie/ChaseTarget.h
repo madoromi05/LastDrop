@@ -10,10 +10,10 @@ class ICollisionBody;
 struct ChaseTarget{
 	GameLib::Math::Vector3 position;    // 足元の位置（向かう所）
 	GameLib::Math::Vector3 eyePosition; // 目の位置（ここが見えているかで気付く）
-	// つかんでよいか（生きている・つかまれていない・離されてから少したった。自キャラの決まり）。
-	// false の間は攻撃を始めず、手を伸ばし切ったときも空振りにする。
-	bool grabbable;
-	// ほかのゾンビが、もう攻撃に行っているか（手を伸ばしている・つかんでいる）。true の間は攻撃を始めない（一度に 1 体だけ）。
+	// 攻撃してよいか（生きている。自キャラの決まり）。
+	// false の間は攻撃を始めず、腕を振り下ろしたときも空振りにする。
+	bool attackable;
+	// ほかのゾンビが、もう攻撃に行っているか（腕を振っている）。true の間は攻撃を始めない（一度に 1 体だけ）。
 	bool attackTaken;
 	// 移動の当たり判定（自キャラの箱）。攻撃の踏み込み（根の動き）は、これを通り抜ける（止めると手が届かないため。
 	// SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt の Q1）。借りるだけ。このティックの update の間だけ使う（覚えない）。

@@ -125,7 +125,11 @@ void GBuffer::endDecals( Graphics::DepthTarget depth ) {
 	gm.setShaderResource( kDecalDepthSlot, Graphics::DepthTarget() ); // 深度を描画先へ戻す前に、読み込み元から外す
 	gm.setRenderTargets( mTargets, kTargetNumber, depth );
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // begin と同じ（G-Buffer のアルファはデータなので混ぜない）
-	setPassConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す（材質の画像は物ごとに付く）
+	setPassConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す
+	// 材質の画像（t11）も外れている。RenderPass は「前と同じ画像なら付けない」ので、忘れさせて次の物で付け直させる。
+	// 忘れないと、後から描く自キャラ・銃・ゾンビは画像の無い t11 を読み、粗さ 0（つるつる）・AO 0 になる
+	// （2026-10-31 に見つけた。街灯のハイライトが小さく強く出て、金色に光って見えた）。
+	RenderPass::forgetSentSurface();
 }
 
 void GBuffer::end() {

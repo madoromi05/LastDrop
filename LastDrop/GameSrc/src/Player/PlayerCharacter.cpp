@@ -39,9 +39,6 @@ namespace{
 	const float kFullWeight = 1.f;
 
 	const float kMinInputLength = 0.001f; // これより短い入力（逆方向キーの同時押しなど）は静止とみなす
-	// ゾンビに離されてから、またつかまれるようになるまで（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）。
-	const float kGrabCooldownSeconds = 1.f;
-	const int kGrabCooldownTicks = GameTime::secondsToTicks( kGrabCooldownSeconds );
 	// 骨の名前の頭の共通部分（移動の当たり判定・部位ごとの当たり判定で骨を引くのに使う）。
 	const char* kBoneNamePrefix = "mixamorig:";
 	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
@@ -204,9 +201,7 @@ const Vector3& position, float angleY ) :
 	mMoveDirection( 0.f, 0.f, 0.f ),
 	mSpeed( 0.f ),
 	mHoldWeight( 0.f ),
-	mCarryWeight( 0.f ),
-	mHeld( false ),
-	mGrabCooldownTicks( 0 ) {
+	mCarryWeight( 0.f ) {
 	mMesh->setPoseModifier( mBody.get() );
 
 	// 状態にアニメを登録する。見つからないアニメは静止のアニメで代用する
@@ -514,36 +509,17 @@ PlayerCommand PlayerCharacter::allowedCommand( const PlayerCommand& command ) co
 		allowed.fireHeld = false;
 		allowed.reloadPressed = false;
 		allowed.flashlightPressed = false;
-		return allowed;
-	}
-	if ( mHeld ) {
-		allowed.forward = 0.f; // つかまれている間は動けない（撃って振りほどく）
-		allowed.strafe = 0.f;
-		allowed.run = false;
 	}
 	return allowed;
 }
 
-void PlayerCharacter::applyBite( float damage ) {
+void PlayerCharacter::applyZombieHit( float damage ) {
 	if (mInvincible) return;
 	mHealth.takeDamage( damage );
 }
 
-void PlayerCharacter::setHeld( bool held ) {
-	if ( mHeld && !held ) {
-		mGrabCooldownTicks = kGrabCooldownTicks; // 離された
-	} else if ( !held && mGrabCooldownTicks > 0 ) {
-		--mGrabCooldownTicks;
-	}
-	mHeld = held;
-}
-
-bool PlayerCharacter::isHeld() const {
-	return mHeld;
-}
-
-bool PlayerCharacter::canBeGrabbed() const {
-	return !isDead() && !mHeld && mGrabCooldownTicks <= 0;
+bool PlayerCharacter::canBeAttacked() const {
+	return !isDead();
 }
 
 bool PlayerCharacter::isDead() const {

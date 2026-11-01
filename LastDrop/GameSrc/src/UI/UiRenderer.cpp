@@ -11,7 +11,8 @@ using namespace GameLib::Math;
 namespace{
 	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。英数字が読みやすい、どの Windows にもあるもの。
 	const char* kFontName = "Arial";
-	// 大きさごとの文字の高さ（画素。目安）。UiTextSize の並びと同じ順。
+	// 大きさごとの文字の高さ（ゲームの座標の画素。目安）。UiTextSize の並びと同じ順。
+	// 実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。
 	const int kCharHeights[ UI_TEXT_SIZE_NUMBER ] = {
 		20, // UI_TEXT_NORMAL
 		48, // UI_TEXT_LARGE
@@ -30,20 +31,44 @@ namespace{
 	const int kTextCapacity = 256;
 
 	const float kHalf = 0.5f;
+	const float kDefaultGlyphScale = 1.f; // 画面の大きさが分からないときの、文字の絵の細かさ（座標と同じ）
 	// 最初に文字の絵を作っておく範囲（ASCII の表示できる文字すべて。空白〜チルダ）。
 	const int kFirstPrintableChar = 0x20;
 	const int kLastPrintableChar = 0x7e;
 }
 
 UiRenderer::UiRenderer() :
-	mPrimitives( Scene::PrimitiveRenderer::create( kRectCapacity * kVerticesPerRect, kBatchCapacity ) ) {
+	mPrimitives( Scene::PrimitiveRenderer::create( kRectCapacity * kVerticesPerRect, kBatchCapacity ) ),
+	mGlyphScale( 0.f ) {
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
-		mFonts[ i ] = Scene::Font::create( kFontName, kCharHeights[ i ], kBold, kItalic, kProportional, kAntialias );
 		mStrings[ i ] = Scene::StringRenderer::create( kCharCapacity, kTextCapacity );
-		mStrings[ i ].setFont( mFonts[ i ] );
-		prepareGlyphs( mFonts[ i ] );
 	}
+	fitFontsToScreen();
 	prepareRectState(); // 最初の描画で積む長方形に効かせる
+}
+
+void UiRenderer::fitFontsToScreen() {
+	Graphics::Manager graphics;
+	int logicalHeight = graphics.height();
+	int backBufferHeight = graphics.backBufferHeight();
+	bool sizeKnown = ( logicalHeight > 0 && backBufferHeight > 0 );
+	if ( !sizeKnown && mGlyphScale > 0.f ) {
+		return; // 大きさが分からないうち（最小化中など）は今のフォントのまま
+	}
+	// まだフォントが無いのに大きさが分からなければ、座標と同じ細かさで作っておく（文字を積めないと止まるため）。
+	float scale = sizeKnown ? static_cast< float >( backBufferHeight ) / static_cast< float >( logicalHeight ) : kDefaultGlyphScale;
+	if ( scale == mGlyphScale ) {
+		return; // 画面の大きさが変わったときだけ作り直す（毎回作ると重い）
+	}
+	mGlyphScale = scale;
+	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
+		int charHeight = static_cast< int >( static_cast< float >( kCharHeights[ i ] ) * scale + kHalf );
+		// 古いフォントは、もう積んだ文字（あれば）が持っているので、この draw が終わるまで消えない。
+		mFonts[ i ] = Scene::Font::create( kFontName, charHeight, kBold, kItalic, kProportional, kAntialias );
+		prepareGlyphs( mFonts[ i ] );
+		mStrings[ i ].setFont( mFonts[ i ] );
+		mStrings[ i ].setGlyphScale( scale );
+	}
 }
 
 void UiRenderer::addRect( const UiRect& rect, unsigned color ) {
@@ -52,12 +77,15 @@ void UiRenderer::addRect( const UiRect& rect, unsigned color ) {
 
 void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize size, UiAlign align, unsigned color ) {
 	ASSERT( text && size >= 0 && size < UI_TEXT_SIZE_NUMBER && "UiRenderer : bad text." );
+	// 文字を積む前に合わせる（draw で合わせると、積んだ後に倍率だけが変わって文字の大きさがずれる）。
+	// ウィンドウの大きさは描画の始めに変わるので、その回の最初の addText で合う。
+	fitFontsToScreen();
 	Vector2 topLeft = position;
 	if ( align == UI_ALIGN_CENTER ) {
 		topLeft.x -= textWidth( text, size ) * kHalf;
 	}
 	if ( align == UI_ALIGN_CENTER || align == UI_ALIGN_MIDDLE_LEFT ) {
-		topLeft.y -= static_cast< float >( mFonts[ size ].charHeight() ) * kHalf;
+		topLeft.y -= static_cast< float >( mFonts[ size ].charHeight() ) / mGlyphScale * kHalf;
 	}
 	mStrings[ size ].add( topLeft, text, color );
 }
@@ -70,7 +98,8 @@ void UiRenderer::prepareRectState() {
 }
 
 void UiRenderer::draw() {
-	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。描き終えたら 3D 用の読み方へ戻す。
+	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。絵は実際の画面とほぼ同じ細かさなので、点で読んでも粗くならない。
+	// 描き終えたら 3D 用の読み方へ戻す。
 	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
 	mPrimitives.draw();
 	prepareRectState(); // 次の描画で積む長方形に効かせる（理由は prepareRectState の宣言）
@@ -104,5 +133,5 @@ float UiRenderer::textWidth( const char* text, UiTextSize size ) {
 		}
 		width += ( uvBottomRight.x - uvTopLeft.x ) * static_cast< float >( texture.width() );
 	}
-	return width;
+	return width / mGlyphScale; // 絵の画素から座標の画素へ
 }

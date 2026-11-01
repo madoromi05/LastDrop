@@ -13,10 +13,7 @@ ZombieDamageReaction::Fall ZombieDamageReaction::chooseFall( const Facts& facts 
 	return Fall::None;
 }
 
-ZombieDamageReaction::Hit ZombieDamageReaction::chooseHit( const Facts& facts, bool shakenOff ) {
-	if ( shakenOff ) {
-		return facts.isStanding ? Hit::ShakeOff : Hit::None;
-	}
+ZombieDamageReaction::Hit ZombieDamageReaction::chooseHit( const Facts& facts ) {
 	if ( facts.isStanding && !facts.isAttacking && facts.canStagger ) {
 		return Hit::Stagger;
 	}

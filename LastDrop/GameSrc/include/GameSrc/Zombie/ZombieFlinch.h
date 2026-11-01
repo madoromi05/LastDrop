@@ -20,9 +20,6 @@ public:
 
 	// part に当たった弾で押す。direction: 弾の進む向き（長さ1。骨格の根の空間＝置き場所と向きを掛ける前）。
 	void push( BodyPart part, const GameLib::Math::Vector3& direction );
-	// 噛むときに、首と背骨を rootDirection（骨格の根の空間。長さ1）へ突き出す（噛むアニメが無いので、顔を相手へ近づける代わり）。
-	// 首は 2 回・背骨は 1 回押す（首は 1 回 20°なので 40°、背骨は 12°）。のけぞりと同じく、すぐ曲がって 0.25 秒で戻る。
-	void lunge( const GameLib::Math::Vector3& rootDirection );
 	// 押した分を1ティック戻す。
 	void update();
 	// 押されている分だけ、当たったまとまりを関節で曲げる（BonePoseModifier）。

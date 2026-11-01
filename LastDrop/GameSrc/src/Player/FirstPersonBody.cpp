@@ -47,14 +47,8 @@ namespace{
 	// 手首から見た2つの向きがこれより平行に近ければ、回転軸が決まらないので回さない（ほぼ回す必要も無い）。
 	const float kMinAxisLength = 1e-6f;
 
-	// 一人称で消す骨。カメラは頭の中にあるので、頭（と髪・顔）が視界を塞がないようにする。首は残す（見下ろすと襟元が見える）。
+	// 目の位置を決める骨。頭は潰さずに描く（影・観察カメラでも頭が見えるように。2026-11-01 ユーザー指示）。
 	const char* const kHeadBone = "mixamorig:Head";
-	const char* const kHiddenBones[] = {
-		kHeadBone,
-		"mixamorig:HeadTop_End",
-	};
-
-	const float kCollapsedScale = 0.f; // 骨の原点へ頂点を潰す縮尺
 
 	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）。
 	const char* const kChestBone = "mixamorig:Spine2";
@@ -183,7 +177,6 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mGrip.setIdentity();
 	std::vector< int > lowerBody = findBones( data, kLowerBodyBones );
 	std::vector< int > spine = findBones( data, kSpineBones );
-	mHiddenBones = findBones( data, kHiddenBones );
 	mArmBones = findBonesByPrefix( data, kArmBonePrefixes );
 	mRightHandBones = findBonesByPrefix( data, kRightHandBonePrefixes );
 
@@ -261,7 +254,7 @@ void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
 	// 順番に意味がある: リロードなら腕をアニメへ差し替える → 背骨を曲げる → 銃を両手の間に置く → 走るなら胸元へ寄せる → 曲げた後の頭から目を決める
 	// → その目へ銃を寄せる → 照準のぶれで銃を回す → 反動で銃を跳ねさせる
 	// 腕の差し替えを最初にするのは、差し替えた腕も背骨の曲げ（視線の上下）に付いてくるようにするため。
-	// → 跳ねた銃を囲む → 頭を消す。
+	// → 跳ねた銃を囲む。
 	// ぶれと反動は、置き終えた銃（覗いていればサイトが目に合った銃）から動かす。覗く補正より前に掛けると、合わせ直されて消える。
 	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）。
 	// 目を曲げる前の頭で決めると、見上げ・見下ろしで目と銃がずれる。
@@ -276,7 +269,6 @@ void FirstPersonBody::apply( std::vector< Matrix34 >* pose ) {
 	swayWeapon( pose );
 	kickWeapon( pose );
 	updateWeaponBounds( *pose );
-	hideHead( pose );
 }
 
 void FirstPersonBody::bendSpine( std::vector< Matrix34 >* pose ) const {
@@ -476,8 +468,3 @@ void FirstPersonBody::updateWeaponBounds( const std::vector< Matrix34 >& pose ) 
 	mHasWeaponBounds = true;
 }
 
-void FirstPersonBody::hideHead( std::vector< Matrix34 >* pose ) const {
-	for ( int b : mHiddenBones ) {
-		( *pose )[ b ].scale( kCollapsedScale );
-	}
-}

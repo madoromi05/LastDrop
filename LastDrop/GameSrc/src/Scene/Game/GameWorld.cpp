@@ -4,6 +4,7 @@
 #include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Zombie/ChaseTarget.h"
+#include "GameSrc/Render/DrawCulling.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -46,8 +47,8 @@ namespace{
 	const char* kZombieStaggerAnimation = "gethit";
 	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
 	const char* kZombieIdleAnimation = "idle1";
-	// 追いついたら、つかんで噛む攻撃のアニメ（同じく extra_animations。両手を前へ伸ばしてつかむ）。
-	const char* kZombieAttackAnimation = "atack3";
+	// 追いついたら、腕で引っかく攻撃のアニメ（同じく extra_animations。右手を振り上げて振り下ろす）。
+	const char* kZombieAttackAnimation = "atack1";
 	// 血しぶきの量と大きさの倍率。頭は多く大きく飛ばす（当たった手応えを一番強くする部位）。
 	const float kBodyBloodScale = 1.f;
 	const float kHeadBloodScale = 1.5f;
@@ -77,7 +78,7 @@ namespace{
 	const int kAmmoDropRounds = 10;
 	// 同時に落ちていられる数。超えたら一番古い物を消す（拾わずに倒し続けても名簿が増え続けないように）。
 	const int kMaxAmmoDrops = 10;
-	// 足元から自キャラの方へ寄せる長さ（m）。死体の脚の下に隠れにくくする（視線は死体を素通りするので、隠れても拾える）。
+	// 足元から自キャラの方へ寄せる長さ（m）。死体の脚の下に隠れにくくする（隠れても、死体を見れば拾える）。
 	const float kAmmoDropTowardPlayer = 0.5f;
 	const float kFullTurnDegree = 360.f; // 落ちた弾の向きは体ごとにばらばら
 
@@ -301,7 +302,7 @@ void GameWorld::updateZombies() {
 	if ( mPlayer ) {
 		target.position = mPlayer->position();
 		target.eyePosition = mPlayer->eyePosition();
-		target.grabbable = mPlayer->canBeGrabbed();
+		target.attackable = mPlayer->canBeAttacked();
 		target.attackTaken = false;
 		target.body = mPlayer.get();
 		chaseTarget = &target;
@@ -321,39 +322,25 @@ void GameWorld::updateZombies() {
 			mCrowd.add( &zombie, zombie.bodyCenter() );
 		}
 	} );
-	const Zombie* holder = nullptr;
 	mObjects.forEach< Zombie >( [ & ]( Zombie& zombie ) {
 		target.attackTaken = ( attacker != nullptr && attacker != &zombie );
 		zombie.update( chaseTarget, mHitWorld, &mCrowd );
 		if ( !attacker && zombie.isAttacking() ) {
 			attacker = &zombie;
 		}
-		if ( zombie.isHoldingTarget() ) {
-			holder = &zombie;
-		}
-		if ( zombie.grabbedThisTick() ) {
+		if ( zombie.hitTargetThisTick() && mPlayer ) {
+			// 体力は体全体で 1 つなので、体を引きずって足元から腕を伸ばすゾンビも同じダメージ。
+			mPlayer->applyZombieHit( ZombieAttack::hitDamage() );
 			ZombieAttackEvent event;
-			event.kind = ZombieAttackEvent::Kind::Grab;
-			event.point = zombie.headPosition();
-			mZombieAttacks.push_back( event );
-		}
-		if ( zombie.bitThisTick() && mPlayer ) {
-			// 体力は体全体で 1 つなので、体を引きずって足元から噛むゾンビも同じダメージ。
-			mPlayer->applyBite( ZombieAttack::biteDamage() );
-			ZombieAttackEvent event;
-			event.kind = ZombieAttackEvent::Kind::Bite;
 			event.point = zombie.headPosition();
 			mZombieAttacks.push_back( event );
 		}
 		// 沈み終わった死体は、全員の更新が済んでから消す（update の flush）。
 		if ( zombie.isGone() ) {
+			forgetCorpseDrop( zombie.gameObject() ); // 死体が消えた後も弾は残る（弾そのものを見て拾う）
 			mObjects.destroyLater( zombie.gameObject() );
 		}
 	} );
-	// つかんでいるゾンビが倒れた・振りほどかれた・噛み終えたら、次の update から動ける。
-	if ( mPlayer ) {
-		mPlayer->setHeld( holder != nullptr );
-	}
 }
 
 void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
@@ -429,6 +416,7 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 	if ( mObjects.countTagged( GameObjectTag::AmmoDrop ) >= kMaxAmmoDrops ) {
 		GameObject* oldest = mObjects.oldestTagged( GameObjectTag::AmmoDrop );
 		mBulletHoles.removeAttachedTo( oldest->component< Pickup >() ); // 物が消える前に外す
+		forgetCorpseDrop( oldest );
 		mObjects.destroyLater( oldest );
 	}
 	Vector3 position = zombie.position();
@@ -442,10 +430,17 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 		}
 	}
 	float yaw = mZombieRandom.getFloat( kFullTurnDegree );
-	mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
+	Pickup* drop = mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
+	mCorpseDrops.push_back( CorpseDrop{ zombie.gameObject(), drop } );
 }
 
-void GameWorld::drawStatic( const ViewFrustum& frustum, const Vector3& eye ) const {
+void GameWorld::forgetCorpseDrop( const GameObject* object ) {
+	mCorpseDrops.erase( std::remove_if( mCorpseDrops.begin(), mCorpseDrops.end(),
+		[ object ]( const CorpseDrop& link ) { return link.corpse == object || link.drop->gameObject() == object; } ),
+		mCorpseDrops.end() );
+}
+
+void GameWorld::drawStatic( const DrawCulling& culling, const Vector3& eye ) const {
 	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる。
 	mBuildingDrawOrder.clear();
 	for ( const Building& building : mBuildings ) {
@@ -456,20 +451,20 @@ void GameWorld::drawStatic( const ViewFrustum& frustum, const Vector3& eye ) con
 	std::sort( mBuildingDrawOrder.begin(), mBuildingDrawOrder.end(),
 		[]( const std::pair< float, const Building* >& a, const std::pair< float, const Building* >& b ) { return a.first < b.first; } );
 	for ( const auto& entry : mBuildingDrawOrder ) {
-		entry.second->draw( frustum );
+		entry.second->draw( culling );
 	}
 	Profiling::gpuMark( "Buildings" );
 	if ( mEscapeCar ) {
-		mEscapeCar->draw( frustum );
+		mEscapeCar->draw( culling );
 	}
 	if ( mEndlessFuel ) {
-		mEndlessFuel->draw( frustum );
+		mEndlessFuel->draw( culling );
 	}
 	// 落ちているガソリンと、ゾンビが落とした弾（どちらも Pickup の部品）。
-	mObjects.forEach< Pickup >( [ &frustum ]( const Pickup& pickup ) { pickup.draw( frustum ); } );
+	mObjects.forEach< Pickup >( [ &culling ]( const Pickup& pickup ) { pickup.draw( culling ); } );
 	Profiling::gpuMark( "Props" );
-	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。
-	mGround.draw( frustum );
+	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く。
+	mGround.draw( culling.frustum() );
 	Profiling::gpuMark( "Ground" );
 }
 
@@ -482,29 +477,39 @@ void GameWorld::drawFirstPerson() const {
 	Profiling::gpuMark( "Player" );
 }
 
-void GameWorld::drawCharacters() const {
-	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
-	mSeveredLimbs.draw();
+void GameWorld::drawCharacters( const DrawCulling& culling ) const {
+	drawZombies( culling );
+	mSeveredLimbs.draw( culling );
 	Profiling::gpuMark( "Zombies" );
 }
 
-void GameWorld::drawShadowCasters( const ViewFrustum& frustum, bool includesPlayer ) const {
+void GameWorld::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) const {
 	// 深度だけなので、draw のような近い順の並べ替えはしない（速さにほとんど効かない）。
-	if ( includesPlayer && mPlayer ) {
+	// 自キャラは部位の箱で間引く（月の遠い枚には映らないことが多い）。
+	if ( includesPlayer && mPlayer && culling.showsPosed( mPlayer->hitboxes(), DrawCulling::Target::Large ) ) {
 		mPlayer->draw();
 	}
-	mObjects.forEach< Zombie >( []( const Zombie& zombie ) { zombie.draw(); } );
-	mSeveredLimbs.draw();
+	drawZombies( culling );
+	mSeveredLimbs.draw( culling );
 	for ( const Building& building : mBuildings ) {
-		building.draw( frustum );
+		building.draw( culling );
 	}
 	if ( mEscapeCar ) {
-		mEscapeCar->draw( frustum );
+		mEscapeCar->draw( culling );
 	}
 	if ( mEndlessFuel ) {
-		mEndlessFuel->draw( frustum );
+		mEndlessFuel->draw( culling );
 	}
-	mObjects.forEach< Pickup >( [ &frustum ]( const Pickup& pickup ) { pickup.draw( frustum ); } );
+	mObjects.forEach< Pickup >( [ &culling ]( const Pickup& pickup ) { pickup.draw( culling ); } );
+}
+
+void GameWorld::drawZombies( const DrawCulling& culling ) const {
+	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く（OptimizationA_Plan.txt 6-1）。
+	mObjects.forEach< Zombie >( [ &culling ]( const Zombie& zombie ) {
+		if ( culling.showsPosed( zombie.hitboxes(), DrawCulling::Target::Zombie ) ) {
+			zombie.draw();
+		}
+	} );
 }
 
 void GameWorld::drawBulletHoles( const Matrix44& projectionView ) {
@@ -543,14 +548,45 @@ void GameWorld::removeTakenPickups() {
 	mObjects.forEach< Pickup >( [ this ]( Pickup& pickup ) {
 		if ( pickup.isTaken() ) {
 			mBulletHoles.removeAttachedTo( &pickup ); // 物が消える前に外す
+			forgetCorpseDrop( pickup.gameObject() );
 			mObjects.destroyLater( pickup.gameObject() );
 		}
 	} );
 }
 
+IInteractable* GameWorld::findInteractable( const Vector3& origin, const Vector3& delta ) {
+	// 弾と同じ名簿で一番手前の物を探す（壁の向こうは見えない・死体にも当たる）。自分の体には当てない（目が体の中にあるため）。
+	float nearest = 1.f;
+	IInteractable* found = nullptr;
+	HitWorld::Hit hit;
+	if ( mHitWorld.raycast( origin, delta, mPlayer.get(), &hit ) ) {
+		nearest = hit.time;
+		found = resolveInteractable( hit );
+	}
+	// 落ちている物の見る箱は名簿に無いので、ここで調べる。見た目より大きいので、手前に当たった物より近ければ見る箱を選ぶ。
+	mObjects.forEach< Pickup >( [ &origin, &delta, &nearest, &found ]( Pickup& pickup ) {
+		float time;
+		if ( pickup.lookRaycast( origin, delta, &time ) && time <= nearest ) {
+			nearest = time;
+			found = &pickup;
+		}
+	} );
+	return found;
+}
+
 IInteractable* GameWorld::resolveInteractable( const HitWorld::Hit& hit ) {
-	if ( !hit.blocker ) {
-		return nullptr; // キャラ（ゾンビ）は使えない
+	if ( hit.target ) {
+		// 死体（倒れ始めた後）なら、その死体が落とした弾。生きているゾンビ・脚を失って這っているゾンビ（まだ落としていない）は使えない。
+		const Zombie* zombie = mObjects.find< Zombie >( hit.target );
+		if ( !zombie || zombie->isAlive() ) {
+			return nullptr;
+		}
+		for ( const CorpseDrop& link : mCorpseDrops ) {
+			if ( link.corpse == zombie->gameObject() ) {
+				return link.drop;
+			}
+		}
+		return nullptr; // 弾を落とさなかった死体
 	}
 	if ( Pickup* pickup = mObjects.find< Pickup >( hit.blocker ) ) {
 		return pickup; // 落ちているガソリン・落ちた弾

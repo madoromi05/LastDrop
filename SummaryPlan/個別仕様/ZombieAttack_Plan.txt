@@ -157,3 +157,35 @@
  ・噛む・つかむの音は仮（素材に無い）。ゾンビの声（うなり・吠える roar）も無い
  ・後回し：引っかき（atack1・atack2）・飛びかかり（atack4）・Downed が這ってきて足をつかむ・回復アイテム・
    出血（タルコフの bleeding）・自キャラが撃たれる（胸と腹の箱を分ける）・Debug の無敵
+
+================================================================================
+ 8. 2026-11-01 つかみ・噛みをやめて、腕の引っかき（atack1）にした
+================================================================================
+ ユーザー依頼「ゾンビの攻撃アニメーションは普通に腕で攻撃をするように」。
+ ユーザーの決定：アニメは atack1 だけ（右手で 1 回引っかく）／つかみ・噛み・撃って振りほどくは全部やめる。
+
+ atack1（Blender で右手の位置を測った。60 フレーム＝ゲームで約 1 秒）
+   16〜18 フレームで振り上げ、30 フレームで足元から前へ 0.86m まで振り下ろす。根は 0.16m 出て戻る。
+
+ 段階：Ready → Swing（振る）→ Recover（戻る）。Hold は無くした
+   当たる時刻     atack1 の 28 フレーム（Blender の 30 フレーム目。始めてから約 0.47 秒）
+   当たる条件     その時刻に 1.6m 以内・向きの差 45° 以内（今までのつかめる範囲と同じ）
+   ダメージ       20（今までの噛みと同じ。満タンから 5 回で死ぬ）
+   避け方         当たる時刻までに離れる
+   音             当たったら hit_flesh を音程 0.8 で（空振りは鳴らさない）
+   見せ方         今までの噛まれたときと同じ（狙いが跳ねる・絵が揺れる・画面の周りが赤い）
+   這うゾンビ     同じ時間割の時計で、腕を前へ伸ばして当たる時刻にダメージ
+   そのまま       始める間合い 1.6m・向き 30°・待ち時間 2 秒・一度に攻撃するのは 1 体
+
+ 消したもの：ZombieAttack の Hold・振りほどき（takeShakeDamage）・ゆっくり再生／ZombieFlinch::lunge（首の突き出し）／
+   ZombieDamageReaction の ShakeOff／Zombie の shakeOff・isHoldingTarget・grabbedThisTick／
+   PlayerCharacter のつかまれている間（setHeld・動けない・離された後の待ち時間）／
+   FirstPersonControl の lookToward・updateLookPull・shakeOnGrab／ZombieAttackEvent の Kind（当たっただけになった）
+ 名前を変えたもの：bitThisTick → hitTargetThisTick、biteDamage → hitDamage、applyBite → applyZombieHit、
+   ChaseTarget::grabbable → attackable、canBeGrabbed → canBeAttacked、canGrab → canHit
+ 変換：tools/configs/zombie.json に atack1 を足して Resource/character.txt を作り直した（atack3 も残してある。差分は atack1 の追加だけ）
+
+ 同じ日に、自キャラの頭を潰すのもやめた（FirstPersonBody::hideHead を削除。ユーザー指示「モデルとして復元」）。
+ 影・F4 の観察カメラでも頭が出る。一人称の画面に顔の内側や髪が映ったら、F6 の eyeForward で目を前へ出して直す。
+
+ ビルドは Debug・Release とも通過。画面での確認はまだ。

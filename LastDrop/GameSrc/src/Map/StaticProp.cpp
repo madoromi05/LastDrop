@@ -21,8 +21,10 @@ const BoxCollider& StaticProp::collider() const {
 	return mCollider;
 }
 
-void StaticProp::draw( const ViewFrustum& frustum ) const {
-	mMesh.draw( frustum );
+void StaticProp::draw( const DrawCulling& culling, DrawCulling::Target target ) const {
+	if ( culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), target ) ) {
+		mMesh.draw();
+	}
 }
 
 bool StaticProp::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {

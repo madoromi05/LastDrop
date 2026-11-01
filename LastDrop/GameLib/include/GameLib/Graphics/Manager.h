@@ -69,9 +69,15 @@ public:
 		int primitiveNumber, 
 		PrimitiveType = PRIMITIVE_TRIANGLE );
 	///設定したテクスチャ、頂点バッファで描画
-	void draw( 
-		int offset, 
-		int primitiveNumber, 
+	void draw(
+		int offset,
+		int primitiveNumber,
+		PrimitiveType = PRIMITIVE_TRIANGLE );
+	///draw と同じだが、始まりを頂点の番号で指定する（draw の offset は三角形・線・点の番号）。
+	///三角形・線・点が混ざった頂点バッファで、途中から描くときに使う。
+	void drawFromVertex(
+		int firstVertex,
+		int primitiveNumber,
 		PrimitiveType = PRIMITIVE_TRIANGLE );
 	///全画面にテクスチャを貼り付け
 	void blendToScreen( Texture );
@@ -81,6 +87,9 @@ public:
 	int width() const;
 	///描画バッファ高さを返す
 	int height() const;
+	///バックバッファ（実際の画面）の高さを返す（画素）。height() はゲームの座標の高さで固定、こちらはウィンドウの大きさで変わる。
+	///2D の絵（文字など）を実際の画面の細かさで作るときに、height() との比を使う。
+	int backBufferHeight() const;
 	///フルスクリーン時のウィンドウ幅を返す
 	int fullScreenWindowWidth() const;
 	///フルスクリーン時のウィンドウ高さを返す

@@ -988,6 +988,10 @@ public:
 	}
 
 	void draw( int offset, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
+		drawFromVertex( offset * vertsPerPrim( prim ), primitiveNumber, prim );
+	}
+	// 始まりを頂点の番号で受ける draw。三角形・線・点が混ざった頂点バッファ（PrimitiveRenderer）は、始まりを三角形の番号に直せないため。
+	void drawFromVertex( int firstVertex, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
 		if ( mLightChanged )    sendLightingParameters();
 		if ( mMatricesChanged ) sendMatrices();
 		STRONG_ASSERT( mCurrentVB && "VertexBuffer is not set." );
@@ -997,7 +1001,7 @@ public:
 		int vpp = vertsPerPrim( prim );
 		flushConstantBuffers();
 		PROFILE_COUNT( "Gfx.draw", 1 );
-		mContext->Draw( primitiveNumber * vpp, offset * vpp );
+		mContext->Draw( primitiveNumber * vpp, firstVertex );
 	}
 
 	void drawIndexed( int offset, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){

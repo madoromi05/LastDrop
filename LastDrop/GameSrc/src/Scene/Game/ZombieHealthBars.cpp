@@ -110,8 +110,7 @@ namespace{
 	const char* attackPhaseName( ZombieAttack::Phase phase ) {
 		switch ( phase ) {
 			case ZombieAttack::Phase::Ready:   return "Ready";
-			case ZombieAttack::Phase::Reach:   return "Reach";
-			case ZombieAttack::Phase::Hold:    return "Hold";
+			case ZombieAttack::Phase::Swing:   return "Swing";
 			case ZombieAttack::Phase::Recover: return "Recover";
 		}
 		return "-";

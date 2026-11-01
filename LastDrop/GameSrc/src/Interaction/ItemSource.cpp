@@ -23,8 +23,8 @@ void ItemSource::addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) con
 	hitWorld->addBlocker( &mBody );
 }
 
-void ItemSource::draw( const ViewFrustum& frustum ) const {
-	mBody.draw( frustum );
+void ItemSource::draw( const DrawCulling& culling ) const {
+	mBody.draw( culling, DrawCulling::Target::Small );
 }
 
 bool ItemSource::isBody( const IRayBlocker* blocker ) const {

@@ -30,7 +30,7 @@ ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation
 	int rootBone = BoneNamePattern::find( data, kBoneNamePrefix, kRootBone );
 	for ( const char* name : rootMotionAnimations ) {
 		mRootMotions.push_back( NamedRootMotion{ name, ZombieRootMotion( data, data->animation( name ), rootBone ) } );
-		// 起動時のデバッグ出力で表が作れたかを見る（atack3 約 0.48m・gethit 約 0.18m・death1 約 0.88m・death2 約 1.2m）。
+		// 起動時のデバッグ出力で表が作れたかを見る（atack1 約 0.16m・gethit 約 0.18m・death1 約 0.88m・death2 約 1.2m）。
 		const ZombieRootMotion& table = mRootMotions.back().table;
 		if ( table.isValid() ) {
 			GameLib::cout << "ZombieRootMotion: " << name << " " << table.farthestDistance() << " m" << GameLib::endl;

@@ -424,7 +424,9 @@ public:
 						break;
 					default: ASSERT( 0 ); break;
 				}
-				m.draw( b.mStart, b.mPrimitiveNumber, prim );
+				//mStart は頂点の番号。draw は三角形の番号を受けるので、頂点の番号で描く方を使う。
+				//2026-11-01 まで draw に渡していて、2つ目以降のバッチが3倍ずれた所から描かれていた（文字の絵が2枚以上になると崩れた）。
+				m.drawFromVertex( b.mStart, b.mPrimitiveNumber, prim );
 			}
 			//バッチが持ってるテクスチャハンドルを全部捨てる
 			b.mTexture.release();

@@ -71,11 +71,11 @@ namespace{
 	const float kVignetteStrength = 0.35f;
 	const float kVignetteInner = 0.6f;
 	const float kVignetteOuter = 1.4f;
-	// 噛まれた瞬間の赤み。画面の周り（中心からこの距離の間で強まる）を、この色へ寄せる。強さ 1 でも真ん中は赤くしない（狙いを隠さない）。
+	// 攻撃された瞬間の赤み。画面の周り（中心からこの距離の間で強まる）を、この色へ寄せる。強さ 1 でも真ん中は赤くしない（狙いを隠さない）。
 	const float kFlashInner = 0.3f;
 	const float kFlashOuter = 1.2f;
 	const float kFlashColor[ kColorChannels ] = { 0.45f, 0.02f, 0.02f }; // 血しぶきと同じ暗い赤に寄せる
-	// 噛まれた瞬間の痛み（CameraShake_Recoil_Plan.txt の 4 章）。画面の中心へ向かう線の上を読んで平均する（放射状のぼかし）。
+	// 攻撃された瞬間の痛み（CameraShake_Recoil_Plan.txt の 4 章）。画面の中心へ向かう線の上を読んで平均する（放射状のぼかし）。
 	// kPainBlurLength: 痛み 1・画面の端で、中心までの距離の何割の長さを読むか。中心からこの距離（kPainBlurInner）より内はぼかさない。
 	const float kPainBlurLength = 0.12f;
 	const float kPainBlurInner = 0.25f;

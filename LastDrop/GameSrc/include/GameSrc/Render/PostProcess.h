@@ -14,7 +14,7 @@
 // 中間の描画先はリニア（光の量に比例した数）で持ち、beginScene〜endScene の間は Graphics::Manager::enableLinearColor を入れておく。
 // 写すときに、明るい所のにじみ（ブルーム。Bloom）を足し、露出を掛けて ACES で 0〜1 に収め（トーンマップ）、
 // 周辺を少し暗くして（ビネット）、最後に画面の色（sRGB）へ戻す（LinearToneMap_Plan.txt 6 章）。露出とブルームの値は PostProcessParams。
-// ビネットの所に赤を足す強さ・周りのぼかしと暗さ（噛まれた瞬間）と、全体を暗くする量（死んだ後）を外から動かせる。
+// ビネットの所に赤を足す強さ・周りのぼかしと暗さ（攻撃された瞬間）と、全体を暗くする量（死んだ後）を外から動かせる。
 // 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）。
 // トーンマップの後にカラーグレーディング、画面の色へ戻した後にディザを掛ける（NightFinish_Plan.txt 6・7 章）。
 // アンチエイリアスが FXAA（antiAliasingMode）のときは、写した結果をいったん 8bit の中間（a に輝度）へ置き、Resource/Shader/Fxaa.hlsl で輪郭を
@@ -44,9 +44,9 @@ public:
 	GameLib::Graphics::DepthTarget sceneDepth() const;
 	// シーンの色（HDR・リニア）。照らした後の色を読むパス（映り込み。ScreenSpaceReflection）が、描画先から外した後に読む。
 	const GameLib::Graphics::RenderTarget& sceneColor() const;
-	// 噛まれた瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く。
+	// 攻撃された瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く。
 	void setDamageFlash( float amount );
-	// 噛まれた瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く。
+	// 攻撃された瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く。
 	void setPain( float amount );
 	// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く。
 	void setFade( float amount );

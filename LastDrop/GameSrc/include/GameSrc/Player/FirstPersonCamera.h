@@ -23,7 +23,7 @@ public:
 
 	// 向きを変える（度）。ピッチは真上・真下へ回り込まないよう上下限で止める。
 	void rotate( float yawDelta, float pitchDelta );
-	// rotate で決めた向きへ足す角度（度。ヨーは正で左、ピッチは負で見上げる側）。撃った反動・噛まれた怯みのように、
+	// rotate で決めた向きへ足す角度（度。ヨーは正で左、ピッチは負で見上げる側）。撃った反動・攻撃された怯みのように、
 	// 一時的に狙いをずらして後で戻すものに使う。yaw・pitch・viewDirection（弾の向き）に入る。
 	// rotate の向きそのものは変えないので、0 を渡せば元の向きへ戻る。足した結果のピッチも上下限で止める。
 	void setAimOffset( float yawDegree, float pitchDegree );

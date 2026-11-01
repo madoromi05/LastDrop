@@ -31,8 +31,8 @@ void SeveredLimbList::update( const IRayBlocker* ground ) {
 		[]( const std::unique_ptr< SeveredLimb >& limb ) { return limb->isGone(); } ), mLimbs.end() );
 }
 
-void SeveredLimbList::draw() const {
+void SeveredLimbList::draw( const DrawCulling& culling ) const {
 	for ( const auto& limb : mLimbs ) {
-		limb->draw();
+		limb->draw( culling );
 	}
 }

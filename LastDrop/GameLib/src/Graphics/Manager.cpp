@@ -126,6 +126,10 @@ void Manager::draw( int offset, int primitiveNumber, PrimitiveType p ){
 	gManagerImpl->draw( offset, primitiveNumber, p );
 }
 
+void Manager::drawFromVertex( int firstVertex, int primitiveNumber, PrimitiveType p ){
+	gManagerImpl->drawFromVertex( firstVertex, primitiveNumber, p );
+}
+
 void Manager::drawIndexed( int offset, int primitiveNumber, PrimitiveType p ){
 	gManagerImpl->drawIndexed( offset, primitiveNumber, p );
 }
@@ -144,6 +148,10 @@ int Manager::width() const {
 
 int Manager::height() const {
 	return gManagerImpl->mHeight;
+}
+
+int Manager::backBufferHeight() const {
+	return gManagerImpl->mBackBufferHeight;
 }
  
 int Manager::fullScreenWindowWidth() const {

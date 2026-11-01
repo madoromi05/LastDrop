@@ -23,11 +23,10 @@ class SkinnedMeshData;
 //    覗いているとサイトが画面の中で少し動いて見える。弾の向き（FirstPersonCamera::weaponDirection）も同じ角度だけぶれている。
 // 5. 撃った反動のぶん、銃を後ろへ引いて銃口を跳ね上げる。両腕をまとめて動かすので手は銃から離れない。
 //    目は動かさない（照準と弾の向きは変わらず、銃の見た目だけが跳ねる）。
-// 6. 頭を消す（頭の骨を縮尺0にして首の付け根へ潰す）。カメラが頭の中にあるので、顔の裏側が映るのを防ぐ。
 // 書き換えのついでに目の位置（カメラの視点に使う）と、銃を囲む範囲（移動の当たり判定に使う）を求めて覚える。
 //
 // 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。キャラの置き場所・向きは知らない。
-// ボーンは Mixamo の名前で探す。見つからない骨は飛ばす（その部分が動かない・消えないだけで落ちない）。
+// ボーンは Mixamo の名前で探す。見つからない骨は飛ばす（その部分が動かないだけで落ちない）。
 class FirstPersonBody : public BonePoseModifier{
 public:
 	// data: 骨の番号を引くためだけに使う（覚えない）。nullptr 不可、isReady() 済みであること。
@@ -91,12 +90,10 @@ private:
 	void overrideArms( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 	// 置き終えた銃の8隅から、銃を囲む箱を求めて mWeaponLow / mWeaponHigh へ覚える。
 	void updateWeaponBounds( const std::vector< GameLib::Math::Matrix34 >& pose );
-	void hideHead( std::vector< GameLib::Math::Matrix34 >* pose ) const;
 
 	std::vector< SpineJoint > mSpine; // 根に近い順
 	std::vector< int > mArmBones;     // 両肩から先（腕・手・指）
 	std::vector< int > mRightHandBones; // 右手と右手の指（手首を曲げるときに一緒に回す）
-	std::vector< int > mHiddenBones;
 	int mHeadBone;
 	int mChestBone;                   // 走るときに銃を寄せる基準の骨・腕を差し替えるときの基準の骨。-1 ならどちらもしない
 	float mPitch;

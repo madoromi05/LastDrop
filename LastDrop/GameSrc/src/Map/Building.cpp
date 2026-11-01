@@ -1,6 +1,7 @@
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Collision/MeshWallBuilder.h"
 #include "GameSrc/Collision/CollisionWorld.h"
+#include "GameSrc/Render/DrawCulling.h"
 
 #include "GameLib/GameLib.h"
 
@@ -16,8 +17,10 @@ void Building::addCollidersTo( CollisionWorld* world ) const {
 	world->addWallMesh( MeshWallBuilder::make( mMesh ) );
 }
 
-void Building::draw( const ViewFrustum& frustum ) const {
-	mMesh.draw( frustum );
+void Building::draw( const DrawCulling& culling ) const {
+	if ( culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), DrawCulling::Target::Large ) ) {
+		mMesh.draw();
+	}
 }
 
 const Vector3& Building::position() const {

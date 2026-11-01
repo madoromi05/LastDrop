@@ -46,7 +46,7 @@ public:
 	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う。
 	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode = PLAY_LOOP );
 	// 再生の速さ（1 で 1 ティックに 1 フレーム。0.5 なら半分の速さ）。アニメを切り替える（setAnimation・crossFadeTo）と 1 に戻る。
-	// アニメの一部だけをゆっくり見せたいとき（ゾンビがつかんでいる間）に、そのアニメの間だけ変える。0 より大きいこと。
+	// アニメの一部だけをゆっくり見せたいときに、そのアニメの間だけ変える。0 より大きいこと。
 	void setPlaybackRate( float rate );
 	// 今見えているアニメの時刻（フレーム。最後の update で使った時刻）。アニメの何フレーム目で何かを起こすときに読む。
 	float animationTime() const;

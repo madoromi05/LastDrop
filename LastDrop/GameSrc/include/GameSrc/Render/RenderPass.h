@@ -49,6 +49,12 @@ void endShadow();
 const GameLib::Graphics::Shader& staticMeshShader();
 // 次に描く物の材質値と材質の画像（ORM。空なら白 1 画素）を G-Buffer のシェーダへ渡す。GBuffer の間だけ呼べる。
 void setSurface( const SurfaceParams&, GameLib::Graphics::Texture orm );
+// 直前に送った材質値と画像を忘れ、次の setSurface で必ず送り直させる。GBuffer の間だけ呼べる。
+// G-Buffer の途中で描画先を付け直したとき（デカール）に呼ぶ。付け直すと t2 以降の画像が全部外れ、材質の画像（t11）も外れるため。
+void forgetSentSurface();
+// メッシュを 1 回描くたびに drawIndexed の直前で呼ぶ。今のパスの描いた回数（Draw.gbuffer・Draw.shadow）を足す（OptimizationA_Plan.txt 5 章）。
+// Forward では数えない。
+void countDraw();
 
 } //namespace RenderPass
 

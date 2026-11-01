@@ -1047,6 +1047,9 @@
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\DrawCulling.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
@@ -1990,6 +1993,9 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h">
       <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\DrawCulling.h">
+      <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h">
       <Filter>GameSrc\Render</Filter>

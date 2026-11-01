@@ -11,6 +11,7 @@
 
 class SkinnedMeshData;
 class IRayBlocker;
+class DrawCulling;
 
 // ゾンビから千切れた部位1つ（腕・脚・頭）。弾の向きへ回りながら飛び、地面に落ちて止まり、しばらく残ってから沈んで消える（isGone）。
 // 部位ごとのメッシュは作らず、ゾンビと同じメッシュをもう1体ぶん描く。千切れた部位の骨だけを残し、
@@ -32,7 +33,8 @@ public:
 
 	// 1ティック進める。ground: 落ちる先の地面（下向きの線で高さを聞く）。nullptr なら高さ 0 の平らな地面とみなす。
 	void update( const IRayBlocker* ground );
-	void draw() const;
+	// culling で描くと決まった時だけ描く（小さい物として間引く。OptimizationA_Plan.txt 6 章）。
+	void draw( const DrawCulling& culling ) const;
 	// 沈み終わって、消してよいか。
 	bool isGone() const;
 
@@ -53,6 +55,7 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mBasePose; // 切れた瞬間の姿勢（ワールド）。残さない骨は切り口へ潰してある
 	GameLib::Math::Vector3 mStartCenter; // 切れた瞬間の部位の中心（回す中心。ワールド）
 	GameLib::Math::Vector3 mCenter;      // 今の部位の中心（ワールド。沈む分は含まない）
+	float mReach;                        // 中心から一番遠い骨までの距離（m。回しても変わらないので、描くときの箱の半分の幅に使う）
 	GameLib::Math::Vector3 mVelocity;    // 中心の速さ（m/ティック）
 	GameLib::Math::Vector3 mSpinAxis;    // 回る軸（長さ1）
 	float mSpinPerTick;                  // 回る速さ（度/ティック）

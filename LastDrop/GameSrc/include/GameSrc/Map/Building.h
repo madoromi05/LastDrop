@@ -5,7 +5,7 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
 #include "GameSrc/Hit/IRayBlocker.h"
 
-class ViewFrustum;
+class DrawCulling;
 class StaticMeshData;
 class CollisionWorld;
 
@@ -27,8 +27,8 @@ public:
 	// 移動の当たり判定を作って world へ渡す（以後は world が持つ）。建物1軒につき1回だけ呼ぶ（呼ぶたびに登録が増える）。
 	// world: 所有権は受け取らない。nullptr 不可。
 	void addCollidersTo( CollisionWorld* world ) const;
-	// frustum: カメラに映る範囲。映らなければ描かない。
-	void draw( const ViewFrustum& frustum ) const;
+	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く。
+	void draw( const DrawCulling& culling ) const;
 	// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う。
 	const GameLib::Math::Vector3& position() const;
 	// 弾の当たり判定（見た目の三角形で判定する）。

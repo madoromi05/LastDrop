@@ -5,9 +5,11 @@
 #include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/PlacementMatrix.h"
+#include "GameSrc/Render/DrawCulling.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Scene/Animation.h"
+#include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -74,6 +76,7 @@ namespace{
 SeveredLimb::SeveredLimb( const SkinnedMeshData* data, const ZombieSeverLayout::Cut& cut, const std::vector< Matrix34 >& worldPose,
 const Vector3& direction, std::mt19937* random ) :
 	mMesh( data ),
+	mReach( 0.f ),
 	mSpinPerTick( 0.f ),
 	mSpinAngle( 0.f ),
 	mState( State::Flying ),
@@ -96,6 +99,15 @@ const Vector3& direction, std::mt19937* random ) :
 		mStartCenter *= 1.f / static_cast< float >( cut.bones.size() );
 	}
 	mCenter = mStartCenter;
+	// 切り口（潰した骨の集まる所）と残す骨のうち、中心から一番遠い物。描くときの箱に使う。
+	Vector3 toJoint;
+	toJoint.setSub( PlacementMatrix::translationOf( worldPose[ cut.jointBone ] ), mStartCenter );
+	mReach = toJoint.length();
+	for ( int bone : cut.bones ) {
+		Vector3 toBone;
+		toBone.setSub( PlacementMatrix::translationOf( worldPose[ bone ] ), mStartCenter );
+		mReach = Math::max( mReach, toBone.length() );
+	}
 
 	mVelocity.setMul( direction, kFlySpeed );
 	mVelocity.y += kUpSpeed;
@@ -163,8 +175,17 @@ void SeveredLimb::apply( std::vector< Matrix34 >* pose ) {
 	}
 }
 
-void SeveredLimb::draw() const {
-	mMesh.draw();
+void SeveredLimb::draw( const DrawCulling& culling ) const {
+	// 今の中心から mReach の球を囲む箱。骨の外の肉・沈む分（kSinkDepth と同じ深さ）は kPoseMargin で足りる。
+	float halfWidth = mReach + DrawCulling::kPoseMargin;
+	const Vector3 half( halfWidth, halfWidth, halfWidth );
+	Vector3 boundsMin;
+	Vector3 boundsMax;
+	boundsMin.setSub( mCenter, half );
+	boundsMax.setAdd( mCenter, half );
+	if ( culling.shows( boundsMin, boundsMax, DrawCulling::Target::Small ) ) {
+		mMesh.draw();
+	}
 }
 
 bool SeveredLimb::isGone() const {

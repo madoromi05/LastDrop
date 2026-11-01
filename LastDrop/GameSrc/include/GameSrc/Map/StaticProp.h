@@ -5,8 +5,8 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
 #include "GameSrc/Collision/BoxCollider.h"
 #include "GameSrc/Hit/IRayBlocker.h"
+#include "GameSrc/Render/DrawCulling.h"
 
-class ViewFrustum;
 class StaticMeshData;
 class CollisionWorld;
 
@@ -29,8 +29,8 @@ public:
 	void addColliderTo( CollisionWorld* world ) const;
 	// 当たり判定の箱（頂点を真上から囲む長方形。置いた所から動かない）。
 	const BoxCollider& collider() const;
-	// frustum: カメラに映る範囲。映らなければ描かない。
-	void draw( const ViewFrustum& frustum ) const;
+	// culling（DrawCulling）で描くと決まった時だけ描く。target：何として間引くか（車は Large、缶は Small。持ち主が決める）。
+	void draw( const DrawCulling& culling, DrawCulling::Target target ) const;
 	// 弾の当たり判定（見た目の三角形で判定する）。
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
