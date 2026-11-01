@@ -5,7 +5,7 @@
 
 class UiLabel;
 class UiRenderer;
-class EscapeCar;
+class FuelTankComponent;
 class Inventory;
 
 // 本編の HUD。見ている物の案内（画面の中央の少し下）、車のガソリンと持ち物（左下）を出す。
@@ -21,7 +21,7 @@ public:
 	// 文字を今の状態にして描く。1回の描画につき1回、3D の後に呼ぶ（上に重ねるため）。
 	// prompt: 見ている物の案内（Interactor::prompt。見ている物が無ければ空文字列）。nullptr 不可。
 	// car: 脱出用の車。nullptr なら車のガソリンの行は書き換えない（車を置けなかったとき）。所有権は受け取らない。
-	void draw( const char* prompt, const EscapeCar* car, const Inventory& inventory );
+	void draw( const char* prompt, const FuelTankComponent* car, const Inventory& inventory );
 
 private:
 	UiScreen mScreen;

@@ -14,6 +14,7 @@
 #include "GameSrc/Render/SsrParams.h"
 #include "GameSrc/Render/LitQuadBatch.h"
 #include "GameSrc/Render/DecalBatch.h"
+#include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -33,6 +34,47 @@ namespace{
 	const ImVec4 kInvincibleOnColor( 1.f, 0.3f, 0.3f, 1.f );
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
+	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
+
+	const char* tagName( GameObjectTag tag ) {
+		switch ( tag ) {
+			case GameObjectTag::Player: return "Player";
+			case GameObjectTag::Weapon: return "Weapon";
+			case GameObjectTag::Zombie: return "Zombie";
+			case GameObjectTag::Fuel: return "Fuel";
+			case GameObjectTag::AmmoDrop: return "AmmoDrop";
+			case GameObjectTag::EscapeCar: return "EscapeCar";
+			case GameObjectTag::FuelStation: return "FuelStation";
+		}
+		return "?";
+	}
+
+	// 世界に置いた物を作った順に 1 行ずつ（名前・タグ・付いている部品の数）。ゾンビが 30 体いても読めるよう、表にして縦に流す。
+	void drawObjects() {
+		if ( !gObjects ) {
+			ImGui::TextDisabled( "No world." );
+			return;
+		}
+		const ImGuiTableFlags kTableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
+		const int kColumnNumber = 3;
+		if ( !ImGui::BeginTable( "Objects", kColumnNumber, kTableFlags ) ) {
+			return;
+		}
+		ImGui::TableSetupColumn( "Name" );
+		ImGui::TableSetupColumn( "Tag" );
+		ImGui::TableSetupColumn( "Parts" );
+		ImGui::TableHeadersRow();
+		gObjects->forEachObject( []( const GameObject& object ) {
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted( object.name().c_str() );
+			ImGui::TableNextColumn();
+			ImGui::TextUnformatted( tagName( object.tag() ) );
+			ImGui::TableNextColumn();
+			ImGui::Text( "%d", object.componentNumber() );
+		} );
+		ImGui::EndTable();
+	}
 
 	void drawInvincible() {
 		if ( gPlayerInvincible ) {
@@ -201,6 +243,9 @@ void draw() {
 		if ( ImGui::CollapsingHeader( "Tuning" ) ) {
 			TuningPanel::draw();
 		}
+		if ( ImGui::CollapsingHeader( "Objects" ) ) {
+			drawObjects();
+		}
 		drawPlannedHeader( "Zombies / Audio (next)" );
 	}
 	ImGui::End();
@@ -208,6 +253,10 @@ void draw() {
 
 void setPlayerInvincible( bool invincible ) {
 	gPlayerInvincible = invincible;
+}
+
+void setObjects( const GameObjectWorld* objects ) {
+	gObjects = objects;
 }
 
 } //namespace EditorWindow
@@ -220,6 +269,9 @@ void draw() {
 }
 
 void setPlayerInvincible( bool ) {
+}
+
+void setObjects( const GameObjectWorld* ) {
 }
 
 } //namespace EditorWindow

@@ -24,11 +24,11 @@ void ZombieCrowd::clear() {
 	mMembers.clear();
 }
 
-void ZombieCrowd::add( const Zombie* owner, const Vector3& position ) {
+void ZombieCrowd::add( const GameObject* owner, const Vector3& position ) {
 	mMembers.push_back( Member{ owner, position } );
 }
 
-Vector3 ZombieCrowd::separation( const Zombie* self, const Vector3& position, float radius ) const {
+Vector3 ZombieCrowd::separation( const GameObject* self, const Vector3& position, float radius ) const {
 	Vector3 sum( 0.f, 0.f, 0.f );
 	if ( radius <= 0.f ) {
 		return sum;

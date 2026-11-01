@@ -1,6 +1,6 @@
 #include "GameSrc/Scene/Game/GameHud.h"
 #include "GameSrc/UI/UiLabel.h"
-#include "GameSrc/Interaction/EscapeCar.h"
+#include "GameSrc/Interaction/FuelTankComponent.h"
 #include "GameSrc/Interaction/Inventory.h"
 #include "GameSrc/Render/VertexColor.h"
 
@@ -28,7 +28,7 @@ GameHud::GameHud( UiRenderer* renderer ) :
 	mCarryLabel = canvas.add( std::make_unique< UiLabel >( "", UI_ANCHOR_LEFT, UiScreen::statusLinePosition( kCarryLine ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kHudColor ) );
 }
 
-void GameHud::draw( const char* prompt, const EscapeCar* car, const Inventory& inventory ) {
+void GameHud::draw( const char* prompt, const FuelTankComponent* car, const Inventory& inventory ) {
 	ASSERT( prompt && "GameHud : prompt is null." );
 	char text[ kHudTextSize ];
 	mPromptLabel->setText( prompt );

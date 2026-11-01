@@ -1,5 +1,7 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
-#include "GameSrc/Zombie/Zombie.h"
+#include "GameSrc/Zombie/ZombieBrainComponent.h"
+#include "GameSrc/Zombie/ZombieChaseComponent.h"
+#include "GameSrc/World/GameObject.h"
 #include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Render/VertexColor.h"
@@ -54,20 +56,20 @@ void ZombiePathDrawer::draw( const GameObjectWorld& objects, const NavMesh& navM
 		mRenderer.addLine( lifted( outline[ i ], kOutlineLift ), lifted( outline[ i + 1 ], kOutlineLift ), kOutlineColor, kOutlineColor );
 		++lineNumber;
 	}
-	objects.forEach< Zombie >( [ this, &lineNumber ]( const Zombie& zombie ) {
-		if ( zombie.state() != Zombie::State::Alive && !zombie.isCrawling() ) {
+	objects.forEach< ZombieBrainComponent >( [ this, &lineNumber ]( const ZombieBrainComponent& zombie ) {
+		if ( zombie.state() != ZombieBrainComponent::State::Alive && !zombie.isCrawling() ) {
 			return;
 		}
 		Vector3 from = lifted( zombie.bodyCenter(), kLineLift ); // 体を引きずっている体は胸から
 		// 仲間を避けて混ぜた向き（混ぜていなければ描かない）。
-		const Vector3& separation = zombie.separation();
+		const Vector3& separation = zombie.getComponent< ZombieChaseComponent >()->separation();
 		if ( ( separation.x != 0.f || separation.z != 0.f ) && lineNumber < mLineCapacity ) {
 			Vector3 to;
 			to.setMadd( from, separation, kSeparationLineLength );
 			mRenderer.addLine( from, to, kSeparationColor, kSeparationColor );
 			++lineNumber;
 		}
-		zombie.path().remainingRoute( &mRoute );
+		zombie.getComponent< ZombieChaseComponent >()->path().remainingRoute( &mRoute );
 		for ( const Vector3& point : mRoute ) {
 			if ( lineNumber >= mLineCapacity ) {
 				break; // 容量を超えると止まるので、描かずに終える

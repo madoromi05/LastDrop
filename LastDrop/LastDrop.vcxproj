@@ -180,6 +180,27 @@
   <!-- ==================== ソースファイル ==================== -->
   <ItemGroup>
     <!-- ゲームコード -->
+    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotionComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieFactory.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieChaseComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieBrainComponent.cpp" />
+    <ClCompile Include="GameSrc\src\World\GameObjectHandle.cpp" />
+    <ClCompile Include="GameSrc\src\World\GameObject.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\WeaponModelComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\GunComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerLocomotionComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\HoldComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\FirstPersonBodyComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\PickupComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\ItemSourceComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\FuelTankComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Effect\MuzzleFlashComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\StaticModelComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\HitboxComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\CharacterColliderComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\BoxColliderComponent.cpp" />
     <ClCompile Include="Framework.cpp" />
     <ClCompile Include="GameSrc\src\Player\Animator.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshData.cpp" />
@@ -196,17 +217,12 @@
     <ClCompile Include="GameSrc\src\Collision\SweepMath.cpp" />
     <ClCompile Include="GameSrc\src\Collision\CollisionWorld.cpp" />
     <ClCompile Include="GameSrc\src\Collision\CharacterMover.cpp" />
-    <ClCompile Include="GameSrc\src\Zombie\Zombie.cpp" />
     <ClCompile Include="GameSrc\src\Map\Building.cpp" />
     <ClCompile Include="GameSrc\src\Collision\MeshBoundsBox.cpp" />
     <ClCompile Include="GameSrc\src\Collision\MeshWallBuilder.cpp" />
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
-    <ClCompile Include="GameSrc\src\Map\StaticProp.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\ItemCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp" />
-    <ClCompile Include="GameSrc\src\Interaction\Pickup.cpp" />
-    <ClCompile Include="GameSrc\src\Interaction\EscapeCar.cpp" />
-    <ClCompile Include="GameSrc\src\Interaction\ItemSource.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
@@ -320,7 +336,6 @@
     <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp" />
     <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp" />
     <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp" />
-    <ClCompile Include="GameSrc\src\Player\PlayerCharacter.cpp" />
     <ClCompile Include="GameSrc\src\Math\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\src\Main.cpp" />
     <ClCompile Include="GameSrc\src\Core\Pad.cpp" />
@@ -496,6 +511,35 @@
   </ItemGroup>
   <!-- ==================== ヘッダファイル ==================== -->
   <ItemGroup>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotionComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealthComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDismemberComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCorpseComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChaseComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieBrainComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\UpdatePhase.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\World\GameObjectHandle.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponModelComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\GunComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerLocomotionComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealthComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\HoldComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBodyComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\PickupComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSourceComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\FuelTankComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\TransformComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\StaticModelComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\SkinnedModelComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\LightComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\HitboxComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\CharacterColliderComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\BoxColliderComponent.h" />
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h" />
@@ -623,7 +667,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\SweepMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\CollisionWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\CharacterMover.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Zombie.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\Building.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshBoundsBox.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshWallBuilder.h" />
@@ -631,12 +674,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\WallPiece.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MoveHeight.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Map\StaticProp.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Pickup.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCar.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSource.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
@@ -733,7 +772,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Audio\Gait.h" />
     <ClInclude Include="GameLib\src\ThirdParty\miniaudio\miniaudio.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifier.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCharacter.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerCommand.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\MatrixBlend.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\TextureCache.h" />

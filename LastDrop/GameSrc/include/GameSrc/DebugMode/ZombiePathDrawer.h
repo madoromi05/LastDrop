@@ -18,7 +18,7 @@ class ZombiePathDrawer{
 public:
 	ZombiePathDrawer();
 
-	// objects のゾンビ（Zombie の部品）のうち通り道を持つものと、navMesh の床の縁を描く。
+	// objects のゾンビ（ZombieBrainComponent を持つ物）のうち通り道を持つものと、navMesh の床の縁を描く。
 	// 1フレームに1回まで（PrimitiveRenderer の約束）。他のものを描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
 	// projectionView: カメラの射影×ビュー行列。容量を超えた分は描かない。
 	void draw( const GameObjectWorld& objects, const NavMesh& navMesh, const GameLib::Math::Matrix44& projectionView );

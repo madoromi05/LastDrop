@@ -1,5 +1,10 @@
 #include "GameSrc/Player/PlayerBodySounds.h"
-#include "GameSrc/Player/PlayerCharacter.h"
+#include "GameSrc/Player/PlayerLocomotionComponent.h"
+#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Component/LightComponent.h"
+#include "GameSrc/Weapon/GunComponent.h"
+#include "GameSrc/World/GameObject.h"
 
 using namespace GameLib::Math;
 
@@ -17,20 +22,24 @@ PlayerBodySounds::PlayerBodySounds( AudioEngine* audio, const IGroundSurface* gr
 	mFoley( audio ) {
 }
 
-void PlayerBodySounds::update( const PlayerCharacter& player ) {
-	const Vector3& feet = player.position();
-	bool stepped = mFootsteps.update( player.gait(), player.gaitPhase(), feet, mGround );
+void PlayerBodySounds::update( const GameObject& player ) {
+	const PlayerLocomotionComponent* locomotion = player.getComponent< PlayerLocomotionComponent >();
+	const HoldComponent* hold = player.getComponent< HoldComponent >();
+	const GunComponent* gun = hold->gun();       // 素手なら nullptr
+	const LightComponent* light = hold->light(); // 同上
+	const Vector3& feet = player.getComponent< TransformComponent >()->position();
+	bool stepped = mFootsteps.update( locomotion->gait(), locomotion->gaitPhase(), feet, mGround );
 	PlayerFoley::FoleyState foley;
 	foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
-	foley.gait = player.gait();
-	foley.weaponDrawn = player.isWeaponDrawn();
-	foley.aiming = player.isAiming();
-	foley.fired = player.firedThisTick();
-	foley.dryFired = player.dryFiredThisTick();
-	WeaponReload::Cue cue = player.reloadCueThisTick();
+	foley.gait = locomotion->gait();
+	foley.weaponDrawn = hold->isDrawn();
+	foley.aiming = hold->isAiming();
+	foley.fired = gun && gun->firedThisTick();
+	foley.dryFired = gun && gun->dryFiredThisTick();
+	WeaponReload::Cue cue = gun ? gun->reloadCueThisTick() : WeaponReload::CUE_NONE;
 	foley.magazineOut = ( cue == WeaponReload::CUE_MAG_OUT );
 	foley.magazineIn = ( cue == WeaponReload::CUE_MAG_IN );
 	foley.boltPulled = ( cue == WeaponReload::CUE_BOLT );
-	foley.flashlightToggled = player.flashlightToggledThisTick();
+	foley.flashlightToggled = light && light->toggledThisTick();
 	mFoley.update( foley, stepped );
 }

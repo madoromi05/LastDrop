@@ -1,7 +1,13 @@
 #include "GameSrc/Scene/Game/ZombieHealthBars.h"
 #include "GameSrc/Scene/Game/GameWorld.h"
 #include "GameSrc/Player/FirstPersonCamera.h"
-#include "GameSrc/Player/PlayerCharacter.h"
+#include "GameSrc/Zombie/ZombieBrainComponent.h"
+#include "GameSrc/Zombie/ZombieHealthComponent.h"
+#include "GameSrc/Zombie/ZombieAttackComponent.h"
+#include "GameSrc/Zombie/ZombieChaseComponent.h"
+#include "GameSrc/Component/HitboxComponent.h"
+#include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/World/GameObject.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Render/VertexColor.h"
 
@@ -89,20 +95,20 @@ namespace{
 		Vector3 delta;
 		delta.setSub( point, eye );
 		HitWorld::Hit hit;
-		return world.hitWorld().raycast( eye, delta, world.player(), &hit ) && hit.blocker;
+		return world.hitWorld().raycast( eye, delta, world.playerTarget(), &hit ) && hit.blocker;
 	}
 
 	int rounded( float value ) {
 		return static_cast< int >( std::lround( value ) );
 	}
 
-	const char* stateName( Zombie::State state ) {
+	const char* stateName( ZombieBrainComponent::State state ) {
 		switch ( state ) {
-			case Zombie::State::Alive:   return "Alive";
-			case Zombie::State::Downed:  return "Downed";
-			case Zombie::State::Falling: return "Falling";
-			case Zombie::State::Corpse:  return "Corpse";
-			case Zombie::State::Sinking: return "Sinking";
+			case ZombieBrainComponent::State::Alive:   return "Alive";
+			case ZombieBrainComponent::State::Downed:  return "Downed";
+			case ZombieBrainComponent::State::Falling: return "Falling";
+			case ZombieBrainComponent::State::Corpse:  return "Corpse";
+			case ZombieBrainComponent::State::Sinking: return "Sinking";
 		}
 		return "-";
 	}
@@ -129,15 +135,15 @@ namespace{
 void ZombieHealthBars::add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
 	ASSERT( renderer && "ZombieHealthBars : renderer is null." );
 	Matrix44 projectionView = camera.projectionViewMatrix();
-	world.objects().forEach< Zombie >( [ & ]( const Zombie& zombie ) {
+	world.objects().forEach< ZombieBrainComponent >( [ & ]( const ZombieBrainComponent& zombie ) {
 		addZombie( zombie, world, camera, projectionView, renderer );
 	} );
 }
 
-void ZombieHealthBars::addZombie( const Zombie& zombie, const GameWorld& world, const FirstPersonCamera& camera,
+void ZombieHealthBars::addZombie( const ZombieBrainComponent& zombie, const GameWorld& world, const FirstPersonCamera& camera,
 const Matrix44& projectionView, UiRenderer* renderer ) const {
 	Vector3 anchor;
-	if ( !barAnchor( zombie.hitboxes(), &anchor ) ) {
+	if ( !barAnchor( zombie.getComponent< HitboxComponent >()->hitboxes(), &anchor ) ) {
 		return;
 	}
 	Vector3 toAnchor;
@@ -150,7 +156,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	}
 
 	// 全体のバー（背景を少し大きく描いて枠に見せ、その上に残りの割合だけ中身を描く）。
-	const ZombieHealth& health = zombie.health();
+	const ZombieHealth& health = zombie.getComponent< ZombieHealthComponent >()->health();
 	bool alive = zombie.isAlive(); // 倒れたまま生きている（Downed）も、生きているので白い中身
 	UiRect back;
 	back.left = screen.x - kBarWidth * kHalf - kBarBorder;
@@ -172,24 +178,24 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。
-	Zombie::State state = zombie.state();
-	if ( alive && zombie.isStaggering() ) {
+	ZombieBrainComponent::State state = zombie.state();
+	if ( alive && zombie.getComponent< ZombieHealthComponent >()->isStaggering() ) {
 		std::snprintf( text, sizeof( text ), "Staggered" );
-	} else if ( alive && zombie.attackPhase() != ZombieAttack::Phase::Ready ) {
+	} else if ( alive && zombie.getComponent< ZombieAttackComponent >()->attack().phase() != ZombieAttack::Phase::Ready ) {
 		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
-			attackPhaseName( zombie.attackPhase() ) );
+			attackPhaseName( zombie.getComponent< ZombieAttackComponent >()->attack().phase() ) );
 	} else if ( zombie.isCrawling() ) {
 		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
-		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.chaseMode() ) );
-	} else if ( state == Zombie::State::Alive && zombie.chaseMode() == ZombieChase::Mode::Chase && world.player() ) {
+		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
+	} else if ( state == ZombieBrainComponent::State::Alive && zombie.getComponent< ZombieChaseComponent >()->mode() == ZombieChase::Mode::Chase && world.player() ) {
 		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため。
 		Vector3 toPlayer;
-		toPlayer.setSub( world.player()->position(), zombie.position() );
+		toPlayer.setSub( world.player()->getComponent< TransformComponent >()->position(), zombie.position() );
 		toPlayer.y = 0.f;
-		std::snprintf( text, sizeof( text ), "%s %.2fm", chaseModeName( zombie.chaseMode() ), toPlayer.length() );
-	} else if ( state == Zombie::State::Alive ) {
-		std::snprintf( text, sizeof( text ), "%s", chaseModeName( zombie.chaseMode() ) );
-	} else if ( state == Zombie::State::Downed || state == Zombie::State::Falling ) {
+		std::snprintf( text, sizeof( text ), "%s %.2fm", chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ), toPlayer.length() );
+	} else if ( state == ZombieBrainComponent::State::Alive ) {
+		std::snprintf( text, sizeof( text ), "%s", chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
+	} else if ( state == ZombieBrainComponent::State::Downed || state == ZombieBrainComponent::State::Falling ) {
 		std::snprintf( text, sizeof( text ), "%s", stateName( state ) );
 	} else {
 		std::snprintf( text, sizeof( text ), "%s %.1fs", stateName( state ), zombie.secondsUntilGone() );
@@ -202,9 +208,9 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	}
 }
 
-void ZombieHealthBars::addPartLabels( const Zombie& zombie, const Matrix44& projectionView, UiRenderer* renderer ) const {
-	const HitboxSet& boxes = zombie.hitboxes();
-	const ZombieHealth& health = zombie.health();
+void ZombieHealthBars::addPartLabels( const ZombieBrainComponent& zombie, const Matrix44& projectionView, UiRenderer* renderer ) const {
+	const HitboxSet& boxes = zombie.getComponent< HitboxComponent >()->hitboxes();
+	const ZombieHealth& health = zombie.getComponent< ZombieHealthComponent >()->health();
 	char text[ kTextSize ];
 	for ( int i = 0; i < boxes.boxNumber(); ++i ) {
 		Matrix34 box;

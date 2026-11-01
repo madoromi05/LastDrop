@@ -22,7 +22,7 @@ namespace{
 	const float kMinTurnDistance = 0.05f;
 }
 
-ZombieLocomotion::ZombieLocomotion( const Zombie* self, const NavMesh* navMesh, const CharacterMover* mover, int sightPhase, int randomSeed ) :
+ZombieLocomotion::ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, const CharacterMover* mover, int sightPhase, int randomSeed ) :
 	mSelf( self ),
 	mNavMesh( navMesh ),
 	mMover( mover ),

@@ -1,6 +1,7 @@
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
 #include "GameSrc/Scene/Game/GameWorld.h"
-#include "GameSrc/Player/PlayerCharacter.h"
+#include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/World/GameObject.h"
 #include "GameSrc/Player/FirstPersonCamera.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/UI/UiScreen.h"
@@ -123,7 +124,7 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 bool GameDebugOverlay::raycast( const GameWorld& world, const FirstPersonCamera& camera, HitWorld::Hit* hit ) const {
 	Vector3 delta = camera.viewDirection();
 	delta *= kDebugRayLength;
-	return world.hitWorld().raycast( camera.eyePosition(), delta, world.player(), hit );
+	return world.hitWorld().raycast( camera.eyePosition(), delta, world.playerTarget(), hit );
 }
 
 void GameDebugOverlay::castRay( const GameWorld& world, const FirstPersonCamera& camera ) {
@@ -147,7 +148,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 	if ( mShowCollision ) {
 		castRay( world, camera );
 		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）。
-		mCollisionDrawer.draw( world.collisionWorld(), world.hitWorld(), camera.projectionViewMatrix(), world.player(), world.player() );
+		mCollisionDrawer.draw( world.collisionWorld(), world.hitWorld(), camera.projectionViewMatrix(), world.playerBody(), world.playerTarget() );
 	}
 	if ( mShowPickups ) {
 		// 落ちている物の箱を、手前の物に隠れない線で描く（壁の向こうの缶の場所が分かる）。拾われた物は世界が渡さない。
@@ -171,11 +172,11 @@ void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCam
 #ifdef ZF_EDITOR
 void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const {
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
-	const PlayerCharacter* player = world.player();
+	const GameObject* player = world.player();
 	if ( !mShowZombieHealth || !player ) {
 		return;
 	}
-	const PlayerHealth& health = player->health();
+	const PlayerHealth& health = player->getComponent< PlayerHealthComponent >()->health();
 	char text[ kDebugTextSize ];
 	std::snprintf( text, sizeof( text ), "Health %.0f/%.0f %s", health.current(), health.maxHealth(), playerConditionName( health.condition() ) );
 	renderer->addText( text, Vector2( kPlayerHealthLeft, kPlayerHealthTop ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );

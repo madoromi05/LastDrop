@@ -1,0 +1,42 @@
+#ifndef INCLUDED_STATIC_MODEL_COMPONENT_H
+#define INCLUDED_STATIC_MODEL_COMPONENT_H
+
+#include "GameSrc/World/Component.h"
+#include "GameSrc/World/IWorldMember.h"
+#include "GameSrc/Hit/IRayBlocker.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
+#include "GameSrc/Render/DrawCulling.h"
+
+class StaticMeshData;
+
+// 動かない置物の見た目 1 つ（車・ガソリン缶・落ちた弾。前の StaticProp の見た目の側）。
+// 置き場所と向きは、同じ物の TransformComponent から start で写す（置いた後は動かない）。
+// 弾・視線は見た目の三角形そのもので止める（IRayBlocker）。命中の名簿（HitWorld）へは自分で載り、物が消えるときに外れる（IWorldMember）。
+// 移動の当たり判定の箱は BoxColliderComponent（この見た目の頂点から求める）。
+class StaticModelComponent : public Component, public IRayBlocker, public IWorldMember{
+public:
+	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること。この部品より長く生きていること（MeshCache が持つ）。
+	// material: 表面の材質（着弾音に使う）。cullTarget: 何として間引くか（車は Large、缶は Small）。
+	StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget );
+
+	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く。
+	void draw( const DrawCulling& culling ) const;
+	const StaticMeshInstance& mesh() const;
+
+	// Component（TransformComponent が要る）
+	virtual void start();
+	// IRayBlocker
+	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal ) const;
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const; // 作るときに受け取った材質（どこに当たっても同じ）
+	// IWorldMember（命中の名簿にだけ載る）
+	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+
+private:
+	StaticMeshInstance mMesh;
+	GroundMaterial mMaterial;
+	DrawCulling::Target mCullTarget;
+};
+
+#endif

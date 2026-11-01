@@ -1,10 +1,26 @@
 #include "GameSrc/Scene/Game/GameWorld.h"
 #include "GameSrc/Render/MeshCache.h"
-#include "GameSrc/Player/PlayerCharacter.h"
 #include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Hit/DamageInfo.h"
-#include "GameSrc/Zombie/ChaseTarget.h"
-#include "GameSrc/Render/DrawCulling.h"
+#include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Component/SkinnedModelComponent.h"
+#include "GameSrc/Component/StaticModelComponent.h"
+#include "GameSrc/Component/HitboxComponent.h"
+#include "GameSrc/Component/CharacterColliderComponent.h"
+#include "GameSrc/Component/LightComponent.h"
+#include "GameSrc/Player/PlayerComponent.h"
+#include "GameSrc/Player/FirstPersonBodyComponent.h"
+#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Player/PlayerLocomotionComponent.h"
+#include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Weapon/GunComponent.h"
+#include "GameSrc/Weapon/WeaponModelComponent.h"
+#include "GameSrc/Effect/MuzzleFlashComponent.h"
+#include "GameSrc/Interaction/ItemComponent.h"
+#include "GameSrc/Interaction/PickupComponent.h"
+#include "GameSrc/Interaction/ItemSourceComponent.h"
+#include "GameSrc/Interaction/FuelTankComponent.h"
+#include "GameSrc/Zombie/ZombieAttack.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -27,6 +43,16 @@ namespace{
 	const char* kMagazineFile = "Resource/rifle_mag.txt"; // tools/configs/rifle_mag.json で変換（AKM の弾倉だけ。銃と同じ座標）
 	// 飛ぶ弾（7.62 NATO の弾頭。実物大・底が原点・先が +Y）。tools/configs/bullet_tip.json で変換
 	const char* kBulletFile = "Resource/bullet_tip.txt";
+	// 骨の名前の頭の共通部分（部位ごとの当たり判定で骨を引くのに使う）。
+	const char* kBoneNamePrefix = "mixamorig:";
+
+	// ── 物の名前（確認用。F6 のエディタの物の一覧・デバッグ出力。ゲームの判断はタグで行う）──
+	const char* kPlayerName = "Player";
+	const char* kWeaponName = "AK47";
+	const char* kFuelName = "Fuel";
+	const char* kAmmoDropName = "AmmoDrop";
+	const char* kEscapeCarName = "EscapeCar";
+	const char* kFuelStationName = "FuelStation";
 
 	// ── 背景 ──
 	const char* kZombieFile = "Resource/character.txt";
@@ -68,8 +94,8 @@ namespace{
 	// 車に入れると走れるようになるガソリンの数。候補の場所（TownMap）から、毎回この数だけ選んで置く（SpawnPicker）。
 	const int kRequiredFuel = 3;
 	const int kFuelPerCan = 1;
-	const bool kBlocksMovement = true;  // ガソリンは移動を止める（ユーザー指定）
-	const bool kWalkOver = false;       // 落ちた弾は上を歩ける（足元の小さな物で引っかからないように）
+	// 置物（車・ガソリン缶・落ちた弾）の表面の材質（着弾音）。どれも金属。木箱などを置くときは、物ごとに変える。
+	const GroundMaterial kPropMaterial = GROUND_METAL;
 
 	// ── ゾンビが落とす予備の弾（2026-10-22 ユーザー指定：40% で 10 発）──
 	// 1 体あたり平均 4 発。倒すのに 3〜6 発使うので、無駄撃ちすると減っていく（バイオハザードの乏しさ）。
@@ -84,6 +110,17 @@ namespace{
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
+	}
+
+	// 物の「使える」部品（見て E で使う）。拾える物・燃料タンク・置き場のどれか。無ければ nullptr。
+	IInteractable* interactableOf( GameObject* object ) {
+		if ( PickupComponent* pickup = object->getComponent< PickupComponent >() ) {
+			return pickup;
+		}
+		if ( FuelTankComponent* tank = object->getComponent< FuelTankComponent >() ) {
+			return tank;
+		}
+		return object->getComponent< ItemSourceComponent >();
 	}
 }
 
@@ -101,6 +138,9 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mObjects( &mCollisionWorld, &mHitWorld ),
+	mPlayer( nullptr ),
+	mPlayerControl( nullptr ),
+	mFuelTank( nullptr ),
 	mZombieNumber( 0 ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
 	// 読み込みを頼むだけ（非同期）。構築が終わったら place で並べる。
@@ -113,20 +153,17 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mVehicleData = meshes->staticMesh( kVehicleFile );
 	mFuelCanData = meshes->staticMesh( kFuelCanFile );
 	mAmmoDropData = meshes->staticMesh( kAmmoDropFile );
+	mZombieContext.hitWorld = &mHitWorld;
+	mZombieContext.crowd = &mCrowd;
 }
 
-// PlayerCharacter の定義が見える所で破棄する（ヘッダでは前方宣言だけ）。
+// ZombieFactory などの定義が見える所で破棄する。
 GameWorld::~GameWorld() {
 }
 
 void GameWorld::place() {
 	if ( mPlayerData->isReady() ) {
-		// 銃の構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
-		const StaticMeshData* weapon = mWeaponData->isReady() ? mWeaponData : nullptr;
-		const StaticMeshData* magazine = mMagazineData->isReady() ? mMagazineData : nullptr; // 失敗したら弾倉の無い銃になるだけ
-		const TownPlacement& start = mMap.playerStart();
-		mPlayer = std::make_unique< PlayerCharacter >( mPlayerData, weapon, magazine, &mCollisionWorld, toPosition( start ), start.yawDegree );
-		mPlayer->addTo( &mCollisionWorld, &mHitWorld );
+		placePlayer();
 	}
 	if ( mZombieData->isReady() ) {
 		// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
@@ -134,6 +171,7 @@ void GameWorld::place() {
 		rootMotionAnimations.push_back( kZombieStaggerAnimation );
 		rootMotionAnimations.push_back( kZombieAttackAnimation );
 		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, rootMotionAnimations );
+		mZombieFactory = std::make_unique< ZombieFactory >( mZombieModel.get(), &mCollisionWorld, &mNavMesh, &mZombieContext );
 		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
 		mZombieRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
 		// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）。
@@ -146,7 +184,7 @@ void GameWorld::place() {
 		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
 		// アニメを付けない（T ポーズ）。追ってこず、倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
 		// 止まった的なので、部位ごとの体力の減り方・のけぞりの向きを確かめやすい。
-		Zombie::Animations tPose;
+		ZombieAnimationNames tPose;
 		tPose.move = nullptr;
 		tPose.moveStartTime = 0.f;
 		tPose.idle = nullptr;
@@ -171,11 +209,40 @@ void GameWorld::place() {
 	mNavMesh.build( mCollisionWorld );
 }
 
+void GameWorld::placePlayer() {
+	// 銃 "AK47"（画像の obj_manager.Register( "AK47" )）。構築に失敗していたら素手で出す（キャラまで出さないと操作の確認ができないため）。
+	GameObject* weapon = nullptr;
+	if ( mWeaponData->isReady() ) {
+		const StaticMeshData* magazine = mMagazineData->isReady() ? mMagazineData : nullptr; // 失敗したら弾倉の無い銃になるだけ
+		weapon = mObjects.create( GameObjectTag::Weapon, kWeaponName );
+		weapon->addComponent< WeaponModelComponent >( mWeaponData, magazine );
+		weapon->addComponent< GunComponent >();
+		weapon->addComponent< LightComponent >();
+		weapon->addComponent< MuzzleFlashComponent >();
+		mObjects.spawn( weapon );
+	}
+	// 自キャラ。HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。
+	// 付ける順に意味がある：見た目 → 一人称の体（見た目に姿勢の書き換えを付ける）→ 持つ（体へ銃の持ち方を渡す）→ 歩き方（構えから最初のアニメを選ぶ）。
+	// PlayerComponent は部品を全部使うので最後の方、CharacterCollider はその形を PlayerComponent から聞く。
+	const TownPlacement& start = mMap.playerStart();
+	mPlayer = mObjects.create( GameObjectTag::Player, kPlayerName );
+	mPlayer->addComponent< TransformComponent >( toPosition( start ), start.yawDegree );
+	mPlayer->addComponent< SkinnedModelComponent >( mPlayerData );
+	mPlayer->addComponent< FirstPersonBodyComponent >( mPlayerData );
+	mPlayer->addComponent< HoldComponent >( mPlayerData, weapon );
+	mPlayer->addComponent< PlayerLocomotionComponent >( mPlayerData );
+	mPlayer->addComponent< PlayerHealthComponent >();
+	mPlayer->addComponent< HitboxComponent >( mPlayerData, kBoneNamePrefix );
+	mPlayer->addComponent< CharacterColliderComponent >( &mCollisionWorld );
+	mPlayerControl = mPlayer->addComponent< PlayerComponent >( mPlayerData );
+	mObjects.spawn( mPlayer );
+}
+
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
-	if ( !mZombieModel || mObjects.count< Zombie >() >= kMaxZombies ) {
+	if ( !mZombieFactory || mObjects.count< ZombieBrainComponent >() >= kMaxZombies ) {
 		return false;
 	}
-	Zombie::Animations animations;
+	ZombieAnimationNames animations;
 	animations.move = kZombieAnimation;
 	animations.moveStartTime = kAnimationStartStep * mZombieNumber;
 	animations.idle = kZombieIdleAnimation;
@@ -187,12 +254,10 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	return true;
 }
 
-void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombie::Animations& animations ) {
-	// 移動・命中の両方の当たり判定への登録は GameObjectWorld が行う。何体目か（mZombieNumber）で見通しを調べる時刻をずらす。
-	// うろつき方の乱数の種も体ごとに変える（同じ種だと全員が同じ向き・同じ間で歩き出す）。
-	int randomSeed = mZombieRandom.getInt();
-	mObjects.spawn( GameObjectTag::Zombie, std::make_unique< Zombie >( mZombieModel.get(), &mCollisionWorld, &mNavMesh,
-		position, yawDegree, animations, mZombieNumber, randomSeed ) );
+void GameWorld::addZombie( const Vector3& position, float yawDegree, const ZombieAnimationNames& animations ) {
+	// 何体目か（mZombieNumber）で見通しを調べる時刻をずらす。うろつき方の乱数の種も体ごとに変える
+	// （同じ種だと全員が同じ向き・同じ間で歩き出す）。
+	mZombieFactory->spawn( &mObjects, position, yawDegree, animations, mZombieNumber, mZombieRandom.getInt() );
 	++mZombieNumber;
 }
 
@@ -208,43 +273,62 @@ void GameWorld::placeBuildings( const StaticMeshData* data, const std::vector< T
 	}
 }
 
+GameObject* GameWorld::createProp( GameObjectTag tag, const char* name, const StaticMeshData* data, const Vector3& position,
+float yawDegree, DrawCulling::Target cullTarget, BoxColliderComponent::Mode colliderMode ) {
+	GameObject* prop = mObjects.create( tag, name );
+	prop->addComponent< TransformComponent >( position, yawDegree );
+	prop->addComponent< StaticModelComponent >( data, kPropMaterial, cullTarget );
+	prop->addComponent< BoxColliderComponent >( colliderMode ); // 箱は見た目の頂点から求めるので、見た目の後に付ける
+	return prop;
+}
+
 void GameWorld::placeMissionObjects() {
 	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない（その場合はクリアできないが、他の確認はできる）。
 	if ( mVehicleData->isReady() ) {
 		const TownPlacement& p = mMap.escapeCar();
-		mEscapeCar = std::make_unique< EscapeCar >( mVehicleData, toPosition( p ), p.yawDegree, kRequiredFuel );
-		mEscapeCar->addTo( &mCollisionWorld, &mHitWorld );
+		// 最後まで置いておく物なので、動かない箱として載せる（ゾンビの道の図にも、回り込む角として入る）。
+		GameObject* car = createProp( GameObjectTag::EscapeCar, kEscapeCarName, mVehicleData, toPosition( p ), p.yawDegree,
+			DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed );
+		mFuelTank = car->addComponent< FuelTankComponent >( kRequiredFuel );
+		mObjects.spawn( car );
 	}
 	if ( mFuelCanData->isReady() ) {
 		const TownPlacement& endless = mMap.endlessFuel();
-		mEndlessFuel = std::make_unique< ItemSource >( mFuelCanData, toPosition( endless ), endless.yawDegree, ITEM_FUEL );
-		mEndlessFuel->addTo( &mCollisionWorld, &mHitWorld );
-		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
+		GameObject* station = createProp( GameObjectTag::FuelStation, kFuelStationName, mFuelCanData, toPosition( endless ),
+			endless.yawDegree, DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed );
+		station->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
+		station->addComponent< ItemSourceComponent >();
+		mObjects.spawn( station );
+		// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。拾うと消えるので、外せる箱で載せる（移動を止める。ユーザー指定）。
 		unsigned seed = Framework::instance().time();
 		const std::vector< TownPlacement >& spawnPoints = mMap.fuelSpawnPoints();
 		for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kRequiredFuel, seed ) ) {
 			const TownPlacement& p = spawnPoints[ index ];
-			mObjects.spawn( GameObjectTag::Fuel,
-				std::make_unique< Pickup >( mFuelCanData, toPosition( p ), p.yawDegree, ITEM_FUEL, kFuelPerCan, kBlocksMovement ) );
+			GameObject* fuel = createProp( GameObjectTag::Fuel, kFuelName, mFuelCanData, toPosition( p ), p.yawDegree,
+				DrawCulling::Target::Small, BoxColliderComponent::Mode::Removable );
+			fuel->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
+			fuel->addComponent< PickupComponent >();
+			mObjects.spawn( fuel );
 		}
 	}
 }
 
 void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection,
 	Inventory* inventory ) {
-	// 前に撃った光を先に進めてから、このティックに撃った光を灯す（撃ったティックの描画が光り始めになる）。
-	mMuzzleFlash.update();
-	if ( mPlayer ) {
+	{
 		PROFILE_SCOPE( "World.player" );
-		mPlayer->update( command, cameraYaw, cameraPitch, inventory );
-		// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
-		if ( mPlayer->firedThisTick() ) {
-			// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。
-			PROFILE_EVENT( "Shot" );
-			mBullets.fire( mPlayer->eyePosition(), viewDirection );
-			mMuzzleFlash.fire();
-			alertZombiesToGunshot( mPlayer->position() );
+		if ( mPlayerControl ) {
+			mPlayerControl->setInput( command, cameraYaw, cameraPitch, inventory );
 		}
+		mObjects.update( UpdatePhase::Input );
+	}
+	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
+	const GunComponent* gun = mPlayer ? mPlayer->getComponent< HoldComponent >()->gun() : nullptr;
+	if ( gun && gun->firedThisTick() ) {
+		// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。
+		PROFILE_EVENT( "Shot" );
+		mBullets.fire( mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition(), viewDirection );
+		alertZombiesToGunshot( mPlayer->getComponent< TransformComponent >()->position() );
 	}
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
 	mImpacts.clear();
@@ -253,7 +337,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	mZombieAttacks.clear();
 	{
 		PROFILE_SCOPE( "World.bullets" );
-		mBullets.update( mHitWorld, mPlayer.get(), &mImpacts );
+		mBullets.update( mHitWorld, playerTarget(), &mImpacts );
 	}
 	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出し、着弾音のために材質を記録する。
 	// ゾンビ（target）には出さず、血しぶきを出す。
@@ -278,14 +362,19 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		PROFILE_SCOPE( "World.zombies" );
 		updateZombies();
 	}
+	// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）。
+	mObjects.update( UpdatePhase::Late );
 	// このティックで消す印の付いたものを、全員の更新が済んでから消す（名簿からも外れる）。
 	mObjects.flush();
-	// 名簿をたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
+	// どちらかが消えた死体と弾の組を捨てる（死体が消えた後も弾は残り、弾そのものを見て拾う）。
+	mCorpseDrops.erase( std::remove_if( mCorpseDrops.begin(), mCorpseDrops.end(),
+		[]( const CorpseDrop& link ) { return !link.corpse.get() || !link.drop.get(); } ), mCorpseDrops.end() );
+	// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
 	spawnZombiesFromSpawner( cameraYaw );
 }
 
 void GameWorld::alertZombiesToGunshot( const Vector3& position ) {
-	mObjects.forEach< Zombie >( [ &position ]( Zombie& zombie ) {
+	mObjects.forEach< ZombieBrainComponent >( [ &position ]( ZombieBrainComponent& zombie ) {
 		Vector3 toZombie;
 		toZombie.setSub( zombie.position(), position );
 		toZombie.y = 0.f;
@@ -297,47 +386,43 @@ void GameWorld::alertZombiesToGunshot( const Vector3& position ) {
 
 void GameWorld::updateZombies() {
 	// ゾンビが追う先は自キャラ（このティックに動いた後の位置）。自キャラが居なければ追わない。
-	ChaseTarget target;
-	const ChaseTarget* chaseTarget = nullptr;
+	mZombieContext.target = nullptr;
 	if ( mPlayer ) {
-		target.position = mPlayer->position();
-		target.eyePosition = mPlayer->eyePosition();
-		target.attackable = mPlayer->canBeAttacked();
-		target.attackTaken = false;
-		target.body = mPlayer.get();
-		chaseTarget = &target;
+		const PlayerHealthComponent* health = mPlayer->getComponent< PlayerHealthComponent >();
+		mChaseTarget.position = mPlayer->getComponent< TransformComponent >()->position();
+		mChaseTarget.eyePosition = mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition();
+		mChaseTarget.attackable = health->canBeAttacked();
+		mChaseTarget.attackTaken = false; // 体ごとに決め直す（ZombieBrainComponent::update）
+		mChaseTarget.body = playerBody();
+		mZombieContext.target = &mChaseTarget;
 	}
-	// 攻撃に行っているゾンビ（前のティックから続いている 1 体）。名簿をたどる途中で攻撃を始めた体も、ここへ入れて
-	// 後の体に attackTaken を渡す（同じティックに 2 体が攻撃を始めないように）。
-	const Zombie* attacker = nullptr;
-	mObjects.forEach< Zombie >( [ &attacker ]( const Zombie& zombie ) {
-		if ( !attacker && zombie.isAttacking() ) {
-			attacker = &zombie;
+	// 攻撃に行っているゾンビ（前のティックから続いている 1 体）。Think の段の途中で攻撃を始めた体も、そこへ入って
+	// 後の体が攻撃を始めない（同じティックに 2 体が攻撃を始めないように）。
+	mZombieContext.attacker = nullptr;
+	mObjects.forEach< ZombieBrainComponent >( [ this ]( const ZombieBrainComponent& zombie ) {
+		if ( !mZombieContext.attacker && zombie.isAttacking() ) {
+			mZombieContext.attacker = zombie.gameObject();
 		}
 	} );
 	// 立って歩ける体の位置（このティックに動く前）。近くの仲間を避けるのに全員が読む（倒れた体・這う体・死体は数えない）。
 	mCrowd.clear();
-	mObjects.forEach< Zombie >( [ this ]( const Zombie& zombie ) {
-		if ( zombie.state() == Zombie::State::Alive ) {
-			mCrowd.add( &zombie, zombie.bodyCenter() );
+	mObjects.forEach< ZombieBrainComponent >( [ this ]( const ZombieBrainComponent& zombie ) {
+		if ( zombie.state() == ZombieBrainComponent::State::Alive ) {
+			mCrowd.add( zombie.gameObject(), zombie.bodyCenter() );
 		}
 	} );
-	mObjects.forEach< Zombie >( [ & ]( Zombie& zombie ) {
-		target.attackTaken = ( attacker != nullptr && attacker != &zombie );
-		zombie.update( chaseTarget, mHitWorld, &mCrowd );
-		if ( !attacker && zombie.isAttacking() ) {
-			attacker = &zombie;
-		}
-		if ( zombie.hitTargetThisTick() && mPlayer ) {
+	mObjects.update( UpdatePhase::Think );
+	PlayerHealthComponent* playerHealth = mPlayer ? mPlayer->getComponent< PlayerHealthComponent >() : nullptr;
+	mObjects.forEach< ZombieBrainComponent >( [ & ]( ZombieBrainComponent& zombie ) {
+		if ( zombie.hitTargetThisTick() && playerHealth ) {
 			// 体力は体全体で 1 つなので、体を引きずって足元から腕を伸ばすゾンビも同じダメージ。
-			mPlayer->applyZombieHit( ZombieAttack::hitDamage() );
+			playerHealth->applyZombieHit( ZombieAttack::hitDamage() );
 			ZombieAttackEvent event;
 			event.point = zombie.headPosition();
 			mZombieAttacks.push_back( event );
 		}
 		// 沈み終わった死体は、全員の更新が済んでから消す（update の flush）。
 		if ( zombie.isGone() ) {
-			forgetCorpseDrop( zombie.gameObject() ); // 死体が消えた後も弾は残る（弾そのものを見て拾う）
 			mObjects.destroyLater( zombie.gameObject() );
 		}
 	} );
@@ -348,16 +433,16 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 		return; // ゾンビの形が無い・見えない所を決める自キャラが居ない
 	}
 	ZombieSpawner::View view;
-	view.playerEye = mPlayer->eyePosition();
+	view.playerEye = mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition();
 	view.viewYaw = cameraYaw;
 	view.standingZombies = 0;
-	mObjects.forEach< Zombie >( [ &view ]( const Zombie& zombie ) {
-		if ( zombie.state() == Zombie::State::Alive ) {
+	mObjects.forEach< ZombieBrainComponent >( [ &view ]( const ZombieBrainComponent& zombie ) {
+		if ( zombie.state() == ZombieBrainComponent::State::Alive ) {
 			++view.standingZombies;
 		}
 	} );
-	view.fuelDelivered = mEscapeCar ? mEscapeCar->fuelDelivered() : 0;
-	view.hasRoom = mObjects.count< Zombie >() < kMaxZombies;
+	view.fuelDelivered = mFuelTank ? mFuelTank->fuelDelivered() : 0;
+	view.hasRoom = mObjects.count< ZombieBrainComponent >() < kMaxZombies;
 	mSpawnOrders.clear();
 	mZombieSpawner->update( view, &mSpawnOrders );
 	for ( const ZombieSpawner::Order& order : mSpawnOrders ) {
@@ -368,12 +453,13 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 
 void GameWorld::hitZombie( const BulletList::Impact& impact ) {
 	const HitWorld::Hit& hit = impact.hit;
-	Zombie* zombie = mObjects.find< Zombie >( hit.target );
+	HitboxComponent* hitbox = mObjects.find< HitboxComponent >( hit.target );
+	ZombieBrainComponent* zombie = hitbox ? hitbox->getComponent< ZombieBrainComponent >() : nullptr;
 	if ( !zombie ) {
 		return; // ゾンビでない的（今は無いが、自キャラを撃つ相手が増えたとき）
 	}
 	PROFILE_EVENT( "ZombieHit" ); // 計測の印（血しぶき・ひるみ・部位欠損が始まる）
-	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力は Zombie が生きている間だけ減らす）。
+	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力はゾンビが生きている間だけ減らす）。
 	mBloodSpray.spawn( hit.point, impact.direction, ( hit.part == BodyPart::Head ) ? kHeadBloodScale : kBodyBloodScale );
 	ZombieHit event;
 	event.point = hit.point;
@@ -386,21 +472,16 @@ void GameWorld::hitZombie( const BulletList::Impact& impact ) {
 	damage.point = hit.point;
 	damage.direction = impact.direction;
 	bool wasAlive = zombie->isAlive();
-	zombie->applyDamage( damage );
+	zombie->applyDamage( damage ); // 倒れ始めたら（脚を失って倒れたときも）、ゾンビが自分で移動の名簿から外れる
 	if ( wasAlive && !zombie->isAlive() ) {
 		dropAmmo( *zombie ); // 脚を失って倒れたまま生きている（Downed）間は落とさない。止めを刺したときに落とす
 	}
 	for ( BodyPart part : zombie->severedByLastDamage() ) {
 		severLimb( *zombie, part, impact.direction );
 	}
-	// 倒れ始めたら（脚を失って倒れたときも）移動の名簿から外す（死体の上を歩ける）。命中の名簿には消えるまで残す（死体も弾を止める）。
-	// ここは名簿をたどっている最中ではないので、すぐ外してよい。外すのは何回呼んでも安全。
-	if ( !zombie->blocksMovement() ) {
-		mCollisionWorld.removeBody( zombie );
-	}
 }
 
-void GameWorld::severLimb( const Zombie& zombie, BodyPart part, const Vector3& direction ) {
+void GameWorld::severLimb( const ZombieBrainComponent& zombie, BodyPart part, const Vector3& direction ) {
 	// 切れた部位は、applyDamage の直後ならまだ見えている（体から消えるのは次の update）ので、その姿勢を写して飛ばす。
 	zombie.shownWorldPose( &mSeverPose );
 	const ZombieSeverLayout::Cut& cut = mZombieModel->severLayout().cut( part );
@@ -409,20 +490,19 @@ void GameWorld::severLimb( const Zombie& zombie, BodyPart part, const Vector3& d
 	mSeveredLimbs.spawn( mZombieData, cut, mSeverPose, direction );
 }
 
-void GameWorld::dropAmmo( const Zombie& zombie ) {
+void GameWorld::dropAmmo( const ZombieBrainComponent& zombie ) {
 	if ( !mAmmoDropData->isReady() || mZombieRandom.getFloat() >= kAmmoDropChance ) {
 		return; // 形の構築に失敗した（理由は MeshCache が出力済み）・外れた
 	}
 	if ( mObjects.countTagged( GameObjectTag::AmmoDrop ) >= kMaxAmmoDrops ) {
 		GameObject* oldest = mObjects.oldestTagged( GameObjectTag::AmmoDrop );
-		mBulletHoles.removeAttachedTo( oldest->component< Pickup >() ); // 物が消える前に外す
-		forgetCorpseDrop( oldest );
+		mBulletHoles.removeAttachedTo( oldest->getComponent< StaticModelComponent >() ); // 物が消える前に外す
 		mObjects.destroyLater( oldest );
 	}
 	Vector3 position = zombie.position();
 	if ( mPlayer ) {
 		Vector3 toPlayer;
-		toPlayer.setSub( mPlayer->position(), position );
+		toPlayer.setSub( mPlayer->getComponent< TransformComponent >()->position(), position );
 		toPlayer.y = 0.f;
 		if ( toPlayer.length() > kAmmoDropTowardPlayer ) {
 			toPlayer.normalize();
@@ -430,14 +510,13 @@ void GameWorld::dropAmmo( const Zombie& zombie ) {
 		}
 	}
 	float yaw = mZombieRandom.getFloat( kFullTurnDegree );
-	Pickup* drop = mObjects.spawn( GameObjectTag::AmmoDrop, std::make_unique< Pickup >( mAmmoDropData, position, yaw, ITEM_AMMO, kAmmoDropRounds, kWalkOver ) );
-	mCorpseDrops.push_back( CorpseDrop{ zombie.gameObject(), drop } );
-}
-
-void GameWorld::forgetCorpseDrop( const GameObject* object ) {
-	mCorpseDrops.erase( std::remove_if( mCorpseDrops.begin(), mCorpseDrops.end(),
-		[ object ]( const CorpseDrop& link ) { return link.corpse == object || link.drop->gameObject() == object; } ),
-		mCorpseDrops.end() );
+	// 足元の小さな物でつまずかないよう、移動の名簿には載せない（上を歩ける）。
+	GameObject* drop = createProp( GameObjectTag::AmmoDrop, kAmmoDropName, mAmmoDropData, position, yaw,
+		DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough );
+	drop->addComponent< ItemComponent >( ITEM_AMMO, kAmmoDropRounds );
+	drop->addComponent< PickupComponent >();
+	mObjects.spawn( drop );
+	mCorpseDrops.push_back( CorpseDrop{ GameObjectHandle( zombie.gameObject() ), GameObjectHandle( drop ) } );
 }
 
 void GameWorld::drawStatic( const DrawCulling& culling, const Vector3& eye ) const {
@@ -454,14 +533,8 @@ void GameWorld::drawStatic( const DrawCulling& culling, const Vector3& eye ) con
 		entry.second->draw( culling );
 	}
 	Profiling::gpuMark( "Buildings" );
-	if ( mEscapeCar ) {
-		mEscapeCar->draw( culling );
-	}
-	if ( mEndlessFuel ) {
-		mEndlessFuel->draw( culling );
-	}
-	// 落ちているガソリンと、ゾンビが落とした弾（どちらも Pickup の部品）。
-	mObjects.forEach< Pickup >( [ &culling ]( const Pickup& pickup ) { pickup.draw( culling ); } );
+	// 置物（車・ガソリンの置き場・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）。
+	mObjects.forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
 	Profiling::gpuMark( "Props" );
 	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く。
 	mGround.draw( culling.frustum() );
@@ -470,11 +543,17 @@ void GameWorld::drawStatic( const DrawCulling& culling, const Vector3& eye ) con
 
 void GameWorld::drawFirstPerson() const {
 	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので、動く物の中では最初に描く。
-	if ( mPlayer ) {
-		mPlayer->draw();
-	}
+	drawPlayer();
 	mBullets.draw();
 	Profiling::gpuMark( "Player" );
+}
+
+void GameWorld::drawPlayer() const {
+	if ( !mPlayer ) {
+		return;
+	}
+	mPlayer->getComponent< SkinnedModelComponent >()->draw();
+	mPlayer->getComponent< HoldComponent >()->draw(); // しまった武器は描かない
 }
 
 void GameWorld::drawCharacters( const DrawCulling& culling ) const {
@@ -486,28 +565,23 @@ void GameWorld::drawCharacters( const DrawCulling& culling ) const {
 void GameWorld::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) const {
 	// 深度だけなので、draw のような近い順の並べ替えはしない（速さにほとんど効かない）。
 	// 自キャラは部位の箱で間引く（月の遠い枚には映らないことが多い）。
-	if ( includesPlayer && mPlayer && culling.showsPosed( mPlayer->hitboxes(), DrawCulling::Target::Large ) ) {
-		mPlayer->draw();
+	if ( includesPlayer && mPlayer && culling.showsPosed( playerTarget()->hitboxes(), DrawCulling::Target::Large ) ) {
+		drawPlayer();
 	}
 	drawZombies( culling );
 	mSeveredLimbs.draw( culling );
 	for ( const Building& building : mBuildings ) {
 		building.draw( culling );
 	}
-	if ( mEscapeCar ) {
-		mEscapeCar->draw( culling );
-	}
-	if ( mEndlessFuel ) {
-		mEndlessFuel->draw( culling );
-	}
-	mObjects.forEach< Pickup >( [ &culling ]( const Pickup& pickup ) { pickup.draw( culling ); } );
+	mObjects.forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
 }
 
 void GameWorld::drawZombies( const DrawCulling& culling ) const {
 	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く（OptimizationA_Plan.txt 6-1）。
-	mObjects.forEach< Zombie >( [ &culling ]( const Zombie& zombie ) {
-		if ( culling.showsPosed( zombie.hitboxes(), DrawCulling::Target::Zombie ) ) {
-			zombie.draw();
+	mObjects.forEach< ZombieBrainComponent >( [ &culling ]( const ZombieBrainComponent& zombie ) {
+		const GameObject* object = zombie.gameObject();
+		if ( culling.showsPosed( object->getComponent< HitboxComponent >()->hitboxes(), DrawCulling::Target::Zombie ) ) {
+			object->getComponent< SkinnedModelComponent >()->draw();
 		}
 	} );
 }
@@ -525,30 +599,41 @@ void GameWorld::drawBloodSpray( const Matrix44& projectionView, const Vector3& v
 }
 
 void GameWorld::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) {
+	if ( !mPlayer ) {
+		return;
+	}
+	const HoldComponent* hold = mPlayer->getComponent< HoldComponent >();
+	GameObject* weapon = hold->heldObject();
+	MuzzleFlashComponent* flash = weapon ? weapon->getComponent< MuzzleFlashComponent >() : nullptr;
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
 	// 撃った後に銃をしまったら、銃口が無いので描かない。
-	if ( !mPlayer || !mPlayer->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+	if ( !flash || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
 		return;
 	}
-	mMuzzleFlash.draw( projectionView, viewDirection, muzzlePosition, muzzleDirection, mPlayer->aimWeight() );
+	flash->flash().draw( projectionView, viewDirection, muzzlePosition, muzzleDirection, hold->aimWeight() );
 }
 
 bool GameWorld::muzzleLight( LightSource* out ) const {
-	Vector3 muzzlePosition;
-	Vector3 muzzleDirection;
-	if ( !mPlayer || !mPlayer->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+	if ( !mPlayer ) {
 		return false;
 	}
-	return mMuzzleFlash.light( muzzlePosition, muzzleDirection, out );
+	const HoldComponent* hold = mPlayer->getComponent< HoldComponent >();
+	const GameObject* weapon = hold->heldObject();
+	const MuzzleFlashComponent* flash = weapon ? weapon->getComponent< MuzzleFlashComponent >() : nullptr;
+	Vector3 muzzlePosition;
+	Vector3 muzzleDirection;
+	if ( !flash || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+		return false;
+	}
+	return flash->flash().light( muzzlePosition, muzzleDirection, out );
 }
 
 void GameWorld::removeTakenPickups() {
-	// ガソリンも弾も同じ手順（どちらも Pickup の部品）。
-	mObjects.forEach< Pickup >( [ this ]( Pickup& pickup ) {
+	// ガソリンも弾も同じ手順（どちらも PickupComponent を持つ物）。
+	mObjects.forEach< PickupComponent >( [ this ]( PickupComponent& pickup ) {
 		if ( pickup.isTaken() ) {
-			mBulletHoles.removeAttachedTo( &pickup ); // 物が消える前に外す
-			forgetCorpseDrop( pickup.gameObject() );
+			mBulletHoles.removeAttachedTo( pickup.getComponent< StaticModelComponent >() ); // 物が消える前に外す
 			mObjects.destroyLater( pickup.gameObject() );
 		}
 	} );
@@ -559,12 +644,12 @@ IInteractable* GameWorld::findInteractable( const Vector3& origin, const Vector3
 	float nearest = 1.f;
 	IInteractable* found = nullptr;
 	HitWorld::Hit hit;
-	if ( mHitWorld.raycast( origin, delta, mPlayer.get(), &hit ) ) {
+	if ( mHitWorld.raycast( origin, delta, playerTarget(), &hit ) ) {
 		nearest = hit.time;
 		found = resolveInteractable( hit );
 	}
 	// 落ちている物の見る箱は名簿に無いので、ここで調べる。見た目より大きいので、手前に当たった物より近ければ見る箱を選ぶ。
-	mObjects.forEach< Pickup >( [ &origin, &delta, &nearest, &found ]( Pickup& pickup ) {
+	mObjects.forEach< PickupComponent >( [ &origin, &delta, &nearest, &found ]( PickupComponent& pickup ) {
 		float time;
 		if ( pickup.lookRaycast( origin, delta, &time ) && time <= nearest ) {
 			nearest = time;
@@ -577,25 +662,23 @@ IInteractable* GameWorld::findInteractable( const Vector3& origin, const Vector3
 IInteractable* GameWorld::resolveInteractable( const HitWorld::Hit& hit ) {
 	if ( hit.target ) {
 		// 死体（倒れ始めた後）なら、その死体が落とした弾。生きているゾンビ・脚を失って這っているゾンビ（まだ落としていない）は使えない。
-		const Zombie* zombie = mObjects.find< Zombie >( hit.target );
+		const HitboxComponent* hitbox = mObjects.find< HitboxComponent >( hit.target );
+		const ZombieBrainComponent* zombie = hitbox ? hitbox->getComponent< ZombieBrainComponent >() : nullptr;
 		if ( !zombie || zombie->isAlive() ) {
 			return nullptr;
 		}
+		GameObjectHandle corpse( zombie->gameObject() );
 		for ( const CorpseDrop& link : mCorpseDrops ) {
-			if ( link.corpse == zombie->gameObject() ) {
-				return link.drop;
+			GameObject* drop = link.drop.get();
+			if ( link.corpse == corpse && drop ) {
+				return drop->getComponent< PickupComponent >();
 			}
 		}
 		return nullptr; // 弾を落とさなかった死体
 	}
-	if ( Pickup* pickup = mObjects.find< Pickup >( hit.blocker ) ) {
-		return pickup; // 落ちているガソリン・落ちた弾
-	}
-	if ( mEndlessFuel && mEndlessFuel->isBody( hit.blocker ) ) {
-		return mEndlessFuel.get();
-	}
-	if ( mEscapeCar && mEscapeCar->isBody( hit.blocker ) ) {
-		return mEscapeCar.get();
+	// 落ちているガソリン・落ちた弾・車・置き場（弾を止める見た目の部品から、その物の使える部品をたどる）。
+	if ( StaticModelComponent* model = mObjects.find< StaticModelComponent >( hit.blocker ) ) {
+		return interactableOf( model->gameObject() );
 	}
 	return nullptr;
 }
@@ -620,20 +703,28 @@ const HitWorld& GameWorld::hitWorld() const {
 	return mHitWorld;
 }
 
-PlayerCharacter* GameWorld::player() {
-	return mPlayer.get();
+GameObject* GameWorld::player() {
+	return mPlayer;
 }
 
-const PlayerCharacter* GameWorld::player() const {
-	return mPlayer.get();
+const GameObject* GameWorld::player() const {
+	return mPlayer;
 }
 
-const EscapeCar* GameWorld::escapeCar() const {
-	return mEscapeCar.get();
+const IHittable* GameWorld::playerTarget() const {
+	return mPlayer ? mPlayer->getComponent< HitboxComponent >() : nullptr;
+}
+
+const ICollisionBody* GameWorld::playerBody() const {
+	return mPlayer ? mPlayer->getComponent< CharacterColliderComponent >() : nullptr;
+}
+
+const FuelTankComponent* GameWorld::fuelTank() const {
+	return mFuelTank;
 }
 
 bool GameWorld::isEscapeReady() const {
-	return mEscapeCar && mEscapeCar->isFueled();
+	return mFuelTank && mFuelTank->isFueled();
 }
 
 const GameObjectWorld& GameWorld::objects() const {
@@ -654,9 +745,9 @@ const ZombieSpawner* GameWorld::zombieSpawner() const {
 
 void GameWorld::appendPickupColliders( std::vector< BoxCollider >* out ) const {
 	// 見せるのはガソリンだけ（落ちた弾は足元に小さく落ちているだけで、運ぶ物ではない）。
-	mObjects.forEach< Pickup >( [ out ]( const Pickup& pickup ) {
+	mObjects.forEach< PickupComponent >( [ out ]( const PickupComponent& pickup ) {
 		if ( pickup.gameObject()->tag() == GameObjectTag::Fuel && !pickup.isTaken() ) {
-			out->push_back( pickup.collider() );
+			out->push_back( pickup.getComponent< BoxColliderComponent >()->collider() );
 		}
 	} );
 }
@@ -666,5 +757,5 @@ const std::vector< GameWorld::ZombieAttackEvent >& GameWorld::zombieAttacksThisT
 }
 
 bool GameWorld::isPlayerDead() const {
-	return mPlayer && mPlayer->isDead();
+	return mPlayer && mPlayer->getComponent< PlayerHealthComponent >()->isDead();
 }

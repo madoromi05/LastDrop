@@ -1,6 +1,13 @@
 #include "GameSrc/Scene/Game/GameScene.h"
 #include "GameSrc/Scene/GameResources.h"
-#include "GameSrc/Player/PlayerCharacter.h"
+#include "GameSrc/Player/PlayerComponent.h"
+#include "GameSrc/Player/FirstPersonBodyComponent.h"
+#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Component/LightComponent.h"
+#include "GameSrc/Weapon/GunComponent.h"
+#include "GameSrc/World/GameObject.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Render/DrawCulling.h"
@@ -72,6 +79,7 @@ GameScene::~GameScene() {
 		mResources->audio().setPaused( false );
 	}
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
+	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
 }
 
 void GameScene::pause() {
@@ -129,13 +137,14 @@ void GameScene::beginFrame() {
 #ifdef ZF_EDITOR
 	// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug と Profile ビルドだけで効く）。
 	if (InputDebugInvincible()) {
-		PlayerCharacter* player = mWorld.player();
+		GameObject* player = mWorld.player();
 		if (player) {
-			player->toggleInvincible();
+			player->getComponent< PlayerHealthComponent >()->toggleInvincible();
 		}
 	}
 	// F6 のエディタの一番上に出す。
-	EditorWindow::setPlayerInvincible( mWorld.player() && mWorld.player()->isInvincible() );
+	EditorWindow::setPlayerInvincible( mWorld.player() && mWorld.player()->getComponent< PlayerHealthComponent >()->isInvincible() );
+	EditorWindow::setObjects( &mWorld.objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
 
 
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
@@ -161,16 +170,16 @@ void GameScene::beginFrame() {
 
 #ifdef ZF_EDITOR
 void GameScene::spawnDebugZombies() {
-	const PlayerCharacter* player = mWorld.player();
+	const GameObject* player = mWorld.player();
 	if ( !player ) {
 		return;
 	}
-	// 視点の水平の向きの前と右（PlayerCharacter の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）。
+	// 視点の水平の向きの前と右（PlayerLocomotionComponent::readMoveDirection の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）。
 	float yaw = mControl.camera().yaw();
 	Vector3 forward( Math::sin( yaw ), 0.f, Math::cos( yaw ) );
 	Vector3 right( -Math::cos( yaw ), 0.f, Math::sin( yaw ) );
 	Vector3 center;
-	center.setMadd( player->position(), forward, kDebugSpawnDistance );
+	center.setMadd( player->getComponent< TransformComponent >()->position(), forward, kDebugSpawnDistance );
 	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）。
 	float firstOffset = -kDebugSpawnSpacing * static_cast< float >( kDebugSpawnNumber - 1 ) * kHalf;
 	for ( int i = 0; i < kDebugSpawnNumber; ++i ) {
@@ -196,14 +205,15 @@ void GameScene::update() {
 	mZombieHitSounds.play( mWorld.zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
 	mSurfaceHitSounds.play( mWorld.surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
-	PlayerCharacter* player = mWorld.player();
+	GameObject* player = mWorld.player();
+	const GunComponent* gun = player ? player->getComponent< HoldComponent >()->gun() : nullptr; // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
 	// 攻撃された怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
-	mControl.updateViewEffects( player && player->firedThisTick(), player ? player->aimSwayBody() : AimSwayBody() );
+	mControl.updateViewEffects( gun && gun->firedThisTick(), player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
 		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
-		player->setWeaponSway( mControl.camera().weaponSwayYaw(), mControl.camera().weaponSwayPitch() );
+		player->getComponent< FirstPersonBodyComponent >()->setWeaponSway( mControl.camera().weaponSwayYaw(), mControl.camera().weaponSwayPitch() );
 		mBodySounds.update( *player );
 	}
 #ifdef ZF_EDITOR
@@ -220,9 +230,9 @@ void GameScene::draw() {
 		return;
 	}
 	mControl.setEyeDrop( mDamageView.eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
-	const PlayerCharacter* player = mWorld.player();
+	const GameObject* player = mWorld.player();
 	if ( player ) {
-		Vector3 eye = player->eyePosition();
+		Vector3 eye = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
 		mControl.placeCamera( &eye, aimWeight() );
 	} else {
 		mControl.placeCamera( nullptr, aimWeight() );
@@ -361,7 +371,7 @@ void GameScene::draw() {
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mInteractor.prompt().c_str(), mWorld.escapeCar(), mInventory );
+		mHud.draw( mInteractor.prompt().c_str(), mWorld.fuelTank(), mInventory );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -471,11 +481,13 @@ void GameScene::addMoon( const LightingParams& params, const FirstPersonCamera& 
 
 void GameScene::addFlashlight( const LightingParams& params ) {
 	mFlashlightCastsShadow = false;
-	const PlayerCharacter* player = mWorld.player();
+	const GameObject* player = mWorld.player();
+	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
+	const LightComponent* light = hold ? hold->light() : nullptr; // 銃に付いたライト（素手なら無い）
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
 	// 銃をしまっている間は銃口が無い（muzzle が false）ので照らさない。付けた状態は自キャラが覚えている。
-	if ( !player || !player->isFlashlightOn() || !player->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+	if ( !light || !light->isOn() || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
 		return;
 	}
 	Vector3 position;
@@ -525,7 +537,7 @@ DrawCulling GameScene::cameraCulling( const FirstPersonCamera& camera ) const {
 }
 
 void GameScene::updateInteraction() {
-	PlayerCharacter* player = mWorld.player();
+	const GameObject* player = mWorld.player();
 	if ( !player ) {
 		return;
 	}
@@ -549,8 +561,8 @@ void GameScene::updateListener() {
 }
 
 float GameScene::aimWeight() const {
-	const PlayerCharacter* player = mWorld.player();
-	return player ? player->aimWeight() : 0.f;
+	const GameObject* player = mWorld.player();
+	return player ? player->getComponent< HoldComponent >()->aimWeight() : 0.f;
 }
 
 const FirstPersonCamera& GameScene::viewCamera() const {
@@ -576,9 +588,10 @@ void GameScene::updatePlayerDamage() {
 		mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
 	}
 	mZombieAttackSounds.play( mWorld.zombieAttacksThisTick() );
-	const PlayerCharacter* player = mWorld.player();
+	const GameObject* player = mWorld.player();
 	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
-	float healthRatio = player ? player->health().current() / player->health().maxHealth() : kFullHealthRatio;
+	const PlayerHealth* health = player ? &player->getComponent< PlayerHealthComponent >()->health() : nullptr;
+	float healthRatio = health ? health->current() / health->maxHealth() : kFullHealthRatio;
 	mDamageView.update( hit, healthRatio, mWorld.isPlayerDead() );
 	if ( mDamageView.isFadedOut() ) {
 		SceneManager::instance().requestChange( SceneManager::SCENE_GAME_OVER );
