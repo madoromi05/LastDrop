@@ -18,6 +18,7 @@ cbuffer DecalConstants : register(b1)
     float4 gDecalRight;                    // xyz: 箱の横の向き（長さ 1。絵の右）  w: 使わない
     float4 gDecalUp;                       // xyz: 箱の縦の向き（長さ 1。絵の上）  w: 使わない
     float4 gDecalFacing;                   // xyz: 貼る面の外向き（長さ 1）  w: 不透明度（古くなると下がる）
+    float4 gDecalUvRect;                   // 絵のうち使う所（xy: 左上  zw: 幅・高さ）。何種類かを 1 枚に並べた絵から選ぶ
 };
 
 static const float kBoxHalf = 0.5;           // 箱の中の座標の端
@@ -54,6 +55,7 @@ DecalOutput PSMain(float4 position : SV_Position)
         discard; // 空・箱の外の面には貼らない
     }
     float2 decalUv = float2(local.x + kBoxHalf, kBoxHalf - local.y); // 絵の上が箱の上（gDecalUp）
+    decalUv = gDecalUvRect.xy + decalUv * gDecalUvRect.zw;
     float4 color = gDecalAlbedo.Sample(gClampSampler, decalUv);
     float depthFade = saturate((kBoxHalf - abs(local.z)) / kDepthFadeWidth);
     float facingFade = saturate((dot(surface, gDecalFacing.xyz) - kMinFacing) / kFacingFadeRange);

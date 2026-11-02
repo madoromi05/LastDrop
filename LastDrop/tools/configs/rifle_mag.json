@@ -24,9 +24,11 @@
     },
     "mesh_texture": "Resource/rifle_albedo.tga",
     "mesh_normalmap": "Resource/rifle_normal.tga",
+    "mesh_orm": "Resource/rifle_orm.tga",
+    "mesh_orm_export": false,
     "material_params": {
-        "roughness": 0.5,
-        "metallic": 0.0,
+        "roughness": 1.0,
+        "metallic": 1.0,
         "specular": [
             0.15,
             0.15,

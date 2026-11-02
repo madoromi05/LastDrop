@@ -1005,6 +1005,19 @@ public:
 	}
 
 	void drawIndexed( int offset, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
+		int vpp = prepareIndexedDraw( prim );
+		mContext->DrawIndexed( primitiveNumber * vpp, offset * vpp, 0 );
+	}
+
+	void drawIndexedInstanced( int offset, int primitiveNumber, int instanceNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
+		STRONG_ASSERT( instanceNumber > 0 && "instanceNumber must be positive." );
+		int vpp = prepareIndexedDraw( prim );
+		mContext->DrawIndexedInstanced( primitiveNumber * vpp, instanceNumber, offset * vpp, 0, 0 );
+	}
+
+	// インデックス付きの描画の前の準備（定数を送る・形を決める・回数の印）。1 つの三角形などの頂点の数を返す。
+	// drawIndexed と drawIndexedInstanced が同じ準備を通るよう、ここ 1 か所にまとめる。
+	int prepareIndexedDraw( PrimitiveType prim ){
 		if ( mLightChanged )    sendLightingParameters();
 		if ( mMatricesChanged ) sendMatrices();
 		STRONG_ASSERT( mCurrentIB && "IndexBuffer is not set." );
@@ -1012,10 +1025,9 @@ public:
 		if ( !mCurrentTexture ) setTexture( mWhiteTexture );
 		D3D11_PRIMITIVE_TOPOLOGY topo = topologyOf( prim );
 		mContext->IASetPrimitiveTopology( topo );
-		int vpp = vertsPerPrim( prim );
 		flushConstantBuffers();
 		PROFILE_COUNT( "Gfx.draw", 1 );
-		mContext->DrawIndexed( primitiveNumber * vpp, offset * vpp, 0 );
+		return vertsPerPrim( prim );
 	}
 
 	static D3D11_PRIMITIVE_TOPOLOGY topologyOf( PrimitiveType prim ){
@@ -1242,6 +1254,23 @@ public:
 		mContext->RSSetViewports( 1, &vp );
 	}
 
+	// t の段 mip だけへ描く（深度なし）。描画範囲はその段の大きさ。
+	void setRenderTargetMip( RenderTarget::Impl* t, int mip ){
+		ASSERT( t && "Graphics::Manager : empty RenderTarget." );
+		unbindUserShaderResources();
+		t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		ASSERT( t->mMipLevels > 1 && "Graphics::Manager : setRenderTargetMip needs a RenderTarget with mips." );
+		ASSERT( mip >= 0 && mip < t->mMipLevels && "Graphics::Manager : mip out of range." );
+		mContext->OMSetRenderTargets( 1, &t->mMipRTVs[ mip ], 0 );
+		mTargetWidth  = t->mipWidth( mip );
+		mTargetHeight = t->mipHeight( mip );
+		D3D11_VIEWPORT vp = {};
+		vp.Width    = static_cast< float >( mTargetWidth );
+		vp.Height   = static_cast< float >( mTargetHeight );
+		vp.MaxDepth = 1.f;
+		mContext->RSSetViewports( 1, &vp );
+	}
+
 	// バックバッファへ戻し、描画範囲を setViewport で決めた範囲（論理座標）に戻す。
 	void resetRenderTargets(){
 		bindBackBuffer();
@@ -1274,6 +1303,13 @@ public:
 			t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
 		}
 		setShaderResource( slot, t ? t->mSRV : 0 );
+	}
+	void setShaderResource( int slot, RenderTarget::Impl* t, int mip ){
+		ASSERT( t && "Graphics::Manager : empty RenderTarget." );
+		t->fitToScreen( mBackBufferWidth, mBackBufferHeight );
+		ASSERT( t->mMipLevels > 1 && "Graphics::Manager : a mip of a RenderTarget without mips." );
+		ASSERT( mip >= 0 && mip < t->mMipLevels && "Graphics::Manager : mip out of range." );
+		setShaderResource( slot, t->mMipSRVs[ mip ] );
 	}
 	void setShaderResource( int slot, DepthTarget::Impl* t ){
 		if ( t ){

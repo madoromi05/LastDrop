@@ -67,7 +67,7 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mObjects( &mCollisionWorld, &mHitWorld ),
-	mCombat( &mObjects, &mEffects, &mPropFactory ),
+	mCombat( &mObjects, &mEffects, &mPropFactory, &mHitWorld ),
 	mInteraction( &mHitWorld, &mObjects, &mEffects ),
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ),

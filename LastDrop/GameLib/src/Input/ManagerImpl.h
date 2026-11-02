@@ -12,6 +12,8 @@
 using namespace GameLib::Math;
 
 #include "Input/JoystickImpl.h"
+#include "GameLib/Input/GamePad.h"
+#include "Input/GamePadImpl.h"
 
 namespace GameLib{
 namespace Input{
@@ -33,6 +35,7 @@ public:
 	mCursorHidden( false ),
 	mDiscardLockedDelta( false ),
 	mEnumeratedJoystick( 0 ),
+	mDirectInputPadNumber( 0 ),
 	mDirectInput( 0 ),
 	mWindowHandle( hwnd ),
 	mDoubleBufferIndex( 0 ){
@@ -41,6 +44,9 @@ public:
 		STRONG_ASSERT( hi );
 		hr = DirectInput8Create( hi, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&mDirectInput, 0);
 		STRONG_ASSERT( SUCCEEDED( hr ) );
+		for ( int i = 0; i < GamePad::PAD_MAX; ++i ){
+			mDirectInputPads[ i ] = 0;
+		}
 		//まず数えて確保
 		hr = mDirectInput->EnumDevices( DI8DEVCLASS_ALL, countCallback, this, DIEDFL_ATTACHEDONLY );
 		STRONG_ASSERT( SUCCEEDED( hr ) );
@@ -49,6 +55,8 @@ public:
 		}
 		hr = mDirectInput->EnumDevices( DI8DEVCLASS_ALL, createCallback, this, DIEDFL_ATTACHEDONLY );
 		STRONG_ASSERT( SUCCEEDED( hr ) );
+		//作れなかったジョイスティックは飛ばしたので、作れた数にそろえる（作っていない Impl を読んだり壊したりしない）
+		mJoystickNumber = mEnumeratedJoystick;
 		//マウスボタン初期化
 		for ( int i = 0; i < BUTTON_MAX; ++i ){
 			mButtons[ 0 ][ i ] = false;
@@ -59,6 +67,10 @@ public:
 			mKeys[ 0 ][ i ] = false;
 			mKeys[ 1 ][ i ] = false;
 		}
+		for ( int i = 0; i < GamePad::PAD_MAX; ++i ){
+			mGamePads[ i ].setUserIndex( static_cast< DWORD >( i ) );
+			mGamePads[ i ].setDirectInputPad( mDirectInputPads[ i ] );
+		}
 	}
 	~ManagerImpl(){
 		applyCursorCapture( false ); //隠したカーソル・閉じ込めを戻してから終わる
@@ -66,6 +78,10 @@ public:
 			mJoysticks[ i ].~Impl();
 		}
 		OPERATOR_DELETE( mJoysticks );
+		for ( int i = 0; i < GamePad::PAD_MAX; ++i ){
+			mGamePads[ i ].setDirectInputPad( 0 ); //借りている側から先に外す
+			SAFE_DELETE( mDirectInputPads[ i ] );
+		}
 
 		mDirectInput->Release();
 		mDirectInput = 0;
@@ -130,6 +146,10 @@ public:
 		for ( int i = 0; i < mJoystickNumber; ++i ){
 			mJoysticks[ i ].update();
 		}
+		bool active = WindowCreator().isActive();
+		for ( int i = 0; i < GamePad::PAD_MAX; ++i ){
+			mGamePads[ i ].update( active );
+		}
 	}
 	bool isButtonOn( Mouse::Button i ) const {
 		ASSERT( i < BUTTON_MAX );
@@ -162,6 +182,7 @@ public:
 	}
 	int mJoystickNumber;
 	Joystick::Impl* mJoysticks;
+	GamePad::Impl mGamePads[ GamePad::PAD_MAX ]; //差し口の数だけ常に持つ（抜き差しは各 Impl が追う）
 
 	//マウス
 	int mX;
@@ -232,10 +253,15 @@ private:
 
 	bool mCursorHidden; //ShowCursor( FALSE ) 済みか（ClipCursor もこの間だけ掛けている）
 	bool mDiscardLockedDelta; //次のロック中フレームの移動量を捨てるか（ロック開始直後・アクティブ復帰直後）
-	static BOOL CALLBACK countCallback( const DIDEVICEINSTANCE* instance, VOID* arg ){
+	//対応表（GamePadMapping）にあるパッドは型を問わず GamePad で読む（DualSense は GAMEPAD 型）。
+	//それ以外の JOYSTICK 型は今までどおり Joystick で読む（並びを置き換えないので、同じ機器を二重には読まない）。
+	static bool isJoystick( const DIDEVICEINSTANCE* instance ){
 		int type = instance->dwDevType & 0xff; //下位バイトがタイプ
+		return type == DI8DEVTYPE_JOYSTICK && !findGamePadLayout( instance->guidProduct.Data1 );
+	}
+	static BOOL CALLBACK countCallback( const DIDEVICEINSTANCE* instance, VOID* arg ){
 		ManagerImpl* self = static_cast< ManagerImpl* >( arg );
-		if ( type == DI8DEVTYPE_JOYSTICK ){
+		if ( isJoystick( instance ) ){
 			++( self->mJoystickNumber );
 		}
 		return DIENUM_CONTINUE;
@@ -245,13 +271,26 @@ private:
 		self->createDevice( instance );
 		return DIENUM_CONTINUE;
 	}
+	//使う機器だけ作る（キーボード・マウスは DirectInput では読まない）。作れなければその機器を飛ばす（起動を止めない）。
 	void createDevice( const DIDEVICEINSTANCE* instance ){
-		int type = instance->dwDevType & 0xff; //下位バイトがタイプ
+		const GamePadLayout* layout = findGamePadLayout( instance->guidProduct.Data1 );
+		bool usePad = layout && ( mDirectInputPadNumber < GamePad::PAD_MAX );
+		bool useJoystick = isJoystick( instance ) && ( mEnumeratedJoystick < mJoystickNumber );
+		if ( !usePad && !useJoystick ){
+			return;
+		}
 		IDirectInputDevice8* device;
 		HRESULT hr = mDirectInput->CreateDevice( instance->guidInstance, &device, 0);
-		STRONG_ASSERT( SUCCEEDED( hr ) );
-
-		if ( type == DI8DEVTYPE_JOYSTICK ){
+		if ( FAILED( hr ) ){
+			return;
+		}
+		if ( usePad ){
+			DirectInputPad* pad = DirectInputPad::create( device, layout, mWindowHandle );
+			if ( pad ){
+				mDirectInputPads[ mDirectInputPadNumber ] = pad;
+				++mDirectInputPadNumber;
+			}
+		}else{
 			new ( &mJoysticks[ mEnumeratedJoystick ] ) Joystick::Impl( device, mWindowHandle );
 			++mEnumeratedJoystick;
 		}
@@ -313,6 +352,8 @@ private:
 	void operator=( const ManagerImpl& ); //禁止
 
 	int mEnumeratedJoystick;
+	int mDirectInputPadNumber;
+	DirectInputPad* mDirectInputPads[ GamePad::PAD_MAX ]; //対応表にある DirectInput のパッド（見つけた順。i 番を mGamePads[ i ] が借りる）
 	IDirectInput8* mDirectInput;
 	const HWND mWindowHandle;
 	int mDoubleBufferIndex;

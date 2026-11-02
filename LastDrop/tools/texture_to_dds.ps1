@@ -32,17 +32,22 @@ $ResourceDir = "Resource"
 $Textures = @(
 	@{ Name = "building_albedo";      Kind = "Color";  MaxSize = 0 }
 	@{ Name = "building_normal";      Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "building_orm";         Kind = "Data";   MaxSize = 0 }  # 段階11 の ORM は tools/orm_gen.py で作る（MaterialTexture_Plan.txt）
 	@{ Name = "bullet_albedo";        Kind = "Color";  MaxSize = 0 }
 	@{ Name = "bullet_normal";        Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "bullet_orm";           Kind = "Data";   MaxSize = 0 }
 	@{ Name = "fuelcan_albedo";       Kind = "Color";  MaxSize = 0 }
 	@{ Name = "fuelcan_normal";       Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "fuelcan_orm";          Kind = "Data";   MaxSize = 0 }
 	@{ Name = "player_body_albedo";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body_normal";   Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "player_body_orm";      Kind = "Data";   MaxSize = 0 }
 	@{ Name = "player_body1_albedo";  Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body1_normal";  Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "player_body1_orm";     Kind = "Data";   MaxSize = 0 }
 	@{ Name = "rifle_albedo";         Kind = "Color";  MaxSize = 0 }
 	@{ Name = "rifle_normal";         Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "rifle_orm";            Kind = "Data";   MaxSize = 0 }
 	@{ Name = "road_albedo";          Kind = "Color";  MaxSize = 0 }
 	@{ Name = "road_normal";          Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "road_orm";             Kind = "Data";   MaxSize = 0 }
@@ -51,8 +56,11 @@ $Textures = @(
 	@{ Name = "uaz_orm";              Kind = "Data";   MaxSize = 0 }
 	@{ Name = "zombie_albedo";        Kind = "Color";  MaxSize = 2048 }
 	@{ Name = "zombie_normal";        Kind = "Normal"; MaxSize = 2048 }
+	@{ Name = "zombie_orm";           Kind = "Data";   MaxSize = 2048 }
 	# エフェクト（tools/*_gen.py で作り直したら、ここも走らせ直す）
 	@{ Name = "blood_drop";           Kind = "Color";  MaxSize = 0 }
+	@{ Name = "blood_stain";          Kind = "Color";  MaxSize = 0 }  # 血の跡のデカール（BloodStain_Plan.txt 5 章）
+	@{ Name = "blood_stain_normal";   Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "bullet_hole";          Kind = "Color";  MaxSize = 0 }
 	@{ Name = "bullet_hole_normal";   Kind = "Normal"; MaxSize = 0 }  # デカールの凹み（SsrDecalMaterial_Plan.txt 8-4）
 	@{ Name = "impact_smoke_sheet";   Kind = "Color";  MaxSize = 0 }

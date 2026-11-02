@@ -23,6 +23,7 @@ namespace{
 	const int kMaterialSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 2;
 	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kSceneColorSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
+	const int kHiZSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5; // Ssr.hlsl の t7
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 	// SsrBlur.hlsl の番号（t2 ぼかす元・t5 深度 / b1）。
 	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
@@ -46,8 +47,12 @@ namespace{
 		float intensity;
 		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
 		float unused;
+		float hiZLevels;        // Hi-Z の段の数
+		float hiZMaxIterations; // Hi-Z で進む回数の上限
+		float useHiZ;           // Hi-Z で進むか（1 / 0）
+		float unused2;
 	};
-	static_assert( sizeof( SsrConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kRowFloats * 2 ), "SsrConstants : keep the HLSL layout." );
+	static_assert( sizeof( SsrConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kRowFloats * 3 ), "SsrConstants : keep the HLSL layout." );
 	// SsrBlur.hlsl の cbuffer SsrBlurConstants と同じ並び。
 	struct SsrBlurConstants{
 		float inverseProjectionView[ kMatrixFloats ];
@@ -83,6 +88,12 @@ ScreenSpaceReflection::ScreenSpaceReflection() {
 	mBlurConstants = Graphics::ConstantBuffer::create( sizeof( SsrBlurConstants ) );
 }
 
+void ScreenSpaceReflection::buildHiZ( Graphics::DepthTarget depth ) {
+	if ( hiZEnabled() ) {
+		mHiZ.draw( depth );
+	}
+}
+
 void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::RenderTarget& sceneColor, Graphics::DepthTarget depth,
 	const Matrix44& projectionView, int noiseFrame ) {
 	const SsrParams& params = ssrParams();
@@ -99,6 +110,10 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	constants.intensity = params.intensity;
 	constants.noiseFrame = static_cast< float >( noiseFrame );
 	constants.unused = 0.f;
+	constants.hiZLevels = static_cast< float >( mHiZ.mipLevels() );
+	constants.hiZMaxIterations = std::floor( params.hiZMaxIterations + 0.5f ); // 整数（歩数と同じ理由）
+	constants.useHiZ = hiZEnabled() ? 1.f : 0.f;
+	constants.unused2 = 0.f;
 	mConstants.set( &constants, sizeof( constants ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();
@@ -109,8 +124,12 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	gm.setShaderResource( kMaterialSlot, gbuffer.material() );
 	gm.setShaderResource( kDepthSlot, depth );
 	gm.setShaderResource( kSceneColorSlot, sceneColor );
+	if ( hiZEnabled() ) {
+		gm.setShaderResource( kHiZSlot, mHiZ.result() );
+	}
 	gm.setConstantBuffer( kConstantSlot, mConstants );
 	gm.drawFullScreen();
+	gm.setShaderResource( kHiZSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kSceneColorSlot, Graphics::RenderTarget() );
@@ -156,10 +175,18 @@ const Graphics::RenderTarget& ScreenSpaceReflection::result() const {
 	return mReflection;
 }
 
+const Graphics::RenderTarget& ScreenSpaceReflection::hiZ() const {
+	return mHiZ.result();
+}
+
 const char* ScreenSpaceReflection::errorMessage() const {
 	const char* message = mShader.errorMessage();
 	if ( message[ 0 ] != '\0' ) {
 		return message;
 	}
-	return mBlurShader.errorMessage();
+	message = mBlurShader.errorMessage();
+	if ( message[ 0 ] != '\0' ) {
+		return message;
+	}
+	return mHiZ.errorMessage();
 }

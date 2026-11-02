@@ -34,7 +34,8 @@ namespace{
 
 WorldRenderer::WorldRenderer( const GameWorld* world, EffectManager* effects ) :
 	mWorld( world ),
-	mEffects( effects ) {
+	mEffects( effects ),
+	mBatchesBuildings( false ) {
 	ASSERT( world && effects && "WorldRenderer : an argument is null." );
 }
 
@@ -48,9 +49,12 @@ void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye )
 	}
 	std::sort( mBuildingDrawOrder.begin(), mBuildingDrawOrder.end(),
 		[]( const std::pair< float, const Building* >& a, const std::pair< float, const Building* >& b ) { return a.first < b.first; } );
+	// まとめて描くときも、形の中では近い順に詰めるので手前から描かれる（違う形どうしの順は混ざらない）。
+	beginBuildings();
 	for ( const auto& entry : mBuildingDrawOrder ) {
-		entry.second->draw( culling );
+		addBuilding( *entry.second, culling );
 	}
+	endBuildings();
 	Profiling::gpuMark( "Buildings" );
 	// 置物（車・ガソリンの置き場・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）。
 	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
@@ -88,7 +92,7 @@ void WorldRenderer::drawCharacters( const DrawCulling& culling ) const {
 	Profiling::gpuMark( "Zombies" );
 }
 
-void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) const {
+void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) {
 	// 深度だけなので、drawStatic のような近い順の並べ替えはしない（速さにほとんど効かない）。
 	// 自キャラは部位の箱で間引く（月の遠い枚には映らないことが多い）。
 	const IHittable* playerTarget = mWorld->playerTarget();
@@ -97,10 +101,33 @@ void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includes
 	}
 	drawZombies( culling );
 	mEffects->drawSeveredLimbs( culling );
+	beginBuildings();
 	for ( const Building& building : mWorld->buildings() ) {
-		building.draw( culling );
+		addBuilding( building, culling );
 	}
+	endBuildings();
 	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
+}
+
+void WorldRenderer::beginBuildings() {
+	mBatchesBuildings = instancingEnabled() && mInstancing.isReady();
+	mBuildingBatch.clear();
+}
+
+void WorldRenderer::addBuilding( const Building& building, const DrawCulling& culling ) {
+	if ( !mBatchesBuildings ) {
+		building.draw( culling ); // 1 軒ずつ（F6 で Instancing を切った見比べ・シェーダが無いとき）
+		return;
+	}
+	if ( building.shows( culling ) ) {
+		mBuildingBatch.add( building.mesh() );
+	}
+}
+
+void WorldRenderer::endBuildings() {
+	if ( mBatchesBuildings ) {
+		mBuildingBatch.draw( &mInstancing );
+	}
 }
 
 void WorldRenderer::drawZombies( const DrawCulling& culling ) const {

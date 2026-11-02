@@ -21,7 +21,8 @@ public:
 	// 2026-10-27 に世界を描く所を物ごとに分けて 9 個になったので、足す余地を残して 12。
 	// 2026-10-30 にグラフィック段階 6・7 の印（SSAO・SSR・SSR composite・Decals）で 16 個になり、後ろの 4 つ（Effects・PostProcess・
 	// FXAA・GBufferView）が捨てられて CSV の列から消えていた（Rest にまとめられていた）ので、足す余地を残して 20。
-	static const int kMaxMarks = 20;
+	// 2026-11-02 に 19 個。グラフィック段階12 の Hi-Z で 20、段階13 のボリュームフォグで 21 になるので 24（HiZSsr_Plan.txt Q8）。
+	static const int kMaxMarks = 24;
 
 	// 読めた 1 フレームぶんの結果。
 	struct Result{

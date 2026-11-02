@@ -46,11 +46,16 @@ namespace{
 	};
 	const int kLineCount = static_cast< int >( sizeof( kLines ) / sizeof( kLines[ 0 ] ) );
 
+	// パッド（DirectInput のジョイスティック・GamePad）の割り当てか。
+	bool isPadDevice( DeviceKind device ) {
+		return device == DeviceKind::Joystick || device == DeviceKind::GamePadButton || device == DeviceKind::GamePadAxis;
+	}
+
 	// work に割り当てたキーとマウスの名前（パッドはこの一覧では見せない。PC のキーとマウスで遊ぶ前提）。
 	std::string keyNames( WorkId work ) {
 		std::string names;
 		for ( const BindingRecord& record : Pad::instance()->bindings( kPlayer ) ) {
-			if ( record.work != work || record.device == DeviceKind::Joystick ) {
+			if ( record.work != work || isPadDevice( record.device ) ) {
 				continue;
 			}
 			if ( !names.empty() ) {

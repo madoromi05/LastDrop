@@ -19,6 +19,8 @@ enum class DeviceKind
     Joystick,
     MouseAxis, // マウスの軸（移動量・ホイール）。code は MouseAxisKind。ボタンと code が重なるので種別を分ける
                // （保存ファイルは番号で持つので、途中に挿さず末尾へ足すこと）
+    GamePadButton, // パッド（GamePad）のボタン。code は GamePad::Button
+    GamePadAxis,   // パッド（GamePad）のスティック。code は GamePadAxisKind（ボタンと code が重なるので種別を分ける）
 };
 
 // 入力ワーク（ゲームのアクション）種別
@@ -53,11 +55,13 @@ enum class WorkId
     UiLeft,   // 選んでいる部品（音量のスライダーなど）の値を下げる（押した瞬間）
     UiRight,  // 選んでいる部品の値を上げる（押した瞬間）
     Flashlight, // 銃の懐中電灯を付ける／消す（押した瞬間。Escape from Tarkov のタクティカルデバイスと同じ T）
+    Move,       // 移動（軸ワーク。パッドの左スティック。-1〜1・右と下が正）。キーの Up/Down/Left/Right と足して使う
+    LookStick,  // 視点操作（軸ワーク。パッドの右スティック。-1〜1）。Look（マウスの画素数）とは単位が違うので分ける
 };
 
 // WorkId の数（全部の操作を順に見るとき用。計測の印など）。
 // WorkId を末尾に足したら、ここの最後の WorkId も足した物に直すこと。
-constexpr int kWorkIdCount = static_cast< int >( WorkId::Flashlight ) + 1;
+constexpr int kWorkIdCount = static_cast< int >( WorkId::LookStick ) + 1;
 
 // コレクター（シーン別の入力割り当てグループ）種別
 enum class CollectorId
@@ -78,6 +82,13 @@ enum class JoystickAxisKind
     LeftStick = 0,
 };
 
+// パッド（GamePad）の軸種別（値は GamePad::Stick と同じ番号）
+enum class GamePadAxisKind
+{
+    LeftStick = 0,
+    RightStick = 1,
+};
+
 // ────────────────────────────────────────────────
 // バインド1件を表すデータ（保存/読込・デフォルト表の最小単位）
 //
@@ -86,6 +97,8 @@ enum class JoystickAxisKind
 //   Keyboard … ASCII（'w' など）
 //   Mouse    … Mouse::Button の整数値
 //   Joystick … ボタンコード（Joystick::BUTTON_UP など。A/B は 0,1）
+//   GamePadButton … GamePad::Button の整数値
+//   GamePadAxis   … GamePadAxisKind の整数値
 //
 // enum とコードだけで表現でき、そのまま整数として保存できるので
 // InputConfig がファイルへ書き出す最小単位になる。

@@ -1,5 +1,6 @@
 #include "GameSrc/Render/DeferredLighting.h"
 #include "GameSrc/Render/GBuffer.h"
+#include "GameSrc/Render/HiZBuffer.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -24,6 +25,8 @@ namespace{
 	const int kReflectionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 11;
 	// 月の模様（t14。SkyDetail.hlsli の gMoonTexture）。空を描くライティングのパスでだけ付ける。
 	const int kMoonTextureSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 12;
+	// Hi-Z（t15。表示の Hi-Z だけが読む）。ScreenSpaceReflection::hiZ。
+	const int kHiZViewSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 13;
 	const char* kMoonTextureFile = "Resource/moon.dds";
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
@@ -38,12 +41,13 @@ namespace{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float view;                                   // 表示する物（GBufferView の番号）
 		float depthViewRange;
-		float unused[ 2 ];
+		float hiZViewLevel;                           // 表示の Hi-Z で見る段
+		float unused;
 		float viewDepthRow[ kRowFloats ];             // 射影×ビューの 4 行目（位置との内積が目からの奥行き。SSAO の拡大に使う）
 	};
 	static_assert( sizeof( DeferredConstants ) == sizeof( float ) * ( kMatrixFloats + kParamFloats ), "DeferredConstants : keep the HLSL layout." );
 
-	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO", "SSR", "SSR color", "Motion" };
+	const char* const kViewNames[] = { "Final", "Albedo", "Normal", "Roughness", "Metallic", "Emission", "Depth", "Position", "Cascade", "Shadow maps", "Fog", "SSAO", "SSR", "SSR color", "Motion", "Hi-Z" };
 	static_assert( sizeof( kViewNames ) / sizeof( kViewNames[ 0 ] ) == static_cast< int >( GBufferView::Count ), "GBufferView : one name per view." );
 }
 
@@ -109,12 +113,14 @@ void DeferredLighting::drawReflection( const GBuffer& gbuffer, const Graphics::R
 }
 
 void DeferredLighting::drawView( GBufferView view, const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion,
-	const Graphics::RenderTarget& reflection, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
+	const Graphics::RenderTarget& reflection, const Graphics::RenderTarget& hiZ, Graphics::DepthTarget depth, const Matrix44& projectionView ) {
 	ASSERT( view != GBufferView::Final && "DeferredLighting : Final is not a G-Buffer view (use drawLighting)." );
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setShaderResource( kReflectionSlot, reflection ); // 表示の SSR・SSR color が読む
+	gm.setShaderResource( kHiZViewSlot, hiZ );           // 表示の Hi-Z が読む
 	drawFullScreen( view, gbuffer, occlusion, depth, projectionView );
 	gm.setShaderResource( kReflectionSlot, Graphics::RenderTarget() );
+	gm.setShaderResource( kHiZViewSlot, Graphics::RenderTarget() );
 }
 
 void DeferredLighting::setConstants( GBufferView view, const Matrix44& projectionView ) {
@@ -126,8 +132,8 @@ void DeferredLighting::setConstants( GBufferView view, const Matrix44& projectio
 	}
 	constants.view = static_cast< float >( view );
 	constants.depthViewRange = kDepthViewRange;
-	constants.unused[ 0 ] = 0.f;
-	constants.unused[ 1 ] = 0.f;
+	constants.hiZViewLevel = static_cast< float >( hiZViewLevel() );
+	constants.unused = 0.f;
 	const int kDepthRowStart = kMatrixFloats - kRowFloats; // m30..m33
 	for ( int i = 0; i < kRowFloats; ++i ) {
 		constants.viewDepthRow[ i ] = ( &projectionView.m00 )[ kDepthRowStart + i ];

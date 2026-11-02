@@ -9,6 +9,7 @@ namespace Input{
 class Keyboard;
 class Mouse;
 class Joystick;
+class GamePad;
 
 class Manager{
 public:
@@ -19,6 +20,8 @@ public:
 	Keyboard keyboard() const;
 	Joystick joystick( int i = 0 ) const;
 	int joystickNumber() const;
+	// パッド（0〜GamePad::PAD_MAX-1 番）。つながっていなくても返す（isConnected で見分ける）。
+	GamePad gamePad( int i = 0 ) const;
 
 	// カーソルロック（TPS/FPS の視点操作用）。ロック中は毎フレームカーソルを画面中央へ戻し、
 	// 中央からのずれを Mouse::velocityX/Y として返す（画面端で移動量が0にならない）。

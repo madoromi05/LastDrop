@@ -1,6 +1,7 @@
 #include "GameLib/Input/InputBuilder.h"
 #include "GameLib/Input/Joystick.h"
 #include "GameLib/Input/Keyboard.h"
+#include "GameLib/Input/GamePad.h"
 #include <cctype>
 
 using namespace GameLib::Input;
@@ -22,6 +23,9 @@ namespace
         case DeviceKind::Keyboard: return "Keyboard";
         case DeviceKind::Mouse:    return "Mouse";
         case DeviceKind::Joystick: return "Joystick";
+        // ボタンと軸は 1 つのデバイス（マウスと同じく、種別だけ分けて同じ名前）。
+        case DeviceKind::GamePadButton:
+        case DeviceKind::GamePadAxis: return "GamePad";
         default:                  return "";
         }
     }
@@ -60,6 +64,8 @@ namespace
         case WorkId::UiLeft:   return "UiLeft";
         case WorkId::UiRight:  return "UiRight";
         case WorkId::Flashlight: return "Flashlight";
+        case WorkId::Move:       return "Move";
+        case WorkId::LookStick:  return "LookStick";
         default:            return "";
         }
     }
@@ -139,6 +145,40 @@ namespace
         }
     }
 
+    std::string GamePadButtonName(int a_buttonCode)
+    {
+        switch (a_buttonCode)
+        {
+        case GamePad::BUTTON_A:           return "A";
+        case GamePad::BUTTON_B:           return "B";
+        case GamePad::BUTTON_X:           return "X";
+        case GamePad::BUTTON_Y:           return "Y";
+        case GamePad::BUTTON_LB:          return "LB";
+        case GamePad::BUTTON_RB:          return "RB";
+        case GamePad::BUTTON_BACK:        return "Back";
+        case GamePad::BUTTON_START:       return "Start";
+        case GamePad::BUTTON_LEFT_THUMB:  return "LS";
+        case GamePad::BUTTON_RIGHT_THUMB: return "RS";
+        case GamePad::BUTTON_DPAD_UP:     return "Up";
+        case GamePad::BUTTON_DPAD_DOWN:   return "Down";
+        case GamePad::BUTTON_DPAD_LEFT:   return "Left";
+        case GamePad::BUTTON_DPAD_RIGHT:  return "Right";
+        case GamePad::BUTTON_LT:          return "LT";
+        case GamePad::BUTTON_RT:          return "RT";
+        default:                            return "";
+        }
+    }
+
+    std::string GamePadAxisName(GamePadAxisKind a_axis)
+    {
+        switch (a_axis)
+        {
+        case GamePadAxisKind::LeftStick:  return "Left Stick";
+        case GamePadAxisKind::RightStick: return "Right Stick";
+        default:                         return "";
+        }
+    }
+
     // 入力設定ファイル名（プレイヤー番号で引く）
     const char* kInputConfigPaths[] = { "input_p0.xml", "input_p1.xml" };
     const int   kInputConfigPathCount = static_cast<int>(sizeof(kInputConfigPaths) / sizeof(kInputConfigPaths[0]));
@@ -152,27 +192,18 @@ namespace
     // ここが入力データの一元管理場所で、ゲーム側は番号で引くだけ。
     // ────────────────────────────────────────────────
 
-    // Player 0：キーボード＋マウス＋ジョイスティック
+    // Player 0：キーボード＋マウス＋パッド
     const BindingRecord kDefaultsP0[] = {
         { CollectorId::InGame, WorkId::Up,    DeviceKind::Keyboard, 'w' },
-        { CollectorId::InGame, WorkId::Up,    DeviceKind::Joystick, Joystick::BUTTON_UP },
         { CollectorId::InGame, WorkId::Down,  DeviceKind::Keyboard, 's' },
-        { CollectorId::InGame, WorkId::Down,  DeviceKind::Joystick, Joystick::BUTTON_DOWN },
         { CollectorId::InGame, WorkId::Left,  DeviceKind::Keyboard, 'a' },
-        { CollectorId::InGame, WorkId::Left,  DeviceKind::Joystick, Joystick::BUTTON_LEFT },
         { CollectorId::InGame, WorkId::Right, DeviceKind::Keyboard, 'd' },
-        { CollectorId::InGame, WorkId::Right, DeviceKind::Joystick, Joystick::BUTTON_RIGHT },
         { CollectorId::InGame, WorkId::Jump,  DeviceKind::Keyboard, ' ' },
-        { CollectorId::InGame, WorkId::Jump,  DeviceKind::Joystick, 0 },              // A
         { CollectorId::InGame, WorkId::Fire,  DeviceKind::Mouse,    Mouse::BUTTON_LEFT },
-        { CollectorId::InGame, WorkId::Fire,  DeviceKind::Joystick, 1 },              // B
         { CollectorId::InGame, WorkId::Dodge, DeviceKind::Keyboard, ' ' },
-        { CollectorId::InGame, WorkId::Dodge, DeviceKind::Joystick, 4 },              // LB
         { CollectorId::InGame, WorkId::Run,   DeviceKind::Keyboard, Keyboard::KEY_SHIFT },
-        { CollectorId::InGame, WorkId::Run,   DeviceKind::Joystick, 2 },              // X
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
-        { CollectorId::InGame, WorkId::Menu,  DeviceKind::Joystick, 7 },              // Start
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
         // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
@@ -197,7 +228,6 @@ namespace
         { CollectorId::InGame, WorkId::UiDown,   DeviceKind::Keyboard, 's' },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
-        { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Joystick, 0 },  // A
         // 設定画面のスライダーの値を変える。上下と同じく矢印キーと WASD の両方で
         // （A/D は移動の Left/Right と共有。設定の画面ではキャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, Keyboard::KEY_LEFT },
@@ -210,6 +240,26 @@ namespace
         { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 },
         // 計測の CSV の記録を始める／止める（2026-10-23 決定。F6 は ImGui のエディタに空けておく）。
         { CollectorId::InGame, WorkId::DebugRecordPerf, DeviceKind::Keyboard, Keyboard::KEY_F7 },
+
+        // ── パッド（ボタンは Xbox の並び。DualSense なども対応表で同じ並びに置き換えて読む） ──
+        // タルコフは PC 版にパッド対応が無いので、よくある FPS の配置（LT 構える・RT 撃つ）に合わせる。
+        // Jump・Dodge は今どこからも読まれていないので割り当てない（A は使う・決定に回す）。
+        { CollectorId::InGame, WorkId::Move,       DeviceKind::GamePadAxis,   static_cast<int>(GamePadAxisKind::LeftStick) },
+        { CollectorId::InGame, WorkId::LookStick,  DeviceKind::GamePadAxis,   static_cast<int>(GamePadAxisKind::RightStick) },
+        { CollectorId::InGame, WorkId::Run,        DeviceKind::GamePadButton, GamePad::BUTTON_LEFT_THUMB },
+        { CollectorId::InGame, WorkId::Fire,       DeviceKind::GamePadButton, GamePad::BUTTON_RT },
+        { CollectorId::InGame, WorkId::Aim,        DeviceKind::GamePadButton, GamePad::BUTTON_LT },
+        { CollectorId::InGame, WorkId::Holster,    DeviceKind::GamePadButton, GamePad::BUTTON_Y },
+        { CollectorId::InGame, WorkId::Reload,     DeviceKind::GamePadButton, GamePad::BUTTON_X },
+        { CollectorId::InGame, WorkId::Interact,   DeviceKind::GamePadButton, GamePad::BUTTON_A },
+        { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
+        { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
+        // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）。
+        { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
+        { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },
+        { CollectorId::InGame, WorkId::UiLeft,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_LEFT },
+        { CollectorId::InGame, WorkId::UiRight,    DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_RIGHT },
+        { CollectorId::InGame, WorkId::UiDecide,   DeviceKind::GamePadButton, GamePad::BUTTON_A },
     };
 
     // Player 1：キーボードのみ
@@ -238,6 +288,8 @@ std::string GameLib::Input::BindingDisplayName(const BindingRecord& a_record)
     case DeviceKind::MouseAxis:
         // 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる。
         return static_cast<MouseAxisKind>(a_record.code) == MouseAxisKind::Move ? "Mouse" : "Mouse " + MouseAxisName(static_cast<MouseAxisKind>(a_record.code));
+    case DeviceKind::GamePadButton: return "Pad " + GamePadButtonName(a_record.code);
+    case DeviceKind::GamePadAxis:   return "Pad " + GamePadAxisName(static_cast<GamePadAxisKind>(a_record.code));
     default:                    return "";
     }
 }
@@ -284,6 +336,15 @@ std::shared_ptr<JoystickDevice> InputBuilder::AddJoystickDevice(int a_joystickIn
     m_joystickButtons = device->AddInputButtonFormat<JoystickButtonFormat>(kFormatButtons);
     m_joystickAxes = device->AddInputAxisFormat<JoystickAxisFormat>(kFormatAxes);
     (void)a_joystickIndex; // JoystickButtonFormat/JoystickAxisFormat のプレイヤーID指定は今後の拡張ポイント
+    return device;
+}
+
+std::shared_ptr<GamePadDevice> InputBuilder::AddGamePadDevice()
+{
+    // ボタンと軸は同じデバイス名（"GamePad"）の下に置く（DeviceKindName は 2 つの種別に同じ名前を返す）。
+    auto device = m_input.AddDevice<GamePadDevice>(DeviceKindName(DeviceKind::GamePadButton));
+    m_gamePadButtons = device->AddInputButtonFormat<GamePadButtonFormat>(kFormatButtons);
+    m_gamePadAxes = device->AddInputAxisFormat<GamePadAxisFormat>(kFormatAxes);
     return device;
 }
 
@@ -356,6 +417,18 @@ std::shared_ptr<JoystickButtonFormat> InputBuilder::ensureJoystickButtonFormat()
     return m_joystickButtons;
 }
 
+std::shared_ptr<GamePadButtonFormat> InputBuilder::ensureGamePadButtonFormat()
+{
+    if (!m_gamePadButtons) AddGamePadDevice();
+    return m_gamePadButtons;
+}
+
+std::shared_ptr<GamePadAxisFormat> InputBuilder::ensureGamePadAxisFormat()
+{
+    if (!m_gamePadAxes) AddGamePadDevice();
+    return m_gamePadAxes;
+}
+
 std::shared_ptr<InputCollector> InputBuilder::ensureCollector(CollectorId a_collector)
 {
     auto col = m_input.GetCollector(CollectorName(a_collector));
@@ -399,6 +472,33 @@ void InputBuilder::UnbindMouseAxis(CollectorId a_collector, WorkId a_work, Mouse
     if (col) col->RemoveAxisFromAxisWork(WorkName(a_work), DeviceKindName(DeviceKind::Mouse), MouseAxisName(a_axis));
 }
 
+void InputBuilder::BindGamePadButton(CollectorId a_collector, WorkId a_work, int a_buttonCode)
+{
+    ensureGamePadButtonFormat()->AddButton(GamePadButtonName(a_buttonCode), a_buttonCode);
+    ensureCollector(a_collector)->AddButtonToButtonWork(
+        WorkName(a_work), DeviceKindName(DeviceKind::GamePadButton), GamePadButtonName(a_buttonCode));
+}
+
+void InputBuilder::UnbindGamePadButton(CollectorId a_collector, WorkId a_work, int a_buttonCode)
+{
+    auto col = m_input.GetCollector(CollectorName(a_collector));
+    if (col) col->RemoveButtonFromButtonWork(WorkName(a_work), DeviceKindName(DeviceKind::GamePadButton), GamePadButtonName(a_buttonCode));
+}
+
+void InputBuilder::BindGamePadAxis(CollectorId a_collector, WorkId a_work, GamePadAxisKind a_axis)
+{
+    // スティックはマウスの軸と同じく「軸ワーク」に登録する（値は押下状態ではなく傾き）。
+    ensureGamePadAxisFormat()->AddAxis(GamePadAxisName(a_axis), static_cast<int>(a_axis));
+    ensureCollector(a_collector)->AddAxisToAxisWork(
+        WorkName(a_work), DeviceKindName(DeviceKind::GamePadAxis), GamePadAxisName(a_axis));
+}
+
+void InputBuilder::UnbindGamePadAxis(CollectorId a_collector, WorkId a_work, GamePadAxisKind a_axis)
+{
+    auto col = m_input.GetCollector(CollectorName(a_collector));
+    if (col) col->RemoveAxisFromAxisWork(WorkName(a_work), DeviceKindName(DeviceKind::GamePadAxis), GamePadAxisName(a_axis));
+}
+
 void InputBuilder::UnbindKeyboard(CollectorId a_collector, WorkId a_work, char a_asciiKey)
 {
     auto col = m_input.GetCollector(CollectorName(a_collector));
@@ -436,6 +536,12 @@ void InputBuilder::Bind(const BindingRecord& a_record)
     case DeviceKind::MouseAxis:
         BindMouseAxis(a_record.collector, a_record.work, static_cast<MouseAxisKind>(a_record.code));
         break;
+    case DeviceKind::GamePadButton:
+        BindGamePadButton(a_record.collector, a_record.work, a_record.code);
+        break;
+    case DeviceKind::GamePadAxis:
+        BindGamePadAxis(a_record.collector, a_record.work, static_cast<GamePadAxisKind>(a_record.code));
+        break;
     }
 }
 
@@ -454,6 +560,12 @@ void InputBuilder::Unbind(const BindingRecord& a_record)
         break;
     case DeviceKind::MouseAxis:
         UnbindMouseAxis(a_record.collector, a_record.work, static_cast<MouseAxisKind>(a_record.code));
+        break;
+    case DeviceKind::GamePadButton:
+        UnbindGamePadButton(a_record.collector, a_record.work, a_record.code);
+        break;
+    case DeviceKind::GamePadAxis:
+        UnbindGamePadAxis(a_record.collector, a_record.work, static_cast<GamePadAxisKind>(a_record.code));
         break;
     }
 }

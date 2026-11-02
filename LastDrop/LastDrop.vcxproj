@@ -99,7 +99,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;xinput.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- ==================== Release|Win32 ==================== -->
@@ -118,7 +118,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;xinput.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- ==================== Debug|x64 ==================== -->
@@ -135,7 +135,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;xinput.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- ==================== Release|x64 ==================== -->
@@ -154,7 +154,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;xinput.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- ==================== Profile|x64 ==================== -->
@@ -174,7 +174,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d3d11.lib;dxgi.lib;d3dcompiler.lib;dsound.lib;dinput8.lib;xinput.lib;dxguid.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <!-- ==================== ソースファイル ==================== -->
@@ -220,6 +220,8 @@
     <ClCompile Include="GameSrc\src\Render\MeshLoaderUtil.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshData.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstancing.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshBatch.cpp" />
     <ClCompile Include="GameSrc\src\Player\HeldItem.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstance.cpp" />
     <ClCompile Include="GameSrc\src\Collision\SweepMath.cpp" />
@@ -291,6 +293,7 @@
     <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp" />
     <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp" />
     <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp" />
+    <ClCompile Include="GameSrc\src\Render\HiZBuffer.cpp" />
     <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp" />
     <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp" />
     <ClCompile Include="GameSrc\src\Render\ColorLut.cpp" />
@@ -410,6 +413,7 @@
     <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp" />
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp" />
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp" />
+    <ClCompile Include="GameSrc\src\Effect\BloodStainList.cpp" />
     <ClCompile Include="GameSrc\src\Render\DrawCulling.cpp" />
     <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp" />
@@ -456,6 +460,8 @@
       <ObjectFileName>$(IntDir)GameLib\Input\</ObjectFileName>
     </ClCompile>
     <ClCompile Include="GameLib\src\Input\Mouse.cpp" />
+    <ClCompile Include="GameLib\src\Input\GamePad.cpp" />
+    <ClCompile Include="GameLib\src\Input\GamePadMapping.cpp" />
     <!-- Math -->
     <ClCompile Include="GameLib\src\Math\Functions.cpp">
       <ObjectFileName>$(IntDir)GameLib\Math\</ObjectFileName>
@@ -615,6 +621,7 @@
     <ClInclude Include="GameLib\include\GameLib\Input\JoystickDevice.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\KeyboardDevice.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\MouseDevice.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\GamePadDevice.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Attribute.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Document.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Element.h" />
@@ -679,6 +686,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshLoaderUtil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshData.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstancing.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\HeldItem.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstance.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\BoxCollider.h" />
@@ -752,6 +761,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\PuddleParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\HiZBuffer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h" />
@@ -864,6 +874,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\SurfaceHitSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodStainList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\DrawCulling.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h" />
@@ -891,6 +902,10 @@
     <ClInclude Include="GameLib\include\GameLib\Input\Keyboard.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\Mouse.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\Joystick.h" />
+    <ClInclude Include="GameLib\include\GameLib\Input\GamePad.h" />
+    <ClInclude Include="GameLib\src\Input\GamePadImpl.h" />
+    <ClInclude Include="GameLib\src\Input\GamePadMapping.h" />
+    <ClInclude Include="GameLib\src\Input\DirectInputPad.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix44.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix34.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix33.h" />
@@ -946,6 +961,9 @@
     <None Include="Resource\Shader\SkinnedMeshShadow.hlsl" />
     <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshInstancing.hlsli" />
+    <None Include="Resource\Shader\StaticMeshInstancedGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshInstancedShadow.hlsl" />
     <None Include="Resource\Shader\DeferredLighting.hlsl" />
     <None Include="Resource\Shader\DeferredConstants.hlsli" />
     <None Include="Resource\Shader\Fog.hlsli" />
@@ -957,6 +975,7 @@
     <None Include="Resource\Shader\SoftQuad.hlsli" />
     <None Include="Resource\Shader\GlowQuad.hlsl" />
     <None Include="Resource\Shader\Ssr.hlsl" />
+    <None Include="Resource\Shader\HiZBuild.hlsl" />
     <None Include="Resource\Shader\SsrBlur.hlsl" />
     <None Include="Resource\Shader\SsrComposite.hlsl" />
     <None Include="Resource\Shader\SsrCommon.hlsli" />

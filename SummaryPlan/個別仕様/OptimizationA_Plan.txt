@@ -339,3 +339,53 @@
     1 フレームに描くのは最大 2 枚、12° 振り向く・2m 動くとすぐ描く、5° なら待つ）
   ・画面で見てほしいこと：急に振り向いた・走ったときに、遠くの建物の影が欠ける・遅れて付いてくるのが見えるか（見えたら moonRedrawAngle を下げる）。
     F7 の Shadow.cascades の平均が 3 → 約 1.75 になるか（4 フレームで 2・1・2・2 枚なので、中央値は 2）
+
+ 12-4. c インスタンシングの実装（2026-11-02。Debug・Profile・Release とも警告なしで build・シェーダは fxc でコンパイル確認・画面確認待ち）
+  ・GameLib：Graphics::Manager::drawIndexedInstanced( offset, primitiveNumber, instanceNumber )。drawIndexed と同じ準備（prepareIndexedDraw：
+    定数を送る・形を決める・Gfx.draw の印）を通ってから DrawIndexedInstanced
+  ・シェーダ：StaticMeshInstancing.hlsli（b1 に 128 軒 × 3 行の行列・placePoint / placeVector）、StaticMeshInstancedGBuffer.hlsl・StaticMeshInstancedShadow.hlsl。
+    G-Buffer へ書く中身は今と同じ writeGBuffer。b0 のワールド行列は単位行列にし、gTransform（射影×ビュー）で clip へ（骨の行列と同じ作り）
+  ・StaticMeshInstancing（新規。Render/StaticMesh）：シェーダ 2 つと b1 の定数バッファ。begin で今のパスのシェーダ・b1・単位行列を付け、
+    setPlacements で行列を送り、end で外す。WorldRenderer が 1 つ持つ。F6 → Render の Instancing（instancingEnabled）もここ
+  ・StaticMeshBatch（新規。Render/StaticMesh）：形（StaticMeshData）ごとに行列を集め、パーツごとに 1 回で描く。形の描く順はそのフレームで最初に足された順、
+    形の中は足した順（G-Buffer では目に近い順に足すので手前から）。128 軒を超えたら分けて描く
+  ・StaticMeshData::drawInstanced・StaticMeshPart::drawInstanced：材質を付け（bindForDraw は draw と共通）、countDraw を 1 回だけ数えて描く
+  ・WorldRenderer：建物は beginBuildings → addBuilding（描くかは Building::shows。今までと同じ DrawCulling）→ endBuildings。G-Buffer と影の 4 枚の両方。
+    Instancing を切った・シェーダが無いときは 1 軒ずつ（今までの描き方）
+  ・Building の当たり判定・弾の判定は変えていない（描き方だけ）
+  ・画面で見てほしいこと：建物の見た目と影が今と同じか（F6 の Instancing を切り替えて見比べる）。F7 の Draw.gbuffer・Draw.shadow が減るか、
+    gpu.Buildings が増えないか（形ごとの順になり Early-Z が少し落ちる可能性。11 章）
+
+ 12-5. 「後」の計測（a〜c。2026-11-02。どれも Profile・VSync なし・2560×1369・夜・ゾンビを湧かせたまま。起動は別なので場面は揃っていない）
+  ・前   ：Profiling/20261101_151855/perf_20261101_151907.csv（A-0 だけ。23,374 フレーム）
+  ・a+b  ：Profiling/20261102_044352/perf_20261102_044401.csv（インスタンシングの前。94,204 フレーム・2 分 30 秒）
+  ・a+b+c：Profiling/20261102_052744/perf_20261102_052805.csv（インスタンシングの後。86,101 フレーム・2 分 14 秒）
+  （同じフォルダの他の CSV は 0〜600 フレームの切れ端なので使わない）
+                                 前（中央値）   a+b          a+b+c        c の差（a+b → a+b+c）   全体の差（前 → a+b+c）
+   frameMs                       1.546          1.493        1.465        −0.028                   −0.081（−5%）
+   frameMs の 95%                2.610          2.144        2.146        変わらない               −0.464（−18%）
+   cpuMs                         0.669          0.511        0.466        −0.045（−9%）            −0.203（−30%）
+   gpuMs                         1.516          1.462        1.436        −0.026（揺れの内）       −0.080（−5%）
+   Scene.draw（CPU の描画）       0.374          0.211        0.160        −0.051（−24%）           −0.214（−57%）
+   World.draw                    0.062          0.051        0.027        −0.024                   −0.035
+   gpu.Shadow                    0.139          0.093        0.084        −0.009                   −0.055（−40%）
+   gpu.Buildings                 0.068          0.079        0.092        +0.013                   +0.024
+   gpu.Lighting                  0.650          0.640        0.615        −0.025（c は触っていない）
+   Draw.gbuffer                  80             74           25           −66%                     −69%
+   Draw.shadow（4 枚の合計）     395            119          33           −72%                     −92%
+   Shadow.cascades（平均）       3.00           1.75         1.75         —                        見込みどおり 1.75
+   Gfx.draw（全部）              474            187          62           −67%                     −87%
+   Material.apply                471            185          58           −69%                     −88%
+   Gfx.shader                    966            400          141          −65%                     −85%
+   Gfx.texture                   787            397          69           −83%                     −91%
+   Gfx.cbUser                    176            46           54           +8（置き場所の行列を送る分）
+   Cull.zombie                   —              71           65           （ゾンビの数は両方ほぼ同じ）
+  読み方
+   ・c だけで、描く回数は 187 → 62（G-Buffer 74 → 25・影 119 → 33）。G-Buffer の 25 回のうち建物は最大 4 回（2 種類 × 2 パーツ）
+   ・CPU の描画は c で −0.051ms、a〜c 全体で 0.374 → 0.160ms（−57%）。CPU 全体は 0.669 → 0.466ms（−30%）
+   ・影は b（遠い 2 枚の間引き）で 3 → 1.75 枚。gpu.Shadow は全体で −40%
+   ・GPU 全体は −0.08ms（−5%）。c で動いた −0.026ms は、c と関係ないライティングも −0.025ms 動いているので場面の揺れの内と読む。
+     フレームは今も GPU で決まっている（GPU 1.44ms ＞ CPU 0.47ms）。GPU を減らすのは d（画質の設定）
+   ・gpu.Buildings は c で +0.013ms。11 章の懸念（形ごとの順で Early-Z が落ちる）の分かもしれないが、a+b でも +0.011ms 動いていて（建物の描き方は変えていない）
+     場面の揺れと同じ大きさなので、この 2 本では分けられない。分けるなら、同じ場所・同じ向きで F6 の Instancing を ON / OFF して 30 秒ずつ録る
+   ・95% のフレーム時間は a+b で 2.61 → 2.14ms（影の重い所が減った）。c では変わらない

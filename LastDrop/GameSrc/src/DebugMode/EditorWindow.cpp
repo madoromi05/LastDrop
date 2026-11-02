@@ -12,13 +12,19 @@
 #include "GameSrc/Render/SsaoParams.h"
 #include "GameSrc/Render/PuddleParams.h"
 #include "GameSrc/Render/SsrParams.h"
+#include "GameSrc/Render/HiZBuffer.h"
 #include "GameSrc/Render/LitQuadBatch.h"
 #include "GameSrc/Render/DecalBatch.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshInstancing.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
+#include "GameLib/Input/Manager.h"
+#include "GameLib/Input/GamePad.h"
+#include "GameLib/Input/InputBuilder.h"
 #include "ThirdParty/imgui/imgui.h"
+#include <string>
 
 namespace{
 	// 窓の幅は画面の幅に合わせる。照準（画面の中央）を隠さないよう半分より細くし、大きい画面でも広げすぎない。
@@ -30,8 +36,12 @@ namespace{
 	const float kMaxTimeScale = 2.f;
 	const float kNormalTimeScale = 1.f;
 	const char* const kTimeScaleFormat = "%.2f";
+	// G-Buffer の表示の Hi-Z で見る段のスライダー。上限は 4K の半分（1920）でも 1 画素まで届く段の数（それより上は一番粗い段に丸まる）。
+	const int kMaxHiZViewLevel = 11;
+	const float kHiZLevelSliderWidth = 80.f; // チェックボックスと同じ行に並べる幅（画素）
 	// 無敵の行。ON は見落とさないよう赤くし、OFF は他の説明の行と同じ灰色にする。
 	const ImVec4 kInvincibleOnColor( 1.f, 0.3f, 0.3f, 1.f );
+	const int kShownGamePad = 0; // Pad の欄に出すパッド（自キャラを動かすのは 0 番だけ）
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
@@ -74,6 +84,25 @@ namespace{
 			ImGui::Text( "%d", object.componentNumber() );
 		} );
 		ImGui::EndTable();
+	}
+
+	// パッドの 0 番の今の入力（どこから読んでいるか・押しているボタン・スティック）。
+	// DualSense などを対応表（GameLib の GamePadMapping）で Xbox の並びに置き換えているので、押したボタンが正しい名前で出るかを見る。
+	void drawGamePad() {
+		GameLib::Input::GamePad pad = GameLib::Input::Manager::instance().gamePad( kShownGamePad );
+		ImGui::Text( "Source: %s", pad.sourceName() );
+		std::string pressed;
+		for ( int i = 0; i < GameLib::Input::GamePad::BUTTON_MAX; ++i ) {
+			if ( !pad.isOn( static_cast< GameLib::Input::GamePad::Button >( i ) ) ) {
+				continue;
+			}
+			// ボタンの名前は GameLib が持つ（割り当ての表示と同じ名前）。
+			GameLib::Input::BindingRecord record{ GameLib::Input::CollectorId::InGame, GameLib::Input::WorkId::Up, GameLib::Input::DeviceKind::GamePadButton, i };
+			pressed += GameLib::Input::BindingDisplayName( record ) + " ";
+		}
+		ImGui::Text( "Pressed: %s", pressed.c_str() );
+		ImGui::Text( "Left  %+.2f %+.2f", pad.stickX( GameLib::Input::GamePad::STICK_LEFT ), pad.stickY( GameLib::Input::GamePad::STICK_LEFT ) );
+		ImGui::Text( "Right %+.2f %+.2f", pad.stickX( GameLib::Input::GamePad::STICK_RIGHT ), pad.stickY( GameLib::Input::GamePad::STICK_RIGHT ) );
 	}
 
 	void drawInvincible() {
@@ -129,6 +158,10 @@ namespace{
 		ImGui::Checkbox( "Shadows", &shadowsEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(flashlight + moon cascades)" );
+		// 建物を形ごとにまとめて描くか（OptimizationA_Plan.txt 8-3）。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings。
+		ImGui::Checkbox( "Instancing", &instancingEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(buildings)" );
 		// 霧を掛けるか（NightFinish_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる。
 		ImGui::Checkbox( "Fog", &fogEnabled() );
 		ImGui::SameLine();
@@ -149,6 +182,13 @@ namespace{
 		ImGui::Checkbox( "SSR", &ssrEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > SSR / SSR color)" );
+		// Hi-Z（HiZSsr_Plan.txt 6・8 章）。切ると今までの直線の進み方（段階12 の計測が終わったら直線は消す）。時間は gpu.Hi-Z・gpu.SSR。
+		ImGui::Checkbox( "Hi-Z", &hiZEnabled() );
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth( kHiZLevelSliderWidth );
+		ImGui::SliderInt( "Hi-Z view level", &hiZViewLevel(), 0, kMaxHiZViewLevel );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(view: G-Buffer > Hi-Z)" );
 		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6・9 章）。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える。
 		ImGui::Checkbox( "Puddles", &puddlesEnabled() );
 		ImGui::SameLine();
@@ -245,6 +285,9 @@ void draw() {
 		}
 		if ( ImGui::CollapsingHeader( "Objects" ) ) {
 			drawObjects();
+		}
+		if ( ImGui::CollapsingHeader( "Pad" ) ) {
+			drawGamePad();
 		}
 		drawPlannedHeader( "Zombies / Audio (next)" );
 	}

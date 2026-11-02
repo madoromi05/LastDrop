@@ -308,6 +308,12 @@
     <ClCompile Include="GameLib\src\Input\Mouse.cpp">
       <Filter>GameLib\Input</Filter>
     </ClCompile>
+    <ClCompile Include="GameLib\src\Input\GamePad.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\Input\GamePadMapping.cpp">
+      <Filter>GameLib\Input</Filter>
+    </ClCompile>
     <!-- Math -->
     <ClCompile Include="GameLib\src\Math\Functions.cpp">
       <Filter>GameLib\Math</Filter>
@@ -807,6 +813,12 @@
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstancing.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshBatch.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Player\HeldItem.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
@@ -943,6 +955,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\HiZBuffer.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp">
@@ -1236,6 +1251,9 @@
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Effect\BloodStainList.cpp">
+      <Filter>GameSrc\Effect</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
@@ -1371,6 +1389,21 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Input\Joystick.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\GamePad.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\Input\GamePadDevice.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Input\GamePadImpl.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Input\GamePadMapping.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Input\DirectInputPad.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix44.h">
@@ -1634,6 +1667,12 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstancing.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshBatch.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\HeldItem.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
@@ -1848,6 +1887,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\PuddleParams.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\HiZBuffer.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h">
@@ -2186,6 +2228,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h">
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodStainList.h">
+      <Filter>GameSrc\Effect</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h">
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
@@ -2274,6 +2319,9 @@
     <None Include="Resource\Shader\SkinnedMeshShadow.hlsl" />
     <None Include="Resource\Shader\SkinnedMeshGBuffer.hlsl" />
     <None Include="Resource\Shader\StaticMeshGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshInstancing.hlsli" />
+    <None Include="Resource\Shader\StaticMeshInstancedGBuffer.hlsl" />
+    <None Include="Resource\Shader\StaticMeshInstancedShadow.hlsl" />
     <None Include="Resource\Shader\DeferredLighting.hlsl" />
     <None Include="Resource\Shader\DeferredConstants.hlsli" />
     <None Include="Resource\Shader\Fog.hlsli" />
@@ -2285,6 +2333,7 @@
     <None Include="Resource\Shader\SoftQuad.hlsli" />
     <None Include="Resource\Shader\GlowQuad.hlsl" />
     <None Include="Resource\Shader\Ssr.hlsl" />
+    <None Include="Resource\Shader\HiZBuild.hlsl" />
     <None Include="Resource\Shader\SsrBlur.hlsl" />
     <None Include="Resource\Shader\SsrComposite.hlsl" />
     <None Include="Resource\Shader\SsrCommon.hlsli" />

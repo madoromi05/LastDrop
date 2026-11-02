@@ -44,6 +44,9 @@ public:
 	bool updateLoading();
 	// world の位置・向き・大きさで描画する。upload 前なら何もしない。
 	void draw( const GameLib::Math::Matrix34& world ) const;
+	// instanceNumber 個まとめて描画する（インスタンシング。OptimizationA_Plan.txt 8 章）。upload 前なら何もしない。
+	// シェーダ・置き場所・ワールド行列は StaticMeshInstancing が付けておく（ここでは選ばない）。
+	void drawInstanced( int instanceNumber ) const;
 	// 弾の当たり判定。座標はモデルの空間（置く前）。意味は TriangleMesh::raycast と同じ。upload 前なら当たらない。
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
@@ -57,6 +60,9 @@ public:
 	unsigned short sourceIndex( int i ) const;
 
 private:
+	// 材質（テクスチャ・材質値）・頂点・インデックスを付ける。draw と drawInstanced の共通の準備。
+	void bindForDraw() const;
+
 	// 構築中だけ使う作業用配列。upload 後は空になる（mKeepsSource なら残す）。
 	GameLib::Array< GameLib::Graphics::Vertex > mStagingVertices;
 	GameLib::Array< unsigned short > mStagingIndices;

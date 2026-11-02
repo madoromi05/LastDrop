@@ -172,6 +172,8 @@ bool InputFireHeld   (int playerId) { return Pad::instance()->isOn(WorkId::Fire,
 bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(WorkId::Dodge, playerId); }
 bool InputRun        (int playerId) { return Pad::instance()->isOn(WorkId::Run, playerId); }
 AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Look, playerId); }
+AxisStatus InputMove (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Move, playerId); }
+AxisStatus InputLookStick(int playerId) { return Pad::instance()->getAxisWorkState(WorkId::LookStick, playerId); }
 bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(WorkId::Menu, playerId); }
 bool InputAim        (int playerId) { return Pad::instance()->isOn(WorkId::Aim, playerId); }
 bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(WorkId::Holster, playerId); }

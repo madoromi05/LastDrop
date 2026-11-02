@@ -54,6 +54,8 @@ CONFIG = {
     # texture_export_size > 0 なら、texture_sources の mesh_orm_roughness（必須）・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す。
     # ORM を付けた材質は、material_params の roughness / metallic を 1 にする（ゲームは「数値 × 画像」で読む）。
     "mesh_orm": "",
+    # False なら mesh_orm を書き出さず、属性だけ書く（ORM を tools/orm_gen.py で別に作る物。MaterialTexture_Plan.txt 4 章）。
+    "mesh_orm_export": True,
     # 材質値（任意）。書いたものだけ出力し、無ければゲーム側 MeshMaterial の既定値になる。
     # 例: {"specular": (0.01, 0.01, 0.01), "sharpness": 8.0, "normalstrength": 0.3, "diffuse": (1, 1, 1)}
     "material_params": {},
@@ -68,7 +70,8 @@ CONFIG = {
     # マテリアル名 → そのパーツの見た目。書くと <SkinnedMesh> の中をマテリアルごとの <Part> に分け、
     # パーツごとに別のテクスチャで描く（マテリアルごとに別のテクスチャ組を持つモデル用。Mixamo の体/髪など）。
     # 空なら従来どおり mesh_texture の1組で全体を描く。
-    # 値に書けるもの: texture / normalmap（ゲームの作業フォルダ基準のパス）と material_params と同じ材質値。
+    # 値に書けるもの: texture / normalmap / ormmap（ゲームの作業フォルダ基準のパス）と material_params と同じ材質値。
+    # ormmap は書き出さない（tools/orm_gen.py で作る。MaterialTexture_Plan.txt 4 章）。
     # 例: {"Ch15_body": {"texture": "Resource/a.tga", "normalmap": "Resource/a_n.tga", "sharpness": 16.0}}
     "parts": {},
     # >0 なら、parts のテクスチャを FBX 内の画像（Base Color / Normal Map に繋がった画像）から
@@ -101,6 +104,11 @@ CONFIG = {
     # 箱は Blender に読み込んだ向き・大きさ（scale・rotation を掛ける前。Z が上）。keep は "inside"（箱の中の島だけ残す）か "outside"（箱の中の島を除く）。
     # 例: {"min": [-0.013, -0.1, 1.33], "max": [0.013, 0.045, 1.512], "keep": "inside"}。None なら全部残す。
     "island_filter": None,
+    # static モードのみ。面の表裏を反転する場所の並び。object のメッシュのうち、中心が箱に入る面を裏返す。
+    # 片面の板の表が逆を向いているモデル用（UAZ のミラーのガラスは表が車の前を向き、後ろから見ると背面カリングで消える）。
+    # 箱は island_filter と同じく Blender に読み込んだ向き・大きさ。1 面も当たらない場所はエラーにする（箱の書き間違いに気付くため）。
+    # 例: [{"object": "_other_source.", "min": [1.35, -0.17, 1.75], "max": [1.6, -0.15, 2.1]}]
+    "flip_faces": [],
     # static モードのみ。mesh_texture / mesh_normalmap の元にする画像ファイル（設定ファイルからの相対パスで書ける）。
     # 書いた項目は、マテリアルに繋がった画像ではなくこのファイルから書き出す。
     # FBX の中の画像の参照が切れているモデル用（作者の PC のパスが入っていて、読み込んでも画像が空になる）。
@@ -237,6 +245,28 @@ def filter_islands(mesh_objs):
         bm.to_mesh(obj.data)
         bm.free()
         print("ISLANDS", obj.name, "removed verts", len(doomed), "left", len(obj.data.vertices))
+
+
+def flip_faces(mesh_objs):
+    # flip_faces の箱ごとに、中心が入る面を裏返す。Decimate より先に行う（減らした後だと面の位置が変わり、箱から外れうるため）。
+    objs = {obj.name: obj for obj in mesh_objs}
+    for rule in CONFIG["flip_faces"]:
+        obj = objs.get(rule["object"])
+        if obj is None:
+            raise RuntimeError("flip_faces のメッシュがありません: %s" % rule["object"])
+        low = mathutils.Vector(rule["min"])
+        high = mathutils.Vector(rule["max"])
+        bm = bmesh.new()
+        bm.from_mesh(obj.data)
+        faces = [face for face in bm.faces
+                 if all(low[i] <= (obj.matrix_world @ face.calc_center_median())[i] <= high[i] for i in range(3))]
+        if not faces:
+            bm.free()
+            raise RuntimeError("flip_faces の箱に面がありません: %s %s %s" % (rule["object"], rule["min"], rule["max"]))
+        bmesh.ops.reverse_faces(bm, faces=faces)
+        bm.to_mesh(obj.data)
+        bm.free()
+        print("FLIP", obj.name, "faces", len(faces))
 
 
 def triangle_count(mesh_objs):
@@ -429,7 +459,7 @@ def emit_animation(armature, action, anim_name, in_place=False):
 # SkinnedMesh / StaticMesh の両方が使う部分。座標変換・巻き順・材質属性・頂点数チェックは
 # ここにだけ書き、メッシュ形式ごとの違いは「頂点に足す属性」だけにする。
 
-PART_PATH_KEYS = ("texture", "normalmap")  # parts の値のうち、材質値ではなく画像パスの項目
+PART_PATH_KEYS = ("texture", "normalmap", "ormmap")  # parts の値のうち、材質値ではなく画像パスの項目
 
 
 def game_texture_path(path):
@@ -471,7 +501,7 @@ def part_element_attrs(part):
     # <Part> に付ける材質属性。材質値は material_params を土台に、パーツに書いたもので上書きする。
     params = dict(CONFIG["material_params"])
     params.update({k: v for k, v in part.items() if k not in PART_PATH_KEYS})
-    return material_attrs(part.get("texture", ""), part.get("normalmap", ""), params)
+    return material_attrs(part.get("texture", ""), part.get("normalmap", ""), params, part.get("ormmap", ""))
 
 
 SPLIT_KEY_DIGITS = 5  # 頂点分割で「同じUV・法線」とみなす小数桁（浮動小数の誤差で分かれすぎないように丸める）
@@ -840,7 +870,7 @@ def export_mesh_textures(mesh_objs):
         # 法線のすき間は元から「平ら」なので埋めない（にじんでも線にならない）。
         fills_padding = CONFIG["fill_island_padding"] and key == "mesh_texture"
         save_scaled_tga(image, size, os.path.join(CONFIG["resource_root"], CONFIG[key]), fills_padding)
-    if CONFIG["mesh_orm"]:
+    if CONFIG["mesh_orm"] and CONFIG["mesh_orm_export"]:
         save_orm_tga(size, os.path.join(CONFIG["resource_root"], CONFIG["mesh_orm"]))
 
 
@@ -990,6 +1020,7 @@ def main():
     out = "<Container>\n"
     if CONFIG["mode"] == "static":
         filter_islands(mesh_objs)
+        flip_faces(mesh_objs)
         decimate_meshes(mesh_objs)  # 島を除いた後の、書き出す形で数える
         adjust_static_transform(mesh_objs)
         out += emit_static_mesh(mesh_objs)
