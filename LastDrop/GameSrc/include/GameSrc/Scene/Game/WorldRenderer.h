@@ -3,6 +3,8 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshInstancing.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshBatch.h"
 #include <utility>
 #include <vector>
 
@@ -21,7 +23,7 @@ struct LightSource;
 //   drawShadowCasters（影のマップごと）→ drawStatic → drawDecals → drawFirstPerson → drawCharacters →
 //   （ライティング・霧・TAA）→ drawImpactDust → drawBloodSpray → drawMuzzleFlash
 // 動かない物は手前に来やすい物から描く：建物（目に近い順）→ 車・置物 → 地面。先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる
-// （Early-Z。Optimization_Plan.txt 2-3）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
+// （Early-Z。Optimization_Plan.txt 2-3）。建物は形ごとにインスタンシングでまとめて描く（OptimizationA_Plan.txt 8 章。形の中では目に近い順）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
 // キャラに弾痕が乗らないようにする（SsrDecalMaterial_Plan.txt Q7）。
 class WorldRenderer{
 public:
@@ -45,7 +47,7 @@ public:
 	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
 	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。culling：光の側から見た映る範囲と、月の影なら小ささ（全部の物を間引く）。
 	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
-	void drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) const;
+	void drawShadowCasters( const DrawCulling& culling, bool includesPlayer );
 	// 着弾の砂ぼこりを描く（半透明。ライティングの後）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。粒を目から遠い順に並べ替えて描くため。
@@ -66,9 +68,19 @@ private:
 	void drawZombies( const DrawCulling& culling ) const;
 	// 自キャラの体と、手に持って出している銃を描く（drawFirstPerson・drawShadowCasters から）。
 	void drawPlayer() const;
+	// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める。
+	void beginBuildings();
+	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ。
+	void addBuilding( const Building& building, const DrawCulling& culling );
+	// 集めた建物を形ごとにまとめて描く（1 軒ずつ描いているときは何もしない）。
+	void endBuildings();
 
 	const GameWorld* mWorld;   // 借りているだけ
 	EffectManager* mEffects;   // 借りているだけ
+	// 建物をまとめて描く道具（OptimizationA_Plan.txt 8 章）。シェーダは G-Buffer と影の両方で使う。
+	StaticMeshInstancing mInstancing;
+	StaticMeshBatch mBuildingBatch; // 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物を集める作業領域
+	bool mBatchesBuildings;         // beginBuildings で決めた、今の建物をまとめて描くか
 	// 建物を目に近い順に描くための並び（目からの距離の 2 乗と建物）。drawStatic の作業領域（毎フレーム確保し直さないために持つ）。
 	std::vector< std::pair< float, const Building* > > mBuildingDrawOrder;
 };

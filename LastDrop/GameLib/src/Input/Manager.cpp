@@ -3,6 +3,7 @@
 #include "GameLib/Input/Keyboard.h"
 #include "GameLib/Input/Mouse.h"
 #include "GameLib/Input/Joystick.h"
+#include "GameLib/Input/GamePad.h"
 
 #include "Input/ManagerImpl.h"
 
@@ -70,6 +71,11 @@ namespace GameLib{
 			// 実体の配列を直接指すハンドルを返すので、範囲外アクセスを事前に弾く。
 			ASSERT( i >= 0 && i < gManagerImpl->mJoystickNumber );
 			return Joystick( &gManagerImpl->mJoysticks[ i ] );
+		}
+
+		GamePad Manager::gamePad( int i ) const {
+			ASSERT( i >= 0 && i < GamePad::PAD_MAX );
+			return GamePad( &gManagerImpl->mGamePads[ i ] );
 		}
 	}
 }

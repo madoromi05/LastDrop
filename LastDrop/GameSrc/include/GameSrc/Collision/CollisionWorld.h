@@ -5,6 +5,7 @@
 #include "GameSrc/Collision/BoxCollider.h"
 #include "GameSrc/Collision/SweepMath.h"
 #include "GameSrc/Collision/WallMesh.h"
+#include "GameSrc/Hit/GroundGrid.h"
 #include <vector>
 
 class ICollisionBody;
@@ -12,8 +13,9 @@ class IGroundHeight;
 
 // 移動の当たり判定の相手の名簿と、それへの問い合わせ（「この長方形をこう動かしたら最初に何に当たるか」）。
 // 位置を動かしたり押し戻したりはしない（それは CharacterMover の仕事）。問い合わせるだけ。
-// 相手は総当たりで調べる。ゾンビが数百体を超えて重くなったら、この中だけを空間分割に変えればよい（外の呼び方は変わらない）。
-// 建物の面のかけら（WallMesh）だけは数が多い（1軒で数百）ので、届かない範囲のものを先に捨ててから調べる。
+// 相手は上から見た 4m のます（GroundGrid）で、届く範囲のますにいる物だけを調べる（OptimizationB_Plan.txt 7 章）。
+// ますは問い合わせの時に、変わっていれば作り直す（動かない物は登録が変わった時、動く体は refreshBodies の後）。
+// 建物の面のかけら（WallMesh）は数が多い（1軒で数百）ので、ますで絞った軒の中でも、届かない範囲のかけらを先に捨ててから調べる。
 // 移動は真上から見た 2D で解くが、キャラが乗る地面の高さ（歩道の段差）もここで答える。
 class CollisionWorld{
 public:
@@ -32,6 +34,9 @@ public:
 	// キャラが乗る地面を登録する（1つだけ。登録し直すと置き換わる）。所有権は受け取らない。nullptr なら地面なし（高さは変えない）。
 	// この世界に問い合わせる間は生きていること（シーンでは、地面をこの世界より先に宣言する）。
 	void setGround( const IGroundHeight* ground );
+	// 動く体のますを、次の問い合わせで入れ直させる。毎ティックの始め（体が動く前）に 1 回呼ぶ。
+	// 入れる範囲には 1 ティックに動ける分の余裕を足すので、同じティックの中で体が動いても外れない。
+	void refreshBodies();
 
 	// box を delta だけ動かしたとき、一番早く当たる相手での結果を hit に書く。何にも当たらなければ false。
 	// ignore: 調べない相手（動かしている本人）。所有権は受け取らない。nullptr なら全員を調べる。
@@ -60,10 +65,22 @@ public:
 	const std::vector< const ICollisionBody* >& bodies() const;
 
 private:
+	// 変わっていれば、ますを作り直す（問い合わせの始めに呼ぶ）。動かない物の登録が変わったら全部、動く体だけなら体のますだけ。
+	void updateGrids() const;
+	// 動く体を、今の置き場所でますへ入れ直す。
+	void fillBodyGrid() const;
+
 	std::vector< BoxCollider > mBoxes;
 	std::vector< WallMesh > mWallMeshes;
 	std::vector< const ICollisionBody* > mBodies; // 借りているだけ
 	const IGroundHeight* mGround;                 // 借りているだけ。nullptr なら地面なし
+	// 届く範囲で引くます。問い合わせ（const）の中で作り直すので mutable。並びの番号は mBoxes・mWallMeshes・mBodies の添え字。
+	mutable GroundGrid mBoxGrid;
+	mutable GroundGrid mWallGrid;
+	mutable GroundGrid mBodyGrid;
+	mutable bool mStaticGridDirty; // 箱・壁メッシュの登録が変わった（ますの大きさから作り直す）
+	mutable bool mBodyGridDirty;   // 動く体の登録か置き場所が変わった（体のますだけ入れ直す）
+	mutable std::vector< int > mCandidates; // ますから引いた番号（問い合わせのたびに確保し直さないための作業領域）
 };
 
 #endif

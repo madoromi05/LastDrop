@@ -47,8 +47,9 @@ namespace{
 		float right[ kRowFloats ];
 		float up[ kRowFloats ];
 		float facing[ kRowFloats ];                   // w が不透明度
+		float uvRect[ kRowFloats ];                   // 絵のうち使う所（左・上・幅・高さ）
 	};
-	static_assert( sizeof( DecalConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * ( kLocalRows + 3 ) ), "DecalConstants : keep the HLSL layout." );
+	static_assert( sizeof( DecalConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * ( kLocalRows + 4 ) ), "DecalConstants : keep the HLSL layout." );
 
 	// axis（箱の軸。長さは箱の 1 辺が何 m か）に沿った「箱の中の座標」を出す行：(axis / |axis|², −center・axis / |axis|²)。
 	// 軸どうしが直交しているので、逆行列を作らずに内積だけで戻せる。
@@ -99,12 +100,13 @@ DecalBatch::DecalBatch( int capacity ) :
 	mBox.unlock( &v );
 }
 
-void DecalBatch::add( const Vector3& center, const Vector3& right, const Vector3& up, const Vector3& normal, float halfDepth, float opacity ) {
+void DecalBatch::add( const Vector3& center, const Vector3& right, const Vector3& up, const Vector3& normal, float halfDepth, float opacity,
+const UvRect& uvRect ) {
 	if ( static_cast< int >( mDecals.size() ) >= mCapacity ) {
 		ASSERT( false && "DecalBatch : capacity over." );
 		return;
 	}
-	mDecals.push_back( Decal{ center, right, up, normal, halfDepth, opacity } );
+	mDecals.push_back( Decal{ center, right, up, normal, halfDepth, opacity, uvRect } );
 }
 
 void DecalBatch::draw( Graphics::Texture albedo, Graphics::Texture normalMap, const Matrix44& projectionView ) {
@@ -162,6 +164,10 @@ void DecalBatch::setDecalConstants( const Decal& decal, const Matrix44& inverseP
 	writeUnit( decal.right, 0.f, constants.right );
 	writeUnit( decal.up, 0.f, constants.up );
 	writeUnit( decal.normal, decal.opacity, constants.facing );
+	constants.uvRect[ 0 ] = decal.uvRect.left;
+	constants.uvRect[ 1 ] = decal.uvRect.top;
+	constants.uvRect[ 2 ] = decal.uvRect.width;
+	constants.uvRect[ 3 ] = decal.uvRect.height;
 	mConstants.set( &constants, sizeof( constants ) );
 	Graphics::Manager::instance().setConstantBuffer( kConstantSlot, mConstants );
 }

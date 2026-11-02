@@ -25,6 +25,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
 #include <memory>
+#include <optional>
 #include <vector>
 
 class MeshCache;
@@ -76,6 +77,11 @@ public:
 	// まだ place していない・ゾンビの形の構築に失敗した・数が上限に達しているなら出さずに false。
 	// position / yawDegree: 足元の位置と向き（度。0 は +Z）。
 	bool spawnZombie( const GameLib::Math::Vector3& position, float yawDegree );
+
+	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
+	// （OptimizationB_Plan.txt Q9）。描いた後に毎フレーム呼ぶ。呼ばれるまでは誰も間引かない。
+	// projectionView：カメラの射影×ビュー（TAA でずらす前）。eye：目の位置。
+	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );
 
 	// ── 係（シーンが直接頼む・読む）──
 	// 見て E で使う物を探す・拾われた物を消す（Interactor の finder と、1 回の描画ごとの後片付け）。
@@ -157,6 +163,7 @@ private:
 	// ゾンビの Think の段で全員が読む、このティックの周り（追う先・仲間の位置・攻撃に行っている体）。ゾンビが借りるので、ゾンビより先に宣言する。
 	ZombieBrainComponent::TickContext mZombieContext;
 	ChaseTarget mChaseTarget; // mZombieContext.target が指す（自キャラが居る間）
+	std::optional< AnimationView > mAnimationView; // mZombieContext.view が指す（setAnimationView の後）
 	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、mZombieContext から全員が読む。毎回確保し直さないために持つ）。
 	ZombieCrowd mCrowd;
 	// ゾンビを部品から組み立てる。mZombieModel を借りる（mNavMesh・名簿・mZombieContext は部品が mObjects の共有の棚から引く）。

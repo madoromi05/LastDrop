@@ -13,8 +13,10 @@
     },
     "mesh_texture": "Resource/bullet_albedo.tga",
     "mesh_normalmap": "Resource/bullet_normal.tga",
+    "mesh_orm": "Resource/bullet_orm.tga",
+    "mesh_orm_export": false,
     "material_params": {
-        "roughness": 0.35,
+        "roughness": 1.0,
         "metallic": 1.0,
         "specular": [0.6, 0.5, 0.3],
         "sharpness": 48.0,

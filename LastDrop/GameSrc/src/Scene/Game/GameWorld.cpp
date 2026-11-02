@@ -67,7 +67,7 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mObjects( &mCollisionWorld, &mHitWorld ),
-	mCombat( &mObjects, &mEffects, &mPropFactory ),
+	mCombat( &mObjects, &mEffects, &mPropFactory, &mHitWorld ),
 	mInteraction( &mHitWorld, &mObjects, &mEffects ),
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ),
@@ -135,6 +135,11 @@ void GameWorld::placePlayer() {
 	mPlayerControl = mPlayer->getComponent< PlayerComponent >();
 }
 
+void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3& eye ) {
+	mAnimationView.emplace( projectionView, eye );
+	mZombieContext.view = &*mAnimationView;
+}
+
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	if ( !mZombieFactory || mObjects.count< ZombieBrainComponent >() >= kMaxZombies ) {
 		return false;
@@ -160,6 +165,8 @@ void GameWorld::addZombie( const Vector3& position, float yawDegree, const Zombi
 
 void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection,
 	Inventory* inventory ) {
+	// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回。OptimizationB_Plan.txt 7 章）。
+	mCollisionWorld.refreshBodies();
 	{
 		PROFILE_SCOPE( "World.player" );
 		if ( mPlayerControl ) {

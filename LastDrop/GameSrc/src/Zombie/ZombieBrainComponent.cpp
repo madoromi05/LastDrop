@@ -4,6 +4,7 @@
 #include "GameSrc/Zombie/ZombieChaseComponent.h"
 #include "GameSrc/Zombie/ZombieAttackComponent.h"
 #include "GameSrc/Zombie/ZombieHealthComponent.h"
+#include "GameSrc/Zombie/ZombieFlinch.h"
 #include "GameSrc/Zombie/ZombieCrawlComponent.h"
 #include "GameSrc/Zombie/ZombieCorpseComponent.h"
 #include "GameSrc/Zombie/ZombieDismemberComponent.h"
@@ -20,6 +21,7 @@ using namespace GameLib::Math;
 
 ZombieBrainComponent::ZombieBrainComponent() :
 	mContext( nullptr ),
+	mAnimationThrottle( 0 ),
 	mPosition( nullptr ),
 	mMesh( nullptr ),
 	mHitboxes( nullptr ),
@@ -48,6 +50,7 @@ void ZombieBrainComponent::start() {
 	mState = requireComponent< ZombieStateComponent >();
 	mChase = requireComponent< ZombieChaseComponent >();
 	mLocomotion = &mChase->locomotion();
+	mAnimationThrottle = AnimationThrottle( gameObject()->id() ); // 湧いた順に番号が増えるので、体ごとに刻みがずれる
 
 	mMesh->setPosition( *mPosition );
 	mMesh->setAngleY( transform->angleY() );
@@ -100,7 +103,14 @@ void ZombieBrainComponent::update() {
 	bool attacking = attack && attack->isActive();
 	mChase->updateSway( chaseTarget, standing && !attacking ); // 姿勢を求める前に、このティックの揺れを決める
 	rebuildPoseModifiers( health );
-	mMesh->update();
+	// 遠い・映らない体は、姿勢を求めるティックを間引く（時刻だけ進める。OptimizationB_Plan.txt 9 章）。部位の箱は下で毎ティック置き直すので、
+	// 体ごと動く所（置き場所・向き）は毎ティック正しく、腕や脚の形だけが前に求めた姿勢のまま付いて行く。
+	AnimationThrottle::Level level = AnimationThrottle::judge( mContext->view, *mHitboxes, *mPosition );
+	if ( mAnimationThrottle.shouldPose( level, mustPoseEveryTick( attack, health ) ) ) {
+		mMesh->update();
+	} else {
+		mMesh->advance();
+	}
 	mRootSpan->apply( chaseTarget ? chaseTarget->body : nullptr, mPosition );
 	if ( state == ZombieStateComponent::State::Alive ) {
 		if ( health ) {
@@ -130,6 +140,15 @@ void ZombieBrainComponent::chase( const ChaseTarget* target, const HitWorld& hit
 		return;
 	}
 	mChase->walk( intent, crowd );
+}
+
+bool ZombieBrainComponent::mustPoseEveryTick( const ZombieAttackComponent* attack, const ZombieHealthComponent* health ) const {
+	return ( attack && attack->isActive() ) || mRootSpan->isActive() || mState->isCrawling() ||
+		( health && ( health->isStaggering() || health->flinch().isActive() ) );
+}
+
+AnimationThrottle::Level ZombieBrainComponent::animationLevel() const {
+	return mAnimationThrottle.level();
 }
 
 void ZombieBrainComponent::rebuildPoseModifiers( ZombieHealthComponent* health ) {

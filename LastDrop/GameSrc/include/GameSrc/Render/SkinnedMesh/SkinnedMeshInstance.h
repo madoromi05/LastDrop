@@ -65,7 +65,12 @@ public:
 
 	// アニメを1フレーム（1ティック）進めて、ポーズを求める。
 	void update();
+	// アニメの時刻とクロスフェードの進みだけを 1 ティック進め、ポーズは求めない（見えるポーズは前の update のまま）。
+	// 遠い・映らない体のアニメを間引くティックに、update の代わりに呼ぶ（AnimationThrottle）。時刻は止めないので、
+	// 次の update では間引かなかった時と同じ時刻のポーズになる（動きが遅れず、飛ぶだけ）。animationTime も進む。
+	void advance();
 	// 最後の update のポーズで描く（骨の行列を求めて GPU で変形する）。まだ update していなければ何も描かない。
+	// 骨の行列は、ポーズか置き場所が変わってから最初の draw でだけ作る（同じフレームの 2 回目からは作った物を使う）。
 	void draw() const;
 
 	// ボーンの今の姿勢をワールド座標の行列で返す（置き場所・向き込み。最後の update で見せたポーズ。書き換え後）。
@@ -89,7 +94,9 @@ public:
 	GameLib::Math::Vector3 toRootPoint( const GameLib::Math::Vector3& worldPoint ) const;
 
 private:
-	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きし、フェードを1フレーム進める。
+	// アニメの時刻とクロスフェードの進みを 1 ティック進め、このティックに見せる時刻を返す（update と advance の共通の所）。
+	float advanceClock();
+	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きする（フェードの進みは advanceClock が数える）。
 	void blendFadingPose();
 	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前。
 	float lastFrameTime() const;
@@ -123,6 +130,8 @@ private:
 
 	// 描くときに求める骨の行列（ボーン数ぶん）。毎回確保し直さないための作業領域なので、const の draw から書けるよう mutable にする。
 	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;
+	// mSkinMatrices が今のポーズ・置き場所より古いか（update・setPosition・setAngleY で立て、draw で作り直して下ろす）。
+	mutable bool mSkinStale;
 	GameLib::Math::Vector3 mPosition;
 	float mAngleY;
 };

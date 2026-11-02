@@ -252,6 +252,8 @@ void GameScene::draw() {
 	}
 #endif
 	const FirstPersonCamera& camera = viewCamera();
+	// このフレームで描くカメラ（観察用カメラの間はそちら）を、次のティックのゾンビのアニメの間引きのために渡す（OptimizationB_Plan.txt Q9）。
+	mWorld.setAnimationView( camera.projectionViewMatrix(), camera.eyePosition() );
 	// TAA のときは、描く行列を 1 画素より細かく毎フレームずらす（Taa_Plan.txt 5 章）。カメラが置いた行列を、ずらした物で上書きし、
 	// 下の G-Buffer・SSAO・SSR・霧・デカール・半透明の板にも同じ行列を渡す（全部のパスが同じずれで揃う）。
 	// 映る範囲（DrawCulling）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）。
@@ -309,6 +311,8 @@ void GameScene::draw() {
 		// 映り込みはライティングの後・霧の前（照らした色を映し、映り込みにも霧が掛かる。SsrDecalMaterial_Plan.txt 4 章）。
 		// 作るパスはシーンの色を読むので、自分の描画先へ描いてから、シーンの色へ付け直して混ぜる。
 		if ( ssrEnabled() ) {
+			mReflection.buildHiZ( mPostProcess.sceneDepth() ); // F6 の Hi-Z を切っている間は作らない（HiZSsr_Plan.txt Q5）
+			Profiling::gpuMark( "Hi-Z" );
 			mReflection.draw( mGBuffer, mPostProcess.sceneColor(), mPostProcess.sceneDepth(), projectionView, mJitter.frameIndex() );
 			Profiling::gpuMark( "SSR" );
 			mPostProcess.bindSceneColor();
@@ -316,7 +320,8 @@ void GameScene::draw() {
 				projectionView );
 		} else {
 			mReflection.clear(); // 表示（SSR）が前の絵を出さないように
-			Profiling::gpuMark( "SSR" ); // 切っていても打つ（計測の列を揃えるため）
+			Profiling::gpuMark( "Hi-Z" ); // 切っていても打つ（計測の列を揃えるため）
+			Profiling::gpuMark( "SSR" );
 		}
 		Profiling::gpuMark( "SSR composite" );
 		// 霧は半透明の板より前（板は自分で同じ霧を掛けるので、二重に掛けない。NightFinish_Plan.txt 4 章）。
@@ -361,8 +366,8 @@ void GameScene::draw() {
 		// 影の表示（Cascade・Shadow maps）はライトの一覧の定数と影のマップを読むので、外した物をもう一度付けて描く。
 		mLights.rebindConstants();
 		mLights.bindShadowMaps();
-		mDeferredLighting.drawView( view, mGBuffer, mAmbientOcclusion.result(), mReflection.result(), mPostProcess.sceneDepth(),
-			projectionView );
+		mDeferredLighting.drawView( view, mGBuffer, mAmbientOcclusion.result(), mReflection.result(), mReflection.hiZ(),
+			mPostProcess.sceneDepth(), projectionView );
 		mLights.unbind();
 	}
 	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）。

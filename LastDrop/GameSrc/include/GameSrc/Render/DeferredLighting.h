@@ -27,6 +27,7 @@ enum class GBufferView{
 	Ssr,       // 映り込みの確からしさ（0 黒〜1 白。SsrDecalMaterial_Plan.txt 9 章）
 	SsrColor,  // 映り込みの色（確からしさで割った、映る物の色そのもの。ToneMap を通さないので暗い）
 	Motion,    // 動きの種類（RT1 の a。黒 動かない物・青 ゾンビなど動く物・赤 手元。Taa_Plan.txt 6 章）
+	HiZ,       // Hi-Z の段（F6 の Hi-Z view level で選ぶ）を、目からの距離の灰色で（Depth と同じ物差し。空は黒。HiZSsr_Plan.txt 8 章）
 	Count,
 };
 // エディタ（F6 の Render）に出す名前。
@@ -62,10 +63,11 @@ public:
 		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
 	// view（Final 以外）を、今の描画先へ全画面で写す。ToneMap を通さず中身の数のまま見るため、PostProcess::endScene の後
 	// （描画先が画面に戻った後）に呼ぶ。occlusion：SSAO の結果（AmbientOcclusion::result。表示の SSAO が読む）。
-	// reflection：SSR の結果（表示の SSR・SSR color が読む）。
+	// reflection：SSR の結果（表示の SSR・SSR color が読む）。hiZ：Hi-Z の全部の段（表示の Hi-Z が読む。ScreenSpaceReflection::hiZ）。
 	// depth：G-Buffer と一緒に描いた深度。projectionView：描いたときのカメラの射影×ビュー。
 	void drawView( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
-		const GameLib::Graphics::RenderTarget& reflection, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );
+		const GameLib::Graphics::RenderTarget& reflection, const GameLib::Graphics::RenderTarget& hiZ, GameLib::Graphics::DepthTarget depth,
+		const GameLib::Math::Matrix44& projectionView );
 	// シェーダのコンパイルエラー（ライティング → 霧 → 映り込みを混ぜるシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
 	const char* errorMessage() const;
 

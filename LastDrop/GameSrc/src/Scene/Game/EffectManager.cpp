@@ -11,6 +11,16 @@ namespace{
 	const float kHeadBloodScale = 1.5f;
 	// 部位が千切れたときに切り口から出す血しぶきの倍率。当たったときより大きく、一番多く出す（BloodSpray::kMaxDropNumber まで）。
 	const float kSeverBloodScale = 2.f;
+
+	// 血の跡の幅の半分（m。BloodStain_Plan.txt。ZombieHitFeedback_Plan.txt 4 章の 25cm・頭 35cm）。
+	// 滴の跡は飛び散った血の半分（落ちた滴だけなので小さい）。
+	const float kSplatterHalfSize = 0.125f;
+	const float kLargeSplatterHalfSize = 0.175f;
+	const float kDripSizeRatio = 0.5f;
+
+	float splatterHalfSize( EffectManager::BloodStainSize size ) {
+		return ( size == EffectManager::BloodStainSize::Large ) ? kLargeSplatterHalfSize : kSplatterHalfSize;
+	}
 }
 
 EffectManager::EffectManager() {
@@ -25,6 +35,15 @@ void EffectManager::spawnBloodHit( const Vector3& point, const Vector3& directio
 	mBloodSpray.spawn( point, direction, ( part == BodyPart::Head ) ? kHeadBloodScale : kBodyBloodScale );
 }
 
+void EffectManager::spawnBloodSplatter( const Vector3& point, const Vector3& normal, const Vector3& direction,
+const IRayBlocker* blocker, BloodStainSize size ) {
+	mBloodStains.addSplatter( point, normal, direction, splatterHalfSize( size ), blocker );
+}
+
+void EffectManager::spawnBloodDrip( const Vector3& point, const Vector3& normal, const IRayBlocker* blocker, BloodStainSize size ) {
+	mBloodStains.addDrip( point, normal, splatterHalfSize( size ) * kDripSizeRatio, blocker );
+}
+
 void EffectManager::spawnSeveredLimb( const SkinnedMeshInstance& zombieMesh, const ZombieModel& model, BodyPart part,
 const Vector3& direction ) {
 	zombieMesh.shownWorldPose( &mSeverPose );
@@ -36,17 +55,20 @@ const Vector3& direction ) {
 
 void EffectManager::detach( const IRayBlocker* blocker ) {
 	mBulletHoles.removeAttachedTo( blocker );
+	mBloodStains.removeAttachedTo( blocker );
 }
 
 void EffectManager::update( const IRayBlocker* ground ) {
 	mBulletHoles.update();
 	mImpactDust.update();
 	mBloodSpray.update();
+	mBloodStains.update();
 	mSeveredLimbs.update( ground );
 }
 
 void EffectManager::drawDecals( const Matrix44& projectionView ) {
 	mBulletHoles.draw( projectionView );
+	mBloodStains.draw( projectionView ); // 弾痕の後（血が穴の上に乗る）
 }
 
 void EffectManager::drawImpactDust( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {

@@ -31,6 +31,8 @@ public:
 	bool updateLoading();
 	// world の位置・向き・大きさで全パーツを描く。
 	void draw( const GameLib::Math::Matrix34& world ) const;
+	// 全パーツを instanceNumber 個まとめて描く（インスタンシング）。置き場所は StaticMeshInstancing::setPlacements で先に渡しておく。
+	void drawInstanced( int instanceNumber ) const;
 	// 全パーツのうち、線分が一番早く当たる所の時刻と法線。座標はモデルの空間（置く前）。当たらなければ false。
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;

@@ -43,7 +43,8 @@ public:
 		DIJOYSTATE2 state;
 		hr = mDevice->GetDeviceState( sizeof( DIJOYSTATE2 ), &state );
 		if ( SUCCEEDED( hr ) ){
-			for ( int i = 0; i < BUTTON_MAX; ++i ){
+			//rgbButtons は番号ボタンの 128 個だけ。上下左右（128 番以降）は下の POV から決めるので、ここでは読まない。
+			for ( int i = 0; i < NUMBERED_BUTTON_MAX; ++i ){
 				mButtons[ mDoubleBufferIndex ][ i ] = state.rgbButtons[ i ] ? true : false;
 			}
 			mAnalogs[ 0 ] = state.lX;
@@ -83,20 +84,11 @@ public:
 					dy = 1;
 				}
 			}
-			if ( dx > 0 ){
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_RIGHT ] = true;
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_LEFT ] = false;
-			}else if ( dx < 0 ){
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_RIGHT ] = false;
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_LEFT ] = true;
-			}
-			if ( dy > 0 ){
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_UP ] = true;
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_DOWN ] = false;
-			}else if ( dy < 0 ){
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_UP ] = false;
-				mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_DOWN ] = true;
-			}
+			//離している向き（0）も毎回書く（前のフレームの値が残って、押したままにならないように）。
+			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_RIGHT ] = ( dx > 0 );
+			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_LEFT ] = ( dx < 0 );
+			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_UP ] = ( dy > 0 );
+			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_DOWN ] = ( dy < 0 );
 			mEnabled = true;
 		}else{
 			for ( int i = 0; i < BUTTON_MAX; ++i ){
@@ -124,10 +116,11 @@ public:
 		return ANALOG_MAX;
 	}
 	int buttonNumber() const {
-		return BUTTON_MAX - 4; //上下左右は除外
+		return NUMBERED_BUTTON_MAX; //上下左右は除外
 	}
 	IDirectInputDevice8* mDevice;
-	static const int BUTTON_MAX = 128 + 4; //上下左右分
+	static const int NUMBERED_BUTTON_MAX = 128; //DIJOYSTATE2::rgbButtons の数
+	static const int BUTTON_MAX = NUMBERED_BUTTON_MAX + 4; //上下左右分
 	static const int ANALOG_MAX = 8;
 	bool mButtons[ 2 ][ BUTTON_MAX ];
 	int mAnalogs[ 8 ];

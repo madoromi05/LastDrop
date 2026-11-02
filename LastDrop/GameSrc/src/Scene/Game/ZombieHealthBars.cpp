@@ -6,6 +6,7 @@
 #include "GameSrc/Zombie/ZombieAttackComponent.h"
 #include "GameSrc/Zombie/ZombieChaseComponent.h"
 #include "GameSrc/Zombie/ZombieCorpseComponent.h"
+#include "GameSrc/Zombie/ZombieBrainComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/World/GameObject.h"
@@ -103,6 +104,16 @@ namespace{
 		return static_cast< int >( std::lround( value ) );
 	}
 
+	// アニメを間引く段の名前（OptimizationB_Plan.txt 9 章。どの体が間引かれているかを頭の上で見る）。
+	const char* animationLevelName( AnimationThrottle::Level level ) {
+		switch ( level ) {
+			case AnimationThrottle::Level::Near:   return "Near";
+			case AnimationThrottle::Level::Far:    return "Far";
+			case AnimationThrottle::Level::Hidden: return "Hidden";
+		}
+		return "-";
+	}
+
 	const char* stateName( ZombieStateComponent::State state ) {
 		switch ( state ) {
 			case ZombieStateComponent::State::Alive:   return "Alive";
@@ -179,8 +190,10 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 
 	// 数字はバーの上、状態はバーの下。
 	char text[ kTextSize ];
-	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。
-	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness() );
+	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）。
+	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
+	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
+		brain ? animationLevelName( brain->animationLevel() ) : "" );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。

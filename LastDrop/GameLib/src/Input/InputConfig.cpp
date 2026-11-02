@@ -41,7 +41,7 @@ namespace
     {
         return a_collector == static_cast<int>(CollectorId::InGame)
             && a_work >= 0 && a_work < kWorkIdCount
-            && a_device >= 0 && a_device <= static_cast<int>(DeviceKind::MouseAxis);
+            && a_device >= 0 && a_device <= static_cast<int>(DeviceKind::GamePadAxis);
     }
 
     // 1 行（<Binding .../>）を読む。4 つの属性がそろい、番号が範囲に入っていれば true。

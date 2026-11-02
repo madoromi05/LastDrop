@@ -24,6 +24,10 @@ public:
 	// origin から delta だけ進む線分が、boundsMin〜boundsMax の軸に沿った箱に触れるか（時刻は要らない、絞り込み用）。
 	static bool segmentTouchesBox( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		const GameLib::Math::Vector3& boundsMin, const GameLib::Math::Vector3& boundsMax );
+	// segmentTouchesBox と同じだが、触れるなら箱に入る時刻（0〜1。始点が中なら 0）を enterTime に書く。
+	// 木を下りるとき、もう見つけた当たりより遠い箱を飛ばすのに使う（TriangleBvh）。enterTime: 出力先。nullptr 不可。
+	static bool segmentBoxEnterTime( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		const GameLib::Math::Vector3& boundsMin, const GameLib::Math::Vector3& boundsMax, float* enterTime );
 	// 箱・メッシュの空間の法線 localNormal を、ワールドの法線（長さ1）にして out に書く。
 	// toLocal: ワールド → その空間の行列（置いた行列の逆）。拡大の入った空間でも面に垂直になるよう、toLocal の転置を掛ける。
 	static void normalToWorld( const GameLib::Math::Matrix34& toLocal, const GameLib::Math::Vector3& localNormal, GameLib::Math::Vector3* out );

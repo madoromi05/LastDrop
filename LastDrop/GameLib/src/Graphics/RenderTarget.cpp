@@ -10,17 +10,19 @@
 namespace GameLib{
 namespace Graphics{
 
-RenderTarget RenderTarget::create( int width, int height, RenderTargetFormat format ){
+RenderTarget RenderTarget::create( int width, int height, RenderTargetFormat format, int mipLevels ){
 	ASSERT( width > 0 && height > 0 && "RenderTarget : size must be positive." );
+	ASSERT( mipLevels >= FULL_MIP_CHAIN && "RenderTarget : mipLevels must not be negative." );
 	RenderTarget r;
-	r.mImpl = NEW Impl( width, height, format, RenderTargetDetail::kFixedSize, gManagerImpl->dxDevice() );
+	r.mImpl = NEW Impl( width, height, format, RenderTargetDetail::kFixedSize, mipLevels, gManagerImpl->dxDevice() );
 	return r;
 }
 
-RenderTarget RenderTarget::createScreenSized( float scale, RenderTargetFormat format ){
+RenderTarget RenderTarget::createScreenSized( float scale, RenderTargetFormat format, int mipLevels ){
 	ASSERT( scale > 0.f && "RenderTarget : scale must be positive." );
+	ASSERT( mipLevels >= FULL_MIP_CHAIN && "RenderTarget : mipLevels must not be negative." );
 	RenderTarget r;
-	r.mImpl = NEW Impl( gManagerImpl->mBackBufferWidth, gManagerImpl->mBackBufferHeight, format, scale, gManagerImpl->dxDevice() );
+	r.mImpl = NEW Impl( gManagerImpl->mBackBufferWidth, gManagerImpl->mBackBufferHeight, format, scale, mipLevels, gManagerImpl->dxDevice() );
 	return r;
 }
 
@@ -37,6 +39,11 @@ int RenderTarget::height() const {
 RenderTargetFormat RenderTarget::format() const {
 	ASSERT( mImpl && "Graphics::RenderTarget : This is empty object." );
 	return mImpl->mFormat;
+}
+
+int RenderTarget::mipLevels() const {
+	ASSERT( mImpl && "Graphics::RenderTarget : This is empty object." );
+	return mImpl->mMipLevels;
 }
 
 void RenderTarget::writeTga( const char* filename ) const {

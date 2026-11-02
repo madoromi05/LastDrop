@@ -22,6 +22,9 @@ public:
 	void push( BodyPart part, const GameLib::Math::Vector3& direction );
 	// 押した分を1ティック戻す。
 	void update();
+	// 見て分かるほど押されているか（どこかのまとまりが kNegligibleDegree 以上曲がっている）。
+	// 押されている間はアニメを間引かない（AnimationThrottle。のけぞりが毎ティック戻っていくのを飛ばして見せないため）。
+	bool isActive() const;
 	// 押されている分だけ、当たったまとまりを関節で曲げる（BonePoseModifier）。
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 

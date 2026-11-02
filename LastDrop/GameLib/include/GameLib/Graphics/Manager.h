@@ -66,7 +66,14 @@ public:
 	///設定したテクスチャ、頂点バッファ、インデクスバッファで描画
 	void drawIndexed(
 		int offset, 
-		int primitiveNumber, 
+		int primitiveNumber,
+		PrimitiveType = PRIMITIVE_TRIANGLE );
+	///drawIndexed と同じ物を instanceNumber 回まとめて描く（インスタンシング）。
+	///何回目かはシェーダが SV_InstanceID で受け取り、置き場所などは自作の定数（setConstantBuffer）から読む
+	void drawIndexedInstanced(
+		int offset,
+		int primitiveNumber,
+		int instanceNumber,
 		PrimitiveType = PRIMITIVE_TRIANGLE );
 	///設定したテクスチャ、頂点バッファで描画
 	void draw(
@@ -140,6 +147,9 @@ public:
 	///上と同じ。readOnlyDepth が true なら depth（空は不可）を奥行きの判定だけに使い、書き込まない（深度の書き込みの設定は無視される）。
 	///その間も depth を setShaderResource で読める（半透明の板を物の近くで薄くする・デカール）
 	void setRenderTargets( const RenderTarget* colors, int count, DepthTarget depth, bool readOnlyDepth );
+	///target の段 mip だけへ描く（深度なし。段が 2 つ以上の描画先。Hi-Z の縮小など）。描画範囲はその段の大きさになる。
+	///t2 以降のテクスチャは setRenderTargets と同じく外れるので、読む段（setShaderResource の mip 付き）は後から付ける
+	void setRenderTargetMip( RenderTarget target, int mip );
 	///画面（バックバッファ）へ描く状態に戻す。描画範囲は setViewport で決めた範囲に戻る
 	void resetRenderTargets();
 	///描画先を色で塗りつぶす
@@ -154,6 +164,9 @@ public:
 	void setShaderResource( int slot, RenderTarget );
 	void setShaderResource( int slot, DepthTarget );
 	void setShaderResource( int slot, Texture );
+	///target の段 mip だけを t slot から読めるようにする（シェーダからは段 0 として見える）。段が 2 つ以上の描画先だけ。
+	///同じ描画先の別の段へ描きながら読める（縮小のパスが 1 つ上の段を読む）
+	void setShaderResource( int slot, RenderTarget target, int mip );
 	///頂点バッファを使わず、描画範囲の全体を今の自作シェーダで描く（ポストプロセス用）。
 	///VSMain は SV_VertexID（0,1,2）だけから位置を作ること（Resource/Shader/Common.hlsli の fullScreenVertex）
 	void drawFullScreen();

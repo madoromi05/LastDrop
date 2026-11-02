@@ -75,6 +75,12 @@ void StaticMeshData::draw( const Matrix34& world ) const {
 	}
 }
 
+void StaticMeshData::drawInstanced( int instanceNumber ) const {
+	for ( int i = 0; i < mParts.size(); ++i ) {
+		mParts[ i ].drawInstanced( instanceNumber );
+	}
+}
+
 void StaticMeshData::appendTriangles( std::vector< Vector3 >* corners ) const {
 	for ( int i = 0; i < mParts.size(); ++i ) {
 		mParts[ i ].appendTriangles( corners );

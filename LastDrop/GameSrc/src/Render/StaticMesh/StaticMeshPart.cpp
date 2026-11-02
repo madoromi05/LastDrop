@@ -110,24 +110,37 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	if ( !isReady() ) {
 		return;
 	}
-	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
+	bindForDraw();
 	Graphics::Manager m = Graphics::Manager::instance();
 	// G-Buffer へ描く間は、固定パイプラインの代わりに G-Buffer へ書くシェーダで描く（材質の値は apply が渡した物をそのまま読む）。
 	// シェーダは MeshMaterial::apply では選ばない（キャラも apply を通り、キャラのシェーダを上書きしてしまうため）。
-	if ( RenderPass::current() == RenderPassKind::GBuffer ) {
+	// 影の間は、影のマップへ深度だけ描くシェーダ（Shadow_Plan.txt 4 章）。
+	if ( RenderPass::current() == RenderPassKind::GBuffer || RenderPass::current() == RenderPassKind::Shadow ) {
 		m.setShader( RenderPass::staticMeshShader() );
-		if ( !mMaterial.hasNormalMap() ) {
-			// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）。
-			m.setNormalMapStrength( kNoNormalMap );
-		}
-	} else if ( RenderPass::current() == RenderPassKind::Shadow ) {
-		m.setShader( RenderPass::staticMeshShader() ); // 影のマップへ深度だけ（Shadow_Plan.txt 4 章）
 	}
 	m.setWorldMatrix( world );
-	m.setVertexBuffer( mVertexBuffer );
-	m.setIndexBuffer( mIndexBuffer );
 	RenderPass::countDraw();
 	m.drawIndexed( 0, mTriangleNumber );
+}
+
+void StaticMeshPart::drawInstanced( int instanceNumber ) const {
+	if ( !isReady() ) {
+		return;
+	}
+	bindForDraw();
+	RenderPass::countDraw(); // 何個まとめても 1 回（Draw.gbuffer・Draw.shadow が減るのを見るため）
+	Graphics::Manager::instance().drawIndexedInstanced( 0, mTriangleNumber, instanceNumber );
+}
+
+void StaticMeshPart::bindForDraw() const {
+	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
+	Graphics::Manager m = Graphics::Manager::instance();
+	if ( RenderPass::current() == RenderPassKind::GBuffer && !mMaterial.hasNormalMap() ) {
+		// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）。
+		m.setNormalMapStrength( kNoNormalMap );
+	}
+	m.setVertexBuffer( mVertexBuffer );
+	m.setIndexBuffer( mIndexBuffer );
 }
 
 bool StaticMeshPart::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {

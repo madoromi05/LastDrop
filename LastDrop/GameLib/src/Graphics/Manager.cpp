@@ -134,6 +134,10 @@ void Manager::drawIndexed( int offset, int primitiveNumber, PrimitiveType p ){
 	gManagerImpl->drawIndexed( offset, primitiveNumber, p );
 }
 
+void Manager::drawIndexedInstanced( int offset, int primitiveNumber, int instanceNumber, PrimitiveType p ){
+	gManagerImpl->drawIndexedInstanced( offset, primitiveNumber, instanceNumber, p );
+}
+
 void Manager::setVSync( bool enabled ){
 	gManagerImpl->mVSync = enabled; // Present( mVSync ? 1 : 0 ) が毎フレーム読む
 }
@@ -256,6 +260,10 @@ void Manager::setRenderTargets( const RenderTarget* colors, int count, DepthTarg
 	gManagerImpl->setRenderTargets( impls, count, depth.mImpl, readOnlyDepth );
 }
 
+void Manager::setRenderTargetMip( RenderTarget target, int mip ){
+	gManagerImpl->setRenderTargetMip( target.mImpl, mip );
+}
+
 void Manager::resetRenderTargets(){
 	gManagerImpl->resetRenderTargets();
 }
@@ -286,6 +294,10 @@ void Manager::setShaderResource( int slot, DepthTarget t ){
 
 void Manager::setShaderResource( int slot, Texture t ){
 	gManagerImpl->setShaderResource( slot, t.mImpl );
+}
+
+void Manager::setShaderResource( int slot, RenderTarget t, int mip ){
+	gManagerImpl->setShaderResource( slot, t.mImpl, mip );
 }
 
 void Manager::drawFullScreen(){

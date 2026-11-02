@@ -6,6 +6,7 @@
 #include "KeyboardDevice.h"
 #include "MouseDevice.h"
 #include "JoystickDevice.h"
+#include "GamePadDevice.h"
 #include "Mouse.h"
 
 // ────────────────────────────────────────────────
@@ -34,6 +35,7 @@ public:
     std::shared_ptr<KeyboardDevice> AddKeyboardDevice();
     std::shared_ptr<MouseDevice>    AddMouseDevice();
     std::shared_ptr<JoystickDevice> AddJoystickDevice(int a_joystickIndex = 0);
+    std::shared_ptr<GamePadDevice> AddGamePadDevice();
 
     // ─────────────────────────────────────────
     // 物理ボタン／軸の登録（名前は内部で自動生成される）
@@ -62,6 +64,11 @@ public:
     // 軸ワーク（視点操作など、押下ではなく量を読む操作）へマウスの軸を割り当てる。
     void BindMouseAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::MouseAxisKind a_axis);
     void UnbindMouseAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::MouseAxisKind a_axis);
+    // パッド（GamePad）。ボタンは GamePad::Button の番号、スティックは軸ワークへ。
+    void BindGamePadButton(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, int a_buttonCode);
+    void UnbindGamePadButton(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, int a_buttonCode);
+    void BindGamePadAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::GamePadAxisKind a_axis);
+    void UnbindGamePadAxis(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::GamePadAxisKind a_axis);
 
     void UnbindKeyboard(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, char a_asciiKey);
     void UnbindMouse(GameLib::Input::CollectorId a_collector, GameLib::Input::WorkId a_work, GameLib::Input::Mouse::Button a_button);
@@ -81,6 +88,8 @@ private:
     std::shared_ptr<MouseButtonFormatInt> ensureMouseButtonFormat();
     std::shared_ptr<MouseAxisFormat>      ensureMouseAxisFormat();
     std::shared_ptr<JoystickButtonFormat> ensureJoystickButtonFormat();
+    std::shared_ptr<GamePadButtonFormat>   ensureGamePadButtonFormat();
+    std::shared_ptr<GamePadAxisFormat>     ensureGamePadAxisFormat();
     std::shared_ptr<InputCollector>       ensureCollector(GameLib::Input::CollectorId a_collector);
 
     ::Input& m_input;
@@ -92,6 +101,8 @@ private:
     std::shared_ptr<MouseAxisFormat>      m_mouseAxes;
     std::shared_ptr<JoystickButtonFormat> m_joystickButtons;
     std::shared_ptr<JoystickAxisFormat>   m_joystickAxes;
+    std::shared_ptr<GamePadButtonFormat>   m_gamePadButtons;
+    std::shared_ptr<GamePadAxisFormat>     m_gamePadAxes;
 };
 
 // ────────────────────────────────────────────────

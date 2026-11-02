@@ -35,6 +35,7 @@ public:
 
 	const ZombieHealth& health() const { return mHealth; }
 	ZombieFlinch& flinch(){ return *mFlinch; } // awake で作る
+	const ZombieFlinch& flinch() const { return *mFlinch; }
 	// よろけのアニメの最中か（生きている間だけ true になりうる）。
 	bool isStaggering() const { return mStagger.isActive(); }
 	// よろけが終わったら歩く・立つのアニメへ戻し、次のよろけまでの間あけを数える（立っている間、毎ティック）。

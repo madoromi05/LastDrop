@@ -17,6 +17,8 @@ struct SsrParams{
 	float edgeFade = 0.1f;
 	// 全体の強さ（1 で計算どおり。見比べ用）
 	float intensity = 1.f;
+	// Hi-Z で進む回数の上限（整数に丸めて使う。HiZSsr_Plan.txt 6 章）。足りないと遠くの映り込みが途切れる。直線の進み方では使わない
+	float hiZMaxIterations = 48.f;
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）。
 	template< class V > void visit( V& v ) {
@@ -26,6 +28,7 @@ struct SsrParams{
 		v( "thickness", thickness, 0.05f, 3.f, "m" );
 		v( "edgeFade", edgeFade, 0.01f, 0.5f, "" );
 		v( "intensity", intensity, 0.f, 2.f, "x" );
+		v( "hiZMaxIterations", hiZMaxIterations, 8.f, 128.f, "" );
 	}
 };
 

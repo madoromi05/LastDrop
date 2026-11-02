@@ -102,6 +102,8 @@ bool InputFireHeld   (int playerId = 0);   // 撃つ（押されている間。�
 bool InputDodge      (int playerId = 0);   // 回避ステップ（押した瞬間）
 bool InputRun        (int playerId = 0);   // 走る（押されている間）
 AxisStatus InputLook (int playerId = 0);   // 視点操作の量（横=右が正、縦=下が正。マウスなら画素数）
+AxisStatus InputMove (int playerId = 0);   // パッドのスティックの移動（-1〜1。横=右が正、縦=下が正）。キーの InputUp などと別に読む
+AxisStatus InputLookStick(int playerId = 0); // パッドのスティックの視点操作（-1〜1。横=右が正、縦=下が正）。傾き＝回る速さ
 bool InputMenu       (int playerId = 0);   // メニュー／中断（押した瞬間）
 bool InputAim        (int playerId = 0);   // 構える（押されている間）
 bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）

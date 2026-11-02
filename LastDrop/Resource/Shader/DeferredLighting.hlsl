@@ -25,6 +25,7 @@ static const uint kViewSsao      = 11;
 static const uint kViewSsr       = 12;
 static const uint kViewSsrColor  = 13;
 static const uint kViewMotion    = 14;
+static const uint kViewHiZ       = 15;
 
 // 動きの種類の表示の色（RT1 の a。GBuffer.cpp の kMotionValues：0 動かない物・0.5 動く物・1 手元）。
 static const float3 kMotionMovingColor = float3(0.2, 0.4, 1.0);
@@ -35,6 +36,7 @@ static const float kMotionFirstPersonThreshold = 0.75; // これより大きけ�
 // SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ。SsrDecalMaterial_Plan.txt 7 章）。
 // 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl。
 Texture2D gReflection : register(t13);
+Texture2D<float> gHiZView : register(t15); // 表示の Hi-Z だけが読む（DeferredLighting.cpp の kHiZViewSlot）
 static const float kMinConfidence = 1e-3; // SSR color の表示で、これより確からしさが小さい所は黒（0 で割らない）
 
 // SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き。SsaoTranslucent_Plan.txt 5 章）。番号は DeferredLighting.cpp の kOcclusionSlot。
@@ -178,6 +180,17 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         float motion = gGBufferNormal.Load(pixel).a;
         c = (motion > kMotionFirstPersonThreshold) ? kMotionFirstPersonColor
           : ((motion > kMotionMovingThreshold) ? kMotionMovingColor : kNothingColor);
+    }
+    else if (view == kViewHiZ)
+    {
+        // 選んだ段の、この画素が入っている升目の一番手前の深度を、Depth と同じ物差しで。段が粗いほど手前の物が太って見える。
+        uint hiZWidth, hiZHeight, hiZLevels;
+        gHiZView.GetDimensions(0, hiZWidth, hiZHeight, hiZLevels);
+        uint level = min((uint)gViewParams.z, hiZLevels - 1);
+        float2 levelSize = max(floor(float2(hiZWidth, hiZHeight) * exp2(-(float)level)), 1.0);
+        float nearest = gHiZView.Load(int3(floor(p.uv * levelSize), level));
+        c = (nearest < kFarDepth) ? saturate(length(reconstructWorldPosition(p.uv, nearest) - gEyePosition.xyz) / gViewParams.y).xxx
+                                  : kNothingColor;
     }
     return float4(c, 1.0);
 }

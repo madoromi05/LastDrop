@@ -18,9 +18,17 @@ void Building::addCollidersTo( CollisionWorld* world ) const {
 }
 
 void Building::draw( const DrawCulling& culling ) const {
-	if ( culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), DrawCulling::Target::Large ) ) {
+	if ( shows( culling ) ) {
 		mMesh.draw();
 	}
+}
+
+bool Building::shows( const DrawCulling& culling ) const {
+	return culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), DrawCulling::Target::Large );
+}
+
+const StaticMeshInstance& Building::mesh() const {
+	return mMesh;
 }
 
 const Vector3& Building::position() const {

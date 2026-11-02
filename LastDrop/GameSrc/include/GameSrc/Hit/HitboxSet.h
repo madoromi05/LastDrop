@@ -55,7 +55,7 @@ public:
 	// out: nullptr 不可。
 	bool partCenter( BodyPart part, GameLib::Math::Vector3* out ) const;
 	// 置いてある箱を全部囲む、軸に沿った箱（ワールド）を書いて true。置いた箱が 1 つも無ければ false（出力は変えない）。
-	// 描くかどうかの判定（DrawCulling::showsPosed）に使う。boundsMin / boundsMax：nullptr 不可。
+	// 描くかどうかの判定（DrawCulling::showsPosed）に使う。update で求めて覚えた物を返すだけなので軽い。boundsMin / boundsMax：nullptr 不可。
 	bool bounds( GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;
 
 private:
@@ -66,8 +66,14 @@ private:
 		bool placed;                      // update で置けたか
 		bool removed;                     // removePart で外したか（外した箱は置かない）
 	};
+	// 置いた箱を全部囲む箱を求め直す（update・removePart の後）。raycast のふるいと bounds に使う。
+	void updateBounds();
+
 	const HitboxLayout* mLayout; // 借りているだけ
 	std::vector< Placement > mPlacements;
+	GameLib::Math::Vector3 mBoundsMin; // 置いた箱を全部囲む箱（mHasBounds が false の間は意味が無い）
+	GameLib::Math::Vector3 mBoundsMax;
+	bool mHasBounds;                   // 置いた箱が 1 つ以上あるか
 };
 
 #endif

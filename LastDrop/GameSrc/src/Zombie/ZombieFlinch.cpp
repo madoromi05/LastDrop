@@ -42,6 +42,15 @@ void ZombieFlinch::update() {
 	}
 }
 
+bool ZombieFlinch::isActive() const {
+	for ( const Vector3& pushed : mPushes ) {
+		if ( pushed.length() >= kNegligibleDegree ) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void ZombieFlinch::apply( std::vector< Matrix34 >* pose ) {
 	for ( size_t g = 0; g < mPushes.size(); ++g ) {
 		float degree = mPushes[ g ].length();

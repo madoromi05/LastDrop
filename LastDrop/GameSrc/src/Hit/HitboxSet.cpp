@@ -5,12 +5,14 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
+#include "GameLib/Profiling/Profiler.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
 
 HitboxSet::HitboxSet( const HitboxLayout* layout ) :
-	mLayout( layout ) {
+	mLayout( layout ),
+	mHasBounds( false ) {
 	ASSERT( mLayout && "HitboxSet : layout is null." );
 	Placement notPlaced;
 	notPlaced.world.setIdentity();
@@ -37,6 +39,7 @@ void HitboxSet::update( const SkinnedMeshInstance& mesh, PoseSource source ) {
 		placement.world.setMul( bone, boxes[ i ].local );
 		placement.toLocal.setInverse( placement.world );
 	}
+	updateBounds();
 }
 
 void HitboxSet::removePart( BodyPart part ) {
@@ -47,9 +50,15 @@ void HitboxSet::removePart( BodyPart part ) {
 			mPlacements[ i ].placed = false; // 当たり判定・表示は placed だけを見る
 		}
 	}
+	updateBounds();
 }
 
 bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult* hit ) const {
+	// 部位の箱へ線分を移す前に、全部を囲む箱で 1 回ふるう（外れる体は箱 1 つの判定で済む。OptimizationB_Plan.txt Q6）。
+	if ( !mHasBounds || !HitMath::segmentTouchesBox( origin, delta, mBoundsMin, mBoundsMax ) ) {
+		return false;
+	}
+	PROFILE_COUNT( "Hit.hitboxSets", 1 ); // 部位の箱まで調べた体（OptimizationB_Plan.txt 5 章）
 	const std::vector< HitboxLayout::Box >& boxes = mLayout->boxes();
 	bool found = false;
 	for ( size_t i = 0; i < boxes.size(); ++i ) {
@@ -116,6 +125,15 @@ bool HitboxSet::partCenter( BodyPart part, Vector3* out ) const {
 
 bool HitboxSet::bounds( Vector3* boundsMin, Vector3* boundsMax ) const {
 	ASSERT( boundsMin && boundsMax && "HitboxSet : bounds output is null." );
+	if ( !mHasBounds ) {
+		return false;
+	}
+	*boundsMin = mBoundsMin;
+	*boundsMax = mBoundsMax;
+	return true;
+}
+
+void HitboxSet::updateBounds() {
 	bool found = false;
 	for ( int i = 0; i < boxNumber(); ++i ) {
 		Matrix34 box;
@@ -133,13 +151,13 @@ bool HitboxSet::bounds( Vector3* boundsMin, Vector3* boundsMax ) const {
 		low.setSub( center, half );
 		high.setAdd( center, half );
 		if ( found ) {
-			boundsMin->min( low );
-			boundsMax->max( high );
+			mBoundsMin.min( low );
+			mBoundsMax.max( high );
 		} else {
-			*boundsMin = low;
-			*boundsMax = high;
+			mBoundsMin = low;
+			mBoundsMax = high;
 			found = true;
 		}
 	}
-	return found;
+	mHasBounds = found;
 }

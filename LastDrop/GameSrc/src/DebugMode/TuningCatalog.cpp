@@ -9,6 +9,7 @@
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
+#include "GameSrc/Zombie/AnimationThrottleParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Render/ShadowParams.h"
@@ -83,6 +84,9 @@ namespace{
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
+		// ゾンビのアニメを間引く段（OptimizationB_Plan.txt 9 章）。
+		groups.push_back( std::make_unique< TuningGroup< AnimationThrottleParams > >(
+			"AnimationThrottle", "AnimationThrottleParams", "GameSrc/Zombie/AnimationThrottleParams.h", &animationThrottleParams ) );
 		// 露出・ブルーム（リニア化の後に合わせ直す値。LinearToneMap_Plan.txt 7 章）。
 		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
 			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );

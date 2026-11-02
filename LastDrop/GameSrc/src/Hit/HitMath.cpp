@@ -59,13 +59,20 @@ bool HitMath::segmentUnitCube( const Vector3& origin, const Vector3& delta, floa
 }
 
 bool HitMath::segmentTouchesBox( const Vector3& origin, const Vector3& delta, const Vector3& boundsMin, const Vector3& boundsMax ) {
-	float enterTime = kStartTime;
-	float exitTime = kEndTime;
+	float enterTime;
+	return segmentBoxEnterTime( origin, delta, boundsMin, boundsMax, &enterTime );
+}
+
+bool HitMath::segmentBoxEnterTime( const Vector3& origin, const Vector3& delta, const Vector3& boundsMin, const Vector3& boundsMax,
+float* enterTime ) {
+	float enter = kStartTime;
+	float exit = kEndTime;
 	for ( int axis = 0; axis < kAxisNumber; ++axis ) {
-		if ( !clipAxis( origin[ axis ], delta[ axis ], boundsMin[ axis ], boundsMax[ axis ], axis, &enterTime, &exitTime, nullptr, nullptr ) ) {
+		if ( !clipAxis( origin[ axis ], delta[ axis ], boundsMin[ axis ], boundsMax[ axis ], axis, &enter, &exit, nullptr, nullptr ) ) {
 			return false;
 		}
 	}
+	*enterTime = enter;
 	return true;
 }
 

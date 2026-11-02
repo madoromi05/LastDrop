@@ -15,6 +15,9 @@
     ],
     "mesh_texture": "Resource/zombie_albedo.tga",
     "mesh_normalmap": "Resource/zombie_normal.tga",
+    "mesh_orm": "Resource/zombie_orm.tga",
+    "mesh_orm_export": false,
+    "material_params": { "roughness": 1.0, "metallic": 1.0 },
     "material_colors": {
         "lambert2": [0.42, 0.60, 0.35],
         "phong1":   [0.45, 0.28, 0.20],

@@ -4,6 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
+#include "GameSrc/Zombie/AnimationThrottle.h"
 
 class HitWorld;
 class ZombieCrowd;
@@ -42,6 +43,8 @@ public:
 		// 攻撃に行っている体（前のティックから続いている 1 体）。攻撃を始めた体がここへ入り、後の体は攻撃を始めない
 		// （同じティックに 2 体が攻撃を始めないように）。
 		const GameObject* attacker = nullptr;
+		// 前のフレームで絵を描いたカメラ。アニメを間引く段（AnimationThrottle）を決めるのに使う。nullptr なら間引かない。
+		const AnimationView* view = nullptr;
 	};
 
 	ZombieBrainComponent();
@@ -57,6 +60,9 @@ public:
 	// アニメを進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は描くときに行う。
 	virtual void update();
 
+	// 最後のティックのアニメの段（F3 の頭の上の表示に使う）。
+	AnimationThrottle::Level animationLevel() const;
+
 private:
 	// 立っている体が、追う先を考えて向きを変え、追いついたら攻撃を始め、そうでなければ歩く・横へよける。
 	// attack: 攻撃の部品（外されていれば nullptr）。
@@ -66,9 +72,14 @@ private:
 	// のけぞりは外せる体力の部品が持つので毎ティック組み直す（外された部品の書き換えを指したまま姿勢を求めないため）。
 	// health: 体力の部品（外されていれば nullptr）。
 	void rebuildPoseModifiers( ZombieHealthComponent* health );
+	// アニメを間引いてはいけない間か（攻撃・根の動き・よろけ・のけぞり・体を引きずる間。仕様書 9 章）。
+	// 根の動きを置き場所へ移す処理や、アニメの何フレーム目で何かを起こす処理が、飛んだ姿勢だとずれるため。
+	// attack / health: 外せる部品（外されていれば nullptr）。
+	bool mustPoseEveryTick( const ZombieAttackComponent* attack, const ZombieHealthComponent* health ) const;
 
 	TickContext* mContext; // 借りているだけ（共有の棚から start で引く）
 	BonePoseModifierChain mPoseModifiers; // 掛ける順は mPoseModifiers へ足す順で決まる
+	AnimationThrottle mAnimationThrottle; // 姿勢を求めるティックを間引く（体ごとのずれは start で物の番号から決め直す）
 	// ── 同じ物の必須の部品（start で借りる）──
 	GameLib::Math::Vector3* mPosition; // 足元の位置（TransformComponent）
 	SkinnedMeshInstance* mMesh;

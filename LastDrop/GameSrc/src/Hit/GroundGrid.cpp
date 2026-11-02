@@ -93,11 +93,7 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 	if ( mCells.empty() ) {
 		return;
 	}
-	++mQuery;
-	if ( mQuery == 0 ) { // 一周したら印を全部消す（0 は「まだ入れていない」の意味なので使わない）
-		std::fill( mVisitedQuery.begin(), mVisitedQuery.end(), 0u );
-		mQuery = 1;
-	}
+	beginQuery();
 	// 線分のうち、ますの範囲の中を通る所だけにする。
 	float begin = kSegmentBegin;
 	float end = kSegmentEnd;
@@ -136,6 +132,42 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 	}
 	// 小数の誤差で角をずれて進んだときも、線分の終わりのますは必ず入れる（入れ済みなら印で飛ばされる）。
 	collectCell( lastX, lastZ, items );
+}
+
+void GroundGrid::collectArea( const Vector3& boundsMin, const Vector3& boundsMax, std::vector< int >* items ) const {
+	ASSERT( items && "GroundGrid : items is null." );
+	items->clear();
+	if ( mCells.empty() ) {
+		return;
+	}
+	beginQuery();
+	int beginX = cellIndexX( boundsMin.x );
+	int endX = cellIndexX( boundsMax.x );
+	int beginZ = cellIndexZ( boundsMin.z );
+	int endZ = cellIndexZ( boundsMax.z );
+	for ( int z = beginZ; z <= endZ; ++z ) {
+		for ( int x = beginX; x <= endX; ++x ) {
+			collectCell( x, z, items );
+		}
+	}
+}
+
+void GroundGrid::clearItems() {
+	for ( std::vector< int >& cell : mCells ) {
+		cell.clear(); // 確保した分は残す（毎ティック入れ直すので、確保し直さない）
+	}
+}
+
+bool GroundGrid::isReady() const {
+	return !mCells.empty();
+}
+
+void GroundGrid::beginQuery() const {
+	++mQuery;
+	if ( mQuery == 0 ) { // 一周したら印を全部消す（0 は「まだ入れていない」の意味なので使わない）
+		std::fill( mVisitedQuery.begin(), mVisitedQuery.end(), 0u );
+		mQuery = 1;
+	}
 }
 
 void GroundGrid::collectCell( int cellX, int cellZ, std::vector< int >* items ) const {

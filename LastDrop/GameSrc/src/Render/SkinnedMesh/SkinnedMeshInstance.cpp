@@ -8,6 +8,7 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
 #include "GameLib/Scene/Animation.h"
+#include "GameLib/Profiling/Profiler.h"
 
 #include <cmath>
 
@@ -32,6 +33,7 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 	mFadeFrames( 0.f ),
 	mFadeElapsed( 0.f ),
 	mHasPose( false ),
+	mSkinStale( true ),
 	mPosition( 0.f, 0.f, 0.f ),
 	mAngleY( 0.f ) {
 	ASSERT( mData && mData->isReady() && "SkinnedMeshInstance : data is null or not ready." );
@@ -45,10 +47,12 @@ SkinnedMeshInstance::SkinnedMeshInstance( const SkinnedMeshData* data ) :
 
 void SkinnedMeshInstance::setPosition( const Vector3& position ) {
 	mPosition = position;
+	mSkinStale = true;
 }
 
 void SkinnedMeshInstance::setAngleY( float degree ) {
 	mAngleY = degree;
+	mSkinStale = true;
 }
 
 void SkinnedMeshInstance::setAnimation( const char* name, float startTime, PlayMode mode ) {
@@ -114,17 +118,34 @@ float SkinnedMeshInstance::lastFrameTime() const {
 	return mAnimation ? mAnimation.period() - kLastFrameMargin : 0.f;
 }
 
-void SkinnedMeshInstance::update() {
+float SkinnedMeshInstance::advanceClock() {
 	// 1回だけのアニメは、最後のフレームを超えたらそこで止める（時刻を戻すので、止まった後も増え続けない）。
 	if ( mPlayMode == PLAY_ONCE && mTime > lastFrameTime() ) {
 		mTime = lastFrameTime();
 	}
-	mSkeleton.updateAnimation( mTime );
 	mShownTime = mTime;
 	mTime += mPlaybackRate;
+	if ( mFadeFrames > 0.f ) {
+		mFadeElapsed += kTimeStep;
+		if ( mFadeElapsed >= mFadeFrames ) {
+			mFadeFrames = 0.f; // フェード終了。今のアニメのポーズをそのまま使う
+		}
+	}
+	return mShownTime;
+}
+
+void SkinnedMeshInstance::advance() {
+	advanceClock();
+}
+
+void SkinnedMeshInstance::update() {
+	float time = advanceClock();
+	PROFILE_COUNT( "Anim.poses", 1 ); // アニメの姿勢を求めた回数（OptimizationB_Plan.txt 5 章）
+	mSkeleton.updateAnimation( time );
 	mData->computeBonePose( mSkeleton, &mBonePose );
 	blendFadingPose();
 	mHasPose = true;
+	mSkinStale = true;
 
 	// 体の書き換え（当たり判定も動く）→ 見た目だけの書き換え、の順に掛ける。
 	if ( mBodyPoseModifier ) {
@@ -190,12 +211,7 @@ void SkinnedMeshInstance::blendFadingPose() {
 	if ( mFadeFrames <= 0.f ) {
 		return;
 	}
-	mFadeElapsed += kTimeStep;
-	float t = mFadeElapsed / mFadeFrames;
-	if ( t >= 1.f ) {
-		mFadeFrames = 0.f; // フェード終了。今のアニメのポーズをそのまま使う
-		return;
-	}
+	float t = mFadeElapsed / mFadeFrames; // 進みは advanceClock が数える（終われば mFadeFrames が 0 になっている）
 	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする。
 	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため。
 	float weight = ScalarMath::smoothStep( t );
@@ -208,8 +224,13 @@ void SkinnedMeshInstance::draw() const {
 	if ( !mHasPose ) {
 		return; // まだ update していない（見せるポーズが無い）
 	}
-	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
-	mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );
+	// 骨の行列は、ポーズか置き場所が変わった後に初めて描く時だけ作る。G-Buffer と影（最大 4 枚）で同じ体を何度描いても 1 回で済む
+	// （OptimizationB_Plan.txt 8 章）。置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+	if ( mSkinStale ) {
+		PROFILE_COUNT( "Skin.matrices", 1 ); // 骨の行列を作った回数（OptimizationB_Plan.txt 5 章）
+		mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );
+		mSkinStale = false;
+	}
 	mData->draw( mSkinMatrices );
 }
 
