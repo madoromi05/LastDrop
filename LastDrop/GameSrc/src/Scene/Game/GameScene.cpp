@@ -519,6 +519,7 @@ void GameScene::addFlashlight( const LightingParams& params ) {
 	float innerAngle = min( params.flashlightInnerAngle, params.flashlightOuterAngle );
 	LightSource flashlight = spotLight( position, muzzleDirection, params.flashlightColor, params.flashlightIntensity, params.flashlightRange,
 		innerAngle, params.flashlightOuterAngle );
+	flashlight.nearDistance = params.flashlightNearDistance;
 	// 影（Shadow_Plan.txt 5 章）。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない。
 	if ( shadowsEnabled() ) {
 		mFlashlightShadowMatrix = spotShadowProjectionView( position, muzzleDirection, params.flashlightOuterAngle,

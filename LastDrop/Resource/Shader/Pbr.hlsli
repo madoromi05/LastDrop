@@ -18,9 +18,13 @@ static const float3 kDielectricF0 = float3(0.04, 0.04, 0.04); // 金属でない
 static const float kMinRoughness = 0.045;
 // N・V に足す小さな数。真横から見た面で 0 割りにならないように（見た目に効く大きさではない）。
 static const float kNoVBias = 1e-5;
-// 点光源・スポットの距離の下限（10cm）。距離の 2 乗で弱まるので、ライトのすぐ近くの面は何百倍にも明るくなる。
-// マズルフラッシュの光は銃口の 5cm 前にあり、銃そのものが真っ白にならないよう、これより近くは 10cm と同じ明るさにする。
-static const float kMinLightDistanceSquared = 0.01;
+// 明るさの距離の下限はライトごと（LightData の nearDistance）。ここの値は、光の向きを作るときの 0 割りよけだけ（見た目に効く大きさではない）。
+static const float kMinDirectionDistanceSquared = 1e-8;
+// 点光源・スポットの光る所の半径（m。全ライト共通）。光源を大きさ 0 の点として GGX の D を計算すると、ツヤの強い面（水たまり）の
+// ハイライトの芯が何万倍にもなり、ブルームでちらつく。球の光源として、近いほど α を広げる（Karis「Real Shading in Unreal Engine 4」の球ライト）。
+// D は α を変えても全体の光の量が変わらないので、芯だけが下がりハイライトが少し大きくなる。平行光（月）は広げない。
+static const float kLightSourceRadius = 0.05;
+static const float kSourceRadiusToAlpha = 0.5; // α' = saturate( α + 半径 / (2 × 距離) ) の 1/2
 // Smith の Schlick-GGX 近似で、点光源用の k ＝ (粗さ + 1)² / 8（Karis「Real Shading in Unreal Engine 4」）。
 static const float kSmithRemapOffset = 1.0;
 static const float kSmithRemapDivisor = 8.0;
@@ -84,7 +88,8 @@ float3 fresnelSchlick(float3 f0, float voh)
 }
 
 // 1 つのライトから届く光 radiance が、向き l（面からライトへ・長さ 1）で当たったときに、目の向き v へ返る色。
-float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance)
+// alphaWiden：光源の大きさの分だけ D の α を広げる量（点光源・スポット。平行光は 0）。
+float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance, float alphaWiden)
 {
     float nol = saturate(dot(s.normal, l));
     if (nol <= 0.0)
@@ -92,7 +97,7 @@ float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance)
         return 0.0;
     }
     float roughness = max(s.roughness, kMinRoughness);
-    float alpha = roughness * roughness;
+    float alpha = saturate(roughness * roughness + alphaWiden);
     float3 h = normalize(l + v);
     float nov = viewCosine(s.normal, v);
     float noh = saturate(dot(s.normal, h));
@@ -149,16 +154,21 @@ float3 evaluateLight(Surface s, float3 v, LightData light)
     float3 l = -light.directionKind.xyz;
     float attenuation = 1.0;
     float lightDistance = 1.0; // 平行光では使わない（影を読む位置のずらしは、正射影なので距離に関わらず同じ）
+    float alphaWiden = 0.0;
     if (kind != kLightDirectional)
     {
         float3 toLight = light.positionRange.xyz - s.position;
-        float distanceSquared = max(dot(toLight, toLight), kMinLightDistanceSquared);
+        float distanceSquared = max(dot(toLight, toLight), kMinDirectionDistanceSquared);
         float rcpDistance = rsqrt(distanceSquared);
+        // 向き・影・届く距離の窓は本当の距離で計算し、距離の 2 乗の弱まりだけ近さの下限で止める
+        // （下限で距離ごと置き換えると、下限より近い面で l の長さが 1 でなくなる）。
         l = toLight * rcpDistance;
         lightDistance = distanceSquared * rcpDistance;
+        alphaWiden = kLightSourceRadius * kSourceRadiusToAlpha * rcpDistance;
         float rangeRatio = distanceSquared / (light.positionRange.w * light.positionRange.w); // (d / range)²
         float window = saturate(1.0 - rangeRatio * rangeRatio);
-        attenuation = window * window / distanceSquared;
+        float nearSquared = light.nearDistance.x * light.nearDistance.x;
+        attenuation = window * window / max(distanceSquared, nearSquared);
         if (kind == kLightSpot)
         {
             float cone = saturate(dot(-l, light.directionKind.xyz) * light.spotScaleOffset.x + light.spotScaleOffset.y);
@@ -175,7 +185,7 @@ float3 evaluateLight(Surface s, float3 v, LightData light)
             ? cascadedShadowVisibility((uint)shadowMap, s.position, s.normal, l, gEyePosition.xyz)
             : shadowVisibility((uint)shadowMap, s.position, s.normal, l, lightDistance);
     }
-    return surfaceBrdf(s, l, v, radiance * attenuation);
+    return surfaceBrdf(s, l, v, radiance * attenuation, alphaWiden);
 }
 
 // 面を、環境光とライトの一覧（b2）で照らした色（発光は含まない）。

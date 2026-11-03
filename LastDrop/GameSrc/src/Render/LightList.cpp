@@ -31,7 +31,8 @@ namespace{
 		float positionRange[ kVectorFloats ];   // xyz 位置  w 届く距離
 		float directionKind[ kVectorFloats ];   // xyz 光の進む向き  w 種類（LightKind の番号）
 		float colorIntensity[ kVectorFloats ];  // xyz 色（sRGB）  w 強さ
-		float spotScaleOffset[ kVectorFloats ]; // x 角度の倍率  y 角度のずらし（Frostbite の式。LightList.hlsli）  z 影のマップの番号（無ければ −1）  w 使わない
+		float spotScaleOffset[ kVectorFloats ]; // x 角度の倍率  y 角度のずらし（Frostbite の式。LightList.hlsli）  z 影のマップの番号（無ければ −1）  w 影のマップの枚数
+		float nearDistance[ kVectorFloats ];    // x 近さの下限（m）  yzw 使わない
 	};
 	// LightList.hlsli の cbuffer LightConstants と同じ並び。
 	struct LightConstants{
@@ -50,7 +51,7 @@ namespace{
 		float shadowTexels[ LightList::kMaxShadowMaps ][ kVectorFloats ];   // x 1 画素の大きさ（m）  y 1 なら透視（x は光から 1m の所）  zw 使わない
 		LightData lights[ LightList::kMaxLights ];
 	};
-	static_assert( sizeof( LightData ) == sizeof( float ) * kVectorFloats * 4, "LightData : keep the HLSL layout." );
+	static_assert( sizeof( LightData ) == sizeof( float ) * kVectorFloats * 5, "LightData : keep the HLSL layout." );
 
 	void setVector( float* out, const Vector3& v, float w ) {
 		out[ 0 ] = v.x;
@@ -99,6 +100,7 @@ namespace{
 		}
 		data.spotScaleOffset[ 2 ] = static_cast< float >( light.shadowMap );
 		data.spotScaleOffset[ 3 ] = static_cast< float >( light.shadowMapCount );
+		data.nearDistance[ 0 ] = light.nearDistance;
 		return data;
 	}
 }

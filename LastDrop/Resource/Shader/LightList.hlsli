@@ -19,6 +19,7 @@ struct LightData
     float4 directionKind;   // xyz 光の進む向き（平行光・スポット）  w 種類
     float4 colorIntensity;  // xyz 色（sRGB。読むときにリニアへ直す）  w 強さ
     float4 spotScaleOffset; // x 角度の倍率  y 角度のずらし（saturate( cos × x + y ) が内側で 1・外側で 0）  z 影のマップの番号（無ければ −1）  w 影のマップの枚数（2 以上なら CSM）
+    float4 nearDistance;    // x 近さの下限（m。これより近い面はこの距離と同じ明るさ。LightList.h の LightSource::nearDistance）  yzw 使わない
 };
 
 // b2（LightList.cpp の kLightSlot）。b1 は全画面のパスの定数・キャラの骨、b3 は G-Buffer の材質値。

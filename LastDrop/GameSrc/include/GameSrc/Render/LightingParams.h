@@ -58,6 +58,9 @@ struct LightingParams{
 	float flashlightOuterAngle = 22.f; // 中心からこの角度で 0（度。半角）
 	GameLib::Math::Vector3 flashlightColor = GameLib::Math::Vector3( 1.f, 0.96f, 0.88f ); // 白に少し暖かみ（LED より電球寄り）
 	float flashlightIntensity = 200.f; // 10m 先で 強さ / 100 の明るさ（距離の 2 乗で弱まる）
+	// 近さの下限（m。LightSource::nearDistance）。これより近い面は、この距離と同じ明るさ（強さ / 下限²）で止める。
+	// 本物の懐中電灯は反射鏡で光の束を作るので、すぐ近くでは距離の 2 乗どおりに明るくならない。
+	float flashlightNearDistance = 5.0f;
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）。
 	template< class V > void visit( V& v ) {
@@ -90,6 +93,7 @@ struct LightingParams{
 		v( "flashlightOuterAngle", flashlightOuterAngle, 1.f, 80.f, "deg" );
 		v( "flashlightColor", flashlightColor, 0.f, 1.f, "" );
 		v( "flashlightIntensity", flashlightIntensity, 0.f, 400.f, "x" );
+		v( "flashlightNearDistance", flashlightNearDistance, 0.05f, 5.f, "m" ); // 0 は不可（下限の 2 乗で割るため）
 	}
 };
 

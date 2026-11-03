@@ -24,7 +24,10 @@ struct LightSource{
 	float range = 0.f;                // 点・スポット：届く距離（m）。0 より大きいこと
 	float innerAngleDegree = 0.f;     // スポット：中心からこの角度までは減らない（半角）
 	float outerAngleDegree = 0.f;     // スポット：中心からこの角度で 0（半角。inner より大きいこと）
-	int shadowMap = -1;               // 影を付けるなら、LightList::setShadowMap で設定した影のマップの番号（無ければ −1）
+	// 点・スポット：近さの下限（m。0 より大きいこと）。これより近い面は、この距離にあるものとして明るさを計算する（距離の 2 乗で弱まるので、
+	// すぐ近くの面が何百倍にも明るくなり白く飛ぶのを止める）。初期値 10cm は、銃口の 5cm 前のマズルフラッシュで銃が真っ白にならない距離
+	float nearDistance = 0.1f;
+	int shadowMap = -1;              // 影を付けるなら、LightList::setShadowMap で設定した影のマップの番号（無ければ −1）
 	int shadowMapCount = 1;           // 影のマップの枚数。2 以上なら shadowMap から続く枚を距離で選ぶ（月の CSM。LightList::setCascades）
 };
 
