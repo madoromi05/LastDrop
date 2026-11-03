@@ -41,9 +41,9 @@ public:
 	const char* errorMessage() const;
 
 private:
-	// source を読んで destination へ、directionX・directionY（1 画素ずつ進む向き）にぼかす。
+	// source を読んで destination へ、directionX・directionY（1 画素ずつ進む向き）にぼかす。粗さは gbuffer の材質から読む。
 	void blur( const GameLib::Graphics::RenderTarget& source, const GameLib::Graphics::RenderTarget& destination,
-		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& inverse, const GameLib::Math::Matrix44& projectionView,
+		const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& inverse, const GameLib::Math::Matrix44& projectionView,
 		float directionX, float directionY );
 
 	GameLib::Graphics::RenderTarget mReflection;   // 半分の大きさの映り込み（作る先・結果）

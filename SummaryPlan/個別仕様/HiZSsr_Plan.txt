@@ -2,7 +2,8 @@
  Hi-Z と、粗い面のぼけた映り込み（グラフィック段階12）の計画メモ
  作成日：2026-11-02
  状態：Q1〜Q8 ともおすすめ案（★）でユーザーが承認（2026-11-02）。12-a（Hi-Z）実装済み・ビルド済み（2026-11-02）・画面確認と計測待ち。
-       12-b（ぼけた映り込み）は 12-a の画面確認・計測の後（Q1）。実装で決めた細かい所は 12 章
+       12-b（ぼけた映り込み）はユーザーの依頼で 12-a の確認を待たずに実装・ビルド済み（2026-11-04。13 章）・画面確認と計測待ち。
+       実装で決めた細かい所は 12 章（12-a）・13 章（12-b）
  元の仕様：GraphicsExtra_Spec.txt 7 章（Q9 ★A：GameLib の RenderTarget に段（mip）を足す・Q10 ★A：GGX でばらす確率的 SSR）・9 章（予算）
            SsrDecalMaterial_Plan.txt 7 章（今の SSR：半分の大きさ・直線 24 歩＋二分探索 4 回・粗さ 0.4 より上は計算しない・確からしさ）
            Taa_Plan.txt 8 章（IGN をフレームで動かし、TAA が均す）
@@ -213,3 +214,15 @@
   ・F6 → Render：Hi-Z（ON/OFF）・Hi-Z view level（0〜11）。G-Buffer の表示に Hi-Z（t15。選んだ段の一番手前の深度を Depth と同じ物差しで）。
     Tuning の SSR に hiZMaxIterations（48・8〜128）
   ・確かめたこと：Debug ビルド（警告なし）・Ssr / HiZBuild / DeferredLighting / SsrComposite.hlsl を fxc でコンパイル。ゲームを動かしての確認はまだ
+
+================================================================================
+ 13. 実装で決めた細かい所（12-b。2026-11-04）
+================================================================================
+  ・SsrParams::maxRoughness 0.4 → 0.7。SsrCommon.hlsli に kSsrSharpRoughness 0.4・kSsrRoughRange 0.3 と ssrRoughBlend（0.4 で 0・0.7 で 1）
+  ・Ssr.hlsl：reflectionDirection。法線を z にする向きの組は Duff ほか 2017（分かれ道なし）。sampleGgxVisibleNormal は Heitz 2018 の式そのまま（alpha = 粗さ²）。
+    乱数は IGN( 半分の画素, フレーム ) と IGN( 半分の画素 + (37, 61), フレーム )。粗さ 0.05 未満・面の中へ入る向きは鏡の向き
+    確からしさに lerp( 1, 0.6, ssrRoughBlend ) を掛ける（ばらすときだけ）。定数は gSsrFade.w（1 / 0）
+  ・SsrBlur.hlsl：t4（G-Buffer の材質）を読む。間隔 = 1 + 2 × ssrRoughBlend( 真ん中の粗さ )（読む画素は round( i × 間隔 )）。
+    粗さの差 0.2 より大きい画素の重みは 0。定数は gBlurDirection.z（ばらすときだけ 1）
+  ・F6 → Render に「Stochastic SSR」（ssrStochasticEnabled()。初期値 ON）。切ると鏡の向き・ぼかしも今まで（maxRoughness は 0.7 のまま）
+  ・確かめたこと：Debug ビルド（警告は miniaudio の前からある物だけ）・Ssr / SsrBlur.hlsl を fxc でコンパイル。ゲームを動かしての確認はまだ

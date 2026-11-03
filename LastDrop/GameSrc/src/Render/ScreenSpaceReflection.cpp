@@ -46,7 +46,7 @@ namespace{
 		float edgeFade;
 		float intensity;
 		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
-		float unused;
+		float stochastic; // 粗い面の反射の向きをばらすか（1 / 0。HiZSsr_Plan.txt 7 章）
 		float hiZLevels;        // Hi-Z の段の数
 		float hiZMaxIterations; // Hi-Z で進む回数の上限
 		float useHiZ;           // Hi-Z で進むか（1 / 0）
@@ -58,7 +58,8 @@ namespace{
 		float inverseProjectionView[ kMatrixFloats ];
 		float viewDepthRow[ kRowFloats ]; // 射影×ビューの 4 行目（m30..m33）
 		float direction[ 2 ];
-		float unused[ 2 ];
+		float roughAware; // 粗さで読む間隔を広げるか（1 / 0。ばらすときだけ）
+		float unused;
 	};
 	static_assert( sizeof( SsrBlurConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * 2 ), "SsrBlurConstants : keep the HLSL layout." );
 
@@ -75,6 +76,11 @@ SsrParams& ssrParams() {
 }
 
 bool& ssrEnabled() {
+	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sEnabled;
+}
+
+bool& ssrStochasticEnabled() {
 	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
 	return sEnabled;
 }
@@ -109,7 +115,7 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	constants.edgeFade = params.edgeFade;
 	constants.intensity = params.intensity;
 	constants.noiseFrame = static_cast< float >( noiseFrame );
-	constants.unused = 0.f;
+	constants.stochastic = ssrStochasticEnabled() ? 1.f : 0.f;
 	constants.hiZLevels = static_cast< float >( mHiZ.mipLevels() );
 	constants.hiZMaxIterations = std::floor( params.hiZMaxIterations + 0.5f ); // 整数（歩数と同じ理由）
 	constants.useHiZ = hiZEnabled() ? 1.f : 0.f;
@@ -131,19 +137,19 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	gm.drawFullScreen();
 	gm.setShaderResource( kHiZSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
-	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kSceneColorSlot, Graphics::RenderTarget() );
-	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。
-	blur( mReflection, mBlurScratch, depth, inverse, projectionView, kHorizontal[ 0 ], kHorizontal[ 1 ] );
-	blur( mBlurScratch, mReflection, depth, inverse, projectionView, kVertical[ 0 ], kVertical[ 1 ] );
+	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。ぼかしも粗さを読む（HiZSsr_Plan.txt 7 章）。
+	blur( mReflection, mBlurScratch, gbuffer, depth, inverse, projectionView, kHorizontal[ 0 ], kHorizontal[ 1 ] );
+	blur( mBlurScratch, mReflection, gbuffer, depth, inverse, projectionView, kVertical[ 0 ], kVertical[ 1 ] );
 	// 後から描く物（固定パイプライン）に残さない。
 	gm.setShader( Graphics::Shader() );
+	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }
 
 void ScreenSpaceReflection::blur( const Graphics::RenderTarget& source, const Graphics::RenderTarget& destination,
-	Graphics::DepthTarget depth, const Matrix44& inverse, const Matrix44& projectionView, float directionX, float directionY ) {
+	const GBuffer& gbuffer, Graphics::DepthTarget depth, const Matrix44& inverse, const Matrix44& projectionView, float directionX, float directionY ) {
 	SsrBlurConstants constants;
 	copyMatrix( inverse, constants.inverseProjectionView );
 	const int kDepthRowStart = kMatrixFloats - kRowFloats; // m30..m33
@@ -152,8 +158,8 @@ void ScreenSpaceReflection::blur( const Graphics::RenderTarget& source, const Gr
 	}
 	constants.direction[ 0 ] = directionX;
 	constants.direction[ 1 ] = directionY;
-	constants.unused[ 0 ] = 0.f;
-	constants.unused[ 1 ] = 0.f;
+	constants.roughAware = ssrStochasticEnabled() ? 1.f : 0.f;
+	constants.unused = 0.f;
 	mBlurConstants.set( &constants, sizeof( constants ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();
@@ -161,6 +167,7 @@ void ScreenSpaceReflection::blur( const Graphics::RenderTarget& source, const Gr
 	gm.setRenderTargets( &destination, 1, Graphics::DepthTarget() );
 	gm.setShader( mBlurShader );
 	gm.setShaderResource( kBlurSourceSlot, source ); // 描画先の切り替えで外れるので、切り替えた後に付ける
+	gm.setShaderResource( kMaterialSlot, gbuffer.material() );
 	gm.setShaderResource( kDepthSlot, depth );
 	gm.setConstantBuffer( kConstantSlot, mBlurConstants );
 	gm.drawFullScreen();

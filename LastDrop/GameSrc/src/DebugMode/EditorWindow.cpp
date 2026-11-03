@@ -199,6 +199,10 @@ namespace{
 		ImGui::SliderInt( "Hi-Z view level", &hiZViewLevel(), 0, kMaxHiZViewLevel );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > Hi-Z)" );
+		// 粗い面のぼけた映り込み（HiZSsr_Plan.txt 7・8 章）。切ると鏡の向きだけ・ぼかしも今までのまま。TAA を切るとざらつくのが正しい。
+		ImGui::Checkbox( "Stochastic SSR", &ssrStochasticEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(roughness 0.4-0.7, Tuning > SSR maxRoughness)" );
 		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6・9 章）。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える。
 		ImGui::Checkbox( "Puddles", &puddlesEnabled() );
 		ImGui::SameLine();

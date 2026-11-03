@@ -3,6 +3,8 @@
 // その画素の「照らした後のシーンの色」を持ってくる。進み方は 2 つ（F6 → Render の Hi-Z で切り替える。HiZSsr_Plan.txt Q5）：
 //   Hi-Z（HiZSsr_Plan.txt 6 章。Uludag 2014）… 深度の縮小の段で、何も無い所を大きく飛ばして進む
 //   直線 ＋ 二分探索（SsrDecalMaterial_Plan.txt Q5 の A）… 段階12 の計測が終わったら消す
+// 粗い面（HiZSsr_Plan.txt 7 章。Stachowiak 2015）は、反射の向きを GGX の見える法線の分布から画素ごとに 1 本選んでばらし、
+// ぼかし（SsrBlur.hlsl）と TAA が均す（F6 → Render の Stochastic SSR。切ると鏡の向きだけ）。
 // 出力：rgb は「映る色 × 確からしさ」、a は確からしさ（SsrCommon.hlsli）。当たらなかった・粗い面・空は 0（混ぜるパスで空の色のまま）。
 #include "GBuffer.hlsli"
 #include "Noise.hlsli"
@@ -17,7 +19,7 @@ cbuffer SsrConstants : register(b1)
     float4 gSsrInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
     float4 gSsrProjectionView[4];        // 射影×ビュー（行ごと）。進んだ点を画面へ戻す
     float4 gSsrMarch;                    // x: 計算する粗さの上限  y: 歩数（直線）  z: 一番遠くまで進む長さ（m）  w: 当たったとみなす厚さ（m）
-    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  z: ノイズのフレームの番号（TAA。Taa_Plan.txt 8 章）  w: 使わない
+    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  z: ノイズのフレームの番号（TAA。Taa_Plan.txt 8 章）  w: 向きをばらすか（1 / 0）
     float4 gSsrHiZ;                      // x: Hi-Z の段の数  y: Hi-Z で進む回数の上限  z: Hi-Z で進むか（1 / 0）  w: 使わない
 };
 
@@ -31,10 +33,57 @@ static const float kHiZMinViewDepth = 0.1;
 // Hi-Z：升目の境目を越えるときに、段 0 の 1 画素のこの割合だけ先へ出す（境目の上で止まって、同じ升目を見続けないように）。
 static const float kHiZCrossOffset = 0.01;
 static const float kHiZFar = 1e30;            // 進む向きの成分が 0 の軸の「境目までの t」（いつまでも越えない）
+// ぼけた映り込み（HiZSsr_Plan.txt 7 章）。
+static const float kStochasticMinRoughness = 0.05; // これよりなめらかな面（水たまり）は鏡の向きのまま（ばらしても見た目が変わらず、ざらつくだけ）
+static const float kRoughConfidence = 0.6;          // 粗さ kSsrSharpRoughness + kSsrRoughRange での確からしさ（ばらした 1 本が外れる分を空の色で埋める）
+static const float2 kSecondNoiseOffset = float2(37.0, 61.0); // 2 つ目の乱数の IGN を読む画素のずらし（1 つ目と同じ値にならないように）
+static const float kTwoPi = 6.28318531;
 
 FullScreenVertex VSMain(uint id : SV_VertexID)
 {
     return fullScreenVertex(id);
+}
+
+// GGX の見える法線の分布から半ベクトルを 1 本選ぶ（Heitz 2018 の式そのまま。HiZSsr_Plan.txt Q6 の A）。
+// 面の向きが z の空間で、toEye：面から目への向き。alpha：粗さ²（Pbr.hlsli と同じ）。u：0〜1 の乱数 2 つ。
+float3 sampleGgxVisibleNormal(float3 toEye, float alpha, float2 u)
+{
+    float3 stretched = normalize(float3(alpha * toEye.x, alpha * toEye.y, toEye.z));
+    float lengthSq = dot(stretched.xy, stretched.xy);
+    float3 t1 = (lengthSq > 0.0) ? float3(-stretched.y, stretched.x, 0.0) * rsqrt(lengthSq) : float3(1.0, 0.0, 0.0);
+    float3 t2 = cross(stretched, t1);
+    float radius = sqrt(u.x);
+    float phi = kTwoPi * u.y;
+    float p1 = radius * cos(phi);
+    float p2 = radius * sin(phi);
+    float s = 0.5 * (1.0 + stretched.z);
+    p2 = (1.0 - s) * sqrt(1.0 - p1 * p1) + s * p2;
+    float3 h = p1 * t1 + p2 * t2 + sqrt(max(0.0, 1.0 - p1 * p1 - p2 * p2)) * stretched;
+    return normalize(float3(alpha * h.x, alpha * h.y, max(0.0, h.z)));
+}
+
+// 反射の向き。粗い面は GGX でばらした半ベクトルで反射する。ばらした向きが面の中へ入るときは、選び直さずに鏡の向き（ざらつきを増やさない）。
+// view：目から画素への向き。n：法線。
+float3 reflectionDirection(float3 view, float3 n, float roughness, uint2 halfPixel)
+{
+    float3 mirror = reflect(view, n);
+    if (gSsrFade.w < 0.5 || roughness < kStochasticMinRoughness)
+    {
+        return mirror;
+    }
+    // 法線を z にする向きの組（Duff ほか 2017。分かれ道の無い作り方）。
+    float side = (n.z >= 0.0) ? 1.0 : -1.0;
+    float a = -1.0 / (side + n.z);
+    float b = n.x * n.y * a;
+    float3 tangent = float3(1.0 + side * n.x * n.x * a, side * b, -side * n.x);
+    float3 bitangent = float3(b, side + n.y * n.y * a, -n.y);
+    float3 toEye = -view;
+    float3 localEye = float3(dot(toEye, tangent), dot(toEye, bitangent), dot(toEye, n));
+    float2 u = float2(interleavedGradientNoise(halfPixel, gSsrFade.z), interleavedGradientNoise(halfPixel + kSecondNoiseOffset, gSsrFade.z));
+    float3 localHalf = sampleGgxVisibleNormal(localEye, roughness * roughness, u);
+    float3 h = localHalf.x * tangent + localHalf.y * bitangent + localHalf.z * n;
+    float3 r = reflect(view, h);
+    return (dot(n, r) > 0.0) ? r : mirror;
 }
 
 float viewDepthOf(float3 world)
@@ -244,7 +293,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         // 目から画素への向き：同じ画素の一番手前（深度 0）から画素の位置へ（目の位置を別に渡さなくてよい）。
         float3 view = normalize(position - worldPositionFromDepth(gSsrInverseProjectionView, uv, 0.0));
         float3 n = normalize(gGBufferNormal.Load(pixel).xyz);
-        float3 r = reflect(view, n);
+        float3 r = reflectionDirection(view, n, roughness, halfPixel);
         // ほぼ目の方へ戻る反射（目の後ろへ出ていく）は画面の中で当たらないので、計算しない。
         // 0（目の方へ少しでも戻る反射を全部捨てる）にすると、水たまりを 45° より下向きに見たときの映り込みが全部消える。
         if (dot(r, view) > -kTowardEyeLimit)
@@ -255,11 +304,13 @@ float4 PSMain(FullScreenVertex p) : SV_Target
             {
                 float3 hit = ssrProjectToScreen(gSsrProjectionView, position + r * hitDistance);
                 float3 color = gSceneColor.SampleLevel(gClampSampler, hit.xy, 0).rgb;
-                // 確からしさ：画面の端で薄く × つやの境目で薄く × 遠くまで進んだほど薄く。
+                // 確からしさ：画面の端で薄く × つやの境目で薄く × 遠くまで進んだほど薄く × ばらした粗い面で少し薄く（HiZSsr_Plan.txt 7 章）。
                 float edge = min(min(hit.x, 1.0 - hit.x), min(hit.y, 1.0 - hit.y));
+                float roughFade = (gSsrFade.w > 0.5) ? lerp(1.0, kRoughConfidence, ssrRoughBlend(roughness)) : 1.0;
                 float confidence = saturate(edge / gSsrFade.x)
                                  * saturate((maxRoughness - roughness) / kRoughnessFadeRange)
-                                 * saturate(1.0 - hitDistance / maxDistance);
+                                 * saturate(1.0 - hitDistance / maxDistance)
+                                 * roughFade;
                 result = float4(color * confidence, confidence) * gSsrFade.y;
             }
         }
