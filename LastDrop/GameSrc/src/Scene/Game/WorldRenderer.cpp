@@ -114,13 +114,20 @@ void WorldRenderer::beginBuildings() {
 	mBuildingBatch.clear();
 }
 
+int WorldRenderer::buildingIndex( const Building& building ) const {
+	return static_cast< int >( &building - mWorld->buildings().data() );
+}
+
 void WorldRenderer::addBuilding( const Building& building, const DrawCulling& culling ) {
+	if ( !culling.showsBuildingIndex( buildingIndex( building ) ) ) {
+		return;
+	}
 	if ( !mBatchesBuildings ) {
 		building.draw( culling ); // 1 軒ずつ（F6 で Instancing を切った見比べ・シェーダが無いとき）
 		return;
 	}
 	if ( building.shows( culling ) ) {
-		mBuildingBatch.add( building.mesh() );
+		mBuildingBatch.add( building.mesh(), building.shapeFor( culling ) ); // 形 × 段ごとにまとまる
 	}
 }
 

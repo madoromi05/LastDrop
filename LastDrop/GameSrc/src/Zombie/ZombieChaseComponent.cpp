@@ -9,6 +9,7 @@
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/CharacterColliderComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
+#include "GameSrc/Map/PathBudget.h"
 #include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/GameLib.h"
@@ -33,7 +34,8 @@ void ZombieChaseComponent::awake() {
 	mSway = std::make_unique< ZombieSway >( &model->flinchLayout(), mSwayPeriodSeconds, mSwayStartPhase );
 	const CharacterColliderComponent* collider = requireComponent< CharacterColliderComponent >();
 	// 仲間の並び（ZombieCrowd）に自分を名乗るのは、物そのもの（ポインタを比べるだけ）。
-	mLocomotion = std::make_unique< ZombieLocomotion >( gameObject(), shared< NavMesh >(), &collider->mover(), mSightPhase, mWanderSeed );
+	mLocomotion = std::make_unique< ZombieLocomotion >( gameObject(), shared< NavMesh >(), shared< PathBudget >(), &collider->mover(),
+		mSightPhase, mWanderSeed );
 }
 
 void ZombieChaseComponent::start() {

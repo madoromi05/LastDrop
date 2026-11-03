@@ -33,6 +33,7 @@ namespace{
 	const int kDebugTextSize = 128;
 	const int kRayLine = 2;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
 	const int kSpawnerLine = 3; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
+	const int kPvsLine = 4;     // 簡易 PVS の目のいるますと、隠した建物の数（ゾンビの体力の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 	// 自キャラの体力の数字と状態（F3）。画面の左上に 1 行（普段の画面には体力を出さないので、確認用にだけ見せる）。
 	const float kPlayerHealthLeft = 16.f; // 画面の左端からの間（画素）
@@ -119,6 +120,23 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 			spawner->standingCount(), spawner->targetCount(), spawner->secondsUntilNext() );
 		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), text );
 	}
+	// 簡易 PVS（OptimizationC_Plan.txt 7 章）。ますの外（町の外・建物の足元・高い所）では使わない。
+	const TownVisibility& visibility = world.visibility();
+	char pvsText[ kDebugTextSize ];
+	int cell = visibility.cellAt( camera.eyePosition() );
+	if ( !pvsEnabled() ) {
+		std::snprintf( pvsText, sizeof( pvsText ), "PVS: off" );
+	} else if ( cell == TownVisibility::kNoCell ) {
+		std::snprintf( pvsText, sizeof( pvsText ), "PVS: no cell (draw all)" );
+	} else {
+		int hidden = 0;
+		int buildingNumber = static_cast< int >( world.buildings().size() );
+		for ( int b = 0; b < buildingNumber; ++b ) {
+			hidden += visibility.showsBuilding( cell, b ) ? 0 : 1;
+		}
+		std::snprintf( pvsText, sizeof( pvsText ), "PVS: cell %d  hidden buildings %d/%d", cell, hidden, buildingNumber );
+	}
+	DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kPvsLine ), pvsText );
 }
 
 bool GameDebugOverlay::raycast( const GameWorld& world, const FirstPersonCamera& camera, HitWorld::Hit* hit ) const {

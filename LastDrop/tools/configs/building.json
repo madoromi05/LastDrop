@@ -15,5 +15,9 @@
         "specular": [0.02, 0.02, 0.02],
         "sharpness": 8.0,
         "normalstrength": 0.6
+    },
+    "plain_material_params": {
+        "roughness": 0.8,
+        "metallic": 0.0
     }
 }

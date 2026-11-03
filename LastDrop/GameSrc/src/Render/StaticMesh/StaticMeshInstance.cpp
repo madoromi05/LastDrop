@@ -109,6 +109,11 @@ void StaticMeshInstance::draw() const {
 	mData->draw( mWorld );
 }
 
+void StaticMeshInstance::draw( const StaticMeshData* shape ) const {
+	ASSERT( shape && "StaticMeshInstance : shape is null." );
+	shape->draw( mWorld );
+}
+
 void StaticMeshInstance::draw( const ViewFrustum& frustum ) const {
 	if ( frustum.mayContain( mBoundsMin, mBoundsMax ) ) {
 		mData->draw( mWorld );

@@ -190,10 +190,13 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 
 	// 数字はバーの上、状態はバーの下。
 	char text[ kTextSize ];
-	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）。
+	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）と、
+	// 道を探す順番を待っていれば「wait」（OptimizationC_Plan.txt 6 章）。
 	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
-	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
-		brain ? animationLevelName( brain->animationLevel() ) : "" );
+	const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
+	bool waitingForPath = chase && chase->path().isWaitingForSearch();
+	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
+		brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "" );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。

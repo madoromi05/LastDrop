@@ -8,7 +8,12 @@
 using namespace GameLib::Math;
 
 StaticModelComponent::StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget ) :
-	mMesh( data ),
+	StaticModelComponent( StaticMeshLods( data ), material, cullTarget ) {
+}
+
+StaticModelComponent::StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget ) :
+	mMesh( shapes.full() ),
+	mShapes( shapes ),
 	mMaterial( material ),
 	mCullTarget( cullTarget ) {
 }
@@ -21,7 +26,7 @@ void StaticModelComponent::awake() {
 
 void StaticModelComponent::draw( const DrawCulling& culling ) const {
 	if ( culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), mCullTarget ) ) {
-		mMesh.draw();
+		mMesh.draw( culling.chooseLod( mShapes, &mLod, mMesh.boundsMin(), mMesh.boundsMax() ) );
 	}
 }
 

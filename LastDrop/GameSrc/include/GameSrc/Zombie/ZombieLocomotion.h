@@ -7,6 +7,7 @@
 
 class GameObject;
 class NavMesh;
+class PathBudget;
 class CharacterMover;
 class HitWorld;
 class ZombieCrowd;
@@ -34,10 +35,12 @@ public:
 	};
 
 	// self: ZombieCrowd に自分を名乗るための持ち主（ポインタを比べるだけで、中身は読まない）。
-	// navMesh: 建物を回り込む通り道を聞く町の床の形。mover: 壁・ほかの体に沿って滑る移動。
+	// navMesh: 建物を回り込む通り道を聞く町の床の形。pathBudget: 1 ティックに道を探してよい回数を配る係（ZombiePath）。
+	// mover: 壁・ほかの体に沿って滑る移動。
 	// どれも所有権は受け取らない。nullptr 不可。この部品より長く生きていること（mover は同じ Zombie のメンバで、この部品より先に宣言する）。
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号。randomSeed: うろつく先・立つ長さを選ぶ乱数の種（ZombieChase）。
-	ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, const CharacterMover* mover, int sightPhase, int randomSeed );
+	ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, PathBudget* pathBudget, const CharacterMover* mover, int sightPhase,
+		int randomSeed );
 	ZombieLocomotion( const ZombieLocomotion& ) = delete;
 	ZombieLocomotion& operator=( const ZombieLocomotion& ) = delete;
 

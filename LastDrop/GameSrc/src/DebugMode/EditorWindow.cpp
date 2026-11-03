@@ -16,6 +16,8 @@
 #include "GameSrc/Render/LitQuadBatch.h"
 #include "GameSrc/Render/DecalBatch.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshInstancing.h"
+#include "GameSrc/Map/TownVisibility.h"
+#include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/Graphics/Manager.h"
@@ -162,6 +164,14 @@ namespace{
 		ImGui::Checkbox( "Instancing", &instancingEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(buildings)" );
+		// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか（OptimizationC_Plan.txt 7 章）。回数は Pvs.building・Pvs.zombie。
+		ImGui::Checkbox( "PVS", &pvsEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(hidden buildings + zombies)" );
+		// 置物を遠くで粗い形（LOD）で描くか（OptimizationC_Plan.txt 8 章）。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles。
+		ImGui::Checkbox( "LOD", &lodEnabled() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(car, fuel cans)" );
 		// 霧を掛けるか（NightFinish_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる。
 		ImGui::Checkbox( "Fog", &fogEnabled() );
 		ImGui::SameLine();

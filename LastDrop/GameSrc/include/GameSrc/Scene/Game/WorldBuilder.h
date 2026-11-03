@@ -2,6 +2,7 @@
 #define INCLUDED_WORLD_BUILDER_H
 
 #include "GameSrc/Map/TownMap.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
 #include <vector>
 
 class MeshCache;
@@ -44,14 +45,14 @@ public:
 
 private:
 	// data の建物を placements の場所へ建てる。data: nullptr 不可。
-	void placeBuildings( const WorldBuildTarget& target, const StaticMeshData* data, const std::vector< TownPlacement >& placements ) const;
+	void placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes, const std::vector< TownPlacement >& placements ) const;
 	// 脱出用の車と、何度でも拾えるガソリン、候補点から選んだ場所のガソリンを置き、車の燃料タンクを返す（無ければ nullptr）。
 	const FuelTankComponent* placeMissionObjects( GameObjectWorld* objects ) const;
 
 	const TownMap* mMap;                          // 借りているだけ
 	const PropFactory* mProps;                    // 借りているだけ
-	const StaticMeshData* mBuildingData;          // どれも MeshCache から借りる
-	const StaticMeshData* mPerimeterBuildingData; // 町を囲む、足元の板の無い建物
+	StaticMeshLods mBuildingShapes;          // どれも MeshCache から借りる（建物は 1 段だけ）
+	StaticMeshLods mPerimeterBuildingShapes; // 町を囲む、足元の板の無い建物
 };
 
 #endif

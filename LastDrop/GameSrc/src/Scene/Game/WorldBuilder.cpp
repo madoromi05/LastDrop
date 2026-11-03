@@ -36,19 +36,18 @@ namespace{
 WorldBuilder::WorldBuilder( MeshCache* meshes, const TownMap* map, const PropFactory* props ) :
 	mMap( map ),
 	mProps( props ),
-	mBuildingData( nullptr ),
-	mPerimeterBuildingData( nullptr ) {
+	// 建物は粗い形（LOD）を持たない（OptimizationC_Plan.txt 13-3。三角形の 85% が窓枠・ガラスの小さな部品で、Decimate で窓が崩れるため）。
+	mBuildingShapes( meshes->staticMesh( kBuildingFile ) ),
+	mPerimeterBuildingShapes( meshes->staticMesh( kPerimeterBuildingFile ) ) {
 	ASSERT( meshes && map && props && "WorldBuilder : an argument is null." );
-	mBuildingData = meshes->staticMesh( kBuildingFile );
-	mPerimeterBuildingData = meshes->staticMesh( kPerimeterBuildingFile );
 }
 
 const FuelTankComponent* WorldBuilder::build( const WorldBuildTarget& target ) const {
 	target.ground->place( *mMap );
 	target.hitWorld->addBlocker( target.ground ); // 地面も弾・視線を止める（地面全体で1つの物）
 	target.collisionWorld->setGround( target.ground ); // キャラは地面の高さに乗る（歩道の段差）
-	placeBuildings( target, mBuildingData, mMap->buildings() );
-	placeBuildings( target, mPerimeterBuildingData, mMap->perimeterBuildings() );
+	placeBuildings( target, mBuildingShapes, mMap->buildings() );
+	placeBuildings( target, mPerimeterBuildingShapes, mMap->perimeterBuildings() );
 	// 弾を止める物として登録する。建物を並べ終えてから行う（push_back の途中で登録すると、
 	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）。
 	for ( const Building& building : *target.buildings ) {
@@ -60,16 +59,16 @@ const FuelTankComponent* WorldBuilder::build( const WorldBuildTarget& target ) c
 	return fuelTank;
 }
 
-void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshData* data,
+void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes,
 const std::vector< TownPlacement >& placements ) const {
 	// 当たり判定を三角形から作るので、構築に失敗した建物は置かない。
-	if ( !data->isReady() ) {
+	if ( !shapes.full()->isReady() ) {
 		return;
 	}
 	std::vector< Building >* buildings = target.buildings;
 	buildings->reserve( buildings->size() + placements.size() );
 	for ( const TownPlacement& p : placements ) {
-		buildings->emplace_back( data, toPosition( p ), p.yawDegree, kBuildingMaterial );
+		buildings->emplace_back( shapes, toPosition( p ), p.yawDegree, kBuildingMaterial );
 		buildings->back().addCollidersTo( target.collisionWorld );
 	}
 }

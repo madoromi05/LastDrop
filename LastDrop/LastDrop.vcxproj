@@ -181,6 +181,7 @@
   <ItemGroup>
     <!-- ゲームコード -->
     <ClCompile Include="GameSrc\src\Render\CascadeRefresh.cpp" />
+    <ClCompile Include="GameSrc\src\Render\LodSelector.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotionComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFactory.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberComponent.cpp" />
@@ -219,6 +220,7 @@
     <ClCompile Include="GameSrc\src\Render\MeshMaterial.cpp" />
     <ClCompile Include="GameSrc\src\Render\MeshLoaderUtil.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshData.cpp" />
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshLods.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstancing.cpp" />
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshBatch.cpp" />
@@ -228,6 +230,8 @@
     <ClCompile Include="GameSrc\src\Collision\CollisionWorld.cpp" />
     <ClCompile Include="GameSrc\src\Collision\CharacterMover.cpp" />
     <ClCompile Include="GameSrc\src\Map\Building.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownVisibility.cpp" />
+    <ClCompile Include="GameSrc\src\Map\PathBudget.cpp" />
     <ClCompile Include="GameSrc\src\Collision\MeshBoundsBox.cpp" />
     <ClCompile Include="GameSrc\src\Collision\MeshWallBuilder.cpp" />
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
@@ -533,6 +537,7 @@
   <!-- ==================== ヘッダファイル ==================== -->
   <ItemGroup>
     <ClInclude Include="GameSrc\include\GameSrc\Render\CascadeRefresh.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LodSelector.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotionComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealthComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h" />
@@ -687,6 +692,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshMaterial.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\MeshLoaderUtil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshData.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshLods.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstancing.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshBatch.h" />
@@ -698,6 +704,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\CollisionWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\CharacterMover.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\Building.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownVisibility.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\PathBudget.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshBoundsBox.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshWallBuilder.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Collision\WallMesh.h" />

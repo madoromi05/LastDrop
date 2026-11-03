@@ -5,6 +5,7 @@
 #include <vector>
 
 class NavMesh;
+class PathBudget;
 
 // ゾンビ1体の通り道（建物を回り込むときだけ使う）。行き先（どこへ行きたいか）は ZombieChase が決め、
 // ここは「このティックにどこを向いて歩くか」だけを答える。自分では動かない（動くのは Zombie）。
@@ -17,11 +18,17 @@ class NavMesh;
 // 行き先が 1 ティックで大きく飛んだら（新しい銃声の所へ向かい直した）、すぐ調べ直して数え直す。
 // 歩いているのに向かう点の向きへ決まった時間進めなければ（群れ・床の形に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
 // 向かい直す（SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
+// 道を探す（findPath）のは PathBudget が許したときだけ。待たされたら前の通り道（無ければ行き先へまっすぐ）のまま歩き、次のティックに頼み直す
+// （SummaryPlan/個別仕様/OptimizationC_Plan.txt 6 章）。
 // 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt（道探しを NavMesh に替えたのは ZombieNavMesh_Plan.txt）。
 class ZombiePath{
 public:
 	// probePhase: まっすぐ通れるかを調べる時刻をずらす番号（何体目か）。同じティックに全員が線を引かないようにする。
-	explicit ZombiePath( int probePhase );
+	// budget: 1 ティックに道を探してよい回数を配る係。所有権は受け取らない。nullptr 不可。この物より長く生きていること。
+	ZombiePath( int probePhase, PathBudget* budget );
+	~ZombiePath();
+	ZombiePath( const ZombiePath& ) = delete;
+	ZombiePath& operator=( const ZombiePath& ) = delete;
 
 	// このティックに向く点を返す。self: 自分の足元。destination: 最後に向かいたい所（ZombieChase::destination）。
 	// walking: 歩こうとしているか（ZombieChase::wantsToWalk）。立ち止まっている間は「近づけない」を数えない。
@@ -32,6 +39,8 @@ public:
 	void clear();
 	// 一度よけても、まだ向く点へ近づけないか（見失った後、着けない所へ向かっているのを見分ける。あきらめるかは持ち主が決める）。
 	bool isStuck() const;
+	// 道を探したいのに、順番を待っているか（確認用の表示）。
+	bool isWaitingForSearch() const;
 	// 近づけているかを数え直す（探し始めたとき。追っている間に数えた分を持ち越さない）。
 	void resetProgress();
 	// 残りの通り道（今向かっている点から最後＝行き先まで）。まっすぐ向かっている間は空。よけている間は、よける点が先頭に入る。
@@ -51,6 +60,7 @@ private:
 	// 今向かっている点（通り道が無ければ行き先）。
 	const GameLib::Math::Vector3& currentPoint( const GameLib::Math::Vector3& destination ) const;
 
+	PathBudget* mBudget;                          // 借りているだけ
 	std::vector< GameLib::Math::Vector3 > mRoute; // 通り道（最後は行き先）。空ならまっすぐ向かう
 	int mNext;                                    // mRoute のうち今向かっている点の番号
 	GameLib::Math::Vector3 mRouteGoal;            // 通り道を探したときの行き先（大きく動いたら探し直す）

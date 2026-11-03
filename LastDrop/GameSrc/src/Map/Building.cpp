@@ -7,8 +7,9 @@
 
 using namespace GameLib::Math;
 
-Building::Building( const StaticMeshData* data, const Vector3& position, float angleY, GroundMaterial material ) :
-	mMesh( data, position, angleY ),
+Building::Building( const StaticMeshLods& shapes, const Vector3& position, float angleY, GroundMaterial material ) :
+	mMesh( shapes.full(), position, angleY ),
+	mShapes( shapes ),
 	mMaterial( material ) {
 }
 
@@ -19,7 +20,7 @@ void Building::addCollidersTo( CollisionWorld* world ) const {
 
 void Building::draw( const DrawCulling& culling ) const {
 	if ( shows( culling ) ) {
-		mMesh.draw();
+		mMesh.draw( shapeFor( culling ) );
 	}
 }
 
@@ -29,6 +30,10 @@ bool Building::shows( const DrawCulling& culling ) const {
 
 const StaticMeshInstance& Building::mesh() const {
 	return mMesh;
+}
+
+const StaticMeshData* Building::shapeFor( const DrawCulling& culling ) const {
+	return culling.chooseLod( mShapes, &mLod, mMesh.boundsMin(), mMesh.boundsMax() );
 }
 
 const Vector3& Building::position() const {

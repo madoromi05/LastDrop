@@ -4,6 +4,7 @@
 #include "GameSrc/World/GameObjectTag.h"
 #include "GameSrc/Render/DrawCulling.h"
 #include "GameSrc/Component/BoxColliderComponent.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
 #include "GameLib/Math/Vector3.h"
 
 class MeshCache;
@@ -37,13 +38,13 @@ public:
 private:
 	// 動かない置物の物を作り、見た目と箱の部品まで付けて返す（まだ spawn しない。呼ぶ側が残りの部品を付けて spawn する）。
 	// data: 構築済みであること。
-	GameObject* createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshData* data,
+	GameObject* createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshLods& shapes,
 		const GameLib::Math::Vector3& position, float yawDegree, DrawCulling::Target cullTarget,
 		BoxColliderComponent::Mode colliderMode ) const;
 
-	const StaticMeshData* mVehicleData;   // どれも MeshCache から借りる。脱出用の車
-	const StaticMeshData* mFuelCanData;   // ガソリンの携行缶（落ちているガソリンと置き場で共通）
-	const StaticMeshData* mAmmoDropData;  // ゾンビが落とす予備の弾（7.62 NATO の弾薬を大きくして寝かせた物）
+	StaticMeshLods mVehicleShapes;  // どれも MeshCache から借りる。脱出用の車（細かさの段ごと）
+	StaticMeshLods mFuelCanShapes;  // ガソリンの携行缶（落ちているガソリンと置き場で共通。細かさの段ごと）
+	StaticMeshLods mAmmoDropShapes; // ゾンビが落とす予備の弾（7.62 NATO の弾薬を大きくして寝かせた物。1 段だけ）
 };
 
 #endif

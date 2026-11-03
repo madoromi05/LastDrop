@@ -6,16 +6,21 @@
 #include "GameLib/Math/Matrix44.h"
 
 class HitboxSet;
+class TownVisibility;
 
 // 前のフレームで絵を描いたカメラ（目の位置と映る範囲）。ゾンビがアニメを間引く段を決めるのに読む。
 // 描く側（GameScene）が描いた後に GameWorld へ渡し、次のティックで ZombieBrainComponent が TickContext から読む。
 // 描く側はゲームの状態を書き換えない（DrawCulling の約束）ので、ゾンビの方が自分で読みに来る形にしている。
 struct AnimationView{
 	// projectionView：カメラの射影×ビュー（TAA でずらす前）。eye：目の位置。
-	AnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye ) :
-		frustum( projectionView ), eye( eye ){}
+	// visibility：隠れたゾンビも「映らない」にする表（nullptr なら見ない。OptimizationC_Plan.txt Q5）。viewCell：目のいるます。
+	AnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye, const TownVisibility* visibility,
+		int viewCell ) :
+		frustum( projectionView ), eye( eye ), visibility( visibility ), viewCell( viewCell ){}
 	ViewFrustum frustum;
 	GameLib::Math::Vector3 eye;
+	const TownVisibility* visibility; // 借りているだけ
+	int viewCell;
 };
 
 // ゾンビ 1 体の、アニメの姿勢を求めるティックを間引く係（SummaryPlan/個別仕様/OptimizationB_Plan.txt 9 章）。

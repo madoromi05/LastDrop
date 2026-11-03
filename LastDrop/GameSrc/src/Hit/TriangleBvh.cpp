@@ -18,6 +18,9 @@ namespace{
 	// 下りる途中で覚えておく節の数の上限。中央値で分けるので深さは log2(三角形の数 / 4) 程度
 	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする。
 	const int kMaxStackDepth = 64;
+	// 節の箱を三角形からこれだけ広げる（m）。ぴったりの箱だと、三角形の縁にちょうど当たる線を、浮動小数の誤差で箱の方が外してしまい、
+	// 総当たりと答えが食い違う（2026-11-03 に Debug の確かめで見つかった）。当たる三角形は変わらず、箱を調べる数がわずかに増えるだけ。
+	const float kBoundsPadding = 0.001f;
 
 	// 三角形 triangle の 3 つの頂点。
 	void corners( const std::vector< Vector3 >& positions, const std::vector< unsigned short >& indices, int triangle,
@@ -76,8 +79,9 @@ const std::vector< unsigned short >& indices, const std::vector< Vector3 >& cent
 		centerMax.max( centers[ mTriangles[ i ] ] );
 	}
 	Node& node = mNodes[ nodeIndex ];
-	node.boundsMin = boundsMin;
-	node.boundsMax = boundsMax;
+	const Vector3 padding( kBoundsPadding, kBoundsPadding, kBoundsPadding );
+	node.boundsMin.setSub( boundsMin, padding );
+	node.boundsMax.setAdd( boundsMax, padding );
 
 	Vector3 extent;
 	extent.setSub( centerMax, centerMin );

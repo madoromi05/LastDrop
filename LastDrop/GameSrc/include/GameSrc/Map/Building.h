@@ -3,6 +3,8 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
+#include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/Hit/IRayBlocker.h"
 
 class DrawCulling;
@@ -18,11 +20,11 @@ class CollisionWorld;
 // 弾も見た目の三角形そのもので止める（IRayBlocker）。こちらは高さで切らず、全部の三角形が相手。
 class Building : public IRayBlocker{
 public:
-	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること（当たり判定を三角形から作るため）。
-	//       この建物より長く生きていること（MeshCache が持つ）。
+	// shapes: 細かさの段ごとの形と見た目（元の形 shapes.full() で当たり判定を作る）。元の形は isReady() 済みであること。
+	//         形はこの建物より長く生きていること（MeshCache が持つ）。
 	// position / angleY: 置き場所（地面の上）と向き（度）。
 	// material: 壁の材質（着弾音に使う）。何でできた建物かは置く側が決める。
-	Building( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY, GroundMaterial material );
+	Building( const StaticMeshLods& shapes, const GameLib::Math::Vector3& position, float angleY, GroundMaterial material );
 
 	// 移動の当たり判定を作って world へ渡す（以後は world が持つ）。建物1軒につき1回だけ呼ぶ（呼ぶたびに登録が増える）。
 	// world: 所有権は受け取らない。nullptr 不可。
@@ -31,8 +33,10 @@ public:
 	void draw( const DrawCulling& culling ) const;
 	// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く（OptimizationA_Plan.txt 8-3）。
 	bool shows( const DrawCulling& culling ) const;
-	// 見た目（形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む。
+	// 見た目（元の形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む。
 	const StaticMeshInstance& mesh() const;
+	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す。
+	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;
 	// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う。
 	const GameLib::Math::Vector3& position() const;
 	// 弾の当たり判定（見た目の三角形で判定する）。
@@ -43,6 +47,9 @@ public:
 
 private:
 	StaticMeshInstance mMesh;
+	StaticMeshLods mShapes;
+	// 今描く細かさの段。描く側だけが使う状態（ゲームの進行には使わない）なので、const の draw から選び直せるように mutable。
+	mutable LodSelector mLod;
 	GroundMaterial mMaterial;
 };
 

@@ -92,9 +92,10 @@ void forgetSentSurface() {
 	gHasSentSurface = false;
 }
 
-void countDraw() {
+void countDraw( int triangleNumber ) {
 	if ( gCurrent == RenderPassKind::GBuffer ) {
 		PROFILE_COUNT( "Draw.gbuffer", 1 );
+		PROFILE_COUNT( "Draw.triangles", static_cast< double >( triangleNumber ) );
 	} else if ( gCurrent == RenderPassKind::Shadow ) {
 		PROFILE_COUNT( "Draw.shadow", 1 );
 	}

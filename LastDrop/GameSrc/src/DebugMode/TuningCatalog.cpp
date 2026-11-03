@@ -8,6 +8,7 @@
 #include "GameSrc/Player/AimSwayParams.h"
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
+#include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
 #include "GameSrc/Zombie/AnimationThrottleParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
@@ -87,6 +88,9 @@ namespace{
 		// ゾンビのアニメを間引く段（OptimizationB_Plan.txt 9 章）。
 		groups.push_back( std::make_unique< TuningGroup< AnimationThrottleParams > >(
 			"AnimationThrottle", "AnimationThrottleParams", "GameSrc/Zombie/AnimationThrottleParams.h", &animationThrottleParams ) );
+		// 置物の細かさの段（LOD）の境目（OptimizationC_Plan.txt 8 章）。
+		groups.push_back( std::make_unique< TuningGroup< LodParams > >(
+			"Lod", "LodParams", "GameSrc/Render/LodSelector.h", &lodParams ) );
 		// 露出・ブルーム（リニア化の後に合わせ直す値。LinearToneMap_Plan.txt 7 章）。
 		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
 			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );

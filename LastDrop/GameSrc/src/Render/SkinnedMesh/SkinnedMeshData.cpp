@@ -305,7 +305,7 @@ void SkinnedMeshData::draw( const std::vector< Matrix34 >& skinMatrices ) const 
 			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）。
 			m.setNormalMapStrength( kNoNormalMap );
 		}
-		RenderPass::countDraw();
+		RenderPass::countDraw( part.mTriangleNumber );
 		m.drawIndexed( part.mFirstTriangle, part.mTriangleNumber );
 	}
 	mSkinning->end();

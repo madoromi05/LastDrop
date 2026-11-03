@@ -4,6 +4,7 @@
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
+#include "GameLib/Profiling/Profiler.h"
 
 #include "ThirdParty/recastnavigation/Recast/Recast.h"
 #include "ThirdParty/recastnavigation/Detour/DetourNavMesh.h"
@@ -338,6 +339,7 @@ bool NavMesh::isReady() const {
 }
 
 bool NavMesh::isWalkable( const Vector3& from, const Vector3& to ) const {
+	PROFILE_COUNT( "Path.walkable", 1 ); // 道探しの予算に入れるかを決める数（OptimizationC_Plan.txt Q3）
 	if ( !isReady() ) {
 		return true;
 	}
@@ -361,6 +363,9 @@ bool NavMesh::isWalkable( const Vector3& from, const Vector3& to ) const {
 
 bool NavMesh::findPath( const Vector3& start, const Vector3& goal, std::vector< Vector3 >* out ) const {
 	ASSERT( out && "NavMesh : out is null." );
+	// 1 回の重さ（Path.ms ÷ Path.find）で、探す処理を途中で区切る作り（OptimizationC_Plan.txt Q2 の B）が要るかを決める。
+	PROFILE_TOTAL( "Path.ms" );
+	PROFILE_COUNT( "Path.find", 1 );
 	out->clear();
 	if ( !isReady() ) {
 		return false;

@@ -71,7 +71,10 @@ private:
 	// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める。
 	void beginBuildings();
 	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ。
+	// 隠れ（PVS）も culling に聞く（目から見る絵の culling だけが表を持つ）。
 	void addBuilding( const Building& building, const DrawCulling& culling );
+	// building の GameWorld::buildings の並びでの番号（PVS の表の番号）。
+	int buildingIndex( const Building& building ) const;
 	// 集めた建物を形ごとにまとめて描く（1 軒ずつ描いているときは何もしない）。
 	void endBuildings();
 

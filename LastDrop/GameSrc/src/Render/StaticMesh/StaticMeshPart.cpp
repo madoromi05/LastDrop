@@ -119,7 +119,7 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 		m.setShader( RenderPass::staticMeshShader() );
 	}
 	m.setWorldMatrix( world );
-	RenderPass::countDraw();
+	RenderPass::countDraw( mTriangleNumber );
 	m.drawIndexed( 0, mTriangleNumber );
 }
 
@@ -128,7 +128,7 @@ void StaticMeshPart::drawInstanced( int instanceNumber ) const {
 		return;
 	}
 	bindForDraw();
-	RenderPass::countDraw(); // 何個まとめても 1 回（Draw.gbuffer・Draw.shadow が減るのを見るため）
+	RenderPass::countDraw( mTriangleNumber * instanceNumber ); // 何個まとめても 1 回（Draw.gbuffer・Draw.shadow が減るのを見るため）
 	Graphics::Manager::instance().drawIndexedInstanced( 0, mTriangleNumber, instanceNumber );
 }
 

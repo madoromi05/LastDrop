@@ -59,6 +59,10 @@ CONFIG = {
     # 材質値（任意）。書いたものだけ出力し、無ければゲーム側 MeshMaterial の既定値になる。
     # 例: {"specular": (0.01, 0.01, 0.01), "sharpness": 8.0, "normalstrength": 0.3, "diffuse": (1, 1, 1)}
     "material_params": {},
+    # static モードのみ。画像を貼らないパーツ（UV の無い単色部品）だけ、material_params をこの値で上書きする。
+    # ORM を付けた材質は roughness / metallic を倍率の 1 にするが、ORM の無い単色部品ではそれが値そのものになり、
+    # metallic 1（金属 100%）で真っ黒に見えるため（2026-11-03。LOD を作り直して見つかった）。例: {"roughness": 0.8, "metallic": 0.0}
+    "plain_material_params": {},
     "frame_step": 1,            # アニメを何フレームおきにサンプリングするか
     "translate_root_only": True,  # True: 根ボーンだけ移動カーブを出す(関節は回転のみ)
     "flip_winding": False,      # 三角形の巻き順を反転する（AXIS_CONVERT が鏡像変換のときだけ必要）
@@ -122,6 +126,10 @@ CONFIG = {
     # （SummaryPlan/個別仕様/OptimizationS246_Plan.txt 2 章）。全メッシュを同じ割合で減らす。0 なら減らさない。
     # 形のかどは法線マップが補う。スキンのあるモデルもウェイト（頂点グループ）を保ったまま減る。
     "max_triangles": 0,
+    # static モードのみ。粗いモデル（LOD）を作る割合の並び（書き出す形の三角形の数に対する割合。例: [0.5, 0.25]）。
+    # 1 つ目を <out_path の名前>_lod1.txt、2 つ目を _lod2.txt へ書き出す（SummaryPlan/個別仕様/OptimizationC_Plan.txt 8 章）。
+    # 細かいモデルを書き出した後に、同じ形を Decimate（Collapse）でさらに減らして書く。画像は細かいモデルと同じ物を使う。
+    "lods": [],
 }
 
 # (A) 座標変換: Blender(x,y,z: Z-up 右手) → エンジン(Y-up 右手)。
@@ -278,11 +286,15 @@ def triangle_count(mesh_objs):
 
 
 def decimate_meshes(mesh_objs):
-    # max_triangles を超えていたら、全メッシュを同じ割合で減らす。Decimate を一番上の段に置いてから適用する
-    # （Armature より下の段のまま適用すると、それより上の段の変形（今の姿勢）まで頂点に焼き付いてしまうため）。
-    limit = CONFIG["max_triangles"]
-    if limit <= 0:
+    # max_triangles を超えていたら、全メッシュを同じ割合で減らす。
+    if CONFIG["max_triangles"] <= 0:
         return
+    decimate_to(mesh_objs, CONFIG["max_triangles"])
+
+
+def decimate_to(mesh_objs, limit):
+    # 全メッシュの三角形の数が limit を超えていたら、全メッシュを同じ割合で減らす。Decimate を一番上の段に置いてから適用する
+    # （Armature より下の段のまま適用すると、それより上の段の変形（今の姿勢）まで頂点に焼き付いてしまうため）。
     before = triangle_count(mesh_objs)
     if before <= limit:
         print("DECIMATE skipped", before, "<=", limit)
@@ -298,7 +310,19 @@ def decimate_meshes(mesh_objs):
         modifier.use_collapse_triangulate = True
         bpy.ops.object.modifier_move_to_index(modifier=modifier.name, index=0)
         bpy.ops.object.modifier_apply(modifier=modifier.name)
+        remove_degenerate_faces(obj)
     print("DECIMATE", before, "->", triangle_count(mesh_objs), "ratio", f(ratio))
+
+
+def remove_degenerate_faces(obj):
+    # Decimate（Collapse）は面積 0 の三角形を残すことがあり、その角の法線は長さ 0 になる（MIN_NORMAL_LENGTH）。消しておく。
+    mesh = obj.data
+    bm = bmesh.new()
+    bm.from_mesh(mesh)
+    bmesh.ops.dissolve_degenerate(bm, dist=DEGENERATE_DISTANCE, edges=bm.edges)
+    bm.to_mesh(mesh)
+    bm.free()
+    mesh.update()
 
 
 def find_meshes():
@@ -491,9 +515,12 @@ def material_attrs(texture, normalmap, params, ormmap=""):
 def mesh_element_attrs(textured):
     # メッシュ要素に付ける材質属性。
     # textured=False のパーツ（UVの無い単色部品）にはテクスチャを付けない。
+    params = dict(CONFIG["material_params"])
+    if not textured:
+        params.update(CONFIG["plain_material_params"])
     return material_attrs(CONFIG["mesh_texture"] if textured else "",
                           CONFIG["mesh_normalmap"] if textured else "",
-                          CONFIG["material_params"],
+                          params,
                           CONFIG["mesh_orm"] if textured else "")
 
 
@@ -505,6 +532,11 @@ def part_element_attrs(part):
 
 
 SPLIT_KEY_DIGITS = 5  # 頂点分割で「同じUV・法線」とみなす小数桁（浮動小数の誤差で分かれすぎないように丸める）
+# 角の法線がこれより短ければ、使えない法線とみなす。長さ 0 の法線はシェーダで正規化すると NaN になり、ブルームのぼかしで
+# 画面に黒い四角が広がる（2026-11-03。Decimate で作った LOD の、面積 0 の三角形の角で起きた）。
+MIN_NORMAL_LENGTH = 1e-4
+# Decimate の後に、面積 0 の面・長さ 0 の辺を消すときの距離（m）。
+DEGENERATE_DISTANCE = 1e-5
 
 
 WHITE = (1.0, 1.0, 1.0)  # テクスチャを貼る部分の頂点カラー（テクスチャの色をそのまま出す）
@@ -579,6 +611,10 @@ def split_corners(obj, textured):
         for loop_index in lt.loops:
             v = mesh.vertices[mesh.loops[loop_index].vertex_index]
             no = corner_normals[loop_index].vector
+            if no.length < MIN_NORMAL_LENGTH:
+                no = lt.normal  # 角の法線が無い（周りの面が打ち消し合った）なら、その三角形の面の法線
+            if no.length < MIN_NORMAL_LENGTH:
+                raise RuntimeError("メッシュ '%s' に法線の決まらない三角形があります（面積 0）。" % obj.name)
             uv = uvdata[loop_index].uv if uvdata else zero_uv
             key = (v.index,
                    round(uv[0], SPLIT_KEY_DIGITS), round(uv[1], SPLIT_KEY_DIGITS),
@@ -787,6 +823,24 @@ def config_path_from_args():
         if args:
             return args[0]
     return CONFIG_FILE
+
+
+def lods_only_from_args():
+    # blender ... -- <設定ファイル> --lods-only なら、粗いモデル（lods）だけを書き出す（細かいモデルと画像は書き直さない）。
+    # 今のモデルを変えずに LOD だけ足すときに使う。
+    return "--" in sys.argv and "--lods-only" in sys.argv[sys.argv.index("--") + 1:]
+
+
+def lod_path(index):
+    # index 番目（1 始まり）の粗いモデルの書き出し先（out_path の拡張子の前に _lod<index>）。
+    root, extension = os.path.splitext(CONFIG["out_path"])
+    return "%s_lod%d%s" % (root, index, extension)
+
+
+def write_container(path, body):
+    with open(path, "w", encoding="utf-8") as fp:
+        fp.write("<Container>\n" + body + "</Container>\n")
+    print("WROTE", path)
 
 
 def load_config(path):
@@ -1017,22 +1071,22 @@ def main():
     if not mesh_objs:
         raise RuntimeError("Mesh が見つかりません。")
 
-    out = "<Container>\n"
     if CONFIG["mode"] == "static":
         filter_islands(mesh_objs)
         flip_faces(mesh_objs)
         decimate_meshes(mesh_objs)  # 島を除いた後の、書き出す形で数える
         adjust_static_transform(mesh_objs)
-        out += emit_static_mesh(mesh_objs)
-        export_mesh_textures(mesh_objs)
+        if not lods_only_from_args():
+            write_container(CONFIG["out_path"], emit_static_mesh(mesh_objs))
+            export_mesh_textures(mesh_objs)
+        # 粗いモデルは、細かいモデルの三角形の数に対する割合で順に減らす（2 つ目は 1 つ目をさらに減らした形）。
+        full = triangle_count(mesh_objs)
+        for index, ratio in enumerate(CONFIG["lods"], start=1):
+            decimate_to(mesh_objs, max(1, int(full * ratio)))
+            write_container(lod_path(index), emit_static_mesh(mesh_objs))
     else:
         decimate_meshes(mesh_objs)
-        out += build_skinned(mesh_objs)
-    out += "</Container>\n"
-
-    with open(CONFIG["out_path"], "w", encoding="utf-8") as fp:
-        fp.write(out)
-    print("WROTE", CONFIG["out_path"])
+        write_container(CONFIG["out_path"], build_skinned(mesh_objs))
 
 
 if __name__ == "__main__":

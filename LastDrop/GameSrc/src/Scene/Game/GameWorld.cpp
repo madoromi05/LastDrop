@@ -12,6 +12,7 @@
 #include "GameSrc/Zombie/ZombieStateComponent.h"
 #include "GameSrc/Zombie/ZombieAttackComponent.h"
 #include "GameSrc/Zombie/ZombieCorpseComponent.h"
+#include "GameSrc/Zombie/ZombieCrowdParams.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -19,6 +20,7 @@
 #include "GameLib/Math/Random.h"
 #include "GameLib/Profiling/Profiler.h"
 
+#include <cmath>
 #include <iterator>
 
 using namespace GameLib;
@@ -79,6 +81,7 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の B）。
 	// 床の形は place で作るが、置くのは借りる場所だけなので先に置いてよい（ゾンビが道を聞くのは作った後）。
 	mObjects.provide( &mNavMesh );
+	mObjects.provide( &mPathBudget );
 	mObjects.provide( &mZombieContext );
 }
 
@@ -127,6 +130,10 @@ void GameWorld::place() {
 	target.objects = &mObjects;
 	target.navMesh = &mNavMesh;
 	mFuelTank = mBuilder.build( target );
+	mVisibility.build( mBuildings );
+#ifdef _DEBUG
+	mVisibility.verify( mBuildings, mHitWorld );
+#endif
 }
 
 void GameWorld::placePlayer() {
@@ -136,7 +143,9 @@ void GameWorld::placePlayer() {
 }
 
 void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3& eye ) {
-	mAnimationView.emplace( projectionView, eye );
+	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）。
+	const TownVisibility* visibility = ( pvsEnabled() && mVisibility.isReady() ) ? &mVisibility : nullptr;
+	mAnimationView.emplace( projectionView, eye, visibility, visibility ? visibility->cellAt( eye ) : TownVisibility::kNoCell );
 	mZombieContext.view = &*mAnimationView;
 }
 
@@ -167,6 +176,8 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	Inventory* inventory ) {
 	// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回。OptimizationB_Plan.txt 7 章）。
 	mCollisionWorld.refreshBodies();
+	// このティックに道を探してよい回数を戻す（OptimizationC_Plan.txt 6 章）。
+	mPathBudget.beginTick( static_cast< int >( std::lround( zombieCrowdParams().pathSearchesPerTick ) ) );
 	{
 		PROFILE_SCOPE( "World.player" );
 		if ( mPlayerControl ) {
@@ -316,6 +327,10 @@ const HitWorld& GameWorld::hitWorld() const {
 
 const std::vector< Building >& GameWorld::buildings() const {
 	return mBuildings;
+}
+
+const TownVisibility& GameWorld::visibility() const {
+	return mVisibility;
 }
 
 const BulletList& GameWorld::bullets() const {

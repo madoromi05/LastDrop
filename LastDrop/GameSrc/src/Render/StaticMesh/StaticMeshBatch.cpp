@@ -18,7 +18,12 @@ void StaticMeshBatch::clear() {
 }
 
 void StaticMeshBatch::add( const StaticMeshInstance& instance ) {
-	int index = groupIndexOf( instance.data() );
+	add( instance, instance.data() );
+}
+
+void StaticMeshBatch::add( const StaticMeshInstance& instance, const StaticMeshData* shape ) {
+	ASSERT( shape && "StaticMeshBatch : shape is null." );
+	int index = groupIndexOf( shape );
 	Group& group = mGroups[ index ];
 	if ( group.placements.empty() ) {
 		mDrawOrder.push_back( index ); // このフレームで初めて足された形

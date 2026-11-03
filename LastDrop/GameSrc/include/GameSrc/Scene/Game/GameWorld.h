@@ -4,6 +4,8 @@
 #include "GameSrc/Map/TownMap.h"
 #include "GameSrc/Map/TownGround.h"
 #include "GameSrc/Map/NavMesh.h"
+#include "GameSrc/Map/PathBudget.h"
+#include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Zombie/ZombieModel.h"
@@ -99,6 +101,7 @@ public:
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
 	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
 	const std::vector< Building >& buildings() const;	// 建てた建物（place の後は増えない）
+	const TownVisibility& visibility() const;			// 建物・ゾンビの隠れの表（簡易 PVS。place で作る）
 	const BulletList& bullets() const;					// 飛んでいる弾
 	// 自キャラの物（部品は PlayerComponent の説明）。place の前・構築に失敗して置けなかったときは nullptr。
 	// 返すポインタはこの世界がある間使える（自キャラは消えない）。
@@ -140,6 +143,8 @@ private:
 	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。place で建物・車を置き終えてから作る。
 	// ゾンビが借りるのでゾンビより先に宣言する（作った後は当たり判定の名簿を借りないので、名簿との順は問わない）。
 	NavMesh mNavMesh;
+	// 1 ティックに道を探してよい回数を配る（OptimizationC_Plan.txt 6 章）。ゾンビの通り道が借りるので、ゾンビより先に宣言する。
+	PathBudget mPathBudget;
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する。
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;
@@ -185,6 +190,8 @@ private:
 	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
+	// 建物の隠れの表（OptimizationC_Plan.txt 7 章）。place で建物を建てた後に作る。
+	TownVisibility mVisibility;
 };
 
 #endif

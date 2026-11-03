@@ -1,7 +1,11 @@
 #include "GameSrc/Render/DrawCulling.h"
 #include "GameSrc/Hit/HitboxSet.h"
+#include "GameSrc/Map/TownVisibility.h"
+#include "GameSrc/Render/LodSelector.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
 #include "GameSrc/Math/ScalarMath.h"
 
+#include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
 #include "GameLib/Profiling/Profiler.h"
 
@@ -20,27 +24,38 @@ namespace{
 const float DrawCulling::kPoseMargin = 0.3f;
 
 DrawCulling::DrawCulling( const Matrix44& projectionView ) :
-	DrawCulling( projectionView, Vector3( 0.f, 0.f, 0.f ), kNoLimit, kNoLimit, kNoLimit ) {
+	DrawCulling( projectionView, Vector3( 0.f, 0.f, 0.f ), kNoLimit, kNoLimit, kNoLimit, kNoLimit, LodPolicy::Current ) {
 }
 
 DrawCulling::DrawCulling( const Matrix44& projectionView, const Vector3& eye, float drawDistance, float minRadiusPerDistance,
-	float minDiameter ) :
+	float minDiameter, float pixelsPerRadiusPerDistance, LodPolicy lodPolicy ) :
 	mFrustum( projectionView ),
+	mVisibility( nullptr ),
+	mViewCell( TownVisibility::kNoCell ),
 	mEye( eye ),
 	mDrawDistance( drawDistance ),
 	mMinRadiusPerDistance( minRadiusPerDistance ),
-	mMinDiameter( minDiameter ) {
+	mMinDiameter( minDiameter ),
+	mPixelsPerRadiusPerDistance( pixelsPerRadiusPerDistance ),
+	mLodPolicy( lodPolicy ) {
 }
 
 DrawCulling DrawCulling::forCamera( const Matrix44& projectionView, const Vector3& eye, float drawDistance, float fieldOfViewY,
-	int screenHeight ) {
+	int screenHeight, const TownVisibility* visibility ) {
 	// 画面の上の半径（画素）＝ 半径 ÷ 距離 × ( 画面の高さ ÷ 2 ) ÷ tan( 縦の画角 ÷ 2 )。これが kMinPixels になる「半径 ÷ 距離」。
 	float pixelsPerRadiusPerDistance = static_cast< float >( screenHeight ) * kHalf / Math::tan( fieldOfViewY * kHalf );
-	return DrawCulling( projectionView, eye, drawDistance, kMinPixels / pixelsPerRadiusPerDistance, kNoLimit );
+	DrawCulling culling( projectionView, eye, drawDistance, kMinPixels / pixelsPerRadiusPerDistance, kNoLimit, pixelsPerRadiusPerDistance,
+		LodPolicy::Select );
+	if ( visibility && visibility->isReady() ) {
+		culling.mVisibility = visibility;
+		culling.mViewCell = visibility->cellAt( eye );
+	}
+	return culling;
 }
 
-DrawCulling DrawCulling::forOrthographicShadow( const Matrix44& projectionView, float texelSize ) {
-	return DrawCulling( projectionView, Vector3( 0.f, 0.f, 0.f ), kNoLimit, kNoLimit, kMinPixels * texelSize );
+DrawCulling DrawCulling::forOrthographicShadow( const Matrix44& projectionView, float texelSize, bool coarsestLod ) {
+	return DrawCulling( projectionView, Vector3( 0.f, 0.f, 0.f ), kNoLimit, kNoLimit, kMinPixels * texelSize, kNoLimit,
+		coarsestLod ? LodPolicy::Coarsest : LodPolicy::Current );
 }
 
 float DrawCulling::drawDistanceForFog( float fogHalfDistance ) {
@@ -87,10 +102,56 @@ bool DrawCulling::showsPosed( const HitboxSet& hitboxes, Target target ) const {
 	if ( !hitboxes.bounds( &boundsMin, &boundsMax ) ) {
 		return true;
 	}
+	if ( target == Target::Zombie && mVisibility ) {
+		Vector3 foot( ( boundsMin.x + boundsMax.x ) * kHalf, boundsMin.y, ( boundsMin.z + boundsMax.z ) * kHalf );
+		if ( !mVisibility->showsPoint( mViewCell, foot ) ) {
+			PROFILE_COUNT( "Pvs.zombie", 1 ); // OptimizationC_Plan.txt 5 章
+			PROFILE_COUNT( "Cull.zombie", 1 );
+			return false;
+		}
+	}
 	const Vector3 margin( kPoseMargin, kPoseMargin, kPoseMargin );
 	boundsMin -= margin;
 	boundsMax += margin;
 	return shows( boundsMin, boundsMax, target );
+}
+
+bool DrawCulling::showsBuildingIndex( int building ) const {
+	if ( mVisibility && !mVisibility->showsBuilding( mViewCell, building ) ) {
+		PROFILE_COUNT( "Pvs.building", 1 ); // OptimizationC_Plan.txt 5 章
+		return false;
+	}
+	return true;
+}
+
+const StaticMeshData* DrawCulling::chooseLod( const StaticMeshLods& shapes, LodSelector* selector, const Vector3& boundsMin,
+	const Vector3& boundsMax ) const {
+	ASSERT( selector && "DrawCulling : selector is null." );
+	if ( !lodEnabled() ) {
+		return shapes.full();
+	}
+	int level = selector->current();
+	if ( mLodPolicy == LodPolicy::Coarsest ) {
+		level = StaticMeshLods::kLevelNumber - 1;
+	} else if ( mLodPolicy == LodPolicy::Select ) {
+		// 画面の上の半径（画素）＝ 囲む球の半径 ÷ 中心までの距離 × 倍率。目が球の中なら一番大きく見える（距離を半径で止める）。
+		Vector3 size;
+		size.setSub( boundsMax, boundsMin );
+		float radius = size.length() * kHalf;
+		Vector3 center;
+		center.setAdd( boundsMin, boundsMax );
+		center *= kHalf;
+		Vector3 toCenter;
+		toCenter.setSub( center, mEye );
+		float distance = Math::max( toCenter.length(), radius );
+		level = selector->select( radius / distance * mPixelsPerRadiusPerDistance );
+		if ( level == 1 ) {
+			PROFILE_COUNT( "Lod.1", 1 ); // OptimizationC_Plan.txt 5 章
+		} else if ( level == 2 ) {
+			PROFILE_COUNT( "Lod.2", 1 );
+		}
+	}
+	return shapes.level( level );
 }
 
 const ViewFrustum& DrawCulling::frustum() const {

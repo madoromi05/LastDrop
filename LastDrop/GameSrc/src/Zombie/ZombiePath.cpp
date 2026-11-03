@@ -1,6 +1,7 @@
 #include "GameSrc/Zombie/ZombiePath.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
 #include "GameSrc/Map/NavMesh.h"
+#include "GameSrc/Map/PathBudget.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/FlatMath.h"
 
@@ -26,7 +27,8 @@ namespace{
 	const float kMinDirectionLength = 0.001f;
 }
 
-ZombiePath::ZombiePath( int probePhase ) :
+ZombiePath::ZombiePath( int probePhase, PathBudget* budget ) :
+	mBudget( budget ),
 	mNext( 0 ),
 	mRouteGoal( 0.f, 0.f, 0.f ),
 	mLastDestination( 0.f, 0.f, 0.f ),
@@ -39,6 +41,11 @@ ZombiePath::ZombiePath( int probePhase ) :
 	mSidestepTicks( 0 ),
 	mSidestepCount( 0 ),
 	mStuck( false ) {
+	ASSERT( budget && "ZombiePath : budget is null." );
+}
+
+ZombiePath::~ZombiePath() {
+	mBudget->cancel( this ); // 待っている間に消えても、列に残らないように
 }
 
 const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const NavMesh& navMesh,
@@ -147,6 +154,11 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const N
 		return;
 	}
 	if ( mRoute.empty() || FlatMath::distance( mRouteGoal, destination ) > kReplanDistance ) {
+		// 今のティックに探す回数が残っていなければ、前の通り道のまま歩き、次のティックにもう一度調べる（間隔を待たない）。
+		if ( !mBudget->tryAcquire( this ) ) {
+			mProbeTicks = 1;
+			return;
+		}
 		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる。
 		navMesh.findPath( self, destination, &mRoute );
 		mNext = 0;
@@ -162,6 +174,7 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const N
 }
 
 void ZombiePath::clear() {
+	mBudget->cancel( this );
 	mRoute.clear();
 	mNext = 0;
 	mHasLastDestination = false;
@@ -172,6 +185,10 @@ void ZombiePath::clear() {
 
 bool ZombiePath::isStuck() const {
 	return mStuck;
+}
+
+bool ZombiePath::isWaitingForSearch() const {
+	return mBudget->isWaiting( this );
 }
 
 void ZombiePath::remainingRoute( std::vector< Vector3 >* out ) const {

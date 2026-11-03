@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/AnimationThrottleParams.h"
 #include "GameSrc/Render/DrawCulling.h"
 #include "GameSrc/Hit/HitboxSet.h"
+#include "GameSrc/Map/TownVisibility.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -44,6 +45,10 @@ AnimationThrottle::Level AnimationThrottle::judge( const AnimationView* view, co
 	boundsMin -= margin;
 	boundsMax += margin;
 	if ( !view->frustum.mayContain( boundsMin, boundsMax ) ) {
+		return Level::Hidden;
+	}
+	// 描く時と同じく、建物の向こうに隠れた体も映らない（DrawCulling::showsPosed と同じ足元で聞く）。
+	if ( view->visibility && !view->visibility->showsPoint( view->viewCell, position ) ) {
 		return Level::Hidden;
 	}
 	Vector3 toBody;

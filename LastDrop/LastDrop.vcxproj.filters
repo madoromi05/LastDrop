@@ -136,6 +136,9 @@
     <ClCompile Include="GameSrc\src\Render\CascadeRefresh.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\LodSelector.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotionComponent.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
@@ -437,6 +440,9 @@
       <Filter>GameLib\Profiling</Filter>
     </ClCompile>
     <ClInclude Include="GameSrc\include\GameSrc\Render\CascadeRefresh.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\LodSelector.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotionComponent.h">
@@ -810,6 +816,9 @@
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshData.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshLods.cpp">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshPart.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
@@ -835,6 +844,12 @@
       <Filter>GameSrc\Collision</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Map\Building.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownVisibility.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\PathBudget.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Collision\MeshBoundsBox.cpp">
@@ -1670,6 +1685,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshData.h">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshLods.h">
+      <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshPart.h">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
@@ -1701,6 +1719,12 @@
       <Filter>GameSrc\Collision</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\Building.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownVisibility.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\PathBudget.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Collision\MeshBoundsBox.h">

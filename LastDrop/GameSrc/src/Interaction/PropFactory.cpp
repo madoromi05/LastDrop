@@ -30,30 +30,28 @@ namespace{
 }
 
 PropFactory::PropFactory( MeshCache* meshes ) :
-	mVehicleData( nullptr ),
-	mFuelCanData( nullptr ),
-	mAmmoDropData( nullptr ) {
+	// 車と缶は粗い形（LOD）も読む（OptimizationC_Plan.txt Q7。弾の箱は小さく、2 画素未満で消えるので段を持たない）。
+	mVehicleShapes( StaticMeshLods::request( meshes, kVehicleFile ) ),
+	mFuelCanShapes( StaticMeshLods::request( meshes, kFuelCanFile ) ),
+	mAmmoDropShapes( meshes->staticMesh( kAmmoDropFile ) ) {
 	ASSERT( meshes && "PropFactory : meshes is null." );
-	mVehicleData = meshes->staticMesh( kVehicleFile );
-	mFuelCanData = meshes->staticMesh( kFuelCanFile );
-	mAmmoDropData = meshes->staticMesh( kAmmoDropFile );
 }
 
-GameObject* PropFactory::createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshData* data,
+GameObject* PropFactory::createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshLods& shapes,
 const Vector3& position, float yawDegree, DrawCulling::Target cullTarget, BoxColliderComponent::Mode colliderMode ) const {
 	GameObject* obj = world->create( tag, name );
 	obj->addComponent< TransformComponent >( position, yawDegree );
-	obj->addComponent< StaticModelComponent >( data, kPropMaterial, cullTarget );
+	obj->addComponent< StaticModelComponent >( shapes, kPropMaterial, cullTarget );
 	obj->addComponent< BoxColliderComponent >( colliderMode ); // 箱は見た目の頂点から求める（見た目は awake で置かれる）
 	return obj;
 }
 
 GameObject* PropFactory::spawnEscapeCar( GameObjectWorld* world, const Vector3& position, float yawDegree, int requiredFuel ) const {
 	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない。
-	if ( !mVehicleData->isReady() ) {
+	if ( !mVehicleShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::EscapeCar, kEscapeCarName, mVehicleData, position, yawDegree,
+	GameObject* obj = createProp( world, GameObjectTag::EscapeCar, kEscapeCarName, mVehicleShapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed );
 	obj->addComponent< FuelTankComponent >( requiredFuel );
 	world->spawn( obj );
@@ -61,10 +59,10 @@ GameObject* PropFactory::spawnEscapeCar( GameObjectWorld* world, const Vector3& 
 }
 
 GameObject* PropFactory::spawnFuelStation( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
-	if ( !mFuelCanData->isReady() ) {
+	if ( !mFuelCanShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::FuelStation, kFuelStationName, mFuelCanData, position, yawDegree,
+	GameObject* obj = createProp( world, GameObjectTag::FuelStation, kFuelStationName, mFuelCanShapes, position, yawDegree,
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed );
 	obj->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
 	obj->addComponent< ItemSourceComponent >();
@@ -73,10 +71,10 @@ GameObject* PropFactory::spawnFuelStation( GameObjectWorld* world, const Vector3
 }
 
 GameObject* PropFactory::spawnFuel( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
-	if ( !mFuelCanData->isReady() ) {
+	if ( !mFuelCanShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::Fuel, kFuelName, mFuelCanData, position, yawDegree,
+	GameObject* obj = createProp( world, GameObjectTag::Fuel, kFuelName, mFuelCanShapes, position, yawDegree,
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::Removable );
 	obj->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
 	obj->addComponent< PickupComponent >();
@@ -85,10 +83,10 @@ GameObject* PropFactory::spawnFuel( GameObjectWorld* world, const Vector3& posit
 }
 
 GameObject* PropFactory::spawnAmmoDrop( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
-	if ( !mAmmoDropData->isReady() ) {
+	if ( !mAmmoDropShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::AmmoDrop, kAmmoDropName, mAmmoDropData, position, yawDegree,
+	GameObject* obj = createProp( world, GameObjectTag::AmmoDrop, kAmmoDropName, mAmmoDropShapes, position, yawDegree,
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough );
 	obj->addComponent< ItemComponent >( ITEM_AMMO, kAmmoDropRounds );
 	obj->addComponent< PickupComponent >();

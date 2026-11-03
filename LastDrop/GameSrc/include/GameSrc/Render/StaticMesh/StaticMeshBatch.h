@@ -23,6 +23,8 @@ public:
 	void clear();
 	// instance の形と置き場所を足す。instance の寿命は draw までで足りる（行列は写して持つ）。
 	void add( const StaticMeshInstance& instance );
+	// 形だけ shape に替えて足す（細かさの段 LOD。段ごとに別の形としてまとまる）。shape: nullptr 不可。
+	void add( const StaticMeshInstance& instance, const StaticMeshData* shape );
 	// 集めた物を描く。instancing: 描く道具（begin〜end は中で呼ぶ）。nullptr 不可。isReady() であること。
 	// 1 つの形を kMaxInstances より多く置いていれば、分けて描く。
 	void draw( StaticMeshInstancing* instancing ) const;

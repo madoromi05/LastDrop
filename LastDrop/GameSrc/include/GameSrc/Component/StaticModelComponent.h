@@ -5,6 +5,8 @@
 #include "GameSrc/World/IWorldMember.h"
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
+#include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/Render/DrawCulling.h"
 
 class StaticMeshData;
@@ -18,6 +20,8 @@ public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること。この部品より長く生きていること（MeshCache が持つ）。
 	// material: 表面の材質（着弾音に使う）。cullTarget: 何として間引くか（車は Large、缶は Small）。
 	StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget );
+	// 細かさの段（LOD）を持つ置物（車・缶）。shapes.full() が上の data にあたる（当たり判定・箱は元の形で作る）。
+	StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget );
 
 	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く。
 	void draw( const DrawCulling& culling ) const;
@@ -35,6 +39,9 @@ public:
 
 private:
 	StaticMeshInstance mMesh;
+	StaticMeshLods mShapes;
+	// 今描く細かさの段。描く側だけが使う状態なので、const の draw から選び直せるように mutable（Building と同じ）。
+	mutable LodSelector mLod;
 	GroundMaterial mMaterial;
 	DrawCulling::Target mCullTarget;
 };

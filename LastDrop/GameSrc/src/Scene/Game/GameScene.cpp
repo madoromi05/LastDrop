@@ -45,6 +45,7 @@ namespace{
 	const float kRoundToNearest = 0.5f;     // 調整値（float）の間隔を一番近い整数のフレームにする
 	const float kMinCascadeGap = 0.5f;      // F6 で端を逆に並べても枚の範囲が 0 にならないよう、前の端よりこれだけ奥へ揃える（m）
 	const float kNoDrawDistance = 0.f;      // 霧を切っている間は、距離で間引かない（DrawCulling::forCamera）
+	const int kFirstCoarseLodCascade = 1;   // 月の影のこの枚から、置物を一番粗い段（LOD）で描く
 
 #ifdef ZF_EDITOR
 	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
@@ -543,7 +544,9 @@ void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 			}
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
-			mRenderer.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ) ), kWithPlayer );
+			// 2 枚目からは置物を一番粗い段で描く（OptimizationC_Plan.txt Q8。遠い枚は 1 画素が大きく、形の差が影に出ない）。
+			mRenderer.drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ), i >= kFirstCoarseLodCascade ),
+				kWithPlayer );
 			mMoonShadow.map( i ).end();
 			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
@@ -557,8 +560,10 @@ void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 DrawCulling GameScene::cameraCulling( const FirstPersonCamera& camera ) const {
 	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( lightingParams().fogHalfDistance ) : kNoDrawDistance;
 	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える。
+	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない。OptimizationC_Plan.txt Q5）。
+	const TownVisibility* visibility = pvsEnabled() ? &mWorld.visibility() : nullptr;
 	return DrawCulling::forCamera( camera.projectionViewMatrix(), camera.eyePosition(), drawDistance, camera.fieldOfView(),
-		mPostProcess.sceneDepth().height() );
+		mPostProcess.sceneDepth().height(), visibility );
 }
 
 void GameScene::updateInteraction() {
