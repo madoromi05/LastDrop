@@ -61,6 +61,8 @@ public:
 	const std::vector< SurfaceHit >& surfaceHitsThisTick() const;
 	// 最後の update でゾンビの腕が自キャラに当たった出来事（起きた順）。次の update で入れ替わる。
 	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;
+	// 最後の update で倒したゾンビの数（弾で止めを刺した数。脚を失って倒れただけ〈Downed〉は数えない）。1 日の倒した数・スコアに使う。
+	int zombiesKilledThisTick() const;
 
 private:
 	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。部位が切れたら飛ばす。
@@ -82,6 +84,7 @@ private:
 	std::vector< ZombieHit > mZombieHits;           // このティックの出来事（毎回確保し直さないために持つ）
 	std::vector< SurfaceHit > mSurfaceHits;         // 同上
 	std::vector< ZombieAttackEvent > mZombieAttacks; // 同上
+	int mZombiesKilled; // このティックに倒した数
 };
 
 #endif

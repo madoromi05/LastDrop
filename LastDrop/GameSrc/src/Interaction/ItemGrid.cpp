@@ -101,6 +101,75 @@ ItemStack ItemGrid::takeAll( int cell ) {
 	return taken;
 }
 
+bool ItemGrid::placeAt( int owner, const ItemStack& stack ) {
+	const ItemSpec& spec = itemSpec( stack.item );
+	ASSERT( stack.amount > 0 && stack.amount <= spec.stackSize && "ItemGrid::placeAt : bad amount." );
+	if ( owner < 0 || owner >= cellCount() || !isFree( mCells, owner, spec.cellSize ) ) {
+		return false;
+	}
+	place( &mCells, owner, stack );
+	return true;
+}
+
+bool ItemGrid::placeAnywhere( const ItemStack& stack ) {
+	int owner = firstFree( mCells, itemSpec( stack.item ).cellSize );
+	return owner != kNotFound && placeAt( owner, stack );
+}
+
+int ItemGrid::countPlaceableInto( int cell, const ItemStack& stack ) const {
+	const ItemSpec& spec = itemSpec( stack.item );
+	int owner = placementCell( stack.item, cell );
+	if ( !isInside( owner / mColumns, owner % mColumns, spec.cellSize ) ) {
+		return 0;
+	}
+	if ( isFree( mCells, owner, spec.cellSize ) ) {
+		return std::min( stack.amount, spec.stackSize );
+	}
+	// 1 つの物だけが使っていて、それが同じ物で重ねられるなら、その空きの分。
+	std::vector< int > others = ownersIn( mCells, owner, spec.cellSize, kEmpty );
+	if ( others.size() != 1 ) {
+		return 0;
+	}
+	const ItemStack& into = mCells[ others[ 0 ] ].stack;
+	if ( into.item != stack.item || spec.stackSize <= 1 ) {
+		return 0;
+	}
+	return std::min( stack.amount, spec.stackSize - into.amount );
+}
+
+void ItemGrid::placeInto( int cell, const ItemStack& stack, int count ) {
+	ASSERT( count > 0 && count <= countPlaceableInto( cell, stack ) && "ItemGrid::placeInto : does not fit." );
+	const ItemSpec& spec = itemSpec( stack.item );
+	int owner = placementCell( stack.item, cell );
+	if ( isFree( mCells, owner, spec.cellSize ) ) {
+		ItemStack placed = stack;
+		placed.amount = count;
+		place( &mCells, owner, placed );
+		return;
+	}
+	mCells[ ownersIn( mCells, owner, spec.cellSize, kEmpty )[ 0 ] ].stack.amount += count;
+}
+
+void ItemGrid::setLoadedRounds( int owner, int rounds ) {
+	ASSERT( owner >= 0 && owner < cellCount() && mCells[ owner ].owner == owner && "ItemGrid::setLoadedRounds : not an owner cell." );
+	mCells[ owner ].stack.loadedRounds = rounds;
+}
+
+std::vector< ItemStack > ItemGrid::stacks() const {
+	std::vector< ItemStack > result;
+	for ( int i = 0; i < cellCount(); ++i ) {
+		if ( mCells[ i ].owner == i ) {
+			result.push_back( mCells[ i ].stack );
+		}
+	}
+	return result;
+}
+
+void ItemGrid::clearAll() {
+	Cell empty = { kEmpty, kNoStack };
+	mCells.assign( mCells.size(), empty );
+}
+
 int ItemGrid::placementCell( ItemId id, int cell ) const {
 	ASSERT( cell >= 0 && cell < cellCount() && "ItemGrid::placementCell : bad cell." );
 	int row = cell / mColumns;
@@ -119,6 +188,25 @@ void ItemGrid::move( int from, int to ) {
 	ASSERT( moved && "ItemGrid::move : cannot move (check canMove first)." );
 	if ( moved ) {
 		mCells.swap( trial );
+	}
+}
+
+bool ItemGrid::canMoveBetween( const ItemGrid& source, int from, const ItemGrid& target, int to ) {
+	ASSERT( &source != &target && "ItemGrid::canMoveBetween : same grid (use canMove)." );
+	Cells sourceTrial = source.mCells;
+	Cells targetTrial = target.mCells;
+	return source.applyMoveBetween( &sourceTrial, from, target, &targetTrial, to );
+}
+
+void ItemGrid::moveBetween( ItemGrid* source, int from, ItemGrid* target, int to ) {
+	ASSERT( source && target && source != target && "ItemGrid::moveBetween : bad grids." );
+	Cells sourceTrial = source->mCells;
+	Cells targetTrial = target->mCells;
+	bool moved = source->applyMoveBetween( &sourceTrial, from, *target, &targetTrial, to );
+	ASSERT( moved && "ItemGrid::moveBetween : cannot move (check canMoveBetween first)." );
+	if ( moved ) {
+		source->mCells.swap( sourceTrial );
+		target->mCells.swap( targetTrial );
 	}
 }
 
@@ -193,13 +281,7 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 	}
 
 	// 置く先のマスを使っている、動かす物とは別の物（2 マスの物を置く先に 1 マスの物が 2 つあることもある）。
-	std::vector< int > others;
-	for ( int i = 0; i < spec.cellSize; ++i ) {
-		int other = ( *cells )[ target + i ].owner;
-		if ( other != kEmpty && other != source && std::find( others.begin(), others.end(), other ) == others.end() ) {
-			others.push_back( other );
-		}
-	}
+	std::vector< int > others = ownersIn( *cells, target, spec.cellSize, source );
 
 	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）。
 	if ( others.size() == 1 ) {
@@ -241,6 +323,73 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 			return false;
 		}
 		place( cells, owner, otherStacks[ i ] );
+	}
+	return true;
+}
+
+std::vector< int > ItemGrid::ownersIn( const Cells& cells, int owner, int size, int except ) {
+	std::vector< int > owners;
+	for ( int i = 0; i < size; ++i ) {
+		int other = cells[ owner + i ].owner;
+		if ( other != kEmpty && other != except && std::find( owners.begin(), owners.end(), other ) == owners.end() ) {
+			owners.push_back( other );
+		}
+	}
+	return owners;
+}
+
+bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& target, Cells* targetCells, int to ) const {
+	int source = ( *sourceCells )[ from ].owner;
+	ASSERT( source != kEmpty && "ItemGrid::applyMoveBetween : nothing to move." );
+	ItemStack moving = ( *sourceCells )[ source ].stack;
+	const ItemSpec& spec = itemSpec( moving.item );
+	int placed = target.placementCell( moving.item, to );
+	if ( !target.isInside( placed / target.mColumns, placed % target.mColumns, spec.cellSize ) ) {
+		return false; // 列が足りない（1 列のマス目に 2 マスの物）
+	}
+	// 置く先を使っている物（別のマス目なので、動かす物自身は入っていない）。
+	std::vector< int > others = ownersIn( *targetCells, placed, spec.cellSize, kEmpty );
+
+	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）。
+	if ( others.size() == 1 ) {
+		Cell& into = ( *targetCells )[ others[ 0 ] ];
+		if ( into.stack.item == moving.item && spec.stackSize > 1 && into.stack.amount < spec.stackSize ) {
+			int count = std::min( moving.amount, spec.stackSize - into.stack.amount );
+			into.stack.amount += count;
+			( *sourceCells )[ source ].stack.amount -= count;
+			if ( ( *sourceCells )[ source ].stack.amount == 0 ) {
+				clear( sourceCells, source );
+			}
+			return true;
+		}
+	}
+
+	// ② 入れ替え。置く先の物を全部どけ、動かす物を置いてから、どけた物を元のマス目の空いた所へ。
+	std::vector< ItemStack > otherStacks;
+	for ( int other : others ) {
+		otherStacks.push_back( ( *targetCells )[ other ].stack );
+		clear( targetCells, other );
+	}
+	clear( sourceCells, source );
+	if ( !target.isFree( *targetCells, placed, spec.cellSize ) ) {
+		return false;
+	}
+	place( targetCells, placed, moving );
+	// どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ。
+	for ( size_t i = 0; i < others.size(); ++i ) {
+		int size = itemSpec( otherStacks[ i ].item ).cellSize;
+		int row = source / mColumns + ( others[ i ] / target.mColumns - placed / target.mColumns );
+		int column = source % mColumns + ( others[ i ] % target.mColumns - placed % target.mColumns );
+		int owner = kNotFound;
+		if ( isInside( row, column, size ) && isFree( *sourceCells, row * mColumns + column, size ) ) {
+			owner = row * mColumns + column;
+		} else {
+			owner = firstFree( *sourceCells, size );
+		}
+		if ( owner == kNotFound ) {
+			return false;
+		}
+		place( sourceCells, owner, otherStacks[ i ] );
 	}
 	return true;
 }

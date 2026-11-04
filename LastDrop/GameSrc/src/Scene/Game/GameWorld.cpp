@@ -8,7 +8,6 @@
 #include "GameSrc/Player/HoldComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
-#include "GameSrc/Interaction/FuelTankComponent.h"
 #include "GameSrc/Zombie/ZombieStateComponent.h"
 #include "GameSrc/Zombie/ZombieAttackComponent.h"
 #include "GameSrc/Zombie/ZombieCorpseComponent.h"
@@ -78,7 +77,6 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mInteraction( &mHitWorld, &mObjects, &mEffects ),
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ),
-	mFuelTank( nullptr ),
 	mZombieNumber( 0 ) {
 	ASSERT( meshes && "GameWorld : meshes is null." );
 	mZombieContext.hitWorld = &mHitWorld;
@@ -134,7 +132,7 @@ void GameWorld::place() {
 	target.hitWorld = &mHitWorld;
 	target.objects = &mObjects;
 	target.navMesh = &mNavMesh;
-	mFuelTank = mBuilder.build( target );
+	mBuilder.build( target );
 	mVisibility.build( mBuildings );
 #ifdef _DEBUG
 	mVisibility.verify( mBuildings, mHitWorld );
@@ -293,7 +291,6 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 			++view.standingZombies;
 		}
 	} );
-	view.fuelDelivered = mFuelTank ? mFuelTank->fuelDelivered() : 0;
 	view.hasRoom = mObjects.count< ZombieBrainComponent >() < kMaxZombies;
 	mSpawnOrders.clear();
 	mZombieSpawner->update( view, &mSpawnOrders );
@@ -367,12 +364,22 @@ const ICollisionBody* GameWorld::playerBody() const {
 	return mPlayer ? mPlayer->getComponent< CharacterColliderComponent >() : nullptr;
 }
 
-const FuelTankComponent* GameWorld::fuelTank() const {
-	return mFuelTank;
+int GameWorld::magazineRounds( ItemId item ) const {
+	int rounds = 0;
+	mObjects.forEach< GunComponent >( [ item, &rounds ]( const GunComponent& gun ) {
+		if ( gun.spec().item == item ) {
+			rounds = gun.magazineRounds();
+		}
+	} );
+	return rounds;
 }
 
-bool GameWorld::isEscapeReady() const {
-	return mFuelTank && mFuelTank->isFueled();
+void GameWorld::setMagazineRounds( ItemId item, int rounds ) {
+	mObjects.forEach< GunComponent >( [ item, rounds ]( GunComponent& gun ) {
+		if ( gun.spec().item == item ) {
+			gun.setMagazineRounds( rounds );
+		}
+	} );
 }
 
 const GameObjectWorld& GameWorld::objects() const {

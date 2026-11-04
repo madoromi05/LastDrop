@@ -12,9 +12,9 @@ class IInteractable;
 class IHittable;
 
 // 見て E で使える物を探す・拾われた物を消す係（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-5。2026-11-02 GameWorld から分けた）。
-// 使える物：落ちている物（ガソリン・ゾンビが落とした弾）・何度でも拾える置き場・脱出用の車、それと死体（その死体が落とした弾。
+// 使える物：落ちている物（ガソリン・ゾンビが落とした弾）、それと死体（その死体が落とした弾。
 // 死体の物に付いた CorpseLootComponent からたどる）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す。
-// 何を使うと何が起きるか（持ち物が増える・給油する）は、使える部品（IInteractable）が決める。
+// 何を使うと何が起きるか（持ち物が増える）は、使える部品（IInteractable）が決める。
 class InteractionSystem{
 public:
 	// 近くの使える物 1 つ（collectNearby の答え）。

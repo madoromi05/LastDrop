@@ -18,6 +18,7 @@
 #include "GameSrc/Render/PuddleParams.h"
 #include "GameSrc/Render/SsrParams.h"
 #include "GameSrc/Render/TaaParams.h"
+#include "GameSrc/Raid/RaidParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -81,6 +82,9 @@ namespace{
 			"Look", "LookParams", "GameSrc/Player/LookParams.h", &lookParams ) );
 		groups.push_back( std::make_unique< TuningGroup< AimSwayParams > >(
 			"AimSway", "AimSwayParams", "GameSrc/Player/AimSwayParams.h", &aimSwayParams ) );
+		// 1 日の時間・脱出点・スコアの重み（R2_Plan.txt。遊んで決める値）。
+		groups.push_back( std::make_unique< TuningGroup< RaidParams > >(
+			"Raid", "RaidParams", "GameSrc/Raid/RaidParams.h", &raidParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(

@@ -16,6 +16,10 @@
 #include "GameSrc/Render/SsrParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/DebugMode/EditorWindow.h"
+#include "GameSrc/Raid/RunRules.h"
+#include "GameSrc/Raid/RaidParams.h"
+#include "GameSrc/Weapon/WeaponCatalog.h"
+#include "GameSrc/Interaction/IInteractable.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -24,6 +28,8 @@
 #include "GameLib/Math/Functions.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
 #include "GameLib/Profiling/Profiler.h"
+#include "Framework.h"
+#include <string>
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -31,6 +37,9 @@ using namespace GameLib::Math;
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
 	const float kNoShotRecoil = 0.f;   // 撃っていないティックの反動の大きさ（FirstPersonControl::updateViewEffects）
+	// カバンの画面の見出しの下に出す、開いている脱出点（R2_Plan.txt Q10）。
+	const char* kExitsPrefix = "Exits: ";
+	const char* kExitsSeparator = " / ";
 
 	// ── 影（Shadow_Plan.txt 5 章）──
 	const int kFlashlightShadowSize = 1024; // 懐中電灯の影のマップの一辺（画素）
@@ -63,6 +72,7 @@ GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	mWorld( &resources->meshes() ),
 	mRenderer( &mWorld, &mWorld.effects() ),
+	mInventory( resources->run().bag() ), // 拠点のカバンの写し（町の中で変わっても、拠点のカバンは脱出するまで変えない。R2_Plan.txt Q3）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
 	mControl( mWorld.map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
 	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
@@ -70,6 +80,8 @@ GameScene::GameScene( GameResources* resources ) :
 	mSurfaceHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
+	// 開く脱出点は毎日変える（起動からの時間を種にする。ガソリンの場所と同じ）。
+	mSession( mWorld.map().extractPoints(), Framework::instance().time() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
 	mInventoryScreen( &resources->uiRenderer() ),
 	mFlashlightShadow( kFlashlightShadowSize ),
@@ -78,7 +90,9 @@ GameScene::GameScene( GameResources* resources ) :
 	mMoonCastsShadow( false ),
 	mReady( false ),
 	mPaused( false ),
-	mBagOpen( false ) {
+	mBagOpen( false ),
+	mRaidFinished( false ),
+	mOffer( nullptr ) {
 }
 
 GameScene::~GameScene() {
@@ -88,6 +102,8 @@ GameScene::~GameScene() {
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
 	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
 	EditorWindow::setInventory( nullptr ); // カバンも同じ
+	EditorWindow::setRaid( nullptr );
+	EditorWindow::setRun( nullptr );
 }
 
 void GameScene::pause() {
@@ -121,6 +137,8 @@ bool GameScene::canOpenBag() const {
 
 void GameScene::openBag() {
 	mBagOpen = true;
+	// 銃のマスの「弾倉の数/大きさ」を今の数にする（町の中では銃の物が本当の数を持つ。InventoryPickup_Plan.txt Q2）。
+	storeMagazineRounds();
 	mInventoryScreen.open();
 	mResources->audio().setPaused( true );
 	mControl.clearInput();   // 押していた移動・撃つを放す（一時停止と同じ）
@@ -129,13 +147,67 @@ void GameScene::openBag() {
 
 void GameScene::closeBag() {
 	mBagOpen = false;
+	mOffer = nullptr; // 入れていない分は地面に残る
 	mResources->audio().setPaused( false );
 	mControl.lockCursor();
 }
 
+void GameScene::startPlacing( IInteractable* offer ) {
+	ItemStack stack;
+	if ( !canOpenBag() || !offer->offeredStack( &stack ) ) {
+		return;
+	}
+	openBag();
+	mOffer = offer;
+	ItemStack shown;
+	offeredStack( &shown );
+	mInventoryScreen.openForPlacing( mInventory, shown );
+}
+
+bool GameScene::offeredStack( ItemStack* out ) const {
+	if ( !mOffer || !mOffer->offeredStack( out ) ) {
+		return false;
+	}
+	// 銃は弾倉の数を銃の物から読む（拾った銃のマスにも「30/30」が出るように）。
+	if ( weaponForItem( out->item ) != WEAPON_NONE ) {
+		out->loadedRounds = mWorld.magazineRounds( out->item );
+	}
+	return true;
+}
+
+void GameScene::placeOffered( int cell ) {
+	ItemStack stack;
+	if ( !offeredStack( &stack ) ) {
+		return;
+	}
+	int count = mInventory.countPlaceableInto( cell, stack );
+	if ( count <= 0 ) {
+		return;
+	}
+	mInventory.placeInto( cell, stack, count );
+	mOffer->takeOffered( count ); // 入りきらない分は持ったまま（続けて別のマスへ置ける）
+	finishPlacingIfDone();
+}
+
+void GameScene::quickPlaceOffered() {
+	if ( !mOffer->canInteract( mInventory ) ) {
+		return; // どこにも入らない（捨てる・並べ替えるで空けてから）
+	}
+	mOffer->interact( &mInventory ); // 今までの自動の入れ方（重ねられるマス → 上の行・左の列の空き）
+	storeMagazineRounds();           // 拾った銃のマスにも弾倉の数を出す
+	finishPlacingIfDone();
+}
+
+void GameScene::finishPlacingIfDone() {
+	ItemStack rest;
+	if ( !offeredStack( &rest ) ) {
+		closeBag(); // 全部入れた。拾う操作が長くならないよう、町へ戻す（Q3）
+	}
+}
+
 void GameScene::handleBagInput() {
 	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない。GridInventory_Plan.txt Q8）。
-	// ESC はメニュー・動かしている途中なら、まずそれを取りやめる。
+	// ESC は拾った物を持っている・メニュー・動かしている途中なら、まずそれを取りやめる（拾うのをやめても開いたまま。Q3）。
 	if ( InputInventory() ) {
 		closeBag();
 		return;
@@ -143,11 +215,21 @@ void GameScene::handleBagInput() {
 	if ( InputMenu() ) {
 		if ( !mInventoryScreen.back() ) {
 			closeBag();
+		} else if ( !mInventoryScreen.isPlacing() ) {
+			mOffer = nullptr; // 拾うのをやめた（地面に残る）
 		}
 		return;
 	}
-	InventoryScreen::Request request = mInventoryScreen.handleInput( &mInventory, equippedWeapon() );
+	ItemStack incoming;
+	bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
+	InventoryScreen::Request request = mInventoryScreen.handleInput( &mInventory, equippedWeapon(), placing ? &incoming : nullptr );
 	switch ( request.kind ) {
+	case InventoryScreen::Request::PLACE:
+		placeOffered( request.cell );
+		break;
+	case InventoryScreen::Request::QUICK_PLACE:
+		quickPlaceOffered();
+		break;
 	case InventoryScreen::Request::DROP:
 		// 手に持っている銃を捨てたら、閉じた後の最初のティックで素手になる（HoldComponent::syncWithInventory）。
 		dropFromBag( request.cell );
@@ -193,6 +275,7 @@ void GameScene::beginFrame() {
 			LOAD_SCOPE( "place", "GameWorld::place" );
 			mWorld.place();
 		}
+		restoreMagazineRounds(); // 銃の物を作った後に、拠点で覚えた弾倉の数を入れる
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 		mReady = true;
 	}
@@ -208,7 +291,8 @@ void GameScene::beginFrame() {
 		return;
 	}
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）。
-	if ( InputMenu() || !GameLib::WindowCreator().isActive() ) {
+	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように。R2_Plan.txt Q3）。
+	if ( ( InputMenu() || !GameLib::WindowCreator().isActive() ) && !mWorld.isPlayerDead() ) {
 		pause();
 		return;
 	}
@@ -232,6 +316,8 @@ void GameScene::beginFrame() {
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setObjects( &mWorld.objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
 	EditorWindow::setInventory( &mInventory );     // F6 の Inventory の欄（物を足す・行を増やす）
+	EditorWindow::setRaid( &mSession );            // F6 の Raid の欄（残り時間・すぐ脱出）
+	EditorWindow::setRun( &mResources->run() );    // 同じ欄の、日・保存を消す
 
 
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
@@ -280,8 +366,8 @@ void GameScene::spawnDebugZombies() {
 #endif
 
 void GameScene::update() {
-	if ( !mReady || mPaused || mBagOpen ) {
-		return; // 止めている間（一時停止・カバン）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
+	if ( !mReady || mPaused || mBagOpen || mRaidFinished ) {
+		return; // 1 日を終えた後と、止めている間（一時停止・カバン）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
@@ -292,6 +378,7 @@ void GameScene::update() {
 	mZombieHitSounds.play( mWorld.combat().zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
 	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
+	updateRaid();
 	GameObject* player = mWorld.player();
 	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
@@ -459,7 +546,10 @@ void GameScene::draw() {
 	if ( mPaused ) {
 		mPauseMenu.draw();
 	} else if ( mBagOpen ) {
-		mInventoryScreen.draw( mInventory, equippedWeapon() ); // カバンの画面も同じ（HUD は描かない）
+		std::string exits = kExitsPrefix + RaidHud::exitNames( mSession.extraction(), kExitsSeparator, false );
+		ItemStack incoming;
+		bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
+		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr ); // カバンの画面も同じ（HUD は描かない）
 	} else {
 #ifdef ZF_EDITOR
 		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
@@ -469,7 +559,7 @@ void GameScene::draw() {
 		// 使える物の上のマーク（積むだけ。すぐ下の HUD の描画でまとめて描かれる）。
 		mInteractMarkers.add( camera, &mResources->uiRenderer() );
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mWorld.fuelTank() );
+		mHud.draw( mSession, mResources->run().day() );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -526,6 +616,7 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 			mLights.add( pointLight( position, params.streetLightColor, params.streetLightIntensity, params.streetLightRange ) );
 		}
 	}
+	addExitLights();
 	EnvironmentLight environment;
 	environment.skyZenithColor = params.skyZenithColor;
 	environment.skyHorizonColor = params.skyHorizonColor;
@@ -662,16 +753,17 @@ void GameScene::updateInteraction() {
 	const FirstPersonCamera& camera = mControl.camera();
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す。
 	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
+	// 拾う物は、カバンを開いて入れるマスを選ぶ（InventoryPickup_Plan.txt Q3）。拾い終えた物は次の描画の後片付けで消える。
+	if ( IInteractable* offer = mInteractor.offer() ) {
+		startPlacing( offer );
+	}
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.interaction().removeTakenPickups();
-	// マークは使った後の状態で決める（拾い切った物は出さない・給油した後の満タンは灰色）。死んだ後は出さない。
+	// マークは使った後の状態で決める（拾い切った物は出さない）。死んだ後は出さない。
 	if ( mWorld.isPlayerDead() ) {
 		mInteractMarkers.clear();
 	} else {
 		mInteractMarkers.update( mWorld.interaction(), camera.eyePosition(), mInteractor.target(), mInventory );
-	}
-	if ( mWorld.isEscapeReady() ) {
-		SceneManager::instance().requestChange( SceneManager::SCENE_CLEAR );
 	}
 }
 
@@ -718,7 +810,70 @@ void GameScene::updatePlayerDamage() {
 	const PlayerHealth* health = healthComponent ? &healthComponent->health() : nullptr;
 	float healthRatio = health ? health->current() / health->maxHealth() : kFullHealthRatio;
 	mDamageView.update( hit, healthRatio, mWorld.isPlayerDead() );
-	if ( mDamageView.isFadedOut() ) {
-		SceneManager::instance().requestChange( SceneManager::SCENE_GAME_OVER );
+}
+
+void GameScene::updateRaid() {
+	const GameObject* player = mWorld.player();
+	if ( player ) {
+		mSession.tick( player->getComponent< TransformComponent >()->position(), mWorld.isPlayerDead(), mWorld.combat().zombiesKilledThisTick() );
+	}
+	switch ( mSession.ending() ) {
+	case RaidEnding::Survived:
+	case RaidEnding::Missing:
+		finishRaid();
+		break;
+	case RaidEnding::Killed:
+		if ( mDamageView.isFadedOut() ) {
+			finishRaid(); // 崩れて真っ暗になるのを見せてから
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void GameScene::finishRaid() {
+	mRaidFinished = true;
+	RunState& run = mResources->run();
+	DayResult result = mSession.result();
+	if ( result.ending == RaidEnding::Survived ) {
+		storeMagazineRounds();
+		RunRules::finishDay( &run, result, mInventory.grid() );
+		SceneManager::instance().requestChange( SceneManager::SCENE_DAY_RESULT );
+	} else {
+		RunRules::failDay( &run, result );
+		SceneManager::instance().requestChange( SceneManager::SCENE_RUN_END );
+	}
+}
+
+void GameScene::storeMagazineRounds() {
+	const ItemGrid& grid = mInventory.grid();
+	for ( int cell = 0; cell < grid.cellCount(); ++cell ) {
+		if ( grid.ownerCell( cell ) != cell ) {
+			continue;
+		}
+		ItemId item = grid.stackAt( cell ).item;
+		if ( weaponForItem( item ) != WEAPON_NONE ) {
+			mInventory.setLoadedRounds( cell, mWorld.magazineRounds( item ) );
+		}
+	}
+}
+
+void GameScene::restoreMagazineRounds() {
+	for ( const ItemStack& stack : mInventory.grid().stacks() ) {
+		if ( weaponForItem( stack.item ) != WEAPON_NONE ) {
+			mWorld.setMagazineRounds( stack.item, stack.loadedRounds );
+		}
+	}
+}
+
+void GameScene::addExitLights() {
+	if ( mSession.ending() != RaidEnding::None ) {
+		return;
+	}
+	const RaidParams& params = raidParams();
+	for ( const ExtractZone& zone : mSession.extraction().zones() ) {
+		Vector3 position( zone.position.x, zone.position.y + params.exitLightHeight, zone.position.z );
+		mLights.add( pointLight( position, params.exitLightColor, params.exitLightIntensity, params.exitLightRange ) );
 	}
 }

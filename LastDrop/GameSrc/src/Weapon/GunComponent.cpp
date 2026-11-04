@@ -91,3 +91,7 @@ WeaponReload::Cue GunComponent::reloadCueThisTick() const {
 int GunComponent::magazineRounds() const {
 	return mMagazine.rounds();
 }
+
+void GunComponent::setMagazineRounds( int rounds ) {
+	mMagazine.setRounds( rounds );
+}

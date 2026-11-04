@@ -5,8 +5,6 @@
 #include "GameSrc/Component/BoxColliderComponent.h"
 #include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/Interaction/PickupComponent.h"
-#include "GameSrc/Interaction/ItemSourceComponent.h"
-#include "GameSrc/Interaction/FuelTankComponent.h"
 #include "GameSrc/Interaction/CorpseLootComponent.h"
 #include "GameSrc/Zombie/ZombieStateComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
@@ -19,15 +17,10 @@ namespace{
 	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）。
 	const float kMarkAboveTop = 0.15f;
 
-	// 物の「使える」部品（見て E で使う）。拾える物・燃料タンク・置き場のどれか。無ければ nullptr。
+	// 物の「使える」部品（見て E で使う）。今は拾える物だけ（2026-11-05 に車の燃料タンクと何度でも拾える置き場を消した。R2_Plan.txt Q15）。
+	// 無ければ nullptr。
 	IInteractable* interactableOf( GameObject* object ) {
-		if ( PickupComponent* pickup = object->getComponent< PickupComponent >() ) {
-			return pickup;
-		}
-		if ( FuelTankComponent* tank = object->getComponent< FuelTankComponent >() ) {
-			return tank;
-		}
-		return object->getComponent< ItemSourceComponent >();
+		return object->getComponent< PickupComponent >();
 	}
 }
 
@@ -96,7 +89,7 @@ IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit 
 		GameObject* drop = loot ? loot->drop() : nullptr; // 弾を落とさなかった死体・もう拾われた弾なら nullptr
 		return drop ? drop->getComponent< PickupComponent >() : nullptr;
 	}
-	// 落ちているガソリン・落ちた弾・車・置き場（弾を止める見た目の部品から、その物の使える部品をたどる）。
+	// 落ちているガソリン・落ちた弾（弾を止める見た目の部品から、その物の使える部品をたどる）。
 	if ( StaticModelComponent* model = mObjects->find< StaticModelComponent >( hit.blocker ) ) {
 		return interactableOf( model->gameObject() );
 	}

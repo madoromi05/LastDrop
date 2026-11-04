@@ -12,7 +12,7 @@ class BodyFootprint;
 // ゾンビを「いつ・どこに」湧かせるかを決める。自分では作らない（作るのは GameWorld::spawnZombie）。
 // ・始め：最初の plan で、目標の数まで湧いてよい場所を選ぶ
 // ・補充：立っている数が目標より少ない間だけ決まった時間を数え、0 になったら湧いてよい場所を 1 か所選ぶ
-// ・目標の数は給油の数で増える（何をしたから増えたかが分かるように）
+// ・目標の数は決まった数（2026-11-05 に給油で増やす決まりを消した。時間・日で増やすのは段階R4。R2_Plan.txt Q15）
 // 湧いてよい場所＝候補のうち、自キャラから離れていて、自キャラから見えず（画面の外か物の陰）、何にも重ならない所。
 // 値の理由は SummaryPlan/個別仕様/ZombieSpawn_Plan.txt。
 class ZombieSpawner{
@@ -22,7 +22,6 @@ public:
 		GameLib::Math::Vector3 playerEye; // 自キャラの目の位置
 		float viewYaw;                    // カメラの水平の向き（度。0 は +Z）
 		int standingZombies;              // 立っているゾンビの数（Downed・死体は数えない）
-		int fuelDelivered;                // 車に入れたガソリンの数
 		bool hasRoom;                     // 全体の上限まで余裕があるか（無ければ補充を待つ）
 	};
 	// 出す場所と向き。
@@ -51,8 +50,6 @@ public:
 	float secondsUntilNext() const;   // 次の補充までの残り（秒。補充を待っていない間は補充の間隔そのもの）
 
 private:
-	// 給油の数から、目標の数。
-	static int targetFor( int fuelDelivered );
 	// 始めに置く分を out へ足す（候補を混ぜて、湧いてよい所から順に）。
 	void planInitial( const View& view, std::vector< Order >* out );
 	// 補充の残りを数え、0 なら候補を何か所か調べ、湧いてよい所が見つかれば out へ足す。

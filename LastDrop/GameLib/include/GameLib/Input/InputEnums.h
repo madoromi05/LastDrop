@@ -58,11 +58,12 @@ enum class WorkId
     Move,       // 移動（軸ワーク。パッドの左スティック。-1〜1・右と下が正）。キーの Up/Down/Left/Right と足して使う
     LookStick,  // 視点操作（軸ワーク。パッドの右スティック。-1〜1）。Look（マウスの画素数）とは単位が違うので分ける
     Inventory,  // カバン（持ち物のマス目）の画面を開く／閉じる（押した瞬間。開いている間は世界が止まる）
+    QuickPlace, // 拾った物を、置く所を選ばずにおまかせでカバンへ入れる（押した瞬間。カバンの画面で拾った物を持っている間だけ）
 };
 
 // WorkId の数（全部の操作を順に見るとき用。計測の印など）。
 // WorkId を末尾に足したら、ここの最後の WorkId も足した物に直すこと。
-constexpr int kWorkIdCount = static_cast< int >( WorkId::Inventory ) + 1;
+constexpr int kWorkIdCount = static_cast< int >( WorkId::QuickPlace ) + 1;
 
 // コレクター（シーン別の入力割り当てグループ）種別
 enum class CollectorId

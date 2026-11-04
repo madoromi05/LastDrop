@@ -19,18 +19,23 @@ public:
 	// reach: 手が届く距離（m）。これより遠い物は使えない。finder: 空は不可。
 	Interactor( float reach, Finder finder );
 
-	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う。
+	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う
+	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側。InventoryPickup_Plan.txt Q3）。
 	// 1回の描画につき1回（押した瞬間を1回だけ拾うため）。
 	// inventory: 使うときに増やしたり減らしたりする持ち物。nullptr 不可。
 	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction,
 		Inventory* inventory, bool interactPressed );
 	// 今見ている使える物（無ければ nullptr）。update の直後に読む（拾われた物は次の世界の update で消えるので、それより後には使わない）。
 	const IInteractable* target() const;
+	// 最後の update で E を押した拾う物（無ければ nullptr）。update の直後に読む。世界を進める前に使い終えること
+	// （拾い終えた物は世界の update で消える）。
+	IInteractable* offer() const;
 
 private:
 	float mReach;
 	Finder mFinder;
 	const IInteractable* mTarget; // 借りているだけ
+	IInteractable* mOffer;        // 借りているだけ
 };
 
 #endif

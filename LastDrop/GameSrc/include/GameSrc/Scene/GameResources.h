@@ -5,12 +5,14 @@
 #include "GameSrc/Audio/AudioEngine.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Core/GameSettings.h"
+#include "GameSrc/Raid/RunState.h"
 
 // シーンをまたいで使い回す、作るのが重い物の持ち主。起動から終了まで1つだけある（SceneManager が持つ）。
 // ・MeshCache: メッシュの設計図とテクスチャ、スキニングのシェーダ
 // ・AudioEngine: 音の装置と、読み込んだ全ての音
 // ・UiRenderer: 画面の文字のフォントと字形
 // ・GameSettings: 遊ぶ人が設定画面で変える値（音量・感度）。重くはないが、タイトルと本編の両方の設定画面で同じ値を使うためここに置く
+// ・RunState: 5 日間の今の様子（何日目か・倉庫・カバン）とハイスコア。拠点・本編・結果の画面の間で受け渡すためここに置く（R2_Plan.txt 5 章）
 // シーンが自分で持つと、シーンを作り直すたび（クリア → Retry など）に全部を読み直すことになる。
 // ここに置けば、読み込むのは最初の1回だけで、どの画面でも同じ音・同じフォントが使える。
 //
@@ -28,12 +30,14 @@ public:
 	AudioEngine& audio();
 	UiRenderer& uiRenderer();
 	GameSettings& settings();
+	RunState& run();
 
 private:
 	MeshCache mMeshes;
 	AudioEngine mAudio;
 	UiRenderer mUiRenderer;
 	GameSettings mSettings;
+	RunState mRun;
 };
 
 #endif

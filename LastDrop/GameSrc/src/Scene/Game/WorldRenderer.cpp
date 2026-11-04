@@ -56,7 +56,7 @@ void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye )
 	}
 	endBuildings();
 	Profiling::gpuMark( "Buildings" );
-	// 置物（車・ガソリンの置き場・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）。
+	// 置物（車・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）。
 	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
 	Profiling::gpuMark( "Props" );
 	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く。

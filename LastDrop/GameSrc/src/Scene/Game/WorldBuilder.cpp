@@ -7,7 +7,6 @@
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Interaction/PropFactory.h"
-#include "GameSrc/Interaction/FuelTankComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -25,8 +24,9 @@ namespace{
 	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす。
 	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
 
-	// 車に入れると走れるようになるガソリンの数。候補の場所（TownMap）から、毎回この数だけ選んで置く（SpawnPicker）。
-	const int kRequiredFuel = 3;
+	// 町に落ちているガソリンの数。候補の場所（TownMap）から、毎日この数だけ選んで置く（SpawnPicker）。
+	// 2026-11-05 から車へ入れる物ではなく、持ち帰ると点になる 2 マスの物（R2_Plan.txt Q15）。
+	const int kFuelCount = 3;
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
@@ -42,7 +42,7 @@ WorldBuilder::WorldBuilder( MeshCache* meshes, const TownMap* map, const PropFac
 	ASSERT( meshes && map && props && "WorldBuilder : an argument is null." );
 }
 
-const FuelTankComponent* WorldBuilder::build( const WorldBuildTarget& target ) const {
+void WorldBuilder::build( const WorldBuildTarget& target ) const {
 	target.ground->place( *mMap );
 	target.hitWorld->addBlocker( target.ground ); // 地面も弾・視線を止める（地面全体で1つの物）
 	target.collisionWorld->setGround( target.ground ); // キャラは地面の高さに乗る（歩道の段差）
@@ -53,11 +53,10 @@ const FuelTankComponent* WorldBuilder::build( const WorldBuildTarget& target ) c
 	for ( const Building& building : *target.buildings ) {
 		target.hitWorld->addBlocker( &building );
 	}
-	const FuelTankComponent* fuelTank = placeMissionObjects( target.objects );
+	placeCarAndFuel( target.objects );
 	placeWeapons( target.objects );
-	// 建物・車・ガソリンの置き場を名簿へ載せ終えてから、それを材料に歩ける床の形を作る（ZombieNavMesh_Plan.txt）。
+	// 建物・車を名簿へ載せ終えてから、それを材料に歩ける床の形を作る（ZombieNavMesh_Plan.txt）。
 	target.navMesh->build( *target.collisionWorld );
-	return fuelTank;
 }
 
 void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes,
@@ -79,18 +78,14 @@ void WorldBuilder::placeWeapons( GameObjectWorld* objects ) const {
 	mProps->spawnWeaponDrop( objects, WEAPON_RIFLE, toPosition( rifle ), rifle.yawDegree ); // 置けなくても（形の構築の失敗）拳銃で遊べる
 }
 
-const FuelTankComponent* WorldBuilder::placeMissionObjects( GameObjectWorld* objects ) const {
-	// 車を置けなかった場合はクリアできないが、他の確認はできる。
-	const TownPlacement& car = mMap->escapeCar();
-	GameObject* escapeCar = mProps->spawnEscapeCar( objects, toPosition( car ), car.yawDegree, kRequiredFuel );
-	const TownPlacement& station = mMap->endlessFuel();
-	mProps->spawnFuelStation( objects, toPosition( station ), station.yawDegree );
+void WorldBuilder::placeCarAndFuel( GameObjectWorld* objects ) const {
+	const TownPlacement& car = mMap->parkedCar();
+	mProps->spawnParkedCar( objects, toPosition( car ), car.yawDegree );
 	// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
 	unsigned seed = Framework::instance().time();
 	const std::vector< TownPlacement >& spawnPoints = mMap->fuelSpawnPoints();
-	for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kRequiredFuel, seed ) ) {
+	for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kFuelCount, seed ) ) {
 		const TownPlacement& p = spawnPoints[ index ];
 		mProps->spawnFuel( objects, toPosition( p ), p.yawDegree );
 	}
-	return escapeCar ? escapeCar->getComponent< FuelTankComponent >() : nullptr;
 }

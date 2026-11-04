@@ -69,3 +69,22 @@ void PickupComponent::interact( Inventory* inventory ) {
 	}
 	mTaken = ( mItem->amount() == 0 );
 }
+
+bool PickupComponent::offeredStack( ItemStack* out ) const {
+	ASSERT( out && "PickupComponent::offeredStack : out is null." );
+	if ( mTaken ) {
+		return false;
+	}
+	out->item = mItem->item();
+	out->amount = mItem->amount();
+	out->loadedRounds = 0; // 銃の弾倉の数は銃の物（GunComponent）が持つ。描く側が読んで入れる
+	return true;
+}
+
+void PickupComponent::takeOffered( int count ) {
+	ASSERT( !mTaken && count > 0 && count <= mItem->amount() && "PickupComponent::takeOffered : bad count." );
+	for ( int i = 0; i < count; ++i ) {
+		mItem->takeOne();
+	}
+	mTaken = ( mItem->amount() == 0 );
+}

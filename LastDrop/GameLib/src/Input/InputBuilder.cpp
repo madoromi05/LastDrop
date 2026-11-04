@@ -67,6 +67,7 @@ namespace
         case WorkId::Move:       return "Move";
         case WorkId::LookStick:  return "LookStick";
         case WorkId::Inventory:  return "Inventory";
+        case WorkId::QuickPlace: return "QuickPlace";
         default:            return "";
         }
     }
@@ -240,6 +241,8 @@ namespace
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
         // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
+        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない。InventoryPickup_Plan.txt Q4）。
+        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },
 		// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
         { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 },
         // 計測の CSV の記録を始める／止める（2026-10-23 決定。F6 は ImGui のエディタに空けておく）。
@@ -259,6 +262,8 @@ namespace
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
         { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
         { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_BACK },
+        // Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）。
+        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_Y },
         // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
         { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },

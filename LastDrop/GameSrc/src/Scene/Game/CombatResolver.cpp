@@ -54,7 +54,8 @@ CombatResolver::CombatResolver( GameObjectWorld* objects, EffectManager* effects
 	mEffects( effects ),
 	mProps( props ),
 	mHitWorld( hitWorld ),
-	mRandom( Random::create( static_cast< int >( Framework::instance().time() ) ) ) {
+	mRandom( Random::create( static_cast< int >( Framework::instance().time() ) ) ),
+	mZombiesKilled( 0 ) {
 	ASSERT( objects && effects && props && hitWorld && "CombatResolver : an argument is null." );
 }
 
@@ -62,6 +63,7 @@ void CombatResolver::beginTick() {
 	mZombieHits.clear();
 	mSurfaceHits.clear();
 	mZombieAttacks.clear();
+	mZombiesKilled = 0;
 }
 
 void CombatResolver::resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts, const GameObject* player ) {
@@ -108,6 +110,7 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact, const GameObje
 	zombie->applyDamage( damage ); // 倒れ始めたら（脚を失って倒れたときも）、ゾンビが自分で移動の名簿から外れる
 	if ( wasAlive && !state->isAlive() ) {
 		dropAmmo( *state, player ); // 脚を失って倒れたまま生きている（Downed）間は落とさない。止めを刺したときに落とす
+		++mZombiesKilled; // 倒した数（スコア。弾を落とすのと同じ時＝止めを刺したとき）
 	}
 	// 切り口の決まりは、このゾンビの設計図から読む（設計図の種類が増えても、当たった体の形で切れる）。
 	const SkinnedMeshInstance& mesh = zombie->getComponent< SkinnedModelComponent >()->mesh();
@@ -195,4 +198,8 @@ const std::vector< CombatResolver::SurfaceHit >& CombatResolver::surfaceHitsThis
 
 const std::vector< CombatResolver::ZombieAttackEvent >& CombatResolver::zombieAttacksThisTick() const {
 	return mZombieAttacks;
+}
+
+int CombatResolver::zombiesKilledThisTick() const {
+	return mZombiesKilled;
 }

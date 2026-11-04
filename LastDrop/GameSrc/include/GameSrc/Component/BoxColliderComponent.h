@@ -12,7 +12,7 @@
 class BoxColliderComponent : public Component, public ICollisionBody, public IWorldMember{
 public:
 	enum class Mode{
-		Fixed,       // 動かない箱として載る（車・何度でも拾える置き場。最後まで置いておく物。名簿の方が値を写して持ち、外せない）
+		Fixed,       // 動かない箱として載る（車。最後まで置いておく物。名簿の方が値を写して持ち、外せない）
 		Removable,   // 外せる相手として載る（拾うと消えるガソリン）
 		WalkThrough, // 載らない（足元の弾。上を歩ける。箱は視線で探す見る箱にだけ使う）
 	};

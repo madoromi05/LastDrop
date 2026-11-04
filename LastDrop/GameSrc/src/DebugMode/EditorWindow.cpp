@@ -20,6 +20,10 @@
 #include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Raid/RaidSession.h"
+#include "GameSrc/Raid/RunState.h"
+#include "GameSrc/Raid/RunRules.h"
+#include "GameSrc/Weapon/WeaponCatalog.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -49,6 +53,10 @@ namespace{
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
+	RaidSession* gRaid = nullptr;    // GameScene から受け取った、町の 1 日（無ければ nullptr）
+	RunState* gRun = nullptr;        // GameScene・BaseScene から受け取った、5 日間の様子（無ければ nullptr）
+	// Raid の欄の「残り 10 秒」（時間切れの流れをすぐ試すため）。
+	const float kShortRemainingSeconds = 10.f;
 
 	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く）。ガソリンは車へ運ぶ遊びの物なので、ここでは触らない。
 	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM };
@@ -151,6 +159,65 @@ namespace{
 		}
 	}
 
+	// 町の 1 日と 5 日間の様子を動かす欄（R2_Plan.txt 10 章の ⑥〜⑧ を、遊んで待たずに試すため）。
+	void drawRaid() {
+		if ( gRaid ) {
+			ImGui::Text( "Time left: %.0f s", gRaid->clock().remainingSeconds() );
+			ImGui::SameLine();
+			if ( ImGui::SmallButton( "10 s left" ) ) {
+				gRaid->setRemainingSeconds( kShortRemainingSeconds );
+			}
+			ImGui::SameLine();
+			if ( ImGui::SmallButton( "Extract now" ) ) {
+				gRaid->forceExtract();
+			}
+			ImGui::Text( "Kills today: %d", gRaid->kills() );
+		}
+		if ( !gRun ) {
+			if ( !gRaid ) {
+				ImGui::TextDisabled( "No raid." );
+			}
+			return;
+		}
+		ImGui::Text( "Day %d / %d", gRun->day(), RunState::kDayCount );
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Day -" ) && gRun->day() > 1 ) {
+			gRun->setDay( gRun->day() - 1 );
+		}
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Day +" ) && gRun->day() < RunState::kDayCount ) {
+			gRun->setDay( gRun->day() + 1 );
+		}
+		ImGui::Text( "Kills before today: %d   Best: %d", gRun->kills(), gRun->bestScore() );
+		ImGui::Text( "Stash items: %d points", RunRules::itemPoints( gRun->stash() ) );
+		// 倉庫へ 1 マスぶん（重ねられる物はいっぱいまで。銃は弾倉いっぱいで）足す。
+		for ( ItemId id : kDebugItems ) {
+			const ItemSpec& spec = itemSpec( id );
+			ImGui::PushID( id );
+			if ( ImGui::SmallButton( "Add to stash" ) ) {
+				ItemStack stack = { id, spec.stackSize };
+				WeaponId weapon = weaponForItem( id );
+				if ( weapon != WEAPON_NONE ) {
+					stack.loadedRounds = weaponSpec( weapon ).magazineCapacity;
+				}
+				gRun->stash().placeAnywhere( stack );
+			}
+			ImGui::SameLine();
+			ImGui::Text( "%s: %d", spec.name, gRun->stash().total( id ) );
+			ImGui::PopID();
+		}
+		if ( ImGui::SmallButton( "Save" ) ) {
+			gRun->save();
+		}
+		ImGui::SameLine();
+		// 保存を消して 1 日目から（ハイスコアも消す）。町の中で押すと、今の日はそのまま続き、終わった時の結果が新しい回に入る。
+		if ( ImGui::SmallButton( "Erase save" ) ) {
+			RunState::erase();
+			gRun->setBestScore( 0 );
+			RunRules::startNewRun( gRun );
+		}
+	}
+
 	const char* tagName( GameObjectTag tag ) {
 		switch ( tag ) {
 			case GameObjectTag::Player: return "Player";
@@ -158,8 +225,7 @@ namespace{
 			case GameObjectTag::Zombie: return "Zombie";
 			case GameObjectTag::Fuel: return "Fuel";
 			case GameObjectTag::AmmoDrop: return "AmmoDrop";
-			case GameObjectTag::EscapeCar: return "EscapeCar";
-			case GameObjectTag::FuelStation: return "FuelStation";
+			case GameObjectTag::ParkedCar: return "ParkedCar";
 			case GameObjectTag::WeaponDrop: return "WeaponDrop";
 		}
 		return "?";
@@ -407,6 +473,9 @@ void draw() {
 		if ( ImGui::CollapsingHeader( "Inventory" ) ) {
 			drawInventory();
 		}
+		if ( ImGui::CollapsingHeader( "Raid" ) ) {
+			drawRaid();
+		}
 		if ( ImGui::CollapsingHeader( "Pad" ) ) {
 			drawGamePad();
 		}
@@ -427,6 +496,14 @@ void setInventory( Inventory* inventory ) {
 	gInventory = inventory;
 }
 
+void setRaid( RaidSession* session ) {
+	gRaid = session;
+}
+
+void setRun( RunState* run ) {
+	gRun = run;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -443,6 +520,12 @@ void setObjects( const GameObjectWorld* ) {
 }
 
 void setInventory( Inventory* ) {
+}
+
+void setRaid( RaidSession* ) {
+}
+
+void setRun( RunState* ) {
 }
 
 } //namespace EditorWindow

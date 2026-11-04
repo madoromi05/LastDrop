@@ -4,8 +4,6 @@
 #include "GameSrc/Component/StaticModelComponent.h"
 #include "GameSrc/Interaction/ItemComponent.h"
 #include "GameSrc/Interaction/PickupComponent.h"
-#include "GameSrc/Interaction/ItemSourceComponent.h"
-#include "GameSrc/Interaction/FuelTankComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -22,8 +20,7 @@ namespace{
 	const char* kAmmoDropName = "AmmoDrop";
 	const char* kWeaponDropName = "WeaponDrop";
 	const int kOneWeapon = 1; // 落ちている銃は 1 丁
-	const char* kEscapeCarName = "EscapeCar";
-	const char* kFuelStationName = "FuelStation";
+	const char* kParkedCarName = "ParkedCar";
 
 	const int kFuelPerCan = 1;
 	const int kAmmoDropRounds = 10;		//落とす球数
@@ -58,26 +55,13 @@ const Vector3& position, float yawDegree, DrawCulling::Target cullTarget, BoxCol
 	return obj;
 }
 
-GameObject* PropFactory::spawnEscapeCar( GameObjectWorld* world, const Vector3& position, float yawDegree, int requiredFuel ) const {
+GameObject* PropFactory::spawnParkedCar( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
 	// 箱の大きさを頂点から求めるので、構築に失敗したデータは置かない。
 	if ( !mVehicleShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::EscapeCar, kEscapeCarName, mVehicleShapes, position, yawDegree,
+	GameObject* obj = createProp( world, GameObjectTag::ParkedCar, kParkedCarName, mVehicleShapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed );
-	obj->addComponent< FuelTankComponent >( requiredFuel );
-	world->spawn( obj );
-	return obj;
-}
-
-GameObject* PropFactory::spawnFuelStation( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
-	if ( !mFuelCanShapes.full()->isReady() ) {
-		return nullptr;
-	}
-	GameObject* obj = createProp( world, GameObjectTag::FuelStation, kFuelStationName, mFuelCanShapes, position, yawDegree,
-		DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed );
-	obj->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
-	obj->addComponent< ItemSourceComponent >();
 	world->spawn( obj );
 	return obj;
 }

@@ -82,6 +82,12 @@
     <Filter Include="GameSrc\Interaction">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000007}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameSrc\Raid">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Base">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A2}</UniqueIdentifier>
+    </Filter>
     <Filter Include="GameSrc\Map">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000008}</UniqueIdentifier>
     </Filter>
@@ -200,12 +206,6 @@
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\PropFactory.cpp">
-      <Filter>GameSrc\Interaction</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\ItemSourceComponent.cpp">
-      <Filter>GameSrc\Interaction</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\FuelTankComponent.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\MuzzleFlashComponent.cpp">
@@ -514,13 +514,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\CorpseLootComponent.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemSourceComponent.h">
-      <Filter>GameSrc\Interaction</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h">
-      <Filter>GameSrc\Interaction</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\FuelTankComponent.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h">
@@ -870,6 +864,45 @@
     <ClCompile Include="GameSrc\src\Interaction\ItemGrid.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\RaidParams.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\RaidClock.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\ExtractionTracker.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\RaidSession.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\RunState.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\RunRules.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\ItemTransfer.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\ItemGridView.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\RaidHud.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Base\BaseScene.cpp">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Base\DayResultScene.cpp">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Base\RunEndScene.cpp">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
@@ -1124,9 +1157,6 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp">
       <Filter>GameSrc\Player</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
@@ -1772,6 +1802,51 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemGrid.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidParams.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidClock.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\ExtractionTracker.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidSession.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\DayResult.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\Score.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunState.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemTransfer.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemGridView.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\RaidHud.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\BaseScene.h">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\DayResultScene.h">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\RunEndScene.h">
+      <Filter>GameSrc\Scene\Base</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -2119,9 +2194,6 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h">
       <Filter>GameSrc\Player</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h">
-      <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h">
       <Filter>GameSrc\Scene\Game</Filter>

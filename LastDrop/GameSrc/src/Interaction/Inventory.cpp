@@ -1,24 +1,21 @@
 #include "GameSrc/Interaction/Inventory.h"
 
 #include "GameLib/GameLib.h"
+#include <algorithm>
 
 namespace{
-	// 2 列にすると、2 マスの物（ガソリン）が 1 行にぴったり入り、強化 1 回で増える 2 マスも 1 行になる（GridInventory_Plan.txt Q1）。
-	const int kColumns = 2;
-	const int kStartRows = 4; // 始めは 8 マス（バイオハザード RE:2 と同じ）
+	const int kNoLimit = 0; // ItemSpec::carryLimit の「決めない」
 }
 
-Inventory::Inventory() :
-	mGrid( kColumns, kStartRows ) {
-	for ( int i = 0; i < ITEM_NUMBER; ++i ) {
-		ItemId id = static_cast< ItemId >( i );
-		for ( int n = 0; n < itemSpec( id ).startAmount; ++n ) {
-			add( id );
-		}
-	}
+Inventory::Inventory( const ItemGrid& bag ) :
+	mGrid( bag ) {
 }
 
 bool Inventory::canAdd( ItemId id ) const {
+	int limit = itemSpec( id ).carryLimit;
+	if ( limit != kNoLimit && count( id ) >= limit ) {
+		return false; // 2 丁目の銃（R2_Plan.txt Q14）
+	}
 	return mGrid.canAddOne( id );
 }
 
@@ -59,4 +56,22 @@ bool Inventory::canSetRows( int rows ) const {
 
 void Inventory::setRows( int rows ) {
 	mGrid.setRows( rows );
+}
+
+int Inventory::countPlaceableInto( int cell, const ItemStack& stack ) const {
+	int count = mGrid.countPlaceableInto( cell, stack );
+	int limit = itemSpec( stack.item ).carryLimit;
+	if ( limit != kNoLimit ) {
+		count = std::min( count, std::max( limit - this->count( stack.item ), 0 ) ); // 2 丁目の銃は 0
+	}
+	return count;
+}
+
+void Inventory::placeInto( int cell, const ItemStack& stack, int count ) {
+	ASSERT( count > 0 && count <= countPlaceableInto( cell, stack ) && "Inventory::placeInto : does not fit." );
+	mGrid.placeInto( cell, stack, count );
+}
+
+void Inventory::setLoadedRounds( int owner, int rounds ) {
+	mGrid.setLoadedRounds( owner, rounds );
 }

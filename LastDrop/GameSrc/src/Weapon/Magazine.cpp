@@ -25,6 +25,10 @@ void Magazine::takeRound() {
 	--mRounds;
 }
 
+void Magazine::setRounds( int rounds ) {
+	mRounds = ( rounds < 0 ) ? 0 : ( ( rounds > mCapacity ) ? mCapacity : rounds );
+}
+
 void Magazine::load( int count ) {
 	ASSERT( count >= 0 && count <= missingRounds() && "Magazine::load : bad count." );
 	mRounds += count;

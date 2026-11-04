@@ -34,6 +34,12 @@ struct TownTile{
 	float scale; // 部品の拡大率（1 で実寸）
 };
 
+// 脱出点 1 つの置き場所（R2_Plan.txt Q10）。名前は画面に出す（英語）。向きは使わない。
+struct TownExtractPoint{
+	const char* name;
+	TownPlacement placement;
+};
+
 // 町のどこに何を置くかを決める1か所（道路・歩道・建物・自キャラ・ゾンビ・車・ガソリンの候補・床の材質）。
 // 置き場所を決めるだけで、物は作らない（作って並べるのはシーン）。町の形を変えるときは、このクラスの .cpp の定数だけを直す。
 //
@@ -56,8 +62,9 @@ public:
 	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ。
 	const std::vector< TownPlacement >& zombieSpawnPoints() const;
 	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
-	const TownPlacement& escapeCar() const;							// 脱出用の車
-	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
+	const TownPlacement& parkedCar() const;							// 置物の車（2026-11-05 から、車で逃げるゴールは無い）
+	// 脱出点の候補（外周の 4 本の道の真ん中。北・東・南・西の順）。毎日どれを開くかは RaidSession が選ぶ。
+	const std::vector< TownExtractPoint >& extractPoints() const;
 	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
 	const TownPlacement& rifle() const;								// 町に 1 丁だけ置くライフル（拾うとカバンへ。段階R3 までの仮）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
@@ -74,10 +81,10 @@ private:
 	TownPlacement mPlayerStart;
 	std::vector< TownPlacement > mZombieSpawnPoints;
 	TownPlacement mTPoseZombie;
-	TownPlacement mEscapeCar;
-	TownPlacement mEndlessFuel;
+	TownPlacement mParkedCar;
 	TownPlacement mRifle;
 	std::vector< TownPlacement > mFuelSpawnPoints;
+	std::vector< TownExtractPoint > mExtractPoints;
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;
 	std::vector< TownPlacement > mStreetLights;

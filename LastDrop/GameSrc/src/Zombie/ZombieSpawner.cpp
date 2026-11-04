@@ -11,9 +11,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	const int kStartCount = 30;		// 初期ゾンビ数
-	const int kCountPerFuel = 5;	// 給油 1 回ごとに増やす数
-	const int kMaxCount = 50;		// 目標の数の上限（立っているゾンビ。給油 3 回でちょうどここに届く）
+	// 立っているゾンビの目標の数。2026-11-05 に給油で増やす決まり（+5・上限 50）を消した（車のゴールをやめた。R2_Plan.txt Q15）。
+	// 時間・日で増やすのは段階R4 で決める。
+	const int kTargetCount = 30;
 	// 減ったら、これだけ待って 1 体補う（秒）。倒した直後に湧かないように。
 	const float kRefillSeconds = 10.f;
 	const int kRefillTicks = GameTime::secondsToTicks( kRefillSeconds );
@@ -45,7 +45,7 @@ const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int random
 
 void ZombieSpawner::update( const View& view, std::vector< Order >* out ) {
 	ASSERT( out && "ZombieSpawner : out is null." );
-	mTargetCount = targetFor( view.fuelDelivered );
+	mTargetCount = kTargetCount;
 	mStandingCount = view.standingZombies;
 	if ( mCandidates.empty() ) {
 		return;
@@ -56,11 +56,6 @@ void ZombieSpawner::update( const View& view, std::vector< Order >* out ) {
 		return;
 	}
 	planRefill( view, out );
-}
-
-int ZombieSpawner::targetFor( int fuelDelivered ) {
-	int count = kStartCount + kCountPerFuel * fuelDelivered;
-	return ( count < kMaxCount ) ? count : kMaxCount;
 }
 
 void ZombieSpawner::planInitial( const View& view, std::vector< Order >* out ) {

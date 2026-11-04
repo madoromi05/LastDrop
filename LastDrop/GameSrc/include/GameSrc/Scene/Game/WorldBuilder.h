@@ -14,7 +14,6 @@ class CollisionWorld;
 class HitWorld;
 class GameObjectWorld;
 class NavMesh;
-class FuelTankComponent;
 
 // WorldBuilder::build が町を置く先。どれも GameWorld が持ち、build の間だけ借りる（覚えない）。どれも nullptr 不可。
 struct WorldBuildTarget{
@@ -27,8 +26,8 @@ struct WorldBuildTarget{
 };
 
 // 町を最初に一度だけ組み立てる係（「どこに何を置くか」。SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-2。2026-11-02 GameWorld から分けた）。
-// 置き場所は TownMap、置物が何で出来ているかは PropFactory が決める。ここはゲームループの決まり
-// （ガソリンを何個置き、車に何個入れれば走れるか）と、置く順番（名簿へ載せ終えてから床の形を作る）を持つ。
+// 置き場所は TownMap、置物が何で出来ているかは PropFactory が決める。ここは町の決まり
+// （ガソリンを何個置くか）と、置く順番（名簿へ載せ終えてから床の形を作る）を持つ。
 // 置いた物の持ち主にはならない（建物の並びは GameWorld、置物は GameObjectWorld が持つ）。
 class WorldBuilder{
 public:
@@ -40,14 +39,13 @@ public:
 
 	// 全データの構築後に一度だけ、地面・建物・車・ガソリンを置き、最後に歩ける床の形を作る。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
-	// 脱出用の車の燃料タンクを返す（車を置けなかったら nullptr。物は target.objects が持つ）。
-	const FuelTankComponent* build( const WorldBuildTarget& target ) const;
+	void build( const WorldBuildTarget& target ) const;
 
 private:
 	// data の建物を placements の場所へ建てる。data: nullptr 不可。
 	void placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes, const std::vector< TownPlacement >& placements ) const;
-	// 脱出用の車と、何度でも拾えるガソリン、候補点から選んだ場所のガソリンを置き、車の燃料タンクを返す（無ければ nullptr）。
-	const FuelTankComponent* placeMissionObjects( GameObjectWorld* objects ) const;
+	// 置物の車と、候補点から選んだ場所のガソリンを置く。
+	void placeCarAndFuel( GameObjectWorld* objects ) const;
 	// 町で拾える銃を置く（今はライフル 1 丁。始めの銃〈拳銃〉はカバンに入っているので置かない）。
 	void placeWeapons( GameObjectWorld* objects ) const;
 

@@ -115,7 +115,7 @@ namespace{
 		}
 	}
 
-	// 動かない箱（車・ガソリンの置き場）を、床から体の高さまでの柱の 4 つの側面として足す。床の種類は「歩けない」。
+	// 動かない箱（車）を、床から体の高さまでの柱の 4 つの側面として足す。床の種類は「歩けない」。
 	void addBox( const BoxCollider& box, TriangleSoup* soup ) {
 		// 箱のローカルの X 軸・Z 軸がワールドで向く向き（SweepMath の boxAxes と同じ。Matrix34::rotateY と同じ回転の向き）。
 		float c = GameLib::Math::cos( box.angleY );

@@ -11,8 +11,7 @@ enum class GameObjectTag{
 	Zombie,      // ゾンビ
 	Fuel,        // 落ちているガソリン（拾うと消える）
 	AmmoDrop,    // ゾンビが落とした予備の弾（拾うと消える）
-	EscapeCar,   // 脱出用の車
-	FuelStation, // 車の近くの、何度でも拾えるガソリンの置き場
+	ParkedCar,   // 置物の車（2026-11-05 から車で逃げるゴールは無い。何度でも拾えるガソリンの置き場も消した。R2_Plan.txt Q15）
 	WeaponDrop,  // 地面に落ちている銃（町に置いた銃・カバンから捨てた銃。拾うと消える）
 };
 

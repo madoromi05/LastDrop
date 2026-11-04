@@ -12,7 +12,8 @@
 #include "GameSrc/Scene/Game/SurfaceHitSounds.h"
 #include "GameSrc/Scene/Game/ZombieAttackSounds.h"
 #include "GameSrc/Scene/Game/PlayerDamageView.h"
-#include "GameSrc/Scene/Game/GameHud.h"
+#include "GameSrc/Scene/Game/RaidHud.h"
+#include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Scene/Game/InteractMarkers.h"
 #include "GameSrc/Scene/Game/PauseMenu.h"
 #include "GameSrc/Scene/Game/InventoryScreen.h"
@@ -35,12 +36,13 @@
 class GameResources;
 class DrawCulling;
 
-// ゲーム本編。自キャラを一人称(FPS)視点で動かし、ガソリンを集めて車で脱出する。
-// WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う・車に給油する。左クリックを押している間、銃を撃つ。R で弾を込める。
+// ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
+// WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う。左クリックを押している間、銃を撃つ。R で弾を込める。
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
-// 車にガソリンを決まった数だけ入れるとクリア画面へ進む。
-// ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、ゲームオーバー画面へ進む。
-// ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。
+// 持ち物は拠点のカバン（RunState）の写しで始まる。開いている脱出点の円に決まった秒だけ立つと脱出し、1 日の結果の画面へ進む。
+// ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、5 日間の終わり（ゲームオーバー）の画面へ。時間切れ（行方不明）も同じ。
+// ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。死んだ後は止めない
+// （途中でやめると、その日をやり直せるので、死んでからやめて逃げられないように。R2_Plan.txt Q3）。
 // Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
@@ -53,7 +55,8 @@ class DrawCulling;
 //   弾が物（建物・地面・車）に当たった音… SurfaceHitSounds
 //   ゾンビの腕が当たった音              … ZombieAttackSounds
 //   攻撃された・死んだ後の見せ方の量    … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
-//   HUD                                 … GameHud
+//   1 日の時間・脱出点・終わり方        … RaidSession（終わった後に何を残すかは RunRules）
+//   HUD                                 … RaidHud
 //   一時停止のメニュー                  … PauseMenu
 //   カバンの画面                        … InventoryScreen
 //   画面全体の処理                      … PostProcess
@@ -86,6 +89,15 @@ private:
 	void handleBagInput();
 	// cell の物を取り出して、自キャラの足元に置く（置けなければカバンへ戻す）。
 	void dropFromBag( int cell );
+	// E で拾った物 offer を持った状態でカバンを開く（入れるマスを選ぶ。InventoryPickup_Plan.txt Q3）。
+	void startPlacing( IInteractable* offer );
+	// 拾って持っている物（銃なら弾倉の数も入れる）を out へ。持っていなければ false。
+	bool offeredStack( ItemStack* out ) const;
+	// 拾った物を cell を指した所へ入る分だけ入れる・おまかせで入れる。全部入ったらカバンを閉じる。
+	void placeOffered( int cell );
+	void quickPlaceOffered();
+	// 拾った物を全部入れたら、拾うのを終えてカバンを閉じる。
+	void finishPlacingIfDone();
 	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
 	ItemId equippedWeapon() const;
 	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。
@@ -104,6 +116,18 @@ private:
 	// ゾンビの腕が当たった出来事を読み、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
 	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
 	void updatePlayerDamage();
+	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、updatePlayerDamage の後）。
+	// 脱出：銃の弾倉の数をカバンへ書き戻してから finishDay → 1 日の結果。時間切れ：failDay → 5 日間の終わり。
+	// 死んだ：暗くなり終わるのを待ってから failDay → 5 日間の終わり。
+	void updateRaid();
+	// 終わった日を RunRules へ渡して、次のシーンへの切り替えを予約する（1 回だけ）。
+	void finishRaid();
+	// カバンの銃のマスへ、銃の物の弾倉の数を書き戻す（脱出したとき。R2_Plan.txt Q13）。
+	void storeMagazineRounds();
+	// 拠点で覚えた弾倉の数を、カバンの銃の物へ入れる（世界を並べた後に 1 回）。
+	void restoreMagazineRounds();
+	// 開いている脱出点の緑の光をライトの一覧へ足す（setupLights から。R2_Plan.txt Q10）。
+	void addExitLights();
 #ifdef ZF_EDITOR
 	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
 	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
@@ -129,7 +153,8 @@ private:
 	SurfaceHitSounds mSurfaceHitSounds;
 	ZombieAttackSounds mZombieAttackSounds;
 	PlayerDamageView mDamageView;
-	GameHud mHud;
+	RaidHud mHud;
+	RaidSession mSession; // 町の 1 日（mWorld の町の脱出点を借りるので、mWorld より後に宣言する）
 	PauseMenu mPauseMenu;
 	InventoryScreen mInventoryScreen;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
@@ -153,6 +178,9 @@ private:
 	bool mReady; // 世界の配置が済んだか
 	bool mPaused; // 一時停止しているか
 	bool mBagOpen; // カバンを開いているか（開いている間も世界は止まっている）
+	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
+	// E で拾って、入れるマスを選んでいる物（無ければ nullptr）。借りているだけ（カバンを開いている間は世界が止まり、拾う物は消えない）。
+	IInteractable* mOffer;
 };
 
 #endif

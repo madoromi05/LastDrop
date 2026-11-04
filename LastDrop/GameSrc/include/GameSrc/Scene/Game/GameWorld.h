@@ -35,10 +35,9 @@ class SkinnedMeshData;
 class StaticMeshData;
 class Inventory;
 class PlayerComponent;
-class FuelTankComponent;
 
-// 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・脱出用の車・
-// ガソリンの置き場）の持ち主、飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
+// 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
+// 飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
 // ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt。2026-11-02 分けた）：
 //   最初に町を組み立てる         … WorldBuilder（置物の部品の並びは PropFactory、自キャラは PlayerFactory、ゾンビは ZombieFactory）
 //   弾痕・砂ぼこり・血・千切れた部位 … EffectManager
@@ -50,8 +49,8 @@ class FuelTankComponent;
 //
 // 舞台は碁盤の目の町。町の周りは建物で囲んであり、外へは出られない。
 // 建物とゾンビと車は移動を止め、自キャラは当たると沿って滑る。道路と歩道は移動を止めないが、弾・視線は止める（TownGround）。
-// ゲームループ: 候補点から選んだ場所にガソリンが出る。拾って車へ運び、決まった数を入れると車が走れるようになる（isEscapeReady）。
-// その後どうするか（クリア画面へ進む）は知らない。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
+// 候補点から選んだ場所にガソリンが出る（持ち帰ると点になる物。2026-11-05 に車へ入れて逃げるゴールをやめた。R2_Plan.txt Q15）。
+// 1 日の時間・脱出点・終わり方は知らない（RaidSession。シーンが持つ）。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
 class GameWorld{
 public:
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから place を呼ぶ。
@@ -116,10 +115,10 @@ public:
 	// 自キャラが居ない・その部品を外していれば nullptr。
 	const IHittable* playerTarget() const;
 	const ICollisionBody* playerBody() const;
-	// 脱出用の車の燃料タンク。place の前・構築に失敗して置けなかったときは nullptr。
-	const FuelTankComponent* fuelTank() const;
-	// 車にガソリンが決まった数だけ入ったか（車が無ければ false）。
-	bool isEscapeReady() const;
+	// 銃の物 item（ITEM_KIND_WEAPON）の弾倉に入っている弾の数（銃が無ければ 0）・入れる（弾倉の大きさまでに収める）。
+	// 拠点で覚えた数を出撃の始めに入れ、脱出したときに読み出す（R2_Plan.txt Q13）。銃は 1 種類 1 丁なので、種類で引ける。
+	int magazineRounds( ItemId item ) const;
+	void setMagazineRounds( ItemId item, int rounds );
 	// 世界に置いた物（自キャラ・銃・ゾンビ・落ちている物・車…）。確認用の表示が forEach< ZombieStateComponent > で
 	// ゾンビ全員（倒れている途中・死体も含む）の体力・通り道を読む、F6 のエディタが物の一覧を出す、WorldRenderer が描くのに使う。
 	const GameObjectWorld& objects() const;
@@ -137,7 +136,7 @@ private:
 	// ゾンビの Think の段を動かし、腕の当たりを CombatResolver へ渡し、沈み終わった死体に消す印を付ける（update から）。
 	// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
 	void updateZombies();
-	// 立っているゾンビの数・給油の数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
+	// 立っているゾンビの数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
 	// cameraYaw: カメラの水平の向き（度）。
 	void spawnZombiesFromSpawner( float cameraYaw );
 	// ゾンビを組み立てて置く（spawnZombie と、place の確認用の T ポーズの1体から）。mZombieFactory があること。
@@ -178,7 +177,7 @@ private:
 	ZombieCrowd mCrowd;
 	// ゾンビを部品から組み立てる。mZombieModel を借りる（mNavMesh・名簿・mZombieContext は部品が mObjects の共有の棚から引く）。
 	std::unique_ptr< ZombieFactory > mZombieFactory;
-	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車・置き場）。物（GameObject）に部品を付けて持つ
+	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ
 	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt）。
 	// 物が名簿・mZombieModel・mNavMesh・mZombieContext を借りるので、それらより後に宣言する（＝先に破棄される）。
 	GameObjectWorld mObjects;
@@ -187,7 +186,6 @@ private:
 	InteractionSystem mInteraction;
 	GameObject* mPlayer;             // 自キャラの物（mObjects が持つ。置けなければ nullptr）
 	PlayerComponent* mPlayerControl; // 自キャラの操作を読む部品（同上）
-	const FuelTankComponent* mFuelTank; // 脱出用の車の燃料タンク（同上）
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）・湧かせ方の種を選ぶ（place で種を決める）
 	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
 	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。

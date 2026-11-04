@@ -22,7 +22,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── DebugScreen の文字位置（2026-10-21 ユーザー指定：左上から左下へ。左上は体の図を置く）──
-	// 左下の状態表示（Car fuel・Carrying。GameHud）の上に、下から順に積む。行は下から数えた番号（0 が一番下）。
+	// 左下に、下から順に積む（2026-11-05 に左下の HUD〈Car fuel〉は無くなった）。行は下から数えた番号（0 が一番下）。
 	const int kHelpColumn = 1;
 	const int kHelpLine = 0;
 	const int kShaderErrorLine = 1; // シェーダのコンパイルエラー（あるときだけ）

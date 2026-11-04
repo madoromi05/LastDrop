@@ -5,10 +5,12 @@
 #include "GameSrc/UI/UiAnchor.h"
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
+#include "GameSrc/Core/Pad.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
 #include <algorithm>
+#include <cstdio>
 #include <string>
 
 using namespace GameLib;
@@ -18,18 +20,11 @@ namespace{
 	const float kHalf = 0.5f;
 	const int kNone = -1;
 
-	// マス 1 つの大きさと間（画素）。物の絵（1 マスの物は正方形）が潰れない正方形。
+	// マス 1 つの一辺（画素）。物の絵（1 マスの物は正方形）が潰れない正方形。
 	// 座標の高さ 480 に、見出し・6 行・下の欄まで入る大きさ（強化で 7 行以上にするときは並べ方を変える。ItemIcon_Plan.txt 5 章）。
-	const float kCellWidth = 64.f;
-	const float kCellHeight = 64.f;
-	const float kCellGap = 4.f;
-	const float kIconInset = 3.f;      // マスの縁から絵まで（選んだ枠の太さより広く、枠が絵に掛からないように）
-	const float kBothSides = 2.f;      // 左右（上下）の両側の余白の分
-	// 数（2 桁）を置く右下の板。板の真ん中に数を置く。
-	const float kAmountPlateWidth = 26.f;
-	const float kAmountPlateHeight = 20.f; // 文字（UI_TEXT_NORMAL の 20）と同じ高さ
-	const float kAmountInset = 3.f;    // マスの右下の角から板まで
+	const float kCellSize = 64.f;
 	const float kHeadingGap = 34.f;    // 見出しの真ん中から、マス目の上端まで
+	const float kExitsGap = 12.f;      // 開いている脱出点の行の真ん中から、マス目の上端まで（見出しとマス目の間）
 	const float kFooterGap = 22.f;     // マス目の下端から、選んだ物の名前の真ん中まで
 	const float kFooterLineHeight = 24.f;
 	// 選んだ物のメニュー（マス目の右に、選んだ物の行から縦に並べる）。
@@ -51,23 +46,21 @@ namespace{
 	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "Equip", "Drop", "Move", "Cancel" };
 	// 手に持っている銃の印（マスの左上）。
 	const char* kEquippedMark = "E";
-	const float kMarkPlateSize = 20.f; // 文字（UI_TEXT_NORMAL の 20）と同じ高さの正方形
 
 	const char* kHeading = "BAG";
 	const char* kEmptyName = "Empty";
 	const char* kBrowseHint = "[Enter] Select   [Tab] Close";
 	const char* kMenuHint = "[Enter] Decide   [Esc] Back";
 	const char* kMovingHint = "[Enter] Place   [Esc] Cancel";
+	const char* kPlacingHint = "[Enter] Put   [F] Auto   [Esc] Cancel";
+	const char* kPickupFormat = "Pick up: %s";           // 1 つずつの物（ガソリン・銃）
+	const char* kPickupAmountFormat = "Pick up: %s x%d"; // 重ねられる物（弾）は数も
+	const int kTextSize = 64;
 
-	// 止めた画を暗くする板（一時停止と同じ暗さ）。
-	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
-	const unsigned kEmptyCellColor = VertexColor::pack( 0.08f, 0.08f, 0.08f, 0.85f );
-	// 物のあるマスの背景（どの物も同じ。物の見分けは絵で付ける）。空のマスより少し明るくして、物のある所が分かるように。
-	const float kItemCellGray = 0.2f;
-	const float kItemAlpha = 0.9f;
-	const float kOpaque = 1.f;        // 絵はそのままの色・濃さで貼る（白を掛ける）
-	const float kLiftedAlpha = 0.35f; // 持ち上げている物の元の場所（薄くして、どれを動かしているか分かるように）
-	const unsigned kAmountPlateColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.65f );
+	// 後ろの町を透かして見せる濃さ（InventoryPickup_Plan.txt Q6。ユーザー指定の 0.5）。暗くする板とマスの背景に使い、物の絵と文字は濃いまま。
+	// 一時停止（0.6）より薄い。
+	const float kPanelAlpha = 0.5f;
+	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );
 	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
 	const unsigned kHintColor = VertexColor::pack( 0.65f, 0.65f, 0.65f );
 	const unsigned kHeadingColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // ボタンを選んだ色と同じ黄
@@ -78,31 +71,12 @@ namespace{
 	const unsigned kMenuSelectedColor = VertexColor::pack( 0.85f, 0.65f, 0.15f, 0.95f );
 	const unsigned kMenuSelectedTextColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );
 
-	unsigned itemColor( ItemId id, float alpha ) {
-		const ItemSpec& spec = itemSpec( id );
-		return VertexColor::pack( spec.red, spec.green, spec.blue, alpha );
-	}
-
-	// area の内側 kIconInset に、絵の縦横の比を保って収まる一番大きい長方形（真ん中に置く）。
-	// 2 マスの物の範囲（132×64）は絵（2 : 1）とわずかに比が違うので、引き伸ばさずに収める。
-	UiRect fitIcon( const UiRect& area, const Graphics::Texture& texture ) {
-		float maxWidth = area.width - kIconInset * kBothSides;
-		float maxHeight = area.height - kIconInset * kBothSides;
-		float aspect = static_cast< float >( texture.originalWidth() ) / static_cast< float >( texture.originalHeight() );
-		UiRect rect;
-		rect.width = std::min( maxWidth, maxHeight * aspect );
-		rect.height = rect.width / aspect;
-		rect.left = area.left + ( area.width - rect.width ) * kHalf;
-		rect.top = area.top + ( area.height - rect.height ) * kHalf;
-		return rect;
-	}
-
 	float gridWidth( const ItemGrid& grid ) {
-		return grid.columns() * kCellWidth + ( grid.columns() - 1 ) * kCellGap;
+		return ItemGridView::width( grid, kCellSize );
 	}
 
 	float gridHeight( const ItemGrid& grid ) {
-		return grid.rows() * kCellHeight + ( grid.rows() - 1 ) * kCellGap;
+		return ItemGridView::height( grid, kCellSize );
 	}
 
 	// マス目の左上（画素。画面の真ん中に置く）。
@@ -115,6 +89,7 @@ namespace{
 
 InventoryScreen::InventoryScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
+	mView( renderer, &mIcons ),
 	mMode( Mode::Browse ),
 	mSelected( 0 ),
 	mMenuCount( 0 ),
@@ -123,6 +98,22 @@ InventoryScreen::InventoryScreen( UiRenderer* renderer ) :
 	mPreviousCursor( 0.f, 0.f ) {
 	static_assert( MENU_ITEM_NUMBER == kMenuCapacity, "kMenuCapacity must hold every MenuItem" );
 	ASSERT( mRenderer && "InventoryScreen : renderer is null." );
+	mView.setCellAlpha( kPanelAlpha );
+}
+
+void InventoryScreen::openForPlacing( const Inventory& inventory, const ItemStack& incoming ) {
+	mMode = Mode::Placing;
+	mSelected = 0;
+	for ( int cell = 0; cell < inventory.grid().cellCount(); ++cell ) {
+		if ( inventory.countPlaceableInto( cell, incoming ) > 0 ) {
+			mSelected = cell; // 入る最初のマス（決定を 1 回押すだけで入れられるように）
+			break;
+		}
+	}
+}
+
+bool InventoryScreen::isPlacing() const {
+	return mMode == Mode::Placing;
 }
 
 void InventoryScreen::open() {
@@ -142,13 +133,17 @@ bool InventoryScreen::back() {
 	return true;
 }
 
-InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, ItemId equipped ) {
+InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, ItemId equipped, const ItemStack* incoming ) {
 	const Request nothing = { Request::NONE, kNone };
 	ASSERT( inventory && "InventoryScreen::handleInput : inventory is null." );
 	UiInput input = UiInput::read( mPreviousCursor );
 	mPreviousCursor = input.cursor;
 	const ItemGrid& grid = inventory->grid();
 	forgetStale( grid );
+	layout( grid );
+	if ( mMode == Mode::Placing && !incoming ) {
+		mMode = Mode::Browse; // 拾う物が無くなった（全部入れた）
+	}
 
 	if ( mMode == Mode::Menu ) {
 		int pointed = menuAt( grid, input.cursor );
@@ -175,12 +170,15 @@ InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, Ite
 		return nothing;
 	}
 
-	// Browse と Moving は、どちらもマスを選ぶ（Moving は置く所を選ぶ）。
-	int pointed = cellAt( grid, input.cursor );
+	// Browse・Moving・Placing は、どれもマスを選ぶ（Moving・Placing は置く所を選ぶ）。
+	int pointed = mView.cellAt( grid, input.cursor );
 	if ( input.cursorMoved && pointed != kNone ) {
 		mSelected = pointed;
 	}
 	moveSelection( input.upPressed, input.downPressed, input.leftPressed, input.rightPressed, grid );
+	if ( mMode == Mode::Placing && InputQuickPlace() ) {
+		return { Request::QUICK_PLACE, kNone };
+	}
 	bool decided = input.decidePressed;
 	if ( input.clicked && pointed != kNone ) {
 		mSelected = pointed;
@@ -188,6 +186,10 @@ InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, Ite
 	}
 	if ( !decided ) {
 		return nothing;
+	}
+	if ( mMode == Mode::Placing ) {
+		// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）。
+		return ( inventory->countPlaceableInto( mSelected, *incoming ) > 0 ) ? Request{ Request::PLACE, mSelected } : nothing;
 	}
 	if ( mMode == Mode::Moving ) {
 		place( inventory );
@@ -275,37 +277,18 @@ void InventoryScreen::place( Inventory* inventory ) {
 	back();
 }
 
-UiRect InventoryScreen::cellRect( const ItemGrid& grid, int cell ) const {
-	return spanRect( grid, cell, 1 );
-}
-
-UiRect InventoryScreen::spanRect( const ItemGrid& grid, int owner, int size ) const {
-	Vector2 origin = gridOrigin( grid );
-	UiRect rect;
-	rect.left = origin.x + ( owner % grid.columns() ) * ( kCellWidth + kCellGap );
-	rect.top = origin.y + ( owner / grid.columns() ) * ( kCellHeight + kCellGap );
-	rect.width = size * kCellWidth + ( size - 1 ) * kCellGap;
-	rect.height = kCellHeight;
-	return rect;
+void InventoryScreen::layout( const ItemGrid& grid ) {
+	mView.setLayout( gridOrigin( grid ), kCellSize );
 }
 
 UiRect InventoryScreen::menuRect( const ItemGrid& grid, int index ) const {
 	Vector2 origin = gridOrigin( grid );
 	UiRect rect;
 	rect.left = origin.x + gridWidth( grid ) + kMenuGap;
-	rect.top = cellRect( grid, mSelected ).top + index * ( kMenuHeight + kMenuSpacing );
+	rect.top = mView.cellRect( grid, mSelected ).top + index * ( kMenuHeight + kMenuSpacing );
 	rect.width = kMenuWidth;
 	rect.height = kMenuHeight;
 	return rect;
-}
-
-int InventoryScreen::cellAt( const ItemGrid& grid, const Vector2& point ) const {
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( cellRect( grid, i ).contains( point ) ) {
-			return i;
-		}
-	}
-	return kNone;
 }
 
 int InventoryScreen::menuAt( const ItemGrid& grid, const Vector2& point ) const {
@@ -317,9 +300,10 @@ int InventoryScreen::menuAt( const ItemGrid& grid, const Vector2& point ) const 
 	return kNone;
 }
 
-void InventoryScreen::draw( const Inventory& inventory, ItemId equipped ) {
+void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming ) {
 	const ItemGrid& grid = inventory.grid();
 	forgetStale( grid );
+	layout( grid );
 	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）。
 	UiRect screen;
 	screen.left = 0.f;
@@ -330,110 +314,44 @@ void InventoryScreen::draw( const Inventory& inventory, ItemId equipped ) {
 
 	Vector2 heading( UiLayout::anchorX( UI_ANCHOR_CENTER ), gridOrigin( grid ).y - kHeadingGap );
 	mRenderer->addText( kHeading, heading, UI_TEXT_LARGE, UI_ALIGN_CENTER, kHeadingColor );
-	drawCells( grid );
-	drawEquippedMark( grid, equipped );
-	drawSelection( inventory );
+	if ( exits ) {
+		Vector2 exitsLine( heading.x, gridOrigin( grid ).y - kExitsGap );
+		mRenderer->addText( exits, exitsLine, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+	}
+	mView.drawCells( grid, ( mMode == Mode::Moving ) ? mMovingFrom : kNone );
+	mView.drawMark( grid, equipped, kEquippedMark );
+	drawSelection( inventory, incoming );
 	if ( mMode == Mode::Menu ) {
 		drawMenu( grid );
 	}
-	drawFooter( grid );
+	drawFooter( grid, incoming );
 	mRenderer->draw();
 }
 
-void InventoryScreen::drawCells( const ItemGrid& grid ) {
-	// ① 背景（長方形だけ）。物のマスは同じ灰。絵が読めなかった物だけ、物の色で塗る（名前は選ぶと下の欄に出る）。
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( grid.ownerCell( i ) == kNone ) {
-			mRenderer->addRect( cellRect( grid, i ), kEmptyCellColor );
-		}
-	}
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( grid.ownerCell( i ) != i ) {
-			continue; // 空のマスか、2 マスの物の右のマス
-		}
-		ItemId item = grid.stackAt( i ).item;
-		float alpha = ( mMode == Mode::Moving && i == mMovingFrom ) ? kLiftedAlpha : kItemAlpha;
-		unsigned color = mIcons.icon( item ) ? VertexColor::pack( kItemCellGray, kItemCellGray, kItemCellGray, alpha ) : itemColor( item, alpha );
-		mRenderer->addRect( spanRect( grid, i, itemSpec( item ).cellSize ), color );
-	}
-	// ② 物の絵（まとめて積む）。持ち上げている物の元の場所は、背景と同じく薄くする。
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( grid.ownerCell( i ) != i ) {
-			continue;
-		}
-		ItemId item = grid.stackAt( i ).item;
-		const Graphics::Texture* icon = mIcons.icon( item );
-		if ( !icon ) {
-			continue;
-		}
-		float alpha = ( mMode == Mode::Moving && i == mMovingFrom ) ? kLiftedAlpha : kOpaque;
-		UiRect area = spanRect( grid, i, itemSpec( item ).cellSize );
-		mRenderer->addImage( fitIcon( area, *icon ), *icon, VertexColor::pack( kOpaque, kOpaque, kOpaque, alpha ) );
-	}
-	// ③ 数（絵の上に重ねる）。
-	drawAmounts( grid );
-}
-
-void InventoryScreen::drawAmounts( const ItemGrid& grid ) {
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( grid.ownerCell( i ) != i ) {
-			continue;
-		}
-		const ItemStack& stack = grid.stackAt( i );
-		const ItemSpec& spec = itemSpec( stack.item );
-		// 重ねられる物だけ数を出す（ガソリンのように 1 つずつの物は数を出さない）。
-		if ( spec.stackSize <= 1 ) {
-			continue;
-		}
-		UiRect area = spanRect( grid, i, spec.cellSize );
-		UiRect plate;
-		plate.width = kAmountPlateWidth;
-		plate.height = kAmountPlateHeight;
-		plate.left = area.right() - kAmountInset - plate.width;
-		plate.top = area.bottom() - kAmountInset - plate.height;
-		mRenderer->addRect( plate, kAmountPlateColor );
-		// 板の真ん中に置く（2 桁まで。文字の幅は UiRenderer の外から測れないので、右揃えではなく板の中央揃えにする）。
-		std::string amount = std::to_string( stack.amount );
-		mRenderer->addText( amount.c_str(), plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
-	}
-}
-
-void InventoryScreen::drawEquippedMark( const ItemGrid& grid, ItemId equipped ) {
-	if ( equipped == ITEM_NONE ) {
-		return; // 素手
-	}
-	for ( int i = 0; i < grid.cellCount(); ++i ) {
-		if ( grid.ownerCell( i ) != i || grid.stackAt( i ).item != equipped ) {
-			continue;
-		}
-		UiRect area = cellRect( grid, i );
-		UiRect plate;
-		plate.left = area.left + kAmountInset;
-		plate.top = area.top + kAmountInset;
-		plate.width = kMarkPlateSize;
-		plate.height = kMarkPlateSize;
-		mRenderer->addRect( plate, kAmountPlateColor );
-		mRenderer->addText( kEquippedMark, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHeadingColor );
-		return; // 銃は 1 種類 1 丁だけ
-	}
-}
-
-void InventoryScreen::drawSelection( const Inventory& inventory ) {
+void InventoryScreen::drawSelection( const Inventory& inventory, const ItemStack* incoming ) {
 	const ItemGrid& grid = inventory.grid();
+	if ( mMode == Mode::Placing && incoming ) {
+		// 入れようとしている所に、拾った物を薄く重ね、その大きさの枠。入らない所は赤（入るのは空き・同じ物に重ねるだけ）。
+		int target = grid.placementCell( incoming->item, mSelected );
+		bool fits = inventory.countPlaceableInto( mSelected, *incoming ) > 0;
+		mView.drawGhost( grid, target, *incoming );
+		mView.addFrame( mView.spanRect( grid, target, itemSpec( incoming->item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
+		return;
+	}
 	if ( mMode == Mode::Moving ) {
 		// 置く所に、持ち上げている物の大きさの枠。入らない所は赤。
 		ItemId item = grid.stackAt( mMovingFrom ).item;
 		int target = grid.placementCell( item, mSelected );
 		bool fits = ( target == mMovingFrom ) || inventory.canMove( mMovingFrom, mSelected );
-		addFrame( spanRect( grid, target, itemSpec( item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
+		mView.addFrame( mView.spanRect( grid, target, itemSpec( item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
 		return;
 	}
 	// 物のマスなら、その物全体（2 マスの物は 1 行）に枠。
 	int owner = grid.ownerCell( mSelected );
 	if ( owner == kNone ) {
-		addFrame( cellRect( grid, mSelected ), kFrameThickness, kSelectColor );
+		mView.addFrame( mView.cellRect( grid, mSelected ), kFrameThickness, kSelectColor );
 	} else {
-		addFrame( spanRect( grid, owner, itemSpec( grid.stackAt( owner ).item ).cellSize ), kFrameThickness, kSelectColor );
+		mView.addFrame( mView.spanRect( grid, owner, itemSpec( grid.stackAt( owner ).item ).cellSize ), kFrameThickness, kSelectColor );
 	}
 }
 
@@ -446,34 +364,32 @@ void InventoryScreen::drawMenu( const ItemGrid& grid ) {
 	}
 }
 
-void InventoryScreen::drawFooter( const ItemGrid& grid ) {
+void InventoryScreen::drawFooter( const ItemGrid& grid, const ItemStack* incoming ) {
 	Vector2 position( UiLayout::anchorX( UI_ANCHOR_CENTER ), gridOrigin( grid ).y + gridHeight( grid ) + kFooterGap );
 	int owner = grid.ownerCell( mSelected );
 	const char* name = ( owner == kNone ) ? kEmptyName : itemSpec( grid.stackAt( owner ).item ).name;
+	char text[ kTextSize ];
 	if ( mMode == Mode::Moving ) {
 		name = itemSpec( grid.stackAt( mMovingFrom ).item ).name; // 持ち上げている物
+	} else if ( mMode == Mode::Placing && incoming ) {
+		// 拾って持っている物（重ねられる物は、まだ入れていない数も）。
+		const ItemSpec& spec = itemSpec( incoming->item );
+		if ( spec.stackSize > 1 ) {
+			std::snprintf( text, sizeof( text ), kPickupAmountFormat, spec.name, incoming->amount );
+		} else {
+			std::snprintf( text, sizeof( text ), kPickupFormat, spec.name );
+		}
+		name = text;
 	}
 	mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	const char* hint = kBrowseHint;
 	if ( mMode == Mode::Menu ) {
 		hint = kMenuHint;
+	} else if ( mMode == Mode::Placing ) {
+		hint = kPlacingHint;
 	} else if ( mMode == Mode::Moving ) {
 		hint = kMovingHint;
 	}
 	position.y += kFooterLineHeight;
 	mRenderer->addText( hint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
-}
-
-void InventoryScreen::addFrame( const UiRect& rect, float thickness, unsigned color ) {
-	UiRect edge = rect;
-	edge.height = thickness;
-	mRenderer->addRect( edge, color ); // 上
-	edge.top = rect.bottom() - thickness;
-	mRenderer->addRect( edge, color ); // 下
-	edge.top = rect.top;
-	edge.height = rect.height;
-	edge.width = thickness;
-	mRenderer->addRect( edge, color ); // 左
-	edge.left = rect.right() - thickness;
-	mRenderer->addRect( edge, color ); // 右
 }

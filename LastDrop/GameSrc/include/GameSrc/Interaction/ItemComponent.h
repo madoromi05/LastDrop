@@ -5,11 +5,11 @@
 #include "GameSrc/Interaction/ItemCatalog.h"
 #include "GameLib/GameLib.h"
 
-// この物が何のアイテムで、いくつあるか（落ちているガソリン・落ちた弾・何度でも拾える置き場）。
-// どう渡すか（拾うと減って消える・何度でも渡す）は、同じ物の PickupComponent・ItemSourceComponent が決める。
+// この物が何のアイテムで、いくつあるか（落ちているガソリン・落ちた弾・落ちている銃）。
+// どう渡すか（拾うと減って消える）は、同じ物の PickupComponent が決める。
 class ItemComponent : public Component{
 public:
-	// item: 何のアイテムか。amount: いくつあるか（1 以上。何度でも渡す置き場では 1 回に渡す数）。
+	// item: 何のアイテムか。amount: いくつあるか（1 以上）。
 	ItemComponent( ItemId item, int amount ) :
 		mItem( item ),
 		mAmount( amount ){
