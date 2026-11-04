@@ -50,8 +50,75 @@ namespace{
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
 
-	// カバンの中身（種類ごとの数）と、足す・行を増やす／減らすボタン（GridInventory_Plan.txt。拠点・強化ができる前に試すため）。
-	// Add は重ねられる物なら 1 マスぶん（弾なら 30 発）、入る分だけ足す。
+	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く）。ガソリンは車へ運ぶ遊びの物なので、ここでは触らない。
+	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM };
+	// 一度に足す・減らす数。上限は弾を 1 回で十分に持てる数（カバンの空きのほうが先に尽きる）。
+	const int kMinItemAmount = 1;
+	const int kMaxItemAmount = 999;
+	const int kWeaponLimit = 1;   // 銃は 1 種類 1 丁（ItemCatalog.h の ITEM_PISTOL の説明）
+	const ImVec4 kBagFullColor( 1.f, 0.85f, 0.2f, 1.f ); // 入りきらなかった知らせ（見落とさないよう黄色）
+
+	int gItemAmount = kMinItemAmount; // Amount の欄の値
+	// 最後に押した Add が入りきらなかったときの結果（入った数・入れたかった数）。全部入ったら wanted を 0 にして消す。
+	struct AddResult{
+		ItemId item;
+		int added;
+		int wanted;
+	};
+	AddResult gLastAdd = { ITEM_NONE, 0, 0 };
+
+	// id を amount 個まで、入る分だけ足す。入った数を返す。
+	int addItems( ItemId id, int amount ) {
+		int added = 0;
+		while ( added < amount && gInventory->canAdd( id ) ) {
+			gInventory->add( id );
+			++added;
+		}
+		return added;
+	}
+
+	// id を amount 個まで、持っている分だけ減らす（手に持っている銃を消すと、HoldComponent が素手にする）。
+	void removeItems( ItemId id, int amount ) {
+		for ( int n = gInventory->count( id ); n > 0 && amount > 0; --n, --amount ) {
+			gInventory->remove( id );
+		}
+	}
+
+	// カバンを全部空にする（ガソリンも含む）。中身を持つマスごとに取り出す。
+	void clearInventory() {
+		const ItemGrid& grid = gInventory->grid();
+		for ( int cell = 0; cell < grid.cellCount(); ++cell ) {
+			if ( grid.ownerCell( cell ) == cell ) {
+				gInventory->takeAll( cell );
+			}
+		}
+	}
+
+	// 1 種類の行（Add・Remove・持っている数）。銃は 1 丁持っていれば Add を押せなくする。
+	void drawItemRow( ItemId id ) {
+		const ItemSpec& spec = itemSpec( id );
+		int count = gInventory->count( id );
+		bool atLimit = ( spec.kind == ITEM_KIND_WEAPON ) && ( count >= kWeaponLimit );
+		ImGui::PushID( id );
+		ImGui::BeginDisabled( atLimit );
+		if ( ImGui::SmallButton( "Add" ) ) {
+			int added = addItems( id, gItemAmount );
+			gLastAdd = { id, added, ( added < gItemAmount ) ? gItemAmount : 0 };
+		}
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		ImGui::BeginDisabled( count == 0 );
+		if ( ImGui::SmallButton( "Remove" ) ) {
+			removeItems( id, gItemAmount );
+		}
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		ImGui::Text( "%s: %d", spec.name, gInventory->count( id ) );
+		ImGui::PopID();
+	}
+
+	// カバンの中身を好きに出し入れする欄（GridInventory_Plan.txt。拾いに行かずに銃と弾を試すため）。
+	// 上に行の数・Amount・Clear、その下に 1 種類 1 行。Add / Remove は Amount の数だけ（入る分・持っている分まで）。
 	void drawInventory() {
 		if ( !gInventory ) {
 			ImGui::TextDisabled( "No bag." );
@@ -67,18 +134,20 @@ namespace{
 		if ( ImGui::SmallButton( "Row +" ) ) {
 			gInventory->setRows( grid.rows() + 1 );
 		}
-		for ( int i = 0; i < ITEM_NUMBER; ++i ) {
-			ItemId id = static_cast< ItemId >( i );
-			const ItemSpec& spec = itemSpec( id );
-			ImGui::PushID( i );
-			if ( ImGui::SmallButton( "Add" ) ) {
-				for ( int n = 0; n < spec.stackSize && gInventory->canAdd( id ); ++n ) {
-					gInventory->add( id );
-				}
-			}
-			ImGui::SameLine();
-			ImGui::Text( "%s: %d", spec.name, gInventory->count( id ) );
-			ImGui::PopID();
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x * kSliderWidthRatio );
+		if ( ImGui::InputInt( "Amount", &gItemAmount ) ) {
+			gItemAmount = ( gItemAmount < kMinItemAmount ) ? kMinItemAmount : ( ( gItemAmount > kMaxItemAmount ) ? kMaxItemAmount : gItemAmount );
+		}
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Clear" ) ) {
+			clearInventory();
+			gLastAdd.wanted = 0;
+		}
+		for ( ItemId id : kDebugItems ) {
+			drawItemRow( id );
+		}
+		if ( gLastAdd.wanted > 0 ) {
+			ImGui::TextColored( kBagFullColor, "Bag full: %s added %d / %d", itemSpec( gLastAdd.item ).name, gLastAdd.added, gLastAdd.wanted );
 		}
 	}
 

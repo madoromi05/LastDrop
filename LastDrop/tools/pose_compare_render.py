@@ -20,7 +20,7 @@ P = "mixamorig:"
 ARM_PREFIX = (P + "LeftShoulder", P + "LeftArm", P + "LeftForeArm", P + "LeftHand", P + "RightShoulder", P + "RightArm", P + "RightForeArm", P + "RightHand")
 
 RIFLE = dict(in_hand=(0.354, 0.38, -9.102), rot=(-156.062, 2.115, 89.224), grip=(0, 1.438, -0.169), muzzle=(0, 1.541, 0.471))
-PISTOL = dict(in_hand=(-0.706, 1.342, -10.76), rot=(-2.956, -157.73, -84.344), grip=(0, -0.0238, -0.1084), muzzle=(0, 0.095, 0.1502))
+PISTOL = dict(in_hand=(-0.706, 1.342, -10.76), rot=(-2.956, -157.73, -84.344), grip=(-0.008, -0.0268, -0.122), muzzle=(0, 0.1069, 0.169))
 
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 PISTOL_READY = args[0] if args else D + "Pistol/pistol_ready.fbx"

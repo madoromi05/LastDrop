@@ -8,7 +8,7 @@
 //   Perf  ：計測の数字・グラフ・区間・印・ロード・GPU（中身は GameLib の Profiling::drawPerfPanel）
 //   Tuning：調整値の構造体（TuningPanel。自キャラ・銃・視点・ゾンビの群れ。プリセットの保存・読み込みと Copy as C++）
 //   Objects：世界に置いた物の一覧（Unity の Hierarchy。名前・タグ・部品の数。ComponentSystem2_Plan.txt の ★6）
-//   Inventory：カバンの中身を足す・行を増やす／減らす（GridInventory_Plan.txt。拠点・強化ができる前に試すため）
+//   Inventory：銃 2 種と弾 2 種を好きな数だけ足す・減らす・カバンを空にする・行を増やす／減らす（GridInventory_Plan.txt。拾いに行かずに試すため）
 //   Zombies / Audio：まだ灰色の見出しだけ
 // ImGui の土台（開け閉め・入力の受け渡し）は GameLib の DebugUi が持つ。ここは窓の中身だけ。
 class GameObjectWorld;

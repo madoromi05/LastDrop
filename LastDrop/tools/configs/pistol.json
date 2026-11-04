@@ -5,7 +5,7 @@
     "split_vertices": true,
     "resource_root": "../..",
     "mesh_names": ["gun", "barrel", "slide", "loader", "safety-R", "safety-L", "slide-lock", "hammer", "trigger", "magazine-release"],
-    "scale": 1.6,
+    "scale": 1.8,
     "texture_export_size": 1024,
     "texture_sources": {
         "mesh_texture": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_BaseColor.png",

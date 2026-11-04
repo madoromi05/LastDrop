@@ -5,7 +5,7 @@
     "split_vertices": true,
     "resource_root": "../..",
     "mesh_names": ["magazine", "magazine-bullet"],
-    "scale": 1.6,
+    "scale": 1.8,
     "texture_export_size": 0,
     "mesh_texture": "Resource/pistol_albedo.tga",
     "mesh_normalmap": "Resource/pistol_normal.tga",
