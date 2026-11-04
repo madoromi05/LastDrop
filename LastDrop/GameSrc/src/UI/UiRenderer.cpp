@@ -31,6 +31,9 @@ namespace{
 	const int kTextCapacity = 256;
 
 	const float kHalf = 0.5f;
+	// 絵の UV（絵の全体を貼る）。GameLib は TGA を上の行から並べて読むので、v = 0 が絵の上。
+	const float kImageUvTopLeft = 0.f;
+	const float kImageUvBottomRight = 1.f;
 	const float kDefaultGlyphScale = 1.f; // 画面の大きさが分からないときの、文字の絵の細かさ（座標と同じ）
 	// 最初に文字の絵を作っておく範囲（ASCII の表示できる文字すべて。空白〜チルダ）。
 	const int kFirstPrintableChar = 0x20;
@@ -72,7 +75,17 @@ void UiRenderer::fitFontsToScreen() {
 }
 
 void UiRenderer::addRect( const UiRect& rect, unsigned color ) {
+	// 前に積んだ絵が付いたままにならないように外す（PrimitiveRenderer は、絵が変わったときだけ描くまとまりを分ける）。
+	mPrimitives.setTexture( Graphics::Texture() );
 	mPrimitives.addRectangle( Vector2( rect.left, rect.top ), Vector2( rect.right(), rect.bottom() ), color );
+}
+
+void UiRenderer::addImage( const UiRect& rect, const Graphics::Texture& texture, unsigned color ) {
+	ASSERT( texture && "UiRenderer::addImage : texture is null." );
+	mPrimitives.setTexture( texture );
+	mPrimitives.addRectangle(
+		Vector2( rect.left, rect.top ), Vector2( rect.right(), rect.bottom() ),
+		Vector2( kImageUvTopLeft, kImageUvTopLeft ), Vector2( kImageUvBottomRight, kImageUvBottomRight ), color );
 }
 
 void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize size, UiAlign align, unsigned color ) {
@@ -98,11 +111,13 @@ void UiRenderer::prepareRectState() {
 }
 
 void UiRenderer::draw() {
-	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。絵は実際の画面とほぼ同じ細かさなので、点で読んでも粗くならない。
-	// 描き終えたら 3D 用の読み方へ戻す。
-	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
+	// 長方形と絵は線形で読む（物の絵は 256 画素の絵を小さく縮めて貼るので、点で読むとギザギザになる。色だけの長方形には効かない）。
+	// 文字は画素をにじませない（中央揃えは半画素ずれた所に置くことがある）。文字の絵は実際の画面とほぼ同じ細かさなので、点で読んでも粗くならない。
+	// 描き終えたら 3D 用の読み方（線形）へ戻す。
+	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 	mPrimitives.draw();
 	prepareRectState(); // 次の描画で積む長方形に効かせる（理由は prepareRectState の宣言）
+	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
 		mStrings[ i ].draw();
 	}

@@ -56,9 +56,9 @@ public:
 	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・ゾンビの腕が当たった怯み）と、見える絵の揺れ、
 	// 照準のぶれ（銃と弾の向きだけ。AimSway）を進めてカメラへ渡す。
 	// 1ティックに1回、キャラを動かした後（flinch の後）に呼ぶ。
-	// fired: このティックに1発撃ったか（PlayerCharacter::firedThisTick）。
+	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0。
 	// body: 自キャラの今の状態（PlayerCharacter::aimSwayBody。自キャラがいなければ既定のまま＝ぶれない）。
-	void updateViewEffects( bool fired, const AimSwayBody& body );
+	void updateViewEffects( float shotRecoil, const AimSwayBody& body );
 	// ゾンビの腕が当たった瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
 	void flinch();
 	// 目の位置から下げる長さ（m。0 以上）。死んだ後に膝から崩れて見せるのに使う。placeCamera で渡された目の位置から引く。

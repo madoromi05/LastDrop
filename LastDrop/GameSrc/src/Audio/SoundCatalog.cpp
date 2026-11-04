@@ -98,6 +98,9 @@ namespace{
 		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "flashlight_click",  kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		// 聞こえる距離はライフルの銃声と同じ。素材は頭に無音が無い。
+		// 元の素材名: "Weapon Gun Pistol 9mm Glock Single Shot Interior Shooting Range Short 01.wav"
+		{ "pistol_shot",       kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kFromStart },
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

@@ -13,16 +13,16 @@ public:
 	// seed: 左右のぶれの乱数の種。
 	explicit AimRecoil( int seed );
 
-	// 1ティック進める。fired: このティックに1発撃ったか。
-	void update( bool fired );
+	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0。
+	void update( float shotRecoil );
 	// 狙いの上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き）。
 	float pitchOffset() const;
 	// 狙いの左右へ足す角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）。
 	float yawOffset() const;
 
 private:
-	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。
-	void kick();
+	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。scale: 足す量に掛ける反動の大きさ。
+	void kick( float scale );
 
 	GameLib::Math::Random mRandom;
 	float mRise;       // 上がっている角度（度。正が上）

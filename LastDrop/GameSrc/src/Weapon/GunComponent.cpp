@@ -3,7 +3,11 @@
 
 #include <algorithm>
 
-GunComponent::GunComponent() :
+GunComponent::GunComponent( const WeaponSpec& spec ) :
+	mSpec( &spec ),
+	mFire( spec.roundsPerMinute, spec.fullAuto ),
+	mMagazine( spec.magazineCapacity ),
+	mReload( spec.reload, spec.emptyReload ),
 	mFiredThisTick( false ),
 	mDryFiredThisTick( false ),
 	mDryFireLatched( false ) {
@@ -28,6 +32,10 @@ void GunComponent::pullTrigger( bool pulling, bool triggerHeld ) {
 	mFiredThisTick = true;
 }
 
+const WeaponSpec& GunComponent::spec() const {
+	return *mSpec;
+}
+
 void GunComponent::updateRecoil() {
 	mRecoil.update( mFiredThisTick );
 }
@@ -37,11 +45,11 @@ float GunComponent::recoilKick() const {
 }
 
 bool GunComponent::canStartReload( const Inventory& inventory ) const {
-	return !mReload.isActive() && mMagazine.missingRounds() > 0 && inventory.count( ITEM_AMMO ) > 0;
+	return !mReload.isActive() && mMagazine.missingRounds() > 0 && inventory.count( mSpec->ammo ) > 0;
 }
 
 void GunComponent::startReload() {
-	mReload.start();
+	mReload.start( mMagazine.isEmpty() );
 }
 
 void GunComponent::cancelReload() {
@@ -53,9 +61,9 @@ void GunComponent::updateReload( Inventory* inventory ) {
 		return;
 	}
 	// 込め終えた。予備から弾倉の足りない分だけ移す（予備が足りなければ、ある分だけ）。
-	int count = std::min( mMagazine.missingRounds(), inventory->count( ITEM_AMMO ) );
+	int count = std::min( mMagazine.missingRounds(), inventory->count( mSpec->ammo ) );
 	for ( int i = 0; i < count; ++i ) {
-		inventory->remove( ITEM_AMMO );
+		inventory->remove( mSpec->ammo );
 	}
 	mMagazine.load( count );
 }

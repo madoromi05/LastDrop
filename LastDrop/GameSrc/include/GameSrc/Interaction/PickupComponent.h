@@ -28,7 +28,6 @@ public:
 	virtual void start();
 	// IInteractable
 	virtual bool canInteract( const Inventory& inventory ) const;
-	virtual std::string prompt( const Inventory& inventory ) const;
 	virtual void interact( Inventory* inventory );
 
 private:

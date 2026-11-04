@@ -1,0 +1,21 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/source/FP_AKM_binary.fbx",
+    "out_path": "../../Resource/rifle_ground.txt",
+    "split_vertices": true,
+    "resource_root": "../..",
+    "texture_export_size": 0,
+    "rotation": [0.0, 90.0, 0.0],
+    "center_origin": true,
+    "mesh_texture": "Resource/rifle_albedo.tga",
+    "mesh_normalmap": "Resource/rifle_normal.tga",
+    "mesh_orm": "Resource/rifle_orm.tga",
+    "mesh_orm_export": false,
+    "material_params": {
+        "roughness": 1.0,
+        "metallic": 1.0,
+        "specular": [0.15, 0.15, 0.15],
+        "sharpness": 24.0,
+        "normalstrength": 0.6
+    }
+}

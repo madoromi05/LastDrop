@@ -87,6 +87,10 @@ void PlayerComponent::update() {
 	if ( moving ) {
 		mLocomotion->setMoveDirection( direction );
 	}
+	// 捨てた銃を手から外し、素手ならカバンの銃を持つ（このティックの構え・撃つより前に）。
+	if ( hold ) {
+		hold->syncWithInventory( *mInventory );
+	}
 	GunComponent* gun = hold ? hold->gun() : nullptr;
 	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）。
 	bool reloading = gun && gun->isReloading();

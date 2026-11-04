@@ -44,6 +44,8 @@ public:
 	void setWeapon( int handBone, const GameLib::Math::Matrix34& grip, const GameLib::Math::Vector3& sightEye,
 		int supportHandBone, const GameLib::Math::Vector3& supportHandOnWeapon,
 		const GameLib::Math::Vector3& weaponMin, const GameLib::Math::Vector3& weaponMax );
+	// 銃を持たない（素手）に戻す。銃に合わせる補正（両手持ち・覗く・反動・ぶれ・胸元への寄せ）が効かなくなる。
+	void clearWeapon();
 	// 両手持ちの効き具合（0 = 右手首を曲げない、1 = 銃の先が左手を向く）。武器をしまっている間は 0 にする。
 	void setHoldWeight( float weight );
 	// 覗き具合（0 = アニメのまま、1 = サイト線が目と視線にぴったり重なる）。
@@ -56,7 +58,13 @@ public:
 	void setSway( float yawDegree, float pitchDegree );
 	// 腕を差し替えるポーズ（AnimationPoseSampler::sample の結果）と効き具合（0〜1）。pose が nullptr か weight が 0 なら差し替えない。
 	// pose は借りるだけ（次の apply まで中身を変えないこと）。腕がアニメで銃から手を離すので、両手持ちの補正（setHoldWeight）は呼び出し側が弱める。
-	void setArmOverride( const std::vector< GameLib::Math::Matrix34 >* pose, float weight );
+	// followReference：pose を作ったときの体のアニメの右手（銃の手。骨格の根の空間）。nullptr なら寄せない。
+	// followHandWeight：差し替えた腕を、今の体のアニメの右手が followReference からどれだけ動いたか（位置と向き）のとおりに、
+	// まとめて動かす割合（0〜1。0 なら胸に付けて写すだけ）。拳銃の構え（pistol_ready）はライフルの止まった構え（rifle_idle）の体の上で作ってあるので、
+	// 1 にすると、歩き・走りでも拳銃はライフルの右手と同じに動き、同じ所・同じ向きで持つ（PistolAnimation_Plan.txt 14-7）。
+	// followReference は借りるだけ（次の apply まで中身を変えないこと）。
+	void setArmOverride( const std::vector< GameLib::Math::Matrix34 >* pose, float weight, float followHandWeight,
+		const GameLib::Math::Matrix34* followReference );
 
 	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ。
 	const GameLib::Math::Vector3& eyePosition() const;
@@ -113,6 +121,8 @@ private:
 	float mSwayPitch;
 	const std::vector< GameLib::Math::Matrix34 >* mArmOverride; // 借りているだけ。nullptr なら差し替えない
 	float mArmOverrideWeight;
+	float mArmFollowHandWeight; // 差し替えた腕を今のアニメの右手へ寄せる割合（setArmOverride）
+	const GameLib::Math::Matrix34* mArmFollowReference; // 借りているだけ。寄せる基準の右手（setArmOverride）
 
 	GameLib::Math::Vector3 mEyePosition;
 	bool mHasWeaponBounds;                // mWeaponLow / mWeaponHigh を一度でも求めたか

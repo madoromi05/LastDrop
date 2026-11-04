@@ -13,7 +13,9 @@
 #include "GameSrc/Scene/Game/ZombieAttackSounds.h"
 #include "GameSrc/Scene/Game/PlayerDamageView.h"
 #include "GameSrc/Scene/Game/GameHud.h"
+#include "GameSrc/Scene/Game/InteractMarkers.h"
 #include "GameSrc/Scene/Game/PauseMenu.h"
+#include "GameSrc/Scene/Game/InventoryScreen.h"
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Render/GBuffer.h"
 #include "GameSrc/Render/DeferredLighting.h"
@@ -39,6 +41,7 @@ class DrawCulling;
 // 車にガソリンを決まった数だけ入れるとクリア画面へ進む。
 // ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、ゲームオーバー画面へ進む。
 // ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。
+// Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
@@ -52,6 +55,7 @@ class DrawCulling;
 //   攻撃された・死んだ後の見せ方の量    … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
 //   HUD                                 … GameHud
 //   一時停止のメニュー                  … PauseMenu
+//   カバンの画面                        … InventoryScreen
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
@@ -73,6 +77,17 @@ private:
 	void resume();
 	// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない。
 	void handlePausedInput();
+	// カバンを開く・閉じる。止め方は一時停止と同じ（世界を進めず、音を止め、カーソルを外す）。
+	// 開けるのは、自キャラが生きていて、観察用カメラを使っていない間だけ。
+	bool canOpenBag() const;
+	void openBag();
+	void closeBag();
+	// カバンを開いている間の入力（Tab・ESC で閉じる・マスの操作・捨てた物を足元に置く・銃を持ち替える）。ほかの入力は読まない。
+	void handleBagInput();
+	// cell の物を取り出して、自キャラの足元に置く（置けなければカバンへ戻す）。
+	void dropFromBag( int cell );
+	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
+	ItemId equippedWeapon() const;
 	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。
 	// camera：描くカメラ（目の位置はライトを選ぶ順番、目・向き・画角は月の影の枚の範囲に使う）。
 	void setupLights( const FirstPersonCamera& camera );
@@ -107,6 +122,7 @@ private:
 	WorldRenderer mRenderer;
 	Inventory mInventory;
 	Interactor mInteractor;
+	InteractMarkers mInteractMarkers; // 使える物の上のマーク（文字の案内の代わり）
 	FirstPersonControl mControl;
 	PlayerBodySounds mBodySounds;
 	ZombieHitSounds mZombieHitSounds;
@@ -115,6 +131,7 @@ private:
 	PlayerDamageView mDamageView;
 	GameHud mHud;
 	PauseMenu mPauseMenu;
+	InventoryScreen mInventoryScreen;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
 	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
@@ -135,6 +152,7 @@ private:
 #endif
 	bool mReady; // 世界の配置が済んだか
 	bool mPaused; // 一時停止しているか
+	bool mBagOpen; // カバンを開いているか（開いている間も世界は止まっている）
 };
 
 #endif

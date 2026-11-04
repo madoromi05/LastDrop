@@ -18,14 +18,15 @@ public:
 	struct Impact{
 		HitWorld::Hit hit;
 		GameLib::Math::Vector3 direction; // 弾の飛んでいた向き（長さ1）
+		float damage;                     // その弾のダメージ（部位の倍率を掛ける前。Bullet::damage）
 	};
 
 	// data: 弾頭の形と見た目（Resource/bullet_tip.txt）。所有権は受け取らない。nullptr 不可。このリストより長く生きていること（MeshCache が持つ）。
 	//       まだ構築中でもよい。構築に失敗したら、弾は飛んで当たるが描かれない。
 	explicit BulletList( const StaticMeshData* data );
 
-	// origin から direction（長さ1）へ1発撃ち出す。
-	void fire( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& direction );
+	// origin から direction（長さ1）へ1発撃ち出す。damage: その弾のダメージ（撃った銃の WeaponSpec::damage）。
+	void fire( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& direction, float damage );
 	// 全部の弾を1ティック進め、終わった弾（当たった・飛びきった）を消す。
 	// world / shooter: Bullet::update へそのまま渡す（当たりを聞く名簿と、当てないキャラ）。
 	// impacts: このティックに当たった所を後ろへ足す（前の中身は消さない）。nullptr 不可。

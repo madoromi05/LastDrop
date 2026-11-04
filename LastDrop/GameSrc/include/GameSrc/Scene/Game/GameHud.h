@@ -6,11 +6,11 @@
 class UiLabel;
 class UiRenderer;
 class FuelTankComponent;
-class Inventory;
 
-// 本編の HUD。見ている物の案内（画面の中央の少し下）、車のガソリンと持ち物（左下）を出す。
+// 本編の HUD。車のガソリン（左下）を出す。見ている物の文字の案内は出さない（物の上のマーク InteractMarkers に替えた。InteractMarker_Plan.txt）。
 // 自キャラの体力は出さない（バイオハザード式で隠す。心電図の表示は 2026-10-26 にユーザーが保留にした）。
-// 表示するだけで、ゲームの状態は変えない（車と持ち物を読むだけ）。文言と並べ方を変えるときは、このクラスだけを直す。
+// 持ち物も出さない（カバンの画面で見る。弾数を出さない 10-22 の決定と揃えた。GridInventory_Plan.txt Q11。2026-11-04 に「Carrying」を消した）。
+// 表示するだけで、ゲームの状態は変えない（車を読むだけ）。文言と並べ方を変えるときは、このクラスだけを直す。
 class GameHud{
 public:
 	// renderer: 描く道具（UiScreen へ渡す）。所有権は受け取らない。nullptr 不可。この HUD より長く生きていること。
@@ -19,15 +19,12 @@ public:
 	GameHud& operator=( const GameHud& ) = delete;
 
 	// 文字を今の状態にして描く。1回の描画につき1回、3D の後に呼ぶ（上に重ねるため）。
-	// prompt: 見ている物の案内（Interactor::prompt。見ている物が無ければ空文字列）。nullptr 不可。
 	// car: 脱出用の車。nullptr なら車のガソリンの行は書き換えない（車を置けなかったとき）。所有権は受け取らない。
-	void draw( const char* prompt, const FuelTankComponent* car, const Inventory& inventory );
+	void draw( const FuelTankComponent* car );
 
 private:
 	UiScreen mScreen;
-	UiLabel* mPromptLabel; // mScreen が持つ部品を借りる（文字を毎回書き換える）
-	UiLabel* mTankLabel;
-	UiLabel* mCarryLabel;
+	UiLabel* mTankLabel; // mScreen が持つ部品を借りる（文字を毎回書き換える）
 };
 
 #endif

@@ -30,6 +30,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
+	const float kNoShotRecoil = 0.f;   // 撃っていないティックの反動の大きさ（FirstPersonControl::updateViewEffects）
 
 	// ── 影（Shadow_Plan.txt 5 章）──
 	const int kFlashlightShadowSize = 1024; // 懐中電灯の影のマップの一辺（画素）
@@ -70,20 +71,23 @@ GameScene::GameScene( GameResources* resources ) :
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
+	mInventoryScreen( &resources->uiRenderer() ),
 	mFlashlightShadow( kFlashlightShadowSize ),
 	mFlashlightCastsShadow( false ),
 	mMoonShadow( kMoonShadowSize ),
 	mMoonCastsShadow( false ),
 	mReady( false ),
-	mPaused( false ) {
+	mPaused( false ),
+	mBagOpen( false ) {
 }
 
 GameScene::~GameScene() {
-	if ( mPaused ) {
+	if ( mPaused || mBagOpen ) {
 		mResources->audio().setPaused( false );
 	}
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
 	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
+	EditorWindow::setInventory( nullptr ); // カバンも同じ
 }
 
 void GameScene::pause() {
@@ -111,6 +115,72 @@ void GameScene::handlePausedInput() {
 	mPauseMenu.handleInput(); // Resume が押されたら、この中で resume が呼ばれる
 }
 
+bool GameScene::canOpenBag() const {
+	return mWorld.player() && !mWorld.isPlayerDead() && !isFreeCameraActive();
+}
+
+void GameScene::openBag() {
+	mBagOpen = true;
+	mInventoryScreen.open();
+	mResources->audio().setPaused( true );
+	mControl.clearInput();   // 押していた移動・撃つを放す（一時停止と同じ）
+	mControl.unlockCursor(); // マスをマウスで選べるように
+}
+
+void GameScene::closeBag() {
+	mBagOpen = false;
+	mResources->audio().setPaused( false );
+	mControl.lockCursor();
+}
+
+void GameScene::handleBagInput() {
+	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない。GridInventory_Plan.txt Q8）。
+	// ESC はメニュー・動かしている途中なら、まずそれを取りやめる。
+	if ( InputInventory() ) {
+		closeBag();
+		return;
+	}
+	if ( InputMenu() ) {
+		if ( !mInventoryScreen.back() ) {
+			closeBag();
+		}
+		return;
+	}
+	InventoryScreen::Request request = mInventoryScreen.handleInput( &mInventory, equippedWeapon() );
+	switch ( request.kind ) {
+	case InventoryScreen::Request::DROP:
+		// 手に持っている銃を捨てたら、閉じた後の最初のティックで素手になる（HoldComponent::syncWithInventory）。
+		dropFromBag( request.cell );
+		break;
+	case InventoryScreen::Request::EQUIP: {
+		// 開いている間は世界が止まっているので、持ち替えの時間は作らない（RE:2 と同じ。Pistol_Plan.txt Q6）。
+		GameObject* player = mWorld.player();
+		HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
+		if ( hold ) {
+			hold->equip( mInventory.grid().stackAt( request.cell ).item );
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void GameScene::dropFromBag( int cell ) {
+	ItemStack dropped = mInventory.takeAll( cell );
+	if ( !mWorld.dropItem( dropped, mControl.camera().yaw() ) ) {
+		// 置けなかった（形の構築に失敗した）。無くさないようカバンへ戻す（空いたばかりなので必ず入る）。
+		for ( int i = 0; i < dropped.amount; ++i ) {
+			mInventory.add( dropped.item );
+		}
+	}
+}
+
+ItemId GameScene::equippedWeapon() const {
+	const GunComponent* gun = HoldComponent::heldGun( mWorld.player() );
+	return gun ? gun->spec().item : ITEM_NONE;
+}
+
 void GameScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
 	// 2回目以降のこのシーン（Retry）では、もう構築済みなのですぐに並べられる。
@@ -132,9 +202,18 @@ void GameScene::beginFrame() {
 		handlePausedInput();
 		return;
 	}
+	// カバンを開いている間も同じ（ESC はカバンを閉じる方に使う。世界は止まっているので、窓が裏に回っても一時停止のメニューは重ねない）。
+	if ( mBagOpen ) {
+		handleBagInput();
+		return;
+	}
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）。
 	if ( InputMenu() || !GameLib::WindowCreator().isActive() ) {
 		pause();
+		return;
+	}
+	if ( InputInventory() && canOpenBag() ) {
+		openBag();
 		return;
 	}
 
@@ -152,6 +231,7 @@ void GameScene::beginFrame() {
 	const PlayerHealthComponent* playerHealth = mWorld.player() ? mWorld.player()->getComponent< PlayerHealthComponent >() : nullptr;
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setObjects( &mWorld.objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
+	EditorWindow::setInventory( &mInventory );     // F6 の Inventory の欄（物を足す・行を増やす）
 
 
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
@@ -200,8 +280,8 @@ void GameScene::spawnDebugZombies() {
 #endif
 
 void GameScene::update() {
-	if ( !mReady || mPaused ) {
-		return; // 止めている間は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
+	if ( !mReady || mPaused || mBagOpen ) {
+		return; // 止めている間（一時停止・カバン）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
@@ -213,12 +293,13 @@ void GameScene::update() {
 	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	GameObject* player = mWorld.player();
-	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
-	const GunComponent* gun = hold ? hold->gun() : nullptr; // 素手なら nullptr
+	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
 	// 攻撃された怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
-	mControl.updateViewEffects( gun && gun->firedThisTick(), player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
+	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）。
+	float shotRecoil = ( gun && gun->firedThisTick() ) ? gun->spec().recoilScale : kNoShotRecoil;
+	mControl.updateViewEffects( shotRecoil, player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
 		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
 		player->getComponent< FirstPersonBodyComponent >()->setWeaponSway( mControl.camera().weaponSwayYaw(), mControl.camera().weaponSwayPitch() );
@@ -377,14 +458,18 @@ void GameScene::draw() {
 	// 止めている間は HUD を出さず、メニューがまとめて描く（2026-10-23。HUD とメニューの両方が描いて止まっていた）。
 	if ( mPaused ) {
 		mPauseMenu.draw();
+	} else if ( mBagOpen ) {
+		mInventoryScreen.draw( mInventory, equippedWeapon() ); // カバンの画面も同じ（HUD は描かない）
 	} else {
 #ifdef ZF_EDITOR
 		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 #endif
+		// 使える物の上のマーク（積むだけ。すぐ下の HUD の描画でまとめて描かれる）。
+		mInteractMarkers.add( camera, &mResources->uiRenderer() );
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mInteractor.prompt().c_str(), mWorld.fuelTank(), mInventory );
+		mHud.draw( mWorld.fuelTank() );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -570,14 +655,21 @@ DrawCulling GameScene::cameraCulling( const FirstPersonCamera& camera ) const {
 void GameScene::updateInteraction() {
 	const GameObject* player = mWorld.player();
 	if ( !player ) {
+		mInteractMarkers.clear();
 		return;
 	}
 	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）。
 	const FirstPersonCamera& camera = mControl.camera();
-	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。案内は今まで通り出す。
+	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す。
 	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.interaction().removeTakenPickups();
+	// マークは使った後の状態で決める（拾い切った物は出さない・給油した後の満タンは灰色）。死んだ後は出さない。
+	if ( mWorld.isPlayerDead() ) {
+		mInteractMarkers.clear();
+	} else {
+		mInteractMarkers.update( mWorld.interaction(), camera.eyePosition(), mInteractor.target(), mInventory );
+	}
 	if ( mWorld.isEscapeReady() ) {
 		SceneManager::instance().requestChange( SceneManager::SCENE_CLEAR );
 	}

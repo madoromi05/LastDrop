@@ -2,6 +2,7 @@
 #define INCLUDED_UI_RENDERER_H
 
 #include "GameLib/Math/Vector2.h"
+#include "GameLib/Graphics/Texture.h"
 #include "GameLib/Scene/Font.h"
 #include "GameLib/Scene/PrimitiveRenderer.h"
 #include "GameLib/Scene/StringRenderer.h"
@@ -23,7 +24,7 @@ enum UiAlign{
 };
 
 // 画面の部品（IUiElement）が描く内容を積んでおき、draw でまとめて画面に描く（画素の座標。左上が原点）。
-// 長方形は PrimitiveRenderer、文字は StringRenderer へ積み、長方形 → 文字の順に描く（文字が板に隠れないように）。
+// 長方形と絵は PrimitiveRenderer、文字は StringRenderer へ積み、長方形・絵（積んだ順）→ 文字の順に描く（文字が板に隠れないように）。
 // 3D の後（PostProcess::endScene の後）に描けば、3D の上に重なる。
 class UiRenderer{
 public:
@@ -31,6 +32,11 @@ public:
 
 	// 塗りつぶした長方形を積む。color: VertexColor::pack の並び。
 	void addRect( const UiRect& rect, unsigned color );
+	// 絵を rect いっぱいに貼った長方形を積む（カバンの物の絵。SummaryPlan/個別仕様/ItemIcon_Plan.txt）。
+	// texture: 読み終えた絵（isReady が true・isError が false）。画面は sRGB ではないので、絵は TEXTURE_COLOR_SPACE_LINEAR で読んだ物
+	// （色の変換をせずに、画像の色のまま出す）。color: 絵に掛ける色（白でそのまま。a で薄くする）。
+	// 絵が変わるたびに描く回数が 1 つ増えるので、長方形と絵を交互に積まず、絵はまとめて積む。
+	void addImage( const UiRect& rect, const GameLib::Graphics::Texture& texture, unsigned color );
 	// 文字を積む（ASCII の英数字・記号のみ。それ以外の文字は、途中で絵を作れないので使えない）。color: VertexColor::pack の並び。
 	void addText( const char* text, const GameLib::Math::Vector2& position, UiTextSize size, UiAlign align, unsigned color );
 	// 積んだものを描いて空にする。1回の描画につき1回。

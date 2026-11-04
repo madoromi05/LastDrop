@@ -4,6 +4,7 @@
 #include "GameSrc/Weapon/BulletList.h"
 #include "GameSrc/Scene/Game/EffectManager.h"
 #include "GameSrc/Hit/BodyPart.h"
+#include "GameSrc/Interaction/ItemCatalog.h"
 #include "GameSrc/Audio/GroundMaterial.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
@@ -70,6 +71,8 @@ private:
 	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とし、死体から弾をたどれるようにする。
 	// 落ちている弾（タグ AmmoDrop）が多すぎたら、一番古い物を消す。数の上限があるのは弾だけ（ガソリンは数が決まっている）。
 	void dropAmmo( const ZombieStateComponent& zombie, const GameObject* player );
+	// ゾンビが落とす弾の種類（自キャラ player が手に持っている銃の弾）。
+	static ItemId droppedAmmo( const GameObject* player );
 
 	GameObjectWorld* mObjects;  // 借りているだけ
 	EffectManager* mEffects;    // 借りているだけ

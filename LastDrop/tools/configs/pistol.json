@@ -1,0 +1,25 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/G2-Combat.fbx",
+    "out_path": "../../Resource/pistol.txt",
+    "split_vertices": true,
+    "resource_root": "../..",
+    "mesh_names": ["gun", "barrel", "slide", "loader", "safety-R", "safety-L", "slide-lock", "hammer", "trigger", "magazine-release"],
+    "scale": 1.6,
+    "texture_export_size": 1024,
+    "texture_sources": {
+        "mesh_texture": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_BaseColor.png",
+        "mesh_normalmap": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Normal opengl.png"
+    },
+    "mesh_texture": "Resource/pistol_albedo.tga",
+    "mesh_normalmap": "Resource/pistol_normal.tga",
+    "mesh_orm": "Resource/pistol_orm.tga",
+    "mesh_orm_export": false,
+    "material_params": {
+        "roughness": 1.0,
+        "metallic": 1.0,
+        "specular": [0.15, 0.15, 0.15],
+        "sharpness": 24.0,
+        "normalstrength": 0.6
+    }
+}

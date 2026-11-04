@@ -7,7 +7,7 @@ class StaticMeshData;
 class SkinnedMeshInstance;
 
 // 銃から外せる弾倉の見た目。銃に付いている・左手に持っている・左手から銃の差し込み口へ寄せている、のどこにあるかで描く場所を変える。
-// 弾倉のモデルは銃のモデルと同じ座標で作ってある（tools/configs/rifle_mag.json）ので、銃に付いている間は銃と同じ行列で描けば元の場所に収まる。
+// 弾倉のモデルは銃のモデルと同じ座標で作ってある（tools/configs/rifle_mag.json・pistol_mag.json など）ので、銃に付いている間は銃と同じ行列で描けば元の場所に収まる。
 // いつ外す・持つ・はめるか（リロードの時間割）は知らない（呼び出し側が WeaponReload から読んで渡す）。
 class HeldMagazine{
 public:

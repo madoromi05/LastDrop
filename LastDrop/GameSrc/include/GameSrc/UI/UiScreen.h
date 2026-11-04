@@ -40,8 +40,6 @@ public:
 	static UiRect listButtonRect( int lineCount );
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。
 	static GameLib::Math::Vector2 screenCenter();
-	// 見ている物の案内を出す位置（照準の少し下。UI_ANCHOR_CENTER。中央揃えで使う）。
-	static GameLib::Math::Vector2 promptPosition();
 	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（UI_ANCHOR_LEFT。左揃えで使う）。
 	static GameLib::Math::Vector2 statusLinePosition( int index );
 

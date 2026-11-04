@@ -44,6 +44,7 @@ namespace{
 		case SOUND_IMPACT_DIRT:
 		case SOUND_IMPACT_METAL:	return makeImpact( id, random );
 		case SOUND_FLASHLIGHT_CLICK:	return makeFlashlightClick( random );
+		case SOUND_PISTOL_SHOT:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
 		case SOUND_NUM:				break;
 		}
 		return Synth::Buffer(); // 目録に足したのにレシピが無い（main で知らせる）

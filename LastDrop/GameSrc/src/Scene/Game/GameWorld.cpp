@@ -18,6 +18,7 @@
 #include "Framework.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
+#include "GameLib/Math/Functions.h"
 #include "GameLib/Profiling/Profiler.h"
 
 #include <cmath>
@@ -54,6 +55,10 @@ namespace{
 	const char* kZombieIdleAnimation = "idle1";
 	// 追いついたら、腕で引っかく攻撃のアニメ（同じく extra_animations。右手を振り上げて振り下ろす）。
 	const char* kZombieAttackAnimation = "atack1";
+
+	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）。
+	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所。
+	const float kDropForward = 0.8f;
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
@@ -165,6 +170,16 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	return true;
 }
 
+bool GameWorld::dropItem( const ItemStack& stack, float cameraYaw ) {
+	if ( !mPlayer ) {
+		return false;
+	}
+	Vector3 position = mPlayer->getComponent< TransformComponent >()->position();
+	Vector3 forward( GameLib::Math::sin( cameraYaw ), 0.f, GameLib::Math::cos( cameraYaw ) );
+	position.madd( forward, kDropForward );
+	return mPropFactory.spawnDroppedItem( &mObjects, stack, position, cameraYaw ) != nullptr;
+}
+
 void GameWorld::addZombie( const Vector3& position, float yawDegree, const ZombieAnimationNames& animations ) {
 	// 何体目か（mZombieNumber）で見通しを調べる時刻をずらす。うろつき方の乱数の種も体ごとに変える
 	// （同じ種だと全員が同じ向き・同じ間で歩き出す）。
@@ -186,12 +201,11 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		mObjects.update( UpdatePhase::Input );
 	}
 	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
-	const HoldComponent* hold = mPlayer ? mPlayer->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
-	const GunComponent* gun = hold ? hold->gun() : nullptr;
+	const GunComponent* gun = HoldComponent::heldGun( mPlayer ); // 素手なら nullptr
 	if ( gun && gun->firedThisTick() ) {
 		// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。
 		PROFILE_EVENT( "Shot" );
-		mBullets.fire( mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition(), viewDirection );
+		mBullets.fire( mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition(), viewDirection, gun->spec().damage );
 		alertZombiesToGunshot( mPlayer->getComponent< TransformComponent >()->position() );
 	}
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。

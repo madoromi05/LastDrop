@@ -66,6 +66,7 @@ namespace
         case WorkId::Flashlight: return "Flashlight";
         case WorkId::Move:       return "Move";
         case WorkId::LookStick:  return "LookStick";
+        case WorkId::Inventory:  return "Inventory";
         default:            return "";
         }
     }
@@ -97,6 +98,7 @@ namespace
         case Keyboard::KEY_SHIFT:   return "Shift";
         case Keyboard::KEY_CONTROL: return "Control";
         case Keyboard::KEY_ESC:     return "Esc";
+        case Keyboard::KEY_TAB:     return "Tab";
         case Keyboard::KEY_F1:      return "F1";
         default:  return std::string(1, static_cast<char>(std::toupper(static_cast<unsigned char>(a_asciiKey))));
         }
@@ -236,6 +238,8 @@ namespace
         { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, 'd' },
         // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
+        // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）。
+        { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
 		// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
         { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 },
         // 計測の CSV の記録を始める／止める（2026-10-23 決定。F6 は ImGui のエディタに空けておく）。
@@ -254,6 +258,7 @@ namespace
         { CollectorId::InGame, WorkId::Interact,   DeviceKind::GamePadButton, GamePad::BUTTON_A },
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
         { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
+        { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_BACK },
         // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
         { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },

@@ -79,6 +79,11 @@ public:
 	// まだ place していない・ゾンビの形の構築に失敗した・数が上限に達しているなら出さずに false。
 	// position / yawDegree: 足元の位置と向き（度。0 は +Z）。
 	bool spawnZombie( const GameLib::Math::Vector3& position, float yawDegree );
+	// カバンから捨てた物を、自キャラの少し前（向いている方）の地面へ置く（拾い直せる。GridInventory_Plan.txt Q6）。
+	// update の外（カバンの画面を開いて世界を止めている間）で呼ぶ。自キャラが居ない・形の構築に失敗したなら置かずに false
+	// （そのとき物は無くなる。捨てる前に呼ぶ側が確かめる手段は無いので、置けなかったことだけ返す）。
+	// cameraYaw: カメラの水平の向き（度。0 は +Z）。
+	bool dropItem( const ItemStack& stack, float cameraYaw );
 
 	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
 	// （OptimizationB_Plan.txt Q9）。描いた後に毎フレーム呼ぶ。呼ばれるまでは誰も間引かない。

@@ -13,9 +13,10 @@ public:
 		STATE_IDLE,			// 静止（素手）
 		STATE_WALK,			// 歩き（素手）
 		STATE_RUN,			// 走り（素手）
-		STATE_RIFLE_IDLE,	// 銃を持って静止（覗く間もこのアニメのまま、腕と銃を FirstPersonBody で寄せる）
-		STATE_RIFLE_WALK,	// 銃を持って歩き
-		STATE_RIFLE_RUN,	// 銃を持って走り
+		// 銃を持っている間（拳銃・ライフル共通。アニメの名前は素材のまま "rifle_idle" など。腕は銃ごとに HoldComponent が差し替える）
+		STATE_ARMED_IDLE,	// 銃を持って静止（覗く間もこのアニメのまま、腕と銃を FirstPersonBody で寄せる）
+		STATE_ARMED_WALK,	// 銃を持って歩き
+		STATE_ARMED_RUN,	// 銃を持って走り
 		STATE_NUM,		// 状態数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 	};
 

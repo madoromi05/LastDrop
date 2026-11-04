@@ -6,18 +6,22 @@
 #include "GameSrc/Weapon/Magazine.h"
 #include "GameSrc/Weapon/WeaponRecoil.h"
 #include "GameSrc/Weapon/WeaponReload.h"
+#include "GameSrc/Weapon/WeaponCatalog.h"
 
 class Inventory;
 
-// 銃（"AK47"）の撃つ仕組み（画像の GunComponent）。連射の間隔は FireControl、弾倉の弾の数は Magazine、
+// 銃の撃つ仕組み（画像の GunComponent）。どの銃か（弾倉・連射・使う弾…）は作る時に受け取る表の行（WeaponSpec）で決まる。連射の間隔は FireControl、弾倉の弾の数は Magazine、
 // 撃った反動の量は WeaponRecoil、リロードの時間割は WeaponReload に任せる（委譲）。
 // 引き金を引くか・リロードを始めるかは持つ側（PlayerComponent が HoldComponent 越しに）が決める。ここは「撃てたか」だけを答える。
 // 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。
-// 予備の弾は持ち物（Inventory の ITEM_AMMO）にあり、リロードを込め終えた瞬間に、そこから弾倉の足りない分だけ移す（弾倉に残っていた弾は捨てない）。
+// 予備の弾は持ち物（Inventory の、銃に合った弾 WeaponSpec::ammo）にあり、リロードを込め終えた瞬間に、そこから弾倉の足りない分だけ移す（弾倉に残っていた弾は捨てない）。
 // 弾倉が空で撃つ番が来たら、弾は出ずに空撃ちになる（dryFiredThisTick）。引き金を離すまで次の空撃ちはしない。
 class GunComponent : public Component{
 public:
-	GunComponent();
+	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）。
+	explicit GunComponent( const WeaponSpec& spec );
+
+	const WeaponSpec& spec() const;
 
 	// 撃つ番が来たら、弾倉に弾があれば 1 発撃ち、空なら空撃ちにする（1 ティックに 1 回）。
 	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）。
@@ -42,6 +46,7 @@ public:
 	int magazineRounds() const;     // 弾倉に入っている弾の数
 
 private:
+	const WeaponSpec* mSpec;   // 表の行（借りているだけ）
 	FireControl mFire;         // 連射の間隔
 	Magazine mMagazine;        // 弾倉の弾の数
 	WeaponRecoil mRecoil;      // 撃った反動の量

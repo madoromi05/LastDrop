@@ -12,8 +12,8 @@ BulletList::BulletList( const StaticMeshData* data ) :
 	ASSERT( mData && "BulletList : data is null." );
 }
 
-void BulletList::fire( const Vector3& origin, const Vector3& direction ) {
-	mBullets.emplace_back( origin, direction );
+void BulletList::fire( const Vector3& origin, const Vector3& direction, float damage ) {
+	mBullets.emplace_back( origin, direction, damage );
 }
 
 void BulletList::update( const HitWorld& world, const IHittable* shooter, std::vector< Impact >* impacts ) {
@@ -22,6 +22,7 @@ void BulletList::update( const HitWorld& world, const IHittable* shooter, std::v
 	for ( Bullet& bullet : mBullets ) {
 		if ( bullet.update( world, shooter, &impact.hit ) ) {
 			impact.direction = bullet.direction();
+			impact.damage = bullet.damage();
 			impacts->push_back( impact );
 		}
 	}

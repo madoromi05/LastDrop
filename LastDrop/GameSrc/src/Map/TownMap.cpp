@@ -140,6 +140,10 @@ namespace{
 		{ 2.5f, 2.0f,  0.0f,  2.0f,  30.f }, // 内側（南東）
 	};
 
+	// 町に 1 丁だけ置くライフル（始めの銃は拳銃。漁る場所ができる段階R3 までの仮。Pistol_Plan.txt Q1）。
+	// 始めの位置から 1 ブロック南の通り（東西の道 2 番）の真ん中を、南の歩道寄りに。ガソリンの候補点・車とは重ならない。
+	const StreetSpot kRifle = { 1.5f, 2.0f, 1.0f, 3.0f, 30.f };
+
 	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。
 	float roadX( float column ) {
 		return ( column - 0.5f * ( kColumnNumber - 1 ) ) * kRoadPitch;
@@ -341,7 +345,8 @@ TownMap::TownMap() :
 	mPlayerStart( toPlacement( kPlayerStart ) ),
 	mTPoseZombie( toPlacement( kTPoseZombie ) ),
 	mEscapeCar( toPlacement( kEscapeCar ) ),
-	mEndlessFuel( toPlacement( kEndlessFuel ) ) {
+	mEndlessFuel( toPlacement( kEndlessFuel ) ),
+	mRifle( toPlacement( kRifle ) ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
 	addStraights( &mGroundTiles );
@@ -388,6 +393,10 @@ const TownPlacement& TownMap::escapeCar() const {
 
 const TownPlacement& TownMap::endlessFuel() const {
 	return mEndlessFuel;
+}
+
+const TownPlacement& TownMap::rifle() const {
+	return mRifle;
 }
 
 const std::vector< TownPlacement >& TownMap::fuelSpawnPoints() const {

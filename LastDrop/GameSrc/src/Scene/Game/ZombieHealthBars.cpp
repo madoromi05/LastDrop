@@ -11,13 +11,12 @@
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/UI/UiRenderer.h"
+#include "GameSrc/UI/ScreenProjection.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"
-#include "Framework.h"
 #include "GameLib/Math/Vector2.h"
 #include "GameLib/Math/Vector3.h"
-#include "GameLib/Math/Vector4.h"
 #include "GameLib/Math/Matrix34.h"
 
 #include <cmath>
@@ -50,21 +49,6 @@ namespace{
 
 	const int kTextSize = 32;
 	const float kHalf = 0.5f;
-
-	// 世界の位置を画面の位置（画素。左上が原点）へ直す。カメラの後ろなら false。
-	bool toScreen( const Matrix44& projectionView, const Vector3& world, Vector2* out ) {
-		Vector4 clip;
-		projectionView.mul( &clip, world );
-		if ( clip.w <= 0.f ) {
-			return false;
-		}
-		// -1〜1（上が +1）の正規化した位置を、画素（下が +）へ。
-		float ndcX = clip.x / clip.w;
-		float ndcY = clip.y / clip.w;
-		out->x = ( ndcX * kHalf + kHalf ) * static_cast< float >( Framework::instance().width() );
-		out->y = ( kHalf - ndcY * kHalf ) * static_cast< float >( Framework::instance().height() );
-		return true;
-	}
 
 	// -1〜1 の立方体を置く行列（HitboxSet::boxMatrix）から、箱の中心と、一番高い所の高さ。
 	Vector3 boxCenter( const Matrix34& box ) {
@@ -167,7 +151,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	toAnchor.setSub( anchor, camera.eyePosition() );
 	float distance = toAnchor.length();
 	Vector2 screen;
-	if ( distance > kMaxBarDistance || !toScreen( projectionView, anchor, &screen ) ||
+	if ( distance > kMaxBarDistance || !ScreenProjection::worldToScreen( projectionView, anchor, &screen ) ||
 		isBlocked( world, camera.eyePosition(), anchor ) ) {
 		return;
 	}
@@ -240,7 +224,7 @@ void ZombieHealthBars::addPartLabels( const ZombieStateComponent& zombie, const 
 	for ( int i = 0; i < boxes.boxNumber(); ++i ) {
 		Matrix34 box;
 		Vector2 screen;
-		if ( !boxes.boxMatrix( i, &box ) || !toScreen( projectionView, boxCenter( box ), &screen ) ) {
+		if ( !boxes.boxMatrix( i, &box ) || !ScreenProjection::worldToScreen( projectionView, boxCenter( box ), &screen ) ) {
 			continue;
 		}
 		BodyPart part = boxes.boxPart( i );

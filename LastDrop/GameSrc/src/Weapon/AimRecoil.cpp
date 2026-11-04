@@ -7,7 +7,7 @@
 using namespace GameLib;
 
 namespace{
-	// ── 上（度）──
+	// ── 上（度。ライフル〈反動の大きさ 1〉のとき。ほかの銃は反動の大きさを掛ける）──
 	// 1 発目に上がる角度。2 発目からはだんだん小さくし、kClimbShots 発目で 0 にする（数発で頭打ち。ユーザー指定）。
 	// 合計は kRiseFirst × (kClimbShots + 1) / 2 ＝ 3.5°。
 	const float kRiseFirst = 1.0f;
@@ -45,9 +45,9 @@ AimRecoil::AimRecoil( int seed ) :
 	mQuietTicks( kSettleTicks ) {
 }
 
-void AimRecoil::update( bool fired ) {
-	if ( fired ) {
-		kick();
+void AimRecoil::update( float shotRecoil ) {
+	if ( shotRecoil > 0.f ) {
+		kick( shotRecoil );
 		mQuietTicks = 0;
 		return;
 	}
@@ -60,16 +60,17 @@ void AimRecoil::update( bool fired ) {
 	mSide = settle( mSide );
 }
 
-void AimRecoil::kick() {
+void AimRecoil::kick( float scale ) {
 	++mShotIndex;
 	if ( mShotIndex <= kClimbShots ) {
 		float share = 1.f - static_cast< float >( mShotIndex - 1 ) / static_cast< float >( kClimbShots );
-		mRise += kRiseFirst * share;
+		mRise += kRiseFirst * share * scale;
 	} else {
-		mRise += mRandom.getFloat( -kRiseBounce, kRiseBounce );
-		mRise = kRiseTop + ScalarMath::clampSigned( mRise - kRiseTop, kRiseBounceLimit );
+		float top = kRiseTop * scale; // 頭打ちの高さも反動の大きさに合わせる
+		mRise += mRandom.getFloat( -kRiseBounce, kRiseBounce ) * scale;
+		mRise = top + ScalarMath::clampSigned( mRise - top, kRiseBounceLimit * scale );
 	}
-	mSide = ScalarMath::clampSigned( mSide + mRandom.getFloat( -kSidePerShot, kSidePerShot ), kSideLimit );
+	mSide = ScalarMath::clampSigned( mSide + mRandom.getFloat( -kSidePerShot, kSidePerShot ) * scale, kSideLimit );
 }
 
 float AimRecoil::pitchOffset() const {

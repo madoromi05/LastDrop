@@ -170,12 +170,12 @@ void FirstPersonControl::consumePressed() {
 	mCommand.flashlightPressed = false;
 }
 
-void FirstPersonControl::updateViewEffects( bool fired, const AimSwayBody& body ) {
-	mRecoil.update( fired );
-	mAimRecoil.update( fired );
+void FirstPersonControl::updateViewEffects( float shotRecoil, const AimSwayBody& body ) {
+	mRecoil.update( shotRecoil );
+	mAimRecoil.update( shotRecoil );
 	mAimPunch.update();
-	if ( fired ) {
-		mShake.addTrauma( kFireTrauma, kFireTraumaLimit );
+	if ( shotRecoil > 0.f ) {
+		mShake.addTrauma( kFireTrauma * shotRecoil, kFireTraumaLimit );
 	}
 	mShake.update();
 	// ためたマウスの回転は、このティックで使い切る（1 回の描画に 2 ティックあれば、2 つ目は 0）。

@@ -3,6 +3,7 @@
 #include "GameSrc/Component/StaticModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Component/BoxColliderComponent.h"
+#include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/Interaction/PickupComponent.h"
 #include "GameSrc/Interaction/ItemSourceComponent.h"
 #include "GameSrc/Interaction/FuelTankComponent.h"
@@ -15,6 +16,9 @@
 using namespace GameLib::Math;
 
 namespace{
+	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）。
+	const float kMarkAboveTop = 0.15f;
+
 	// 物の「使える」部品（見て E で使う）。拾える物・燃料タンク・置き場のどれか。無ければ nullptr。
 	IInteractable* interactableOf( GameObject* object ) {
 		if ( PickupComponent* pickup = object->getComponent< PickupComponent >() ) {
@@ -52,6 +56,32 @@ IInteractable* InteractionSystem::findInteractable( const Vector3& origin, const
 		}
 	} );
 	return found;
+}
+
+void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const {
+	ASSERT( out && "InteractionSystem::collectNearby : out is null." );
+	// 使える物はどれも見た目の部品（StaticModelComponent）を持つので、見た目から使える部品をたどる（findInteractable と同じたどり方）。
+	mObjects->forEach< StaticModelComponent >( [ this, &eye, radius, out ]( StaticModelComponent& model ) {
+		const IInteractable* interactable = interactableOf( model.gameObject() );
+		const PickupComponent* pickup = model.getComponent< PickupComponent >();
+		if ( !interactable || ( pickup && pickup->isTaken() ) ) {
+			return;
+		}
+		// 箱は見た目の頂点から作る（移動の当たり判定と同じ箱。高さは地面 Y=0 から）。
+		BoxCollider box = MeshBoundsBox::make( model.mesh() );
+		Vector3 mark( box.center.x, box.height + kMarkAboveTop, box.center.z );
+		Vector3 toMark;
+		toMark.setSub( mark, eye );
+		if ( toMark.length() > radius ) {
+			return;
+		}
+		// 目とマークの間に弾を止める物があれば隠れている。ただし、その物自身に当たったなら見えている（車の屋根の上のマークを横から見たとき）。
+		HitWorld::Hit hit;
+		if ( mHitWorld->raycastBlockers( eye, toMark, &hit ) && mObjects->find< StaticModelComponent >( hit.blocker ) != &model ) {
+			return;
+		}
+		out->push_back( NearbyInteractable{ interactable, mark } );
+	} );
 }
 
 IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit ) const {

@@ -17,6 +17,12 @@ class IHittable;
 // 何を使うと何が起きるか（持ち物が増える・給油する）は、使える部品（IInteractable）が決める。
 class InteractionSystem{
 public:
+	// 近くの使える物 1 つ（collectNearby の答え）。
+	struct NearbyInteractable{
+		const IInteractable* interactable;     // 借りているだけ（拾われた物は次の世界の update で消えるので、それより後には使わない）
+		GameLib::Math::Vector3 markPosition;   // マークを出す所（物の見た目の箱の上端の少し上。ワールド）
+	};
+
 	// どれも所有権は受け取らない。nullptr 不可。この係より長く生きていること（どれも GameWorld が持つ）。
 	// hitWorld: 視線を撃つ名簿。objects: 当たった物の部品を引く・消す印を付ける。effects: 消える物に付いた弾痕を外す。
 	InteractionSystem( const HitWorld* hitWorld, GameObjectWorld* objects, EffectManager* effects );
@@ -27,6 +33,10 @@ public:
 	// 落ちている物は一回り大きい見る箱（PickupComponent::lookRaycast）でも当たる。壁などの向こうの物は返さない。
 	// viewer: 視線を当てない的（目が体の中にある自キャラ）。nullptr 可。使える物が無ければ nullptr（Interactor の finder に使う）。
 	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* viewer );
+	// 目 eye から radius（m）以内にマークがあり、目とマークの間が壁・建物・ほかの物で隠れていない使える物を、全部 out の後ろへ足す
+	// （マークを出すため。InteractMarker_Plan.txt Q1・Q5）。拾われた物は入れない。死体は入れない（死体が落とした弾が入る。Q4）。
+	// 隠れているかは弾を止める物だけで調べる（ゾンビの体では隠さない）。out: nullptr 不可。
+	void collectNearby( const GameLib::Math::Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const;
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す。

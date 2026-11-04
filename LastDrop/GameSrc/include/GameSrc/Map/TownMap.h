@@ -59,6 +59,7 @@ public:
 	const TownPlacement& escapeCar() const;							// 脱出用の車
 	const TownPlacement& endlessFuel() const;						// 何度でも拾えるガソリン（車の近く）
 	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
+	const TownPlacement& rifle() const;								// 町に 1 丁だけ置くライフル（拾うとカバンへ。段階R3 までの仮）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 交差点の真ん中（道の中心どうしが交わる所。向きは使わない）。街灯の置き場所に使う。
 	const std::vector< TownPlacement >& junctions() const;
@@ -75,6 +76,7 @@ private:
 	TownPlacement mTPoseZombie;
 	TownPlacement mEscapeCar;
 	TownPlacement mEndlessFuel;
+	TownPlacement mRifle;
 	std::vector< TownPlacement > mFuelSpawnPoints;
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;

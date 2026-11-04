@@ -2,11 +2,11 @@
 #define INCLUDED_MAGAZINE_H
 
 // 銃に入っている弾倉の弾の数。決めるのは「何発入っているか」と「あと何発入るか」だけ。
-// 予備の弾（持ち物の ITEM_AMMO）・込めるのにかかる時間（WeaponReload）・撃つ間隔（FireControl）は持たない。
-// 弾倉に何発入るかを変えるときは Magazine.cpp の定数だけを直す。
+// 予備の弾（持ち物の、銃に合った弾）・込めるのにかかる時間（WeaponReload）・撃つ間隔（FireControl）は持たない。
+// 弾倉に何発入るかは銃ごとの表（WeaponCatalog の magazineCapacity）で決まり、作る時に受け取る。
 class Magazine{
 public:
-	Magazine(); // 満タンで始まる
+	explicit Magazine( int capacity ); // 満タンで始まる。capacity: 弾倉に入る弾の数（1 以上）
 
 	int rounds() const;			// 入っている弾の数
 	bool isEmpty() const;
@@ -17,6 +17,7 @@ public:
 	void load( int count );
 
 private:
+	int mCapacity;
 	int mRounds;
 };
 

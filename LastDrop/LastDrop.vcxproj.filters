@@ -867,6 +867,9 @@
     <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\ItemGrid.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
@@ -901,6 +904,9 @@
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp">
+      <Filter>GameSrc\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\ScreenProjection.cpp">
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp">
@@ -1029,6 +1035,9 @@
     <ClCompile Include="GameSrc\src\Weapon\WeaponReload.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Weapon\WeaponCatalog.cpp">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
@@ -1120,6 +1129,12 @@
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\InventoryScreen.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\ItemIcons.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp">
@@ -1261,6 +1276,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\InteractMarkers.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp">
@@ -1751,6 +1769,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemGrid.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -1803,6 +1824,9 @@
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h">
+      <Filter>GameSrc\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\ScreenProjection.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h">
@@ -1988,6 +2012,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponReload.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponCatalog.h">
+      <Filter>GameSrc\Weapon</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
@@ -2097,6 +2124,12 @@
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InventoryScreen.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemIcons.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h">
@@ -2256,6 +2289,9 @@
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InteractMarkers.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h">

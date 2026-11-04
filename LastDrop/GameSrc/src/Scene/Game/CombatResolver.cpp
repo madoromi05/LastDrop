@@ -8,6 +8,8 @@
 #include "GameSrc/Component/StaticModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/Zombie/ZombieAttack.h"
 #include "GameSrc/Zombie/ZombieModelComponent.h"
 #include "GameSrc/Zombie/ZombieStateComponent.h"
@@ -26,6 +28,8 @@ using namespace GameLib::Math;
 namespace{
 	// ── ゾンビが落とす予備の弾
 	const float kAmmoDropChance = 0.5f;	// 落とす確率
+	// 素手のときに落とす弾（手に持っている銃が無いので、どちらかに決める。始めの銃ではない方＝拾ったライフル用）。
+	const ItemId kBareHandAmmo = ITEM_AMMO_762;
 	// 同時に落ちていられる数。超えたら一番古い物を消す
 	const int kMaxAmmoDrops = 10;
 	// 足元から自キャラの方へ寄せる長さ（m）。死体の脚の下に隠れにくくする（隠れても、死体を見れば拾える）。
@@ -97,7 +101,7 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact, const GameObje
 	}
 	DamageInfo damage;
 	damage.part = hit.part;
-	damage.baseAmount = Bullet::damage();
+	damage.baseAmount = impact.damage;
 	damage.point = hit.point;
 	damage.direction = impact.direction;
 	bool wasAlive = state->isAlive();
@@ -134,6 +138,12 @@ void CombatResolver::stainAroundZombie( const BulletList::Impact& impact, Effect
 	}
 }
 
+ItemId CombatResolver::droppedAmmo( const GameObject* player ) {
+	// 手に持っている銃の弾（拳銃なら 9mm。Pistol_Plan.txt Q3）。素手・自キャラがいなければ 7.62。
+	const GunComponent* gun = HoldComponent::heldGun( player );
+	return gun ? gun->spec().ammo : kBareHandAmmo;
+}
+
 void CombatResolver::dropAmmo( const ZombieStateComponent& zombie, const GameObject* player ) {
 	if ( mRandom.getFloat() >= kAmmoDropChance ) {
 		return;
@@ -148,7 +158,7 @@ void CombatResolver::dropAmmo( const ZombieStateComponent& zombie, const GameObj
 			position.madd( toPlayer, kAmmoDropTowardPlayer );
 		}
 	}
-	GameObject* drop = mProps->spawnAmmoDrop( mObjects, position, mRandom.getFloat( kFullTurnDegree ) );
+	GameObject* drop = mProps->spawnAmmoDrop( mObjects, droppedAmmo( player ), position, mRandom.getFloat( kFullTurnDegree ) );
 	if ( !drop ) {
 		return; // 形の構築に失敗した（理由は MeshCache が出力済み）
 	}

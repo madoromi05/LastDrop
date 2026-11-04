@@ -1,0 +1,52 @@
+{
+    "output_dir": "../../Resource",
+    "icons": [
+        {
+            "name": "icon_fuel",
+            "fbx": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Model/Oil tank_atlas.fbx",
+            "size": [512, 256],
+            "rotation": [0.0, 90.0, 0.0],
+            "albedo": "../../Resource/fuelcan_albedo.tga",
+            "orm": "../../Resource/fuelcan_orm.tga"
+        },
+        {
+            "name": "icon_ammo_762",
+            "fbx": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Mesh/Ammunition Props/7.62NATO Ammo.fbx",
+            "size": [256, 256],
+            "rotation": [0.0, 0.0, 0.0],
+            "albedo": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/7.62NATO_Ammo/7.62NATO_Ammo_AlbedoTransparency.png",
+            "normal": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/7.62NATO_Ammo/7.62NATO_Ammo_Normal.png",
+            "metallic_smoothness": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/7.62NATO_Ammo/7.62NATO_Ammo_MetallicSmoothness.png"
+        },
+        {
+            "name": "icon_ammo_9mm",
+            "fbx": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Mesh/Ammunition Props/9MM Ammo.fbx",
+            "size": [256, 256],
+            "rotation": [0.0, 0.0, 0.0],
+            "albedo": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/9MM_Ammo/9MM Ammo_AlbedoTransparency.png",
+            "normal": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/9MM_Ammo/9MM Ammo_Normal.png",
+            "metallic_smoothness": "C:/Users/mador/Downloads/Ammo&Prop+Unity/Unity/Texture/Ammunition Props/9MM_Ammo/9MM Ammo_MetallicSmoothness.png"
+        },
+        {
+            "name": "icon_pistol",
+            "fbx": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/G2-Combat.fbx",
+            "size": [256, 256],
+            "mesh_names": ["gun", "barrel", "slide", "loader", "safety-R", "safety-L", "slide-lock", "hammer", "trigger", "magazine-release", "magazine", "magazine-bullet"],
+            "camera_elevation": 5.0,
+            "camera_azimuth": -90.0,
+            "albedo": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_BaseColor.png",
+            "normal": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Normal opengl.png",
+            "orm": "../../Resource/pistol_orm.tga"
+        },
+        {
+            "name": "icon_rifle",
+            "fbx": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/source/FP_AKM_binary.fbx",
+            "size": [256, 256],
+            "camera_elevation": 5.0,
+            "camera_azimuth": -90.0,
+            "albedo": "../../Resource/rifle_albedo.tga",
+            "normal": "../../Resource/rifle_normal.tga",
+            "orm": "../../Resource/rifle_orm.tga"
+        }
+    ]
+}

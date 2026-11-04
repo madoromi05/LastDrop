@@ -54,6 +54,7 @@ const FuelTankComponent* WorldBuilder::build( const WorldBuildTarget& target ) c
 		target.hitWorld->addBlocker( &building );
 	}
 	const FuelTankComponent* fuelTank = placeMissionObjects( target.objects );
+	placeWeapons( target.objects );
 	// 建物・車・ガソリンの置き場を名簿へ載せ終えてから、それを材料に歩ける床の形を作る（ZombieNavMesh_Plan.txt）。
 	target.navMesh->build( *target.collisionWorld );
 	return fuelTank;
@@ -71,6 +72,11 @@ const std::vector< TownPlacement >& placements ) const {
 		buildings->emplace_back( shapes, toPosition( p ), p.yawDegree, kBuildingMaterial );
 		buildings->back().addCollidersTo( target.collisionWorld );
 	}
+}
+
+void WorldBuilder::placeWeapons( GameObjectWorld* objects ) const {
+	const TownPlacement& rifle = mMap->rifle();
+	mProps->spawnWeaponDrop( objects, WEAPON_RIFLE, toPosition( rifle ), rifle.yawDegree ); // 置けなくても（形の構築の失敗）拳銃で遊べる
 }
 
 const FuelTankComponent* WorldBuilder::placeMissionObjects( GameObjectWorld* objects ) const {

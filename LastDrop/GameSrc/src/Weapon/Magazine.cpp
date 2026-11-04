@@ -2,13 +2,10 @@
 
 #include "GameLib/GameLib.h"
 
-namespace{
-	// 弾倉に入る弾の数。AKM の標準の弾倉（30 発）に合わせる。
-	const int kCapacity = 30;
-}
-
-Magazine::Magazine() :
-	mRounds( kCapacity ) {
+Magazine::Magazine( int capacity ) :
+	mCapacity( capacity ),
+	mRounds( capacity ) {
+	ASSERT( capacity > 0 && "Magazine : capacity must be positive." );
 }
 
 int Magazine::rounds() const {
@@ -20,7 +17,7 @@ bool Magazine::isEmpty() const {
 }
 
 int Magazine::missingRounds() const {
-	return kCapacity - mRounds;
+	return mCapacity - mRounds;
 }
 
 void Magazine::takeRound() {

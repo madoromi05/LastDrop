@@ -48,6 +48,8 @@ private:
 	void placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes, const std::vector< TownPlacement >& placements ) const;
 	// 脱出用の車と、何度でも拾えるガソリン、候補点から選んだ場所のガソリンを置き、車の燃料タンクを返す（無ければ nullptr）。
 	const FuelTankComponent* placeMissionObjects( GameObjectWorld* objects ) const;
+	// 町で拾える銃を置く（今はライフル 1 丁。始めの銃〈拳銃〉はカバンに入っているので置かない）。
+	void placeWeapons( GameObjectWorld* objects ) const;
 
 	const TownMap* mMap;                          // 借りているだけ
 	const PropFactory* mProps;                    // 借りているだけ

@@ -237,6 +237,7 @@
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\ItemCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\ItemGrid.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
@@ -249,6 +250,7 @@
     <ClCompile Include="GameSrc\src\UI\UiSlider.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
+    <ClCompile Include="GameSrc\src\UI\ScreenProjection.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp" />
@@ -315,6 +317,7 @@
     <ClCompile Include="GameSrc\src\Weapon\Magazine.cpp" />
     <ClCompile Include="GameSrc\src\Player\HeldMagazine.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponReload.cpp" />
+    <ClCompile Include="GameSrc\src\Weapon\WeaponCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\AimRecoil.cpp" />
@@ -368,6 +371,8 @@
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\InventoryScreen.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\ItemIcons.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp" />
     <ClCompile Include="GameSrc\src\Scene\GameResources.cpp" />
     <ClCompile Include="GameSrc\src\Hit\HitboxLayout.cpp" />
@@ -415,6 +420,7 @@
     <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp" />
     <ClCompile Include="GameSrc\src\Math\FlatMath.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\InteractMarkers.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp" />
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp" />
@@ -714,6 +720,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemGrid.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
@@ -732,6 +739,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiSlider.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\ScreenProjection.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h" />
@@ -793,6 +801,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\Magazine.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\HeldMagazine.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponReload.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\AimRecoil.h" />
@@ -830,6 +839,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InventoryScreen.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemIcons.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\GameResources.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxLayout.h" />
@@ -883,6 +894,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InteractMarkers.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\SurfaceHitSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h" />

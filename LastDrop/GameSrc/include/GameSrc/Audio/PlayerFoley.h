@@ -2,6 +2,7 @@
 #define INCLUDED_PLAYER_FOLEY_H
 
 #include "GameSrc/Audio/Gait.h"
+#include "GameSrc/Audio/SoundCatalog.h"
 #include "GameLib/Math/Vector3.h"
 
 class AudioEngine;
@@ -25,6 +26,8 @@ public:
 		bool weaponDrawn;	// 武器を持っているか
 		bool aiming;		// 覗いているか
 		bool fired;			// このフレームに1発撃ったか
+		SoundId shotSound;	// 撃ったときに鳴らす銃声（持っている銃の WeaponSpec::shotSound。fired が false なら使わない）
+		float shotVolume;	// その大きさ（WeaponSpec::shotVolume）
 		bool dryFired;		// このフレームに空撃ちしたか
 		bool magazineOut;	// このフレームに弾倉を抜いたか（リロード）
 		bool magazineIn;	// このフレームに弾倉を挿したか（リロード）

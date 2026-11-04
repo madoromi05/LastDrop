@@ -36,6 +36,9 @@ $Textures = @(
 	@{ Name = "bullet_albedo";        Kind = "Color";  MaxSize = 0 }
 	@{ Name = "bullet_normal";        Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "bullet_orm";           Kind = "Data";   MaxSize = 0 }
+	@{ Name = "bullet9_albedo";       Kind = "Color";  MaxSize = 0 }  # ゾンビが落とす 9mm の弾（Pistol_Plan.txt）
+	@{ Name = "bullet9_normal";       Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "bullet9_orm";          Kind = "Data";   MaxSize = 0 }
 	@{ Name = "fuelcan_albedo";       Kind = "Color";  MaxSize = 0 }
 	@{ Name = "fuelcan_normal";       Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "fuelcan_orm";          Kind = "Data";   MaxSize = 0 }
@@ -45,6 +48,9 @@ $Textures = @(
 	@{ Name = "player_body1_albedo";  Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body1_normal";  Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "player_body1_orm";     Kind = "Data";   MaxSize = 0 }
+	@{ Name = "pistol_albedo";        Kind = "Color";  MaxSize = 0 }  # 拳銃（G2-Combat.fbx。Pistol_Plan.txt）
+	@{ Name = "pistol_normal";        Kind = "Normal"; MaxSize = 0 }
+	@{ Name = "pistol_orm";           Kind = "Data";   MaxSize = 0 }
 	@{ Name = "rifle_albedo";         Kind = "Color";  MaxSize = 0 }
 	@{ Name = "rifle_normal";         Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "rifle_orm";            Kind = "Data";   MaxSize = 0 }

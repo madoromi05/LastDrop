@@ -2,36 +2,20 @@
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/ScalarMath.h"
 
+#include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
 
 using namespace GameLib;
 
 namespace{
-	// ── アニメ（reloading.fbx。元は 30fps・3.3 秒。player.json の game_fps でゲームのフレームに直してある）──
-	// 使うのは頭から 2.5 秒（左手がハンドガードへ戻った所）まで。その後は構えたまま立っているだけなので見せない。
-	// 2 秒で込め終える（バイオハザード RE:4 のライフル程度。撃てない時間が長いほど、弾が切れたときの焦りが出る）よう、1.25 倍で流す。
-	const float kAnimationUsedSeconds = 2.5f;
-	const float kDurationSeconds = 2.f;
-	const float kAnimationRate = kAnimationUsedSeconds / kDurationSeconds;
+	// アニメ・合図の時刻・長さは銃ごとの表（WeaponCatalog の WeaponReloadSpec）。アニメは player.json の game_fps でゲームのフレームに直してある。
 	// 腕をアニメへ切り替える・戻す長さ（秒）。急に切り替えると腕が跳ねて見える。
 	const float kArmBlendSeconds = 0.15f;
 	// 挿す合図の前に、手の弾倉を銃の差し込み口へ寄せる長さ（秒）。手の位置と差し込み口はアニメで少しずれているので、跳ばずにはめるため。
 	const float kMagazineSeatSeconds = 0.2f;
 
-	// ── 音の合図（アニメの時刻。秒）。Blender で左手の動きを見て決めた ──
-	const float kMagOutAnimationSeconds = 0.45f; // 左手が弾倉をつかんで下へ抜く
-	const float kMagInAnimationSeconds = 1.6f;   // 左手が下から上がりきる（新しい弾倉を挿す）
-	const float kBoltAnimationSeconds = 2.1f;    // 左手が右手へ一番近づく（銃の右の槓桿を引く）
-
-	// アニメの時刻を、リロードを始めてからのティックに直す（1.25 倍で流すので早く来る）。
-	int animationSecondsToTicks( float animationSeconds ) {
-		return GameTime::secondsToTicks( animationSeconds / kAnimationRate );
-	}
-	const int kDurationTicks = GameTime::secondsToTicks( kDurationSeconds );
-	const int kMagOutTicks = animationSecondsToTicks( kMagOutAnimationSeconds );
-	const int kMagInTicks = animationSecondsToTicks( kMagInAnimationSeconds );
-	const int kBoltTicks = animationSecondsToTicks( kBoltAnimationSeconds );
 	const int kInactive = -1;
+	const int kNoTick = -1; // 来ない合図（スライドを引かないリロードの CUE_BOLT）
 
 	// seconds が from → to の間をどれだけ進んだか（0〜1。曲線を掛けた値）。
 	// 曲線は始めと終わりがゆっくりになる物（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため。
@@ -41,13 +25,44 @@ namespace{
 	}
 }
 
-WeaponReload::WeaponReload() :
+WeaponReload::WeaponReload( const WeaponReloadSpec& normal, const WeaponReloadSpec& empty ) :
+	mNormal( &normal ),
+	mEmpty( &empty ),
+	mSpec( &normal ),
+	mDurationTicks( 0 ),
+	mMagOutTicks( 0 ),
+	mMagInTicks( 0 ),
+	mBoltTicks( kNoTick ),
 	mTicks( kInactive ),
 	mCue( CUE_NONE ) {
+	ASSERT( normal.durationSeconds > 0.f && empty.durationSeconds > 0.f && "WeaponReload : durationSeconds must be positive." );
+	select( false );
 }
 
-void WeaponReload::start() {
+void WeaponReload::select( bool magazineEmpty ) {
+	mSpec = magazineEmpty ? mEmpty : mNormal;
+	mDurationTicks = GameTime::secondsToTicks( mSpec->durationSeconds );
+	mMagOutTicks = animationSecondsToTicks( mSpec->magOutSeconds );
+	mMagInTicks = animationSecondsToTicks( mSpec->magInSeconds );
+	mBoltTicks = ( mSpec->boltSeconds < 0.f ) ? kNoTick : animationSecondsToTicks( mSpec->boltSeconds );
+}
+
+float WeaponReload::animationRate() const {
+	return mSpec->animationSeconds / mSpec->durationSeconds;
+}
+
+const char* WeaponReload::animationName() const {
+	return mSpec->animation;
+}
+
+int WeaponReload::animationSecondsToTicks( float animationSeconds ) const {
+	// 速めて流すので、アニメの時刻より早く来る。
+	return GameTime::secondsToTicks( animationSeconds / animationRate() );
+}
+
+void WeaponReload::start( bool magazineEmpty ) {
 	if ( !isActive() ) {
+		select( magazineEmpty );
 		mTicks = 0;
 	}
 }
@@ -62,14 +77,14 @@ bool WeaponReload::update() {
 		return false;
 	}
 	++mTicks;
-	if ( mTicks == kMagOutTicks ) {
+	if ( mTicks == mMagOutTicks ) {
 		mCue = CUE_MAG_OUT;
-	} else if ( mTicks == kMagInTicks ) {
+	} else if ( mTicks == mMagInTicks ) {
 		mCue = CUE_MAG_IN;
-	} else if ( mTicks == kBoltTicks ) {
+	} else if ( mTicks == mBoltTicks ) {
 		mCue = CUE_BOLT;
 	}
-	if ( mTicks < kDurationTicks ) {
+	if ( mTicks < mDurationTicks ) {
 		return false;
 	}
 	mTicks = kInactive;
@@ -88,7 +103,7 @@ float WeaponReload::animationFrame() const {
 	if ( !isActive() ) {
 		return 0.f;
 	}
-	return elapsedSeconds() * kAnimationRate * GameTime::kTicksPerSecond;
+	return elapsedSeconds() * animationRate() * GameTime::kTicksPerSecond;
 }
 
 float WeaponReload::armWeight() const {
@@ -96,18 +111,18 @@ float WeaponReload::armWeight() const {
 		return 0.f;
 	}
 	float seconds = elapsedSeconds();
-	return easedProgress( seconds, 0.f, kArmBlendSeconds ) * ( 1.f - easedProgress( seconds, kDurationSeconds - kArmBlendSeconds, kDurationSeconds ) );
+	return easedProgress( seconds, 0.f, kArmBlendSeconds ) * ( 1.f - easedProgress( seconds, mSpec->durationSeconds - kArmBlendSeconds, mSpec->durationSeconds ) );
 }
 
 bool WeaponReload::isMagazineOut() const {
-	return isActive() && mTicks >= kMagOutTicks && mTicks < kMagInTicks;
+	return isActive() && mTicks >= mMagOutTicks && mTicks < mMagInTicks;
 }
 
 float WeaponReload::magazineSeatWeight() const {
 	if ( !isActive() ) {
 		return 0.f;
 	}
-	float magInSeconds = GameTime::ticksToSeconds( kMagInTicks );
+	float magInSeconds = GameTime::ticksToSeconds( mMagInTicks );
 	return easedProgress( elapsedSeconds(), magInSeconds - kMagazineSeatSeconds, magInSeconds );
 }
 

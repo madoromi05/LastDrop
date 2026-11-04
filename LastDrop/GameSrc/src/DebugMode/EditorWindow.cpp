@@ -19,6 +19,7 @@
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/World/GameObjectWorld.h"
+#include "GameSrc/Interaction/Inventory.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -47,6 +48,39 @@ namespace{
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
+	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
+
+	// カバンの中身（種類ごとの数）と、足す・行を増やす／減らすボタン（GridInventory_Plan.txt。拠点・強化ができる前に試すため）。
+	// Add は重ねられる物なら 1 マスぶん（弾なら 30 発）、入る分だけ足す。
+	void drawInventory() {
+		if ( !gInventory ) {
+			ImGui::TextDisabled( "No bag." );
+			return;
+		}
+		const ItemGrid& grid = gInventory->grid();
+		ImGui::Text( "Cells: %d x %d", grid.columns(), grid.rows() );
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Row -" ) && gInventory->canSetRows( grid.rows() - 1 ) ) {
+			gInventory->setRows( grid.rows() - 1 );
+		}
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Row +" ) ) {
+			gInventory->setRows( grid.rows() + 1 );
+		}
+		for ( int i = 0; i < ITEM_NUMBER; ++i ) {
+			ItemId id = static_cast< ItemId >( i );
+			const ItemSpec& spec = itemSpec( id );
+			ImGui::PushID( i );
+			if ( ImGui::SmallButton( "Add" ) ) {
+				for ( int n = 0; n < spec.stackSize && gInventory->canAdd( id ); ++n ) {
+					gInventory->add( id );
+				}
+			}
+			ImGui::SameLine();
+			ImGui::Text( "%s: %d", spec.name, gInventory->count( id ) );
+			ImGui::PopID();
+		}
+	}
 
 	const char* tagName( GameObjectTag tag ) {
 		switch ( tag ) {
@@ -57,6 +91,7 @@ namespace{
 			case GameObjectTag::AmmoDrop: return "AmmoDrop";
 			case GameObjectTag::EscapeCar: return "EscapeCar";
 			case GameObjectTag::FuelStation: return "FuelStation";
+			case GameObjectTag::WeaponDrop: return "WeaponDrop";
 		}
 		return "?";
 	}
@@ -300,6 +335,9 @@ void draw() {
 		if ( ImGui::CollapsingHeader( "Objects" ) ) {
 			drawObjects();
 		}
+		if ( ImGui::CollapsingHeader( "Inventory" ) ) {
+			drawInventory();
+		}
 		if ( ImGui::CollapsingHeader( "Pad" ) ) {
 			drawGamePad();
 		}
@@ -316,6 +354,10 @@ void setObjects( const GameObjectWorld* objects ) {
 	gObjects = objects;
 }
 
+void setInventory( Inventory* inventory ) {
+	gInventory = inventory;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -329,6 +371,9 @@ void setPlayerInvincible( bool ) {
 }
 
 void setObjects( const GameObjectWorld* ) {
+}
+
+void setInventory( Inventory* ) {
 }
 
 } //namespace EditorWindow

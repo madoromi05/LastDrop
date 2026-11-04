@@ -170,6 +170,8 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mSwayPitch( 0.f ),
 	mArmOverride( nullptr ),
 	mArmOverrideWeight( 0.f ),
+	mArmFollowHandWeight( 0.f ),
+	mArmFollowReference( nullptr ),
 	mEyePosition( 0.f, kFallbackEyeHeight, 0.f ),
 	mHasWeaponBounds( false ),
 	mWeaponLow( 0.f, 0.f, 0.f ),
@@ -211,6 +213,12 @@ int supportHandBone, const Vector3& supportHandOnWeapon, const Vector3& weaponMi
 	mHasWeaponBounds = false; // 次の apply で、この銃の範囲を求め直す
 }
 
+void FirstPersonBody::clearWeapon() {
+	mHandBone = -1;        // 銃を持つ手が無い（どの補正も mHandBone < 0 で止まる）
+	mSupportHandBone = -1;
+	mHasWeaponBounds = false;
+}
+
 void FirstPersonBody::setHoldWeight( float weight ) {
 	mHoldWeight = weight;
 }
@@ -232,9 +240,11 @@ void FirstPersonBody::setSway( float yawDegree, float pitchDegree ) {
 	mSwayPitch = pitchDegree;
 }
 
-void FirstPersonBody::setArmOverride( const std::vector< Matrix34 >* pose, float weight ) {
+void FirstPersonBody::setArmOverride( const std::vector< Matrix34 >* pose, float weight, float followHandWeight, const Matrix34* followReference ) {
 	mArmOverride = pose;
 	mArmOverrideWeight = weight;
+	mArmFollowHandWeight = followHandWeight;
+	mArmFollowReference = followReference;
 }
 
 const Vector3& FirstPersonBody::eyePosition() const {
@@ -432,6 +442,19 @@ void FirstPersonBody::overrideArms( std::vector< Matrix34 >* pose ) const {
 	toCurrentChest.setInverse( layer[ mChestBone ] );
 	Matrix34 chestMove;
 	chestMove.setMul( ( *pose )[ mChestBone ], toCurrentChest );
+	// 今の体のアニメの右手へ寄せる（setArmOverride の followHandWeight）。差し替える腕を作ったときの体（followReference）の右手から、
+	// 今の体のアニメの右手がどれだけ動いたか（位置と向き）を、腕にまとめて掛ける（腕の形は変えない）。
+	// ライフルの歩き・走りは、止まった構えより手が低く・胸の傾きも違い・揺れるので、拳銃もライフルの右手と同じに動かす。
+	// 胸に付けて写すだけだと、胸の傾きの違いで拳銃の向きが変わる（歩くと銃口が上を向いた。14-7）。
+	if ( mArmFollowHandWeight > 0.f && mArmFollowReference && mHandBone >= 0 ) {
+		Matrix34 toReference;
+		toReference.setInverse( *mArmFollowReference );
+		Matrix34 handMove;
+		handMove.setMul( ( *pose )[ mHandBone ], toReference );
+		Matrix34 followed;
+		MatrixBlend::blend( chestMove, handMove, mArmFollowHandWeight, &followed );
+		chestMove = followed;
+	}
 	for ( int b : mArmBones ) {
 		Matrix34 target;
 		target.setMul( chestMove, layer[ b ] );

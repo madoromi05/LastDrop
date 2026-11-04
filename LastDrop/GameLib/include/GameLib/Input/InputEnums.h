@@ -57,11 +57,12 @@ enum class WorkId
     Flashlight, // 銃の懐中電灯を付ける／消す（押した瞬間。Escape from Tarkov のタクティカルデバイスと同じ T）
     Move,       // 移動（軸ワーク。パッドの左スティック。-1〜1・右と下が正）。キーの Up/Down/Left/Right と足して使う
     LookStick,  // 視点操作（軸ワーク。パッドの右スティック。-1〜1）。Look（マウスの画素数）とは単位が違うので分ける
+    Inventory,  // カバン（持ち物のマス目）の画面を開く／閉じる（押した瞬間。開いている間は世界が止まる）
 };
 
 // WorkId の数（全部の操作を順に見るとき用。計測の印など）。
 // WorkId を末尾に足したら、ここの最後の WorkId も足した物に直すこと。
-constexpr int kWorkIdCount = static_cast< int >( WorkId::LookStick ) + 1;
+constexpr int kWorkIdCount = static_cast< int >( WorkId::Inventory ) + 1;
 
 // コレクター（シーン別の入力割り当てグループ）種別
 enum class CollectorId

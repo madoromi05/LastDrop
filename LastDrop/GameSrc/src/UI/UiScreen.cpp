@@ -26,7 +26,6 @@ namespace{
 	const float kListColumnX[] = { -220.f, 20.f }; // 列ごとの左端（画面の横の中央から）。操作の名前・キーの名前
 	const float kListButtonGap = 24.f;      // 最後の行の真ん中から、ボタンの上端まで
 	// 本編の HUD（画素）。
-	const float kPromptOffsetY = 40.f;     // 照準から案内までの下向きの距離
 	const float kStatusMargin = 16.f;      // 画面の左端・下端からの余白
 	const float kStatusLineHeight = 26.f;  // 状態表示1行の高さ（UI_TEXT_NORMAL の文字より少し広く）
 }
@@ -93,12 +92,6 @@ UiRect UiScreen::listButtonRect( int lineCount ) {
 
 Vector2 UiScreen::screenCenter() {
 	return Vector2( 0.f, Framework::instance().height() * kHalf );
-}
-
-Vector2 UiScreen::promptPosition() {
-	Vector2 position = screenCenter();
-	position.y += kPromptOffsetY;
-	return position;
 }
 
 Vector2 UiScreen::statusLinePosition( int index ) {

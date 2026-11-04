@@ -42,6 +42,7 @@ namespace{
 		{ "Reload",         { WorkId::Reload } },
 		{ "Flashlight",     { WorkId::Flashlight } },
 		{ "Interact",       { WorkId::Interact } },
+		{ "Inventory",      { WorkId::Inventory } },
 		{ "Pause",          { WorkId::Menu } },
 	};
 	const int kLineCount = static_cast< int >( sizeof( kLines ) / sizeof( kLines[ 0 ] ) );

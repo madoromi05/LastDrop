@@ -18,8 +18,8 @@ namespace{
 	// 値は元アニメ（In Place にする前）が1周で進む距離から測った。
 	const float kWalkSpeed      = 1.4f / GameTime::kTicksPerSecond; // Walking（素手）
 	const float kRunSpeed       = 3.2f / GameTime::kTicksPerSecond; // Slow Run（素手）
-	const float kRifleWalkSpeed = 1.0f / GameTime::kTicksPerSecond; // walking（Shooter Pack）: 1.36m / 1.37秒
-	const float kRifleRunSpeed  = 3.1f / GameTime::kTicksPerSecond; // rifle run（Shooter Pack）: 2.30m / 0.73秒
+	const float kArmedWalkSpeed = 1.0f / GameTime::kTicksPerSecond; // walking（Shooter Pack）: 1.36m / 1.37秒
+	const float kArmedRunSpeed  = 3.1f / GameTime::kTicksPerSecond; // rifle run（Shooter Pack）: 2.30m / 0.73秒
 	const float kStopSpeed      = 0.f;
 	// 加速・減速（m/フレーム²）。毎秒²の値をフレーム²に直す。
 	// 止まる→走るは約0.4秒、走る→止まるは約0.27秒。減速を強めにしているのは、止まりたいときに滑り続けると操作が重く感じるため。
@@ -49,9 +49,9 @@ namespace{
 		{ Animator::STATE_IDLE,       "idle",       kStopSpeed,      GAIT_STILL, kBareHands   },
 		{ Animator::STATE_WALK,       "walk",       kWalkSpeed,      GAIT_WALK,  kBareHands   },
 		{ Animator::STATE_RUN,        "run",        kRunSpeed,       GAIT_RUN,   kBareHands   },
-		{ Animator::STATE_RIFLE_IDLE, "rifle_idle", kStopSpeed,      GAIT_STILL, kWeaponDrawn },
-		{ Animator::STATE_RIFLE_WALK, "rifle_walk", kRifleWalkSpeed, GAIT_WALK,  kWeaponDrawn },
-		{ Animator::STATE_RIFLE_RUN,  "rifle_run",  kRifleRunSpeed,  GAIT_RUN,   kWeaponDrawn },
+		{ Animator::STATE_ARMED_IDLE, "rifle_idle", kStopSpeed,      GAIT_STILL, kWeaponDrawn },
+		{ Animator::STATE_ARMED_WALK, "rifle_walk", kArmedWalkSpeed, GAIT_WALK,  kWeaponDrawn },
+		{ Animator::STATE_ARMED_RUN,  "rifle_run",  kArmedRunSpeed,  GAIT_RUN,   kWeaponDrawn },
 	};
 
 	// 状態の行。表に無い状態は、先頭（素手の静止）の行を返す。
@@ -181,5 +181,5 @@ float PlayerLocomotionComponent::gaitPhase() const {
 
 float PlayerLocomotionComponent::walkRate() const {
 	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）。
-	return mSpeed / kRifleWalkSpeed;
+	return mSpeed / kArmedWalkSpeed;
 }

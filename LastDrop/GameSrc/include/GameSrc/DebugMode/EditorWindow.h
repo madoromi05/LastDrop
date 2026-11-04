@@ -8,9 +8,11 @@
 //   Perf  ：計測の数字・グラフ・区間・印・ロード・GPU（中身は GameLib の Profiling::drawPerfPanel）
 //   Tuning：調整値の構造体（TuningPanel。自キャラ・銃・視点・ゾンビの群れ。プリセットの保存・読み込みと Copy as C++）
 //   Objects：世界に置いた物の一覧（Unity の Hierarchy。名前・タグ・部品の数。ComponentSystem2_Plan.txt の ★6）
+//   Inventory：カバンの中身を足す・行を増やす／減らす（GridInventory_Plan.txt。拠点・強化ができる前に試すため）
 //   Zombies / Audio：まだ灰色の見出しだけ
 // ImGui の土台（開け閉め・入力の受け渡し）は GameLib の DebugUi が持つ。ここは窓の中身だけ。
 class GameObjectWorld;
+class Inventory;
 
 namespace EditorWindow{
 
@@ -22,6 +24,9 @@ void setPlayerInvincible( bool invincible );
 // Objects の欄に一覧を出す物の持ち主。窓は世界を知らないので、GameScene から渡す。所有権は受け取らない。
 // nullptr なら欄に何も出さない。GameScene が終わるときに nullptr へ戻す（消えた世界を指し続けないように）。Release では何もしない。
 void setObjects( const GameObjectWorld* objects );
+// Inventory の欄で触るカバン。窓は自キャラを知らないので、GameScene から渡す。所有権は受け取らない。
+// nullptr なら欄に何も出さない。GameScene が終わるときに nullptr へ戻す。Release では何もしない。
+void setInventory( Inventory* inventory );
 
 } //namespace EditorWindow
 

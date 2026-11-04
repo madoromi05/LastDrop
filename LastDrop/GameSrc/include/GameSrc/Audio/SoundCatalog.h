@@ -43,6 +43,8 @@ enum SoundId{
 	SOUND_IMPACT_METAL,		// 金属（車・ガソリン缶・弾）。短い破裂の後に響く
 	// ── 装備（末尾に足す。SoundGen の種は音の番号から決まるので、途中に挿すと後ろの合成音が全部変わる）──
 	SOUND_FLASHLIGHT_CLICK,	// 銃の懐中電灯のスイッチ（付ける・消す）
+	// ── 銃（末尾に足す。理由は上と同じ）──
+	SOUND_PISTOL_SHOT,		// 拳銃の銃声（1発ごと。ライフルは SOUND_GUNSHOT。どちらを鳴らすかは WeaponSpec::shotSound）
 
 	SOUND_NUM, // 音の種類の数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 };

@@ -61,18 +61,6 @@ bool PickupComponent::canInteract( const Inventory& inventory ) const {
 	return !mTaken && inventory.canAdd( mItem->item() );
 }
 
-std::string PickupComponent::prompt( const Inventory& inventory ) const {
-	const std::string name = itemSpec( mItem->item() ).name;
-	if ( !inventory.canAdd( mItem->item() ) ) {
-		return "Can't carry more " + name;
-	}
-	// 1 つだけなら数は書かない（ガソリンの「Pick up Fuel」のまま）。
-	if ( mItem->amount() > 1 ) {
-		return "[E] Pick up " + name + " (" + std::to_string( mItem->amount() ) + ")";
-	}
-	return "[E] Pick up " + name;
-}
-
 void PickupComponent::interact( Inventory* inventory ) {
 	ASSERT( inventory && canInteract( *inventory ) && "PickupComponent::interact : cannot pick up." );
 	while ( mItem->amount() > 0 && inventory->canAdd( mItem->item() ) ) {

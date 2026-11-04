@@ -22,10 +22,6 @@ namespace{
 	const float kClothAimInVolume = 0.125f;
 	const float kClothAimOutVolume = 0.1f;
 
-	// ── 銃声の大きさ ──
-	// 元の WAV のまま鳴らす。足音・装備の音（0.5 以下）よりはっきり大きく、連射で重なっても割れにくい大きさ。
-	const float kGunshotVolume = 1.f;
-
 	// ── 空撃ち・リロードの大きさ ──
 	// 自分の手元の金属音。素材の一番大きい所が 0.9 前後と大きいので、出し入れの音（0.5）と同じくらいに抑える。
 	// 空撃ちは弾切れに気付かせる音なので、リロードより少し大きくする。
@@ -57,7 +53,8 @@ void PlayerFoley::update( const FoleyState& state, bool stepped ) {
 		playStep( state );
 	}
 	if ( state.fired ) {
-		mAudio->play( SOUND_GUNSHOT, AudioEngine::BUS_EFFECT, state.bodyPosition, kGunshotVolume );
+		// 銃声の素材と大きさは銃ごと（WeaponCatalog）。ライフルは元の WAV のまま（足音・装備の音よりはっきり大きく、連射で重なっても割れにくい）。
+		mAudio->play( state.shotSound, AudioEngine::BUS_EFFECT, state.bodyPosition, state.shotVolume );
 	}
 	playWeaponHandling( state );
 	mHasPrevious = true;
