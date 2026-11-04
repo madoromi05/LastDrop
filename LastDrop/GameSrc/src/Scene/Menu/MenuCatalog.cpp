@@ -8,7 +8,7 @@ using namespace GameLib;
 namespace{
 	const char* kGameTitle = "ZOMBIE ESCAPE"; // 仮の名前
 	const unsigned kTitleColor = VertexColor::pack( 0.95f, 0.75f, 0.2f );
-	const char* kPauseHeading = "PAUSED";
+	const char* kPauseHeading = "Pause";
 	const unsigned kPauseColor = VertexColor::WHITE;
 
 	// 押されたら種別 id のシーンへ切り替える処理。ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）。

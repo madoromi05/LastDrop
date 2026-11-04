@@ -7,7 +7,6 @@
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
-#include <cctype>
 #include <cmath>
 #include <cstdio>
 
@@ -31,9 +30,9 @@ namespace{
 	const unsigned kExitColor = VertexColor::pack( 0.4f, 0.95f, 0.45f ); // 脱出点の光と同じ緑の仲間
 
 	const char* kDayFormat = "DAY %d";
-	const char* kExitsPrefix = "EXITS: ";
+	const char* kExitsPrefix = "脱出点：";
 	const char* kExitsSeparator = " / ";
-	const char* kExtractFormat = "EXTRACTING %.1f";
+	const char* kExtractFormat = "脱出中 %.1f";
 }
 
 RaidHud::RaidHud( UiRenderer* renderer ) :
@@ -41,19 +40,13 @@ RaidHud::RaidHud( UiRenderer* renderer ) :
 	ASSERT( mRenderer && "RaidHud : renderer is null." );
 }
 
-std::string RaidHud::exitNames( const ExtractionTracker& extraction, const char* separator, bool upper ) {
+std::string RaidHud::exitNames( const ExtractionTracker& extraction, const char* separator ) {
 	std::string names;
 	for ( const ExtractZone& zone : extraction.zones() ) {
 		if ( !names.empty() ) {
 			names += separator;
 		}
-		std::string name = zone.name;
-		if ( upper ) {
-			for ( char& c : name ) {
-				c = static_cast< char >( std::toupper( static_cast< unsigned char >( c ) ) );
-			}
-		}
-		names += name;
+		names += zone.name;
 	}
 	return names;
 }
@@ -75,7 +68,7 @@ void RaidHud::draw( const RaidSession& session, int day ) {
 	if ( session.clock().elapsedSeconds() < params.exitNoticeSeconds ) {
 		std::snprintf( text, sizeof( text ), kDayFormat, day );
 		mRenderer->addText( text, Vector2( center, kNoticeTop ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kNoticeColor );
-		std::string exits = kExitsPrefix + exitNames( session.extraction(), kExitsSeparator, true );
+		std::string exits = kExitsPrefix + exitNames( session.extraction(), kExitsSeparator );
 		mRenderer->addText( exits.c_str(), Vector2( center, kNoticeTop + kNoticeLineHeight ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kExitColor );
 	}
 

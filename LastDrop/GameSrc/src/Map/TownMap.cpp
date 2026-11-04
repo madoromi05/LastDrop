@@ -156,10 +156,10 @@ namespace{
 	const float kEastRoad = static_cast< float >( kColumnNumber - 1 );
 	const float kAtCenter = 0.f; // 道の中心から動かさない・向きは使わない
 	const ExtractSpot kExtractSpots[] = {
-		{ "North", { kSideMiddle, kNorthRoad, kAtCenter, kAtCenter, kAtCenter } },
-		{ "East",  { kEastRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
-		{ "South", { kSideMiddle, kSouthRoad, kAtCenter, kAtCenter, kAtCenter } },
-		{ "West",  { kWestRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
+		{ "北", { kSideMiddle, kNorthRoad, kAtCenter, kAtCenter, kAtCenter } },
+		{ "東",  { kEastRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
+		{ "南", { kSideMiddle, kSouthRoad, kAtCenter, kAtCenter, kAtCenter } },
+		{ "西",  { kWestRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
 	};
 
 	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。

@@ -24,8 +24,8 @@ public:
 	// 同じ描画で一時停止のメニュー・カバンの画面は描かないこと（UiRenderer は 1 回の描画に 1 回だけ）。day: 何日目か。
 	void draw( const RaidSession& session, int day );
 
-	// 開いている脱出点の名前を separator でつないだ文字（カバンの画面の見出しの下にも使う）。upper: 大文字にするか。
-	static std::string exitNames( const ExtractionTracker& extraction, const char* separator, bool upper );
+	// 開いている脱出点の名前を separator でつないだ文字（カバンの画面の見出しの下にも使う）。
+	static std::string exitNames( const ExtractionTracker& extraction, const char* separator );
 
 private:
 	UiRenderer* mRenderer; // 借りているだけ

@@ -97,7 +97,7 @@ public:
 		}
 	}
 	// Constructor for procedural (pre-allocated) texture
-	Impl( int w, int h, bool createMipChain, ID3D11Device* device, ID3D11DeviceContext* context ) :
+	Impl( int w, int h, bool createMipChain, ID3D11Device* device, ID3D11DeviceContext* context, bool keepsCpuPixels = false ) :
 	mGpuTexture( 0 ),
 	mSRV( 0 ),
 	mDevice( device ),
@@ -111,7 +111,8 @@ public:
 	mExtension( EXT_UNKNOWN ),
 	mName( 0 ),
 	mRequestedAt( 0 ),
-	mColorSpace( TEXTURE_COLOR_SPACE_LINEAR ){
+	mColorSpace( TEXTURE_COLOR_SPACE_LINEAR ),
+	mKeepsCpuPixels( keepsCpuPixels ){
 		createStagingObject( w, h, createMipChain );
 	}
 	// Constructor from raw data buffer
@@ -163,6 +164,14 @@ public:
 	void ensureGpuUploaded(){
 		if ( !mNeedsUpload && mGpuTexture ) return;
 		if ( mMips.empty() && mCompressed.levels.empty() ) return;
+		// 後から書き足せる画像は、大きさも形式も変わらないので、作り直さず中身だけ送り直す。
+		if ( mKeepsCpuPixels && mGpuTexture ){
+			for ( size_t i = 0; i < mMips.size(); ++i ){
+				mContext->UpdateSubresource( mGpuTexture, static_cast< UINT >( i ), nullptr, mMips[ i ].pixels.data(), mMips[ i ].width * 4, 0 );
+			}
+			mNeedsUpload = false;
+			return;
+		}
 
 		if ( mSRV       ){ mSRV->Release();        mSRV = 0; }
 		if ( mGpuTexture){ mGpuTexture->Release(); mGpuTexture = 0; }
@@ -232,7 +241,9 @@ public:
 				<< static_cast< int >( sUploadedBytes / ( kKiB * kKiB ) ) << " MiB)" << GameLib::endl;
 		}
 
-		mMips.clear();
+		if ( !mKeepsCpuPixels ){ // 後から書き足せる画像は、次に書き足すときのために残す
+			mMips.clear();
+		}
 		mCompressed.levels.clear();
 		mCompressed.levels.shrink_to_fit(); // GPU へ送った後は CPU に残さない（4096² の BC7 で 22MB）
 		mNeedsUpload = false;
@@ -745,6 +756,8 @@ public:
 	TextureColorSpace         mColorSpace; // 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
 	// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）。
 	DdsReader::Image          mCompressed;
+	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる。
+	bool                      mKeepsCpuPixels = false;
 };
 
 } //namespace Graphics

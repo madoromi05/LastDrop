@@ -626,6 +626,7 @@
     <ClInclude Include="GameLib\include\GameLib\Base\SharedPtr.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Stack.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Tank.h" />
+    <ClInclude Include="GameLib\include\GameLib\Base\Utf8.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Vector.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\InFile.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h" />

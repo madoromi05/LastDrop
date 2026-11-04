@@ -38,15 +38,15 @@ namespace{
 	};
 	const UiRect kTitleRect = { -110.f, 400.f, 220.f, 44.f }; // 横の中央からのずれ・上端・幅・高さ（メニューのボタンと同じ大きさ）
 
-	const char* kClearFormat = "SURVIVED %d DAYS";
-	const char* kKilledHeading = "KILLED IN ACTION";
-	const char* kMissingHeading = "MISSING IN ACTION";
+	const char* kClearFormat = "%d 日間 生き延びた";
+	const char* kKilledHeading = "死亡";
+	const char* kMissingHeading = "行方不明";
 	const char* kDayFormat = "DAY %d";
-	const char* kTimesFormat = "%d x %d";
+	const char* kTimesFormat = "%d × %d";
 	const char* kNoDetail = "";
-	const char* kNewBest = "NEW BEST";
-	const char* kBestFormat = "BEST %d";
-	const char* kTitleLabel = "Title";
+	const char* kNewBest = "最高記録";
+	const char* kBestFormat = "最高 %d";
+	const char* kTitleLabel = "タイトルへ";
 
 	const unsigned kClearColor = VertexColor::pack( 0.4f, 0.9f, 0.4f );
 	const unsigned kFailColor = VertexColor::pack( 0.85f, 0.12f, 0.1f );
@@ -89,12 +89,12 @@ RunEndScene::RunEndScene( GameResources* resources ) :
 
 	// 内訳（R2_Plan.txt 6-4）。掛け算の重みは今の調整値（RaidParams）で出す。
 	std::snprintf( text, sizeof( text ), kTimesFormat, score.daysSurvived, roundToInt( params.scorePerDay ) );
-	addScoreLine( LINE_DAYS, "Days survived", text, score.dayPoints, kTextColor );
+	addScoreLine( LINE_DAYS, "生き延びた日数", text, score.dayPoints, kTextColor );
 	std::snprintf( text, sizeof( text ), kTimesFormat, score.kills, roundToInt( params.scorePerKill ) );
-	addScoreLine( LINE_KILLS, "Kills", text, score.killPoints, kTextColor );
-	addScoreLine( LINE_ITEMS, "Items", kNoDetail, score.itemPoints, kTextColor );
-	addScoreLine( LINE_CLEAR_BONUS, "Clear bonus", kNoDetail, score.clearBonus, kTextColor );
-	addScoreLine( LINE_TOTAL, "SCORE", kNoDetail, score.total(), kTotalColor );
+	addScoreLine( LINE_KILLS, "倒した数", text, score.killPoints, kTextColor );
+	addScoreLine( LINE_ITEMS, "持ち帰った物", kNoDetail, score.itemPoints, kTextColor );
+	addScoreLine( LINE_CLEAR_BONUS, "クリアのボーナス", kNoDetail, score.clearBonus, kTextColor );
+	addScoreLine( LINE_TOTAL, "スコア", kNoDetail, score.total(), kTotalColor );
 	if ( end.newBest ) {
 		canvas.add( std::make_unique< UiLabel >( kNewBest, UI_ANCHOR_CENTER, Vector2( kPointsColumn, lineTop( LINE_BEST ) ), UI_TEXT_NORMAL,
 			UI_ALIGN_MIDDLE_LEFT, kTotalColor ) );

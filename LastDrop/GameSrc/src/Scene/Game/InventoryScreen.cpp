@@ -43,18 +43,18 @@ namespace{
 
 		MENU_ITEM_NUMBER,
 	};
-	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "Equip", "Drop", "Move", "Cancel" };
+	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "装備", "捨てる", "動かす", "やめる" };
 	// 手に持っている銃の印（マスの左上）。
 	const char* kEquippedMark = "E";
 
-	const char* kHeading = "BAG";
-	const char* kEmptyName = "Empty";
-	const char* kBrowseHint = "[Enter] Select   [Tab] Close";
-	const char* kMenuHint = "[Enter] Decide   [Esc] Back";
-	const char* kMovingHint = "[Enter] Place   [Esc] Cancel";
-	const char* kPlacingHint = "[Enter] Put   [F] Auto   [Esc] Cancel";
-	const char* kPickupFormat = "Pick up: %s";           // 1 つずつの物（ガソリン・銃）
-	const char* kPickupAmountFormat = "Pick up: %s x%d"; // 重ねられる物（弾）は数も
+	const char* kHeading = "カバン";
+	const char* kEmptyName = "空";
+	const char* kBrowseHint = "[Enter] 選ぶ   [Tab] 閉じる";
+	const char* kMenuHint = "[Enter] 決定   [Esc] 戻る";
+	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
+	const char* kPlacingHint = "[Enter] 置く   [F] 自動で置く   [Esc] やめる";
+	const char* kPickupFormat = "拾う：%s";           // 1 つずつの物（ガソリン・銃）
+	const char* kPickupAmountFormat = "拾う：%s ×%d"; // 重ねられる物（弾）は数も
 	const int kTextSize = 64;
 
 	// 後ろの町を透かして見せる濃さ（InventoryPickup_Plan.txt Q6。ユーザー指定の 0.5）。暗くする板とマスの背景に使い、物の絵と文字は濃いまま。

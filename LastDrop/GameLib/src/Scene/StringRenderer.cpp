@@ -10,6 +10,7 @@
 #include "GameLib/Base/Stack.h"
 #include "GameLib/Base/Array.h"
 #include "GameLib/Base/Impl/ReferenceType.h"
+#include "GameLib/Base/Utf8.h"
 #include <algorithm>
 #include <string>
 using namespace std;
@@ -81,20 +82,12 @@ public:
 			Request& r = *mRequests.get();
 			Vector2 pos = r.mPosition;
 			float charHeight = static_cast< float >( r.mFont.charHeight() ) / mGlyphScale;
-			//一文字づつ取り出す。unsigned charにする必要あり
-			int n = static_cast< int >( r.mString.size() );
-			const unsigned char* s = reinterpret_cast< const unsigned char* >( r.mString.c_str() );
-			for ( int i = 0; i < n; ++i ){
+			//一文字づつ取り出す。文字列は UTF-8（/utf-8 でビルドするため）。code は Unicode のコードポイント。
+			const char* s = r.mString.c_str();
+			int byteCount = 0;
+			for ( ; *s != '\0'; s += byteCount ){
 				//Char準備
-				int code = s[ i ];
-				//ShiftJis範囲か？
-				if ( ( code >= 0x81 && code <= 0x9F ) || ( code >= 0xE0 && code <= 0xFC ) ){
-					if ( ( i + 1 < n ) ){
-						code <<= 8;
-						code |= s[ i + 1 ]; //2バイトコード
-						++i;
-					}
-				}
+				int code = Utf8::decode( s, &byteCount );
 				if ( code == '\n' ){ //改行文字ですな。
 					pos.x = r.mPosition.x;
 					pos.y += charHeight;

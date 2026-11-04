@@ -38,8 +38,6 @@ public:
 		bool cursorLocked;            // カーソルをロックしているか（操作説明を切り替える）
 		const char* shaderError;      // シェーダのコンパイルエラー。空文字列なら出さない。nullptr 不可
 	};
-	// 文字を出す。1回の描画につき1回。
-	void drawText( const TextState& state ) const;
 
 #ifdef ZF_EDITOR
 	// 入力を読んで、表示を切り替える（F1・F2・F3）。1回の描画につき1回、Pad::update の後に呼ぶ。

@@ -51,8 +51,6 @@ private:
 	// 座標の高さ（480）の大きさで作った文字の絵を大きな画面へ引き伸ばすと、ドットのまま拡大されて縁がギザギザになるため。
 	// 置く位置と大きさは座標のままにし、絵だけを細かくする（StringRenderer::setGlyphScale で割って並べる）。
 	void fitFontsToScreen();
-	// font の英数字・記号の絵を、最初の描画より前にすべて作っておく（理由は UiRenderer.cpp）。
-	static void prepareGlyphs( GameLib::Scene::Font& font );
 	// text を size の文字で書いたときの幅（画素）。中央に揃えるのに使う。
 	float textWidth( const char* text, UiTextSize size );
 

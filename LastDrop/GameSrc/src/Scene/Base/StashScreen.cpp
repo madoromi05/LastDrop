@@ -38,17 +38,17 @@ namespace{
 	const float kFrameThickness = 2.f;
 	const int kTextSize = 64;
 
-	const char* kHeading = "BASE";
-	const char* kStashLabel = "STASH";
-	const char* kBagLabel = "BAG";
-	const char* kDeployLabel = "DEPLOY";
+	const char* kHeading = "拠点";
+	const char* kStashLabel = "倉庫";
+	const char* kBagLabel = "カバン";
+	const char* kDeployLabel = "出撃";
 	const char* kDayFormat = "DAY %d / %d";
-	const char* kBestFormat = "BEST %d";
-	const char* kEmptyName = "Empty";
-	const char* kBrowseHint = "[Enter] Pick up   [Tab] Switch   [Esc] Title";
-	const char* kMovingHint = "[Enter] Place   [Esc] Cancel";
-	const char* kDeployHint = "[Enter] Go to the town";
-	const char* kNoWeaponWarning = "No weapon in bag";
+	const char* kBestFormat = "最高 %d";
+	const char* kEmptyName = "空";
+	const char* kBrowseHint = "[Enter] 持つ   [Tab] 切り替え   [Esc] タイトルへ";
+	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
+	const char* kDeployHint = "[Enter] 町へ出る";
+	const char* kNoWeaponWarning = "カバンに銃がありません";
 
 	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
 	const unsigned kHintColor = VertexColor::pack( 0.65f, 0.65f, 0.65f );

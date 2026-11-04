@@ -14,11 +14,11 @@
 using namespace GameLib::Input;
 
 namespace{
-	const char* kHeading = "CONTROLS";
+	const char* kHeading = "操作の一覧";
 	const unsigned kHeadingColor = VertexColor::WHITE;
 	const unsigned kActionColor = VertexColor::pack( 0.9f, 0.9f, 0.9f );
 	const unsigned kKeyColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // ボタンを選んだときと同じ燃料の色（黄）
-	const char* kBackLabel = "Back";
+	const char* kBackLabel = "戻る";
 	const int kPlayer = 0;          // 一覧に見せるのは自キャラを動かす 0 番の割り当て
 	const int kActionColumn = 0;    // UiScreen::listLinePosition の列
 	const int kKeyColumn = 1;
@@ -33,17 +33,17 @@ namespace{
 
 	// 上から見せる順。移動は W A S D と読めるよう、上・左・下・右の順に並べる。
 	const Line kLines[] = {
-		{ "Move",           { WorkId::Up, WorkId::Left, WorkId::Down, WorkId::Right } },
-		{ "Run",            { WorkId::Run } },
-		{ "Look",           { WorkId::Look } },
-		{ "Fire",           { WorkId::Fire } },
-		{ "Aim",            { WorkId::Aim } },
-		{ "Draw / Holster", { WorkId::Holster } },
-		{ "Reload",         { WorkId::Reload } },
-		{ "Flashlight",     { WorkId::Flashlight } },
-		{ "Interact",       { WorkId::Interact } },
-		{ "Inventory",      { WorkId::Inventory } },
-		{ "Pause",          { WorkId::Menu } },
+		{ "移動",           { WorkId::Up, WorkId::Left, WorkId::Down, WorkId::Right } },
+		{ "走る",            { WorkId::Run } },
+		{ "見回す",           { WorkId::Look } },
+		{ "撃つ",           { WorkId::Fire } },
+		{ "覗く",            { WorkId::Aim } },
+		{ "銃を出す／しまう", { WorkId::Holster } },
+		{ "リロード",         { WorkId::Reload } },
+		{ "ライト",     { WorkId::Flashlight } },
+		{ "拾う・使う",       { WorkId::Interact } },
+		{ "カバン",      { WorkId::Inventory } },
+		{ "一時停止",          { WorkId::Menu } },
 	};
 	const int kLineCount = static_cast< int >( sizeof( kLines ) / sizeof( kLines[ 0 ] ) );
 

@@ -27,7 +27,7 @@ enum ItemKind{
 // 種類を足しても、マス目の処理は変えずにこの表へ 1 行足すだけで済むようにするため。
 // 何個まで持てるかは決めない（カバンの空きのマス目が上限）。SummaryPlan/個別仕様/GridInventory_Plan.txt。
 struct ItemSpec{
-	const char* name; // 画面に出す名前（英語。UiRenderer は英数字しか描けない）
+	const char* name; // 画面に出す名前（日本語。F6 の ImGui は日本語の字を持たないので、そちらは saveName を出す）
 	// 保存のファイル（save.xml）に書く名前（英小文字）。ItemId の番号で書くと、並びを変えたときに古いファイルが別の物になるため。
 	// 一度決めたら変えない（変えると、その名前で保存した物が読めなくなる）。R2_Plan.txt 7 章。
 	const char* saveName;

@@ -22,6 +22,14 @@ Texture Texture::create( int w, int h, bool createMipChain ){
 	return r;
 }
 
+Texture Texture::createWritable( int w, int h ){
+	const bool kNoMipChain = false; // 書き足すたびにミップを作り直さないため
+	const bool kKeepsCpuPixels = true;
+	Texture r;
+	r.mImpl = NEW Texture::Impl( w, h, kNoMipChain, gManagerImpl->dxDevice(), gManagerImpl->dxContext(), kKeepsCpuPixels );
+	return r;
+}
+
 Texture Texture::create( const char* filename, TextureColorSpace colorSpace ){
 	Texture r;
 	r.mImpl = NEW Texture::Impl( filename, colorSpace, gManagerImpl->dxDevice(), gManagerImpl->dxContext() );

@@ -1,6 +1,7 @@
 #include "GameSrc/UI/UiRenderer.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Base/Utf8.h"
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Texture.h"
@@ -9,8 +10,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。英数字が読みやすい、どの Windows にもあるもの。
-	const char* kFontName = "Arial";
+	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。日本語の字があり、Windows 10 以降に必ずあるゴシック体。
+	// 小さくても読みやすく、英数字もきれい（英数字も同じフォントで描く。混ぜると高さと線の太さが揃わない）。JapaneseText_Plan.txt Q4。
+	const char* kFontName = "Yu Gothic UI";
 	// 大きさごとの文字の高さ（ゲームの座標の画素。目安）。UiTextSize の並びと同じ順。
 	// 実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。
 	const int kCharHeights[ UI_TEXT_SIZE_NUMBER ] = {
@@ -35,9 +37,6 @@ namespace{
 	const float kImageUvTopLeft = 0.f;
 	const float kImageUvBottomRight = 1.f;
 	const float kDefaultGlyphScale = 1.f; // 画面の大きさが分からないときの、文字の絵の細かさ（座標と同じ）
-	// 最初に文字の絵を作っておく範囲（ASCII の表示できる文字すべて。空白〜チルダ）。
-	const int kFirstPrintableChar = 0x20;
-	const int kLastPrintableChar = 0x7e;
 }
 
 UiRenderer::UiRenderer() :
@@ -67,8 +66,8 @@ void UiRenderer::fitFontsToScreen() {
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
 		int charHeight = static_cast< int >( static_cast< float >( kCharHeights[ i ] ) * scale + kHalf );
 		// 古いフォントは、もう積んだ文字（あれば）が持っているので、この draw が終わるまで消えない。
+		// 字の絵は初めて使うときに描き足される（文字の画像は後から書き足せる作り。GameLib の Texture::createWritable）。
 		mFonts[ i ] = Scene::Font::create( kFontName, charHeight, kBold, kItalic, kProportional, kAntialias );
-		prepareGlyphs( mFonts[ i ] );
 		mStrings[ i ].setFont( mFonts[ i ] );
 		mStrings[ i ].setGlyphScale( scale );
 	}
@@ -124,26 +123,17 @@ void UiRenderer::draw() {
 	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 }
 
-void UiRenderer::prepareGlyphs( Scene::Font& font ) {
-	// OS のフォントは、文字を初めて使うときにその文字の絵をテクスチャへ描き足す。ところが GameLib の DX11 版のテクスチャは、
-	// 一度 GPU へ送ると CPU 側の画素を捨てるので、その後に新しい文字を描き足そうとすると止まる（TextureImpl::lock の ASSERT）。
-	// HUD の案内のように途中から新しい文字が出る画面があるので、最初の描画より前に、使う文字をすべて作っておく。
-	Graphics::Texture texture;
-	Vector2 uvTopLeft;
-	Vector2 uvBottomRight;
-	for ( int code = kFirstPrintableChar; code <= kLastPrintableChar; ++code ) {
-		font.getChar( &texture, &uvTopLeft, &uvBottomRight, code );
-	}
-}
-
 float UiRenderer::textWidth( const char* text, UiTextSize size ) {
 	// 文字の絵がフォントのテクスチャのどこにあるか（UV）から、1文字ずつ幅を足す。
+	// 文字列は UTF-8 なので、StringRenderer と同じ読み方（Utf8::decode）で 1 字ずつ取り出す（1 バイトずつ数えると日本語の幅が合わない）。
 	float width = 0.f;
-	for ( const char* c = text; *c != '\0'; ++c ) {
+	int byteCount = 0;
+	for ( const char* c = text; *c != '\0'; c += byteCount ) {
+		int code = Utf8::decode( c, &byteCount );
 		Graphics::Texture texture;
 		Vector2 uvTopLeft;
 		Vector2 uvBottomRight;
-		if ( !mFonts[ size ].getChar( &texture, &uvTopLeft, &uvBottomRight, static_cast< unsigned char >( *c ) ) ) {
+		if ( !mFonts[ size ].getChar( &texture, &uvTopLeft, &uvBottomRight, code ) ) {
 			continue;
 		}
 		width += ( uvBottomRight.x - uvTopLeft.x ) * static_cast< float >( texture.width() );

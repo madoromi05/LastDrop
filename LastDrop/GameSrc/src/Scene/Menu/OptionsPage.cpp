@@ -14,13 +14,13 @@
 #include <string>
 
 namespace{
-	const char* kHeading = "OPTIONS";
+	const char* kHeading = "設定";
 	const unsigned kHeadingColor = VertexColor::WHITE;
-	const char* kMasterVolumeLabel = "Master Volume";
-	const char* kEffectVolumeLabel = "Effects Volume";
-	const char* kSensitivityLabel = "Mouse Sensitivity";
-	const char* kControlsLabel = "Controls";
-	const char* kBackLabel = "Back";
+	const char* kMasterVolumeLabel = "全体の音量";
+	const char* kEffectVolumeLabel = "効果音の音量";
+	const char* kSensitivityLabel = "マウス感度";
+	const char* kControlsLabel = "操作の一覧";
+	const char* kBackLabel = "戻る";
 
 	// 上から並べる行の番号（UiScreen::settingRowRect / settingButtonRect の番号）。
 	enum Row{

@@ -83,17 +83,6 @@ GameDebugOverlay::GameDebugOverlay()
 	{
 }
 
-void GameDebugOverlay::drawText( const TextState& state ) const {
-	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく。
-	if ( state.shaderError[ 0 ] != '\0' ) {
-		drawErrorLine( kHelpColumn, rowFromBottom( kShaderErrorLine ), state.shaderError );
-	}
-	DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kHelpLine ),
-		state.cursorLocked
-			? "OnCursor"
-			: "Click: lock cursor" );
-}
-
 #ifdef ZF_EDITOR
 void GameDebugOverlay::handleInput() {
 	if ( InputDebugCollision() ) {

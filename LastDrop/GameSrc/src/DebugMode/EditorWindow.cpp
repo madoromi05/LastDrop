@@ -121,7 +121,7 @@ namespace{
 		}
 		ImGui::EndDisabled();
 		ImGui::SameLine();
-		ImGui::Text( "%s: %d", spec.name, gInventory->count( id ) );
+		ImGui::Text( "%s: %d", spec.saveName, gInventory->count( id ) );
 		ImGui::PopID();
 	}
 
@@ -155,7 +155,7 @@ namespace{
 			drawItemRow( id );
 		}
 		if ( gLastAdd.wanted > 0 ) {
-			ImGui::TextColored( kBagFullColor, "Bag full: %s added %d / %d", itemSpec( gLastAdd.item ).name, gLastAdd.added, gLastAdd.wanted );
+			ImGui::TextColored( kBagFullColor, "Bag full: %s added %d / %d", itemSpec( gLastAdd.item ).saveName, gLastAdd.added, gLastAdd.wanted );
 		}
 	}
 
@@ -203,7 +203,7 @@ namespace{
 				gRun->stash().placeAnywhere( stack );
 			}
 			ImGui::SameLine();
-			ImGui::Text( "%s: %d", spec.name, gRun->stash().total( id ) );
+			ImGui::Text( "%s: %d", spec.saveName, gRun->stash().total( id ) );
 			ImGui::PopID();
 		}
 		if ( ImGui::SmallButton( "Save" ) ) {

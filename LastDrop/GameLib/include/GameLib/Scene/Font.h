@@ -18,7 +18,7 @@ class Font{
 public:
 	///ビットマップフォントの文字一つづつに付き必要なデータ
 	struct BitmapChar{
-		unsigned short mCode; //文字コード(SHIFT_JIS)
+		unsigned short mCode; //文字コード。StringRenderer は UTF-8 から読んだ Unicode のコードポイントで探す（ASCII は同じ値）
 		unsigned short mX; //左端
 		unsigned short mY; //上端
 		unsigned char mTexturePage; //テクスチャページ

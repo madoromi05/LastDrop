@@ -38,7 +38,7 @@ namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
 	const float kNoShotRecoil = 0.f;   // 撃っていないティックの反動の大きさ（FirstPersonControl::updateViewEffects）
 	// カバンの画面の見出しの下に出す、開いている脱出点（R2_Plan.txt Q10）。
-	const char* kExitsPrefix = "Exits: ";
+	const char* kExitsPrefix = "脱出点：";
 	const char* kExitsSeparator = " / ";
 
 	// ── 影（Shadow_Plan.txt 5 章）──
@@ -546,7 +546,7 @@ void GameScene::draw() {
 	if ( mPaused ) {
 		mPauseMenu.draw();
 	} else if ( mBagOpen ) {
-		std::string exits = kExitsPrefix + RaidHud::exitNames( mSession.extraction(), kExitsSeparator, false );
+		std::string exits = kExitsPrefix + RaidHud::exitNames( mSession.extraction(), kExitsSeparator );
 		ItemStack incoming;
 		bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
 		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr ); // カバンの画面も同じ（HUD は描かない）
@@ -584,7 +584,6 @@ void GameScene::draw() {
 			break;
 		}
 	}
-	mDebug.drawText( text );
 }
 
 void GameScene::setupLights( const FirstPersonCamera& camera ) {

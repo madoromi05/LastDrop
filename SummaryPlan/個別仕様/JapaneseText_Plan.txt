@@ -1,0 +1,249 @@
+================================================================================
+ UI の日本語化（日本語の文字を出せるようにして、UI の説明を日本語に置き換える）の計画メモ
+ 作成日：2026-11-05
+ 状態：全部決定（2026-11-05。Q1〜Q7 は ★ で承認）。同日実装・3 つの構成でビルド済み・UTF-8 の読み方は使い捨ての単体テストで確認・画面確認待ち・未コミット
+       画面を見たユーザーの指定で英語に戻した：タイトルと一時停止のボタン・DAY %d・一時停止の見出しは Pause（UiLayout.md の追記）
+       実装で変えた所：結果の画面の「%d x %d」も「%d × %d」に。WeaponSpec::name は F6 だけに出るので英語のまま
+ ユーザーの依頼（2026-11-05）：「日本語を追加して UI の説明を置き換えたい」
+================================================================================
+
+ 目次
+  0. 決めること（Q1〜Q7）
+  1. タルコフでは
+  2. 今のコードで関係するところ（日本語が出ない理由）
+  3. やること・やらないこと
+  4. 置き換える文字の表（★の案）
+  5. 変える所（ファイルごと）
+  6. 確かめ方
+  7. 懸念点
+  8. 参考
+
+================================================================================
+ 0. 決めること（★はおすすめ）
+================================================================================
+ Q1. 英語を残すか
+     ★A：日本語だけにする（英語の文字は日本語に書き換えて消す）。依頼の「置き換えたい」どおり。
+      B：設定画面に「言語」を足し、英語と日本語を切り替えられるようにする（タルコフと同じ）。
+         文字を 1 か所の表に集める作業と、settings.xml の項目が増える。
+
+ Q2. 文字の置き場所
+     ★A：今のまま、各画面の .cpp の先頭の定数（kHeading など）を日本語に書き換える。
+         置き場所が変わらないので「この画面の文字を直したい」の入口は今と同じ。
+      B：UiText.cpp などの 1 か所の表に全部集める（Q1 で B を選ぶならこちらが要る）。
+
+ Q3. 途中から初めて出る文字をどう作るか
+     （今は「最初の描画より前に、使う文字を全部作っておく」作り。DX11 版の画像は GPU へ送った後に描き足せないため。2 章）
+     ★A：文字の画像だけ CPU 側の画素を残し、新しい文字を描いたら GPU へ送り直す。
+         GameLib の Texture に「後から書き足せる画像」の作り方を 1 つ足す。どの文字でも出せるので、書き忘れで止まることが無い。
+         CPU 側に残る量は 512×512×4 = 1MB × 文字の画像の枚数（数枚）。
+      B：起動時に、使う日本語の文字の一覧から全部作っておく。一覧に無い文字を出すと止まる（ASSERT）。
+      C：JIS 第 1 水準（約 3000 字）を起動時に全部作る。108px の大きさだと数百 MB になるので不可。
+
+ Q4. フォント
+     ★A：Yu Gothic UI（太字）。Windows 10 以降に必ずある。ゴシック体で小さくても読みやすい。英数字もきれい。
+      B：Meiryo UI（太字）。少し丸く、横に広い（説明の行がはみ出しやすい）。
+      C：BIZ UDPGothic。読みやすさ重視のフォント。Windows 10 の途中から入った物で、古い Windows に無い。
+     ※ 今の Arial には日本語の字が無いので、変えないと日本語は出ない。英数字も同じフォントで描く（混ぜると高さと線の太さが揃わない）。
+
+ Q5. 大きい見出し（タイトル名・PAUSED・DAY 3 SURVIVED・KILLED IN ACTION など）
+     ★A：見出しも日本語にする。タイトル名「ZOMBIE ESCAPE」だけは仮の名前なので英語のまま。
+      B：大きい見出しは英語のまま（雰囲気を残す）、ボタン・説明・項目名だけ日本語。
+
+ Q6. 確認用の表示（F3 のゾンビの体力・F6 の ImGui エディタ）
+     ★：英語のまま（遊ぶ人が見る物ではない）。
+         ただし F6 の物の一覧は物の名前（ItemSpec::name）を出しているので、日本語にすると ImGui の初めの字（英数字だけ）で「?」になる。
+         → F6 では内部の名前（"fuel" などの saveName）を出すように変える。
+
+ Q7. キーの名前（[Enter] [Tab] [Esc] [F] [E]）
+     ★：英語のまま（キーボードに書いてある字と同じ）。説明の言葉だけ日本語にする。例：「[Enter] 拾う」
+
+================================================================================
+ 1. タルコフでは
+================================================================================
+ ・設定（SETTINGS）の「Interface Language」で言語を選ぶ作り。日本語は 2020 年 7 月にテストで入った。
+   出典：https://www.gamespark.jp/article/2020/07/28/100862.html
+ ・最初の日本語フォントは読みにくいと言われ、2020 年 11 月にゴシック系の読みやすいフォントへ変わった。
+   変え方は「SETTINGS」から「Interface Language」を「jp」。
+   出典：https://automaton-media.com/articles/newsjp/20201121-143974/
+ ・翻訳は公認のボランティアチームがしていた。
+   出典：https://www.gamebusiness.jp/article/2020/01/14/16622.html
+ ・正式版（2025-11-15）の後の今の日本語の状態は、調べて分からなかった。
+
+ 合わせる所：ゴシック体の読みやすいフォント（Q4 ★）。
+ あえて変える所：言語の切り替えは作らない（Q1 ★A）。このゲームは日本語だけで遊ぶ人に見せる物で、
+                 切り替えの作り（表・設定の項目）を足しても今は使う人がいない。要るようになったら Q2 を B にして足す。
+
+================================================================================
+ 2. 今のコードで関係するところ（日本語が出ない理由）
+================================================================================
+ ① 文字のコード：プロジェクトは /utf-8 なので、"拾う" のような文字列は UTF-8 のバイトで入る。
+    ところが GameLib::Scene::StringRenderer は Shift_JIS として 2 バイトの字を切り出している（StringRenderer.cpp 89〜95 行）。
+    → UTF-8 の日本語はバラバラのバイトとして読まれ、化ける。
+ ② フォント：UiRenderer.cpp の kFontName が "Arial"。日本語の字が無い。
+    FontImplOS は GetGlyphOutlineA（Shift_JIS のコードを受ける）で字を描いている。
+ ③ 途中から出る文字：DX11 版の Texture は GPU へ送った後に CPU 側の画素を捨てる（TextureImpl.h の ensureGpuUploaded の最後）。
+    だから UiRenderer::prepareGlyphs で ASCII の 95 字を最初に全部作っている。日本語は数が多いので同じやり方ができない（Q3）。
+ ④ 文字の幅：UiRenderer::textWidth は 1 バイトずつ数えている。中央揃えの位置がずれる。
+ ⑤ 大文字にする所：RaidHud::exitNames が toupper で脱出点の名前を大文字にしている（日本語には要らない）。
+
+================================================================================
+ 3. やること・やらないこと
+================================================================================
+ やること
+  ・GameLib の文字の読み方を UTF-8 にする（StringRenderer と UiRenderer::textWidth で同じ読み方を使う。1 か所にまとめる）
+  ・OS のフォントを Unicode で描く（GetGlyphOutlineW）
+  ・文字の画像を後から書き足せるようにする（Q3 ★A）
+  ・フォントを Yu Gothic UI に（Q4 ★A）
+  ・遊ぶ人が見る UI の文字を全部日本語にする（4 章の表）
+ やらないこと
+  ・言語の切り替え（Q1 ★A）
+  ・F3・F6 の確認用の表示の日本語化（Q6）
+  ・Framework::drawDebugString（別物。ASCII だけなので UTF-8 にしても変わらない）
+  ・ゲームのタイトル名（Q5。仮の名前のまま）
+
+================================================================================
+ 4. 置き換える文字の表（★の案。言い回しはここで直してください）
+================================================================================
+ ── タイトル・一時停止（MenuCatalog.cpp）──
+  ZOMBIE ESCAPE      → ZOMBIE ESCAPE（そのまま）
+  Start              → はじめる
+  Options            → 設定
+  Quit               → ゲームを終了
+  PAUSED             → 一時停止
+  Resume             → つづける
+  Retry day          → この日をやり直す
+  Title              → タイトルへ
+
+ ── 設定（OptionsPage.cpp）──
+  OPTIONS            → 設定
+  Master Volume      → 全体の音量
+  Effects Volume     → 効果音の音量
+  Mouse Sensitivity  → マウス感度
+  Controls           → 操作の一覧
+  Back               → 戻る
+
+ ── 操作の一覧（ControlsPage.cpp）──
+  CONTROLS           → 操作の一覧
+  Move               → 移動
+  Run                → 走る
+  Look               → 見回す
+  Fire               → 撃つ
+  Aim                → 覗く
+  Draw / Holster     → 銃を出す／しまう
+  Reload             → リロード
+  Flashlight         → ライト
+  Interact           → 拾う・使う
+  Inventory          → カバン
+  Pause              → 一時停止
+  Back               → 戻る
+
+ ── 拠点（StashScreen.cpp）──
+  BASE               → 拠点
+  STASH              → 倉庫
+  BAG                → カバン
+  DEPLOY             → 出撃
+  DAY %d / %d        → %d 日目 / %d 日
+  BEST %d            → 最高 %d
+  Empty              → 空
+  [Enter] Pick up   [Tab] Switch   [Esc] Title → [Enter] 持つ   [Tab] 切り替え   [Esc] タイトルへ
+  [Enter] Place   [Esc] Cancel                 → [Enter] 置く   [Esc] やめる
+  [Enter] Go to the town                       → [Enter] 町へ出る
+  No weapon in bag                             → カバンに銃がありません
+
+ ── カバン（InventoryScreen.cpp）──
+  BAG                → カバン
+  Equip / Drop / Move / Cancel → 装備 / 捨てる / 動かす / やめる
+  Empty              → 空
+  [Enter] Select   [Tab] Close              → [Enter] 選ぶ   [Tab] 閉じる
+  [Enter] Decide   [Esc] Back               → [Enter] 決定   [Esc] 戻る
+  [Enter] Place   [Esc] Cancel              → [Enter] 置く   [Esc] やめる
+  [Enter] Put   [F] Auto   [Esc] Cancel     → [Enter] 置く   [F] 自動で置く   [Esc] やめる
+  Pick up: %s        → 拾う：%s
+  Pick up: %s x%d    → 拾う：%s ×%d
+
+ ── 物の名前（ItemCatalog.cpp）──
+  Fuel               → ガソリン
+  7.62 rounds        → 7.62mm 弾
+  Pistol             → 拳銃
+  Rifle              → ライフル
+  9mm rounds         → 9mm 弾
+
+ ── 町の中の表示（RaidHud.cpp・GameScene.cpp・TownMap.cpp）──
+  DAY %d             → %d 日目
+  EXITS: / Exits:    → 脱出点：
+  EXTRACTING %.1f    → 脱出中 %.1f
+  North / East / South / West（脱出点の名前）→ 北 / 東 / 南 / 西
+  ※ 大文字にする処理（exitNames の upper）は要らなくなるので外す。
+
+ ── その日の結果（DayResultScene.cpp）──
+  DAY %d SURVIVED    → %d 日目 生還
+  Time %02d:%02d    Kills %d → 時間 %02d:%02d    倒した数 %d
+  Brought back       → 持ち帰った物
+  Nothing            → なし
+  Continue           → つづける
+
+ ── 5 日間の終わり（RunEndScene.cpp）──
+  SURVIVED %d DAYS   → %d 日間 生き延びた
+  KILLED IN ACTION   → 死亡
+  MISSING IN ACTION  → 行方不明
+  DAY %d             → %d 日目
+  NEW BEST           → 最高記録
+  BEST %d            → 最高 %d
+  Title              → タイトルへ
+  Days survived      → 生き延びた日数
+  Kills              → 倒した数
+  Items              → 持ち帰った物
+  Clear bonus        → クリアのボーナス
+  SCORE              → スコア
+
+ ── そのまま ──
+  使える物のマークの「E」（キーの名前）・残り時間「09:41」・弾数「24/30」
+
+================================================================================
+ 5. 変える所（ファイルごと）
+================================================================================
+ GameLib
+  ・Base/Utf8.h（新規）：UTF-8 の 1 字を読む関数 decodeUtf8( const char* text, int* byteCount ) → コードポイント。
+      StringRenderer と UiRenderer::textWidth が同じ物を使う（読み方を 2 か所に書かない）。
+  ・Scene/StringRenderer.cpp：Shift_JIS の切り出し（89〜95 行）を decodeUtf8 に置き換える。
+  ・Scene/FontImplOS.h：GetGlyphOutlineA → GetGlyphOutlineW。文字の画像を「後から書き足せる画像」で作る。
+  ・Graphics/Texture.h・TextureImpl.h：後から書き足せる画像の作り方を足す（Q3 ★A）。
+      その画像だけ ensureGpuUploaded で CPU 側の画素を捨てず、unlock の後の次の描画で送り直す。他の画像は今と同じ。
+  ・ビットマップのフォント（BitmapChar の mCode は Shift_JIS）は使っている所が無いので触らない（コメントで「UTF-8 のコードポイント」に直すかは実装で確認）。
+ GameSrc
+  ・UI/UiRenderer.cpp：kFontName を "Yu Gothic UI" に。textWidth を decodeUtf8 で 1 字ずつに。
+      prepareGlyphs（ASCII の先作り）は Q3 ★A なら要らなくなるので消す（理由のコメントも一緒に）。
+  ・4 章の各 .cpp の定数を日本語に書き換える。
+  ・Scene/Game/RaidHud.cpp：exitNames の upper を外す。
+  ・DebugMode/EditorWindow.cpp：物の一覧を saveName で出す（Q6）。
+
+ 修正の入口（できあがった後）
+  ・言い回しを直す → 各画面の .cpp の先頭の定数（Q2 ★A）
+  ・フォントを変える → UiRenderer.cpp の kFontName だけ
+
+================================================================================
+ 6. 確かめ方
+================================================================================
+ ・タイトル → 設定 → 操作の一覧 → 拠点 → 町（カバン・拾う）→ 脱出 → 結果 → 5 日間の終わり、を全部開いて日本語が出るか見る。
+ ・中央揃えの見出し・ボタンが真ん中にあるか（textWidth が UTF-8 で合っているか）。
+ ・説明の行・ボタンの中の字がはみ出さないか（日本語は英字より横に広い。「この日をやり直す」「カバンに銃がありません」など）。
+ ・ウィンドウの大きさを変えて（fitFontsToScreen で作り直す）も字が崩れないか。
+ ・町で初めて拾う物の名前（途中から初めて出る字）で止まらないか（Q3）。
+
+================================================================================
+ 7. 懸念点
+================================================================================
+ ・はみ出し：ボタンの幅・説明の行の幅が英語に合わせてある。はみ出したら UiScreen.cpp 等の幅の定数を広げる（画面で見てから）。
+ ・文字の画像の枚数：日本語は字の種類が多いので、大きい見出し（4K で 1 字 216px）だと 512×512 が数枚になる。
+   いまの描き方は画像が変わるたびに描くまとまりを分けるので、描く回数が数回増える（UI だけなので小さい）。
+ ・FontImplOS の Char::mWidth は unsigned char（255px まで）。8K のような大きい画面で見出しを作ると溢れる。今の範囲（4K まで）では大丈夫。
+ ・Yu Gothic UI が無い Windows（7・8）では、Windows が別のフォントに置き換える。対象外とする。
+
+================================================================================
+ 8. 参考
+================================================================================
+ ・GetGlyphOutlineW：https://learn.microsoft.com/ja-jp/windows/win32/api/wingdi/nf-wingdi-getglyphoutlinew
+ ・/utf-8（ソースと実行の文字セット）：https://learn.microsoft.com/ja-jp/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8
+ ・UTF-8 の符号化（RFC 3629）：https://www.rfc-editor.org/rfc/rfc3629
+ ・ID3D11DeviceContext::UpdateSubresource：https://learn.microsoft.com/ja-jp/windows/win32/api/d3d11/nf-d3d11-id3d11devicecontext-updatesubresource
+ ・Windows に入っているフォント（Yu Gothic UI ほか）：https://learn.microsoft.com/ja-jp/typography/fonts/windows_10_font_list

@@ -15,6 +15,9 @@ public:
 	static Texture create( PseudoXml::ConstElement, const char* path = 0 );
 	//空のテクスチャ
 	static Texture create( int width, int height, bool createMipChain );
+	///後から書き足せる空のテクスチャ（ミップなし）。GPU へ送った後も CPU 側の画素を残し、unlock の後の次の描画で送り直す。
+	///使う途中で中身が増える物（OS のフォントの文字の画像）に使う。CPU 側に width × height × 4 バイト残る。
+	static Texture createWritable( int width, int height );
 	///TGAもしくはDDS。拡張子で判別する。
 	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため。SummaryPlan/個別仕様/LinearToneMap_Plan.txt 3 章）。
 	static Texture create( const char* filename, TextureColorSpace colorSpace = TEXTURE_COLOR_SPACE_LINEAR );

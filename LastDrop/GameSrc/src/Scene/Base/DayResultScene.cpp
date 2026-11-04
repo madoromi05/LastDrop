@@ -28,11 +28,11 @@ namespace{
 	const int kShownColumns = 8;        // 持ち帰った物を横に並べる数（カバン 8 マスが 1 行に入る）
 	const UiRect kContinueRect = { -110.f, 400.f, 220.f, 44.f }; // 横の中央からのずれ・上端・幅・高さ（メニューのボタンと同じ大きさ）
 
-	const char* kHeadingFormat = "DAY %d SURVIVED";
-	const char* kInfoFormat = "Time %02d:%02d    Kills %d";
-	const char* kItemsLabel = "Brought back";
-	const char* kNothing = "Nothing";
-	const char* kContinueLabel = "Continue";
+	const char* kHeadingFormat = "DAY %d 生還";
+	const char* kInfoFormat = "時間 %02d:%02d    倒した数 %d";
+	const char* kItemsLabel = "持ち帰った物";
+	const char* kNothing = "なし";
+	const char* kContinueLabel = "つづける";
 
 	const unsigned kHeadingColor = VertexColor::pack( 0.4f, 0.9f, 0.4f );
 	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
