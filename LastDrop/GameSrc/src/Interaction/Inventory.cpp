@@ -38,6 +38,10 @@ const ItemGrid& Inventory::grid() const {
 	return mGrid;
 }
 
+ItemGrid* Inventory::gridForTransfer() {
+	return &mGrid;
+}
+
 bool Inventory::canMove( int from, int to ) const {
 	return mGrid.canMove( from, to );
 }

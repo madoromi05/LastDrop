@@ -14,13 +14,18 @@ const char* playerConditionName( PlayerCondition condition );
 // 自キャラの体力。バイオハザードと同じく、体全体で 1 つだけ持つ（2026-10-26 ユーザー決定。それまではタルコフの 7 部位）。
 // ・0 になったら死ぬ
 // ・残りの割合で状態（PlayerCondition）が変わり、状態で歩く・走る速さが落ちる（読むのは PlayerCharacter）
-// 回復はしない（回復アイテムを作るときに入口を足す）。最大の体力・状態の境目・速さの倍率は、この .cpp だけが知っている。
+// ・包帯で戻る（heal。2026-11-05 段階R3。R3_Plan.txt Q11・Q12）
+// 最大の体力・状態の境目・速さの倍率は、この .cpp だけが知っている。
 class PlayerHealth{
 public:
 	PlayerHealth(); // 満タンで始める
 
 	// amount のダメージを受ける。死んだ後は何もしない。
 	void takeDamage( float amount );
+	// amount だけ戻す（最大で止める）。死んだ後は何もしない（死んでから包帯で起き上がらないように）。
+	void heal( float amount );
+	// 最大より減っているか（減っていなければ、カバンの画面に「使う」を出さない）。
+	bool isInjured() const;
 
 	bool isDead() const;               // 体力が 0 になったか
 	float current() const;             // 残り（0 以上）

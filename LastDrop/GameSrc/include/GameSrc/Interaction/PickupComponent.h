@@ -32,6 +32,8 @@ public:
 	virtual void interact( Inventory* inventory );
 	virtual bool offeredStack( ItemStack* out ) const;
 	virtual void takeOffered( int count );
+	virtual ItemGrid* lootGrid() { return nullptr; } // 拾う物は中を見せない
+	virtual float useSeconds() const { return 0.f; } // 拾う物は待たない（カバンの画面を開く）
 
 private:
 	ItemComponent* mItem;

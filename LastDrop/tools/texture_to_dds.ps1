@@ -42,6 +42,8 @@ $Textures = @(
 	@{ Name = "fuelcan_albedo";       Kind = "Color";  MaxSize = 0 }
 	@{ Name = "fuelcan_normal";       Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "fuelcan_orm";          Kind = "Data";   MaxSize = 0 }
+	@{ Name = "loot_props_albedo";    Kind = "Color";  MaxSize = 0 }  # ゴミ箱・木箱・包帯・腕時計・ノートパソコン（tools/loot_prop_gen.py。R3_Plan.txt Q2）
+	@{ Name = "loot_props_orm";       Kind = "Data";   MaxSize = 0 }
 	@{ Name = "player_body_albedo";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body_normal";   Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "player_body_orm";      Kind = "Data";   MaxSize = 0 }

@@ -21,6 +21,13 @@ namespace{
 		// ITEM_AMMO_9MM: 1 マスに弾倉 2 本ぶん（24 発）。
 		// 落ちた形は 9mm の弾薬を大きくして寝かせた物（tools/configs/ammo9_drop.json）。
 		{ "9mm 弾", "ammo_9mm", ITEM_KIND_AMMO, "Resource/ammo9_drop.txt", "Resource/icon_ammo_9mm.tga", 1, 24, kNoLimit, 2, 0.55f, 0.50f, 0.35f },
+		// ── 段階R3 の物（R3_Plan.txt 7-1。点は遊んで決める）。形と絵は tools/loot_prop_gen.py・item_icon_gen.py ──
+		// ITEM_BANDAGE: 1 マスに 3 つ。使えば体力が戻るが、使った分の点（1 つ 40）も無くなる（R3_Plan.txt Q11）。
+		{ "包帯", "bandage", ITEM_KIND_MEDICAL, "Resource/bandage.txt", "Resource/icon_bandage.tga", 1, 3, kNoLimit, 40, 0.90f, 0.88f, 0.80f },
+		// ITEM_WATCH: 1 マスで 200 点（1 マスあたりの点はノートパソコンより少し低い）。
+		{ "腕時計", "watch", ITEM_KIND_VALUABLE, "Resource/watch.txt", "Resource/icon_watch.tga", 1, 1, kNoLimit, 200, 0.80f, 0.70f, 0.35f },
+		// ITEM_LAPTOP: 2 マスで 450 点（1 マスあたり 225 で一番高いが、マスを 2 つ使う）。
+		{ "ノートパソコン", "laptop", ITEM_KIND_VALUABLE, "Resource/laptop.txt", "Resource/icon_laptop.tga", 2, 1, kNoLimit, 450, 0.25f, 0.26f, 0.30f },
 	};
 }
 

@@ -8,9 +8,16 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/Input/Manager.h"
 
+namespace{
+	const char* kPreparingLabel = "町へ向かっています"; // 本編を作り始める前のロード画面の文字
+	const float kNoProgress = 0.f;
+}
+
 BaseScene::BaseScene( GameResources* resources ) :
 	mResources( resources ),
-	mScreen( &resources->uiRenderer() ) {
+	mScreen( &resources->uiRenderer() ),
+	mLoadingScreen( &resources->uiRenderer() ),
+	mDeploying( false ) {
 	ASSERT( mResources && "BaseScene : resources is null." );
 	// 本編でロックしたカーソルを戻す（マスをマウスで選べるように）。
 	GameLib::Input::Manager::instance().setCursorLocked( false );
@@ -24,6 +31,11 @@ BaseScene::~BaseScene() {
 }
 
 void BaseScene::beginFrame() {
+	if ( mDeploying ) {
+		// 出撃を押したフレームにロード画面を描いた。このフレームの終わりに本編を作る（作る間もこの画面のまま）。
+		SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+		return;
+	}
 	RunState& run = mResources->run();
 	// ESC は持ち上げている物を取りやめる。何もしていなければタイトルへ（動かした物は、このシーンが消えるときに保存する）。
 	if ( InputMenu() ) {
@@ -33,8 +45,8 @@ void BaseScene::beginFrame() {
 		return;
 	}
 	if ( mScreen.handleInput( &run ) == StashScreen::Request::Deploy ) {
-		RunRules::deploy( &run ); // タダの拳銃・保存（この形がその日のやり直しの形になる）
-		SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+		RunRules::deploy( &run ); // 保存（この形がその日のやり直しの形になる）
+		mDeploying = true; // 本編への切り替えは、ロード画面を 1 回描いた次のフレーム
 	}
 }
 
@@ -43,5 +55,9 @@ void BaseScene::update() {
 }
 
 void BaseScene::draw() {
+	if ( mDeploying ) {
+		mLoadingScreen.draw( mResources->run().day(), kPreparingLabel, kNoProgress );
+		return;
+	}
 	mScreen.draw( mResources->run() );
 }

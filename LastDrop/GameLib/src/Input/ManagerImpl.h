@@ -117,6 +117,17 @@ public:
 			mButtons[ mDoubleBufferIndex ][ 0 ] = ( GetAsyncKeyState( VK_LBUTTON ) & 0xf000 ) ? true : false;
 			mButtons[ mDoubleBufferIndex ][ 1 ] = ( GetAsyncKeyState( VK_RBUTTON ) & 0xf000 ) ? true : false;
 			mButtons[ mDoubleBufferIndex ][ 2 ] = ( GetAsyncKeyState( VK_MBUTTON ) & 0xf000 ) ? true : false;
+			//前のフレームから今までに押して、もう離した短いクリックも、このフレームだけ押していることにする
+			//（重いフレームの間のクリックが「押していない」のまま消えないように。次のフレームで離したことになる）。
+			//前のフレームも押していたなら、押し続けているだけなので何もしない。
+			const unsigned presses = WindowCreator().getAndResetMouseButtonPresses();
+			const unsigned pressBits[ BUTTON_MAX ] = {
+				WindowCreator::MOUSE_PRESS_LEFT, WindowCreator::MOUSE_PRESS_RIGHT, WindowCreator::MOUSE_PRESS_MIDDLE };
+			for ( int i = 0; i < BUTTON_MAX; ++i ){
+				if ( ( presses & pressBits[ i ] ) && !mButtons[ 1 - mDoubleBufferIndex ][ i ] ){
+					mButtons[ mDoubleBufferIndex ][ i ] = true;
+				}
+			}
 			mWheel = WindowCreator().getAndResetMouseWheel();
 			// 開発用のエディタが使っている入力は、ゲームに渡さない（Manager::setUiCapture）。
 			if ( mUiCapturesKeyboard ){

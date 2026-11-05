@@ -2,12 +2,12 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Map/TownGround.h"
 #include "GameSrc/Map/Building.h"
-#include "GameSrc/Map/NavMesh.h"
-#include "GameSrc/Map/SpawnPicker.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Interaction/PropFactory.h"
 #include "GameSrc/World/GameObjectWorld.h"
+#include "GameSrc/Map/SpawnPicker.h"
+#include "GameSrc/Raid/RaidParams.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -24,10 +24,6 @@ namespace{
 	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす。
 	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
 
-	// 町に落ちているガソリンの数。候補の場所（TownMap）から、毎日この数だけ選んで置く（SpawnPicker）。
-	// 2026-11-05 から車へ入れる物ではなく、持ち帰ると点になる 2 マスの物（R2_Plan.txt Q15）。
-	const int kFuelCount = 3;
-
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
 	}
@@ -42,7 +38,7 @@ WorldBuilder::WorldBuilder( MeshCache* meshes, const TownMap* map, const PropFac
 	ASSERT( meshes && map && props && "WorldBuilder : an argument is null." );
 }
 
-void WorldBuilder::build( const WorldBuildTarget& target ) const {
+void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot ) const {
 	target.ground->place( *mMap );
 	target.hitWorld->addBlocker( target.ground ); // 地面も弾・視線を止める（地面全体で1つの物）
 	target.collisionWorld->setGround( target.ground ); // キャラは地面の高さに乗る（歩道の段差）
@@ -53,10 +49,8 @@ void WorldBuilder::build( const WorldBuildTarget& target ) const {
 	for ( const Building& building : *target.buildings ) {
 		target.hitWorld->addBlocker( &building );
 	}
-	placeCarAndFuel( target.objects );
-	placeWeapons( target.objects );
-	// 建物・車を名簿へ載せ終えてから、それを材料に歩ける床の形を作る（ZombieNavMesh_Plan.txt）。
-	target.navMesh->build( *target.collisionWorld );
+	placeLootSpots( target.objects );
+	placeEscapeCar( target.objects, escapeCarSpot ); // 町に置く車はこの 1 台だけ（乗れない置物の車は置かない）
 }
 
 void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes,
@@ -73,19 +67,32 @@ const std::vector< TownPlacement >& placements ) const {
 	}
 }
 
-void WorldBuilder::placeWeapons( GameObjectWorld* objects ) const {
-	const TownPlacement& rifle = mMap->rifle();
-	mProps->spawnWeaponDrop( objects, WEAPON_RIFLE, toPosition( rifle ), rifle.yawDegree ); // 置けなくても（形の構築の失敗）拳銃で遊べる
+void WorldBuilder::placeLootSpots( GameObjectWorld* objects ) const {
+	// 置き場所は毎日同じで、中身だけ毎日変わる（R3_Plan.txt Q3。起動からの時間を種にする。脱出の車の置き場所と同じ）。
+	// 置けなくても（形の構築の失敗）その場所が無いだけで遊べる。
+	Random random = Random::create( static_cast< int >( Framework::instance().time() ) );
+	// ガソリンを入れる箱を、漁れる場所（ゴミ箱 → 木箱の通し番号）から fuelCanCount か所選ぶ（FuelEscapeLoading_Plan.txt Q15）。
+	// 置物の車には物を入れない（改訂 2）。
+	// 1 か所に 1 個。選ぶのは場所の番号なので、形の構築に失敗して置けなかった場所に当たると、その分だけ町のガソリンが減る。
+	const int spotCount = static_cast< int >( mMap->dumpsters().size() + mMap->crates().size() );
+	const int fuelCount = raidParams().fuelCanCount;
+	ASSERT( fuelCount >= 0 && fuelCount <= spotCount && "WorldBuilder : fuelCanCount is more than the loot spots (add spots to TownMap)." );
+	std::vector< bool > withFuel( spotCount, false );
+	for ( int spot : SpawnPicker::pick( spotCount, fuelCount, static_cast< unsigned >( random.getInt() ) ) ) {
+		withFuel[ spot ] = true;
+	}
+	int spot = 0;
+	for ( const TownPlacement& p : mMap->dumpsters() ) {
+		mProps->spawnLootContainer( objects, LootTableId::Dumpster, toPosition( p ), p.yawDegree, &random, withFuel[ spot++ ] );
+	}
+	for ( const TownPlacement& p : mMap->crates() ) {
+		mProps->spawnLootContainer( objects, LootTableId::Crate, toPosition( p ), p.yawDegree, &random, withFuel[ spot++ ] );
+	}
 }
 
-void WorldBuilder::placeCarAndFuel( GameObjectWorld* objects ) const {
-	const TownPlacement& car = mMap->parkedCar();
-	mProps->spawnParkedCar( objects, toPosition( car ), car.yawDegree );
-	// 遊ぶたびに違う場所に出す（起動からの時間を種にする）。
-	unsigned seed = Framework::instance().time();
-	const std::vector< TownPlacement >& spawnPoints = mMap->fuelSpawnPoints();
-	for ( int index : SpawnPicker::pick( static_cast< int >( spawnPoints.size() ), kFuelCount, seed ) ) {
-		const TownPlacement& p = spawnPoints[ index ];
-		mProps->spawnFuel( objects, toPosition( p ), p.yawDegree );
-	}
+void WorldBuilder::placeEscapeCar( GameObjectWorld* objects, int escapeCarSpot ) const {
+	const std::vector< TownEscapeCarSpot >& spots = mMap->escapeCarSpots();
+	ASSERT( escapeCarSpot >= 0 && escapeCarSpot < static_cast< int >( spots.size() ) && "WorldBuilder : bad escape car spot." );
+	const TownPlacement& p = spots[ escapeCarSpot ].placement;
+	mProps->spawnEscapeCar( objects, toPosition( p ), p.yawDegree, raidParams().requiredFuel );
 }

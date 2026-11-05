@@ -511,9 +511,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PropFactory.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\CorpseLootComponent.h">
-      <Filter>GameSrc\Interaction</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -886,6 +883,39 @@
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\ItemGridView.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\LootParams.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\LootTable.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\LootContainerComponent.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\FireProbe.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownCache.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\GameLoader.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\LoadingScreen.cpp">
+      <Filter>GameSrc\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\LootSearch.cpp">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\GridPairPicker.cpp">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\LootScreen.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\RaidHud.cpp">
@@ -1833,6 +1863,39 @@
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemGridView.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootParams.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootTable.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootContainerComponent.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FireProbe.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameLoader.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\LoadingScreen.h">
+      <Filter>GameSrc\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootSearch.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GridPairPicker.h">
+      <Filter>GameSrc\Scene\Game</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\LootScreen.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\RaidHud.h">

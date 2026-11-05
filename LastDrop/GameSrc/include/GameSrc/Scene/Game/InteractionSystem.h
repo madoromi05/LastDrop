@@ -10,10 +10,12 @@ class GameObjectWorld;
 class EffectManager;
 class IInteractable;
 class IHittable;
+class LootContainerComponent;
+class EscapeCarComponent;
 
 // 見て E で使える物を探す・拾われた物を消す係（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-5。2026-11-02 GameWorld から分けた）。
-// 使える物：落ちている物（ガソリン・ゾンビが落とした弾）、それと死体（その死体が落とした弾。
-// 死体の物に付いた CorpseLootComponent からたどる）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す。
+// 使える物：落ちている物（カバンから捨てた物）、漁れる場所（車・ゴミ箱・木箱と、止めを刺したゾンビの死体。
+// どれも LootContainerComponent を持つ。R3_Plan.txt Q1・Q10）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す。
 // 何を使うと何が起きるか（持ち物が増える）は、使える部品（IInteractable）が決める。
 class InteractionSystem{
 public:
@@ -29,14 +31,24 @@ public:
 	InteractionSystem( const InteractionSystem& ) = delete;
 	InteractionSystem& operator=( const InteractionSystem& ) = delete;
 
-	// origin から delta だけ進む視線の先の、一番手前の使える物。視線はキャラにも当たる（死体なら、その死体が落としてまだ残っている弾）。
+	// origin から delta だけ進む視線の先の、一番手前の使える物。視線はキャラにも当たる（死体なら、その死体の漁れる場所）。
 	// 落ちている物は一回り大きい見る箱（PickupComponent::lookRaycast）でも当たる。壁などの向こうの物は返さない。
 	// viewer: 視線を当てない的（目が体の中にある自キャラ）。nullptr 可。使える物が無ければ nullptr（Interactor の finder に使う）。
 	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* viewer );
 	// 目 eye から radius（m）以内にマークがあり、目とマークの間が壁・建物・ほかの物で隠れていない使える物を、全部 out の後ろへ足す
-	// （マークを出すため。InteractMarker_Plan.txt Q1・Q5）。拾われた物は入れない。死体は入れない（死体が落とした弾が入る。Q4）。
+	// （マークを出すため。InteractMarker_Plan.txt Q1・Q5）。拾われた物は入れない。漁れる死体は足元の少し上に出す（R3_Plan.txt Q14）。
 	// 隠れているかは弾を止める物だけで調べる（ゾンビの体では隠さない）。out: nullptr 不可。
 	void collectNearby( const GameLib::Math::Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const;
+	// interactable（Interactor::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）。
+	// 漁れる場所でなければ nullptr。
+	LootContainerComponent* findContainer( const IInteractable* interactable );
+	// interactable（Interactor::timedUse が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr。
+	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );
+	// ── F6 の確認用（Loot の欄。R3_Plan.txt Q13）──
+	// 全部の漁れる場所の中身を決め直し、まだ開けていない形に戻す。seed: 乱数の種。
+	void rerollLoot( int seed );
+	// 全部の漁れる場所を開けたことにする（待たずに中を見られる）。
+	void markAllLootSearched();
 	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ。
 	void removeTakenPickups();
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す。
@@ -44,7 +56,7 @@ public:
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
 
 private:
-	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。死体なら、その死体が落とした弾。
+	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。死体なら、その死体の漁れる場所。
 	IInteractable* resolveInteractable( const HitWorld::Hit& hit ) const;
 
 	const HitWorld* mHitWorld;  // 借りているだけ

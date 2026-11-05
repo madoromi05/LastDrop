@@ -45,6 +45,15 @@ enum SoundId{
 	SOUND_FLASHLIGHT_CLICK,	// 銃の懐中電灯のスイッチ（付ける・消す）
 	// ── 銃（末尾に足す。理由は上と同じ）──
 	SOUND_PISTOL_SHOT,		// 拳銃の銃声（1発ごと。ライフルは SOUND_GUNSHOT。どちらを鳴らすかは WeaponSpec::shotSound）
+	// ── 漁る・包帯（段階R3。末尾に足す。理由は上と同じ。SummaryPlan/個別仕様/R3_Plan.txt Q7）──
+	SOUND_LOOT_SEARCH_METAL,	// 開けている間（ループ）：ゴミ箱（金属を探るガサガサ）
+	SOUND_LOOT_SEARCH_WOOD,		// 開けている間（ループ）：木箱
+	SOUND_LOOT_SEARCH_CLOTH,	// 開けている間（ループ）：死体（服を探る）
+	// 開け終わった音・包帯を巻いた音は作らない（中を見る画面・カバンの画面の間は音の装置ごと止めるので、鳴らしても閉じた後に鳴る）。
+	// ── 脱出の車（FuelEscapeLoading_Plan.txt Q5。末尾に足す。理由は上と同じ）──
+	SOUND_CAR_ENGINE_START,	// エンジンを掛ける（セルが回って掛かる。1 回）。車から鳴らす
+	SOUND_CAR_ENGINE_IDLE,		// エンジンのアイドリング（ループ）。車から鳴らす
+	SOUND_REFUEL_POUR,		// 給油している間（ループ）：缶からガソリンを注ぐ水の音（改訂 2）。自分の手元から鳴らす
 
 	SOUND_NUM, // 音の種類の数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 };

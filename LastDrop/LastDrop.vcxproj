@@ -244,6 +244,17 @@
     <ClCompile Include="GameSrc\src\Raid\RunRules.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\ItemTransfer.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ItemGridView.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\LootParams.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\LootTable.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\LootContainerComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\LootSearch.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\FireProbe.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownCache.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GameLoader.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\LoadingScreen.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\GridPairPicker.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\LootScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\RaidHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Base\BaseScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp" />
@@ -348,24 +359,116 @@
     <!-- miniaudio（同梱の単一ヘッダ。実装はこの1ファイルでだけコンパイルする） -->
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp" />
     <!-- Recast Navigation v1.6.0（zlib。ゾンビの道探しのナビメッシュ。Recast で作り Detour で探す） -->
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp" />
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp" />
+    <!-- Debug でも最適化してコンパイルする（FuelEscapeLoading_Plan.txt 5 章 L1。最適化なしではナビメッシュを作るのに数秒かかり、出撃のロードが長かった。
+         他人の書いたライブラリで、中を追うことはまず無い。ゲームのコードは今まで通り最適化なしで追える） -->
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MaxSpeed</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Default</BasicRuntimeChecks>
+      <DebugInformationFormat Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ProgramDatabase</DebugInformationFormat>
+      <SupportJustMyCode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SupportJustMyCode>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Math\MatrixBlend.cpp" />
     <ClCompile Include="GameSrc\src\Main.cpp" />
     <ClCompile Include="GameSrc\src\Core\Pad.cpp" />
@@ -576,7 +679,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBodyComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PickupComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PropFactory.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\CorpseLootComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\TransformComponent.h" />
@@ -740,6 +842,17 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemTransfer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemGridView.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootTable.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootContainerComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootSearch.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FireProbe.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameLoader.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\LoadingScreen.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GridPairPicker.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\LootScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\RaidHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\BaseScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h" />

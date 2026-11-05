@@ -4,23 +4,27 @@
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
-// 開いている脱出点 1 つ（R2_Plan.txt Q10）。name は画面に出す英語の名前（TownMap の表の文字列を借りる）。
+// 脱出できる所 1 つ（2026-11-05 から、脱出の車のそば。FuelEscapeLoading_Plan.txt）。name は画面に出す名前（TownMap の表の文字列を借りる）。
 struct ExtractZone{
 	const char* name;
-	GameLib::Math::Vector3 position; // 円の中心（足元。道の中心）
+	GameLib::Math::Vector3 position; // 円の中心（車の足元の中心）
 };
 
-// 開いている脱出点の円の中に、何秒居続けたかを数える（R2_Plan.txt Q11）。
+// 脱出できる所の円の中に、何秒居続けたかを数える（R2_Plan.txt Q11）。
+// 始めは閉じていて、open（脱出の車へ要る数のガソリンを入れ終えた）の後だけ数える。
 // 円を出たら 0 に戻す。攻撃されても止めない（タルコフと同じ）。決まった秒に届いたら脱出した、と答えるだけで、物には触らない。
-// 円の大きさと何秒かは作るときに受け取る（RaidParams）。どこを開くかは知らない（RaidSession が選んで渡す）。
+// 円の大きさと何秒かは作るときに受け取る（RaidParams）。どこにするかは知らない（RaidSession が選んで渡す）。
 class ExtractionTracker{
 public:
-	// zones: 開いている脱出点（写して持つ）。radius: 円の半径（m。水平だけで測る）。seconds: 居続ける長さ（秒）。どちらも 0 より大きいこと。
+	// zones: 脱出できる所（写して持つ）。radius: 円の半径（m。水平だけで測る）。seconds: 居続ける長さ（秒）。どちらも 0 より大きいこと。
 	ExtractionTracker( const std::vector< ExtractZone >& zones, float radius, float seconds );
 
-	// 1 ティック進める。feet: 自キャラの足元（ワールド）。円の中なら数え、外なら 0 に戻す。脱出した後は何もしない。
+	// 数え始める（給油し終えた）。2 回目からは何もしない。
+	void open();
+	bool isOpen() const;
+	// 1 ティック進める。feet: 自キャラの足元（ワールド）。開いていて円の中なら数え、外なら 0 に戻す。脱出した後は何もしない。
 	void tick( const GameLib::Math::Vector3& feet );
-	// 脱出点の円の中にいるか（最後の tick）。
+	// 円の中にいるか（最後の tick。開く前は false）。
 	bool isInside() const;
 	// 脱出し終えるまでの残り（秒。円の外では居続ける長さそのもの）。
 	float remainingSeconds() const;
@@ -34,6 +38,7 @@ private:
 	float mRadius;
 	int mRequiredTicks;
 	int mInsideTicks; // 円の中に居続けたティック数（出たら 0）
+	bool mOpen;
 	bool mInside;
 	bool mExtracted;
 };

@@ -10,6 +10,7 @@
 #include <d3dcompiler.h>
 #include <cstdio>
 #include <list>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -128,6 +129,36 @@ namespace ShaderDetail{
 	template< class T > inline void safeRelease( T*& p ){
 		if ( p ){ p->Release(); p = 0; }
 	}
+
+	// コンパイルした結果（バイトコード）を、起動中はファイル名ごとに覚えておく（FuelEscapeLoading_Plan.txt 5 章 L4）。
+	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす（Profile のロードの半分がコンパイルだった）。
+	// 読んだファイル（#include も）の更新時刻を一緒に覚え、どれかが変わっていたら使わずにコンパイルし直す（ホットリロードはそのまま効く）。
+	// 入口・ターゲット・フラグはどのシェーダも同じ（kVertexEntry など）なので、ファイル名だけで引ける。
+	struct CompiledShader{
+		std::vector< char > vs;
+		std::vector< char > ps;
+		std::vector< FileStamp > files;
+	};
+
+	inline std::map< std::string, CompiledShader >& compiledShaders(){
+		static std::map< std::string, CompiledShader > sCompiled; // メインスレッドだけで使う（シェーダを作るのはメインスレッド）
+		return sCompiled;
+	}
+
+	inline bool isUnchanged( const std::vector< FileStamp >& files ){
+		for ( const FileStamp& f : files ){
+			FILETIME now;
+			if ( !readWriteTime( f.path, &now ) || CompareFileTime( &now, &f.writeTime ) != 0 ){
+				return false;
+			}
+		}
+		return true;
+	}
+
+	inline std::vector< char > blobBytes( ID3DBlob* b ){
+		const char* data = static_cast< const char* >( b->GetBufferPointer() );
+		return std::vector< char >( data, data + b->GetBufferSize() );
+	}
 }
 
 class Shader::Impl : public ReferenceType{
@@ -168,6 +199,12 @@ public:
 		using namespace ShaderDetail;
 		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい（計画書 6-6）。
 		LOAD_SCOPE( "shader", mFilename.c_str() );
+		// 起動中に同じファイルをコンパイル済みで、読んだファイルが変わっていなければ、その結果から作る。
+		auto cached = compiledShaders().find( mFilename );
+		if ( cached != compiledShaders().end() && isUnchanged( cached->second.files ) ){
+			const CompiledShader& c = cached->second;
+			return createShaders( c.vs.data(), c.vs.size(), c.ps.data(), c.ps.size(), c.files );
+		}
 		std::vector< FileStamp > files;
 		std::vector< char > source;
 		if ( !readFile( mFilename, &source, &files ) ){
@@ -200,15 +237,30 @@ public:
 		}
 		safeRelease( error );
 
+		CompiledShader compiled;
+		compiled.vs = blobBytes( vsBlob );
+		compiled.ps = blobBytes( psBlob );
+		compiled.files = files;
+		safeRelease( vsBlob );
+		safeRelease( psBlob );
+		if ( !createShaders( compiled.vs.data(), compiled.vs.size(), compiled.ps.data(), compiled.ps.size(), files ) ){
+			return false;
+		}
+		compiledShaders()[ mFilename ] = std::move( compiled ); // 作れた物だけ覚える
+		return true;
+	}
+
+	// バイトコードからシェーダと頂点の並びを作り、成功したら今のシェーダに差し替える。files: そのとき読んだファイル（見張る物）。
+	bool createShaders( const void* vsCode, size_t vsSize, const void* psCode, size_t psSize,
+		const std::vector< ShaderDetail::FileStamp >& files ){
+		using namespace ShaderDetail;
 		ID3D11VertexShader* vs = 0;
 		ID3D11PixelShader* ps = 0;
 		ID3D11InputLayout* layout = 0;
 		bool created =
-			SUCCEEDED( mDevice->CreateVertexShader( vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), nullptr, &vs ) ) &&
-			SUCCEEDED( mDevice->CreatePixelShader( psBlob->GetBufferPointer(), psBlob->GetBufferSize(), nullptr, &ps ) ) &&
-			createLayout( vsBlob, &layout );
-		safeRelease( vsBlob );
-		safeRelease( psBlob );
+			SUCCEEDED( mDevice->CreateVertexShader( vsCode, vsSize, nullptr, &vs ) ) &&
+			SUCCEEDED( mDevice->CreatePixelShader( psCode, psSize, nullptr, &ps ) ) &&
+			createLayout( vsCode, vsSize, &layout );
 		if ( !created ){
 			safeRelease( layout );
 			safeRelease( ps );
@@ -235,7 +287,7 @@ public:
 	VertexFormat mFormat;
 	unsigned mLastCheckFrame; // 最後に isSourceChanged を見たフレーム（Manager が使う）
 private:
-	bool createLayout( ID3DBlob* vsBlob, ID3D11InputLayout** out ){
+	bool createLayout( const void* vsCode, size_t vsSize, ID3D11InputLayout** out ){
 		D3D11_INPUT_ELEMENT_DESC elements[ VertexFormat::MAX_ELEMENT ];
 		int n = mFormat.elementNumber();
 		for ( int i = 0; i < n; ++i ){
@@ -243,7 +295,7 @@ private:
 		}
 		// 頂点を読まないシェーダ（SV_VertexID だけの全画面描画）でも作れる。余った要素は使われないだけ。
 		return SUCCEEDED( mDevice->CreateInputLayout( elements, static_cast< UINT >( n ),
-			vsBlob->GetBufferPointer(), vsBlob->GetBufferSize(), out ) );
+			vsCode, vsSize, out ) );
 	}
 	// 失敗を記録する。読めたファイルは監視対象にする（直して保存したら、もう一度コンパイルするため）。
 	void fail( const std::string& message, const std::vector< ShaderDetail::FileStamp >& files ){

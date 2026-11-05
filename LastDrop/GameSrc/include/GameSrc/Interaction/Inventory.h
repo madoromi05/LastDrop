@@ -27,6 +27,9 @@ public:
 
 	// マス目（見るだけ）。
 	const ItemGrid& grid() const;
+	// 別のマス目との間で動かすためのマス目（漁れる場所の画面だけが使う。R3_Plan.txt Q9）。
+	// カバンに何個までの決まり（carryLimit）は、動かす側が ItemTransfer に GridRule::CarryLimit を渡して守る。
+	ItemGrid* gridForTransfer();
 	// from の物を to を指した所へ動かせるか・動かす（決まりは ItemGrid::canMove）。
 	bool canMove( int from, int to ) const;
 	void move( int from, int to );

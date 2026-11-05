@@ -96,6 +96,10 @@ bool FirstPersonControl::isCursorLocked() const {
 	return GameLib::Input::Manager::instance().isCursorLocked();
 }
 
+bool FirstPersonControl::isFireSuppressed() const {
+	return mFireSuppressed;
+}
+
 void FirstPersonControl::readInput( float aimWeight ) {
 	updateCursorLock();
 	GameLib::Input::Manager input = GameLib::Input::Manager::instance();

@@ -118,48 +118,46 @@ namespace{
 	// T ポーズの1体は、始めの位置から 5m 前・少し右（始めの視界に収まる所）に、こちら向きに置く。
 	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
-	// ── 置物の車（2026-11-05 に車で逃げるゴールをやめ、ただの置物にした。R2_Plan.txt Q15）──
-	// 始めの位置の左前に、道に沿って北側の車線へ寄せて停める（南側の車線には T ポーズのゾンビが居るため）。
-	// 前後の位置は、始めの位置にも奥の歩くゾンビにも車体が掛からない所。
+	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）。
+	// 乗れない置物の車は 2026-11-05 に消した（ユーザー指定：脱出できる車と見分けが付かないため）。
 	const float kLaneOffset = 0.25f * kRoadWidth; // 道の中心から車線の中心まで
-	const StreetSpot kParkedCar = { 1.5f, 1.f, 4.5f, -kLaneOffset, 90.f };
-	// ── 町に落ちているガソリン（持ち帰ると点になる 2 マスの物。R2_Plan.txt Q15）──
-	// ガソリンが出るかもしれない場所（10か所）。町じゅうを歩かせるよう、外周の四隅と各辺の真ん中、内側の通りに散らす。
-	// どれも車道の上（建物・ゾンビ・車・始めの位置と重ならない所）。ずれは、道の真ん中ではなく端に寄せるため。
-	const StreetSpot kFuelSpawnPoints[] = {
-		{ 0.0f, 0.0f,  1.0f,  1.5f,   0.f }, // 北西の角
-		{ 1.5f, 0.0f, -2.0f, -1.5f,  40.f }, // 北の辺
-		{ 3.0f, 0.0f, -1.0f,  1.5f, -20.f }, // 北東の角
-		{ 0.0f, 1.5f,  1.0f,  3.0f,  70.f }, // 西の辺
-		{ 3.0f, 1.5f, -1.0f, -3.0f,  10.f }, // 東の辺
-		{ 0.0f, 3.0f,  1.0f, -1.5f, -45.f }, // 南西の角
-		{ 1.5f, 3.0f,  2.0f,  1.5f,  90.f }, // 南の辺
-		{ 3.0f, 3.0f, -1.0f, -1.5f,  15.f }, // 南東の角
-		{ 0.5f, 1.0f,  0.0f, -2.0f, -60.f }, // 内側（北西）
-		{ 2.5f, 2.0f,  0.0f,  2.0f,  30.f }, // 内側（南東）
+	// ── ゴミ箱と木箱（R3_Plan.txt Q3。置き場所は毎日同じ）──
+	// どれも車道の端（歩道の縁石の手前）に、長い辺を道に沿わせて置く。正面（+Z）は道の真ん中へ向ける
+	// （北の端は 0・南の端は 180・西の端は 90・東の端は -90）。ずれの 3.1〜3.2m は、車道の幅の半分（3.86m）から箱の奥行きの半分を引いた所。
+	const float kCurbSide = 3.1f;  // ゴミ箱（奥行き約 1m）
+	const float kCrateSide = 3.2f; // 木箱（奥行き約 0.6m）
+	const StreetSpot kDumpsters[] = {
+		{ 0.5f, 0.0f,  0.0f,      -kCurbSide,   0.f }, // 北の外周の道の西の区間
+		{ 2.5f, 1.0f, -2.0f,       kCurbSide, 180.f }, // 東西の道 1 番の東の区間
+		{ 1.0f, 2.5f, -kCurbSide,  3.0f,       90.f }, // 南北の道 1 番の南の区間
+		{ 3.0f, 2.5f, -kCurbSide, -4.0f,       90.f }, // 東の外周の道の南の区間（町の内側の端）
+		{ 0.0f, 0.5f,  kCurbSide,  2.0f,      -90.f }, // 西の外周の道の北の区間（町の内側の端）
+		{ 1.5f, 2.0f,  3.0f,      -kCurbSide,   0.f }, // 東西の道 2 番の真ん中の区間
+	};
+	const StreetSpot kCrates[] = {
+		{ 2.0f, 0.5f,  kCrateSide,  0.0f,       -90.f }, // 南北の道 2 番の北の区間
+		{ 0.5f, 2.0f,  2.0f,        kCrateSide, 180.f }, // 東西の道 2 番の西の区間
+		{ 2.5f, 3.0f,  0.0f,       -kCrateSide,   0.f }, // 南の外周の道の東の区間（町の内側の端）
+		{ 1.0f, 1.5f,  kCrateSide,  0.0f,       -90.f }, // 南北の道 1 番の真ん中の区間
 	};
 
-	// 町に 1 丁だけ置くライフル（始めの銃は拳銃。漁る場所ができる段階R3 までの仮。Pistol_Plan.txt Q1）。
-	// 始めの位置から 1 ブロック南の通り（東西の道 2 番）の真ん中を、南の歩道寄りに。ガソリンの候補点・車とは重ならない。
-	const StreetSpot kRifle = { 1.5f, 2.0f, 1.0f, 3.0f, 30.f };
-
-	// 脱出点（R2_Plan.txt Q10）。外周の 4 本の道の真ん中（交差点と交差点の間）の、道の中心。毎日このうち 2 つが開く（RaidSession が選ぶ）。
-	// 名前は画面に出す（英語。UiRenderer は英数字しか描けない）。北は -Z（TownMap の向きの決まり）。
-	struct ExtractSpot{
+	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13。2026-11-05 に脱出点の円から変えた）。
+	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
+	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
+	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）。
+	struct EscapeCarSpot{
 		const char* name;
 		StreetSpot spot;
 	};
 	const float kSideMiddle = 1.5f; // 外周の道の、交差点 1 番と 2 番の真ん中
 	const float kNorthRoad = 0.f;
 	const float kSouthRoad = static_cast< float >( kRowNumber - 1 );
-	const float kWestRoad = 0.f;
-	const float kEastRoad = static_cast< float >( kColumnNumber - 1 );
-	const float kAtCenter = 0.f; // 道の中心から動かさない・向きは使わない
-	const ExtractSpot kExtractSpots[] = {
-		{ "北", { kSideMiddle, kNorthRoad, kAtCenter, kAtCenter, kAtCenter } },
-		{ "東",  { kEastRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
-		{ "南", { kSideMiddle, kSouthRoad, kAtCenter, kAtCenter, kAtCenter } },
-		{ "西",  { kWestRoad, kSideMiddle, kAtCenter, kAtCenter, kAtCenter } },
+	const float kAlongRoad = 0.f;   // 道に沿った向きには動かさない
+	const float kCarFacingEast = 90.f; // 車の向き（StreetSpot の決まり。90 で +X）
+	const float kCarFacingWest = -90.f;
+	const EscapeCarSpot kEscapeCarSpots[] = {
+		{ "北", { kSideMiddle, kNorthRoad, kAlongRoad,  kLaneOffset, kCarFacingEast } }, // 南側（町の内側）の車線
+		{ "南", { kSideMiddle, kSouthRoad, kAlongRoad, -kLaneOffset, kCarFacingWest } }, // 北側（町の内側）の車線
 	};
 
 	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。
@@ -361,9 +359,7 @@ namespace{
 
 TownMap::TownMap() :
 	mPlayerStart( toPlacement( kPlayerStart ) ),
-	mTPoseZombie( toPlacement( kTPoseZombie ) ),
-	mParkedCar( toPlacement( kParkedCar ) ),
-	mRifle( toPlacement( kRifle ) ) {
+	mTPoseZombie( toPlacement( kTPoseZombie ) ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
 	addStraights( &mGroundTiles );
@@ -375,11 +371,14 @@ TownMap::TownMap() :
 	addJunctionCenters( &mJunctions );
 	// 街灯は交差点ごとに 1 本（道の途中にも置くと明るくなりすぎ、選ぶ数も増える。PbrNightLighting_Plan.txt Q4）。
 	mStreetLights = mJunctions;
-	for ( const StreetSpot& spot : kFuelSpawnPoints ) {
-		mFuelSpawnPoints.push_back( toPlacement( spot ) );
+	for ( const StreetSpot& spot : kDumpsters ) {
+		mDumpsters.push_back( toPlacement( spot ) );
 	}
-	for ( const ExtractSpot& exit : kExtractSpots ) {
-		mExtractPoints.push_back( { exit.name, toPlacement( exit.spot ) } );
+	for ( const StreetSpot& spot : kCrates ) {
+		mCrates.push_back( toPlacement( spot ) );
+	}
+	for ( const EscapeCarSpot& car : kEscapeCarSpots ) {
+		mEscapeCarSpots.push_back( { car.name, toPlacement( car.spot ) } );
 	}
 }
 
@@ -407,20 +406,16 @@ const TownPlacement& TownMap::tPoseZombie() const {
 	return mTPoseZombie;
 }
 
-const TownPlacement& TownMap::parkedCar() const {
-	return mParkedCar;
+const std::vector< TownPlacement >& TownMap::dumpsters() const {
+	return mDumpsters;
 }
 
-const std::vector< TownExtractPoint >& TownMap::extractPoints() const {
-	return mExtractPoints;
+const std::vector< TownPlacement >& TownMap::crates() const {
+	return mCrates;
 }
 
-const TownPlacement& TownMap::rifle() const {
-	return mRifle;
-}
-
-const std::vector< TownPlacement >& TownMap::fuelSpawnPoints() const {
-	return mFuelSpawnPoints;
+const std::vector< TownEscapeCarSpot >& TownMap::escapeCarSpots() const {
+	return mEscapeCarSpots;
 }
 
 const std::vector< GroundZone >& TownMap::groundZones() const {

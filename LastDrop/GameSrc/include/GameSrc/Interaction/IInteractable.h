@@ -9,6 +9,8 @@ class Inventory;
 // 使う処理は、Interactor がこの同じ入口から呼ぶ（新しい「使える物」を足しても Interactor は変わらない）。
 // 拾う物は、すぐ使わずに「差し出す」（offeredStack）。どのマスへ入れるかを遊ぶ人がカバンの画面で選び、入れた分だけ takeOffered で受け取る
 // （InventoryPickup_Plan.txt Q3。2026-11-05 に、自動で入れる形から変えた）。
+// 漁れる場所（ゴミ箱・木箱・死体）は、中のマス目（lootGrid）を見せる。開けるまでの時間と中を見る画面は呼ぶ側
+// （LootSearch・LootScreen。SummaryPlan/個別仕様/R3_Plan.txt 5 章）。
 // 画面には文字の案内を出さず、物の上にマークだけを出す（InteractMarkers。SummaryPlan/個別仕様/InteractMarker_Plan.txt）。
 class IInteractable{
 public:
@@ -21,6 +23,11 @@ public:
 	virtual bool offeredStack( ItemStack* out ) const = 0;
 	// offeredStack の物を count 個、持ち物へ入れた（入れるのは呼ぶ側）。count は 1〜差し出した数。全部入ったら、もう差し出さない。
 	virtual void takeOffered( int count ) = 0;
+	// 漁れる場所なら、中身のマス目（Interactor は開ける物として呼ぶ側へ回す）。漁れる場所でなければ nullptr。
+	virtual ItemGrid* lootGrid() = 0;
+	// 使い終えるまでにかかる秒（脱出の車への給油。FuelEscapeLoading_Plan.txt Q4）。0 より大きければ Interactor はすぐ使わずに
+	// 呼ぶ側へ回し（timedUse）、呼ぶ側が待ってから interact を呼ぶ（待つ間の取りやめは漁るのと同じ）。すぐ使う物・拾う物・漁れる場所は 0。
+	virtual float useSeconds() const = 0;
 };
 
 #endif

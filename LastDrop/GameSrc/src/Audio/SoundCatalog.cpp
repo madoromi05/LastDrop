@@ -51,6 +51,9 @@ namespace{
 	// サイレンは遠くから鳴る大きな音。近くでは減衰させず、マップの端からでも聞こえるようにする。
 	const float kSirenMinDistance = 30.f;
 	const float kSirenMaxDistance = 800.f;
+	// 脱出の車のエンジン（FuelEscapeLoading_Plan.txt Q5）。ゾンビを呼ぶ音なので、遠くまで聞こえる（銃声より近い）。
+	const float kEngineMinDistance = 3.f;
+	const float kEngineMaxDistance = 80.f;
 
 	// ── 鳴らし始める位置（秒）──
 	const float kFromStart = 0.f;
@@ -101,6 +104,16 @@ namespace{
 		// 聞こえる距離はライフルの銃声と同じ。素材は頭に無音が無い。
 		// 元の素材名: "Weapon Gun Pistol 9mm Glock Single Shot Interior Shooting Range Short 01.wav"
 		{ "pistol_shot",       kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kFromStart },
+		// 漁る音（R3_Plan.txt Q7）。自分の手元の音なので、装備の音と同じ距離。ループはテイク 1 つ（継ぎ目は SoundGen が畳む）。
+		// ゾンビに聞かせるかは段階R4 で決める（今は鳴らすだけ）。
+		{ "loot_search_metal", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "loot_search_wood",  kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "loot_search_cloth", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		// 脱出の車（FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）。
+		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
+		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
+		// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）。
+		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

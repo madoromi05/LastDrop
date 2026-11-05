@@ -2,33 +2,38 @@
 #include "GameSrc/Raid/RaidParams.h"
 #include "GameSrc/Map/SpawnPicker.h"
 
-#include <algorithm>
+#include "GameLib/GameLib.h"
 
 using namespace GameLib::Math;
 
 namespace{
-	// 毎日開く脱出点の数（RaidLoop Q5。4 つのうち 2 つ）。
-	const int kOpenExtractCount = 2;
+	const int kOneCar = 1; // 脱出の車は毎日 1 台（FuelEscapeLoading_Plan.txt Q1）
 }
 
-RaidSession::RaidSession( const std::vector< TownExtractPoint >& extractPoints, unsigned seed ) :
+RaidSession::RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) :
+	mEscapeCarSpot( pickCarSpot( carSpots, seed ) ),
 	mClock( raidParams().raidSeconds ),
-	mExtraction( pickOpenZones( extractPoints, seed ), raidParams().extractRadius, raidParams().extractSeconds ),
+	mExtraction( zoneAt( carSpots, mEscapeCarSpot ), raidParams().extractRadius, raidParams().extractSeconds ),
 	mKills( 0 ),
 	mEnding( RaidEnding::None ) {
 }
 
-std::vector< ExtractZone > RaidSession::pickOpenZones( const std::vector< TownExtractPoint >& points, unsigned seed ) {
-	int count = static_cast< int >( points.size() );
-	std::vector< int > picked = SpawnPicker::pick( count, std::min( kOpenExtractCount, count ), seed );
-	// 画面に出す順は表の順（北・東・南・西）にそろえる（毎日ばらばらの順に並ぶと読みにくい）。
-	std::sort( picked.begin(), picked.end() );
-	std::vector< ExtractZone > zones;
-	for ( int index : picked ) {
-		const TownPlacement& p = points[ index ].placement;
-		zones.push_back( { points[ index ].name, Vector3( p.x, p.y, p.z ) } );
-	}
-	return zones;
+int RaidSession::pickCarSpot( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) {
+	ASSERT( !carSpots.empty() && "RaidSession : no escape car spot." );
+	return SpawnPicker::pick( static_cast< int >( carSpots.size() ), kOneCar, seed ).front();
+}
+
+std::vector< ExtractZone > RaidSession::zoneAt( const std::vector< TownEscapeCarSpot >& carSpots, int spot ) {
+	const TownPlacement& p = carSpots[ spot ].placement;
+	return { { carSpots[ spot ].name, Vector3( p.x, p.y, p.z ) } };
+}
+
+int RaidSession::escapeCarSpot() const {
+	return mEscapeCarSpot;
+}
+
+void RaidSession::openEscape() {
+	mExtraction.open();
 }
 
 void RaidSession::tick( const Vector3& feet, bool playerDead, int kills ) {

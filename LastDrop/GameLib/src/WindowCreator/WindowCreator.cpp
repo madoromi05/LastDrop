@@ -47,6 +47,7 @@ public:
 	mFullScreenForbidden( false ),
 	mDragAndDropEnabled( false ),
 	mMouseWheel( 0 ),
+	mMouseButtonPresses( 0 ),
 	mTimeBias( 0 ),
 	mThreadId( 0 ),
 	mWindowHandle( NULL ),
@@ -113,6 +114,7 @@ public:
 	bool mFullScreenForbidden;
 	bool mDragAndDropEnabled;
 	int mMouseWheel;
+	unsigned mMouseButtonPresses; //前に読んでから押されたマウスのボタン（ビット 0 左・1 右・2 中。Input::Manager が読んで 0 に戻す）
 	unsigned mTimeBias; //timeGetTime()にはこれを加算
 	unsigned mThreadId;
 	Array< string > mDroppedItems;
@@ -208,6 +210,12 @@ void WindowCreator::clearDroppedItem(){
 int WindowCreator::getAndResetMouseWheel(){
 	int t = gImpl->mMouseWheel;
 	gImpl->mMouseWheel = 0;
+	return t;
+}
+
+unsigned WindowCreator::getAndResetMouseButtonPresses(){
+	unsigned t = gImpl->mMouseButtonPresses;
+	gImpl->mMouseButtonPresses = 0;
 	return t;
 }
 
@@ -513,6 +521,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		gImpl->mMouseWheel = ( static_cast< short >( HIWORD( wParam ) ) > 0 ) ? 1 : -1;
 		break;
+	//押した知らせを覚えておく（1 フレームの間に押して離した短いクリックを、Input::Manager が落とさないように。
+	//GetAsyncKeyState は読んだ瞬間に押しているかしか分からないため。FuelEscapeLoading_Plan.txt Q10）。
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+		gImpl->mMouseButtonPresses |= WindowCreator::MOUSE_PRESS_LEFT;
+		return DefWindowProc( hWnd, message, wParam, lParam );
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDBLCLK:
+		gImpl->mMouseButtonPresses |= WindowCreator::MOUSE_PRESS_RIGHT;
+		return DefWindowProc( hWnd, message, wParam, lParam );
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONDBLCLK:
+		gImpl->mMouseButtonPresses |= WindowCreator::MOUSE_PRESS_MIDDLE;
+		return DefWindowProc( hWnd, message, wParam, lParam );
 	case WM_DROPFILES:
 		if ( gImpl->mDragAndDropEnabled ){
 			HDROP hDrop = ( HDROP )wParam;

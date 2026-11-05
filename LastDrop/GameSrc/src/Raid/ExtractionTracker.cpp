@@ -10,16 +10,25 @@ ExtractionTracker::ExtractionTracker( const std::vector< ExtractZone >& zones, f
 	mRadius( radius ),
 	mRequiredTicks( GameTime::secondsToTicks( seconds ) ),
 	mInsideTicks( 0 ),
+	mOpen( false ),
 	mInside( false ),
 	mExtracted( false ) {
 	ASSERT( radius > 0.f && mRequiredTicks > 0 && "ExtractionTracker : radius and seconds must be positive." );
 }
 
+void ExtractionTracker::open() {
+	mOpen = true;
+}
+
+bool ExtractionTracker::isOpen() const {
+	return mOpen;
+}
+
 void ExtractionTracker::tick( const Vector3& feet ) {
-	if ( mExtracted ) {
+	mInside = false;
+	if ( mExtracted || !mOpen ) {
 		return;
 	}
-	mInside = false;
 	for ( const ExtractZone& zone : mZones ) {
 		// 高さは見ない（歩道の段差・車道の面のどちらでも同じ円に入る）。
 		Vector3 toFeet;

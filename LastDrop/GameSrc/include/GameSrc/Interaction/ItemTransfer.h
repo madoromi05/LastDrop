@@ -19,6 +19,10 @@ namespace ItemTransfer{
 	bool canMove( const ItemGrid& source, GridRule sourceRule, int from, const ItemGrid& target, GridRule targetRule, int to );
 	// canMove が true のときだけ呼ぶこと。
 	void move( ItemGrid* source, int from, ItemGrid* target, int to );
+	// source の from の物を、別のマス目 target のおまかせの所へ動かす（漁れる場所の画面の F。R3_Plan.txt Q9）。
+	// ①同じ物で重ねられるマス → ②上の行・左の列の空き、の順に入れる（入れ替えはしない）。重ねて入りきらない分は次のマスへ続け、
+	// それでも入らない分は source に残る。1 つでも動いたら true。source と target は別のマス目であること。
+	bool quickMove( ItemGrid* source, GridRule sourceRule, int from, ItemGrid* target, GridRule targetRule );
 }
 
 #endif

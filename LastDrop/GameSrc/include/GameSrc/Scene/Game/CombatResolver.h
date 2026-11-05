@@ -13,11 +13,11 @@
 class GameObject;
 class GameObjectWorld;
 class HitWorld;
-class PropFactory;
 class ZombieStateComponent;
 
 // 当たった後に何が起きるかを決める係（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-4。2026-11-02 GameWorld から分けた）。
-// ・弾：物に当たったら弾痕と砂ぼこり、ゾンビに当たったらダメージを渡して血しぶき・後ろの壁と足元の血の跡・千切れた部位・倒したら弾を落とす
+// ・弾：物に当たったら弾痕と砂ぼこり、ゾンビに当たったらダメージを渡して血しぶき・後ろの壁と足元の血の跡・千切れた部位・
+//   倒したら死体を漁れる場所にする（2026-11-05 から弾は落とさない。R3_Plan.txt Q10）
 // ・ゾンビの腕（★3）：自キャラに当たったら体力を減らす
 // 起きたことは出来事の並び（ZombieHit・SurfaceHit・ZombieAttackEvent）に残し、音・画面の赤み・揺れの係（シーン）が読む。
 // 相手の体力へは IDamageable（ZombieHealthComponent::applyDamage）・PlayerHealthComponent::applyZombieHit の入口だけを通す
@@ -40,17 +40,16 @@ public:
 	};
 
 	// どれも所有権は受け取らない。nullptr 不可。この係より長く生きていること（どれも GameWorld が持つ）。
-	// objects: 当たった物の部品を引く・落とした弾を置く。effects: 弾痕・血しぶき・血の跡・千切れた部位を出す。props: 落とす弾を組み立てる。
+	// objects: 当たった物の部品を引く。effects: 弾痕・血しぶき・血の跡・千切れた部位を出す。
 	// hitWorld: 血の跡を付ける面（撃たれたゾンビの後ろ・足元）を聞く。
-	CombatResolver( GameObjectWorld* objects, EffectManager* effects, const PropFactory* props, const HitWorld* hitWorld );
+	CombatResolver( GameObjectWorld* objects, EffectManager* effects, const HitWorld* hitWorld );
 	CombatResolver( const CombatResolver& ) = delete;
 	CombatResolver& operator=( const CombatResolver& ) = delete;
 
 	// このティックの出来事を空にする。ティックの頭（弾を進める前）に 1 回呼ぶ。
 	void beginTick();
 	// 弾が当たった所を当たった順に解決する（BulletList::update の後）。
-	// player: 自キャラの物（落とした弾を自キャラ側へ寄せるのに使う）。nullptr 可（寄せない）。
-	void resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts, const GameObject* player );
+	void resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts );
 	// このティックに腕が当たったゾンビの分だけ、自キャラの体力を減らして出来事を残す（ゾンビの Think の段の後）。
 	// player: nullptr 可。自キャラが居ない・体力の部品を外した自キャラなら、減らさず出来事も残さない。
 	void resolveZombieAttacks( GameObject* player );
@@ -66,21 +65,17 @@ public:
 
 private:
 	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。部位が切れたら飛ばす。
-	void hitZombie( const BulletList::Impact& impact, const GameObject* player );
+	void hitZombie( const BulletList::Impact& impact );
 	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける（BloodStain_Plan.txt 3 章）。
 	// 後ろは、先に別のゾンビに当たったら付けない（後ろのゾンビにも、その奥の壁にも）。
 	void stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size );
-	// zombie が今倒れたので、決まった割合で足元（自キャラ側へ少し寄せた所）に予備の弾を落とし、死体から弾をたどれるようにする。
-	// 落ちている弾（タグ AmmoDrop）が多すぎたら、一番古い物を消す。数の上限があるのは弾だけ（ガソリンは数が決まっている）。
-	void dropAmmo( const ZombieStateComponent& zombie, const GameObject* player );
-	// ゾンビが落とす弾の種類（自キャラ player が手に持っている銃の弾）。
-	static ItemId droppedAmmo( const GameObject* player );
+	// zombie が今倒れた（止めを刺した）ので、死体を漁れる場所にする（中身はゾンビの表。R3_Plan.txt Q10）。
+	void makeLootable( const ZombieStateComponent& zombie );
 
 	GameObjectWorld* mObjects;  // 借りているだけ
 	EffectManager* mEffects;    // 借りているだけ
-	const PropFactory* mProps;  // 借りているだけ
 	const HitWorld* mHitWorld;  // 借りているだけ
-	GameLib::Math::Random mRandom; // 弾を落とすか・落とした弾の向きを選ぶ（遊ぶたびに変わるよう、起動からの時間を種にする）
+	GameLib::Math::Random mRandom; // 死体の中身を決める（遊ぶたびに変わるよう、起動からの時間を種にする）
 	std::vector< ZombieHit > mZombieHits;           // このティックの出来事（毎回確保し直さないために持つ）
 	std::vector< SurfaceHit > mSurfaceHits;         // 同上
 	std::vector< ZombieAttackEvent > mZombieAttacks; // 同上

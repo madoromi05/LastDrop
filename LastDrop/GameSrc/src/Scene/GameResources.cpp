@@ -28,3 +28,7 @@ GameSettings& GameResources::settings() {
 RunState& GameResources::run() {
 	return mRun;
 }
+
+TownCache& GameResources::town() {
+	return mTown;
+}

@@ -8,14 +8,20 @@
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
-// 町の中の 1 日（1 回の出撃）。残り時間（RaidClock）と脱出点（ExtractionTracker）を持ち、「今終わったか・どう終わったか」を答える
-// （R2_Plan.txt 5 章）。開く脱出点は作るときに 4 つから 2 つを選ぶ（Q10）。倒した数もここで数える。
+// 町の中の 1 日（1 回の出撃）。残り時間（RaidClock）と脱出の車のそば（ExtractionTracker）を持ち、「今終わったか・どう終わったか」を答える
+// （R2_Plan.txt 5 章）。脱出の車を置く所は、作るときに候補（北・南）から 1 つ選ぶ（FuelEscapeLoading_Plan.txt Q1・Q13）。
+// 車へ要る数のガソリンを入れ終えたら（openEscape）、車のそばに居続けて脱出できる。倒した数もここで数える。
 // 物・カバン・保存には触らない（終わった後に何を残すかは RunRules。シーンは毎ティック tick を呼び、終わったら次のシーンへ移るだけ）。
 class RaidSession{
 public:
-	// extractPoints: 脱出点の候補（TownMap::extractPoints。名前の文字列は TownMap の表を借りるので、その表より短く生きること）。
-	// seed: どの脱出点を開くかの乱数の種（毎日変わるよう、呼ぶ側が起動からの時間などを渡す）。
-	RaidSession( const std::vector< TownExtractPoint >& extractPoints, unsigned seed );
+	// carSpots: 脱出の車を置く候補（TownMap::escapeCarSpots。名前の文字列は TownMap の表を借りるので、その表より短く生きること）。
+	// seed: どこに置くかの乱数の種（毎日変わるよう、呼ぶ側が起動からの時間などを渡す）。
+	RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed );
+
+	// 今日の脱出の車を置く所（carSpots の番号）。町を組み立てる側が、ここに車を置く。
+	int escapeCarSpot() const;
+	// 脱出の車へ要る数のガソリンを入れ終えた。ここから車のそばに居続けたら脱出（2 回目からは何もしない）。
+	void openEscape();
 
 	// 1 ティック進める（一時停止・カバンの間は呼ばない）。終わった後は何もしない。
 	// feet: 自キャラの足元。playerDead: 自キャラが死んだか。kills: このティックに倒した数。
@@ -34,7 +40,10 @@ public:
 	void forceExtract();
 
 private:
-	static std::vector< ExtractZone > pickOpenZones( const std::vector< TownExtractPoint >& points, unsigned seed );
+	static int pickCarSpot( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed );
+	static std::vector< ExtractZone > zoneAt( const std::vector< TownEscapeCarSpot >& carSpots, int spot );
+
+	int mEscapeCarSpot; // mExtraction より先に決める（並びの順に作られる）
 
 	RaidClock mClock;
 	ExtractionTracker mExtraction;

@@ -20,7 +20,8 @@ public:
 	Interactor( float reach, Finder finder );
 
 	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う
-	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側。InventoryPickup_Plan.txt Q3）。
+	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側。InventoryPickup_Plan.txt Q3。
+	// 漁れる場所も使わずに opened に残す。開けるまで待つ・中を見せるのは呼ぶ側。R3_Plan.txt 5 章）。
 	// 1回の描画につき1回（押した瞬間を1回だけ拾うため）。
 	// inventory: 使うときに増やしたり減らしたりする持ち物。nullptr 不可。
 	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction,
@@ -30,12 +31,18 @@ public:
 	// 最後の update で E を押した拾う物（無ければ nullptr）。update の直後に読む。世界を進める前に使い終えること
 	// （拾い終えた物は世界の update で消える）。
 	IInteractable* offer() const;
+	// 最後の update で E を押した漁れる場所（lootGrid がある物。無ければ nullptr）。読む決まりは offer と同じ。
+	IInteractable* opened() const;
+	// 最後の update で E を押した、時間をかけて使う物（useSeconds が 0 より大きい物。脱出の車への給油）。読む決まりは offer と同じ。
+	IInteractable* timedUse() const;
 
 private:
 	float mReach;
 	Finder mFinder;
 	const IInteractable* mTarget; // 借りているだけ
 	IInteractable* mOffer;        // 借りているだけ
+	IInteractable* mOpened;       // 借りているだけ
+	IInteractable* mTimedUse;     // 借りているだけ
 };
 
 #endif

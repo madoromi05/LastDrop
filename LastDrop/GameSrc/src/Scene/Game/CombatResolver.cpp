@@ -1,7 +1,6 @@
 #include "GameSrc/Scene/Game/CombatResolver.h"
 #include "GameSrc/Hit/HitWorld.h"
-#include "GameSrc/Interaction/PropFactory.h"
-#include "GameSrc/Interaction/CorpseLootComponent.h"
+#include "GameSrc/Interaction/LootContainerComponent.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
@@ -26,16 +25,6 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── ゾンビが落とす予備の弾
-	const float kAmmoDropChance = 0.5f;	// 落とす確率
-	// 素手のときに落とす弾（手に持っている銃が無いので、どちらかに決める。始めの銃ではない方＝拾ったライフル用）。
-	const ItemId kBareHandAmmo = ITEM_AMMO_762;
-	// 同時に落ちていられる数。超えたら一番古い物を消す
-	const int kMaxAmmoDrops = 10;
-	// 足元から自キャラの方へ寄せる長さ（m）。死体の脚の下に隠れにくくする（隠れても、死体を見れば拾える）。
-	const float kAmmoDropTowardPlayer = 0.5f;
-	const float kFullTurnDegree = 360.f; // 落ちた弾の向きは体ごとにばらばら
-
 	// ── 血の跡（BloodStain_Plan.txt 3 章。ZombieHitFeedback_Plan.txt 4 章）
 	const float kStainBehindDistance = 2.f; // 当たった所から弾の向きへ、血が飛ぶ所まで（m）
 	const float kStainDropDistance = 1.5f;  // 当たった所から真下へ、滴が落ちる所まで（m）
@@ -49,14 +38,13 @@ namespace{
 	}
 }
 
-CombatResolver::CombatResolver( GameObjectWorld* objects, EffectManager* effects, const PropFactory* props, const HitWorld* hitWorld ) :
+CombatResolver::CombatResolver( GameObjectWorld* objects, EffectManager* effects, const HitWorld* hitWorld ) :
 	mObjects( objects ),
 	mEffects( effects ),
-	mProps( props ),
 	mHitWorld( hitWorld ),
 	mRandom( Random::create( static_cast< int >( Framework::instance().time() ) ) ),
 	mZombiesKilled( 0 ) {
-	ASSERT( objects && effects && props && hitWorld && "CombatResolver : an argument is null." );
+	ASSERT( objects && effects && hitWorld && "CombatResolver : an argument is null." );
 }
 
 void CombatResolver::beginTick() {
@@ -66,7 +54,7 @@ void CombatResolver::beginTick() {
 	mZombiesKilled = 0;
 }
 
-void CombatResolver::resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts, const GameObject* player ) {
+void CombatResolver::resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts ) {
 	// 物（建物・車・地面・拾える物）に当たった所にだけ、弾痕と砂ぼこりを出し、着弾音のために材質を記録する。
 	// ゾンビ（target）には出さず、血しぶきを出す。
 	for ( const BulletList::Impact& impact : impacts ) {
@@ -75,12 +63,12 @@ void CombatResolver::resolveBulletImpacts( const std::vector< BulletList::Impact
 			mEffects->spawnSurfaceImpact( hit.point, hit.normal, hit.blocker );
 			mSurfaceHits.push_back( { hit.point, hit.blocker->surfaceMaterial( hit.point ) } );
 		} else if ( hit.target ) {
-			hitZombie( impact, player );
+			hitZombie( impact );
 		}
 	}
 }
 
-void CombatResolver::hitZombie( const BulletList::Impact& impact, const GameObject* player ) {
+void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 	const HitWorld::Hit& hit = impact.hit;
 	HitboxComponent* hitbox = mObjects->find< HitboxComponent >( hit.target );
 	const ZombieStateComponent* state = hitbox ? hitbox->getComponent< ZombieStateComponent >() : nullptr;
@@ -109,8 +97,8 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact, const GameObje
 	bool wasAlive = state->isAlive();
 	zombie->applyDamage( damage ); // 倒れ始めたら（脚を失って倒れたときも）、ゾンビが自分で移動の名簿から外れる
 	if ( wasAlive && !state->isAlive() ) {
-		dropAmmo( *state, player ); // 脚を失って倒れたまま生きている（Downed）間は落とさない。止めを刺したときに落とす
-		++mZombiesKilled; // 倒した数（スコア。弾を落とすのと同じ時＝止めを刺したとき）
+		makeLootable( *state ); // 脚を失って倒れたまま生きている（Downed）間は漁れない。止めを刺したときから
+		++mZombiesKilled; // 倒した数（スコア。死体を漁れるようになるのと同じ時＝止めを刺したとき）
 	}
 	// 切り口の決まりは、このゾンビの設計図から読む（設計図の種類が増えても、当たった体の形で切れる）。
 	const SkinnedMeshInstance& mesh = zombie->getComponent< SkinnedModelComponent >()->mesh();
@@ -141,38 +129,10 @@ void CombatResolver::stainAroundZombie( const BulletList::Impact& impact, Effect
 	}
 }
 
-ItemId CombatResolver::droppedAmmo( const GameObject* player ) {
-	// 手に持っている銃の弾（拳銃なら 9mm。Pistol_Plan.txt Q3）。素手・自キャラがいなければ 7.62。
-	const GunComponent* gun = HoldComponent::heldGun( player );
-	return gun ? gun->spec().ammo : kBareHandAmmo;
-}
-
-void CombatResolver::dropAmmo( const ZombieStateComponent& zombie, const GameObject* player ) {
-	if ( mRandom.getFloat() >= kAmmoDropChance ) {
-		return;
-	}
-	Vector3 position = zombie.position();
-	if ( player ) {
-		Vector3 toPlayer;
-		toPlayer.setSub( player->getComponent< TransformComponent >()->position(), position );
-		toPlayer.y = 0.f;
-		if ( toPlayer.length() > kAmmoDropTowardPlayer ) {
-			toPlayer.normalize();
-			position.madd( toPlayer, kAmmoDropTowardPlayer );
-		}
-	}
-	GameObject* drop = mProps->spawnAmmoDrop( mObjects, droppedAmmo( player ), position, mRandom.getFloat( kFullTurnDegree ) );
-	if ( !drop ) {
-		return; // 形の構築に失敗した（理由は MeshCache が出力済み）
-	}
-	// 今置いた物を数えて上限を超えたら、一番古い物（今置いた物ではない）を消す。
-	if ( mObjects->countTagged( GameObjectTag::AmmoDrop ) > kMaxAmmoDrops ) {
-		GameObject* oldest = mObjects->oldestTagged( GameObjectTag::AmmoDrop );
-		mEffects->detach( oldest->getComponent< StaticModelComponent >() ); // 物が消える前に外す
-		mObjects->destroyLater( oldest );
-	}
-	// 死体を見ても拾えるよう、死体の物に落とした弾を覚えさせる（★1）。倒れたゾンビは 1 回しか落とさない。
-	zombie.gameObject()->addComponent< CorpseLootComponent >( drop );
+void CombatResolver::makeLootable( const ZombieStateComponent& zombie ) {
+	// 倒れたゾンビは 1 回しか倒れない（止めを刺した後は wasAlive が false）ので、付けるのも 1 回だけ。
+	// 中身はゾンビの表から決める（空のこともある。R3_Plan.txt Q10・7-2）。死体が消えれば、この部品も一緒に消える。
+	zombie.gameObject()->addComponent< LootContainerComponent >( LootTableId::Corpse, &mRandom );
 }
 
 void CombatResolver::resolveZombieAttacks( GameObject* player ) {

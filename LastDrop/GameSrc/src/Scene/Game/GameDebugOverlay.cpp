@@ -7,7 +7,13 @@
 #include "GameSrc/UI/UiScreen.h"
 #ifdef ZF_EDITOR
 #include "GameSrc/UI/UiRenderer.h"
+#include "GameSrc/UI/ScreenProjection.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Interaction/LootContainerComponent.h"
+#include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Zombie/ZombieStateComponent.h"
+#include <string>
+#include <vector>
 #endif
 
 #include "GameLib/GameLib.h"
@@ -39,6 +45,13 @@ namespace{
 	const float kPlayerHealthLeft = 16.f; // 画面の左端からの間（画素）
 	const float kPlayerHealthTop = 16.f;  // 画面の上端からの間（画素）
 	const unsigned kPlayerHealthColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
+	// 漁れる場所の中身（F3。R3_Plan.txt Q13）。文字を出す高さ（足元から m）。
+	const float kLootLabelHeight = 1.6f;   // 車・ゴミ箱・木箱（車の屋根より少し上）
+	const float kCorpseLabelHeight = 0.8f; // 死体
+	const char* kLootEmptyText = "（空）";
+	const char* kLootSeparator = "・";
+	const char* kLootSearchedMark = "[済] "; // 開けた所
+	const unsigned kLootTextColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );
 #endif
 
 	// 下から line 番目（0 が一番下）の DebugScreen の行。状態表示の一番上の行の上端より上の、まるごと入る行から上へ数える。
@@ -188,5 +201,38 @@ void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* rend
 	char text[ kDebugTextSize ];
 	std::snprintf( text, sizeof( text ), "Health %.0f/%.0f %s", health.current(), health.maxHealth(), playerConditionName( health.condition() ) );
 	renderer->addText( text, Vector2( kPlayerHealthLeft, kPlayerHealthTop ), UI_TEXT_NORMAL, UI_ALIGN_LEFT, kPlayerHealthColor );
+}
+
+void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
+	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
+	if ( !mShowZombieHealth ) {
+		return;
+	}
+	Matrix44 projectionView = camera.projectionViewMatrix();
+	world.objects().forEach< LootContainerComponent >( [ & ]( const LootContainerComponent& loot ) {
+		const TransformComponent* transform = loot.getComponent< TransformComponent >();
+		if ( !transform ) {
+			return;
+		}
+		Vector3 position = transform->position();
+		position.y += loot.getComponent< ZombieStateComponent >() ? kCorpseLabelHeight : kLootLabelHeight;
+		Vector2 screen;
+		if ( !ScreenProjection::worldToScreen( projectionView, position, &screen ) ) {
+			return; // カメラの後ろ
+		}
+		// 中身の名前を「・」でつなぐ（壁越しに出す。道順を考えるときの確認用。R3_Plan.txt Q13）。
+		std::string text = loot.isSearched() ? kLootSearchedMark : "";
+		std::vector< ItemStack > stacks = loot.contents().stacks();
+		if ( stacks.empty() ) {
+			text += kLootEmptyText;
+		}
+		for ( size_t i = 0; i < stacks.size(); ++i ) {
+			if ( i > 0 ) {
+				text += kLootSeparator;
+			}
+			text += itemSpec( stacks[ i ].item ).name;
+		}
+		renderer->addText( text.c_str(), screen, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kLootTextColor );
+	} );
 }
 #endif

@@ -27,6 +27,7 @@ public:
 			NONE,  // 何もしない
 			DROP,  // cell の物を取り出して足元に置く
 			EQUIP, // cell の銃を手に持つ
+			USE,   // cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11）
 			PLACE, // 拾った物を cell を指した所へ入れる（入る数は本編が Inventory::countPlaceableInto で決める）
 			QUICK_PLACE, // 拾った物をおまかせで入れる
 		};
@@ -48,8 +49,9 @@ public:
 	// 入力を読んで選ぶ・動かす。開いている間、1回の描画につき1回（本編の beginFrame で）。
 	// 「Drop」「Equip」を選んだら、そのマス（物の中身を持つマス）を返す。取り出して足元に置く・持ち替えるのは本編。
 	// inventory: 動かす先。nullptr 不可。equipped: 手に持っている銃の物（素手なら ITEM_NONE。Equip を出すかを決める）。
+	// injured: 体力が減っているか（包帯に Use を出すかを決める）。
 	// incoming: 拾って持っている物（isPlacing の間。それ以外は nullptr）。
-	Request handleInput( Inventory* inventory, ItemId equipped, const ItemStack* incoming );
+	Request handleInput( Inventory* inventory, ItemId equipped, bool injured, const ItemStack* incoming );
 	// 暗くする板とマス目を描く。開いている間、1回の描画につき1回。本編の 3D を描いた後に呼ぶ（上に重ねる）。
 	// 中で UiRenderer::draw まで行うので、同じ描画で HUD・一時停止のメニューは描かないこと（UiRenderer は 1 回の描画に 1 回だけ）。
 	// equipped: 手に持っている銃の物（素手なら ITEM_NONE。そのマスに「E」の印を出す）。
@@ -70,7 +72,7 @@ private:
 	// 上下左右でマスを選び直す（端で止まる）。
 	void moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& grid );
 	// 選んでいる物のメニューを出す（その物に使える項目だけを並べる）。
-	void openMenu( const ItemGrid& grid, ItemId equipped );
+	void openMenu( const ItemGrid& grid, ItemId equipped, bool injured );
 	// メニューの選んだ項目を行う。捨てる・持つなら、本編への答えを返す。
 	Request activateMenu( const ItemGrid& grid );
 	// 置く所を決めた。動かせたら（取りやめも）Browse へ戻る。入らない所なら何もしない。
@@ -92,8 +94,8 @@ private:
 	ItemGridView mView;    // マス目を描く（mIcons を借りるので、mIcons より後に宣言する）
 	Mode mMode;
 	int mSelected;   // 選んでいるマス
-	// 出しているメニューの項目（MenuItem の番号を並べた物）と数。項目は物によって変わる（Equip は銃だけ）。
-	static const int kMenuCapacity = 4;
+	// 出しているメニューの項目（MenuItem の番号を並べた物）と数。項目は物によって変わる（Equip は銃だけ・Use は包帯だけ）。
+	static const int kMenuCapacity = 5;
 	int mMenuItems[ kMenuCapacity ];
 	int mMenuCount;
 	int mMenuChoice; // メニューで選んでいる項目（mMenuItems の何番目か）

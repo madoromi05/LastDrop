@@ -19,6 +19,7 @@
 #include "GameSrc/Render/SsrParams.h"
 #include "GameSrc/Render/TaaParams.h"
 #include "GameSrc/Raid/RaidParams.h"
+#include "GameSrc/Interaction/LootParams.h"
 
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
@@ -85,6 +86,9 @@ namespace{
 		// 1 日の時間・脱出点・スコアの重み（R2_Plan.txt。遊んで決める値）。
 		groups.push_back( std::make_unique< TuningGroup< RaidParams > >(
 			"Raid", "RaidParams", "GameSrc/Raid/RaidParams.h", &raidParams ) );
+		// 漁れる場所の開ける秒・空になる確率・包帯の効き目（R3_Plan.txt Q13。遊んで決める値）。
+		groups.push_back( std::make_unique< TuningGroup< LootParams > >(
+			"Loot", "LootParams", "GameSrc/Interaction/LootParams.h", &lootParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(

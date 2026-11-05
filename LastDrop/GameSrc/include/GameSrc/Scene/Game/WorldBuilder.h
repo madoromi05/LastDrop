@@ -13,7 +13,6 @@ class Building;
 class CollisionWorld;
 class HitWorld;
 class GameObjectWorld;
-class NavMesh;
 
 // WorldBuilder::build が町を置く先。どれも GameWorld が持ち、build の間だけ借りる（覚えない）。どれも nullptr 不可。
 struct WorldBuildTarget{
@@ -22,12 +21,11 @@ struct WorldBuildTarget{
 	CollisionWorld* collisionWorld;   // 移動の当たり判定の名簿
 	HitWorld* hitWorld;               // 命中の当たり判定の名簿
 	GameObjectWorld* objects;         // 置物を spawn する先
-	NavMesh* navMesh;                 // 置き終えた名簿から、歩ける床の形を作る
 };
 
 // 町を最初に一度だけ組み立てる係（「どこに何を置くか」。SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-2。2026-11-02 GameWorld から分けた）。
-// 置き場所は TownMap、置物が何で出来ているかは PropFactory が決める。ここは町の決まり
-// （ガソリンを何個置くか）と、置く順番（名簿へ載せ終えてから床の形を作る）を持つ。
+// 置き場所は TownMap、置物が何で出来ているかは PropFactory、漁れる場所の中身の出やすさは LootTable が決める。ここは町の決まり
+// （中身を決める乱数の種・ガソリンを入れる箱の選び方）を持つ。歩ける床の形は作らない（GameWorld が TownCache から借りる）。
 // 置いた物の持ち主にはならない（建物の並びは GameWorld、置物は GameObjectWorld が持つ）。
 class WorldBuilder{
 public:
@@ -37,17 +35,20 @@ public:
 	WorldBuilder( const WorldBuilder& ) = delete;
 	WorldBuilder& operator=( const WorldBuilder& ) = delete;
 
-	// 全データの構築後に一度だけ、地面・建物・車・ガソリンを置き、最後に歩ける床の形を作る。
+	// 全データの構築後に一度だけ、地面・建物・置物の車・漁れる場所（ゴミ箱・木箱）・脱出の車を置く。
+	// 漁れる場所のうち RaidParams::fuelCanCount か所に、ガソリンを 1 個ずつ入れる（FuelEscapeLoading_Plan.txt Q15）。
+	// escapeCarSpot: 脱出の車を置く所（TownMap::escapeCarSpots の番号）。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
-	void build( const WorldBuildTarget& target ) const;
+	void build( const WorldBuildTarget& target, int escapeCarSpot ) const;
 
 private:
 	// data の建物を placements の場所へ建てる。data: nullptr 不可。
 	void placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes, const std::vector< TownPlacement >& placements ) const;
-	// 置物の車と、候補点から選んだ場所のガソリンを置く。
-	void placeCarAndFuel( GameObjectWorld* objects ) const;
-	// 町で拾える銃を置く（今はライフル 1 丁。始めの銃〈拳銃〉はカバンに入っているので置かない）。
-	void placeWeapons( GameObjectWorld* objects ) const;
+	// 漁れる場所（ゴミ箱・木箱）を置き、中身を決める（R3_Plan.txt Q3）。ガソリンを入れる箱を選ぶのもここ。
+	// 地面に落ちているガソリンとライフルは置かない（2026-11-05。ガソリンは箱の中・ライフルは木箱から出る）。
+	void placeLootSpots( GameObjectWorld* objects ) const;
+	// 今日の脱出の車を置く（給油できる車。漁れない）。
+	void placeEscapeCar( GameObjectWorld* objects, int escapeCarSpot ) const;
 
 	const TownMap* mMap;                          // 借りているだけ
 	const PropFactory* mProps;                    // 借りているだけ

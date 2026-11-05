@@ -47,6 +47,14 @@ public:
 	void end(); //終わりを通知する。
 	bool isEndRequested() const; //終わりは要求されてますか
 	int getAndResetMouseWheel();
+	//前に読んでから押されたマウスのボタン（MOUSE_PRESS_* のビット）。読むと 0 に戻る。
+	//1 フレームの間に押して離した短いクリックも分かる（GetAsyncKeyState は読んだ瞬間の状態しか分からない）。
+	enum MousePressBit{
+		MOUSE_PRESS_LEFT = 1 << 0,
+		MOUSE_PRESS_RIGHT = 1 << 1,
+		MOUSE_PRESS_MIDDLE = 1 << 2,
+	};
+	unsigned getAndResetMouseButtonPresses();
 };
 
 } //namespace GameLib

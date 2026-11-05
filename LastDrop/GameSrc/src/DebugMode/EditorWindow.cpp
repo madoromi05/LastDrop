@@ -20,6 +20,7 @@
 #include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Scene/Game/InteractionSystem.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Raid/RunState.h"
 #include "GameSrc/Raid/RunRules.h"
@@ -27,6 +28,7 @@
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
+#include "Framework.h"
 #include "GameLib/Input/Manager.h"
 #include "GameLib/Input/GamePad.h"
 #include "GameLib/Input/InputBuilder.h"
@@ -55,11 +57,13 @@ namespace{
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
 	RaidSession* gRaid = nullptr;    // GameScene から受け取った、町の 1 日（無ければ nullptr）
 	RunState* gRun = nullptr;        // GameScene・BaseScene から受け取った、5 日間の様子（無ければ nullptr）
+	InteractionSystem* gInteraction = nullptr; // GameScene から受け取った、漁れる場所を探す係（無ければ nullptr）
 	// Raid の欄の「残り 10 秒」（時間切れの流れをすぐ試すため）。
 	const float kShortRemainingSeconds = 10.f;
 
-	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く）。ガソリンは車へ運ぶ遊びの物なので、ここでは触らない。
-	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM };
+	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く。2026-11-05 に段階R3 の 3 つも足した）。
+	// ガソリンは 2 マスの持ち帰る物なので、ここでは触らない。
+	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM, ITEM_BANDAGE, ITEM_WATCH, ITEM_LAPTOP };
 	// 一度に足す・減らす数。上限は弾を 1 回で十分に持てる数（カバンの空きのほうが先に尽きる）。
 	const int kMinItemAmount = 1;
 	const int kMaxItemAmount = 999;
@@ -218,6 +222,22 @@ namespace{
 		}
 	}
 
+	// 漁れる場所の欄（R3_Plan.txt Q13）。開ける秒・空になる確率・包帯の効き目は Tuning の Loot。
+	void drawLoot() {
+		if ( !gInteraction ) {
+			ImGui::TextDisabled( "No raid." );
+			return;
+		}
+		if ( ImGui::SmallButton( "Reroll all" ) ) {
+			gInteraction->rerollLoot( static_cast< int >( GameLib::Framework::instance().time() ) );
+		}
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Mark all searched" ) ) {
+			gInteraction->markAllLootSearched();
+		}
+		ImGui::TextDisabled( "(F3 shows contents above each spot)" );
+	}
+
 	const char* tagName( GameObjectTag tag ) {
 		switch ( tag ) {
 			case GameObjectTag::Player: return "Player";
@@ -225,8 +245,10 @@ namespace{
 			case GameObjectTag::Zombie: return "Zombie";
 			case GameObjectTag::Fuel: return "Fuel";
 			case GameObjectTag::AmmoDrop: return "AmmoDrop";
-			case GameObjectTag::ParkedCar: return "ParkedCar";
 			case GameObjectTag::WeaponDrop: return "WeaponDrop";
+			case GameObjectTag::ItemDrop: return "ItemDrop";
+			case GameObjectTag::LootContainer: return "LootContainer";
+			case GameObjectTag::EscapeCar: return "EscapeCar";
 		}
 		return "?";
 	}
@@ -476,6 +498,9 @@ void draw() {
 		if ( ImGui::CollapsingHeader( "Raid" ) ) {
 			drawRaid();
 		}
+		if ( ImGui::CollapsingHeader( "Loot" ) ) {
+			drawLoot();
+		}
 		if ( ImGui::CollapsingHeader( "Pad" ) ) {
 			drawGamePad();
 		}
@@ -504,6 +529,10 @@ void setRun( RunState* run ) {
 	gRun = run;
 }
 
+void setInteraction( InteractionSystem* interaction ) {
+	gInteraction = interaction;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -526,6 +555,9 @@ void setRaid( RaidSession* ) {
 }
 
 void setRun( RunState* ) {
+}
+
+void setInteraction( InteractionSystem* ) {
 }
 
 } //namespace EditorWindow

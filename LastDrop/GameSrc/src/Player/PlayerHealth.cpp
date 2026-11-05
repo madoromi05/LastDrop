@@ -40,6 +40,17 @@ void PlayerHealth::takeDamage( float amount ) {
 	mCurrent = Math::max( 0.f, mCurrent - amount );
 }
 
+void PlayerHealth::heal( float amount ) {
+	if ( isDead() ) {
+		return;
+	}
+	mCurrent = Math::min( kMaxHealth, mCurrent + amount );
+}
+
+bool PlayerHealth::isInjured() const {
+	return !isDead() && mCurrent < kMaxHealth;
+}
+
 bool PlayerHealth::isDead() const {
 	return mCurrent <= 0.f;
 }

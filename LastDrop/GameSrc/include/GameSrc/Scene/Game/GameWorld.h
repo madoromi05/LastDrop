@@ -31,6 +31,7 @@
 #include <vector>
 
 class MeshCache;
+class TownCache;
 class SkinnedMeshData;
 class StaticMeshData;
 class Inventory;
@@ -49,20 +50,31 @@ class PlayerComponent;
 //
 // 舞台は碁盤の目の町。町の周りは建物で囲んであり、外へは出られない。
 // 建物とゾンビと車は移動を止め、自キャラは当たると沿って滑る。道路と歩道は移動を止めないが、弾・視線は止める（TownGround）。
-// 候補点から選んだ場所にガソリンが出る（持ち帰ると点になる物。2026-11-05 に車へ入れて逃げるゴールをやめた。R2_Plan.txt Q15）。
+// ガソリンは漁れる場所の箱に入っていて、脱出の車へ入れると脱出できる（FuelEscapeLoading_Plan.txt。持ち帰ると点にもなる）。
 // 1 日の時間・脱出点・終わり方は知らない（RaidSession。シーンが持つ）。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
 class GameWorld{
 public:
-	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから place を呼ぶ。
-	// meshes: 設計図を借りる倉庫。所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
-	explicit GameWorld( MeshCache* meshes );
+	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから、下のロードの段階を順に呼ぶ。
+	// meshes: 設計図を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所。
+	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
+	GameWorld( MeshCache* meshes, TownCache* town );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
 
-	// 全データの構築後に一度だけ、自キャラ・確認用のゾンビを置き、町を組み立てる（WorldBuilder）。
+	// ── ロード（FuelEscapeLoading_Plan.txt 6 章）。全データの構築後に、GameLoader が 1 回の描画に 1 つずつ、この順に 1 回だけ呼ぶ ──
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
-	void place();
+	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（WorldBuilder）。
+	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号。RaidSession が選ぶ）。
+	void buildTown( int escapeCarSpot );
+	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。buildTown の後。
+	void buildNavMesh();
+	// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後。
+	void buildVisibility();
+	// 自キャラ（と手に持つ銃）と確認用のゾンビを置く。歩ける床の後（ゾンビが共有の棚から床を借りる）。
+	void placeActors();
+	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
+	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
 	// 1ティック進める。段の順（UpdatePhase）：
 	//   Input（自キャラが操作どおりに動く・撃つ）→ 撃ったなら弾を出し、近くのゾンビに銃声を聞かせる → 弾を飛ばし、当たった所を CombatResolver が解決
 	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。腕が当たったら CombatResolver が自キャラの体力を減らす）→
@@ -144,9 +156,11 @@ private:
 
 	// 町のどこに何を置くか。
 	TownMap mMap;
-	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。place で建物・車を置き終えてから作る。
-	// ゾンビが借りるのでゾンビより先に宣言する（作った後は当たり判定の名簿を借りないので、名簿との順は問わない）。
-	NavMesh mNavMesh;
+	// 町の決まった形の持ち主（GameResources が持つ。借りているだけ）。
+	TownCache* mTown;
+	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。buildNavMesh で mTown から借りる（それまでは nullptr）。
+	NavMesh* mNavMesh;
+	int mEscapeCarSpot; // 今日の脱出の車の置き場所（buildTown で受け取る。歩ける床を選ぶのに使う）
 	// 1 ティックに道を探してよい回数を配る（OptimizationC_Plan.txt 6 章）。ゾンビの通り道が借りるので、ゾンビより先に宣言する。
 	PathBudget mPathBudget;
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する。
@@ -193,8 +207,8 @@ private:
 	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
-	// 建物の隠れの表（OptimizationC_Plan.txt 7 章）。place で建物を建てた後に作る。
-	TownVisibility mVisibility;
+	// 建物の隠れの表（OptimizationC_Plan.txt 7 章）。buildVisibility で mTown から借りる（それまでは nullptr）。
+	const TownVisibility* mVisibility;
 };
 
 #endif

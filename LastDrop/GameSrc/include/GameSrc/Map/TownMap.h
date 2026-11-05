@@ -34,8 +34,8 @@ struct TownTile{
 	float scale; // 部品の拡大率（1 で実寸）
 };
 
-// 脱出点 1 つの置き場所（R2_Plan.txt Q10）。名前は画面に出す（英語）。向きは使わない。
-struct TownExtractPoint{
+// 脱出の車を置く候補 1 つ（FuelEscapeLoading_Plan.txt Q13）。名前は画面に出す（「脱出の車：北」）。向きは車の向き。
+struct TownEscapeCarSpot{
 	const char* name;
 	TownPlacement placement;
 };
@@ -62,11 +62,12 @@ public:
 	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ。
 	const std::vector< TownPlacement >& zombieSpawnPoints() const;
 	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
-	const TownPlacement& parkedCar() const;							// 置物の車（2026-11-05 から、車で逃げるゴールは無い）
-	// 脱出点の候補（外周の 4 本の道の真ん中。北・東・南・西の順）。毎日どれを開くかは RaidSession が選ぶ。
-	const std::vector< TownExtractPoint >& extractPoints() const;
-	const std::vector< TownPlacement >& fuelSpawnPoints() const;	// ガソリンが出るかもしれない場所（この中から選んで置く）
-	const TownPlacement& rifle() const;								// 町に 1 丁だけ置くライフル（拾うとカバンへ。段階R3 までの仮）
+	// 漁れる場所（R3_Plan.txt Q3。置き場所は毎日同じで、中身だけ毎日変わる。中身を決めるのは WorldBuilder）。
+	// 地面に落ちているガソリンとライフルは 2026-11-05 に消した（ガソリンはゴミ箱・木箱の中・ライフルは木箱から出る。Q5）。
+	const std::vector< TownPlacement >& dumpsters() const;			// ゴミ箱（車道の端。向きは、正面〈+Z〉が道の真ん中を向く）
+	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
+	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）。毎日どれに置くかは RaidSession が選ぶ。
+	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 交差点の真ん中（道の中心どうしが交わる所。向きは使わない）。街灯の置き場所に使う。
 	const std::vector< TownPlacement >& junctions() const;
@@ -81,10 +82,9 @@ private:
 	TownPlacement mPlayerStart;
 	std::vector< TownPlacement > mZombieSpawnPoints;
 	TownPlacement mTPoseZombie;
-	TownPlacement mParkedCar;
-	TownPlacement mRifle;
-	std::vector< TownPlacement > mFuelSpawnPoints;
-	std::vector< TownExtractPoint > mExtractPoints;
+	std::vector< TownPlacement > mDumpsters;
+	std::vector< TownPlacement > mCrates;
+	std::vector< TownEscapeCarSpot > mEscapeCarSpots;
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;
 	std::vector< TownPlacement > mStreetLights;

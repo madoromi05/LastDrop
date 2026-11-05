@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Game/GameWorld.h"
 #include "GameSrc/Render/MeshCache.h"
+#include "GameSrc/Map/TownCache.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Component/CharacterColliderComponent.h"
@@ -28,7 +29,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ。
-	// 建物・置物は WorldBuilder・PropFactory、血の量は EffectManager、落とす弾は CombatResolver が持つ。
+	// 建物・置物は WorldBuilder・PropFactory、血の量は EffectManager、倒したゾンビを漁れる場所にするのは CombatResolver が持つ。
 
 	// 飛ぶ弾（7.62 NATO の弾頭。実物大・底が原点・先が +Y）。tools/configs/bullet_tip.json で変換
 	const char* kBulletFile = "Resource/bullet_tip.txt";
@@ -64,7 +65,10 @@ namespace{
 	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes ) :
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town ) :
+	mTown( town ),
+	mNavMesh( nullptr ),
+	mEscapeCarSpot( 0 ),
 	mPlayerFactory( meshes ),
 	mPropFactory( meshes ),
 	mBuilder( meshes, &mMap, &mPropFactory ),
@@ -73,17 +77,17 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 	mGround( meshes ),
 	mBullets( mBulletData ),
 	mObjects( &mCollisionWorld, &mHitWorld ),
-	mCombat( &mObjects, &mEffects, &mPropFactory, &mHitWorld ),
+	mCombat( &mObjects, &mEffects, &mHitWorld ),
 	mInteraction( &mHitWorld, &mObjects, &mEffects ),
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ),
-	mZombieNumber( 0 ) {
-	ASSERT( meshes && "GameWorld : meshes is null." );
+	mZombieNumber( 0 ),
+	mVisibility( nullptr ) {
+	ASSERT( meshes && town && "GameWorld : an argument is null." );
 	mZombieContext.hitWorld = &mHitWorld;
 	mZombieContext.crowd = &mCrowd;
 	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の B）。
-	// 床の形は place で作るが、置くのは借りる場所だけなので先に置いてよい（ゾンビが道を聞くのは作った後）。
-	mObjects.provide( &mNavMesh );
+	// 歩ける床（NavMesh）は buildNavMesh で TownCache から借りたときに置く（ゾンビを置くのはその後の placeActors）。
 	mObjects.provide( &mPathBudget );
 	mObjects.provide( &mZombieContext );
 }
@@ -92,7 +96,31 @@ GameWorld::GameWorld( MeshCache* meshes ) :
 GameWorld::~GameWorld() {
 }
 
-void GameWorld::place() {
+void GameWorld::buildTown( int escapeCarSpot ) {
+	LOAD_SCOPE( "town", "WorldBuilder::build" );
+	mEscapeCarSpot = escapeCarSpot;
+	WorldBuildTarget target;
+	target.ground = &mGround;
+	target.buildings = &mBuildings;
+	target.collisionWorld = &mCollisionWorld;
+	target.hitWorld = &mHitWorld;
+	target.objects = &mObjects;
+	mBuilder.build( target, escapeCarSpot );
+}
+
+void GameWorld::buildNavMesh() {
+	// 建物・車・ゴミ箱・木箱を名簿へ載せ終えた形を材料にする（ZombieNavMesh_Plan.txt）。2 回目からの出撃は作らずに借りる。
+	mNavMesh = mTown->navMesh( mEscapeCarSpot, mCollisionWorld );
+	mObjects.provide( mNavMesh );
+}
+
+void GameWorld::buildVisibility() {
+	LOAD_SCOPE( "town", "TownVisibility" );
+	mVisibility = mTown->visibility( mBuildings, mHitWorld );
+}
+
+void GameWorld::placeActors() {
+	LOAD_SCOPE( "town", "GameWorld::placeActors" );
 	if ( mPlayerFactory.isReady() ) {
 		placePlayer();
 	}
@@ -125,18 +153,10 @@ void GameWorld::place() {
 		tPose.attack = nullptr;
 		addZombie( toPosition( mMap.tPoseZombie() ), mMap.tPoseZombie().yawDegree, tPose );
 	}
-	WorldBuildTarget target;
-	target.ground = &mGround;
-	target.buildings = &mBuildings;
-	target.collisionWorld = &mCollisionWorld;
-	target.hitWorld = &mHitWorld;
-	target.objects = &mObjects;
-	target.navMesh = &mNavMesh;
-	mBuilder.build( target );
-	mVisibility.build( mBuildings );
-#ifdef _DEBUG
-	mVisibility.verify( mBuildings, mHitWorld );
-#endif
+}
+
+void GameWorld::alertZombiesToNoise( const Vector3& position ) {
+	alertZombiesToGunshot( position ); // 届く距離・寄って来方は銃声と同じ
 }
 
 void GameWorld::placePlayer() {
@@ -147,7 +167,7 @@ void GameWorld::placePlayer() {
 
 void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3& eye ) {
 	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）。
-	const TownVisibility* visibility = ( pvsEnabled() && mVisibility.isReady() ) ? &mVisibility : nullptr;
+	const TownVisibility* visibility = ( pvsEnabled() && mVisibility && mVisibility->isReady() ) ? mVisibility : nullptr;
 	mAnimationView.emplace( projectionView, eye, visibility, visibility ? visibility->cellAt( eye ) : TownVisibility::kNoCell );
 	mZombieContext.view = &*mAnimationView;
 }
@@ -213,7 +233,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		PROFILE_SCOPE( "World.bullets" );
 		mBullets.update( mHitWorld, playerTarget(), &mImpacts );
 	}
-	mCombat.resolveBulletImpacts( mImpacts, mPlayer );
+	mCombat.resolveBulletImpacts( mImpacts );
 	{
 		PROFILE_SCOPE( "World.effects" );
 		mEffects.update( &mGround ); // 千切れた部位が落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
@@ -321,7 +341,8 @@ const TownMap& GameWorld::map() const {
 }
 
 const NavMesh& GameWorld::navMesh() const {
-	return mNavMesh;
+	ASSERT( mNavMesh && "GameWorld::navMesh : call buildNavMesh first." );
+	return *mNavMesh;
 }
 
 const TownGround& GameWorld::ground() const {
@@ -341,7 +362,8 @@ const std::vector< Building >& GameWorld::buildings() const {
 }
 
 const TownVisibility& GameWorld::visibility() const {
-	return mVisibility;
+	ASSERT( mVisibility && "GameWorld::visibility : call buildVisibility first." );
+	return *mVisibility;
 }
 
 const BulletList& GameWorld::bullets() const {

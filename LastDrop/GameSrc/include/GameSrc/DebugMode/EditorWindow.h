@@ -16,6 +16,7 @@ class GameObjectWorld;
 class Inventory;
 class RaidSession;
 class RunState;
+class InteractionSystem;
 
 namespace EditorWindow{
 
@@ -35,6 +36,9 @@ void setInventory( Inventory* inventory );
 // nullptr ならその行を出さない。シーンが終わるときに nullptr へ戻す。Release では何もしない。
 void setRaid( RaidSession* session );
 void setRun( RunState* run );
+// Loot の欄で触る、漁れる場所（中身を振り直す・全部開けたことにする。R3_Plan.txt Q13）。本編が渡す。所有権は受け取らない。
+// nullptr なら欄に何も出さない。シーンが終わるときに nullptr へ戻す。Release では何もしない。
+void setInteraction( InteractionSystem* interaction );
 
 } //namespace EditorWindow
 

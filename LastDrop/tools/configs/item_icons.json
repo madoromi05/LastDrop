@@ -47,6 +47,31 @@
             "albedo": "../../Resource/rifle_albedo.tga",
             "normal": "../../Resource/rifle_normal.tga",
             "orm": "../../Resource/rifle_orm.tga"
+        },
+        {
+            "name": "icon_bandage",
+            "fbx": "../generated/loot_props/bandage.fbx",
+            "size": [256, 256],
+            "albedo": "../../Resource/loot_props_albedo.tga",
+            "orm": "../../Resource/loot_props_orm.tga"
+        },
+        {
+            "name": "icon_watch",
+            "fbx": "../generated/loot_props/watch.fbx",
+            "size": [256, 256],
+            "rotation": [0.0, 0.0, 45.0],
+            "camera_elevation": 55.0,
+            "albedo": "../../Resource/loot_props_albedo.tga",
+            "orm": "../../Resource/loot_props_orm.tga"
+        },
+        {
+            "name": "icon_laptop",
+            "fbx": "../generated/loot_props/laptop.fbx",
+            "size": [512, 256],
+            "camera_elevation": 50.0,
+            "camera_azimuth": -15.0,
+            "albedo": "../../Resource/loot_props_albedo.tga",
+            "orm": "../../Resource/loot_props_orm.tga"
         }
     ]
 }

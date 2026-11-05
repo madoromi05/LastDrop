@@ -10,6 +10,10 @@ enum ItemId{
 	ITEM_PISTOL,
 	ITEM_RIFLE,
 	ITEM_AMMO_9MM, // 拳銃の予備の弾（9mm。1 つが 1 発）
+	// 段階R3 で足した物（SummaryPlan/個別仕様/R3_Plan.txt Q4。町の漁れる場所から出る）。保存は saveName で書くので、後ろに足しても古い保存は読める。
+	ITEM_BANDAGE,  // 包帯（カバンの画面の「使う」で体力が戻る）
+	ITEM_WATCH,    // 腕時計（小さい売れる物。今はスコアの点だけ。強化の材料にするかは段階R5）
+	ITEM_LAPTOP,   // ノートパソコン（大きい売れる物。2 マス）
 
 	ITEM_NUMBER,
 	ITEM_NONE = -1, // 物が無い（手に持っている銃が無い＝素手、など）
@@ -21,6 +25,8 @@ enum ItemKind{
 	ITEM_KIND_FUEL,   // ガソリン（落ちているガソリンになる）
 	ITEM_KIND_AMMO,   // 予備の弾（落ちた弾になる。形は ItemSpec::groundFile）
 	ITEM_KIND_WEAPON, // 銃（落ちている銃になる。どの銃かは WeaponCatalog の weaponForItem）
+	ITEM_KIND_MEDICAL,  // 体力を戻す物（カバンの画面に「使う」が出る。戻る量は LootParams。落ちた形は ItemSpec::groundFile）
+	ITEM_KIND_VALUABLE, // 売れる物（点になるだけ。落ちた形は ItemSpec::groundFile）
 };
 
 // アイテム1種類の決まり。持ち方の決まり（何マス使うか・1 マスに何個重ねるか）はここにデータで持ち、Inventory・ItemGrid の処理には書かない。
@@ -32,8 +38,9 @@ struct ItemSpec{
 	// 一度決めたら変えない（変えると、その名前で保存した物が読めなくなる）。R2_Plan.txt 7 章。
 	const char* saveName;
 	ItemKind kind;    // 分類
-	// 地面に落ちた形のファイル（ITEM_KIND_AMMO だけが使う。それ以外は nullptr）。
+	// 地面に落ちた形のファイル（ITEM_KIND_AMMO・MEDICAL・VALUABLE が使う。それ以外は nullptr）。
 	// ガソリンは携行缶の形（粗い形の段付き）を PropFactory が持ち、銃は銃ごとの表（WeaponSpec::groundFile）にある。
+	// 包帯・腕時計・ノートパソコンの形は tools/loot_prop_gen.py で作る（R3_Plan.txt Q2）。
 	const char* groundFile;
 	// カバンの画面に出す絵のファイル（tools/item_icon_gen.py で物の 3D モデルを撮って作る。設定は tools/configs/item_icons.json）。
 	// 1 マスの物は正方形、2 マスの物は横 2 : 縦 1 の絵。SummaryPlan/個別仕様/ItemIcon_Plan.txt。

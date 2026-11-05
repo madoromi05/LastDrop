@@ -3,6 +3,7 @@
 
 #include "GameSrc/Scene/IScene.h"
 #include "GameSrc/Scene/Base/StashScreen.h"
+#include "GameSrc/Scene/LoadingScreen.h"
 
 class GameResources;
 
@@ -23,6 +24,10 @@ public:
 private:
 	GameResources* mResources; // 借りているだけ
 	StashScreen mScreen;
+	// 出撃を押したフレームから、ロード画面を出す（本編を作る間〈シェーダーのコンパイルなど〉に倉庫の画面のまま止まって見えないように。
+	// FuelEscapeLoading_Plan.txt 6 章）。出撃を押した次の beginFrame で本編への切り替えを頼む（押したフレームにロード画面を 1 回描くため）。
+	LoadingScreen mLoadingScreen;
+	bool mDeploying;
 };
 
 #endif

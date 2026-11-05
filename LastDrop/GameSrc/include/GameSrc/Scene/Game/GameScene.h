@@ -17,6 +17,10 @@
 #include "GameSrc/Scene/Game/InteractMarkers.h"
 #include "GameSrc/Scene/Game/PauseMenu.h"
 #include "GameSrc/Scene/Game/InventoryScreen.h"
+#include "GameSrc/Scene/Game/LootScreen.h"
+#include "GameSrc/Interaction/LootSearch.h"
+#include "GameSrc/Audio/AudioEngine.h"
+#include "GameSrc/World/GameObjectHandle.h"
 #include "GameSrc/Render/PostProcess.h"
 #include "GameSrc/Render/GBuffer.h"
 #include "GameSrc/Render/DeferredLighting.h"
@@ -29,12 +33,16 @@
 #include "GameSrc/Render/CascadedShadowMap.h"
 #include "GameSrc/Render/LightingParams.h"
 #include "GameSrc/Scene/Game/GameDebugOverlay.h"
+#include "GameSrc/Scene/Game/GameLoader.h"
+#include "GameSrc/Scene/LoadingScreen.h"
 #ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
+#include "GameSrc/DebugMode/FireProbe.h"
 #endif
 
 class GameResources;
 class DrawCulling;
+class EscapeCarComponent;
 
 // ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
 // WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う。左クリックを押している間、銃を撃つ。R で弾を込める。
@@ -44,6 +52,8 @@ class DrawCulling;
 // ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。死んだ後は止めない
 // （途中でやめると、その日をやり直せるので、死んでからやめて逃げられないように。R2_Plan.txt Q3）。
 // Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
+// 漁れる場所（車・ゴミ箱・木箱・死体）を見て E を押すと開け始め（LootSearch。動く・撃つ・構える・攻撃される・E で取りやめ）、
+// 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。SummaryPlan/個別仕様/R3_Plan.txt。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
@@ -59,6 +69,7 @@ class DrawCulling;
 //   HUD                                 … RaidHud
 //   一時停止のメニュー                  … PauseMenu
 //   カバンの画面                        … InventoryScreen
+//   漁れる場所を開けている途中・中を見る画面 … LootSearch・LootScreen
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
@@ -98,6 +109,34 @@ private:
 	void quickPlaceOffered();
 	// 拾った物を全部入れたら、拾うのを終えてカバンを閉じる。
 	void finishPlacingIfDone();
+	// カバンの cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11。世界は止まっているので、すぐ効く）。
+	void useFromBag( int cell );
+	// 体力が減っているか（カバンの画面の「使う」を出すか）。自キャラが居なければ false。
+	bool isPlayerInjured() const;
+	// ── 漁れる場所（R3_Plan.txt 5 章）──
+	// E で漁れる場所 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める（開けている音を鳴らす）。
+	void beginLoot( IInteractable* opened );
+	// ── 脱出の車（FuelEscapeLoading_Plan.txt 3 章）──
+	// E で脱出の車 used を選んだ。漁るのと同じ待ち方（LootSearch・取りやめも同じ）で、給油し始める。
+	void beginRefuel( IInteractable* used );
+	// 給油の待ちを終えた。ガソリンを 1 個入れ、要る数に届いたらエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）。
+	void finishRefuel( EscapeCarComponent* car );
+	// 開けている途中を取りやめる（音を止める）。開けていなければ何もしない。
+	void cancelLootSearch();
+	// 今の待ち（mLootSearch）が漁るのか給油なのか（HUD の棒の文字。待っている相手が脱出の車なら給油）。
+	RaidHud::ProgressKind waitingKind() const;
+	// 開けている途中を 1 ティック進める（update から。commandInterrupts: このティックの操作が取りやめの操作だったか）。
+	// 攻撃された・死んだ・1 日が終わったも取りやめ。開け終わったら中を見る画面を開く（脱出の車なら、ガソリンを入れる）。
+	void updateLootSearch( bool commandInterrupts );
+	// 操作 command が、開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器を出し入れ）。
+	static bool interruptsLootSearch( const PlayerCommand& command );
+	// 中を見る画面を開く・閉じる。止め方はカバンと同じ（世界を進めず、音を止め、カーソルを外す）。
+	void openLoot( LootContainerComponent* container );
+	void closeLoot();
+	// 中を見る画面を開いている間の入力（ESC・E・Tab で閉じる・マスの操作）。ほかの入力は読まない。
+	void handleLootInput();
+	// 中を見ている場所（消えた・開いていなければ nullptr）。
+	LootContainerComponent* lootTarget() const;
 	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
 	ItemId equippedWeapon() const;
 	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。
@@ -126,13 +165,15 @@ private:
 	void storeMagazineRounds();
 	// 拠点で覚えた弾倉の数を、カバンの銃の物へ入れる（世界を並べた後に 1 回）。
 	void restoreMagazineRounds();
-	// 開いている脱出点の緑の光をライトの一覧へ足す（setupLights から。R2_Plan.txt Q10）。
-	void addExitLights();
 #ifdef ZF_EDITOR
 	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
 	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
 	void spawnDebugZombies();
+	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録。FuelEscapeLoading_Plan.txt F-0）。
+	void probeFire();
 #endif
+	// ロードの後の、描画ごとの操作の読み取り（一時停止・カバン・中を見る画面・視点と移動）。beginFrame から。
+	void handleFrameInput();
 	float aimWeight() const;     // 自キャラの覗き具合（0〜1。自キャラがいなければ 0）
 	// 画を描き、音を聞くカメラ。観察用カメラ（FreeCamera）を使っている間はそちら、それ以外は自キャラの視点。
 	// 自キャラを動かす向き・見ている物を使う視線・ゾンビの湧く場所には使わない（そちらは常に自キャラの視点）。
@@ -154,9 +195,14 @@ private:
 	ZombieAttackSounds mZombieAttackSounds;
 	PlayerDamageView mDamageView;
 	RaidHud mHud;
-	RaidSession mSession; // 町の 1 日（mWorld の町の脱出点を借りるので、mWorld より後に宣言する）
+	RaidSession mSession; // 町の 1 日（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
+	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）。
+	GameLoader mLoader;
+	LoadingScreen mLoadingScreen;
 	PauseMenu mPauseMenu;
 	InventoryScreen mInventoryScreen;
+	LootScreen mLootScreen;
+	LootSearch mLootSearch;
 	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
 	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
 	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
@@ -174,6 +220,7 @@ private:
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
+	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）
 #endif
 	bool mReady; // 世界の配置が済んだか
 	bool mPaused; // 一時停止しているか
@@ -181,6 +228,10 @@ private:
 	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 	// E で拾って、入れるマスを選んでいる物（無ければ nullptr）。借りているだけ（カバンを開いている間は世界が止まり、拾う物は消えない）。
 	IInteractable* mOffer;
+	bool mLootOpen;               // 中を見る画面を開いているか（開いている間も世界は止まっている）
+	GameObjectHandle mLootTarget; // 中を見ている場所の物（車・ゴミ箱・木箱・死体）
+	AudioEngine::LoopHandle mSearchSound; // 開けている間の音（開けていなければ kInvalidLoop）
+	AudioEngine::LoopHandle mEngineSound; // 脱出の車のエンジンの音（掛かっていなければ kInvalidLoop）
 };
 
 #endif

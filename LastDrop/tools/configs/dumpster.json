@@ -1,0 +1,18 @@
+{
+    "mode": "static",
+    "fbx_path": "../generated/loot_props/dumpster.fbx",
+    "out_path": "../../Resource/dumpster.txt",
+    "split_vertices": true,
+    "scale": 1.0,
+    "center_origin": true,
+    "mesh_texture": "Resource/loot_props_albedo.tga",
+    "mesh_orm": "Resource/loot_props_orm.tga",
+    "mesh_orm_export": false,
+    "material_params": {
+        "roughness": 1.0,
+        "metallic": 1.0,
+        "specular": [0.1, 0.1, 0.1],
+        "sharpness": 20.0,
+        "normalstrength": 0.6
+    }
+}

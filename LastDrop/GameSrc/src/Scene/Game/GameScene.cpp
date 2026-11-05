@@ -20,6 +20,10 @@
 #include "GameSrc/Raid/RaidParams.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Interaction/IInteractable.h"
+#include "GameSrc/Interaction/LootContainerComponent.h"
+#include "GameSrc/Interaction/LootParams.h"
+#include "GameSrc/Interaction/EscapeCarComponent.h"
+#include "GameSrc/Core/GameTime.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -37,9 +41,16 @@ using namespace GameLib::Math;
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
 	const float kNoShotRecoil = 0.f;   // 撃っていないティックの反動の大きさ（FirstPersonControl::updateViewEffects）
-	// カバンの画面の見出しの下に出す、開いている脱出点（R2_Plan.txt Q10）。
-	const char* kExitsPrefix = "脱出点：";
+	// カバンの画面の見出しの下に出す、今日の脱出の車の場所（FuelEscapeLoading_Plan.txt Q14）。
+	const char* kExitsPrefix = "脱出の車：";
 	const char* kExitsSeparator = " / ";
+	// 漁れる場所（R3_Plan.txt）。
+	const float kNoSearch = -1.f;        // HUD に「探している」の棒を出さない（RaidHud::draw）
+	const float kSearchSoundVolume = 0.6f; // 開けている間の音の大きさ（自分の手元の音。服の擦れと同じくらい）
+	const float kNoMove = 0.f;           // 移動の量がこれなら動いていない（PlayerCommand::forward / strafe）
+	// 脱出の車のエンジン（FuelEscapeLoading_Plan.txt Q5）。掛かったら、銃声と同じくゾンビが寄ってくる。
+	const float kEngineStartVolume = 1.f;
+	const float kEngineIdleVolume = 0.7f;
 
 	// ── 影（Shadow_Plan.txt 5 章）──
 	const int kFlashlightShadowSize = 1024; // 懐中電灯の影のマップの一辺（画素）
@@ -70,7 +81,7 @@ namespace{
 
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
-	mWorld( &resources->meshes() ),
+	mWorld( &resources->meshes(), &resources->town() ),
 	mRenderer( &mWorld, &mWorld.effects() ),
 	mInventory( resources->run().bag() ), // 拠点のカバンの写し（町の中で変わっても、拠点のカバンは脱出するまで変えない。R2_Plan.txt Q3）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
@@ -80,10 +91,13 @@ GameScene::GameScene( GameResources* resources ) :
 	mSurfaceHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
-	// 開く脱出点は毎日変える（起動からの時間を種にする。ガソリンの場所と同じ）。
-	mSession( mWorld.map().extractPoints(), Framework::instance().time() ),
+	// 脱出の車の置き場所は毎日変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
+	mSession( mWorld.map().escapeCarSpots(), Framework::instance().time() ),
+	mLoader( &mWorld, &resources->meshes(), mSession.escapeCarSpot() ),
+	mLoadingScreen( &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
 	mInventoryScreen( &resources->uiRenderer() ),
+	mLootScreen( &resources->uiRenderer() ),
 	mFlashlightShadow( kFlashlightShadowSize ),
 	mFlashlightCastsShadow( false ),
 	mMoonShadow( kMoonShadowSize ),
@@ -92,11 +106,16 @@ GameScene::GameScene( GameResources* resources ) :
 	mPaused( false ),
 	mBagOpen( false ),
 	mRaidFinished( false ),
-	mOffer( nullptr ) {
+	mOffer( nullptr ),
+	mLootOpen( false ),
+	mSearchSound( AudioEngine::kInvalidLoop ),
+	mEngineSound( AudioEngine::kInvalidLoop ) {
 }
 
 GameScene::~GameScene() {
-	if ( mPaused || mBagOpen ) {
+	cancelLootSearch(); // 開けている間の音を止める（音の道具は次のシーンも使う）
+	mResources->audio().stopLoop( mEngineSound ); // 同じ（掛かっていなければ何もしない）
+	if ( mPaused || mBagOpen || mLootOpen ) {
 		mResources->audio().setPaused( false );
 	}
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
@@ -104,6 +123,7 @@ GameScene::~GameScene() {
 	EditorWindow::setInventory( nullptr ); // カバンも同じ
 	EditorWindow::setRaid( nullptr );
 	EditorWindow::setRun( nullptr );
+	EditorWindow::setInteraction( nullptr );
 }
 
 void GameScene::pause() {
@@ -222,8 +242,12 @@ void GameScene::handleBagInput() {
 	}
 	ItemStack incoming;
 	bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
-	InventoryScreen::Request request = mInventoryScreen.handleInput( &mInventory, equippedWeapon(), placing ? &incoming : nullptr );
+	InventoryScreen::Request request = mInventoryScreen.handleInput( &mInventory, equippedWeapon(), isPlayerInjured(),
+		placing ? &incoming : nullptr );
 	switch ( request.kind ) {
+	case InventoryScreen::Request::USE:
+		useFromBag( request.cell );
+		break;
 	case InventoryScreen::Request::PLACE:
 		placeOffered( request.cell );
 		break;
@@ -258,6 +282,172 @@ void GameScene::dropFromBag( int cell ) {
 	}
 }
 
+void GameScene::useFromBag( int cell ) {
+	GameObject* player = mWorld.player();
+	PlayerHealthComponent* health = player ? player->getComponent< PlayerHealthComponent >() : nullptr; // 外せる部品
+	if ( !health || !health->health().isInjured() ) {
+		return; // 満タンでは使わない（メニューにも出していない）
+	}
+	ItemId item = mInventory.grid().stackAt( cell ).item;
+	ASSERT( itemSpec( item ).kind == ITEM_KIND_MEDICAL && "GameScene::useFromBag : not a medical item." );
+	health->heal( lootParams().bandageHeal );
+	mInventory.remove( item ); // 同じ物なら、どのマスから減っても同じ（数が一番少ないマスから減る）
+}
+
+bool GameScene::isPlayerInjured() const {
+	const GameObject* player = mWorld.player();
+	const PlayerHealthComponent* health = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
+	return health && health->health().isInjured();
+}
+
+void GameScene::beginLoot( IInteractable* opened ) {
+	LootContainerComponent* container = mWorld.interaction().findContainer( opened );
+	if ( !container ) {
+		return;
+	}
+	float seconds = container->searchSeconds();
+	if ( seconds <= 0.f ) {
+		openLoot( container ); // 一度開けた所は待たない（R3_Plan.txt Q6）
+		return;
+	}
+	cancelLootSearch();
+	mLootSearch.start( container->gameObject(), seconds );
+	const GameObject* player = mWorld.player();
+	if ( player ) {
+		// 音は自分の手元から鳴らす（探る手の音。開けている間は動けないので、ループの位置は動かさない）。
+		mSearchSound = mResources->audio().startLoopAt( LootTable::searchSound( container->table() ), AudioEngine::BUS_EFFECT,
+			player->getComponent< TransformComponent >()->position(), kSearchSoundVolume );
+	}
+}
+
+void GameScene::beginRefuel( IInteractable* used ) {
+	EscapeCarComponent* car = mWorld.interaction().findEscapeCar( used );
+	if ( !car ) {
+		return;
+	}
+	cancelLootSearch();
+	mLootSearch.start( car->gameObject(), car->useSeconds() );
+	const GameObject* player = mWorld.player();
+	if ( player ) {
+		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない。FuelEscapeLoading_Plan.txt 改訂 2）。
+		mSearchSound = mResources->audio().startLoopAt( SOUND_REFUEL_POUR, AudioEngine::BUS_EFFECT,
+			player->getComponent< TransformComponent >()->position(), kSearchSoundVolume );
+	}
+}
+
+void GameScene::finishRefuel( EscapeCarComponent* car ) {
+	if ( !car->canInteract( mInventory ) ) {
+		return; // 待っている間にガソリンを捨てた（起きない：カバンを開くと待つのはやめる）
+	}
+	car->interact( &mInventory );
+	if ( !car->isFueled() ) {
+		return; // まだ要る（requiredFuel が 2 以上のとき）
+	}
+	mSession.openEscape();
+	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す。Q5）。
+	const Vector3& carPosition = car->getComponent< TransformComponent >()->position();
+	AudioEngine& audio = mResources->audio();
+	audio.play( SOUND_CAR_ENGINE_START, AudioEngine::BUS_EFFECT, carPosition, kEngineStartVolume );
+	if ( mEngineSound == AudioEngine::kInvalidLoop ) {
+		mEngineSound = audio.startLoopAt( SOUND_CAR_ENGINE_IDLE, AudioEngine::BUS_EFFECT, carPosition, kEngineIdleVolume );
+	}
+	mWorld.alertZombiesToNoise( carPosition );
+}
+
+void GameScene::cancelLootSearch() {
+	mLootSearch.cancel();
+	if ( mSearchSound != AudioEngine::kInvalidLoop ) {
+		mResources->audio().stopLoop( mSearchSound );
+		mSearchSound = AudioEngine::kInvalidLoop;
+	}
+}
+
+RaidHud::ProgressKind GameScene::waitingKind() const {
+	const GameObject* target = mLootSearch.target();
+	bool refueling = target && target->getComponent< EscapeCarComponent >();
+	return refueling ? RaidHud::ProgressKind::Refuel : RaidHud::ProgressKind::Search;
+}
+
+bool GameScene::interruptsLootSearch( const PlayerCommand& command ) {
+	return command.forward != kNoMove || command.strafe != kNoMove || command.aimHeld || command.fireHeld
+		|| command.reloadPressed || command.holsterPressed;
+}
+
+void GameScene::updateLootSearch( bool commandInterrupts ) {
+	if ( !mLootSearch.isSearching() ) {
+		return;
+	}
+	bool attacked = !mWorld.combat().zombieAttacksThisTick().empty();
+	bool interrupted = commandInterrupts || attacked || mWorld.isPlayerDead() || mRaidFinished;
+	switch ( mLootSearch.tick( GameTime::kTickSeconds, interrupted ) ) {
+	case LootSearch::Step::Cancelled:
+		cancelLootSearch(); // 音を止める
+		break;
+	case LootSearch::Step::Finished: {
+		LootContainerComponent* container = mLootSearch.container();
+		GameObject* target = mLootSearch.target();
+		EscapeCarComponent* car = target ? target->getComponent< EscapeCarComponent >() : nullptr;
+		cancelLootSearch();
+		if ( container ) {
+			container->markSearched();
+			openLoot( container );
+		} else if ( car ) {
+			finishRefuel( car ); // 待っていたのは給油（FuelEscapeLoading_Plan.txt Q4）
+		}
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+void GameScene::openLoot( LootContainerComponent* container ) {
+	ASSERT( container && "GameScene::openLoot : container is null." );
+	container->markSearched();
+	mLootOpen = true;
+	mLootTarget = GameObjectHandle( container->gameObject() );
+	// 銃のマスの「弾倉の数/大きさ」を今の数にする（場所へ置いていった銃も、その数のまま残る。カバンを開くときと同じ）。
+	storeMagazineRounds();
+	mLootScreen.open();
+	mResources->audio().setPaused( true );
+	mControl.clearInput();   // 押していた移動・撃つを放す（一時停止と同じ）
+	mControl.unlockCursor(); // マスをマウスで選べるように
+}
+
+void GameScene::closeLoot() {
+	mLootOpen = false;
+	mLootTarget = GameObjectHandle();
+	// カバンへ入れた銃（場所から拾った銃）の弾倉の数を、銃の物へ入れる（場所の中の銃は込めた数を持つ。木箱のライフルは 0）。
+	restoreMagazineRounds();
+	mResources->audio().setPaused( false );
+	mControl.lockCursor();
+}
+
+void GameScene::handleLootInput() {
+	LootContainerComponent* container = lootTarget();
+	if ( !container ) {
+		closeLoot(); // 起きない（世界は止まっている）が、消えた物を指したままにしない
+		return;
+	}
+	// ESC は、持ち上げている途中ならまずそれを取りやめる。E・Tab はすぐ閉じる（持ち上げていた物は元の所に残る）。
+	if ( InputMenu() ) {
+		if ( !mLootScreen.back() ) {
+			closeLoot();
+		}
+		return;
+	}
+	if ( InputInteract() || InputInventory() ) {
+		closeLoot();
+		return;
+	}
+	mLootScreen.handleInput( mInventory.gridForTransfer(), container->lootGrid() );
+}
+
+LootContainerComponent* GameScene::lootTarget() const {
+	GameObject* object = mLootTarget.get();
+	return object ? object->getComponent< LootContainerComponent >() : nullptr;
+}
+
 ItemId GameScene::equippedWeapon() const {
 	const GunComponent* gun = HoldComponent::heldGun( mWorld.player() );
 	return gun ? gun->spec().item : ITEM_NONE;
@@ -265,21 +455,27 @@ ItemId GameScene::equippedWeapon() const {
 
 void GameScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
-	// 2回目以降のこのシーン（Retry）では、もう構築済みなのですぐに並べられる。
+	// 2回目以降のこのシーン（次の日の出撃）では、もう構築済みなのですぐに並べられる。
 	bool allReady = mResources->meshes().update();
 	if ( !mReady ) {
-		if ( !allReady ) {
-			return; // ロード完了待ち（テクスチャの展開まで。始まった直後にひっかからないように）
-		}
-		{
-			LOAD_SCOPE( "place", "GameWorld::place" );
-			mWorld.place();
+		// ロードは 1 回の描画に 1 段階ずつ（間にロード画面を描き、窓のメッセージを回す。FuelEscapeLoading_Plan.txt 6 章）。
+		if ( !mLoader.advance( allReady ) ) {
+			return;
 		}
 		restoreMagazineRounds(); // 銃の物を作った後に、拠点で覚えた弾倉の数を入れる
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 		mReady = true;
+#ifdef ZF_EDITOR
+		mFireProbe.markReady();
+#endif
 	}
+	handleFrameInput();
+#ifdef ZF_EDITOR
+	probeFire();
+#endif
+}
 
+void GameScene::handleFrameInput() {
 	// 止めている間は、メニューの操作だけを読む（視点・移動・使う・確認用のキーは読まない）。
 	if ( mPaused ) {
 		handlePausedInput();
@@ -290,6 +486,11 @@ void GameScene::beginFrame() {
 		handleBagInput();
 		return;
 	}
+	// 中を見る画面もカバンと同じ（R3_Plan.txt Q8）。
+	if ( mLootOpen ) {
+		handleLootInput();
+		return;
+	}
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）。
 	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように。R2_Plan.txt Q3）。
 	if ( ( InputMenu() || !GameLib::WindowCreator().isActive() ) && !mWorld.isPlayerDead() ) {
@@ -297,6 +498,7 @@ void GameScene::beginFrame() {
 		return;
 	}
 	if ( InputInventory() && canOpenBag() ) {
+		cancelLootSearch(); // 開けている途中にカバンを開いたら、開けるのはやめる（閉じた後に勝手に開かないように）
 		openBag();
 		return;
 	}
@@ -318,6 +520,7 @@ void GameScene::beginFrame() {
 	EditorWindow::setInventory( &mInventory );     // F6 の Inventory の欄（物を足す・行を増やす）
 	EditorWindow::setRaid( &mSession );            // F6 の Raid の欄（残り時間・すぐ脱出）
 	EditorWindow::setRun( &mResources->run() );    // 同じ欄の、日・保存を消す
+	EditorWindow::setInteraction( &mWorld.interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
 
 
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
@@ -363,12 +566,41 @@ void GameScene::spawnDebugZombies() {
 		}
 	}
 }
+
+void GameScene::probeFire() {
+	FireProbe::FrameState frame;
+	frame.rawFireHeld = InputFireHeld();
+	frame.commandFire = mControl.command().fireHeld;
+	frame.suppressed = mControl.isFireSuppressed();
+	frame.cursorLocked = mControl.isCursorLocked();
+	frame.windowActive = GameLib::WindowCreator().isActive();
+	frame.paused = mPaused;
+	frame.bagOpen = mBagOpen;
+	frame.lootOpen = mLootOpen;
+	frame.freeCamera = isFreeCameraActive();
+	frame.dead = mWorld.isPlayerDead();
+	FireProbe::GunState gunState = {};
+	const GameObject* player = mWorld.player();
+	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
+	const GunComponent* gun = HoldComponent::heldGun( player );
+	if ( hold && gun ) {
+		gunState.hasGun = true;
+		gunState.inHand = hold->isWeaponInHand();
+		gunState.aiming = hold->isAiming();
+		gunState.reloading = gun->isReloading();
+		gunState.running = mControl.command().run;
+		gunState.rounds = gun->magazineRounds();
+	}
+	mFireProbe.onFrame( frame, gunState );
+}
 #endif
 
 void GameScene::update() {
-	if ( !mReady || mPaused || mBagOpen || mRaidFinished ) {
-		return; // 1 日を終えた後と、止めている間（一時停止・カバン）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
+	if ( !mReady || mPaused || mBagOpen || mLootOpen || mRaidFinished ) {
+		return; // 1 日を終えた後と、止めている間（一時停止・カバン・中を見る画面）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
+	// 開けている途中の取りやめは、このティックの操作で決める（押した瞬間の操作は、世界を進めた後に消えるので先に読む）。
+	bool commandInterruptsSearch = interruptsLootSearch( mControl.command() );
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）。
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える。
 	const FirstPersonCamera& camera = mControl.camera();
@@ -379,6 +611,10 @@ void GameScene::update() {
 	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	updateRaid();
+	updateLootSearch( commandInterruptsSearch ); // 攻撃された・死んだ・1 日が終わったも読むので、その後に
+	if ( mLootOpen ) {
+		return; // 開け終わって中を見る画面を開いた（世界を止めたので、同じ描画の残りのティックも進めない）
+	}
 	GameObject* player = mWorld.player();
 	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
@@ -386,6 +622,9 @@ void GameScene::update() {
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
 	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）。
 	float shotRecoil = ( gun && gun->firedThisTick() ) ? gun->spec().recoilScale : kNoShotRecoil;
+#ifdef ZF_EDITOR
+	mFireProbe.onTick( gun && gun->firedThisTick(), gun && gun->dryFiredThisTick() );
+#endif
 	mControl.updateViewEffects( shotRecoil, player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
 		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
@@ -403,6 +642,8 @@ bool GameScene::isLoading() const {
 
 void GameScene::draw() {
 	if ( !mReady ) {
+		// ロード中は世界を描かず、ロード画面だけ（FuelEscapeLoading_Plan.txt 6 章）。
+		mLoadingScreen.draw( mResources->run().day(), mLoader.stageLabel(), mLoader.progress() );
 		return;
 	}
 	mControl.setEyeDrop( mDamageView.eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
@@ -550,16 +791,20 @@ void GameScene::draw() {
 		ItemStack incoming;
 		bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
 		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr ); // カバンの画面も同じ（HUD は描かない）
+	} else if ( mLootOpen && lootTarget() ) {
+		const LootContainerComponent* container = lootTarget();
+		mLootScreen.draw( mInventory.grid(), container->contents(), LootTable::displayName( container->table() ), equippedWeapon() );
 	} else {
 #ifdef ZF_EDITOR
 		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
+		mDebug.addLootContents( mWorld, camera, &mResources->uiRenderer() );
 #endif
 		// 使える物の上のマーク（積むだけ。すぐ下の HUD の描画でまとめて描かれる）。
 		mInteractMarkers.add( camera, &mResources->uiRenderer() );
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mSession, mResources->run().day() );
+		mHud.draw( mSession, mResources->run().day(), mLootSearch.isSearching() ? mLootSearch.progress() : kNoSearch, waitingKind() );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -615,7 +860,6 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 			mLights.add( pointLight( position, params.streetLightColor, params.streetLightIntensity, params.streetLightRange ) );
 		}
 	}
-	addExitLights();
 	EnvironmentLight environment;
 	environment.skyZenithColor = params.skyZenithColor;
 	environment.skyHorizonColor = params.skyHorizonColor;
@@ -751,10 +995,23 @@ void GameScene::updateInteraction() {
 	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）。
 	const FirstPersonCamera& camera = mControl.camera();
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す。
-	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead() );
+	bool interactPressed = InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead();
+	if ( interactPressed && mLootSearch.isSearching() ) {
+		cancelLootSearch(); // 開けている途中に E をもう一度押したら取りやめ（R3_Plan.txt Q6）
+		interactPressed = false;
+	}
+	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, interactPressed );
 	// 拾う物は、カバンを開いて入れるマスを選ぶ（InventoryPickup_Plan.txt Q3）。拾い終えた物は次の描画の後片付けで消える。
 	if ( IInteractable* offer = mInteractor.offer() ) {
 		startPlacing( offer );
+	}
+	// 漁れる場所は、開けるまで待ってから中を見る画面を開く（R3_Plan.txt 5 章）。
+	if ( IInteractable* opened = mInteractor.opened() ) {
+		beginLoot( opened );
+	}
+	// 脱出の車は、給油し終えるまで待ってからガソリンを入れる（FuelEscapeLoading_Plan.txt Q4）。
+	if ( IInteractable* used = mInteractor.timedUse() ) {
+		beginRefuel( used );
 	}
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.interaction().removeTakenPickups();
@@ -866,13 +1123,3 @@ void GameScene::restoreMagazineRounds() {
 	}
 }
 
-void GameScene::addExitLights() {
-	if ( mSession.ending() != RaidEnding::None ) {
-		return;
-	}
-	const RaidParams& params = raidParams();
-	for ( const ExtractZone& zone : mSession.extraction().zones() ) {
-		Vector3 position( zone.position.x, zone.position.y + params.exitLightHeight, zone.position.z );
-		mLights.add( pointLight( position, params.exitLightColor, params.exitLightIntensity, params.exitLightRange ) );
-	}
-}

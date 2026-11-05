@@ -52,6 +52,8 @@ public:
 	// 表示中なら（F3）、画面の左上に、自キャラの体力の数字と状態（Fine など）を renderer に積む。
 	// 呼ぶ場所の決まりは addZombieHealth と同じ。renderer: nullptr 不可。
 	void addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const;
+	// 表示中なら（F3）、漁れる場所の上に中身の名前を壁越しに積む（R3_Plan.txt Q13）。呼ぶ場所の決まりは addZombieHealth と同じ。
+	void addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
 
 private:
 	// 画面中央（視線）へ確認用の線分を撃つ。自キャラには当てない（目の位置は自分の頭の箱の中にあるため）。

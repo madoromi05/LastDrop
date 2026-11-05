@@ -37,13 +37,14 @@ namespace{
 	// メニューの項目（全部）。物ごとに、使える物だけを上からこの順に並べる（openMenu）。
 	enum MenuItem{
 		MENU_EQUIP, // 銃を手に持つ（手に持っていない銃だけ）
+		MENU_USE,   // 包帯を使う（体力が減っているときだけ。R3_Plan.txt Q11）
 		MENU_DROP,
 		MENU_MOVE,
 		MENU_CANCEL,
 
 		MENU_ITEM_NUMBER,
 	};
-	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "装備", "捨てる", "動かす", "やめる" };
+	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "装備", "使う", "捨てる", "動かす", "やめる" };
 	// 手に持っている銃の印（マスの左上）。
 	const char* kEquippedMark = "E";
 
@@ -133,7 +134,7 @@ bool InventoryScreen::back() {
 	return true;
 }
 
-InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, ItemId equipped, const ItemStack* incoming ) {
+InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, ItemId equipped, bool injured, const ItemStack* incoming ) {
 	const Request nothing = { Request::NONE, kNone };
 	ASSERT( inventory && "InventoryScreen::handleInput : inventory is null." );
 	UiInput input = UiInput::read( mPreviousCursor );
@@ -194,7 +195,7 @@ InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, Ite
 	if ( mMode == Mode::Moving ) {
 		place( inventory );
 	} else if ( grid.ownerCell( mSelected ) != kNone ) {
-		openMenu( grid, equipped );
+		openMenu( grid, equipped, injured );
 	}
 	return nothing;
 }
@@ -228,12 +229,16 @@ void InventoryScreen::moveSelection( bool up, bool down, bool left, bool right, 
 	mSelected = row * grid.columns() + column;
 }
 
-void InventoryScreen::openMenu( const ItemGrid& grid, ItemId equipped ) {
+void InventoryScreen::openMenu( const ItemGrid& grid, ItemId equipped, bool injured ) {
 	ItemId item = grid.stackAt( grid.ownerCell( mSelected ) ).item;
 	mMenuCount = 0;
 	// 銃で、まだ手に持っていなければ Equip を一番上に（拾った銃をすぐ持てるように）。
 	if ( weaponForItem( item ) != WEAPON_NONE && item != equipped ) {
 		mMenuItems[ mMenuCount++ ] = MENU_EQUIP;
+	}
+	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない。R3_Plan.txt Q11）。
+	if ( itemSpec( item ).kind == ITEM_KIND_MEDICAL && injured ) {
+		mMenuItems[ mMenuCount++ ] = MENU_USE;
 	}
 	mMenuItems[ mMenuCount++ ] = MENU_DROP;
 	mMenuItems[ mMenuCount++ ] = MENU_MOVE;
@@ -248,6 +253,9 @@ InventoryScreen::Request InventoryScreen::activateMenu( const ItemGrid& grid ) {
 	switch ( mMenuItems[ mMenuChoice ] ) {
 	case MENU_EQUIP:
 		request.kind = Request::EQUIP;
+		break;
+	case MENU_USE:
+		request.kind = Request::USE;
 		break;
 	case MENU_DROP:
 		request.kind = Request::DROP;
