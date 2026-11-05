@@ -17,9 +17,9 @@ public:
 	const MuzzleFlash& flash() const; // 光（点光源）を読む
 
 	// Component（GunComponent が要る）
-	virtual UpdatePhase updatePhase() const;
-	virtual void start();
-	virtual void update();
+	UpdatePhase updatePhase() const override;
+	void start() override;
+	void update() override;
 
 private:
 	const GunComponent* mGun;

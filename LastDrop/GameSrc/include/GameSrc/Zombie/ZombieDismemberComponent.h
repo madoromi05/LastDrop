@@ -23,7 +23,7 @@ public:
 	const ZombieCrawler& crawler() const { return *mCrawler; }
 
 	// Component（ZombieModelComponent が要る。切り口・引きずる腕の設計図を借りて作る）
-	virtual void awake();
+	void awake() override;
 
 private:
 	std::unique_ptr< ZombieDismemberment > mDismemberment;

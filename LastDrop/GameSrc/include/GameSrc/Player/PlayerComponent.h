@@ -41,12 +41,12 @@ public:
 	AimSwayBody aimSwayBody() const;
 
 	// Component（必須の部品が要る。awake で見た目の形から移動の当たり判定の大きさを求める）
-	virtual UpdatePhase updatePhase() const;
-	virtual void awake();
-	virtual void start();
-	virtual void update();
+	UpdatePhase updatePhase() const override;
+	void awake() override;
+	void start() override;
+	void update() override;
 	// ICollisionBody（移動の当たり判定の形）
-	virtual BoxCollider collider() const;
+	BoxCollider collider() const override;
 
 private:
 	// 今できない操作を外した操作（死んだら何もしない）。

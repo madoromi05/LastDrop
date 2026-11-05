@@ -25,7 +25,7 @@ public:
 	float secondsUntilGone() const;
 
 	// Component（Transform・SkinnedModel・ZombieState・ZombieRootMotion が要る）
-	virtual void start();
+	void start() override;
 
 private:
 	ZombieCorpse mCorpse;

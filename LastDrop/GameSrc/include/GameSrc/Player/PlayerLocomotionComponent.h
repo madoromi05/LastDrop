@@ -46,8 +46,8 @@ public:
 
 	// Component（SkinnedModelComponent が要る。HoldComponent は任意＝付いていて銃を出していれば、銃を持った姿で始める）
 	// awake：状態にアニメを登録する。start：最初のアニメを付ける
-	virtual void awake();
-	virtual void start();
+	void awake() override;
+	void start() override;
 
 private:
 	Animator mAnimator;

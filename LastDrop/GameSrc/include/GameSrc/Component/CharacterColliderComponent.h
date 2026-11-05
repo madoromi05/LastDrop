@@ -30,12 +30,12 @@ public:
 	bool isBlocking() const;
 
 	// Component（動くときに壁・他のキャラを聞く名簿を、共有の棚から引いて滑る移動へ渡す）
-	virtual void awake();
+	void awake() override;
 	// ICollisionBody（shape に聞く）
-	virtual BoxCollider collider() const;
+	BoxCollider collider() const override;
 	// IWorldMember（移動の名簿にだけ載る）
-	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
-	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
+	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 
 private:
 	const ICollisionBody* mShape;

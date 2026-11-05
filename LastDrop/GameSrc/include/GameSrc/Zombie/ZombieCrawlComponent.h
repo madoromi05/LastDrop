@@ -29,7 +29,7 @@ public:
 
 	// Component（ZombieModel・Transform・SkinnedModel・CharacterCollider・ZombieDismember・ZombieState・ZombieChase・
 	// ZombieRootMotion が要る。ZombieAttack は任意＝付いていなければ、追いついても攻撃せずにもがくだけ）
-	virtual void start();
+	void start() override;
 
 private:
 	bool canStart() const; // 前へ倒れるアニメで倒れ終わったか（引きずれる骨がそろっているか）

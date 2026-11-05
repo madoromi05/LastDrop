@@ -74,20 +74,28 @@ void GameObjectWorld::destroyLater( const GameObject* object ) {
 
 void GameObjectWorld::flush() {
 	ASSERT( mIterationDepth == 0 && "GameObjectWorld : flush while iterating." );
-	removeMarkedComponents();
-	for ( const GameObject* doomed : mPendingDestroy ) {
-		auto it = std::find_if( mObjects.begin(), mObjects.end(),
-			[ doomed ]( const std::unique_ptr< GameObject >& o ) { return o.get() == doomed; } );
-		if ( it == mObjects.end() ) {
-			continue; // この持ち主の物ではない・もう消した
+	IterationGuard guard( this ); // onDestroy の中での spawn・addComponent を ASSERT で止める
+	// onDestroy の中で destroyLater・removeComponentLater されても、回している並びへ足して壊さないように、
+	// 並びを手元へ移してから回し、印が無くなるまで繰り返す（足された印は次の周で片付ける）。
+	while ( !mPendingRemoval.empty() || !mPendingDestroy.empty() ) {
+		removeMarkedComponents();
+		std::vector< const GameObject* > doomedList;
+		doomedList.swap( mPendingDestroy );
+		for ( const GameObject* doomed : doomedList ) {
+			auto it = std::find_if( mObjects.begin(), mObjects.end(),
+				[ doomed ]( const std::unique_ptr< GameObject >& o ) { return o.get() == doomed; } );
+			if ( it == mObjects.end() ) {
+				continue; // この持ち主の物ではない・もう消した
+			}
+			if ( ( *it )->isSpawned() ) {
+				detachAll( it->get() );
+			}
+			// onDestroy の中でこの物に外す印が付いていたら捨てる（消えた物を次の周で触らない）。
+			eraseValue( &mPendingRemoval, it->get() );
+			mObjectsById.erase( ( *it )->id() );
+			mObjects.erase( it );
 		}
-		if ( ( *it )->isSpawned() ) {
-			detachAll( it->get() );
-		}
-		mObjectsById.erase( ( *it )->id() );
-		mObjects.erase( it );
 	}
-	mPendingDestroy.clear();
 }
 
 int GameObjectWorld::countTagged( GameObjectTag tag ) const {
@@ -139,7 +147,7 @@ void GameObjectWorld::attach( GameObject* object, int index ) {
 	}
 	mObjectsByType[ typeId ].push_back( object );
 	Component* component = object->componentAt( index );
-	UpdatePhase phase = component->updatePhase();
+	UpdatePhase phase = object->updatePhaseAt( index );
 	if ( phase != UpdatePhase::None ) {
 		mPhaseComponents[ static_cast< int >( phase ) ].push_back( component );
 	}
@@ -152,7 +160,7 @@ void GameObjectWorld::detach( GameObject* object, int index ) {
 		member->removeFrom( mCollisionWorld, mHitWorld );
 	}
 	eraseValue( &mObjectsByType[ object->componentTypeIdAt( index ) ], object );
-	UpdatePhase phase = component->updatePhase();
+	UpdatePhase phase = object->updatePhaseAt( index );
 	if ( phase != UpdatePhase::None ) {
 		eraseValue( &mPhaseComponents[ static_cast< int >( phase ) ], component );
 	}
@@ -166,8 +174,12 @@ void GameObjectWorld::detachAll( GameObject* object ) {
 }
 
 void GameObjectWorld::removeMarkedComponents() {
-	for ( GameObject* object : mPendingRemoval ) {
-		// 消す印も付いている物は、物ごと消すときに外れる。まだ spawn していない物は、名簿に載っていないので捨てるだけ。
+	// onDestroy の中で removeComponentLater されても壊れないように、並びを手元へ移してから回す（足された印は flush の次の周で外す）。
+	std::vector< GameObject* > removalList;
+	removalList.swap( mPendingRemoval );
+	for ( GameObject* object : removalList ) {
+		// 外す印の付いた部品だけをここで外す（消す印も付いている物の残りの部品は、物ごと消すときに外れる）。
+		// まだ spawn していない物は、名簿に載っていないので捨てるだけ。
 		for ( int i = object->componentNumber() - 1; i >= 0; --i ) {
 			if ( !object->isRemovingAt( i ) ) {
 				continue;
@@ -178,5 +190,4 @@ void GameObjectWorld::removeMarkedComponents() {
 			object->eraseAt( i );
 		}
 	}
-	mPendingRemoval.clear();
 }

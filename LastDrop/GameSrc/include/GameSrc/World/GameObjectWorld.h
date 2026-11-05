@@ -57,6 +57,8 @@ public:
 	// 次の flush で消す印を付ける。同じ物に何回付けてもよい。この持ち主の物でなければ何もしない。
 	void destroyLater( const GameObject* object );
 	// 印の付いた部品を外し、物を消す。ティックの最後（全員の update が済んだ後）に1回呼ぶ。
+	// onDestroy の中で destroyLater・removeComponentLater してよい（同じ flush の中で、印が無くなるまで片付ける）。
+	// onDestroy の中で spawn・部品を付けることはしないこと（ASSERT で止める）。
 	void flush();
 
 	// T の部品を持つ物を、作った順に全部たどり、function( T& ) を呼ぶ。
@@ -120,13 +122,14 @@ public:
 	// 番号の物（消えた・この持ち主の物でなければ nullptr）。GameObjectHandle が使う。
 	GameObject* findById( unsigned id ) const;
 
-	// ── GameObject が使う ──
+private:
+	// 下の 2 つは GameObject（addComponent・removeComponentLater）だけが呼ぶ。
+	friend class GameObject;
 	// spawn した後に付けた部品（object の index 番目）を awake・start させ、載せる。
 	void attachLate( GameObject* object, int index );
 	// object に外す印の付いた部品がある（flush で外す）。
 	void requestRemoval( GameObject* object );
 
-private:
 	// たどっている間か（たどっている最中の spawn・部品を付けることを見つける）。
 	class IterationGuard{
 	public:

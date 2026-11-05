@@ -21,6 +21,7 @@ class GameObjectWorld;
 // ・途中で付けてもよい（すぐ awake・start して動き出す。GameObjectWorld がたどっている最中は付けない）。
 //   外すのは removeComponentLater で印を付けるだけで、実際に外れるのは GameObjectWorld::flush の中（消える物と同じ約束）。
 //   ほかの部品が requireComponent した部品は外せない（外すとその部品が成り立たないため）
+// ・部品の並びを動かす関数（eraseAt・markSpawned など）は private で、持ち主（friend の GameObjectWorld）だけが呼ぶ
 // ・持ち主は GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ）。
 //   消えたかを知りたいときは GameObjectHandle で持つ
 // ・名前は確認用（F6 のエディタの物の一覧・デバッグ出力）。ゲームの判断にはタグを使う（★6）
@@ -46,6 +47,7 @@ public:
 		entry.component = std::move( component );
 		entry.required = false;
 		entry.removing = false;
+		entry.phase = raw->updatePhase();
 		mComponents.push_back( std::move( entry ) );
 		if ( mSpawned ){
 			attachLate( static_cast< int >( mComponents.size() ) - 1 );
@@ -101,25 +103,33 @@ public:
 	unsigned id() const { return mId; }
 	bool isSpawned() const { return mSpawned; }
 	GameObjectWorld* world() const { return mWorld; }
-
-	// ── GameObjectWorld が使う ──
+	// 付いている部品の数（F6 のエディタの物の一覧が読む）。
 	int componentNumber() const { return static_cast< int >( mComponents.size() ); }
+
+private:
+	// ここから下の部品の並びを動かす関数は、持ち主だけが呼ぶ（名簿・段の並びと一緒に動かさないと、消えた部品を指したままになるため）。
+	friend class GameObjectWorld;
+
 	Component* componentAt( int index ) const { return mComponents[ index ].component.get(); }
 	int componentTypeIdAt( int index ) const { return mComponents[ index ].typeId; }
 	// index 番目の部品が名簿へ載る部品（IWorldMember）なら、その窓口。載らない部品なら nullptr。
 	IWorldMember* worldMemberAt( int index ) const { return mComponents[ index ].member; }
 	bool isRemovingAt( int index ) const { return mComponents[ index ].removing; }
+	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す。
+	UpdatePhase updatePhaseAt( int index ) const { return mComponents[ index ].phase; }
 	// index 番目の部品を外して捨てる（onDestroy と名簿から外すのは GameObjectWorld が済ませてから呼ぶ）。
 	void eraseAt( int index );
 	void markSpawned(){ mSpawned = true; }
 
-private:
 	struct Entry{
 		int typeId;
 		std::unique_ptr< Component > component;
 		IWorldMember* member; // 名簿へ載る部品なら、その窓口（component と同じ物を指す）。載らないなら nullptr
 		bool required;        // ほかの部品が requireComponent した（外せない）
 		bool removing;        // 次の flush で外す
+		// 付けたときの updatePhase の答え。載せるときも外すときもこれを使う
+		// （途中で updatePhase の答えが変わっても、段の並びに消えた部品が残らないように）。
+		UpdatePhase phase;
 	};
 
 	// T が IWorldMember も実装していれば、その窓口を返す（していなければ nullptr）。

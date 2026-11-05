@@ -23,10 +23,10 @@ public:
 	HitboxSet& boxes(){ return mHitboxes; }
 
 	// IHittable
-	virtual const HitboxSet& hitboxes() const;
+	const HitboxSet& hitboxes() const override;
 	// IWorldMember（命中の名簿にだけ載る）
-	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
-	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
+	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 
 private:
 	std::unique_ptr< HitboxLayout > mOwnedLayout; // 自分で作った設計図（借りるときは空）。mHitboxes が借りるので先に宣言する

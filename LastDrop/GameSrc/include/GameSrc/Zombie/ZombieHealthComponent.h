@@ -43,11 +43,11 @@ public:
 
 	// Component（ZombieModel・Transform・SkinnedModel・Hitbox・CharacterCollider・ZombieDismember・ZombieState・
 	// ZombieChase・ZombieRootMotion が要る。ZombieAttack は任意＝付いていれば、倒れる・よろける時に攻撃をやめさせる）
-	virtual void awake();
-	virtual void start();
+	void awake() override;
+	void start() override;
 	// 生きている間だけ体力を減らし、のけぞらせ、当たった部位が 0 になったら切り、条件を満たせばよろけさせる。
 	// 脚を失ったら倒れて Downed に、倒れる条件を満たしたら死亡アニメへ繋いで倒し始める（IDamageable）。
-	virtual void applyDamage( const DamageInfo& damage );
+	void applyDamage( const DamageInfo& damage ) override;
 
 private:
 	void startFalling();      // 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする

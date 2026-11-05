@@ -26,14 +26,14 @@ public:
 	bool lookRaycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, float* time ) const;
 
 	// Component（ItemComponent・StaticModelComponent が要る）
-	virtual void start();
+	void start() override;
 	// IInteractable
-	virtual bool canInteract( const Inventory& inventory ) const;
-	virtual void interact( Inventory* inventory );
-	virtual bool offeredStack( ItemStack* out ) const;
-	virtual void takeOffered( int count );
-	virtual ItemGrid* lootGrid() { return nullptr; } // 拾う物は中を見せない
-	virtual float useSeconds() const { return 0.f; } // 拾う物は待たない（カバンの画面を開く）
+	bool canInteract( const Inventory& inventory ) const override;
+	void interact( Inventory* inventory ) override;
+	bool offeredStack( ItemStack* out ) const override;
+	void takeOffered( int count ) override;
+	ItemGrid* lootGrid() override { return nullptr; } // 拾う物は中を見せない
+	float useSeconds() const override { return 0.f; } // 拾う物は待たない（カバンの画面を開く）
 
 private:
 	ItemComponent* mItem;

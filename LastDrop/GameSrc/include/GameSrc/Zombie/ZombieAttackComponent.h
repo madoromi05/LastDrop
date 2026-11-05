@@ -41,7 +41,7 @@ public:
 	bool hitTargetThisTick() const; // 直前の update で相手に腕が当たったか（ダメージの量は ZombieAttack::hitDamage）
 
 	// Component（Transform・SkinnedModel・ZombieState・ZombieChase・ZombieDismember・ZombieRootMotion が要る）
-	virtual void start();
+	void start() override;
 
 private:
 	bool canStart( const ChaseTarget* target ) const;

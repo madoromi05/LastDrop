@@ -28,14 +28,14 @@ public:
 	const StaticMeshInstance& mesh() const;
 
 	// Component（TransformComponent が要る）
-	virtual void awake();
+	void awake() override;
 	// IRayBlocker
-	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
-		float* time, GameLib::Math::Vector3* normal ) const;
-	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const; // 作るときに受け取った材質（どこに当たっても同じ）
+	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal ) const override;
+	GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const override; // 作るときに受け取った材質（どこに当たっても同じ）
 	// IWorldMember（命中の名簿にだけ載る）
-	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
-	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
+	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 
 private:
 	StaticMeshInstance mMesh;

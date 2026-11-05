@@ -23,7 +23,7 @@ public:
 	const ZombieAnimationSet& animations() const;
 
 	// Component（ZombieModelComponent・SkinnedModelComponent・CharacterColliderComponent が要る）
-	virtual void awake();
+	void awake() override;
 
 private:
 	ZombieAnimationNames mNames;

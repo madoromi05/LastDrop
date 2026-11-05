@@ -19,12 +19,12 @@ public:
 	explicit BoxColliderComponent( Mode mode );
 
 	// Component（StaticModelComponent が要る）
-	virtual void start();
+	void start() override;
 	// ICollisionBody（置いた所から動かないので、start で求めた箱をそのまま返す）
-	virtual BoxCollider collider() const;
+	BoxCollider collider() const override;
 	// IWorldMember（移動の名簿にだけ載る。Fixed は外せないので removeFrom は何もしない）
-	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld );
-	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
+	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 
 private:
 	Mode mMode;

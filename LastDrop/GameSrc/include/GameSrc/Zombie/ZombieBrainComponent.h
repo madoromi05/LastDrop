@@ -54,11 +54,11 @@ public:
 	void hearNoise( const GameLib::Math::Vector3& position );
 
 	// Component（必須の部品と、共有の棚の TickContext が要る）
-	virtual UpdatePhase updatePhase() const;
-	virtual void start();
+	UpdatePhase updatePhase() const override;
+	void start() override;
 	// 1ティック進める。立っていてよろけていなければ、追う先を考えて向きを変え・歩き（追いついたら攻撃し）、倒れていれば這い、
 	// アニメを進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は描くときに行う。
-	virtual void update();
+	void update() override;
 
 	// 最後のティックのアニメの段（F3 の頭の上の表示に使う）。
 	AnimationThrottle::Level animationLevel() const;

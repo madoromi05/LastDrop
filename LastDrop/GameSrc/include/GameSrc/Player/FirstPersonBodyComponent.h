@@ -25,7 +25,7 @@ public:
 	void setWeaponSway( float yawDegree, float pitchDegree );
 
 	// Component（SkinnedModelComponent が要る）
-	virtual void awake();
+	void awake() override;
 
 private:
 	std::unique_ptr< FirstPersonBody > mBody; // 見た目の形（骨の番号）を借りるので awake で作る

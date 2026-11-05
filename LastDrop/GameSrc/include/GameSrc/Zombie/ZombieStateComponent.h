@@ -49,9 +49,9 @@ public:
 	GameLib::Math::Vector3 headPosition() const;
 
 	// Component（ZombieModel・Transform・Hitbox・CharacterCollider・ZombieDismember・ZombieRootMotion が要る）
-	virtual void start();
+	void start() override;
 	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る。体を引きずっている間は胸に置く）。
-	virtual BoxCollider collider() const;
+	BoxCollider collider() const override;
 
 private:
 	State mState;

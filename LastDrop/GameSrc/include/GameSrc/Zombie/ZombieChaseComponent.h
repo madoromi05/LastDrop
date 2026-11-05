@@ -45,8 +45,8 @@ public:
 
 	// Component（ZombieModel・Transform・SkinnedModel・CharacterCollider・ZombieState・ZombieRootMotion が要る）
 	// awake：滑る移動を借りて ZombieLocomotion を、フラつきの骨の設計図を借りて ZombieSway を作る
-	virtual void awake();
-	virtual void start();
+	void awake() override;
+	void start() override;
 
 private:
 	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて、近いほど強い。それ以外は 0。

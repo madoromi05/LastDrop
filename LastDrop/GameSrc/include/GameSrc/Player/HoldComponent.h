@@ -83,8 +83,8 @@ public:
 
 	// Component（SkinnedModelComponent・FirstPersonBodyComponent が要る）
 	// awake：持つ側の形を借り、リロードの腕のポーズを求める物を作る。start：手の骨を引く（銃を持たせるのは最初の syncWithInventory）
-	virtual void awake();
-	virtual void start();
+	void awake() override;
+	void start() override;
 
 private:
 	// held を手に持たせる（nullptr なら素手）。銃の部品を借り直し、一人称の体へ持ち方を渡す。

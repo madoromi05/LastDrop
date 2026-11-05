@@ -18,12 +18,12 @@ public:
 	bool isFueled() const; // 要る数のガソリンが入ったか
 
 	// IInteractable
-	virtual bool canInteract( const Inventory& inventory ) const; // 要る数に届いていない かつ カバンにガソリンがある
-	virtual void interact( Inventory* inventory );                // 待ち終えた後に呼ぶ。カバンのガソリンを 1 個入れる
-	virtual bool offeredStack( ItemStack* out ) const;            // 拾う物ではないので false
-	virtual void takeOffered( int count );                        // 呼ばれない
-	virtual ItemGrid* lootGrid();                                  // 漁れないので nullptr
-	virtual float useSeconds() const;                             // RaidParams::refuelSeconds
+	bool canInteract( const Inventory& inventory ) const override; // 要る数に届いていない かつ カバンにガソリンがある
+	void interact( Inventory* inventory ) override;                // 待ち終えた後に呼ぶ。カバンのガソリンを 1 個入れる
+	bool offeredStack( ItemStack* out ) const override;            // 拾う物ではないので false
+	void takeOffered( int count ) override;                        // 呼ばれない
+	ItemGrid* lootGrid() override;                                  // 漁れないので nullptr
+	float useSeconds() const override;                             // RaidParams::refuelSeconds
 
 private:
 	int mFuelRequired;
