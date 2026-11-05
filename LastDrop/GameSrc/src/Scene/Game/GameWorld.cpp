@@ -8,6 +8,9 @@
 #include "GameSrc/Player/FirstPersonBodyComponent.h"
 #include "GameSrc/Player/HoldComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Player/PlayerLocomotionComponent.h"
+#include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/FlatMath.h"
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/Zombie/ZombieStateComponent.h"
 #include "GameSrc/Zombie/ZombieAttackComponent.h"
@@ -30,31 +33,37 @@ using namespace GameLib::Math;
 namespace{
 	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ。
 	// 建物・置物は WorldBuilder・PropFactory、血の量は EffectManager、倒したゾンビを漁れる場所にするのは CombatResolver が持つ。
-
-	// 飛ぶ弾（7.62 NATO の弾頭。実物大・底が原点・先が +Y）。tools/configs/bullet_tip.json で変換
 	const char* kBulletFile = "Resource/bullet_tip.txt";
 
-	// ── 背景 ──
 	const char* kZombieFile = "Resource/character.txt";
 	const char* kZombieAnimation = "walk";
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
-	// 同時に居られるゾンビの数（死体も数える）。これより多くは出さない（追ってくる AI と見通しの線・描画が体の数だけ重くなる）。
-	const int kMaxZombies = 30;
-	// 倒れるときのアニメ（tools/configs/zombie.json の extra_animations）。体ごとにどれかをランダムで選ぶ（倒れ方が揃わないように）。
+	const int kMaxZombies = 30;								// 同時に居られるゾンビの数（死体も数える）
+	// 倒れるときのアニメ
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
 	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない。
-	// SummaryPlan/個別仕様/ZombieCrawl_Plan.txt の 2 章）。
 	const char* kZombieDownedAnimation = "death1";
-	// 銃声が届く距離（m。撃った所から水平だけ。SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。隣の通り（33m 先）まで届く。
-	// 建物越しでも縮めない（音は回り込むので）。
-	const float kGunshotHearingRange = 40.f;
-	// 撃たれてよろけるときのアニメ（同じく extra_animations）。
-	const char* kZombieStaggerAnimation = "gethit";
-	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
-	const char* kZombieIdleAnimation = "idle1";
-	// 追いついたら、つかんで噛む攻撃のアニメ（同じく extra_animations。両手を前へ伸ばしてつかみ、止まって元へ戻る）。
-	const char* kZombieAttackAnimation = "atack3";
+	const float kGunshotHearingRange = 30.f;				// 銃声が届く距離（m。撃った所から水平だけ
+	// 足音が届く距離（m。自キャラの足元から水平だけ。壁では切らない。SummaryPlan/個別仕様/ZombieFootstepHearing_Plan.txt）。
+	// 走りは横・後ろの目（10m）より遠くまで届き、歩きはそれより短いので、そっと歩けば後ろを抜けられる。
+	const float kWalkFootstepHearingRange = 5.f;
+	const float kRunFootstepHearingRange = 18.f;
+	// 足音を知らせる間隔（秒。ゾンビが目の線を引く間隔と同じ。毎ティック全員を調べないため）。
+	const float kFootstepNoiseIntervalSeconds = 0.3f;
+	const int kFootstepNoiseIntervalTicks = GameTime::secondsToTicks( kFootstepNoiseIntervalSeconds );
+
+	// 歩き方 gait の足音が届く距離（m。止まっていれば 0）。
+	float footstepHearingRange( Gait gait ) {
+		switch ( gait ) {
+			case GAIT_WALK: return kWalkFootstepHearingRange;
+			case GAIT_RUN:  return kRunFootstepHearingRange;
+			default:        return 0.f;
+		}
+	}
+	const char* kZombieStaggerAnimation = "gethit";			// 撃たれてよろけるときのアニメ
+	const char* kZombieIdleAnimation = "idle1";				// 気付く前・追いついた・見失って探し終えたときに立つアニメ
+	const char* kZombieAttackAnimation = "atack3";			// 追いついたら、つかんで噛む攻撃のアニメ
 
 	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）。
 	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所。
@@ -82,6 +91,7 @@ GameWorld::GameWorld( MeshCache* meshes, TownCache* town ) :
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ),
 	mZombieNumber( 0 ),
+	mFootstepNoiseTicks( 0 ),
 	mVisibility( nullptr ) {
 	ASSERT( meshes && town && "GameWorld : an argument is null." );
 	mZombieContext.hitWorld = &mHitWorld;
@@ -226,6 +236,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		mBullets.fire( mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition(), viewDirection, gun->spec().damage );
 		alertZombiesToGunshot( mPlayer->getComponent< TransformComponent >()->position() );
 	}
+	alertZombiesToFootsteps();
 	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
 	mImpacts.clear();
 	mCombat.beginTick();
@@ -257,6 +268,23 @@ void GameWorld::alertZombiesToGunshot( const Vector3& position ) {
 		toZombie.y = 0.f;
 		if ( toZombie.squareLength() <= kGunshotHearingRange * kGunshotHearingRange ) {
 			zombie.getComponent< ZombieBrainComponent >()->hearNoise( position ); // 聞くかどうか（倒れている・よろけている等）はゾンビが決める
+		}
+	} );
+}
+
+void GameWorld::alertZombiesToFootsteps() {
+	if ( !mPlayer || --mFootstepNoiseTicks > 0 ) {
+		return;
+	}
+	mFootstepNoiseTicks = kFootstepNoiseIntervalTicks;
+	float range = footstepHearingRange( mPlayer->getComponent< PlayerLocomotionComponent >()->gait() );
+	if ( range <= 0.f ) {
+		return; // 止まっている（つかまれている間も止まっている）
+	}
+	const Vector3& feet = mPlayer->getComponent< TransformComponent >()->position();
+	mObjects.forEach< ZombieStateComponent >( [ &feet, range ]( ZombieStateComponent& zombie ) {
+		if ( FlatMath::distance( zombie.position(), feet ) <= range ) {
+			zombie.getComponent< ZombieBrainComponent >()->hearFootsteps(); // 聞くかどうかはゾンビが決める（銃声と同じ）
 		}
 	} );
 }

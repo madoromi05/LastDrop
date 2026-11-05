@@ -31,10 +31,8 @@ public:
 	// 最後の update で E を押した拾う物（無ければ nullptr）。update の直後に読む。世界を進める前に使い終えること
 	// （拾い終えた物は世界の update で消える）。
 	IInteractable* offer() const;
-	// 最後の update で E を押した漁れる場所（lootGrid がある物。無ければ nullptr）。読む決まりは offer と同じ。
+	// 最後の update で E を押した漁れる場所・脱出の車（lootGrid がある物。無ければ nullptr）。読む決まりは offer と同じ。
 	IInteractable* opened() const;
-	// 最後の update で E を押した、時間をかけて使う物（useSeconds が 0 より大きい物。脱出の車への給油）。読む決まりは offer と同じ。
-	IInteractable* timedUse() const;
 
 private:
 	float mReach;
@@ -42,7 +40,6 @@ private:
 	const IInteractable* mTarget; // 借りているだけ
 	IInteractable* mOffer;        // 借りているだけ
 	IInteractable* mOpened;       // 借りているだけ
-	IInteractable* mTimedUse;     // 借りているだけ
 };
 
 #endif

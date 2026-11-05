@@ -13,6 +13,14 @@ bool satisfies( const ItemGrid& grid, GridRule rule ) {
 	if ( rule == GridRule::Free ) {
 		return true;
 	}
+	if ( rule == GridRule::FuelOnly ) {
+		for ( const ItemStack& stack : grid.stacks() ) {
+			if ( stack.item != ITEM_FUEL ) {
+				return false;
+			}
+		}
+		return true;
+	}
 	for ( int i = 0; i < ITEM_NUMBER; ++i ) {
 		ItemId id = static_cast< ItemId >( i );
 		int limit = itemSpec( id ).carryLimit;

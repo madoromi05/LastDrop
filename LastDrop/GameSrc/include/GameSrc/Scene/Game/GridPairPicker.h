@@ -32,6 +32,8 @@ public:
 
 	// マスの背景の濃さ（ItemGridView::setCellAlpha。町の中の画面は後ろを透かす）。
 	void setCellAlpha( float alpha );
+	// 右のマス目の決まりを変える（1 つの画面で、漁れる場所と脱出の車の給油口を見せ分けるため）。
+	void setRightRule( GridRule rule );
 	// 2 つのマス目の左上とマスの一辺（画素）。読む・描く前に毎回（画面の幅は窓で変わる）。
 	void layout( const GameLib::Math::Vector2& leftOrigin, const GameLib::Math::Vector2& rightOrigin, float cellSize );
 	const ItemGridView& view( Side side ) const;

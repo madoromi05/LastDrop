@@ -161,11 +161,20 @@ void ZombieBrainComponent::rebuildPoseModifiers( ZombieHealthComponent* health )
 }
 
 void ZombieBrainComponent::hearNoise( const Vector3& position ) {
+	if ( canHear() ) {
+		mLocomotion->hearNoise( position );
+	}
+}
+
+void ZombieBrainComponent::hearFootsteps() {
+	if ( canHear() ) {
+		mLocomotion->alert(); // 撃たれたときと同じ。次に線を引いて見えなければ、その時の自キャラの所を探しに行く
+	}
+}
+
+bool ZombieBrainComponent::canHear() const {
 	const ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >();
 	const ZombieHealthComponent* health = getComponent< ZombieHealthComponent >();
 	bool standing = ( mState->state() == ZombieStateComponent::State::Alive && !( health && health->isStaggering() ) );
-	if ( !( standing || mState->isCrawling() ) || ( attack && attack->isActive() ) || !mState->canChase() ) {
-		return; // 倒れている途中・死んだ・よろけている・攻撃している体と、追ってこない確認用の体は聞かない
-	}
-	mLocomotion->hearNoise( position );
+	return ( standing || mState->isCrawling() ) && !( attack && attack->isActive() ) && mState->canChase();
 }

@@ -36,7 +36,6 @@ public:
 	void interact( Inventory* inventory ) override;     // 呼ばれない（Interactor は lootGrid のある物を使わずに opened へ回す）
 	bool offeredStack( ItemStack* out ) const override; // 拾う物ではないので false
 	void takeOffered( int count ) override;             // 呼ばれない
-	float useSeconds() const override;                  // 0（開ける時間は searchSeconds。中を見る画面へ回す）
 	ItemGrid* lootGrid() override;
 
 private:

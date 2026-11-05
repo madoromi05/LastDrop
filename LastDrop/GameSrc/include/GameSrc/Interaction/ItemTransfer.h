@@ -7,6 +7,7 @@
 enum class GridRule{
 	Free,       // 決まり無し（倉庫。銃を何丁でも置ける）
 	CarryLimit, // ItemSpec::carryLimit を守る（カバン。銃は 1 種類 1 丁）
+	FuelOnly,   // ガソリンだけ（脱出の車の給油口。SummaryPlan/個別仕様/FuelPort_Plan.txt）
 };
 
 // マス目の上で物を動かすときに、決まり（GridRule）を守れるかを調べてから動かす（拠点の倉庫 ⇔ カバン）。

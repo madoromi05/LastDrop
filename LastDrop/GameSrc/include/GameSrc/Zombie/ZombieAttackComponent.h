@@ -31,6 +31,7 @@ public:
 	// target: 追う先（nullptr なら始めない）。
 	bool tryStart( const ChaseTarget* target );
 	// 立って攻撃している間、相手の方を向き、手を伸ばしている段階なら寄る（踏み込みは根の動きで別に足される）。
+	// つかんでいる段階は、決まった距離・正面へ寄せる（手が離れる・めり込むのを防ぐ。ZombieAttackParams）。
 	void approach( const ChaseTarget* target );
 	// 攻撃の段階を進める（生きている間、毎ティック）。立っている体は、つかんでいる間はアニメをゆっくり流し、
 	// 噛んだら首を突き出し、終わったら立つアニメへ戻す。
@@ -54,6 +55,7 @@ private:
 	bool canStart( const ChaseTarget* target ) const;
 	bool isTargetInReach( const ChaseTarget* target ) const;
 	ZombieAttackReach::Origin origin() const;
+	void alignToHeldTarget( const GameLib::Math::Vector3& target );
 
 	ZombieAttack mAttack;
 	// ── 同じ物の部品（start で借りる）──
@@ -65,6 +67,7 @@ private:
 	const ZombieCrawler* mCrawler;
 	ZombieRootMotionSpan* mRootSpan;
 	ZombieAnimationSet* mAnimations;
+	int mAlignTicks; // つかんだ後、決まった距離・正面へ寄せ終えるまでの残り（ティック。寄せ終えたら 1 のまま）
 };
 
 #endif

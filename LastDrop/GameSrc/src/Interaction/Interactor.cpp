@@ -11,8 +11,7 @@ Interactor::Interactor( float reach, Finder finder ) :
 	mFinder( finder ),
 	mTarget( nullptr ),
 	mOffer( nullptr ),
-	mOpened( nullptr ),
-	mTimedUse( nullptr ) {
+	mOpened( nullptr ) {
 	ASSERT( mReach > 0.f && mFinder && "Interactor : bad argument." );
 }
 
@@ -25,17 +24,14 @@ void Interactor::update( const Vector3& eye, const Vector3& direction,
 	mTarget = target;
 	mOffer = nullptr;
 	mOpened = nullptr;
-	mTimedUse = nullptr;
 	if ( !target || !interactPressed || !target->canInteract( *inventory ) ) {
 		return;
 	}
-	// 漁れる場所は、開けるまで待ってから中を見せる（呼ぶ側）。拾う物は、置く所を選ぶまで入れない（呼ぶ側がカバンの画面を開く）。
-	// 時間をかけて使う物（給油）は、待ってから使う（呼ぶ側）。それ以外はすぐ使う。
+	// 漁れる場所・脱出の車の給油口は、中のマス目を見せる（開けるまで待つ・画面を開くのは呼ぶ側）。
+	// 拾う物は、置く所を選ぶまで入れない（呼ぶ側がカバンの画面を開く）。それ以外はすぐ使う。
 	ItemStack offered;
 	if ( target->lootGrid() ) {
 		mOpened = target;
-	} else if ( target->useSeconds() > 0.f ) {
-		mTimedUse = target;
 	} else if ( target->offeredStack( &offered ) ) {
 		mOffer = target;
 	} else {
@@ -49,10 +45,6 @@ IInteractable* Interactor::offer() const {
 
 IInteractable* Interactor::opened() const {
 	return mOpened;
-}
-
-IInteractable* Interactor::timedUse() const {
-	return mTimedUse;
 }
 
 const IInteractable* Interactor::target() const {

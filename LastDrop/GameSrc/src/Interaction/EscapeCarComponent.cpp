@@ -1,38 +1,42 @@
 #include "GameSrc/Interaction/EscapeCarComponent.h"
-#include "GameSrc/Interaction/Inventory.h"
 #include "GameSrc/Interaction/ItemCatalog.h"
-#include "GameSrc/Raid/RaidParams.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Profiling/Profiler.h"
 
 EscapeCarComponent::EscapeCarComponent( int requiredFuel ) :
 	mFuelRequired( requiredFuel ),
-	mFuelDelivered( 0 ) {
+	// 1 行にガソリン 1 個（横 2 マス）。行の数 = 要る数なので、ちょうど要る数だけ入る（FuelPort_Plan.txt）。
+	mTank( itemSpec( ITEM_FUEL ).cellSize, requiredFuel ),
+	mFueled( false ) {
 	ASSERT( requiredFuel > 0 && "EscapeCarComponent : requiredFuel must be positive." );
 }
 
-int EscapeCarComponent::fuelDelivered() const {
-	return mFuelDelivered;
+bool EscapeCarComponent::isTankFull() const {
+	return mTank.total( ITEM_FUEL ) >= mFuelRequired;
 }
 
-int EscapeCarComponent::fuelRequired() const {
-	return mFuelRequired;
+void EscapeCarComponent::startEngine() {
+	ASSERT( !mFueled && isTankFull() && "EscapeCarComponent::startEngine : the tank is not full." );
+	PROFILE_EVENT( "Refuel" ); // 計測の印
+	mTank.clearAll(); // 入れたガソリンは使い切る（もう開けないので、取り出せない）
+	mFueled = true;
 }
 
 bool EscapeCarComponent::isFueled() const {
-	return mFuelDelivered >= mFuelRequired;
+	return mFueled;
 }
 
-bool EscapeCarComponent::canInteract( const Inventory& inventory ) const {
-	return !isFueled() && inventory.count( ITEM_FUEL ) > 0;
+const ItemGrid& EscapeCarComponent::tank() const {
+	return mTank;
 }
 
-void EscapeCarComponent::interact( Inventory* inventory ) {
-	ASSERT( inventory && canInteract( *inventory ) && "EscapeCarComponent::interact : cannot refuel." );
-	PROFILE_EVENT( "Refuel" ); // 計測の印
-	inventory->remove( ITEM_FUEL ); // 同じ物なら、どのマスから減っても同じ
-	++mFuelDelivered;
+bool EscapeCarComponent::canInteract( const Inventory& ) const {
+	return !mFueled;
+}
+
+void EscapeCarComponent::interact( Inventory* ) {
+	ASSERT( false && "EscapeCarComponent::interact : open the fuel port with LootScreen." );
 }
 
 bool EscapeCarComponent::offeredStack( ItemStack* ) const {
@@ -44,9 +48,5 @@ void EscapeCarComponent::takeOffered( int ) {
 }
 
 ItemGrid* EscapeCarComponent::lootGrid() {
-	return nullptr;
-}
-
-float EscapeCarComponent::useSeconds() const {
-	return raidParams().refuelSeconds;
+	return &mTank;
 }

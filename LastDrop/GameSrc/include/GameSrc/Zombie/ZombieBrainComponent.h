@@ -52,6 +52,9 @@ public:
 	// position で銃声がした（届くかは持ち主が決める）。立っている（か、体を引きずっている）、よろけ・攻撃の最中でなければ、
 	// 少し遅れてからそこへ探しに来る（SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。
 	void hearNoise( const GameLib::Math::Vector3& position );
+	// 自キャラの足音がした（届くかは持ち主が決める）。聞ける体なら、撃たれたときと同じく見えていなくても気付く
+	// （SummaryPlan/個別仕様/ZombieFootstepHearing_Plan.txt Q2）。聞ける条件は hearNoise と同じ。
+	void hearFootsteps();
 
 	// Component（必須の部品と、共有の棚の TickContext が要る）
 	UpdatePhase updatePhase() const override;
@@ -64,6 +67,8 @@ public:
 	AnimationThrottle::Level animationLevel() const;
 
 private:
+	// 物音を聞ける様子か。倒れている途中・死んだ・よろけている・攻撃している体と、追ってこない確認用の体は聞かない。
+	bool canHear() const;
 	// 立っている体が、追う先を考えて向きを変え、追いついたら攻撃を始め、そうでなければ歩く・横へよける。
 	// attack: 攻撃の部品（外されていれば nullptr）。
 	void chase( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd, ZombieAttackComponent* attack );

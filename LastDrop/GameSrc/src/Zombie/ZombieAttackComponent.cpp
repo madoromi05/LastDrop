@@ -8,12 +8,26 @@
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/World/GameObject.h"
+#include "GameSrc/Zombie/ZombieAttackParams.h"
+#include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
 
+#include "GameLib/Math/Functions.h"
+
+using namespace GameLib;
 using GameLib::Math::Vector3;
 
 namespace{
 	// 噛むときに首・背骨を突き出す向き（骨格の根の空間で前。押し方は ZombieFlinch::lunge）。噛むアニメが無いので顔を相手へ近づける。
 	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
+	// 寄せ終えた後の残りティック。1 なら毎ティック、ずれた分をそのまま詰める（根の動きの小さな揺れで手が離れないように）。
+	const int kAlignedTicks = 1;
+
+	ZombieAttackParams gParams;
+}
+
+ZombieAttackParams& zombieAttackParams() {
+	return gParams;
 }
 
 ZombieAttackComponent::ZombieAttackComponent() :
@@ -24,7 +38,8 @@ ZombieAttackComponent::ZombieAttackComponent() :
 	mLocomotion( nullptr ),
 	mCrawler( nullptr ),
 	mRootSpan( nullptr ),
-	mAnimations( nullptr ) {
+	mAnimations( nullptr ),
+	mAlignTicks( kAlignedTicks ) {
 }
 
 void ZombieAttackComponent::start() {
@@ -46,7 +61,7 @@ bool ZombieAttackComponent::tryStart( const ChaseTarget* target ) {
 	}
 	mLocomotion->clearPath();
 	if ( mState->isCrawling() ) {
-		// 攻撃のアニメは流さない（倒れた姿勢のまま、腕を前へ伸ばす）。段階は自分の時計で進める（update）。
+		// 攻撃のアニメは流さない（倒れた姿勢のまま、腕を前へ伸ばす）。段階は自分の時計で進める（update）
 		mAttack.startSwing();
 		return true;
 	}
@@ -57,6 +72,12 @@ bool ZombieAttackComponent::tryStart( const ChaseTarget* target ) {
 
 void ZombieAttackComponent::approach( const ChaseTarget* target ) {
 	if ( !target ) {
+		return;
+	}
+	if ( mAttack.phase() == ZombieAttack::Phase::Hold ) {
+		alignToHeldTarget( target->position );
+		mMesh->setPosition( *mPosition );
+		mMesh->setAngleY( *mAngleY );
 		return;
 	}
 	mLocomotion->turnToward( mState->bodyCenter(), target->position, mState->posture(), mAngleY );
@@ -75,9 +96,14 @@ void ZombieAttackComponent::update( const ChaseTarget* target ) {
 	bool wasActive = mAttack.isActive();
 	if ( mState->isCrawling() ) {
 		mAttack.updateWithoutAnimation( isTargetInReach( target ) );
-		return; // 腕を伸ばす・戻すのは ZombieCrawler（ZombieCrawlComponent）。アニメは替えない
+		return; // 腕を伸ばす・戻すのは ZombieCrawler（ZombieCrawlComponent）
 	}
 	mAttack.update( mMesh->animationTime(), mMesh->isAnimationFinished(), isTargetInReach( target ) );
+	if ( mAttack.grabbedThisTick() ) {
+		// 次の approach から、決まった距離・正面へ寄せ始める（つかんだ時の間合いは 0.9〜1.6m・左右 45° とばらつくので）。
+		int alignTicks = GameTime::secondsToTicks( gParams.grabAlignSeconds );
+		mAlignTicks = ( alignTicks > kAlignedTicks ) ? alignTicks : kAlignedTicks;
+	}
 	if ( mAttack.hitThisTick() ) {
 		// のけぞりの部品は外せるので、使うたびに引く（外されていれば首を突き出さずに噛む）。
 		if ( ZombieHealthComponent* health = getComponent< ZombieHealthComponent >() ) {
@@ -114,6 +140,41 @@ bool ZombieAttackComponent::grabbedTargetThisTick() const {
 
 bool ZombieAttackComponent::hitTargetThisTick() const {
 	return mState->isAlive() && mAttack.hitThisTick();
+}
+
+// 腰（足元）を相手から grabDistance の所へ、向きを相手の正面へ、残りのティックで割った分だけ寄せる。
+// アンカーごと動かすので、アニメの踏み込み（根の動き）を足した後の腰が、その所に来る。
+// 相手との間はゾンビが寄って来た所なので、当たり判定はしない（相手はつかまれて動けない）。
+void ZombieAttackComponent::alignToHeldTarget( const Vector3& target ) {
+	float fraction = 1.f / static_cast< float >( mAlignTicks );
+	if ( mAlignTicks > kAlignedTicks ) {
+		--mAlignTicks;
+	}
+	// 向きは根の動きのアンカー（bodyCenter）から測る（turnToward と同じ）。腰はアンカーから前へ出ているので、これで腰も相手の正面へ来る。
+	Vector3 toTarget;
+	toTarget.setSub( target, mState->bodyCenter() );
+	toTarget.y = 0.f;
+	if ( toTarget.squareLength() > 0.f ) {
+		float difference = AngleMath::difference( AngleMath::headingOf( toTarget ), *mAngleY );
+		*mAngleY = AngleMath::wrapSigned( *mAngleY + difference * fraction );
+	}
+	// 距離は、相手から腰への向きのまま縮める・離す。重なっていたら、ゾンビの向きの後ろへ離す。
+	Vector3 fromTarget;
+	fromTarget.setSub( *mPosition, target );
+	fromTarget.y = 0.f;
+	float length = fromTarget.length();
+	if ( length <= 0.f ) {
+		fromTarget.set( -Math::sin( *mAngleY ), 0.f, -Math::cos( *mAngleY ) );
+		length = 1.f;
+	}
+	Vector3 wanted;
+	wanted.setMul( fromTarget, gParams.grabDistance / length );
+	wanted += target;
+	wanted -= *mPosition;
+	wanted.y = 0.f;
+	Vector3 step;
+	step.setMul( wanted, fraction );
+	mRootSpan->moveFooting( step, mPosition );
 }
 
 bool ZombieAttackComponent::canStart( const ChaseTarget* target ) const {

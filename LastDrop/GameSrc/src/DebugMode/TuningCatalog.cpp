@@ -8,6 +8,7 @@
 #include "GameSrc/Player/AimSwayParams.h"
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/ZombieCrowdParams.h"
+#include "GameSrc/Zombie/ZombieAttackParams.h"
 #include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
 #include "GameSrc/Zombie/AnimationThrottleParams.h"
@@ -91,6 +92,9 @@ namespace{
 			"Loot", "LootParams", "GameSrc/Interaction/LootParams.h", &lootParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
+		// つかんでいる間の距離・向きを合わせる値（ZombieAttack_Plan.txt 10 章）。
+		groups.push_back( std::make_unique< TuningGroup< ZombieAttackParams > >(
+			"ZombieAttack", "ZombieAttackParams", "GameSrc/Zombie/ZombieAttackParams.h", &zombieAttackParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
 		// ゾンビのアニメを間引く段（OptimizationB_Plan.txt 9 章）。

@@ -51,10 +51,6 @@ void LootContainerComponent::takeOffered( int ) {
 	ASSERT( false && "LootContainerComponent::takeOffered : not a pickup." );
 }
 
-float LootContainerComponent::useSeconds() const {
-	return 0.f;
-}
-
 ItemGrid* LootContainerComponent::lootGrid() {
 	return &mContents;
 }

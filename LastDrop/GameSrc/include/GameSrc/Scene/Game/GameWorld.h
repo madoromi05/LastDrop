@@ -62,7 +62,7 @@ public:
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
 
-	// ── ロード（FuelEscapeLoading_Plan.txt 6 章）。全データの構築後に、GameLoader が 1 回の描画に 1 つずつ、この順に 1 回だけ呼ぶ ──
+	// ロード
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
 	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（WorldBuilder）。
 	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号。RaidSession が選ぶ）。
@@ -75,7 +75,7 @@ public:
 	void placeActors();
 	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
-	// 1ティック進める。段の順（UpdatePhase）：
+	// 1ティック進める
 	//   Input（自キャラが操作どおりに動く・撃つ）→ 撃ったなら弾を出し、近くのゾンビに銃声を聞かせる → 弾を飛ばし、当たった所を CombatResolver が解決
 	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす）→
 	//   Late（銃口が光る）→ 沈み終わった死体と、消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
@@ -97,11 +97,8 @@ public:
 	bool dropItem( const ItemStack& stack, float cameraYaw );
 
 	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
-	// （OptimizationB_Plan.txt Q9）。描いた後に毎フレーム呼ぶ。呼ばれるまでは誰も間引かない。
-	// projectionView：カメラの射影×ビュー（TAA でずらす前）。eye：目の位置。
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );
 
-	// ── 係（シーンが直接頼む・読む）──
 	// 見て E で使う物を探す・拾われた物を消す（Interactor の finder と、1 回の描画ごとの後片付け）。
 	InteractionSystem& interaction();
 	const InteractionSystem& interaction() const;
@@ -145,6 +142,9 @@ private:
 	void placePlayer();
 	// position（撃った瞬間の自キャラの足元）で銃声がした。届く距離の内のゾンビへ知らせる（update で撃ったティックに）。
 	void alertZombiesToGunshot( const GameLib::Math::Vector3& position );
+	// 0.3 秒ごとに、自キャラの歩き方で決まる距離（歩き 5m・走り 18m）の内のゾンビへ足音を聞かせる（update で毎ティック。
+	// SummaryPlan/個別仕様/ZombieFootstepHearing_Plan.txt）。
+	void alertZombiesToFootsteps();
 	// ゾンビの Think の段を動かし、腕の当たりを CombatResolver へ渡し、沈み終わった死体に消す印を付ける（update から）。
 	// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
 	void updateZombies();
@@ -202,6 +202,7 @@ private:
 	PlayerComponent* mPlayerControl; // 自キャラの操作を読む部品（同上）
 	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）・湧かせ方の種を選ぶ（place で種を決める）
 	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
+	int mFootstepNoiseTicks;             // 次に足音を聞かせるまでのティック（alertZombiesToFootsteps）
 	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。
 	std::unique_ptr< ZombieSpawner > mZombieSpawner;
 	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）

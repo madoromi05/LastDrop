@@ -9,11 +9,10 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 立っている体（SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）──
+	// ── 立っている体──
 	// 攻撃を始める間合い（m。足元どうし、水平だけ）。追いついて止まる距離（ZombieChase の kStopDistance = 1.2m）より遠くする。
 	// 自キャラの移動の当たり判定は、銃を持っている間は銃の先まで前へ伸びるので、正面から来たゾンビは 1.2m より手前で
-	// 銃の箱にぶつかって止まり、1.2m の内へ入れない（2026-10-21 ユーザー報告「攻撃してこない」）。
-	// 止まった後に歩き出す距離（kResumeDistance = 1.5m）より少し遠くして、ぶつかって止まったゾンビも攻撃を始めるようにする。
+	// 銃の箱にぶつかって止まり、1.2m の内へ入れない
 	const float kAttackStartDistance = 1.6f;
 	// 攻撃を始める向きの差（度。左右それぞれ）。相手の方を向き終わってから腕を振る。
 	const float kAttackStartHalfAngle = 30.f;

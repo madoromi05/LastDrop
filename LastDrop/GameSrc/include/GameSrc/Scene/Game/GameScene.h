@@ -114,12 +114,13 @@ private:
 	// 体力が減っているか（カバンの画面の「使う」を出すか）。自キャラが居なければ false。
 	bool isPlayerInjured() const;
 	// ── 漁れる場所（R3_Plan.txt 5 章）──
-	// E で漁れる場所 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める（開けている音を鳴らす）。
+	// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める（開けている音を鳴らす）。
+	// 脱出の車は待たずに給油口を開く（FuelPort_Plan.txt）。
 	void beginLoot( IInteractable* opened );
-	// ── 脱出の車（FuelEscapeLoading_Plan.txt 3 章）──
-	// E で脱出の車 used を選んだ。漁るのと同じ待ち方（LootSearch・取りやめも同じ）で、給油し始める。
-	void beginRefuel( IInteractable* used );
-	// 給油の待ちを終えた。ガソリンを 1 個入れ、要る数に届いたらエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）。
+	// ── 脱出の車（FuelEscapeLoading_Plan.txt 3 章・FuelPort_Plan.txt）──
+	// 給油口に要る数を入れて閉じた。漁るのと同じ待ち方（LootSearch・取りやめも同じ）で、給油し始める。
+	void beginRefuel( EscapeCarComponent* car );
+	// 給油の待ちを終えた。給油口のガソリンを使ってエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）。
 	void finishRefuel( EscapeCarComponent* car );
 	// 開けている途中を取りやめる（音を止める）。開けていなければ何もしない。
 	void cancelLootSearch();
@@ -131,12 +132,18 @@ private:
 	// 操作 command が、開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器を出し入れ）。
 	static bool interruptsLootSearch( const PlayerCommand& command );
 	// 中を見る画面を開く・閉じる。止め方はカバンと同じ（世界を進めず、音を止め、カーソルを外す）。
-	void openLoot( LootContainerComponent* container );
+	// target: 漁れる場所か脱出の車の物。lootRule: 右のマス目に入れてよい物（給油口は GridRule::FuelOnly）。
+	// 給油口に要る数を入れて閉じたら、給油し始める。
+	void openLoot( GameObject* target, GridRule lootRule );
 	void closeLoot();
 	// 中を見る画面を開いている間の入力（ESC・E・Tab で閉じる・マスの操作）。ほかの入力は読まない。
 	void handleLootInput();
-	// 中を見ている場所（消えた・開いていなければ nullptr）。
+	// 中を見ている場所・給油口の車（消えた・開いていなければ nullptr）。
 	LootContainerComponent* lootTarget() const;
+	EscapeCarComponent* fuelPortTarget() const;
+	// 中を見ているマス目と、右の見出し（消えた・開いていなければ nullptr）。
+	ItemGrid* openedGrid() const;
+	const char* openedTitle() const;
 	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
 	ItemId equippedWeapon() const;
 	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。

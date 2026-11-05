@@ -23,11 +23,8 @@ public:
 	virtual bool offeredStack( ItemStack* out ) const = 0;
 	// offeredStack の物を count 個、持ち物へ入れた（入れるのは呼ぶ側）。count は 1〜差し出した数。全部入ったら、もう差し出さない。
 	virtual void takeOffered( int count ) = 0;
-	// 漁れる場所なら、中身のマス目（Interactor は開ける物として呼ぶ側へ回す）。漁れる場所でなければ nullptr。
+	// 漁れる場所・脱出の車の給油口なら、中身のマス目（Interactor は開ける物として呼ぶ側へ回す）。どちらでもなければ nullptr。
 	virtual ItemGrid* lootGrid() = 0;
-	// 使い終えるまでにかかる秒（脱出の車への給油。FuelEscapeLoading_Plan.txt Q4）。0 より大きければ Interactor はすぐ使わずに
-	// 呼ぶ側へ回し（timedUse）、呼ぶ側が待ってから interact を呼ぶ（待つ間の取りやめは漁るのと同じ）。すぐ使う物・拾う物・漁れる場所は 0。
-	virtual float useSeconds() const = 0;
 };
 
 #endif

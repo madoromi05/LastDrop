@@ -999,6 +999,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottle.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottleParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h" />

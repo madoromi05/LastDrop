@@ -53,7 +53,8 @@ LootScreen::LootScreen( UiRenderer* renderer ) :
 	mPicker.setCellAlpha( kPanelAlpha );
 }
 
-void LootScreen::open() {
+void LootScreen::open( GridRule lootRule ) {
+	mPicker.setRightRule( lootRule );
 	mPicker.reset( kLoot, kFirstCell );
 }
 

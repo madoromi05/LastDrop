@@ -51,6 +51,7 @@ namespace{
 	// 脱出の車のエンジン（FuelEscapeLoading_Plan.txt Q5）。掛かったら、銃声と同じくゾンビが寄ってくる。
 	const float kEngineStartVolume = 1.f;
 	const float kEngineIdleVolume = 0.7f;
+	const char* kFuelPortTitle = "給油口"; // 脱出の車を開けた画面の右の見出し（FuelPort_Plan.txt）
 
 	// ── 影（Shadow_Plan.txt 5 章）──
 	const int kFlashlightShadowSize = 1024; // 懐中電灯の影のマップの一辺（画素）
@@ -303,11 +304,15 @@ bool GameScene::isPlayerInjured() const {
 void GameScene::beginLoot( IInteractable* opened ) {
 	LootContainerComponent* container = mWorld.interaction().findContainer( opened );
 	if ( !container ) {
+		if ( EscapeCarComponent* car = mWorld.interaction().findEscapeCar( opened ) ) {
+			cancelLootSearch(); // 給油の待ちの途中なら取りやめ（ガソリンは給油口に入ったまま）
+			openLoot( car->gameObject(), GridRule::FuelOnly ); // 給油口は待たずに開く（FuelPort_Plan.txt）
+		}
 		return;
 	}
 	float seconds = container->searchSeconds();
 	if ( seconds <= 0.f ) {
-		openLoot( container ); // 一度開けた所は待たない（R3_Plan.txt Q6）
+		openLoot( container->gameObject(), GridRule::Free ); // 一度開けた所は待たない（R3_Plan.txt Q6）
 		return;
 	}
 	cancelLootSearch();
@@ -320,13 +325,10 @@ void GameScene::beginLoot( IInteractable* opened ) {
 	}
 }
 
-void GameScene::beginRefuel( IInteractable* used ) {
-	EscapeCarComponent* car = mWorld.interaction().findEscapeCar( used );
-	if ( !car ) {
-		return;
-	}
+void GameScene::beginRefuel( EscapeCarComponent* car ) {
+	ASSERT( car && "GameScene::beginRefuel : car is null." );
 	cancelLootSearch();
-	mLootSearch.start( car->gameObject(), car->useSeconds() );
+	mLootSearch.start( car->gameObject(), raidParams().refuelSeconds );
 	const GameObject* player = mWorld.player();
 	if ( player ) {
 		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない。FuelEscapeLoading_Plan.txt 改訂 2）。
@@ -336,13 +338,10 @@ void GameScene::beginRefuel( IInteractable* used ) {
 }
 
 void GameScene::finishRefuel( EscapeCarComponent* car ) {
-	if ( !car->canInteract( mInventory ) ) {
-		return; // 待っている間にガソリンを捨てた（起きない：カバンを開くと待つのはやめる）
+	if ( car->isFueled() || !car->isTankFull() ) {
+		return; // 起きない（給油口を開くと待つのはやめる）
 	}
-	car->interact( &mInventory );
-	if ( !car->isFueled() ) {
-		return; // まだ要る（requiredFuel が 2 以上のとき）
-	}
+	car->startEngine();
 	mSession.openEscape();
 	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す。Q5）。
 	const Vector3& carPosition = car->getComponent< TransformComponent >()->position();
@@ -390,7 +389,7 @@ void GameScene::updateLootSearch( bool commandInterrupts ) {
 		cancelLootSearch();
 		if ( container ) {
 			container->markSearched();
-			openLoot( container );
+			openLoot( container->gameObject(), GridRule::Free );
 		} else if ( car ) {
 			finishRefuel( car ); // 待っていたのは給油（FuelEscapeLoading_Plan.txt Q4）
 		}
@@ -401,31 +400,36 @@ void GameScene::updateLootSearch( bool commandInterrupts ) {
 	}
 }
 
-void GameScene::openLoot( LootContainerComponent* container ) {
-	ASSERT( container && "GameScene::openLoot : container is null." );
-	container->markSearched();
+void GameScene::openLoot( GameObject* target, GridRule lootRule ) {
+	ASSERT( target && "GameScene::openLoot : target is null." );
 	mLootOpen = true;
-	mLootTarget = GameObjectHandle( container->gameObject() );
+	mLootTarget = GameObjectHandle( target );
 	// 銃のマスの「弾倉の数/大きさ」を今の数にする（場所へ置いていった銃も、その数のまま残る。カバンを開くときと同じ）。
 	storeMagazineRounds();
-	mLootScreen.open();
+	mLootScreen.open( lootRule );
 	mResources->audio().setPaused( true );
 	mControl.clearInput();   // 押していた移動・撃つを放す（一時停止と同じ）
 	mControl.unlockCursor(); // マスをマウスで選べるように
 }
 
 void GameScene::closeLoot() {
+	// 給油口に要る数を入れて閉じたら給油し始める（閉じるまでは入れ直せる。FuelPort_Plan.txt）。
+	EscapeCarComponent* car = fuelPortTarget();
+	bool refuel = car && car->isTankFull();
 	mLootOpen = false;
 	mLootTarget = GameObjectHandle();
 	// カバンへ入れた銃（場所から拾った銃）の弾倉の数を、銃の物へ入れる（場所の中の銃は込めた数を持つ。木箱のライフルは 0）。
 	restoreMagazineRounds();
-	mResources->audio().setPaused( false );
+	mResources->audio().setPaused( false ); // 注ぐ音を鳴らす前に音を戻す
 	mControl.lockCursor();
+	if ( refuel ) {
+		beginRefuel( car );
+	}
 }
 
 void GameScene::handleLootInput() {
-	LootContainerComponent* container = lootTarget();
-	if ( !container ) {
+	ItemGrid* grid = openedGrid();
+	if ( !grid ) {
 		closeLoot(); // 起きない（世界は止まっている）が、消えた物を指したままにしない
 		return;
 	}
@@ -440,12 +444,30 @@ void GameScene::handleLootInput() {
 		closeLoot();
 		return;
 	}
-	mLootScreen.handleInput( mInventory.gridForTransfer(), container->lootGrid() );
+	mLootScreen.handleInput( mInventory.gridForTransfer(), grid );
 }
 
 LootContainerComponent* GameScene::lootTarget() const {
 	GameObject* object = mLootTarget.get();
 	return object ? object->getComponent< LootContainerComponent >() : nullptr;
+}
+
+EscapeCarComponent* GameScene::fuelPortTarget() const {
+	GameObject* object = mLootTarget.get();
+	return object ? object->getComponent< EscapeCarComponent >() : nullptr;
+}
+
+ItemGrid* GameScene::openedGrid() const {
+	if ( LootContainerComponent* container = lootTarget() ) {
+		return container->lootGrid();
+	}
+	EscapeCarComponent* car = fuelPortTarget();
+	return car ? car->lootGrid() : nullptr;
+}
+
+const char* GameScene::openedTitle() const {
+	const LootContainerComponent* container = lootTarget();
+	return container ? LootTable::displayName( container->table() ) : kFuelPortTitle;
 }
 
 ItemId GameScene::equippedWeapon() const {
@@ -791,9 +813,8 @@ void GameScene::draw() {
 		ItemStack incoming;
 		bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
 		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr ); // カバンの画面も同じ（HUD は描かない）
-	} else if ( mLootOpen && lootTarget() ) {
-		const LootContainerComponent* container = lootTarget();
-		mLootScreen.draw( mInventory.grid(), container->contents(), LootTable::displayName( container->table() ), equippedWeapon() );
+	} else if ( mLootOpen && openedGrid() ) {
+		mLootScreen.draw( mInventory.grid(), *openedGrid(), openedTitle(), equippedWeapon() );
 	} else {
 #ifdef ZF_EDITOR
 		// 積むだけ。すぐ下の HUD の描画（UiRenderer::draw）でまとめて描かれる。
@@ -1008,10 +1029,6 @@ void GameScene::updateInteraction() {
 	// 漁れる場所は、開けるまで待ってから中を見る画面を開く（R3_Plan.txt 5 章）。
 	if ( IInteractable* opened = mInteractor.opened() ) {
 		beginLoot( opened );
-	}
-	// 脱出の車は、給油し終えるまで待ってからガソリンを入れる（FuelEscapeLoading_Plan.txt Q4）。
-	if ( IInteractable* used = mInteractor.timedUse() ) {
-		beginRefuel( used );
 	}
 	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）。
 	mWorld.interaction().removeTakenPickups();

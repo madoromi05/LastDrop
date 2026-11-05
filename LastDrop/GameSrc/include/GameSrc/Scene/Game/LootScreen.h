@@ -19,7 +19,8 @@ public:
 	explicit LootScreen( UiRenderer* renderer );
 
 	// 開くたびに、場所の中身の左上を選んだ状態から見せる（F を押せばすぐカバンへ移せるように）。
-	void open();
+	// lootRule: 右のマス目に入れてよい物（漁れる場所は Free・脱出の車の給油口は FuelOnly）。
+	void open( GridRule lootRule );
 	// ESC：持ち上げている途中なら取りやめて true。何もしていなければ false（本編が閉じる）。
 	bool back();
 	// 入力を読んで選ぶ・動かす。開いている間、1回の描画につき1回（本編の beginFrame で）。どれも nullptr 不可。

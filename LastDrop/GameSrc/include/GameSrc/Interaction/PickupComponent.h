@@ -33,7 +33,6 @@ public:
 	bool offeredStack( ItemStack* out ) const override;
 	void takeOffered( int count ) override;
 	ItemGrid* lootGrid() override { return nullptr; } // 拾う物は中を見せない
-	float useSeconds() const override { return 0.f; } // 拾う物は待たない（カバンの画面を開く）
 
 private:
 	ItemComponent* mItem;

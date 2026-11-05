@@ -42,7 +42,7 @@ public:
 	// interactable（Interactor::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）。
 	// 漁れる場所でなければ nullptr。
 	LootContainerComponent* findContainer( const IInteractable* interactable );
-	// interactable（Interactor::timedUse が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr。
+	// interactable（Interactor::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr。
 	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );
 	// ── F6 の確認用（Loot の欄。R3_Plan.txt Q13）──
 	// 全部の漁れる場所の中身を決め直し、まだ開けていない形に戻す。seed: 乱数の種。

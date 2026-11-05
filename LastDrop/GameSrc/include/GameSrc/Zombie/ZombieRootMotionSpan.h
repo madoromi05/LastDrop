@@ -47,7 +47,6 @@ public:
 
 	bool isActive() const;                        // 区間の中か
 	const GameLib::Math::Vector3& anchor() const; // 区間を始めた所（ワールド）。区間の中だけ意味がある
-	// 絵の根（メッシュを置く所。ワールド）。footing ＋ ずれ。
 	GameLib::Math::Vector3 meshRoot( const GameLib::Math::Vector3& footing ) const;
 
 private:

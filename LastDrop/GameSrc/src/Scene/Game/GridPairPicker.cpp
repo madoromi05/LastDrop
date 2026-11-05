@@ -60,6 +60,10 @@ ItemGrid* GridPairPicker::gridOf( ItemGrid* left, ItemGrid* right, Side side ) c
 	return ( side == Side::Left ) ? left : right;
 }
 
+void GridPairPicker::setRightRule( GridRule rule ) {
+	mRightRule = rule;
+}
+
 GridRule GridPairPicker::ruleOf( Side side ) const {
 	return ( side == Side::Left ) ? mLeftRule : mRightRule;
 }
