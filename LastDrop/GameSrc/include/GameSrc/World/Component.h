@@ -20,7 +20,11 @@ class GameObject;
 // ・onDestroy：外される・物が消える時（GameObjectWorld::flush の中）に 1 回。借りている物を手放す
 class Component{
 public:
-	virtual ~Component(){}
+	Component() = default;
+	// コピーしない（部品は自分や隣の部品のポインタを覚えるので、写すと元の部品を指したままになる。CharacterMover( this ) など）。
+	Component( const Component& ) = delete;
+	Component& operator=( const Component& ) = delete;
+	virtual ~Component() = default;
 	// 付いている物（GameObject::addComponent の後から使える）。
 	GameObject* gameObject() const { return mGameObject; }
 	// 同じ物に付いている T の部品（無ければ nullptr）。定義は GameObject.h（GameObject の中身が要るため）。任意の部品はこれで引く。

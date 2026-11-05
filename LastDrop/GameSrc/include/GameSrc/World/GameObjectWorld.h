@@ -17,13 +17,13 @@ class HitWorld;
 //   載せる名簿（CollisionWorld・HitWorld）は作るときに自分で置く
 // ・create：物を作って持つ（まだ動かない）。部品を addComponent で付ける
 // ・spawn：全部の部品の awake → 全部の start を呼び、名簿へ載る部品（IWorldMember）を当たり判定の名簿へ載せ、段の並びへ入れて動かし始める
-// ・update( 段 )：その段の部品の update を、作った順に呼ぶ（段の順は GameWorld::update が決める）
+// ・update( 段 )：その段の部品の update を、並びに載った順に呼ぶ（spawn した順。spawn の後に付けた部品は、付けた時に最後へ入る）（段の順は GameWorld::update が決める）
 // ・destroyLater：消す印を付けるだけ。removeComponentLater（部品を外す印）も同じ
 // ・flush：印の付いた部品・物の onDestroy を呼び、名簿から外して消す。ティックの最後に1回呼ぶ
 //   update の途中（ゾンビ同士の判定・名簿をたどっている最中など）で相手が消えて、ほかの人の持つポインタや名簿の中身が
 //   消えた物を指すのを防ぐため。消えるのは必ず flush の中だけ。
 // ・find：名簿から返ってきた基底のポインタ（IHittable* など）が、どの物の部品かを探す
-// ・forEach< T >：T の部品を持つ物を全部、作った順に。速くするため、部品の種類ごとに「その部品を持つ物の並び」も持つ
+// ・forEach< T >：T の部品を持つ物を全部、並びに載った順に（spawn した順。spawn の後に付けた部品は付けた時）。速くするため、部品の種類ごとに「その部品を持つ物の並び」も持つ
 // 名簿（CollisionWorld・HitWorld）はこの持ち主より長く生きていること（シーンでは名簿を先に宣言する）。
 class GameObjectWorld{
 public:
@@ -49,7 +49,7 @@ public:
 	// 物を作って持つ（画像の obj_manager.Register( "AK47" )）。返すポインタは flush で消えるまで使える。
 	// name: 確認用の名前（写して持つ。nullptr 不可）。部品を付け終えたら spawn する。
 	GameObject* create( GameObjectTag tag, const char* name );
-	// create した物を動かし始める。updatePhase の段の並びに、作った順で入る。たどっている最中には呼ばない（並びが動く）。
+	// create した物を動かし始める。updatePhase の段の並びに、spawn した順で入る。たどっている最中には呼ばない（並びが動く）。
 	void spawn( GameObject* object );
 	// phase の段の部品の update を、spawn した順に呼ぶ。たどっている間に destroyLater・removeComponentLater はしてよい（印だけ）。
 	// spawn・部品を付けることはしないこと。
@@ -61,7 +61,7 @@ public:
 	// onDestroy の中で spawn・部品を付けることはしないこと（ASSERT で止める）。
 	void flush();
 
-	// T の部品を持つ物を、作った順に全部たどり、function( T& ) を呼ぶ。
+	// T の部品を持つ物を、並びに載った順（spawn した順。spawn の後に付けた部品は付けた時）に全部たどり、function( T& ) を呼ぶ。
 	// たどっている間に destroyLater はしてよい（印だけ）。spawn はしないこと。
 	template< class T, class Function >
 	void forEach( Function function ){
@@ -157,7 +157,7 @@ private:
 	SharedShelf mShelf;                                      // 世界に 1 つの物（部品が shared で引く）
 	std::vector< std::unique_ptr< GameObject > > mObjects;   // 作った順
 	std::unordered_map< unsigned, GameObject* > mObjectsById; // GameObjectHandle が引く
-	std::vector< std::vector< GameObject* > > mObjectsByType; // 部品の種類の番号で引く。中は作った順（spawn した物だけ）
+	std::vector< std::vector< GameObject* > > mObjectsByType; // 部品の種類の番号で引く。中は並びに載った順（spawn した物だけ。spawn の後に付けた部品は付けた時に最後へ入る）
 	std::vector< Component* > mPhaseComponents[ kUpdatePhaseNumber ]; // 段ごとの部品。中は spawn した順（None の段は使わない）
 	std::vector< const GameObject* > mPendingDestroy;        // 次の flush で消す物
 	std::vector< GameObject* > mPendingRemoval;              // 次の flush で外す部品を持つ物

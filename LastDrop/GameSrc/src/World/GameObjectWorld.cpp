@@ -46,13 +46,16 @@ void GameObjectWorld::spawn( GameObject* object ) {
 	ASSERT( mIterationDepth == 0 && "GameObjectWorld : spawn while iterating." );
 	// 全部の部品の awake（自分の持ち物を作る）を済ませてから start（隣の部品が作った物を借りる）を呼ぶ。こうすると付けた順に関係しない。
 	// 名簿へ載せるのはその後（載せた途端に当たり判定を聞かれるため）。
-	for ( int i = 0; i < object->componentNumber(); ++i ) {
+	// awake・start の中で部品を付けると、その部品の awake が飛ばされる（start の周に入ってから付いた物は start だけ呼ばれる）ので止める。
+	const int attachedNumber = object->componentNumber();
+	for ( int i = 0; i < attachedNumber; ++i ) {
 		object->componentAt( i )->awake();
 	}
-	for ( int i = 0; i < object->componentNumber(); ++i ) {
+	for ( int i = 0; i < attachedNumber; ++i ) {
 		object->componentAt( i )->start();
 	}
-	for ( int i = 0; i < object->componentNumber(); ++i ) {
+	ASSERT( object->componentNumber() == attachedNumber && "GameObjectWorld : addComponent inside awake/start." );
+	for ( int i = 0; i < attachedNumber; ++i ) {
 		attach( object, i );
 	}
 	object->markSpawned();

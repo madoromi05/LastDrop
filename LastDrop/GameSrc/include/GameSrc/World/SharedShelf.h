@@ -2,6 +2,7 @@
 #define INCLUDED_SHARED_SHELF_H
 
 #include "GameLib/GameLib.h"
+#include <atomic>
 #include <vector>
 
 // 世界に 1 つの物（当たり判定の名簿・町の床の形・ゾンビ全員で共有するティックの周り）を置いておく棚
@@ -32,9 +33,10 @@ public:
 
 private:
 	// 型の番号（ComponentTypeId と同じ作り。番号は初めて使ったときに振るので、保存しないこと）。
+	// 数える所は atomic にする（別スレッドで同時に初めて使われても番号が重ならないように）。
 	static int nextTypeId(){
-		static int counter = 0;
-		return counter++;
+		static std::atomic< int > counter{ 0 };
+		return counter.fetch_add( 1 );
 	}
 	template< class T >
 	static int typeId(){

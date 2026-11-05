@@ -39,6 +39,8 @@ void ZombieStateComponent::start() {
 	mRootSpan = &rootMotion->span();
 	mAnimations = &rootMotion->animations();
 	requireComponent< CharacterColliderComponent >()->setShape( this ); // 移動の当たり判定の形はここが答える
+	// collider に自分を覚えさせたので、自分にも外せない印を付ける（requireComponent で引いた側にしか印が付かないため）。
+	requireComponent< ZombieStateComponent >();
 }
 
 ZombieStateComponent::State ZombieStateComponent::state() const {

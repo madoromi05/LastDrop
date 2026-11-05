@@ -33,7 +33,7 @@ public:
 	GameObject& operator=( const GameObject& ) = delete;
 
 	// T の部品を args で作って付け、借りるポインタを返す（画像の AddComponent< ModelComponent >()）。同じ種類の部品はもう付いていないこと。
-	// spawn した後に付けたなら、すぐ awake・start し、名簿・段の並びへ載せる。
+	// spawn した後に付けたなら、すぐ awake・start し、名簿・段の並びへ載せる。spawn の中（部品の awake・start）では付けないこと（ASSERT）。
 	template< class T, class... Args >
 	T* addComponent( Args&&... args ){
 		static_assert( std::is_base_of< Component, T >::value, "GameObject : T must be a Component." );
