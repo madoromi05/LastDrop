@@ -3,10 +3,18 @@
 #include "GameSrc/Zombie/ZombieChaseComponent.h"
 #include "GameSrc/Zombie/ZombieDismemberComponent.h"
 #include "GameSrc/Zombie/ZombieRootMotionComponent.h"
+#include "GameSrc/Zombie/ZombieHealthComponent.h"
 #include "GameSrc/Zombie/ChaseTarget.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/World/GameObject.h"
+
+using GameLib::Math::Vector3;
+
+namespace{
+	// 噛むときに首・背骨を突き出す向き（骨格の根の空間で前。押し方は ZombieFlinch::lunge）。噛むアニメが無いので顔を相手へ近づける。
+	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
+}
 
 ZombieAttackComponent::ZombieAttackComponent() :
 	mPosition( nullptr ),
@@ -37,11 +45,12 @@ bool ZombieAttackComponent::tryStart( const ChaseTarget* target ) {
 		return false;
 	}
 	mLocomotion->clearPath();
-	mAttack.start();
 	if ( mState->isCrawling() ) {
-		// 攻撃のアニメは流さない（倒れた姿勢のまま、腕を前へ伸ばす）。段階はアニメと同じ時間割の時計で進める（update）。
+		// 攻撃のアニメは流さない（倒れた姿勢のまま、腕を前へ伸ばす）。段階は自分の時計で進める（update）。
+		mAttack.startSwing();
 		return true;
 	}
+	mAttack.start();
 	mAnimations->playAttack( mPosition ); // 終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）
 	return true;
 }
@@ -52,7 +61,7 @@ void ZombieAttackComponent::approach( const ChaseTarget* target ) {
 	}
 	mLocomotion->turnToward( mState->bodyCenter(), target->position, mState->posture(), mAngleY );
 	// 寄る距離は、踏み込む前の足元（根の動きのアンカー＝bodyCenter）から測る。寄るのもアンカーごと（踏み込みは別に足す）。
-	if ( mAttack.phase() == ZombieAttack::Phase::Swing ) {
+	if ( mAttack.phase() == ZombieAttack::Phase::Reach ) {
 		float distance = ZombieAttackReach::approachStep( mState->bodyCenter(), target->position );
 		if ( distance > 0.f ) {
 			mRootSpan->moveFooting( mLocomotion->walkStep( distance, *mAngleY ), mPosition ); // 相手の体・銃の箱に当たったら、そこで止まる
@@ -65,11 +74,19 @@ void ZombieAttackComponent::approach( const ChaseTarget* target ) {
 void ZombieAttackComponent::update( const ChaseTarget* target ) {
 	bool wasActive = mAttack.isActive();
 	if ( mState->isCrawling() ) {
-		mAttack.updateWithoutAnimation( mAnimations->attackPeriod(), isTargetInReach( target ) );
+		mAttack.updateWithoutAnimation( isTargetInReach( target ) );
 		return; // 腕を伸ばす・戻すのは ZombieCrawler（ZombieCrawlComponent）。アニメは替えない
 	}
 	mAttack.update( mMesh->animationTime(), mMesh->isAnimationFinished(), isTargetInReach( target ) );
-	if ( wasActive && !mAttack.isActive() ) {
+	if ( mAttack.hitThisTick() ) {
+		// のけぞりの部品は外せるので、使うたびに引く（外されていれば首を突き出さずに噛む）。
+		if ( ZombieHealthComponent* health = getComponent< ZombieHealthComponent >() ) {
+			health->flinch().lunge( kBiteLungeDirection );
+		}
+	}
+	if ( mAttack.isActive() ) {
+		mMesh->setPlaybackRate( mAttack.playbackRate() ); // つかんでいる間だけゆっくり（アニメを替えれば速さは 1 へ戻る）
+	} else if ( wasActive ) {
 		mAnimations->returnToLocomotion( mPosition ); // 攻撃のアニメの最後（元の立ち姿）から、立つアニメへ戻す
 	}
 }
@@ -85,6 +102,14 @@ bool ZombieAttackComponent::isActive() const {
 // 攻撃は立っている体と、体を引きずっている体だけがする（倒れ始めたら cancel 済み）。
 bool ZombieAttackComponent::isAttacking() const {
 	return mState->isAlive() && mAttack.isAttacking();
+}
+
+bool ZombieAttackComponent::isHoldingTarget() const {
+	return mState->isAlive() && mAttack.isHolding();
+}
+
+bool ZombieAttackComponent::grabbedTargetThisTick() const {
+	return mState->isAlive() && mAttack.grabbedThisTick();
 }
 
 bool ZombieAttackComponent::hitTargetThisTick() const {

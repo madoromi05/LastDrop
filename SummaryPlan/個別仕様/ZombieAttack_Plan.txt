@@ -189,3 +189,31 @@
  影・F4 の観察カメラでも頭が出る。一人称の画面に顔の内側や髪が映ったら、F6 の eyeForward で目を前へ出して直す。
 
  ビルドは Debug・Release とも通過。画面での確認はまだ。
+
+================================================================================
+ 9. 2026-11-05 引っかきをやめて、つかむ → 噛むへ戻した
+================================================================================
+ ユーザー依頼「ゾンビの攻撃を噛みつきに戻したい」。
+ ユーザーの決定：全部戻す（つかむ → 噛む → 離す・つかまれている間は動けない・視点がゾンビの顔へ向く・撃って振りほどく）／
+   這うゾンビは今のまま（足元へ腕を伸ばして 1 回当てる。つかまない）。
+
+ 立っている体（3 章の値のまま。atack3）
+   つかむ時刻 45・噛む時刻 88・つかんでいる間は 1.2 秒かけてゆっくり流す・噛み 20・振りほどき 60（胴 2 発・頭 1 発）
+   噛むときは首 40°・背骨 12° を前へ突き出す（ZombieFlinch::lunge）
+   始める間合い 1.6m・向き 30°・つかめる 1.6m／45°・待ち 2 秒・一度に攻撃するのは 1 体・離された後 1 秒はつかまない
+ 這う体（8 章の時間割のまま。アニメの代わりの時計）
+   当たる時刻 28・終わり 60（atack1 の長さを定数にした。攻撃のアニメが atack3 になっても変わらないように）
+ 自キャラ：つかまれている間は WASD・走るが効かない（撃つ・覗く・視点はできる）。つかまれた瞬間に 0.25 秒で顔へ向き、絵が少し揺れる
+ 音：つかむ＝ cloth_rustle、噛む＝ hit_flesh を音程 0.8
+
+ 今の形（コンポーネント）への置き場所
+   ZombieAttack            段階 Ready / Reach / Hold / Swing（這う体） / Recover。start（立つ）と startSwing（這う）
+   ZombieAttackComponent   つかんでいる間の再生の速さ・噛んだら首を突き出す・isHoldingTarget / grabbedTargetThisTick
+   ZombieHealthComponent   撃たれた量を takeShakeDamage へ渡し、振りほどかれたらよろける（ZombieDamageReaction::ShakeOff）
+   PlayerComponent         setHeld / canBeGrabbed（離された後 1 秒）・つかまれている間は動かない
+   GameWorld               attackable に canBeGrabbed を足す・Think の後につかんでいる体が居るかを setHeld へ
+   CombatResolver          ZombieAttackEvent に Kind（Grab / Hit）
+   GameScene・FirstPersonControl  Grab で lookToward と shakeOnGrab、Hit で flinch と赤み
+   ZombieAnimationSet::attackPeriod は使わなくなったので消した
+
+ ビルドは Debug・Release・Profile とも通過。画面での確認はまだ。

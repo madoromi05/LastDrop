@@ -9,7 +9,7 @@ struct RaidParams{
 	// ── ガソリンの数（FuelEscapeLoading_Plan.txt Q3。数を変えるときはここだけ直す）──
 	// 出撃の始めにしか効かないので F6 には出さない（Tuning は小数だけ）。
 	int requiredFuel = 1;  // 脱出に要るガソリンの数（脱出の車 1 台に入れる数。1 以上）
-	int fuelCanCount = 3;  // 町に置くガソリンの数（漁れる場所の箱に 1 個ずつ入れる。箱の数より多くはできない＝ASSERT）
+	int fuelCanCount = 2;  // 町に置くガソリンの数（漁れる場所の箱に 1 個ずつ入れる。箱の数より多くはできない＝ASSERT）
 
 	// ── 1 日（1 回の出撃）──
 	float raidSeconds = 600.f;       // 1 日の長さ（秒。RaidLoop Q4 の 10 分）。0 になったら行方不明

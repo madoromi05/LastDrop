@@ -136,13 +136,21 @@ void CombatResolver::makeLootable( const ZombieStateComponent& zombie ) {
 }
 
 void CombatResolver::resolveZombieAttacks( GameObject* player ) {
-	PlayerHealthComponent* playerHealth = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
+	if ( !player ) {
+		return;
+	}
+	PlayerHealthComponent* playerHealth = player->getComponent< PlayerHealthComponent >();
 	mObjects->forEach< ZombieAttackComponent >( [ & ]( const ZombieAttackComponent& attack ) {
+		ZombieAttackEvent event;
+		event.point = attack.getComponent< ZombieStateComponent >()->headPosition();
+		if ( attack.grabbedTargetThisTick() ) {
+			event.kind = ZombieAttackEvent::Kind::Grab;
+			mZombieAttacks.push_back( event );
+		}
 		if ( attack.hitTargetThisTick() && playerHealth ) {
 			// 体力は体全体で 1 つなので、体を引きずって足元から腕を伸ばすゾンビも同じダメージ。
 			playerHealth->applyZombieHit( ZombieAttack::hitDamage() );
-			ZombieAttackEvent event;
-			event.point = attack.getComponent< ZombieStateComponent >()->headPosition();
+			event.kind = ZombieAttackEvent::Kind::Hit;
 			mZombieAttacks.push_back( event );
 		}
 	} );

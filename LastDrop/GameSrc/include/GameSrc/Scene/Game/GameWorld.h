@@ -77,7 +77,7 @@ public:
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
 	// 1ティック進める。段の順（UpdatePhase）：
 	//   Input（自キャラが操作どおりに動く・撃つ）→ 撃ったなら弾を出し、近くのゾンビに銃声を聞かせる → 弾を飛ばし、当たった所を CombatResolver が解決
-	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。腕が当たったら CombatResolver が自キャラの体力を減らす）→
+	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす）→
 	//   Late（銃口が光る）→ 沈み終わった死体と、消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
 	// command / cameraYaw / cameraPitch / inventory: PlayerComponent::setInput へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
 	// viewDirection: 弾を出す向き（長さ1。FirstPersonCamera::weaponDirection）。弾は自キャラの目からこの向きへ飛ぶ

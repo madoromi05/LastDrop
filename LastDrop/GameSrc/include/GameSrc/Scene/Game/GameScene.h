@@ -63,7 +63,7 @@ class EscapeCarComponent;
 //   足音・装備の音                      … PlayerBodySounds
 //   弾がゾンビに当たった音              … ZombieHitSounds
 //   弾が物（建物・地面・車）に当たった音… SurfaceHitSounds
-//   ゾンビの腕が当たった音              … ZombieAttackSounds
+//   ゾンビがつかんだ・噛んだ音          … ZombieAttackSounds
 //   攻撃された・死んだ後の見せ方の量    … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
 //   1 日の時間・脱出点・終わり方        … RaidSession（終わった後に何を残すかは RunRules）
 //   HUD                                 … RaidHud
@@ -152,7 +152,7 @@ private:
 	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
-	// ゾンビの腕が当たった出来事を読み、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
+	// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
 	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
 	void updatePlayerDamage();
 	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、updatePlayerDamage の後）。

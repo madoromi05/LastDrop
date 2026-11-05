@@ -52,12 +52,13 @@ public:
 private:
 	void startFalling();      // 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする
 	void startDowned();       // 前へ倒れるアニメ（無ければ死亡アニメ）へ繋ぎ、Downed にする（倒れたまま生きている）
-	// 倒れ始めた（脚を失って倒れたときも）。腕を振っていたらやめ、移動の名簿から外れる。
+	// 倒れ始めた（脚を失って倒れたときも）。攻撃していたらやめ（つかんでいたら離し）、移動の名簿から外れる。
 	void stopActing();
 	// part が 0 になっていて、まだあれば切る（見た目から消して切れた部位を覚えるのは ZombieDismemberment、部位の箱を外すのはここ）。
 	void severIfBroken( BodyPart part );
 	bool canStagger( BodyPart part ) const;
 	void startStagger();      // よろけのアニメへ繋ぐ
+	void shakeOff();          // 振りほどかれた（攻撃はもう Ready）。よろけて手を放す
 
 	GameLib::Math::Random mRandom;
 	ZombieHealth mHealth;

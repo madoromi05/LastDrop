@@ -18,6 +18,8 @@ namespace{
 	const float kDecayPerTick = Math::pow( kRemainAfterReturn, 1.f / ( kReturnSeconds * GameTime::kTicksPerSecond ) );
 	// これより小さい角度（度）は 0 とみなして曲げない（戻りきった後に毎回計算しないため）。
 	const float kNegligibleDegree = 0.1f;
+	// 噛むときに首を押す回数（1 回 20°なので 2 回で 40°。背骨は 1 回）。
+	const int kLungeHeadPushes = 2;
 }
 
 ZombieFlinch::ZombieFlinch( const ZombieFlinchLayout* layout ) :
@@ -34,6 +36,13 @@ void ZombieFlinch::push( BodyPart part, const Vector3& direction ) {
 	if ( degree > kMaxDegree ) {
 		pushed *= kMaxDegree / degree;
 	}
+}
+
+void ZombieFlinch::lunge( const Vector3& rootDirection ) {
+	for ( int i = 0; i < kLungeHeadPushes; ++i ) {
+		push( BodyPart::Head, rootDirection );
+	}
+	push( BodyPart::Torso, rootDirection );
 }
 
 void ZombieFlinch::update() {

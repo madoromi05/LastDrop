@@ -21,7 +21,7 @@ namespace{
 	// 距離は始める間合いと同じ（銃の箱にぶつかって寄れなかったときも、手は銃・腕に届いている）。
 	const float kHitReachDistance = kAttackStartDistance;
 	const float kHitHalfAngle = 45.f;
-	// 腕を振っている間に寄る距離（m）。手は足元から 0.86m 前へ出るので、止まる距離（1.2m）のままだと相手に届かない。
+	// 手を伸ばしている間に寄る距離（m）。手は足元から 0.8m 前へ出るので、止まる距離（1.2m）のままだと相手に届かない。
 	const float kHitCloseDistance = 0.9f;
 	// 寄る速さ（m/ティック）。0.3m を 0.5 秒で（振り下ろす約 0.47 秒の間にほぼ寄り終える）。
 	const float kReachApproachSpeed = 0.6f / GameTime::kTicksPerSecond;

@@ -40,6 +40,14 @@ public:
 	// ぶれを決めるのに要る今の状態（持っているか・覗き具合・歩きの速さと位相・抱えている割合・体力が Danger か）。update の後に呼ぶ。
 	AimSwayBody aimSwayBody() const;
 
+	// ── ゾンビにつかまれている間（SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）──
+	// つかまれているか。GameWorld がゾンビを動かした後に 1 ティックに 1 回呼ぶ（次の update から動けなくなる・動けるようになる）。
+	// つかまれている間も、撃つ・覗く・視点を回すはできる（撃って振りほどく）。
+	void setHeld( bool held );
+	bool isHeld() const;
+	// つかんでよいか（つかまれていない・離されてから少したった）。続けてつかまれて抜け出せなくならないように。生きているかは呼ぶ側が見る。
+	bool canBeGrabbed() const;
+
 	// Component（必須の部品が要る。awake で見た目の形から移動の当たり判定の大きさを求める）
 	UpdatePhase updatePhase() const override;
 	void awake() override;
@@ -49,7 +57,7 @@ public:
 	BoxCollider collider() const override;
 
 private:
-	// 今できない操作を外した操作（死んだら何もしない）。
+	// 今できない操作を外した操作（死んだら何もしない・つかまれていたら動かない）。
 	PlayerCommand allowedCommand( const PlayerCommand& command ) const;
 	// 撃てる状態で引き金を引いているかを、手に持った銃へ伝える（画像の PlayerComponent::Fire。持つ部品はここで引く）。
 	void fire( bool canFire, bool triggerHeld );
@@ -59,6 +67,8 @@ private:
 	float mCameraYaw;
 	float mCameraPitch;
 	Inventory* mInventory;
+	bool mHeld;             // ゾンビにつかまれているか（setHeld）
+	int mGrabCooldownTicks; // 離されてから、またつかまれるようになるまでの残り（ティック）
 	// ── 同じ物の必須の部品（start で借りる）──
 	TransformComponent* mTransform;
 	SkinnedModelComponent* mModel;

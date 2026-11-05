@@ -53,8 +53,8 @@ namespace{
 	const char* kZombieStaggerAnimation = "gethit";
 	// 気付く前・追いついた・見失って探し終えたときに立つアニメ（同じく extra_animations）。
 	const char* kZombieIdleAnimation = "idle1";
-	// 追いついたら、腕で引っかく攻撃のアニメ（同じく extra_animations。右手を振り上げて振り下ろす）。
-	const char* kZombieAttackAnimation = "atack1";
+	// 追いついたら、つかんで噛む攻撃のアニメ（同じく extra_animations。両手を前へ伸ばしてつかみ、止まって元へ戻る）。
+	const char* kZombieAttackAnimation = "atack3";
 
 	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）。
 	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所。
@@ -268,7 +268,8 @@ void GameWorld::updateZombies() {
 		const PlayerHealthComponent* health = mPlayer->getComponent< PlayerHealthComponent >();
 		mChaseTarget.position = mPlayer->getComponent< TransformComponent >()->position();
 		mChaseTarget.eyePosition = mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition();
-		mChaseTarget.attackable = !health || health->canBeAttacked(); // 体力の部品を外した自キャラ（死なない）も襲う
+		// 体力の部品を外した自キャラ（死なない）も襲う。つかまれている間・離された直後は、ほかのゾンビもつかまない。
+		mChaseTarget.attackable = ( !health || health->canBeAttacked() ) && mPlayer->getComponent< PlayerComponent >()->canBeGrabbed();
 		mChaseTarget.attackTaken = false; // 体ごとに決め直す（ZombieBrainComponent::update）
 		mChaseTarget.body = playerBody();
 		mZombieContext.target = &mChaseTarget;
@@ -290,6 +291,14 @@ void GameWorld::updateZombies() {
 	} );
 	mObjects.update( UpdatePhase::Think );
 	mCombat.resolveZombieAttacks( mPlayer );
+	// つかんでいるゾンビが倒れた・振りほどかれた・噛み終えたら、次の update から動ける。
+	if ( mPlayer ) {
+		bool held = false;
+		mObjects.forEach< ZombieAttackComponent >( [ &held ]( const ZombieAttackComponent& attack ) {
+			held = held || attack.isHoldingTarget();
+		} );
+		mPlayer->getComponent< PlayerComponent >()->setHeld( held );
+	}
 	// 沈み終わった死体は、全員の更新が済んでから消す（update の flush）。
 	mObjects.forEach< ZombieCorpseComponent >( [ this ]( const ZombieCorpseComponent& corpse ) {
 		if ( corpse.isGone() ) {

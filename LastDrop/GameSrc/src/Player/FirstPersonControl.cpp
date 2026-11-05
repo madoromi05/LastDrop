@@ -4,6 +4,7 @@
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Core/GameSettings.h"
 #include "GameSrc/Math/ScalarMath.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "Framework.h"
 
 #include "GameLib/GameLib.h"
@@ -51,7 +52,12 @@ namespace{
 	const float kFireTrauma = 0.12f;
 	const float kFireTraumaLimit = 0.45f;
 	const float kZombieHitTrauma = 0.8f;
+	const float kGrabTrauma = 0.35f; // つかまれた瞬間（噛まれたときより弱く）
 	const float kTraumaFull = 1.f;
+
+	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
+	const float kLookPullSeconds = 0.25f;
+	const int kLookPullTicks = GameTime::secondsToTicks( kLookPullSeconds );
 
 	// 揺れ方・ぶれ方を遊ぶたびに変える種（起動からの時間）。部品ごとに足す数を変えて、同じ並びにならないようにする。
 	int timeSeed( int salt ) {
@@ -74,6 +80,9 @@ FirstPersonControl::FirstPersonControl( float startYaw, const GameSettings* sett
 	mShake( timeSeed( kShakeSalt ) ),
 	mPendingLookYaw( 0.f ),
 	mPendingLookPitch( 0.f ),
+	mPullYaw( 0.f ),
+	mPullPitch( 0.f ),
+	mPullTicks( 0 ),
 	mFireSuppressed( true ),
 	mEyeDrop( 0.f ) {
 	ASSERT( mSettings && "FirstPersonControl : settings is null." );
@@ -198,6 +207,36 @@ void FirstPersonControl::updateViewEffects( float shotRecoil, const AimSwayBody&
 void FirstPersonControl::flinch() {
 	mAimPunch.punch();
 	mShake.addTrauma( kZombieHitTrauma, kTraumaFull );
+}
+
+void FirstPersonControl::shakeOnGrab() {
+	mShake.addTrauma( kGrabTrauma, kTraumaFull );
+}
+
+void FirstPersonControl::lookToward( const Vector3& target ) {
+	Vector3 toTarget;
+	toTarget.setSub( target, mCamera.eyePosition() );
+	float flat = Math::sqrt( toTarget.x * toTarget.x + toTarget.z * toTarget.z );
+	// ヨーは 0 で +Z を向き、左回りが正（FirstPersonCamera）。ピッチは見下ろしが正なので、下にある相手は正。
+	float yaw = AngleMath::headingOf( toTarget );
+	float pitch = Math::atan2( -toTarget.y, flat );
+	mPullYaw = AngleMath::difference( yaw, mCamera.yaw() );
+	mPullPitch = pitch - mCamera.pitch();
+	mPullTicks = kLookPullTicks;
+}
+
+void FirstPersonControl::updateLookPull() {
+	if ( mPullTicks <= 0 ) {
+		return;
+	}
+	// 残りを残りのティック数で割って回す（等速。最後のティックで残りを全部回し切る）。
+	float share = 1.f / static_cast< float >( mPullTicks );
+	float yawStep = mPullYaw * share;
+	float pitchStep = mPullPitch * share;
+	mCamera.rotate( yawStep, pitchStep );
+	mPullYaw -= yawStep;
+	mPullPitch -= pitchStep;
+	--mPullTicks;
 }
 
 void FirstPersonControl::placeCamera( const Vector3* eye, float aimWeight ) {

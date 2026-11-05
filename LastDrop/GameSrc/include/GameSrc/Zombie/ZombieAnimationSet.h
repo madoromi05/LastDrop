@@ -24,7 +24,7 @@ struct ZombieAnimationNames{
 	// 倒れたまま動かない（仰向けに倒れるアニメでは引きずれないため）。
 	const char* downed;
 	const char* stagger; // よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
-	// 腕で引っかく攻撃のアニメ（atack1）。nullptr なら攻撃しない（追いついても立って待つだけ）
+	// つかんで噛む攻撃のアニメ（atack3）。nullptr なら攻撃しない（追いついても立って待つだけ）
 	const char* attack;
 };
 
@@ -59,7 +59,6 @@ public:
 	float walkDistanceThisTick() const;
 	// 前へ倒れるアニメ（playDowned）が倒れ終わったか（ここから後は腰が動かない）。
 	bool hasFinishedDownedFall() const;
-	float attackPeriod() const; // 攻撃のアニメの長さ（フレーム。攻撃のアニメを流さない体が、代わりの時計の終わりに使う）
 
 	// そのアニメがあるか（Names の nullptr・見つからなかった名前なら false）。
 	bool canWalk() const;       // 歩くアニメがある（追ってくる体。T ポーズの確認用ではない）

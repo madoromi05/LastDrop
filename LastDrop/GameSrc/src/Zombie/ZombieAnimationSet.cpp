@@ -132,10 +132,6 @@ bool ZombieAnimationSet::hasFinishedDownedFall() const {
 	return mMesh->isAnimationFinished() || mMesh->animationTime() >= kDownedFallEndTime;
 }
 
-float ZombieAnimationSet::attackPeriod() const {
-	return mAttack.period();
-}
-
 bool ZombieAnimationSet::canWalk() const {
 	return static_cast< bool >( mMove );
 }

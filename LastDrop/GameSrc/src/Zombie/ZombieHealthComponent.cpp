@@ -55,7 +55,10 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	if ( !mState->isAlive() ) {
 		return;
 	}
+	// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）。
+	float totalBefore = mHealth.total();
 	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
+	float dealt = totalBefore - mHealth.total();
 	mLocomotion->alert(); // 撃たれたら、見えていなくても気付く
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。
 	mFlinch->push( damage.part, mMesh->toRootDirection( damage.direction ) );
@@ -67,7 +70,8 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	facts.isDead = mHealth.isDead();
 	facts.isStanding = ( mState->state() == ZombieStateComponent::State::Alive );
 	facts.hasLostFooting = mDismemberment->hasLostFooting();
-	const ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >(); // 外せる部品なので、使うたびに引く
+	ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >(); // 外せる部品なので、使うたびに引く
+	// isAttacking は振りほどきを数える前に読むが、数えて値が変わるのは振りほどかれたとき（よろけを選ばない）だけなので同じ答えになる。
 	facts.isAttacking = attack && attack->isActive();
 	facts.canStagger = canStagger( damage.part );
 	switch ( ZombieDamageReaction::chooseFall( facts ) ) {
@@ -75,8 +79,10 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 		case ZombieDamageReaction::Fall::Down: startDowned(); return;
 		case ZombieDamageReaction::Fall::None: break;
 	}
-	switch ( ZombieDamageReaction::chooseHit( facts ) ) {
+	bool shakenOff = attack && attack->attack().takeShakeDamage( dealt ); // 倒れる 1 発では数えない
+	switch ( ZombieDamageReaction::chooseHit( facts, shakenOff ) ) {
 		case ZombieDamageReaction::Hit::Stagger: startStagger(); break;
+		case ZombieDamageReaction::Hit::ShakeOff: shakeOff(); break;
 		case ZombieDamageReaction::Hit::None: break;
 	}
 }
@@ -110,7 +116,7 @@ void ZombieHealthComponent::startDowned() {
 
 void ZombieHealthComponent::stopActing() {
 	if ( ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >() ) {
-		attack->cancel(); // 腕を振っていたらやめる
+		attack->cancel(); // 攻撃していたらやめる（つかんでいたら離す）
 	}
 	mStagger.cancel();
 	// 移動の名簿から外す（死体の上を歩ける）。命中の名簿には消えるまで残す（死体も弾を止める）。
@@ -125,6 +131,15 @@ bool ZombieHealthComponent::canStagger( BodyPart part ) const {
 void ZombieHealthComponent::startStagger() {
 	mAnimations->playStagger( mPosition );
 	mStagger.start();
+}
+
+void ZombieHealthComponent::shakeOff() {
+	// 離すときは、よろけて手を放す（よろけのアニメが無ければ、立つアニメへ戻すだけ）。よろけの間あけは待たない。
+	if ( mAnimations->hasStagger() ) {
+		startStagger();
+	} else {
+		mAnimations->returnToLocomotion( mPosition );
+	}
 }
 
 void ZombieHealthComponent::updateStagger() {

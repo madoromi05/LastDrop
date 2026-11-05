@@ -55,14 +55,21 @@ public:
 	const PlayerCommand& command() const;
 	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ。
 	void consumePressed();
-	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・ゾンビの腕が当たった怯み）と、見える絵の揺れ、
+	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・噛まれた怯み）と、見える絵の揺れ、
 	// 照準のぶれ（銃と弾の向きだけ。AimSway）を進めてカメラへ渡す。
-	// 1ティックに1回、キャラを動かした後（flinch の後）に呼ぶ。
+	// 1ティックに1回、キャラを動かした後（flinch・shakeOnGrab の後）に呼ぶ。
 	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0。
 	// body: 自キャラの今の状態（PlayerCharacter::aimSwayBody。自キャラがいなければ既定のまま＝ぶれない）。
 	void updateViewEffects( float shotRecoil, const AimSwayBody& body );
-	// ゾンビの腕が当たった瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
+	// 噛まれた（這うゾンビの腕が当たった）瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
 	void flinch();
+	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）。
+	void shakeOnGrab();
+	// 視点を target（ワールド座標）の方へ、決まった時間をかけて向け始める（ゾンビにつかまれた瞬間に、その顔を見る）。
+	// 向けている間もマウスで回せる（回した分はそのまま足される）。続けて呼ぶと、その時点の向きから向け直す。
+	void lookToward( const GameLib::Math::Vector3& target );
+	// lookToward の向きへ1ティックぶん回す。1ティックに1回、キャラを動かした後に呼ぶ。
+	void updateLookPull();
 	// 目の位置から下げる長さ（m。0 以上）。死んだ後に膝から崩れて見せるのに使う。placeCamera で渡された目の位置から引く。
 	void setEyeDrop( float meters );
 
@@ -88,6 +95,10 @@ private:
 	// マウスは描画ごと、ぶれはティックごとに進むので、ためておいて次のティックで使い切る。
 	float mPendingLookYaw;
 	float mPendingLookPitch;
+	// lookToward で残っている回す量（度）と、残りのティック数（0 なら向けていない）。
+	float mPullYaw;
+	float mPullPitch;
+	int mPullTicks;
 	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
 	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
 	bool mFireSuppressed;

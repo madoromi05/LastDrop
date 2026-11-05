@@ -12,13 +12,13 @@ namespace{
 	// ── 気付く（SummaryPlan/個別仕様/ZombieChase_Plan.txt の 2 章・2026-10-20 の追記）──
 	// 前（向きから左右 kFieldOfViewHalfDegree の内）に居る自キャラは、これより近ければ気付く（m。目から目まで）。
 	// 追っている間は、向き問わずこの距離まで見失わない。
-	const float kFarSightRange = 60.f;
+	const float kFarSightRange = 20.f;
 	// 横・後ろに居る自キャラは、これより近いときだけ気付く（m）。後ろから近づけるように前より短くする。
-	const float kNearSightRange = 20.f;
+	const float kNearSightRange = 10.f;
 	// 前とみなす範囲（度。向きから左右それぞれ）。上下は見ない（水平の向きだけ）。
 	const float kFieldOfViewHalfDegree = 60.f;
 	// 見通しの線を引く間隔（秒）。気付くのがこれだけ遅れてもよい長さ。
-	const float kSightIntervalSeconds = 0.2f;
+	const float kSightIntervalSeconds = 0.3f;
 	const int kSightIntervalTicks = GameTime::secondsToTicks( kSightIntervalSeconds );
 
 	// ── 近づく──
@@ -29,7 +29,7 @@ namespace{
 	// 最後に見た場所・うろつく先にこれより近づいたら着いたとみなす（m）。
 	const float kArriveDistance = 0.5f;
 
-	// ── うろつく（2026-10-20 の追記）──
+	// ── うろつく──
 	// うろつく先の向きの幅（度。今の向きから左右それぞれ）。前寄りにして、行ったり来たりせず少しずつ町を流れていく。
 	const float kWanderHalfAngle = 90.f;
 	// うろつく先までの距離（m）。

@@ -1055,11 +1055,21 @@ bool GameScene::isFreeCameraActive() const {
 }
 
 void GameScene::updatePlayerDamage() {
-	bool hit = !mWorld.combat().zombieAttacksThisTick().empty();
-	if ( hit ) {
-		mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
+	bool hit = false;
+	for ( const CombatResolver::ZombieAttackEvent& event : mWorld.combat().zombieAttacksThisTick() ) {
+		switch ( event.kind ) {
+			case CombatResolver::ZombieAttackEvent::Kind::Grab:
+				mControl.lookToward( event.point ); // つかんだゾンビの顔を見る（その後はマウスで自由に回せる）
+				mControl.shakeOnGrab();
+				break;
+			case CombatResolver::ZombieAttackEvent::Kind::Hit:
+				mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
+				hit = true;
+				break;
+		}
 	}
 	mZombieAttackSounds.play( mWorld.combat().zombieAttacksThisTick() );
+	mControl.updateLookPull(); // 揺れ・反動をカメラへ渡す updateViewEffects より前に
 	const GameObject* player = mWorld.player();
 	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
 	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr; // 外せる部品
