@@ -36,8 +36,8 @@ namespace{
 	const float kWanderMinDistance = 3.f;
 	const float kWanderMaxDistance = 8.f;
 	// 着いてから次を選ぶまで立っている長さ（秒。毎回この間でランダム）。
-	const float kWanderWaitMinSeconds = 2.f;
-	const float kWanderWaitMaxSeconds = 5.f;
+	const float kWanderWaitMinSeconds = 1.f;
+	const float kWanderWaitMaxSeconds = 3.f;
 	// うろつく先を選び直す回数。全部壁に当たったら、もう一度立ってから後ろ向きを基準に選ぶ。
 	const int kWanderPickTries = 4;
 	// うろつく先へ通るかを調べる線の高さ（m。足元から）。歩道の段差（0.15m）には当たらず、車・壁には当たる高さ。

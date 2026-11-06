@@ -1,0 +1,111 @@
+DayCondition_Plan.txt（2026-11-06）
+日ごとの条件（停電の日・霧の日・雨の日・群れの日）。出撃の前にその日の条件を見せて、心の準備をさせる
+
+■ きっかけ
+・ユーザー「日ごとの条件：停電の日（街灯なし・懐中電灯だけ）、霧の日、雨の日（足音が聞こえにくい）、群れの日。
+  出撃前にその日の条件を見せて、心の準備をさせる」を導入したい。
+・考え方は wadajun の日記「ローグライクゲームを面白くするための3つの心得 1/3」のコントラスト
+  （同じ変化は慣れて効かなくなるので、変化に種類を持たせる・山場は一か所にまとめる）。
+  今は 5 日間がどれも同じ夜で、日が進んでも変わる物が無い。
+
+■ 今のコード（2026-11-06 に読んだ所）
+・街灯：TownMap::streetLights（交差点ごとに 1 本）。GameScene が LightingParams::streetLightIntensity などで毎フレーム点光源を作る。
+・霧：LightingParams の fogHalfDistance（40m）・fogGroundDensity・fogHeightHalf。描く距離も DrawCulling::drawDistanceForFog で霧に合わせて縮む。
+  ボリュームフォグ（段階13）もある。
+・足音：GameWorld.cpp の kWalkFootstepHearingRange 5m・kRunFootstepHearingRange 18m。銃声は 40m（ZombieHearing）。
+・湧く数：ZombieSpawner.cpp の kTargetCount 30（定数）。
+・雨：無い。水たまり・濡れた地面の見た目（PuddleParams）はある。雨の粒・雨の音は無い。
+・日：RunState::day()（1〜5。save.xml）。拠点の画面は BaseScene。出撃の始めに「脱出の車：北」を出す仕組み（RaidParams::exitNoticeSeconds）がある。
+・LightingParams などは F6 で動かす調整値なので、条件は「調整値を書き換える」のではなく「使う所で倍率を掛ける」ようにする（F6 の値が正のまま）。
+
+■ タルコフでは（調べた範囲）
+・天気（雨・霧・雲・雪）と時刻は出撃ごとに変わる。雨は音が大きく、0.12.10 で雨の音を 30% 小さくした・
+  アンケートで 66% 以上が雨の音がうるさいと答え、さらに下げると発表。雪は足音がうるさく 0.14 で小さくした。
+・足音の大きさは動く速さと姿勢で変わる。霧で音が変わるという資料は見つからなかった（霧は見えにくさだけ）。
+・出撃の前の画面で、その時の時刻と天気を見られる（出撃の前に心の準備をする形）。
+  → このゲームでは「雨は足音が聞こえにくい（ゾンビにも自分にも）」で、雨の音が大きすぎないように気を付ける。
+・参考：https://www.gamespot.com/articles/escape-from-tarkov-12-10-patch-notes-are-here/1100-6489402/
+        https://insider-gaming.com/escape-from-tarkov-rain-volume-adjust/
+        https://www.techradar.com/gaming/consoles-pc/escape-from-tarkov-update-makes-airdrops-items-found-in-raid-again-and-snow-quieter
+        https://giantbomb.com/wiki/Games/Escape_From_Tarkov
+        https://wada-jun.hatenadiary.com/entry/2023/04/02/142232
+
+■ 4 つの条件（★の案の中身）
+  ふつう  ：今と同じ
+  停電    ：街灯が全部消える。月は今のまま（真っ暗にはしない）。懐中電灯が頼り
+  霧      ：霧が濃い（半分になる距離 40m → 12m）。遠くのゾンビが見えない。描く距離も一緒に縮む
+  雨      ：ゾンビが足音を聞く距離が半分（歩き 5→2.5m・走り 18→9m）。雨の粒・雨の音・地面が濡れる。銃声の 40m は変えない
+  群れ    ：立っているゾンビの目標 30 → 45。補充も早い
+
+Q1 1 日に付く条件の数
+  ★A 1 日に 1 つ
+   B 2 つ重なる日もある（例：停電＋霧）
+
+Q2 どの日に何が出るか
+  ★A 1 日目は必ず「ふつう」（覚える日）。2〜4 日目は停電・霧・雨・群れから重ならないように 1 つずつ。5 日目は必ず「群れ」（最終日に山場をまとめる）
+   B 全部の日をランダム
+   C 毎回同じ順番（固定）
+
+Q3 「その日をやり直す」（ESC → Retry day）で条件は変わるか
+  ★A 変わらない（その 5 日間の始めに 5 日分を決めて save.xml に残す。やり直しで良い条件を引き直せないように）
+   B やり直すたびに引き直す
+
+Q4 見せ方
+  ★A 拠点の画面に「今日：霧の日」と一言の説明（例「遠くが見えない」）。出撃の始めにも「脱出の車：北」と並べて数秒出す
+   B 拠点の画面だけ
+   ※ 明日の条件は見せない（★）。見せると準備の迷いが増えるが、まずは今日だけ
+
+Q5 霧の日はゾンビの見える距離も縮めるか
+  ★A 縮める（自分もゾンビもお互い見えにくい＝霧の中を静かに抜ける選択ができる）
+   B 縮めない（見えにくいのは自分だけ＝怖さだけ増やす）
+
+Q6 雨の日、自分にもゾンビの足音・うめき声が聞こえにくくなるか
+  ★A なる（ゾンビの声の聞こえる距離も少し縮める。お互い様にする）
+   B ならない（ゾンビだけ不利）
+
+Q7 停電の日に他の明かり
+  ★A 街灯だけ消す（脱出の車・ゾンビは今のまま。ほかに光る物は今は無い）
+   B 月も暗くする（ほぼ懐中電灯だけ）
+
+Q8 難しい日のスコアのおまけ
+  ★A 付けない（まず遊んで、難しさの差を見てから）
+   B 群れの日だけ倒した点 ×1.5 など
+
+Q9 雨の絵と音
+  ★A 雨の粒はカメラの周りに細い線を降らせる（自分の周り約 15m だけ）。地面は PuddleParams を濡れ寄りに。
+     雨の音は SoundGen で合成（ループ。うるさすぎないように音量は F6）
+   B 雨は音と濡れた地面だけ（粒は描かない）
+
+■ 作り（★の案のとき）
+・GameSrc/Raid/DayCondition.h：enum class DayCondition { Normal, Blackout, Fog, Rain, Horde }。
+・DayConditionCatalog：条件ごとの効き目を 1 つの表に（ここだけ見れば何が変わるか分かる。数を変えるときもここだけ）。
+    struct DayConditionEffect{
+        const char* nameKey;          // 「霧の日」など（日本語の文字は UI の目録から引く）
+        float streetLightScale;       // 街灯の明るさに掛ける（停電 0）
+        float fogDistanceScale;       // 霧の半分の距離に掛ける（霧 0.3）
+        float zombieSightScale;       // ゾンビの見える距離に掛ける（Q5）
+        float footstepHearingScale;   // 足音の届く距離に掛ける（雨 0.5）
+        int   zombieTargetCount;      // 立っているゾンビの目標（群れ 45・ほか 30）
+        bool  rain;                   // 雨の粒・音・濡れた地面
+    };
+・RunState：5 日分の条件を持つ（5 日間の始めに決める・save.xml に書く）。dayCondition( day ) で引く。決める関数は RunRules（Q2 の決まり）。
+・使う所で倍率を掛ける（調整値は書き換えない）：
+    GameScene（街灯・霧・雨の粒と音）・GameWorld（足音の距離）・ZombieSpawner（目標の数をコンストラクタで受け取る。kTargetCount は「ふつうの日」の値に）・
+    ゾンビの見える距離（ZombieChase）。どれも GameWorld を作るときに DayConditionEffect を 1 つ渡す。
+・見せ方：BaseScene に一行・RaidHud の始めの知らせに並べる。
+・雨：RainEffect（カメラの周りの線。PrimitiveRenderer か LitQuadBatch）・SOUND_RAIN_LOOP（環境音。AmbienceSystem で鳴らす）。
+・F6：Raid の欄で「今日の条件」を切り替えられる（Debug だけ。見比べと調整のため）。
+
+■ 影響範囲
+・新しい物：DayCondition・DayConditionCatalog・RainEffect・雨の音。
+・直す物：RunState（save.xml の形が変わる。古い save.xml は「全部ふつう」として読む）・RunRules・BaseScene・RaidHud・GameScene・GameWorld・ZombieSpawner・ZombieChase。
+・LightingParams・RaidParams の値は変えない。
+
+■ 進め方（軽い順）
+D-a 仕組み（条件の表・5 日分を決めて保存・拠点と始めの知らせ・F6 で切り替え）＋ 停電 ＋ 群れ（数を変えるだけ）
+D-b 霧（霧の距離・ゾンビの見える距離）
+D-c 雨（足音の距離・雨の粒・雨の音・濡れた地面）。新しい絵と音が要るので一番重い
+各段のあとに遊んで「その日らしさを感じたか・やり方を変えたか（迷う場面が増えたか）」を書く。
+
+■ 状態
+・Q1〜Q9 は回答待ち。コードは未着手。

@@ -1,0 +1,84 @@
+HitFeel_Plan.txt（2026-11-06）
+倒したときの手応えに強弱をつける（ふつうの命中と、部位が飛んだ・頭が弾けた・倒したときの差をはっきりさせる）
+
+■ きっかけ
+・ユーザー「倒したときの手応えに強弱：ふつうの命中と、頭や脚を吹き飛ばしたときの差をはっきりさせる」を導入したい。
+・考え方は wadajun の日記「ローグライクゲームを面白くするための3つの心得 1/3」のコントラスト
+  （少しずつではなく一気に変える・よく起きる小さな変化と、まれな大きな変化を混ぜる）。
+
+■ 今のコード（2026-11-06 に読んだ所）
+・CombatResolver::ZombieHit は「当たった所・部位」だけ。音の係 ZombieHitSounds は頭なら SOUND_HIT_HEAD、ほかは SOUND_HIT_FLESH。
+・部位が切れたかは ZombieDismemberment::severedThisHit、倒したかは CombatResolver の wasAlive → !isAlive で分かる（数えるだけ）。
+・頭のクリティカル（10% で頭が弾けて倒れる）は ZombieHealth::takeDamage の中で決まるが、外から「今のはクリティカル」は分からない。
+・血：切れた・頭は血の跡が Large。血しぶきは部位で変わる（EffectManager::spawnBloodHit）。
+・前の決定（守る）：ヒットマーカーは作らない（10-18）／倒したときの音は作らない（10-18）／ヒットストップは作らない（10-21）。
+
+■ タルコフでは（調べた範囲）
+・ヒットマーカーも倒した音も無い。命中の手応えは、相手の体の反応と音だけ（ヒットマーカーは有志の改造で足されている）。
+・RE:2（リメイク）では頭を撃っても毎回倒れるわけではなく、眉間に当たったときだけ頭が弾ける。
+  監督は「1 発で倒すときの見た目の衝撃を前作より強くした」と話している。
+  → このゲームの「頭 10% で弾ける」はもう RE:2 と同じ形。今回はその「まれな大きな変化」をもっと目立たせる。
+・参考：https://forge.sp-tarkov.com/mod/577/amandss-hitmarker （タルコフにヒットマーカーが無いので改造で足す例）
+        https://www.syfy.com/syfywire/resident-evil-2-remake-horror-gore-zombie-evolution
+        https://www.gamerevolution.com/?p=487315
+        https://wada-jun.hatenadiary.com/entry/2023/04/02/142232
+
+■ 案（★がおすすめ）
+命中を 4 つの重さに分ける。重いほどまれで、出る物が大きい。
+  ふつう      ：胴・腕・脚に当たっただけ           … 今より少し控えめ（差を作るため）
+  部位が飛んだ：腕・脚が千切れた                   … 専用の音・血を多く・画面が少し揺れる
+  倒した      ：止めを刺した（部位は飛んでいない）   … 倒れる体の音（地面にドサッ。ゾンビから 3D）
+  頭が弾けた  ：頭のクリティカル、または頭の体力 0 … 一番大きい音・血・揺れ
+
+Q1 重さの分け方
+  ★A 上の 4 つ（ふつう／部位が飛んだ／倒した／頭が弾けた）
+   B 3 つ（ふつう／部位が飛んだ・頭が弾けた／倒した）
+
+Q2 倒したときの音（前に「作らない」と決めた所）
+  ★A UI の「倒した音」は作らないまま。代わりに体が地面に倒れる音をゾンビの所から鳴らす（世界の中の音なので、前の決定とぶつからない）
+   B 今のまま何も鳴らさない（倒したは見た目だけ）
+   C 倒した音（UI の音）を作る
+
+Q3 画面の揺れ（CameraShake。揺れは絵だけで弾道は動かさない＝10-21 の決まりのまま）
+  ★A 部位が飛んだ＝小さく・頭が弾けた＝少し大きく。ふつうと倒したは揺らさない
+   B 揺らさない（音と血だけ）
+   ※ ヒットストップ・スローは作らない（10-21 の決定のまま）
+
+Q4 ふつうの命中を控えめにするか
+  ★A 血しぶきを少し小さく・音を少し小さく（−3dB くらい）。重い命中との差を作る
+   B 今のまま（重い命中だけ足す）
+
+Q5 新しい音の作り方
+  ★A SoundGen で合成（部位が飛ぶ＝湿った裂ける音・頭が弾ける＝短い破裂＋水っぽい音・倒れる＝低いドサッ）
+   B 素材集から選ぶ（ユーザーが素材を用意）
+
+Q6 頭が弾けたときの血
+  ★A 今の切り口の血しぶき（scale 2）より大きく・上へも飛ばす。血の跡は Large
+   B 今と同じ
+
+■ 作り（★の案のとき）
+・CombatResolver::ZombieHit に「重さ」（enum class HitWeight { Normal, Severed, Killed, HeadBurst }）を足す。
+  決めるのは CombatResolver::hitZombie だけ（部位が切れたか・倒したか・頭か、はもうここで分かる）。
+  重さの決まりを変えるときは、ここの 1 つの関数（chooseHitWeight）だけを直す。
+・頭のクリティカルを外から読めるように、ZombieHealth::takeDamage が「この 1 発で何が起きたか」を返す
+  （戻り値 struct DamageOutcome { bool critical; }。今の void を変える）。ZombieHealthComponent が持ち上げる。
+・音：ZombieHitSounds が重さで音を選ぶ（SOUND_HIT_SEVER・SOUND_HIT_HEADBURST・SOUND_ZOMBIE_BODYFALL を足す）。
+  倒れる音は撃った瞬間ではなく、倒れるアニメで体が地面に着く頃に鳴らしたいが、
+  ★最初は「倒した 0.6 秒後」に固定で鳴らす（アニメの印を読む仕組みが無いため。遊んでずれたら直す）。
+・揺れ：GameScene が zombieHitsThisTick を読み、重さで CameraShake に足す（噛まれた揺れと同じ入口）。強さは調整値（F6）。
+・血：EffectManager::spawnBloodHit に重さを渡す（ふつうを小さく・頭が弾けたを大きく）。
+・調整値は HitFeelParams（F6 の Tuning「HitFeel」）にまとめる：重さごとの揺れの強さ・音量・血の大きさ。
+
+■ 影響範囲
+・CombatResolver・ZombieHealth（戻り値）・ZombieHealthComponent・ZombieHitSounds・EffectManager・GameScene（揺れ）・
+  SoundCatalog（3 つ足す）・tools/SoundGen（合成 3 つ）。
+・ゾンビの体力・倒れる決まり・部位が切れる決まりは変えない（見せ方だけ）。
+
+■ 進め方
+H-a 重さを決めて渡す（CombatResolver・ZombieHealth）＋ F6 で重さを文字で見る
+H-b 音（SoundGen で合成・目録に足す）
+H-c 血と画面の揺れ・ふつうを控えめに
+各段のあとに遊んで「重い命中が気持ちよいか・ふつうと見分けがつくか」を書く。
+
+■ 状態
+・Q1〜Q6 は回答待ち。コードは未着手。
