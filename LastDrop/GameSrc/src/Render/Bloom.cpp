@@ -16,7 +16,7 @@ namespace{
 	const float kFirstLevelScale = 0.5f;
 	const float kLevelShrink = 0.5f;
 
-	// Bloom*.hlsl の番号と揃える（t2 / b1）。
+	// Bloom
 	const int kSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
