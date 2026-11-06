@@ -44,8 +44,8 @@ public:
 private:
 	// data の建物を placements の場所へ建てる。data: nullptr 不可。
 	void placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes, const std::vector< TownPlacement >& placements ) const;
-	// 漁れる場所（ゴミ箱・木箱）を置き、中身を決める（R3_Plan.txt Q3）。ガソリンを入れる箱を選ぶのもここ。
-	// 地面に落ちているガソリンとライフルは置かない（2026-11-05。ガソリンは箱の中・ライフルは木箱から出る）。
+	// 漁れる場所（ゴミ箱・木箱）を置き、中身を決める。ガソリンを入れる箱を選ぶのもここ。
+	// 地面に落ちているガソリンとライフルは置かない。
 	void placeLootSpots( GameObjectWorld* objects ) const;
 	// 今日の脱出の車を置く（給油できる車。漁れない）。
 	void placeEscapeCar( GameObjectWorld* objects, int escapeCarSpot ) const;

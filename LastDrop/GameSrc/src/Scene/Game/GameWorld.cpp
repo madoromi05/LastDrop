@@ -161,7 +161,6 @@ void GameWorld::placeActors() {
 		tPose.downed = nullptr;
 		tPose.stagger = nullptr;
 		tPose.attack = nullptr;
-		addZombie( toPosition( mMap.tPoseZombie() ), mMap.tPoseZombie().yawDegree, tPose );
 	}
 }
 
@@ -194,7 +193,6 @@ bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
 	animations.downed = kZombieDownedAnimation;
 	animations.stagger = kZombieStaggerAnimation;
 	animations.attack = kZombieAttackAnimation;
-	addZombie( position, yawDegree, animations );
 	return true;
 }
 
@@ -206,13 +204,6 @@ bool GameWorld::dropItem( const ItemStack& stack, float cameraYaw ) {
 	Vector3 forward( GameLib::Math::sin( cameraYaw ), 0.f, GameLib::Math::cos( cameraYaw ) );
 	position.madd( forward, kDropForward );
 	return mPropFactory.spawnDroppedItem( &mObjects, stack, position, cameraYaw ) != nullptr;
-}
-
-void GameWorld::addZombie( const Vector3& position, float yawDegree, const ZombieAnimationNames& animations ) {
-	// 何体目か（mZombieNumber）で見通しを調べる時刻をずらす。うろつき方の乱数の種も体ごとに変える
-	// （同じ種だと全員が同じ向き・同じ間で歩き出す）。
-	mZombieFactory->spawn( &mObjects, position, yawDegree, animations, mZombieNumber, mZombieRandom.getInt() );
-	++mZombieNumber;
 }
 
 void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection,

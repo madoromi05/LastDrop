@@ -151,8 +151,6 @@ private:
 	// 立っているゾンビの数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
 	// cameraYaw: カメラの水平の向き（度）。
 	void spawnZombiesFromSpawner( float cameraYaw );
-	// ゾンビを組み立てて置く（spawnZombie と、place の確認用の T ポーズの1体から）。mZombieFactory があること。
-	void addZombie( const GameLib::Math::Vector3& position, float yawDegree, const ZombieAnimationNames& animations );
 
 	// 町のどこに何を置くか。
 	TownMap mMap;
@@ -166,22 +164,17 @@ private:
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する。
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;
-	// 町を組み立てる（mMap・mPropFactory を借りるので、それらより後に宣言する）。
-	WorldBuilder mBuilder;
-	const StaticMeshData* mBulletData;    // どれも MeshCache から借りる。飛ぶ弾（7.62 NATO の弾頭）
+	WorldBuilder mBuilder;					// 町を組み立てる
+	const StaticMeshData* mBulletData;    // どれも MeshCache から借りる。飛ぶ弾
 	const SkinnedMeshData* mZombieData;
-	TownGround mGround;                   // 道路と歩道（見た目・弾の当たり判定・足元の材質）
-
-	// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する（＝載る物より後に破棄される）。
-	CollisionWorld mCollisionWorld;
+	TownGround mGround;						// 道路と歩道（見た目・弾の当たり判定・足元の材質）
+	CollisionWorld mCollisionWorld;			// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する
 	HitWorld mHitWorld;
-	// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）。
-	BulletList mBullets;
-	// 弾痕・砂ぼこり・血しぶき・千切れた部位（どの名簿にも載らない。千切れた部位はゾンビの形を借りるので mZombieData が生きている間だけ使う）。
-	EffectManager mEffects;
+	BulletList mBullets;			// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）。
+	EffectManager mEffects;	// 弾痕・砂ぼこり・血しぶき・千切れた部位
 	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。
 	std::vector< BulletList::Impact > mImpacts;
-	// ゾンビ全員で共有する決まりごと（当たり判定の設計図）。ゾンビが借りるので、ゾンビより先に宣言する。置けなかったときは空。
+	// ゾンビ全員で共有する決まりごと
 	std::unique_ptr< ZombieModel > mZombieModel;
 	// ゾンビの Think の段で全員が読む、このティックの周り（追う先・仲間の位置・攻撃に行っている体）。ゾンビが借りるので、ゾンビより先に宣言する。
 	ZombieBrainComponent::TickContext mZombieContext;
@@ -208,7 +201,7 @@ private:
 	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）
 	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
 	std::vector< Building > mBuildings;
-	// 建物の隠れの表（OptimizationC_Plan.txt 7 章）。buildVisibility で mTown から借りる（それまでは nullptr）。
+	// 建物の隠れの表。buildVisibility で mTown から借りる（それまでは nullptr）。
 	const TownVisibility* mVisibility;
 };
 
