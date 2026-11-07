@@ -38,7 +38,7 @@ public:
 private:
 	std::vector< ImpactDust > mDusts;    // 古い順
 	std::mt19937 mRandom;                // 粒の向き・速さのばらつき
-	GameLib::Graphics::Texture mTexture; // 粒の煙のコマ送りの絵（Resource/impact_smoke_sheet.tga）
+	GameLib::Graphics::Texture mTexture; // 粒の煙のコマ送りの絵（Resource/Texture/Effect/impact_smoke_sheet.tga）
 	Flipbook mFrames;                    // 上の絵のコマの並び
 	LitQuadBatch mQuads;                 // 粒の板をためて、ライトを当てて描く
 };

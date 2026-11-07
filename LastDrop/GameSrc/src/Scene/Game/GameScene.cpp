@@ -82,7 +82,8 @@ namespace{
 
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
-	mWorld( &resources->meshes(), &resources->town() ),
+	// 今日の条件（5 日間の始めに決めて save.xml にある。DayCondition_Plan.txt）。世界を作る時の 1 回だけ読む（F6 で変えたら次の出撃から）。
+	mWorld( &resources->meshes(), &resources->town(), dayConditionEffect( resources->run().condition( resources->run().day() ) ) ),
 	mRenderer( &mWorld, &mWorld.effects() ),
 	mInventory( resources->run().bag() ), // 拠点のカバンの写し（町の中で変わっても、拠点のカバンは脱出するまで変えない。R2_Plan.txt Q3）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
@@ -630,6 +631,7 @@ void GameScene::update() {
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	mZombieHitSounds.play( mWorld.combat().zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
+	shakeOnHeavyHits(); // 揺れも同じ出来事を読む（次の updateViewEffects から効く）
 	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
 	updatePlayerDamage();
 	updateRaid();
@@ -825,7 +827,7 @@ void GameScene::draw() {
 		// 使える物の上のマーク（積むだけ。すぐ下の HUD の描画でまとめて描かれる）。
 		mInteractMarkers.add( camera, &mResources->uiRenderer() );
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-		mHud.draw( mSession, mResources->run().day(), mLootSearch.isSearching() ? mLootSearch.progress() : kNoSearch, waitingKind() );
+		mHud.draw( mSession, mResources->run().day(), mWorld.dayCondition(), mLootSearch.isSearching() ? mLootSearch.progress() : kNoSearch, waitingKind() );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -875,10 +877,12 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 		mLights.add( muzzle );
 	}
 	// 交差点の街灯。16 個を超えた分は、LightList が目から遠い物から外す（PbrNightLighting_Plan.txt 8 章）。
-	if ( params.streetLightIntensity > 0.f ) {
+	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）。
+	float streetLightIntensity = params.streetLightIntensity * mWorld.dayCondition().streetLightScale;
+	if ( streetLightIntensity > 0.f ) {
 		for ( const TownPlacement& spot : mWorld.map().streetLights() ) {
 			Vector3 position( spot.x, spot.y + params.streetLightHeight, spot.z );
-			mLights.add( pointLight( position, params.streetLightColor, params.streetLightIntensity, params.streetLightRange ) );
+			mLights.add( pointLight( position, params.streetLightColor, streetLightIntensity, params.streetLightRange ) );
 		}
 	}
 	EnvironmentLight environment;
@@ -889,7 +893,7 @@ void GameScene::setupLights( const FirstPersonCamera& camera ) {
 	environment.ambientIntensity = params.ambientIntensity;
 	// 霧を切っている間は 0 のまま（霧なし）。半透明の板もライトの一覧の霧の値を読むので、板の霧も一緒に消える。
 	if ( fogEnabled() ) {
-		environment.fogHalfDistance = params.fogHalfDistance;
+		environment.fogHalfDistance = fogHalfDistance(); // 霧の日は短い
 		environment.fogGroundDensity = params.fogGroundDensity;
 		environment.fogHeightHalf = params.fogHeightHalf;
 	}
@@ -998,8 +1002,12 @@ void GameScene::drawShadowMaps( const FirstPersonCamera& camera ) {
 	Profiling::gpuMark( "Shadow" );
 }
 
+float GameScene::fogHalfDistance() const {
+	return lightingParams().fogHalfDistance * mWorld.dayCondition().fogDistanceScale;
+}
+
 DrawCulling GameScene::cameraCulling( const FirstPersonCamera& camera ) const {
-	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( lightingParams().fogHalfDistance ) : kNoDrawDistance;
+	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( fogHalfDistance() ) : kNoDrawDistance; // 霧の日は描く距離も縮む
 	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える。
 	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない。OptimizationC_Plan.txt Q5）。
 	const TownVisibility* visibility = pvsEnabled() ? &mWorld.visibility() : nullptr;
@@ -1069,6 +1077,15 @@ bool GameScene::isFreeCameraActive() const {
 #else
 	return false;
 #endif
+}
+
+void GameScene::shakeOnHeavyHits() {
+	typedef CombatResolver::ZombieHit::Weight Weight;
+	for ( const CombatResolver::ZombieHit& hit : mWorld.combat().zombieHitsThisTick() ) {
+		if ( hit.weight == Weight::Severed || hit.weight == Weight::HeadBurst ) {
+			mControl.shakeOnHeavyHit( hit.weight == Weight::HeadBurst );
+		}
+	}
 }
 
 void GameScene::updatePlayerDamage() {

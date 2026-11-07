@@ -10,7 +10,7 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/blood_gen.py [出力.tga]
-#   出力を省くと Resource/blood_drop.tga に書く。
+#   出力を省くと Resource/Texture/Effect/blood_drop.tga に書く。
 # =====================================================================
 
 import math
@@ -19,7 +19,7 @@ import sys
 
 from tga_image import over, smooth_step, to_byte, write_tga
 
-DEFAULT_OUTPUT = "Resource/blood_drop.tga"
+DEFAULT_OUTPUT = "Resource/Texture/Effect/blood_drop.tga"
 
 SIZE = 64   # 2 の累乗（bullet_hole_gen.py と同じ理由）
 SEED = 7623

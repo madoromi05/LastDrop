@@ -879,6 +879,9 @@
     <ClCompile Include="GameSrc\src\Raid\RunRules.cpp">
       <Filter>GameSrc\Raid</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Raid\DayCondition.cpp">
+      <Filter>GameSrc\Raid</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\ItemTransfer.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
@@ -1273,6 +1276,9 @@
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieUncertaintyParams.cpp">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\ZombieRunParams.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\AnimationThrottle.cpp">
@@ -1859,6 +1865,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemTransfer.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -2333,6 +2342,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRunParams.h">
+      <Filter>GameSrc\Zombie</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackParams.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
@@ -2518,7 +2530,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Resource\font.tga" />
+    <Image Include="Resource\UI\font.tga" />
     <None Include="Resource\Shader\Common.hlsli" />
     <None Include="Resource\Shader\Present.hlsl" />
     <None Include="Resource\Shader\BloomExtract.hlsl" />

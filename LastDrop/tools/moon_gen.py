@@ -10,7 +10,7 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/moon_gen.py [出力.tga]
-#   出力を省くと Resource/moon.tga に書く。その後 tools/texture_to_dds.ps1 moon で DDS（BC7_SRGB）にする。
+#   出力を省くと Resource/Texture/Map/moon.tga に書く。その後 tools/texture_to_dds.ps1 moon で DDS（BC7_SRGB）にする。
 # =====================================================================
 
 import sys
@@ -19,7 +19,7 @@ import numpy as np
 
 from tga_image import write_tga
 
-DEFAULT_OUTPUT = "Resource/moon.tga"
+DEFAULT_OUTPUT = "Resource/Texture/Map/moon.tga"
 
 SIZE = 512    # 2 の累乗（ミップを全段作れるように）
 SEED = 2610

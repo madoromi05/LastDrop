@@ -17,10 +17,10 @@ using namespace GameLib::Math;
 
 namespace{
 	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
-	const char* kBuildingFile = "Resource/building.txt";
+	const char* kBuildingFile = "Resource/Model/Map/building.txt";
 	// 町を囲む建物。同じ建物から足元の歩道の板を除いた形（tools/configs/building_noground.json）。
 	// 板があると、壁どうしを付けて並べたときに隣の板と重なって面がちらつくため。
-	const char* kPerimeterBuildingFile = "Resource/building_noground.txt";
+	const char* kPerimeterBuildingFile = "Resource/Model/Map/building_noground.txt";
 	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす。
 	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
 
@@ -50,6 +50,10 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot ) co
 		target.hitWorld->addBlocker( &building );
 	}
 	placeLootSpots( target.objects );
+	// 消火栓は見た目の置物（置けなくても〈形の構築の失敗〉その場所に無いだけで遊べる）。
+	for ( const TownPlacement& p : mMap->fireHydrants() ) {
+		mProps->spawnFireHydrant( target.objects, toPosition( p ), p.yawDegree );
+	}
 	placeEscapeCar( target.objects, escapeCarSpot ); // 町に置く車はこの 1 台だけ（乗れない置物の車は置かない）
 }
 

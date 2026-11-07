@@ -114,8 +114,8 @@ public:
 
 		{
 			FILE* fp = nullptr;
-			fopen_s( &fp, "Resource/font.tga", "rb" );
-			ASSERT( fp && "Resource/font.tga not found." );
+			fopen_s( &fp, "Resource/UI/font.tga", "rb" );
+			ASSERT( fp && "Resource/UI/font.tga not found." );
 			if ( fp ){
 				fseek( fp, 0, SEEK_END );
 				int textureSize = static_cast< int >( ftell( fp ) );

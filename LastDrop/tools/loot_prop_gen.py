@@ -11,7 +11,7 @@
 #
 #   書き出す物：
 #     tools/generated/loot_props/<名前>.fbx   … fbx_to_gamelib.py（tools/configs/<名前>.json）と item_icon_gen.py が読む
-#     Resource/loot_props_albedo.tga・Resource/loot_props_orm.tga … 色と材質（その後 tools/texture_to_dds.ps1 loot_props で DDS へ）
+#     Resource/Texture/Prop/loot_props_albedo.tga・Resource/Texture/Prop/loot_props_orm.tga … 色と材質（その後 tools/texture_to_dds.ps1 loot_props で DDS へ）
 #   向き：Blender の -Y が物の正面（ゲームの +Z。fbx_to_gamelib の座標変換 (x, y, z) → (x, z, -y)）。長い辺は X に沿わせる。
 #   乱数の種を固定しているので、何度作っても同じ形と絵になる。
 #
@@ -28,8 +28,8 @@ import numpy as np
 from mathutils import Matrix, Vector
 
 OUTPUT_FBX_DIR = "tools/generated/loot_props"
-OUTPUT_ALBEDO = "Resource/loot_props_albedo.tga"
-OUTPUT_ORM = "Resource/loot_props_orm.tga"
+OUTPUT_ALBEDO = "Resource/Texture/Prop/loot_props_albedo.tga"
+OUTPUT_ORM = "Resource/Texture/Prop/loot_props_orm.tga"
 
 ATLAS_SIZE = 512       # 2 の累乗（ミップを全段作れるように）
 ATLAS_CELLS = 4        # 1 辺のますの数（4 × 4 = 16 色）

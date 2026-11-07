@@ -1,6 +1,7 @@
 #include "GameSrc/Scene/Game/RaidHud.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Raid/RaidParams.h"
+#include "GameSrc/Raid/DayCondition.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiAnchor.h"
 #include "GameSrc/Render/VertexColor.h"
@@ -22,6 +23,9 @@ namespace{
 	const float kClockTop = 26.f;
 	const float kNoticeTop = 70.f;     // 始めの知らせ（日）の真ん中の高さ
 	const float kNoticeLineHeight = 30.f;
+	// 始めの知らせの何行目に置くか（日の行 0 から数える）。日 → 今日の条件 → 脱出の車。
+	const float kConditionLine = 1.f;
+	const float kExitsLine = 2.f;
 	const float kExtractFromBottom = 120.f; // 「EXTRACTING」の真ん中の、画面の下端からの高さ
 
 	const unsigned kClockColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
@@ -64,7 +68,7 @@ std::string RaidHud::exitNames( const ExtractionTracker& extraction, const char*
 	return names;
 }
 
-void RaidHud::draw( const RaidSession& session, int day, float progress, ProgressKind progressKind ) {
+void RaidHud::draw( const RaidSession& session, int day, const DayConditionEffect& condition, float progress, ProgressKind progressKind ) {
 	const RaidParams& params = raidParams();
 	char text[ kTextSize ];
 	float center = UiLayout::anchorX( UI_ANCHOR_CENTER );
@@ -77,12 +81,13 @@ void RaidHud::draw( const RaidSession& session, int day, float progress, Progres
 	Vector2 clock( center * kTwice - kClockFromRight, kClockTop );
 	mRenderer->addText( text, clock, UI_TEXT_LARGE, UI_ALIGN_CENTER, ( remaining <= params.warningSeconds ) ? kWarningColor : kClockColor );
 
-	// 始めの数秒だけ、何日目かと脱出の車の場所。
+	// 始めの数秒だけ、何日目か・今日の条件・脱出の車の場所。
 	if ( session.clock().elapsedSeconds() < params.exitNoticeSeconds ) {
 		std::snprintf( text, sizeof( text ), kDayFormat, day );
 		mRenderer->addText( text, Vector2( center, kNoticeTop ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kNoticeColor );
+		mRenderer->addText( condition.title, Vector2( center, kNoticeTop + kNoticeLineHeight * kConditionLine ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kNoticeColor );
 		std::string exits = kExitsPrefix + exitNames( session.extraction(), kExitsSeparator );
-		mRenderer->addText( exits.c_str(), Vector2( center, kNoticeTop + kNoticeLineHeight ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kExitColor );
+		mRenderer->addText( exits.c_str(), Vector2( center, kNoticeTop + kNoticeLineHeight * kExitsLine ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kExitColor );
 	}
 
 	// 給油し終えた後：車のそばの円の中にいる間は脱出までの残り、外にいる間は戻るように知らせる。

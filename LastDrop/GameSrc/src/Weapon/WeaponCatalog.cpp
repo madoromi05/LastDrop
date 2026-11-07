@@ -40,7 +40,7 @@ namespace{
 		// 銃声の素材は 9mm Glock の録音で、ライフルの素材より約 3 倍大きいので小さく鳴らす。
 		{
 			"Pistol", ITEM_PISTOL, ITEM_AMMO_9MM,
-			"Resource/pistol.txt", "Resource/pistol_mag.txt", "Resource/pistol_ground.txt",
+			"Resource/Model/Weapon/pistol.txt", "Resource/Model/Weapon/pistol_mag.txt", "Resource/Model/Weapon/pistol_ground.txt",
 			12, 400.f, false, 12.f, 0.5f,
 			"pistol_hold", "pistol_ready", "rifle_idle", "pistol_hold", kPistolReload, kPistolEmptyReload,
 			SOUND_PISTOL_SHOT, 0.3f,
@@ -60,7 +60,7 @@ namespace{
 		// WEAPON_RIFLE：AKM。弾倉 30 発・600 発/分のフルオート（実銃の値）。
 		{
 			"AK47", ITEM_RIFLE, ITEM_AMMO_762,
-			"Resource/rifle.txt", "Resource/rifle_mag.txt", "Resource/rifle_ground.txt",
+			"Resource/Model/Weapon/rifle.txt", "Resource/Model/Weapon/rifle_mag.txt", "Resource/Model/Weapon/rifle_ground.txt",
 			30, 600.f, true, 20.f, 1.f,
 			nullptr, nullptr, nullptr, "rifle_idle", kRifleReload, kRifleReload,
 			SOUND_GUNSHOT, 1.f,

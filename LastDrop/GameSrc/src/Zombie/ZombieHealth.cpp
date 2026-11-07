@@ -100,6 +100,18 @@ bool ZombieHealth::isBroken( BodyPart part ) const {
 	return this->part( part ) <= 0.f;
 }
 
+float ZombieHealth::weakestLegRatio() const {
+	// 部位ごとに見る（太ももとすねを足して 1 本とみると、半分を切る前に太ももが 0 になって切れてしまう。
+	// 太もも 60・すね 40 で、1 発は太もも 15・すね 10 なので、部位ごとなら半分で 2 発・0 で 4 発になる）。
+	const BodyPart kLegParts[] = { BodyPart::LeftThigh, BodyPart::RightThigh, BodyPart::LeftLowerLeg, BodyPart::RightLowerLeg };
+	float weakest = 1.f;
+	for ( BodyPart leg : kLegParts ) {
+		float ratio = part( leg ) / maxPart( leg );
+		weakest = ( ratio < weakest ) ? ratio : weakest;
+	}
+	return weakest;
+}
+
 float ZombieHealth::toughness() const {
 	return mToughness;
 }

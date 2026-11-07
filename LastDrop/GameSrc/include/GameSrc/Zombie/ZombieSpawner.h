@@ -34,8 +34,9 @@ public:
 	// hitWorld / collisionWorld: 見えているか・重なるかを聞く名簿。footprint: ゾンビの体の長方形の大きさ。
 	// どれも所有権は受け取らない。nullptr 不可。この spawner より長く生きていること。
 	// randomSeed: 候補・向きを選ぶ乱数の種。
+	// targetCount: 立っているゾンビの目標の数（日の条件で変わる。DayConditionEffect::zombieCount）。1 以上。
 	ZombieSpawner( const std::vector< GameLib::Math::Vector3 >& candidates, const HitWorld* hitWorld,
-		const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int randomSeed );
+		const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int randomSeed, int targetCount );
 	ZombieSpawner( const ZombieSpawner& ) = delete;
 	ZombieSpawner& operator=( const ZombieSpawner& ) = delete;
 
@@ -45,7 +46,7 @@ public:
 	void update( const View& view, std::vector< Order >* out );
 
 	// ── 確認用の表示（F3）が読む ──
-	int targetCount() const;          // 最後の update での目標の数
+	int targetCount() const;          // 目標の数（作るときに受け取った値）
 	int standingCount() const;        // 最後の update で渡された、立っている数
 	float secondsUntilNext() const;   // 次の補充までの残り（秒。補充を待っていない間は補充の間隔そのもの）
 
@@ -66,7 +67,7 @@ private:
 	GameLib::Math::Random mRandom;
 	bool mPlacedInitial;  // 始めに置く分を済ませたか
 	int mRefillTicks;     // 次の補充までの残り（ティック）
-	int mTargetCount;     // 確認用（最後の update の値）
+	int mTargetCount;     // 立っているゾンビの目標の数（作るときに受け取る）
 	int mStandingCount;   // 確認用（同上）
 };
 

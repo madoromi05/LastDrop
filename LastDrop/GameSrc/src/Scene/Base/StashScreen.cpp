@@ -30,14 +30,15 @@ namespace{
 	const float kHeadingTop = 30.f;     // 見出し「BASE」の真ん中
 	const float kGridLabelGap = 14.f;   // マス目の名前の真ん中から、マス目の上端まで
 	const float kDayFromRight = 90.f;   // 「DAY 2 / 5」の真ん中の、画面の右端からの長さ
-	const float kBestLineGap = 24.f;    // 「DAY」の行から「BEST」の行まで
+	const float kBestLineGap = 24.f;    // 「DAY」の行から「BEST」の行まで（左上の今日の条件の、名前から一言までも同じ）
+	const float kConditionFromLeft = 16.f; // 今日の条件の左端の、画面の左端からの長さ
 	const float kDeployGap = 28.f;      // カバンの下端から Deploy のボタンの上端まで
 	const float kDeployWidth = 140.f;
 	const float kDeployHeight = 40.f;
 	const float kWarningGap = 22.f;     // ボタンの下端から注意の文字の真ん中まで
 	const float kFooterGap = 22.f;      // 倉庫の下端から、選んだ物の名前の真ん中まで
 	const float kFooterLineHeight = 22.f;
-	const int kTextSize = 64;
+	const int kTextSize = 128; // 日本語は 1 文字 3 バイト（UTF-8）なので、短い文でも 64 では足りないことがある
 
 	const char* kHeading = "拠点";
 	const char* kStashLabel = "倉庫";
@@ -45,6 +46,7 @@ namespace{
 	const char* kDeployLabel = "出撃";
 	const char* kDayFormat = "DAY %d / %d";
 	const char* kBestFormat = "最高 %d";
+	const char* kConditionFormat = "今日：%s";
 	const char* kEmptyName = "空";
 	const char* kBrowseHint = "[Enter] 持つ   [Tab] 切り替え   [Esc] タイトルへ";
 	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
@@ -166,6 +168,12 @@ void StashScreen::draw( const RunState& run ) {
 	mRenderer->addText( text, dayLine, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	std::snprintf( text, sizeof( text ), kBestFormat, run.bestScore() );
 	mRenderer->addText( text, Vector2( dayLine.x, dayLine.y + kBestLineGap ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+	// 左上に今日の条件（右上の「DAY」と向かい合わせ。DayCondition_Plan.txt Q4）。名前の下に一言。
+	const DayConditionEffect& today = dayConditionEffect( run.condition( run.day() ) );
+	std::snprintf( text, sizeof( text ), kConditionFormat, today.title );
+	Vector2 conditionLine( kConditionFromLeft, kHeadingTop );
+	mRenderer->addText( text, conditionLine, UI_TEXT_NORMAL, UI_ALIGN_MIDDLE_LEFT, kTextColor );
+	mRenderer->addText( today.summary, Vector2( conditionLine.x, conditionLine.y + kBestLineGap ), UI_TEXT_NORMAL, UI_ALIGN_MIDDLE_LEFT, kHintColor );
 
 	struct Shown{
 		Side side;

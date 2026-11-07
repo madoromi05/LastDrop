@@ -157,11 +157,16 @@ private:
 	void drawShadowMaps( const FirstPersonCamera& camera );
 	// 目から見る絵の、描くかどうか（OptimizationA_Plan.txt 6 章）。描く距離は霧から決める（霧を切っている間は距離で間引かない）。
 	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
+	// 今日の霧が半分になる距離（調整値 × 今日の条件。調整値そのものは変えない。DayCondition_Plan.txt）。霧の絵と描く距離の両方に使う。
+	float fogHalfDistance() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
 	// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
 	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
 	void updatePlayerDamage();
+	// このティックの命中のうち、部位が飛んだ・頭が弾けた物だけ画面を少し揺らす（ふつうと倒しただけは揺らさない。HitFeel_Plan.txt Q3）。
+	// 1ティックに1回、GameWorld::update の後。
+	void shakeOnHeavyHits();
 	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、updatePlayerDamage の後）。
 	// 脱出：銃の弾倉の数をカバンへ書き戻してから finishDay → 1 日の結果。時間切れ：failDay → 5 日間の終わり。
 	// 死んだ：暗くなり終わるのを待ってから failDay → 5 日間の終わり。

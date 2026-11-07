@@ -192,6 +192,14 @@ namespace{
 		if ( ImGui::SmallButton( "Day +" ) && gRun->day() < RunState::kDayCount ) {
 			gRun->setDay( gRun->day() + 1 );
 		}
+		// 今日の条件を次へ（確かめるため。世界を作るときに読むので、次の出撃から効く。DayCondition_Plan.txt）。
+		DayCondition today = gRun->condition( gRun->day() );
+		ImGui::Text( "Condition: %s", dayConditionEffect( today ).saveName );
+		ImGui::SameLine();
+		if ( ImGui::SmallButton( "Next" ) ) {
+			int next = ( static_cast< int >( today ) + 1 ) % static_cast< int >( DayCondition::Count );
+			gRun->setCondition( gRun->day(), static_cast< DayCondition >( next ) );
+		}
 		ImGui::Text( "Kills before today: %d   Best: %d", gRun->kills(), gRun->bestScore() );
 		ImGui::Text( "Stash items: %d points", RunRules::itemPoints( gRun->stash() ) );
 		// 倉庫へ 1 マスぶん（重ねられる物はいっぱいまで。銃は弾倉いっぱいで）足す。
@@ -249,6 +257,7 @@ namespace{
 			case GameObjectTag::ItemDrop: return "ItemDrop";
 			case GameObjectTag::LootContainer: return "LootContainer";
 			case GameObjectTag::EscapeCar: return "EscapeCar";
+			case GameObjectTag::FireHydrant: return "FireHydrant";
 		}
 		return "?";
 	}
@@ -411,8 +420,8 @@ namespace{
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();
 		ImGui::Checkbox( "Dither", &ditherEnabled() );
-		// 色の表（LUT。MoonStarsLut_Plan.txt 7・8 章）。Export で今の調整を Resource/lut_export.tga に焼き、外の道具で直して
-		// Resource/lut.tga の名前で置き、Reload で読む。強さは Tuning の PostProcessParams の lutStrength と同じ値。
+		// 色の表（LUT。MoonStarsLut_Plan.txt 7・8 章）。Export で今の調整を Resource/UI/lut_export.tga に焼き、外の道具で直して
+		// Resource/UI/lut.tga の名前で置き、Reload で読む。強さは Tuning の PostProcessParams の lutStrength と同じ値。
 		ColorLutControl& lut = colorLutControl();
 		if ( ImGui::Button( "Export LUT" ) ) {
 			lut.exportRequested = true;

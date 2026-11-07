@@ -27,7 +27,7 @@ namespace{
 	const int kMoonTextureSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 12;
 	// Hi-Z（t15。表示の Hi-Z だけが読む）。ScreenSpaceReflection::hiZ。
 	const int kHiZViewSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 13;
-	const char* kMoonTextureFile = "Resource/moon.dds";
+	const char* kMoonTextureFile = "Resource/Texture/Map/moon.dds";
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）。

@@ -53,6 +53,11 @@ namespace{
 	const float kFireTraumaLimit = 0.45f;
 	const float kZombieHitTrauma = 0.8f;
 	const float kGrabTrauma = 0.35f; // つかまれた瞬間（噛まれたときより弱く）
+	// 撃った手応えの揺れ（HitFeel_Plan.txt Q3）。部位が飛んだ＝小さく・頭が弾けた＝少し大きく。
+	// 噛まれた揺れより必ず弱く、連射の揺れ（上限 kFireTraumaLimit）の上に少し乗る上限にする。
+	const float kSeverTrauma = 0.15f;
+	const float kHeadBurstTrauma = 0.25f;
+	const float kHeavyHitTraumaLimit = 0.6f;
 	const float kTraumaFull = 1.f;
 
 	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
@@ -211,6 +216,10 @@ void FirstPersonControl::flinch() {
 
 void FirstPersonControl::shakeOnGrab() {
 	mShake.addTrauma( kGrabTrauma, kTraumaFull );
+}
+
+void FirstPersonControl::shakeOnHeavyHit( bool headBurst ) {
+	mShake.addTrauma( headBurst ? kHeadBurstTrauma : kSeverTrauma, kHeavyHitTraumaLimit );
 }
 
 void FirstPersonControl::lookToward( const Vector3& target ) {

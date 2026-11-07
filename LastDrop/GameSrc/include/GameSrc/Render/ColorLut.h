@@ -7,8 +7,8 @@
 #include "GameLib/Graphics/Texture.h"
 
 // 色の表（LUT。1024×32 の帯）の読み込みと書き出し（SummaryPlan/個別仕様/MoonStarsLut_Plan.txt 6・7 章）。
-//   読む：Resource/lut.tga（外の道具で直した表）。起動時と reload のときに、あれば読む。無ければ「読んでいない」（今と同じ絵）
-//   書く：今の色の調整（Grading.hlsli の gradeColor）を表に焼き、Resource/lut_export.tga に書く（Resource/Shader/LutBake.hlsl）
+//   読む：Resource/UI/lut.tga（外の道具で直した表）。起動時と reload のときに、あれば読む。無ければ「読んでいない」（今と同じ絵）
+//   書く：今の色の調整（Grading.hlsli の gradeColor）を表に焼き、Resource/UI/lut_export.tga に書く（Resource/Shader/LutBake.hlsl）
 // 表を引くのは Present.hlsl（PostProcess が texture を t4 に付ける）。作るのは Graphics::Manager ができた後（シーンの中）。
 class ColorLut{
 public:

@@ -30,6 +30,8 @@ mono_crash.*
 # 5 日間の続き（倉庫・カバン・ハイスコア。遊ぶ人ごとの物。SummaryPlan/個別仕様/R2_Plan.txt 7 章）
 /LastDrop/save.xml
 /LastDrop/save.xml.tmp
+# 画像の元の TGA（DDS を作る途中の物。ゲームは DDS を読む。tools/texture_to_dds.ps1）
+/LastDrop/Resource/Texture/**/*.tga
 
 [Dd]ebug/x64/
 [Dd]ebugPublic/x64/

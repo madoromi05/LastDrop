@@ -181,8 +181,10 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
 	const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
 	bool waitingForPath = chase && chase->path().isWaitingForSearch();
-	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
-		brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "" );
+	// 走る体には「R」を付ける（脚が傷んで歩きに落ちたら消える。R4_Plan.txt Q10）。
+	bool runner = chase && chase->locomotion().isRunner();
+	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s%s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
+		brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "", runner ? " R" : "" );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す。

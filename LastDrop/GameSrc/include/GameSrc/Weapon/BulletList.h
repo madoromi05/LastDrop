@@ -21,7 +21,7 @@ public:
 		float damage;                     // その弾のダメージ（部位の倍率を掛ける前。Bullet::damage）
 	};
 
-	// data: 弾頭の形と見た目（Resource/bullet_tip.txt）。所有権は受け取らない。nullptr 不可。このリストより長く生きていること（MeshCache が持つ）。
+	// data: 弾頭の形と見た目（Resource/Model/Weapon/bullet_tip.txt）。所有権は受け取らない。nullptr 不可。このリストより長く生きていること（MeshCache が持つ）。
 	//       まだ構築中でもよい。構築に失敗したら、弾は飛んで当たるが描かれない。
 	explicit BulletList( const StaticMeshData* data );
 

@@ -15,6 +15,7 @@ namespace{
 	// 頭など scale が大きいときは、どちらも scale 倍にする（合計が kMaxDropNumber を超えないこと）。
 	const int kExitDropNumber = 8;
 	const int kEntryDropNumber = 4;
+	static_assert( kExitDropNumber + kEntryDropNumber == BloodSpray::kBaseDropNumber, "kBaseDropNumber must be the drops at scale 1" );
 
 	// 抜ける側の滴の速さの範囲（m/ティック）。弾の勢いで飛ぶので、撃った側より速い。
 	const float kExitMinSpeed = 2.f / GameTime::kTicksPerSecond;
@@ -57,6 +58,7 @@ BloodSpray::BloodSpray( const Vector3& point, const Vector3& direction, float sc
 	mScale( scale ),
 	mAge( 0 ) {
 	ASSERT( random && "BloodSpray : random is null." );
+	ASSERT( scale > 0.f && scale <= kMaxScale && "BloodSpray : scale is out of range." );
 	int exitNumber = scaledCount( kExitDropNumber, scale );
 	int entryNumber = scaledCount( kEntryDropNumber, scale );
 	ASSERT( exitNumber + entryNumber <= kMaxDropNumber && "BloodSpray : too many drops." );

@@ -30,6 +30,9 @@ public:
 	float maxPart( BodyPart part ) const; // 部位の最大（丈夫さを掛けた後）
 	// 部位の体力が 0 になったか（0 で倒れる部位も、0 なら true）。
 	bool isBroken( BodyPart part ) const;
+	// 脚の 4 部位（左右の太もも・すね）のうち、一番傷んだ部位の残りの割合（0〜1。満タンで 1）。
+	// 走る体が歩きに落ちるかを決めるのに使う（R4_Plan.txt Q7）。
+	float weakestLegRatio() const;
 	float toughness() const; // 最大の体力に掛けている値（確認用の表示に使う）
 
 private:

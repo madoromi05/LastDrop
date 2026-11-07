@@ -79,6 +79,7 @@
     <ClCompile Include="LootSynth.cpp" />
     <ClCompile Include="EngineSynth.cpp" />
     <ClCompile Include="PourSynth.cpp" />
+    <ClCompile Include="BodyFallSynth.cpp" />
     <!-- 音の目録はゲームと共有する（ファイル名の食い違いを防ぐため、同じソースをリンクする）。 -->
     <ClCompile Include="..\..\GameSrc\src\Audio\SoundCatalog.cpp" />
   </ItemGroup>

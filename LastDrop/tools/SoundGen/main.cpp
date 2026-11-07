@@ -39,7 +39,7 @@ namespace{
 		case SOUND_BOLT_PULL:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
 		case SOUND_SIREN:			return makeSiren( random );
 		case SOUND_HIT_FLESH:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
-		case SOUND_HIT_HEAD:		break; // 録音素材だけを使う（SOUND_GEAR_RATTLE と同じ）
+		case SOUND_ZOMBIE_BODYFALL:	return makeZombieBodyFall( random );
 		case SOUND_IMPACT_CONCRETE:
 		case SOUND_IMPACT_DIRT:
 		case SOUND_IMPACT_METAL:	return makeImpact( id, random );

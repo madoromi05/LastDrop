@@ -24,6 +24,7 @@
 #include "GameSrc/Scene/Game/EffectManager.h"
 #include "GameSrc/Scene/Game/CombatResolver.h"
 #include "GameSrc/Scene/Game/InteractionSystem.h"
+#include "GameSrc/Raid/DayCondition.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
 #include <memory>
@@ -57,7 +58,8 @@ public:
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから、下のロードの段階を順に呼ぶ。
 	// meshes: 設計図を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所。
 	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
-	GameWorld( MeshCache* meshes, TownCache* town );
+	// day: 今日の条件の効き目（ゾンビの数・足音の届く距離。表の 1 行は起動中ずっとあるので参照で持つ。DayCondition_Plan.txt）。
+	GameWorld( MeshCache* meshes, TownCache* town, const DayConditionEffect& day );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
@@ -71,7 +73,7 @@ public:
 	void buildNavMesh();
 	// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後。
 	void buildVisibility();
-	// 自キャラ（と手に持つ銃）と確認用のゾンビを置く。歩ける床の後（ゾンビが共有の棚から床を借りる）。
+	// 自キャラ（と手に持つ銃）を置き、ゾンビを湧かせる係（ZombieSpawner）を作る。歩ける床の後（ゾンビが共有の棚から床を借りる）。
 	void placeActors();
 	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
@@ -109,6 +111,7 @@ public:
 
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
 	const TownMap& map() const;							// 町のどこに何を置くか
+	const DayConditionEffect& dayCondition() const;		// 今日の条件（街灯・霧・HUD はシーンがここから読む）
 	const NavMesh& navMesh() const;					// 町の歩ける床の形（確認用の表示が、床の縁を描くのに使う）
 	const TownGround& ground() const;					// 道路と歩道（足元の材質を聞ける）
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
@@ -152,6 +155,8 @@ private:
 	// cameraYaw: カメラの水平の向き（度）。
 	void spawnZombiesFromSpawner( float cameraYaw );
 
+	// 今日の条件の効き目（DayCondition.cpp の表の 1 行。借りているだけ）。
+	const DayConditionEffect& mDay;
 	// 町のどこに何を置くか。
 	TownMap mMap;
 	// 町の決まった形の持ち主（GameResources が持つ。借りているだけ）。

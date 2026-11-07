@@ -11,6 +11,7 @@
 #include "GameSrc/Zombie/ZombieAttackParams.h"
 #include "GameSrc/Render/LodSelector.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
+#include "GameSrc/Zombie/ZombieRunParams.h"
 #include "GameSrc/Zombie/AnimationThrottleParams.h"
 #include "GameSrc/Render/PostProcessParams.h"
 #include "GameSrc/Render/LightingParams.h"
@@ -97,6 +98,9 @@ namespace{
 			"ZombieAttack", "ZombieAttackParams", "GameSrc/Zombie/ZombieAttackParams.h", &zombieAttackParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
+		// 走るゾンビの割合・速さ・脚の線（R4_Plan.txt。遊んで決める値）。
+		groups.push_back( std::make_unique< TuningGroup< ZombieRunParams > >(
+			"ZombieRun", "ZombieRunParams", "GameSrc/Zombie/ZombieRunParams.h", &zombieRunParams ) );
 		// ゾンビのアニメを間引く段（OptimizationB_Plan.txt 9 章）。
 		groups.push_back( std::make_unique< TuningGroup< AnimationThrottleParams > >(
 			"AnimationThrottle", "AnimationThrottleParams", "GameSrc/Zombie/AnimationThrottleParams.h", &animationThrottleParams ) );

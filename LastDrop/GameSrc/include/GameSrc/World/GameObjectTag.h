@@ -15,6 +15,7 @@ enum class GameObjectTag{
 	ItemDrop,    // 地面に落ちている包帯・売れる物（カバンから捨てた物。拾うと消える。R3_Plan.txt）
 	LootContainer, // 漁れる置物（ゴミ箱・木箱。動かない。R3_Plan.txt Q1）
 	EscapeCar,   // 今日の脱出の車（ガソリンを入れる。漁れない。FuelEscapeLoading_Plan.txt）
+	FireHydrant, // 消火栓（見た目の置物。動かない箱で移動を止める。使えない）
 };
 
 #endif

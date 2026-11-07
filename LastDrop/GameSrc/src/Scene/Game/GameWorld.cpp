@@ -33,12 +33,12 @@ using namespace GameLib::Math;
 namespace{
 	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ。
 	// 建物・置物は WorldBuilder・PropFactory、血の量は EffectManager、倒したゾンビを漁れる場所にするのは CombatResolver が持つ。
-	const char* kBulletFile = "Resource/bullet_tip.txt";
+	const char* kBulletFile = "Resource/Model/Weapon/bullet_tip.txt";
 
-	const char* kZombieFile = "Resource/character.txt";
+	const char* kZombieFile = "Resource/Model/Character/zombie.txt";
 	const char* kZombieAnimation = "walk";
+	const char* kZombieRunAnimation = "run"; // 走る体が追う・寄るときのアニメ（R4_Plan.txt）
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
-	const int kMaxZombies = 30;								// 同時に居られるゾンビの数（死体も数える）
 	// 倒れるときのアニメ
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
@@ -74,7 +74,8 @@ namespace{
 	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes, TownCache* town ) :
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town, const DayConditionEffect& day ) :
+	mDay( day ),
 	mTown( town ),
 	mNavMesh( nullptr ),
 	mEscapeCarSpot( 0 ),
@@ -139,7 +140,7 @@ void GameWorld::placeActors() {
 		std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
 		rootMotionAnimations.push_back( kZombieStaggerAnimation );
 		rootMotionAnimations.push_back( kZombieAttackAnimation );
-		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, rootMotionAnimations );
+		mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, kZombieRunAnimation, rootMotionAnimations );
 		mZombieFactory = std::make_unique< ZombieFactory >( mZombieModel.get() );
 		// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
 		mZombieRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
@@ -149,18 +150,7 @@ void GameWorld::placeActors() {
 			spawnPoints.push_back( toPosition( p ) );
 		}
 		mZombieSpawner = std::make_unique< ZombieSpawner >( spawnPoints, &mHitWorld, &mCollisionWorld,
-			&mZombieModel->footprint(), mZombieRandom.getInt() );
-		// 当たり判定の確認用の1体。手足が伸びていて、部位の箱の大きさ・位置を見比べやすい。
-		// アニメを付けない（T ポーズ）。追ってこず、倒れず（体力は減って 0 で止まる）、よろけない（のけぞりだけ）。
-		// 止まった的なので、部位ごとの体力の減り方・のけぞりの向きを確かめやすい。
-		ZombieAnimationNames tPose;
-		tPose.move = nullptr;
-		tPose.moveStartTime = 0.f;
-		tPose.idle = nullptr;
-		tPose.death = nullptr;
-		tPose.downed = nullptr;
-		tPose.stagger = nullptr;
-		tPose.attack = nullptr;
+			&mZombieModel->footprint(), mZombieRandom.getInt(), mDay.zombieCount );
 	}
 }
 
@@ -182,17 +172,24 @@ void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3&
 }
 
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
-	if ( !mZombieFactory || mObjects.count< ZombieBrainComponent >() >= kMaxZombies ) {
+	// 同時に居られるゾンビの数（死体も数える）は、今日の条件で決まる（群れの日は多い）。
+	if ( !mZombieFactory || mObjects.count< ZombieBrainComponent >() >= mDay.zombieCount ) {
 		return false;
 	}
 	ZombieAnimationNames animations;
 	animations.move = kZombieAnimation;
+	animations.run = kZombieRunAnimation;
 	animations.moveStartTime = kAnimationStartStep * mZombieNumber;
 	animations.idle = kZombieIdleAnimation;
 	animations.death = kZombieDeathAnimations[ mZombieRandom.getInt( kZombieDeathAnimationNumber ) ];
 	animations.downed = kZombieDownedAnimation;
 	animations.stagger = kZombieStaggerAnimation;
 	animations.attack = kZombieAttackAnimation;
+	// 何体目か（mZombieNumber）で見通しを調べる時刻をずらす。うろつき方の乱数の種も体ごとに変える
+	// （同じ種だと全員が同じ向き・同じ間で歩き出す）。
+	// 2026-11-06 の「T ポーズのゾンビを削除」で、この組み立ての行（前は addZombie）も一緒に消えて、ゾンビが湧かなくなっていた。
+	mZombieFactory->spawn( &mObjects, position, yawDegree, animations, mZombieNumber, mZombieRandom.getInt() );
+	++mZombieNumber;
 	return true;
 }
 
@@ -268,7 +265,8 @@ void GameWorld::alertZombiesToFootsteps() {
 		return;
 	}
 	mFootstepNoiseTicks = kFootstepNoiseIntervalTicks;
-	float range = footstepHearingRange( mPlayer->getComponent< PlayerLocomotionComponent >()->gait() );
+	// 雨の日は届きにくい（今日の条件の倍率。DayCondition_Plan.txt）。
+	float range = footstepHearingRange( mPlayer->getComponent< PlayerLocomotionComponent >()->gait() ) * mDay.footstepHearingScale;
 	if ( range <= 0.f ) {
 		return; // 止まっている（つかまれている間も止まっている）
 	}
@@ -339,7 +337,7 @@ void GameWorld::spawnZombiesFromSpawner( float cameraYaw ) {
 			++view.standingZombies;
 		}
 	} );
-	view.hasRoom = mObjects.count< ZombieBrainComponent >() < kMaxZombies;
+	view.hasRoom = mObjects.count< ZombieBrainComponent >() < mDay.zombieCount;
 	mSpawnOrders.clear();
 	mZombieSpawner->update( view, &mSpawnOrders );
 	for ( const ZombieSpawner::Order& order : mSpawnOrders ) {
@@ -366,6 +364,10 @@ EffectManager& GameWorld::effects() {
 
 const TownMap& GameWorld::map() const {
 	return mMap;
+}
+
+const DayConditionEffect& GameWorld::dayCondition() const {
+	return mDay;
 }
 
 const NavMesh& GameWorld::navMesh() const {

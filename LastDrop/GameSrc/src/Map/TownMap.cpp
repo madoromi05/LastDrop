@@ -141,6 +141,31 @@ namespace{
 		{ 1.0f, 1.5f,  kCrateSide,  0.0f,       -90.f }, // 南北の道 1 番の真ん中の区間
 	};
 
+	// ── 消火栓（見た目の置物。漁れない）──
+	// 交差点のすぐ先の、南北の道の歩道の帯（縁石の上）に置く。交差点の真四角の中は丸い歩道や横断歩道なので避け、
+	// 帯がまっすぐになる所（交差点の辺から少し先）に立てる。正面（+Z。大きい放水口の側）は車道へ向ける。
+	// 置く角は交差点ごとに変えて、同じ並びに見えないようにする。南北の道が外へ続かない側（外周の道の外）には置かない。
+	struct HydrantSpot{
+		int column;   // 交差点の番号（南北に走る道。西から 0）
+		int row;      // 交差点の番号（東西に走る道。北から 0）
+		float sideX;  // 南北の道のどちら側の歩道か（-1 西・+1 東）
+		float sideZ;  // 交差点のどちら側の先か（-1 北・+1 南）
+	};
+	const HydrantSpot kHydrants[] = {
+		{ 1, 1,  1.f, -1.f }, // 中の十字路（北西）の北東の角
+		{ 2, 1, -1.f,  1.f }, // 中の十字路（北東）の南西の角
+		{ 1, 2, -1.f,  1.f }, // 中の十字路（南西）の南西の角
+		{ 2, 2,  1.f, -1.f }, // 中の十字路（南東）の北東の角
+		{ 0, 1,  1.f,  1.f }, // 西の外周の T 字路の南東の角
+		{ 3, 2, -1.f, -1.f }, // 東の外周の T 字路の北西の角
+	};
+	// 縁石の外側の線（車道の端）から、消火栓の中心まで。奥行き約 0.32m なので、縁石から少し離れて帯の上に収まる。
+	const float kHydrantFromCurb = 0.45f;
+	// 交差点の辺（歩道の帯が始まる所）から、消火栓の中心まで。
+	const float kHydrantPastJunction = 0.8f;
+	const float kFaceRoadFromEast = -90.f; // 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
+	const float kFaceRoadFromWest = 90.f;
+
 	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13。2026-11-05 に脱出点の円から変えた）。
 	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
 	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
@@ -345,6 +370,14 @@ namespace{
 	}
 
 
+	// 消火栓の置き場所（足元は歩道の面の高さ）。
+	TownPlacement hydrantPlacement( const HydrantSpot& spot ) {
+		float x = roadX( static_cast< float >( spot.column ) ) + spot.sideX * ( 0.5f * kRoadWidth + kHydrantFromCurb );
+		float z = roadZ( static_cast< float >( spot.row ) ) + spot.sideZ * ( 0.5f * kStreetWidth + kHydrantPastJunction );
+		float yaw = ( spot.sideX > 0.f ) ? kFaceRoadFromEast : kFaceRoadFromWest;
+		return { x, kSidewalkHeight, z, yaw };
+	}
+
 	// 交差点の真ん中を、道の本数から並べる（町の形を変えても直さなくてよい）。外周の道の交差点も入れる。
 	void addJunctionCenters( std::vector< TownPlacement >* junctions ) {
 		const float kNoOffset = 0.f;
@@ -379,6 +412,9 @@ TownMap::TownMap() :
 	}
 	for ( const EscapeCarSpot& car : kEscapeCarSpots ) {
 		mEscapeCarSpots.push_back( { car.name, toPlacement( car.spot ) } );
+	}
+	for ( const HydrantSpot& spot : kHydrants ) {
+		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
 }
 
@@ -416,6 +452,10 @@ const std::vector< TownPlacement >& TownMap::crates() const {
 
 const std::vector< TownEscapeCarSpot >& TownMap::escapeCarSpots() const {
 	return mEscapeCarSpots;
+}
+
+const std::vector< TownPlacement >& TownMap::fireHydrants() const {
+	return mFireHydrants;
 }
 
 const std::vector< GroundZone >& TownMap::groundZones() const {

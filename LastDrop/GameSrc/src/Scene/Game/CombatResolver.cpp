@@ -25,7 +25,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 血の跡（BloodStain_Plan.txt 3 章。ZombieHitFeedback_Plan.txt 4 章）
+	// 血の跡
 	const float kStainBehindDistance = 2.f; // 当たった所から弾の向きへ、血が飛ぶ所まで（m）
 	const float kStainDropDistance = 1.5f;  // 当たった所から真下へ、滴が落ちる所まで（m）
 	const Vector3 kDown( 0.f, -1.f, 0.f );
@@ -35,6 +35,30 @@ namespace{
 	// 頭に当たったとき・部位が千切れたときは大きくする（一番多く血が出る所）。
 	EffectManager::BloodStainSize bloodStainSize( BodyPart part, bool severed ) {
 		return ( part == BodyPart::Head || severed ) ? EffectManager::BloodStainSize::Large : EffectManager::BloodStainSize::Normal;
+	}
+
+	// 命中の重さ。重い方から調べる（頭で倒した ＞ 部位が飛んだ ＞ 倒した ＞ ふつう。HitFeel_Plan.txt Q1）。
+	// 重さの決まりを変えるときは、ここだけを直す。
+	CombatResolver::ZombieHit::Weight chooseHitWeight( BodyPart part, bool killed, bool severed ) {
+		typedef CombatResolver::ZombieHit::Weight Weight;
+		if ( killed && part == BodyPart::Head ) {
+			return Weight::HeadBurst;
+		}
+		if ( severed ) {
+			return Weight::Severed;
+		}
+		return killed ? Weight::Killed : Weight::Normal;
+	}
+
+	// 命中の重さ → 血しぶきの大きさ（ふつうだけ、頭かどうかで分ける。HitFeel_Plan.txt）。
+	EffectManager::BloodHitSize bloodHitSize( CombatResolver::ZombieHit::Weight weight, BodyPart part ) {
+		typedef CombatResolver::ZombieHit::Weight Weight;
+		switch ( weight ) {
+			case Weight::HeadBurst: return EffectManager::BloodHitSize::Burst;
+			case Weight::Severed:
+			case Weight::Killed:    return EffectManager::BloodHitSize::Heavy;
+			default: return ( part == BodyPart::Head ) ? EffectManager::BloodHitSize::Head : EffectManager::BloodHitSize::Body;
+		}
 	}
 }
 
@@ -70,22 +94,24 @@ void CombatResolver::resolveBulletImpacts( const std::vector< BulletList::Impact
 
 void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 	const HitWorld::Hit& hit = impact.hit;
-	HitboxComponent* hitbox = mObjects->find< HitboxComponent >( hit.target );
+	HitboxComponent* hitbox = mObjects->find< HitboxComponent >( hit.target );		// 基点となるコンポーネントの取得と検証
 	const ZombieStateComponent* state = hitbox ? hitbox->getComponent< ZombieStateComponent >() : nullptr;
-	if ( !state ) {
+	if ( !state )
 		return; // ゾンビでない的（今は無いが、自キャラを撃つ相手が増えたとき）
-	}
+
 	PROFILE_EVENT( "ZombieHit" ); // 計測の印（血しぶき・ひるみ・部位欠損が始まる）
-	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力はゾンビが生きている間だけ減らす）。
-	mEffects->spawnBloodHit( hit.point, impact.direction, hit.part );
 	ZombieHit event;
 	event.point = hit.point;
 	event.part = hit.part;
-	mZombieHits.push_back( event );
+	event.weight = ZombieHit::Weight::Normal;
+	event.killed = false;
 
+	// 血と出来事は、死体に当たったときも出す（体には変わりないため。体力はゾンビが生きている間だけ減らす）。
 	// 体力の部品は外せる（外したゾンビは撃っても死なない。血と当たった出来事だけ出す）。
 	ZombieHealthComponent* zombie = state->getComponent< ZombieHealthComponent >();
 	if ( !zombie ) {
+		mEffects->spawnBloodHit( hit.point, impact.direction, bloodHitSize( event.weight, hit.part ) );
+		mZombieHits.push_back( event );
 		stainAroundZombie( impact, bloodStainSize( hit.part, false ) );
 		return;
 	}
@@ -96,14 +122,23 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 	damage.direction = impact.direction;
 	bool wasAlive = state->isAlive();
 	zombie->applyDamage( damage ); // 倒れ始めたら（脚を失って倒れたときも）、ゾンビが自分で移動の名簿から外れる
-	if ( wasAlive && !state->isAlive() ) {
+
+	bool killed = wasAlive && !state->isAlive();
+	if ( killed ) {
 		makeLootable( *state ); // 脚を失って倒れたまま生きている（Downed）間は漁れない。止めを刺したときから
 		++mZombiesKilled; // 倒した数（スコア。死体を漁れるようになるのと同じ時＝止めを刺したとき）
 	}
+
 	// 切り口の決まりは、このゾンビの設計図から読む（設計図の種類が増えても、当たった体の形で切れる）。
 	const SkinnedMeshInstance& mesh = zombie->getComponent< SkinnedModelComponent >()->mesh();
 	const ZombieModel& model = *zombie->getComponent< ZombieModelComponent >()->model();
 	const std::vector< BodyPart >& severed = zombie->getComponent< ZombieDismemberComponent >()->dismemberment().severedThisHit();
+
+	event.weight = chooseHitWeight( hit.part, killed, !severed.empty() );
+	event.killed = killed;
+	mZombieHits.push_back( event );
+	mEffects->spawnBloodHit( hit.point, impact.direction, bloodHitSize( event.weight, hit.part ) ); // 重さが決まってから（頭は多く）
+
 	for ( BodyPart part : severed ) {
 		mEffects->spawnSeveredLimb( mesh, model, part, impact.direction );
 	}

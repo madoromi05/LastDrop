@@ -1,7 +1,7 @@
 {
     "mode": "static",
     "fbx_path": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/G2-Combat.fbx",
-    "out_path": "../../Resource/pistol_ground.txt",
+    "out_path": "../../Resource/Model/Weapon/pistol_ground.txt",
     "split_vertices": true,
     "resource_root": "../..",
     "mesh_names": ["gun", "barrel", "slide", "loader", "safety-R", "safety-L", "slide-lock", "hammer", "trigger", "magazine-release", "magazine", "magazine-bullet"],
@@ -9,9 +9,9 @@
     "center_origin": true,
     "scale": 1.2,
     "texture_export_size": 0,
-    "mesh_texture": "Resource/pistol_albedo.tga",
-    "mesh_normalmap": "Resource/pistol_normal.tga",
-    "mesh_orm": "Resource/pistol_orm.tga",
+    "mesh_texture": "Resource/Texture/Weapon/pistol_albedo.tga",
+    "mesh_normalmap": "Resource/Texture/Weapon/pistol_normal.tga",
+    "mesh_orm": "Resource/Texture/Weapon/pistol_orm.tga",
     "mesh_orm_export": false,
     "material_params": {
         "roughness": 1.0,

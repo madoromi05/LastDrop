@@ -39,6 +39,8 @@ public:
 		GameLib::Math::Random* random, bool withFuel ) const;
 	// 今日の脱出の車（置物の車と同じ形・同じ動かない箱。ガソリンを入れられ、漁れない）。requiredFuel: 走るのに要るガソリンの数。
 	GameObject* spawnEscapeCar( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, int requiredFuel ) const;
+	// 消火栓（見た目の置物。動かない箱として名簿へ載る。使えない・漁れない）。
+	GameObject* spawnFireHydrant( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
 	// 拾うと消えるガソリン（カバンから捨てたとき）。外せる箱で移動を止める（ユーザー指定）。
 	GameObject* spawnFuel( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
 	// 地面に落ちている銃（拾うとカバンへ入る）。id: どの銃か。上を歩ける。
@@ -61,6 +63,7 @@ private:
 
 	StaticMeshLods mVehicleShapes;  // どれも MeshCache から借りる。置物の車（細かさの段ごと）
 	StaticMeshLods mFuelCanShapes;  // ガソリンの携行缶（細かさの段ごと）
+	StaticMeshLods mFireHydrantShapes; // 消火栓（細かさの段ごと）
 	StaticMeshLods mDumpsterShapes; // ゴミ箱（1 段だけ。tools/loot_prop_gen.py で作る）
 	StaticMeshLods mCrateShapes;    // 木箱（同上）
 	// 落ちた形（物の種類ごと。形のファイルは ItemCatalog の groundFile。1 段だけ）。map なのは、groundFile の無い種類の分を持たないため。

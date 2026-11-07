@@ -24,7 +24,7 @@ public:
 	// shooter: 当てないキャラ（撃った本人。弾は本人の頭の箱の中から出るため）。所有権は受け取らない。nullptr なら全員に当たる。
 	// hit: 当たった所の出力先。nullptr 不可。
 	bool update( const HitWorld& world, const IHittable* shooter, HitWorld::Hit* hit );
-	// data の形で、今の位置に、飛ぶ向きへ先を向けて描く。data: 弾頭（Resource/bullet_tip.txt。底が原点・先が +Y）。isReady() 済みであること。
+	// data の形で、今の位置に、飛ぶ向きへ先を向けて描く。data: 弾頭（Resource/Model/Weapon/bullet_tip.txt。底が原点・先が +Y）。isReady() 済みであること。
 	void draw( const StaticMeshData& data ) const;
 
 	bool isFinished() const;	// 何かに当たったか、届く距離を飛びきったか（持ち主が消す）

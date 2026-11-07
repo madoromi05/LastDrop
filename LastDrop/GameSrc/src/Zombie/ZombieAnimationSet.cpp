@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/ZombieModel.h"
 #include "GameSrc/Zombie/ZombieAttack.h"
 #include "GameSrc/Zombie/ZombieRootMotionSpan.h"
+#include "GameSrc/Zombie/ZombieRunParams.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Core/GameTime.h"
@@ -35,7 +36,7 @@ namespace{
 	const float kLocomotionFadeTicks = 10.f;
 	// 立つ・歩くから攻撃のアニメへ繋ぐ長さ（ティック）。始める時刻は ZombieAttack::startTime（段階の時刻と揃える）。
 	const float kAttackFadeTicks = 6.f;
-	// 前へ倒れるアニメ（death1）が倒れ終わる時刻（フレーム）。ここから後は腰が動かない（Resource/character.txt の腰のキーで確かめた）。
+	// 前へ倒れるアニメ（death1）が倒れ終わる時刻（フレーム）。ここから後は腰が動かない（Resource/Model/Character/zombie.txt の腰のキーで確かめた）。
 	// これより短いアニメなら、最後まで来たら倒れ終わったとみなす。
 	const float kDownedFallEndTime = 160.f;
 
@@ -59,6 +60,7 @@ SkinnedMeshInstance* mesh, ZombieRootMotionSpan* rootSpan ) :
 	mRootSpan( rootSpan ),
 	mMove( findAnimation( model->data(), names.move ) ),
 	mIdle( findAnimation( model->data(), names.idle ) ),
+	mRun( findAnimation( model->data(), names.run ) ),
 	mDeath( findAnimation( model->data(), names.death ) ),
 	mDowned( findAnimation( model->data(), names.downed ) ),
 	mStagger( findAnimation( model->data(), names.stagger ) ),
@@ -68,30 +70,32 @@ SkinnedMeshInstance* mesh, ZombieRootMotionSpan* rootSpan ) :
 	mDeathRootMotion( model->rootMotion( names.death ) ),
 	mDownedRootMotion( model->rootMotion( names.downed ? names.downed : names.death ) ), // playDowned と同じ選び方
 	mMoveStartTime( names.moveStartTime ),
-	mWalking( false ) {
+	mGait( Gait::Stand ) {
 	ASSERT( mMesh && mRootSpan && "ZombieAnimationSet : mesh or rootSpan is null." );
 }
 
 void ZombieAnimationSet::startStanding() {
-	mMesh->setAnimation( locomotionAnimation(), mMoveStartTime );
+	mMesh->setAnimation( locomotionAnimation( mGait ), mMoveStartTime );
 }
 
-void ZombieAnimationSet::setWalking( bool walking ) {
-	if ( walking == mWalking ) {
-		return;
+void ZombieAnimationSet::setGait( Gait gait ) {
+	if ( gait != mGait ) {
+		Scene::Animation before = locomotionAnimation( mGait );
+		mGait = gait;
+		// 立つアニメが無い（立つ＝歩く）・走るアニメが無い（走る＝歩く）ときは、同じアニメなので繋ぎ直さない。
+		Scene::Animation after = locomotionAnimation( mGait );
+		if ( after != before ) {
+			mMesh->crossFadeTo( after, kMoveRestartTime, kLocomotionFadeTicks );
+		}
 	}
-	mWalking = walking;
-	// 立つアニメが無ければ、どちらも歩くアニメなので繋ぎ直さない。
-	if ( mIdle ) {
-		mMesh->crossFadeTo( locomotionAnimation(), kMoveRestartTime, kLocomotionFadeTicks );
-	}
+	applyRunRate(); // F6 で倍率を動かしたら、走っている体にもすぐ効く
 }
 
 void ZombieAnimationSet::playAttack( Vector3* footing ) {
 	mMesh->crossFadeTo( mAttack, ZombieAttack::startTime(), kAttackFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	mRootSpan->start( mAttackRootMotion, ZombieAttack::startTime(), ZombieRootMotionSpan::Pass::Target, footing );
 	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）。
-	mWalking = false;
+	mGait = Gait::Stand;
 }
 
 void ZombieAnimationSet::playStagger( Vector3* footing ) {
@@ -114,11 +118,16 @@ void ZombieAnimationSet::playDowned( Vector3* footing ) {
 
 void ZombieAnimationSet::returnToLocomotion( Vector3* footing ) {
 	// 攻撃・よろけの最後（元の立ち姿）から戻す。腰は始めた所へ戻っているので、置き場所も絵の根へ戻す。
-	mMesh->crossFadeTo( locomotionAnimation(), kMoveRestartTime, kRecoverFadeTicks );
+	mMesh->crossFadeTo( locomotionAnimation( mGait ), kMoveRestartTime, kRecoverFadeTicks );
+	applyRunRate(); // よろけの前に走っていたら、また走る速さで流す
 	mRootSpan->end( footing );
 }
 
 float ZombieAnimationSet::walkDistanceThisTick() const {
+	if ( mGait == Gait::Run && canRun() ) {
+		// 走りのアニメを倍率の速さで流すので、1 ティックに進むフレームも倍率の数だけ。表の 1 フレームぶんに倍率を掛ける。
+		return mModel->runStride().distanceAt( mMesh->animationPhase() * mRun.period() ) * zombieRunParams().runPlaybackRate;
+	}
 	const ZombieStride& stride = mModel->stride();
 	if ( !stride.isValid() ) {
 		return kFallbackWalkSpeed;
@@ -134,6 +143,10 @@ bool ZombieAnimationSet::hasFinishedDownedFall() const {
 
 bool ZombieAnimationSet::canWalk() const {
 	return static_cast< bool >( mMove );
+}
+
+bool ZombieAnimationSet::canRun() const {
+	return static_cast< bool >( mRun ) && mModel->runStride().isValid();
 }
 
 bool ZombieAnimationSet::hasDeath() const {
@@ -152,6 +165,17 @@ bool ZombieAnimationSet::hasAttack() const {
 	return static_cast< bool >( mAttack );
 }
 
-Scene::Animation ZombieAnimationSet::locomotionAnimation() const {
-	return ( mWalking || !mIdle ) ? mMove : mIdle;
+Scene::Animation ZombieAnimationSet::locomotionAnimation( Gait gait ) const {
+	switch ( gait ) {
+		case Gait::Run:   return canRun() ? mRun : mMove;
+		case Gait::Walk:  return mMove;
+		case Gait::Stand: break;
+	}
+	return mIdle ? mIdle : mMove;
+}
+
+void ZombieAnimationSet::applyRunRate() {
+	if ( mGait == Gait::Run && canRun() ) {
+		mMesh->setPlaybackRate( zombieRunParams().runPlaybackRate );
+	}
 }

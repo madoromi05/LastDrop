@@ -80,5 +80,29 @@ H-b 音（SoundGen で合成・目録に足す）
 H-c 血と画面の揺れ・ふつうを控えめに
 各段のあとに遊んで「重い命中が気持ちよいか・ふつうと見分けがつくか」を書く。
 
+■ 差分を書くときの直し（2026-11-06。コードを読んで変えた所）
+・「頭が弾けた」は「頭に当たった 1 発で倒した」で決める（クリティカルでも 3 発目でも、頭で倒せば頭は飛ぶ＝ZombieHealthComponent の severIfBroken）。
+  → ZombieHealth::takeDamage の戻り値は変えない（ZombieHealth は触らない）。
+・ZombieHit は weight（重さ）と killed（倒した）を持つ。倒れる音は重さに関係なく「倒した」なら鳴らす（脚を飛ばして倒したときも）。
+・HitFeelParams（F6）はやめ、値は使う所の定数に置く（揺れは FirstPersonControl・音量は ZombieHitSounds・血は EffectManager。今の揺れ・血の値と同じ置き方）。
+・H-a の「F6 で重さを文字で見る」はやめた（音と血で分かるため）。
+
 ■ 状態
 ・Q1〜Q6 は回答待ち。コードは未着手。
+
+■ ユーザーの変更（2026-11-06）
+・弾が当たった音は SOUND_HIT_FLESH 1 つだけにする（頭の音 SOUND_HIT_HEAD もやめる。千切れる・弾ける音は作らない。音量も重さで変えない）。
+  → Q5 の合成は「倒れる音」だけ（弾が当たった音ではないので残す。2026-11-06 ユーザー「残す」で決定）。
+・その代わり、頭に当たったら血の量を増やす。
+  頭に当たった（倒れていない）＝ 1.5 → 2.0（1 回の血しぶきの上限。BloodSpray::kMaxDropNumber 24 ＝ 12 粒 × 2）。
+  頭が弾けた ＝ 上限の 2.0 を 3 回（弾の向き・真上・撃った側）。
+・前の差分の直し：頭が弾けたを scale 3 にしていたが、BloodSpray は scale 2 を超えると ASSERT で止まる → 上の 3 回に変えた。
+
+■ 実装（2026-11-07。H-a〜H-c。ユーザーが途中まで入れた差分を整えて仕上げた）
+・CombatResolver：ZombieHit に weight・killed。chooseHitWeight（重さ）・bloodHitSize（重さ→血の大きさ）。血しぶきは重さが決まってから出す。
+・音：弾が当たった音は SOUND_HIT_FLESH だけ。SOUND_HIT_HEAD の位置に SOUND_ZOMBIE_BODYFALL（後ろの番号は変わらない）。
+  ZombieHitSounds が倒した 0.6 秒後に鳴らす（PendingFall）。合成は tools/SoundGen/BodyFallSynth.cpp。
+  WAV は zombie_bodyfall_0/1 だけを書き出して入れた（SoundGen は scratchpad へ書き出し、ほかの WAV は触っていない）。hit_head_0.wav は残してある（使わない）。
+・血：BloodSpray に kBaseDropNumber・kMaxScale（2）と範囲の ASSERT。ふつう 0.8・頭 2.0・部位/倒した 1.2・頭が弾けた 2.0 × 3 方向。
+・揺れ：FirstPersonControl::shakeOnHeavyHit（部位 0.15・頭 0.25・上限 0.6）。GameScene::shakeOnHeavyHits が命中を読んで呼ぶ。
+・Debug・Release・Profile・SoundGen ビルド済み。画面と音の確認待ち・未コミット。

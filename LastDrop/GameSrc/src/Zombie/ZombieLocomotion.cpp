@@ -23,13 +23,14 @@ namespace{
 }
 
 ZombieLocomotion::ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, PathBudget* pathBudget, const CharacterMover* mover,
-int sightPhase, int randomSeed ) :
+int sightPhase, int randomSeed, bool runner ) :
 	mSelf( self ),
 	mNavMesh( navMesh ),
 	mMover( mover ),
 	mChase( sightPhase, randomSeed ),
 	mPath( sightPhase, pathBudget ),
-	mSeparation( 0.f, 0.f, 0.f ) {
+	mSeparation( 0.f, 0.f, 0.f ),
+	mRunner( runner ) {
 	ASSERT( self && "ZombieLocomotion : self is null." );
 	ASSERT( navMesh && "ZombieLocomotion : navMesh is null." );
 	ASSERT( mover && "ZombieLocomotion : mover is null." );
@@ -51,6 +52,8 @@ const HitWorld& hitWorld, const ZombieCrowd* crowd, float weaveDegree, float* an
 	intent.walking = mChase.wantsToWalk();
 	intent.facing = false;
 	intent.wandering = ( mChase.mode() == ZombieChase::Mode::Wander );
+	// 走る体は、自キャラを追う間（Chase）も、音を聞いて寄る間（Search）も走る。うろつく間は歩く（R4_Plan.txt Q3）。
+	intent.running = mRunner && intent.walking && !intent.wandering;
 	if ( intent.wandering ) {
 		mPath.clear(); // うろつく先は近く（ZombieChase が通れる所を選ぶ）なので、通り道は使わない
 		if ( mChase.hasDestination() ) {
@@ -79,6 +82,7 @@ const HitWorld& hitWorld, float* angleY ) {
 	intent.walking = false;
 	intent.facing = false;
 	intent.wandering = ( mChase.mode() == ZombieChase::Mode::Wander );
+	intent.running = false; // 這っている体は走らない
 	if ( intent.wandering ) {
 		mPath.clear(); // 気付いていない間はうろつかず、その場でもがくだけ
 		return intent;
@@ -184,6 +188,14 @@ void ZombieLocomotion::hearNoise( const Vector3& position ) {
 
 void ZombieLocomotion::clearPath() {
 	mPath.clear();
+}
+
+void ZombieLocomotion::stopRunning() {
+	mRunner = false;
+}
+
+bool ZombieLocomotion::isRunner() const {
+	return mRunner;
 }
 
 ZombieChase::Mode ZombieLocomotion::mode() const {

@@ -35,16 +35,17 @@ enum SoundId{
 	// ── 環境音 ──（風・鳥・虫・発電機・飛行機は 2026-10-23 に消した。ユーザー指定）
 	SOUND_SIREN,			// 脱出のサイレン（1回鳴らす）
 	// ── 弾が当たった音 ──
-	SOUND_HIT_FLESH,		// ゾンビの体（頭以外）に当たった（当たった所から鳴らす）
-	SOUND_HIT_HEAD,			// ゾンビの頭に当たった（体より短く硬い音）
-	// ── 弾が物に当たった音（着弾音。当たった所から鳴らす）──
+	SOUND_HIT_FLESH,		// ゾンビに当たった（頭も。弾が当たった音はこれ 1 つ。2026-11-06 ユーザー指定）
+	// 倒れたゾンビの体が地面に着いた（低いドサッ。倒した所から）。やめた SOUND_HIT_HEAD の位置に入れた（後ろの番号を変えないため）
+	SOUND_ZOMBIE_BODYFALL,
+	// ── 弾が物に当たった音（着弾音。当たった所から鳴らす）
 	SOUND_IMPACT_CONCRETE,	// コンクリート・レンガ（建物・歩道）。高い破裂と細かい破片
 	SOUND_IMPACT_DIRT,		// 土・砂利（車道・町の外）。低く鈍い音と砂の落ちる音
 	SOUND_IMPACT_METAL,		// 金属（車・ガソリン缶・弾）。短い破裂の後に響く
 	// ── 装備（末尾に足す。SoundGen の種は音の番号から決まるので、途中に挿すと後ろの合成音が全部変わる）──
 	SOUND_FLASHLIGHT_CLICK,	// 銃の懐中電灯のスイッチ（付ける・消す）
 	// ── 銃（末尾に足す。理由は上と同じ）──
-	SOUND_PISTOL_SHOT,		// 拳銃の銃声（1発ごと。ライフルは SOUND_GUNSHOT。どちらを鳴らすかは WeaponSpec::shotSound）
+	SOUND_PISTOL_SHOT,		// 拳銃の銃声
 	// ── 漁る・包帯（段階R3。末尾に足す。理由は上と同じ。SummaryPlan/個別仕様/R3_Plan.txt Q7）──
 	SOUND_LOOT_SEARCH_METAL,	// 開けている間（ループ）：ゴミ箱（金属を探るガサガサ）
 	SOUND_LOOT_SEARCH_WOOD,		// 開けている間（ループ）：木箱

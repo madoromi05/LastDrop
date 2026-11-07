@@ -21,9 +21,9 @@ struct ChaseTarget;
 class ZombieChaseComponent : public Component{
 public:
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号（何体目か）。wanderSeed: うろつく先・立つ長さを選ぶ乱数の種。
-	// swayPeriodSeconds / swayStartPhase: 揺れの周期・始めの位相（ZombieSway）。
+	// swayPeriodSeconds / swayStartPhase: 揺れの周期・始めの位相（ZombieSway）。runner: 走る体か（R4_Plan.txt Q1）。
 	// 建物を回り込む通り道を聞く町の床の形（NavMesh）は共有の棚から、フラつきの骨の設計図は ZombieModelComponent から、awake で引く。
-	ZombieChaseComponent( int sightPhase, int wanderSeed, float swayPeriodSeconds, float swayStartPhase );
+	ZombieChaseComponent( int sightPhase, int wanderSeed, float swayPeriodSeconds, float swayStartPhase, bool runner );
 	~ZombieChaseComponent();
 
 	ZombieLocomotion& locomotion();
@@ -33,7 +33,7 @@ public:
 	// 立っている体が、追う先を見て行き先を決め、向きを変える（見た目の向きも合わせる）。歩くかどうかを返す。
 	// target: 追う先（nullptr なら追わない）。crowd: 近くの仲間（nullptr なら避けない）。
 	ZombieLocomotion::Intent think( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd );
-	// think の結果どおりに歩く（向き終わっていれば進む）。追いついて立ち止まっていれば、仲間の後ろから横へよける。
+	// think の結果どおりに歩く・走る（向き終わっていれば進む）。追いついて立ち止まっていれば、仲間の後ろから横へよける。
 	void walk( const ZombieLocomotion::Intent& intent, const ZombieCrowd* crowd );
 	// このティックの揺れを決める（姿勢を求める前に呼ぶ）。pursuing: 立って追える体で、よろけ・攻撃の最中でないか。
 	void updateSway( const ChaseTarget* target, bool pursuing );
@@ -49,13 +49,14 @@ public:
 	void start() override;
 
 private:
-	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて、近いほど強い。それ以外は 0。
+	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて、近いほど強い。それ以外は 0（走る体も 0）。
 	float swayStrength( const ChaseTarget* target, bool pursuing ) const;
 
 	int mSightPhase;
 	int mWanderSeed;
 	float mSwayPeriodSeconds;
 	float mSwayStartPhase;
+	bool mRunner; // 走る体か（ZombieLocomotion を作るときに渡すだけ。その後は ZombieLocomotion が持つ）
 	std::unique_ptr< ZombieSway > mSway;             // 設計図を借りるので awake で作る
 	std::unique_ptr< ZombieLocomotion > mLocomotion; // 滑る移動を借りるので awake で作る
 	// ── 同じ物の部品（start で借りる）──

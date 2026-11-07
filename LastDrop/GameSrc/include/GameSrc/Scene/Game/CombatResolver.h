@@ -15,7 +15,7 @@ class GameObjectWorld;
 class HitWorld;
 class ZombieStateComponent;
 
-// 当たった後に何が起きるかを決める係（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-4。2026-11-02 GameWorld から分けた）。
+// 当たった後に何が起きるかを決める係
 // ・弾：物に当たったら弾痕と砂ぼこり、ゾンビに当たったらダメージを渡して血しぶき・後ろの壁と足元の血の跡・千切れた部位・
 //   倒したら死体を漁れる場所にする（2026-11-05 から弾は落とさない。R3_Plan.txt Q10）
 // ・ゾンビの攻撃（★3）：つかんだら出来事を残し、噛んだ（這う体は腕が当たった）ら体力を減らす
@@ -26,10 +26,19 @@ class CombatResolver{
 public:
 	// ゾンビに弾が当たった出来事（ヒット音を鳴らすなど、世界の外の係が読む）。死体に当たったときも入る。
 	struct ZombieHit{
+		// 命中の重さ（HitFeel_Plan.txt）。血・画面の揺れの係が読む。決めるのは CombatResolver.cpp の chooseHitWeight だけ。
+		enum class Weight{
+			Normal,    // 胴・腕・脚に当たっただけ（死体に当たったときも）
+			Severed,   // 腕・脚が千切れた（脚を失って倒れた Downed も）
+			Killed,    // 止めを刺した（部位は飛んでいない・頭ではない）
+			HeadBurst, // 頭への 1 発で倒した（頭が飛ぶ）
+		};
 		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
 		BodyPart part;                // 当たった部位
+		Weight weight;
+		bool killed;                  // この 1 発で倒した（重さとは別。脚を飛ばして倒したときも true。倒れる音に使う）
 	};
-	// 弾が物（建物・車・地面・拾える物）に当たった出来事（着弾音を鳴らす係が読む）。
+	// 弾が物（建物・車・地面・拾える物）に当たった出来事（着弾音を鳴らす係が読む）
 	struct SurfaceHit{
 		GameLib::Math::Vector3 point; // 当たった位置（ワールド座標）
 		GroundMaterial material;      // 当たった物の、その位置の表面の材質
@@ -71,10 +80,10 @@ public:
 private:
 	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。部位が切れたら飛ばす。
 	void hitZombie( const BulletList::Impact& impact );
-	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける（BloodStain_Plan.txt 3 章）。
+	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける
 	// 後ろは、先に別のゾンビに当たったら付けない（後ろのゾンビにも、その奥の壁にも）。
 	void stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size );
-	// zombie が今倒れた（止めを刺した）ので、死体を漁れる場所にする（中身はゾンビの表。R3_Plan.txt Q10）。
+	// zombie が今倒れた（止めを刺した）ので、死体を漁れる場所にする
 	void makeLootable( const ZombieStateComponent& zombie );
 
 	GameObjectWorld* mObjects;  // 借りているだけ

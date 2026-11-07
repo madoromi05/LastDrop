@@ -1,0 +1,21 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/fire_hydrant_2k.fbx/fire_hydrant_atlas.fbx",
+    "out_path": "../../Resource/Model/Prop/fire_hydrant.txt",
+    "split_vertices": true,
+    "mesh_names": ["fire_hydrant_aged", "fire_hydrant_cap_01_aged", "fire_hydrant_cap_02_aged", "fire_hydrant_cap_03_aged", "fire_hydrant_chain_aged"],
+    "max_triangles": 3000,
+    "scale": 1.0,
+    "center_origin": true,
+    "mesh_texture": "Resource/Texture/Prop/fire_hydrant_albedo.tga",
+    "mesh_normalmap": "Resource/Texture/Prop/fire_hydrant_normal.tga",
+    "mesh_orm": "Resource/Texture/Prop/fire_hydrant_orm.tga",
+    "material_params": {
+        "roughness": 1.0,
+        "metallic": 1.0,
+        "specular": [0.1, 0.1, 0.1],
+        "sharpness": 20.0,
+        "normalstrength": 0.6
+    },
+    "lods": [0.5, 0.25]
+}

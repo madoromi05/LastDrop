@@ -1,6 +1,7 @@
 #include "GameSrc/Zombie/ZombieFactory.h"
 #include "GameSrc/Zombie/ZombieModel.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
+#include "GameSrc/Zombie/ZombieRunParams.h"
 #include "GameSrc/Zombie/ZombieModelComponent.h"
 #include "GameSrc/Zombie/ZombieBrainComponent.h"
 #include "GameSrc/Zombie/ZombieHealthComponent.h"
@@ -44,6 +45,9 @@ const ZombieAnimationNames& names, int sightPhase, int randomSeed ) const {
 	float swayPhase = random.getFloat();
 	float toughness = names.move ? params.pickToughness( &random ) : kFixedToughness;
 	int wanderSeed = random.getInt();
+	// 走る体か（湧いたときに 1 回だけ決め、一生変わらない。走るアニメが無ければ走らない。R4_Plan.txt Q1）。
+	// 乱数はいつも引く（走るアニメの有無で、後に引く頭のクリティカルの並びが変わらないように）。
+	bool runner = zombieRunParams().pickRunner( &random ) && names.run != nullptr;
 
 	// 外せる部品（ZombieAttack・ZombieHealth・ZombieCorpse・ZombieCrawl）は、行を消せばその振る舞いだけ無くなる
 	// （例：ZombieAttack の行を消すと攻撃しないゾンビ。どれが外せるかは ZombieBrainComponent.h）。
@@ -56,7 +60,7 @@ const ZombieAnimationNames& names, int sightPhase, int randomSeed ) const {
 	obj->addComponent< ZombieDismemberComponent >();
 	obj->addComponent< ZombieRootMotionComponent >( names );
 	obj->addComponent< ZombieStateComponent >();
-	obj->addComponent< ZombieChaseComponent >( sightPhase, wanderSeed, swayPeriod, swayPhase );
+	obj->addComponent< ZombieChaseComponent >( sightPhase, wanderSeed, swayPeriod, swayPhase, runner );
 	obj->addComponent< ZombieAttackComponent >();
 	obj->addComponent< ZombieHealthComponent >( toughness, random );
 	obj->addComponent< ZombieCorpseComponent >();

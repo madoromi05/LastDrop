@@ -34,7 +34,7 @@ public:
 private:
 	std::vector< BloodSpray > mSprays;   // 古い順
 	std::mt19937 mRandom;                // 滴の向き・速さのばらつき
-	GameLib::Graphics::Texture mTexture; // 滴の絵（Resource/blood_drop.tga）
+	GameLib::Graphics::Texture mTexture; // 滴の絵（Resource/Texture/Effect/blood_drop.tga）
 	LitQuadBatch mQuads;                 // 滴の板をためて、ライトを当てて描く
 };
 

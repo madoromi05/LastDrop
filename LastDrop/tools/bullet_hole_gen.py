@@ -12,7 +12,7 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/bullet_hole_gen.py [出力.tga] [法線の出力.tga]
-#   出力を省くと Resource/bullet_hole.tga と Resource/bullet_hole_normal.tga に書く。その後 tools/texture_to_dds.ps1 bullet_hole で DDS にする。
+#   出力を省くと Resource/Texture/Effect/bullet_hole.tga と Resource/Texture/Effect/bullet_hole_normal.tga に書く。その後 tools/texture_to_dds.ps1 bullet_hole で DDS にする。
 # =====================================================================
 
 import math
@@ -21,8 +21,8 @@ import sys
 
 from tga_image import over, smooth_step, to_byte, write_tga
 
-DEFAULT_OUTPUT = "Resource/bullet_hole.tga"
-DEFAULT_NORMAL_OUTPUT = "Resource/bullet_hole_normal.tga"
+DEFAULT_OUTPUT = "Resource/Texture/Effect/bullet_hole.tga"
+DEFAULT_NORMAL_OUTPUT = "Resource/Texture/Effect/bullet_hole_normal.tga"
 
 # 絵の大きさ（ピクセル）。GameLib は 2 の累乗でない絵を 2 の累乗へ広げて読み、UV がずれるので 2 の累乗にする。
 SIZE = 64

@@ -15,16 +15,16 @@ namespace{
 	// 道路キットの部品は tools/configs/road_*.json で変換（原点は真上から見た中心・一番下）。earth.txt は 1m 四方の無地の板（手書き）。
 	// 土の色はアスファルトの平均に合わせてある。部品のつなぎ目には数 mm のすき間があり、そこから見える土が明るいと路面に光る線が出るため。
 	const char* const kPieceFiles[ TOWN_PIECE_NUM ] = {
-		"Resource/road_straight.txt",
-		"Resource/road_center.txt",
-		"Resource/road_crosswalk.txt",
-		"Resource/road_curb.txt",
-		"Resource/road_curb_junction.txt",
-		"Resource/road_curb_stub.txt",
-		"Resource/road_corner.txt",
-		"Resource/road_corner_fill.txt",
-		"Resource/road_pavement.txt",
-		"Resource/earth.txt",
+		"Resource/Model/Map/road_straight.txt",
+		"Resource/Model/Map/road_center.txt",
+		"Resource/Model/Map/road_crosswalk.txt",
+		"Resource/Model/Map/road_curb.txt",
+		"Resource/Model/Map/road_curb_junction.txt",
+		"Resource/Model/Map/road_curb_stub.txt",
+		"Resource/Model/Map/road_corner.txt",
+		"Resource/Model/Map/road_corner_fill.txt",
+		"Resource/Model/Map/road_pavement.txt",
+		"Resource/Model/Map/earth.txt",
 	};
 
 	// 部品の種類ごとの足元の材質（足音の音色）。並びは TownPiece と同じ。車道は砂利、歩道はコンクリート。

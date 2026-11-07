@@ -16,7 +16,7 @@ namespace{
 	const float kMarkDistance = 4.f;
 
 	// 絵（tools/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）。
-	const char* kMarkTexture = "Resource/ui_interact_mark.tga";
+	const char* kMarkTexture = "Resource/UI/ui_interact_mark.tga";
 
 	// 画面の上の大きさ（画素）。遠くても見えるよう、距離では縮めない（ゾンビの頭上の体力のバーと同じ）。
 	const float kSmallSize = 14.f;  // 近くの物

@@ -1,7 +1,7 @@
 {
     "mode": "skinned",
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Idle.fbx",
-    "out_path": "../../Resource/player.txt",
+    "out_path": "../../Resource/Model/Character/player.txt",
     "split_vertices": true,
     "max_triangles": 20000,
     "mesh_names": ["Ch15"],
@@ -31,7 +31,7 @@
         "normalstrength": 0.6
     },
     "parts": {
-        "Ch15_body":  { "texture": "Resource/player_body_albedo.tga",  "normalmap": "Resource/player_body_normal.tga", "ormmap": "Resource/player_body_orm.tga" },
-        "Ch15_body1": { "texture": "Resource/player_body1_albedo.tga", "normalmap": "Resource/player_body1_normal.tga", "ormmap": "Resource/player_body1_orm.tga" }
+        "Ch15_body":  { "texture": "Resource/Texture/Character/player_body_albedo.tga",  "normalmap": "Resource/Texture/Character/player_body_normal.tga", "ormmap": "Resource/Texture/Character/player_body_orm.tga" },
+        "Ch15_body1": { "texture": "Resource/Texture/Character/player_body1_albedo.tga", "normalmap": "Resource/Texture/Character/player_body1_normal.tga", "ormmap": "Resource/Texture/Character/player_body1_orm.tga" }
     }
 }

@@ -32,6 +32,7 @@ public:
 		bool walking;   // 歩きたいか（ZombieChase::wantsToWalk）
 		bool facing;    // 行き先の方を向き終わったか（向きの差が大きいうちは false。まだ進まない）
 		bool wandering; // うろついているか（Wander。這っている体はその場でもがくだけ）
+		bool running;   // 走りたいか（走る体が、追う・寄る間に歩きたいとき。R4_Plan.txt Q3。這っている体は走らない）
 	};
 
 	// self: ZombieCrowd に自分を名乗るための持ち主（ポインタを比べるだけで、中身は読まない）。
@@ -39,8 +40,9 @@ public:
 	// mover: 壁・ほかの体に沿って滑る移動。
 	// どれも所有権は受け取らない。nullptr 不可。この部品より長く生きていること（mover は同じ Zombie のメンバで、この部品より先に宣言する）。
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号。randomSeed: うろつく先・立つ長さを選ぶ乱数の種（ZombieChase）。
+	// runner: 走る体か（湧いたときに決まる。R4_Plan.txt Q1）。
 	ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, PathBudget* pathBudget, const CharacterMover* mover, int sightPhase,
-		int randomSeed );
+		int randomSeed, bool runner );
 	ZombieLocomotion( const ZombieLocomotion& ) = delete;
 	ZombieLocomotion& operator=( const ZombieLocomotion& ) = delete;
 
@@ -69,6 +71,9 @@ public:
 	void alert();                                              // 撃たれた。見えていなくても気付く
 	void hearNoise( const GameLib::Math::Vector3& position );  // position で銃声がした。少し遅れてから探しに来る
 	void clearPath();                                          // 通り道を捨てる（攻撃を始めた・這い始めた）
+	// 脚が傷んで、もう走らない（歩きに落ちる。戻らない。R4_Plan.txt Q7）。走る体でなければ何もしない。
+	void stopRunning();
+	bool isRunner() const;                                     // 走る体か（脚が傷んで走れなくなったら false）
 	ZombieChase::Mode mode() const;                            // 今の考え（Wander / Chase / Search）
 	const ZombiePath& path() const;                            // 建物を回り込む通り道（確認用の表示）
 	// 最後に向く点へ混ぜた・横へよけた、仲間から離れる向き（水平。確認用の表示）。
@@ -89,6 +94,7 @@ private:
 	ZombieChase mChase;                  // どこへ行きたいか
 	ZombiePath mPath;                    // 行き先へまっすぐ通れないときの通り道
 	GameLib::Math::Vector3 mSeparation;  // 最後に混ぜた、仲間から離れる向き（確認用の表示）
+	bool mRunner;                        // 走る体か（脚が傷んだら false にして、もう戻さない）
 };
 
 #endif

@@ -1,7 +1,7 @@
 {
-    "output": "Resource/rifle_orm.tga",
+    "output": "Resource/Texture/Weapon/rifle_orm.tga",
     "size": 1024,
-    "albedo": "Resource/rifle_albedo.tga",
+    "albedo": "Resource/Texture/Weapon/rifle_albedo.tga",
     "rules": [
         { "name": "bare_metal", "saturation": [0.0, 0.15], "value": [0.5, 1.0], "roughness": 0.3,  "metallic": 1.0 },
         { "name": "steel",      "saturation": [0.0, 0.15],                      "roughness": 0.45, "metallic": 1.0 },

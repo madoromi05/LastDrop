@@ -9,7 +9,7 @@ class ZombieBrainComponent;
 class GameObjectWorld;
 
 // ゾンビ 1 体を部品から組み立てる（Unity のプレハブの代わり。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt の 4 章）。
-// 部品の並びと、体ごとの個体差（丈夫さ・揺れの速さ・うろつき方の乱数）を 1 か所で決める。
+// 部品の並びと、体ごとの個体差（丈夫さ・揺れの速さ・うろつき方の乱数・走る体か）を 1 か所で決める。
 // 付ける順は自由（部品は awake で自分の物を作り、start で隣の部品を借りる。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）。
 // 世界に 1 つの物（当たり判定の名簿・町の床の形・ティックの周り）は、部品が GameObjectWorld の共有の棚から引く
 // （spawn する world に、持ち主の GameWorld が置いておくこと）。

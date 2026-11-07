@@ -7,14 +7,14 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/interact_mark_gen.py [出力.tga]
-#   出力を省くと Resource/ui_interact_mark.tga に書く。UI の絵なので DDS にはせず、ゲームは LINEAR で読む。
+#   出力を省くと Resource/UI/ui_interact_mark.tga に書く。UI の絵なので DDS にはせず、ゲームは LINEAR で読む。
 # =====================================================================
 
 import sys
 
 from tga_image import over, smooth_step, to_byte, write_tga
 
-DEFAULT_OUTPUT = "Resource/ui_interact_mark.tga"
+DEFAULT_OUTPUT = "Resource/UI/ui_interact_mark.tga"
 
 SIZE = 64            # 絵の幅・高さ（画素）
 FILL_RADIUS = 0.72   # 白いひし形の大きさ（中心から頂点まで。絵の幅の半分を 1 とする）

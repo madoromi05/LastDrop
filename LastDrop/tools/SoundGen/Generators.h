@@ -33,5 +33,7 @@ Synth::Buffer makeEngineStart( Synth::Random* random );
 Synth::Buffer makeEngineIdle( Synth::Random* random );
 // 給油している間のガソリンを注ぐ音（PourSynth.cpp。ループ。FuelEscapeLoading_Plan.txt 改訂 2）。
 Synth::Buffer makeRefuelPour( Synth::Random* random );
+// 倒れたゾンビの体が地面に着く「ドサッ」（BodyFallSynth.cpp。HitFeel_Plan.txt Q5）。
+Synth::Buffer makeZombieBodyFall( Synth::Random* random );
 
 #endif

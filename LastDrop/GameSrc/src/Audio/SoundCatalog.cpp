@@ -13,6 +13,8 @@ namespace{
 	// 着弾音も連射で続くので、足音と同じ数を持つ。金属は響きが長く聞き分けやすいので少なめ。
 	const int kImpactVariations = 4;
 	const int kImpactMetalVariations = 3;
+	// 倒れる音は続けて倒すと重なるので 2 つ持つ（HitFeel_Plan.txt）。
+	const int kBodyFallVariations = 2;
 
 	// ── 素材の出どころ ──
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）。
@@ -44,6 +46,9 @@ namespace{
 	// 当たった音は足音と同じくらい届く。近い間（3m まで）は減衰させず、すぐ横で鳴る銃声に埋もれないようにする。
 	const float kHitMinDistance = 3.f;
 	const float kHitMaxDistance = 40.f;
+	// 倒れたゾンビの体の音。自分が倒した手応えの音なので、当たった音より近くまでしか届かなくてよい。
+	const float kBodyFallMinDistance = 2.f;
+	const float kBodyFallMaxDistance = 30.f;
 	// 物に当たった音（着弾音）。まずはゾンビに当たった音と同じ距離から始め、耳で直す。
 	// タルコフも物への着弾と体への命中の聞こえる距離を別々に調整しているので、定数を分けておく（ImpactSound_Plan.txt 1 章）。
 	const float kImpactMinDistance = 3.f;
@@ -95,8 +100,8 @@ namespace{
 		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
 		// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
 		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },
-		// 元の素材名: "Weapon Knife Hit Short 01.wav"（頭に無音は無い）
-		{ "hit_head",          kSingle, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kFromStart },
+		// 2026-11-06 頭に当たった音（hit_head）をやめた所に入れた（後ろの番号がずれないように。合成は BodyFallSynth.cpp）。
+		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart },
 		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },

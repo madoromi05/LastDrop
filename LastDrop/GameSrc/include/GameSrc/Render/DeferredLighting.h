@@ -81,7 +81,7 @@ private:
 	GameLib::Graphics::Shader mFogShader; // 霧（Fog.hlsl）
 	GameLib::Graphics::Shader mReflectionShader; // 映り込みを混ぜる（SsrComposite.hlsl）
 	GameLib::Graphics::ConstantBuffer mConstants;
-	GameLib::Graphics::Texture mMoonTexture; // 空に描く月の模様（Resource/moon.dds。SkyDetail.hlsli の t14。MoonStarsLut_Plan.txt 4 章）
+	GameLib::Graphics::Texture mMoonTexture; // 空に描く月の模様（Resource/Texture/Map/moon.dds。SkyDetail.hlsli の t14。MoonStarsLut_Plan.txt 4 章）
 };
 
 #endif

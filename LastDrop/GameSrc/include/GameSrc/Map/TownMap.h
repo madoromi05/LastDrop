@@ -68,6 +68,8 @@ public:
 	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
 	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）。毎日どれに置くかは RaidSession が選ぶ。
 	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;
+	// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）。
+	const std::vector< TownPlacement >& fireHydrants() const;
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 交差点の真ん中（道の中心どうしが交わる所。向きは使わない）。街灯の置き場所に使う。
 	const std::vector< TownPlacement >& junctions() const;
@@ -85,6 +87,7 @@ private:
 	std::vector< TownPlacement > mDumpsters;
 	std::vector< TownPlacement > mCrates;
 	std::vector< TownEscapeCarSpot > mEscapeCarSpots;
+	std::vector< TownPlacement > mFireHydrants;
 	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mJunctions;
 	std::vector< TownPlacement > mStreetLights;

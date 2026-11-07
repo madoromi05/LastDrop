@@ -32,7 +32,7 @@ namespace{
 	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
 
 	// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6 章）。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）。
-	const char* kPuddleMaskFile = "Resource/puddle_mask.dds";
+	const char* kPuddleMaskFile = "Resource/Texture/Map/puddle_mask.dds";
 	const int kPuddleMaskSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 10;
 	const int kPassSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
 	// 動きの種類を RT1 の a に書く数（Taa_Plan.txt 6 章。MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）。

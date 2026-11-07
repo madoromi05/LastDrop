@@ -242,6 +242,7 @@
     <ClCompile Include="GameSrc\src\Raid\RaidSession.cpp" />
     <ClCompile Include="GameSrc\src\Raid\RunState.cpp" />
     <ClCompile Include="GameSrc\src\Raid\RunRules.cpp" />
+    <ClCompile Include="GameSrc\src\Raid\DayCondition.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\ItemTransfer.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\ItemGridView.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\LootParams.cpp" />
@@ -513,6 +514,7 @@
     <ClCompile Include="GameSrc\src\Zombie\ZombieCrawler.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieDamageReaction.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieUncertaintyParams.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\ZombieRunParams.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\AnimationThrottle.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieAnimationSet.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieAttackReach.cpp" />
@@ -840,6 +842,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\Score.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RunState.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemTransfer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemGridView.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootParams.h" />
@@ -999,6 +1002,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRunParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottle.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottleParams.h" />
@@ -1106,7 +1110,7 @@
   </ItemGroup>
   <!-- ==================== リソース ==================== -->
   <ItemGroup>
-    <Image Include="Resource\font.tga" />
+    <Image Include="Resource\UI\font.tga" />
     <None Include="Resource\Shader\Common.hlsli" />
     <None Include="Resource\Shader\Present.hlsl" />
     <None Include="Resource\Shader\BloomExtract.hlsl" />

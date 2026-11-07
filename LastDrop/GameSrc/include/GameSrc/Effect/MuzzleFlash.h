@@ -50,9 +50,9 @@ private:
 	float mScale;  // 芯の大きさのばらつき（倍率）
 	int mShape;    // 芯の形（mCoreFrames のコマの番号）
 	std::mt19937 mRandom;                    // 大きさと形のばらつき
-	GameLib::Graphics::Texture mCoreTexture; // 光の芯の絵（Resource/muzzle_flash_sheet.tga。2×2 に 4 つの形）
+	GameLib::Graphics::Texture mCoreTexture; // 光の芯の絵（Resource/Texture/Effect/muzzle_flash_sheet.tga。2×2 に 4 つの形）
 	Flipbook mCoreFrames;                    // 上の絵のコマの並び
-	GameLib::Graphics::Texture mGlowTexture; // にじみの板の絵（Resource/muzzle_glow.tga）
+	GameLib::Graphics::Texture mGlowTexture; // にじみの板の絵（Resource/Texture/Effect/muzzle_glow.tga）
 	LitQuadBatch mCoreQuads; // 絵と明るさの倍率が違うので、芯とにじみの板は別にためて描く
 	LitQuadBatch mGlowQuads;
 };

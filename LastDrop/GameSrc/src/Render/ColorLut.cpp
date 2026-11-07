@@ -9,8 +9,8 @@
 using namespace GameLib;
 
 namespace{
-	const char* kLutFile = "Resource/lut.tga";
-	const char* kExportFile = "Resource/lut_export.tga";
+	const char* kLutFile = "Resource/UI/lut.tga";
+	const char* kExportFile = "Resource/UI/lut_export.tga";
 	const char* kBakeShaderFile = "Resource/Shader/LutBake.hlsl";
 	// 帯の大きさ：32×32 の表を横に 32 枚。
 	const int kStripWidth = ColorLut::kSize * ColorLut::kSize;

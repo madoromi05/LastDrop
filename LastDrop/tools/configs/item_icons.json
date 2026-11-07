@@ -1,13 +1,14 @@
 {
-    "output_dir": "../../Resource",
+    "output_dir": "../../Resource/UI",
     "icons": [
         {
             "name": "icon_fuel",
-            "fbx": "C:/Users/mador/Downloads/ゾンビゲーム/Oil+Tank+—+kopia/Model/Oil tank_atlas.fbx",
+            "fbx": "C:/Users/mador/Downloads/metal_jerrycan_2k.fbx/metal_jerrycan_atlas.fbx",
             "size": [512, 256],
             "rotation": [0.0, 90.0, 0.0],
-            "albedo": "../../Resource/fuelcan_albedo.tga",
-            "orm": "../../Resource/fuelcan_orm.tga"
+            "albedo": "../../Resource/Texture/Prop/fuelcan_albedo.tga",
+            "normal": "../../Resource/Texture/Prop/fuelcan_normal.tga",
+            "orm": "../../Resource/Texture/Prop/fuelcan_orm.tga"
         },
         {
             "name": "icon_ammo_762",
@@ -36,7 +37,7 @@
             "camera_azimuth": -90.0,
             "albedo": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_BaseColor.png",
             "normal": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Normal opengl.png",
-            "orm": "../../Resource/pistol_orm.tga"
+            "orm": "../../Resource/Texture/Weapon/pistol_orm.tga"
         },
         {
             "name": "icon_rifle",
@@ -44,16 +45,16 @@
             "size": [256, 256],
             "camera_elevation": 5.0,
             "camera_azimuth": -90.0,
-            "albedo": "../../Resource/rifle_albedo.tga",
-            "normal": "../../Resource/rifle_normal.tga",
-            "orm": "../../Resource/rifle_orm.tga"
+            "albedo": "../../Resource/Texture/Weapon/rifle_albedo.tga",
+            "normal": "../../Resource/Texture/Weapon/rifle_normal.tga",
+            "orm": "../../Resource/Texture/Weapon/rifle_orm.tga"
         },
         {
             "name": "icon_bandage",
             "fbx": "../generated/loot_props/bandage.fbx",
             "size": [256, 256],
-            "albedo": "../../Resource/loot_props_albedo.tga",
-            "orm": "../../Resource/loot_props_orm.tga"
+            "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
+            "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
         },
         {
             "name": "icon_watch",
@@ -61,8 +62,8 @@
             "size": [256, 256],
             "rotation": [0.0, 0.0, 45.0],
             "camera_elevation": 55.0,
-            "albedo": "../../Resource/loot_props_albedo.tga",
-            "orm": "../../Resource/loot_props_orm.tga"
+            "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
+            "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
         },
         {
             "name": "icon_laptop",
@@ -70,8 +71,8 @@
             "size": [512, 256],
             "camera_elevation": 50.0,
             "camera_azimuth": -15.0,
-            "albedo": "../../Resource/loot_props_albedo.tga",
-            "orm": "../../Resource/loot_props_orm.tga"
+            "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
+            "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
         }
     ]
 }

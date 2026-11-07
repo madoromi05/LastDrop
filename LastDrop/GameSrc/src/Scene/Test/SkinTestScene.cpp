@@ -20,7 +20,7 @@ namespace{
 	};
 
 	// ── ゾンビ（身長約1.82・Y=0立ち）──
-	const char* kZombieFile = "Resource/character.txt"; // tools/configs/zombie.json で変換
+	const char* kZombieFile = "Resource/Model/Character/zombie.txt"; // tools/configs/zombie.json で変換
 	const char* kZombieAnimation = "walk";               // コンバータの anim_name
 	const Placement kZombiePlacements[] = {
 		{  0.0f,  0.0f,   0.f },
@@ -31,7 +31,7 @@ namespace{
 	const float kAnimationStartStep = 11.f;
 
 	// ── 建物（幅約7.9・奥行き約7.8・屋根の高さ約10.8。足元の歩道は幅約11.2。底がY=0）──
-	const char* kBuildingFile = "Resource/building.txt"; // tools/configs/building.json で変換
+	const char* kBuildingFile = "Resource/Model/Map/building.txt"; // tools/configs/building.json で変換
 	// 正面(窓と店の入口)は +X 向きなので、rotateY(-90) で +Z（カメラ側）へ向ける。
 	const float kBuildingYaw = -90.f;
 	// 建物は tools/configs/building.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。

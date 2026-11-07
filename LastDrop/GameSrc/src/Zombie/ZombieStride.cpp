@@ -34,7 +34,7 @@ ZombieStride::ZombieStride( const SkinnedMeshData* data, Scene::Animation walk, 
 	mPeriod( 0.f ) {
 	ASSERT( data && "ZombieStride : data is null." );
 	if ( !walk || leftToe < 0 || rightToe < 0 || walk.period() <= 0.f ) {
-		GameLib::cout << "ZombieStride: no walk animation or toe bones. Zombies walk at a fixed speed." << GameLib::endl;
+		GameLib::cout << "ZombieStride: no animation or toe bones. No stride table." << GameLib::endl;
 		return;
 	}
 	mPeriod = walk.period();

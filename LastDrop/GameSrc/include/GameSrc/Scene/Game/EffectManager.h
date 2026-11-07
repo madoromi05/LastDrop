@@ -29,6 +29,14 @@ public:
 		Normal,
 		Large,
 	};
+	// 弾が当たったときの血しぶきの大きさ（HitFeel_Plan.txt。どれにするかは CombatResolver が命中の重さで決める）。
+	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（2026-11-06 ユーザー指定）。
+	enum class BloodHitSize{
+		Body,  // 胴・腕・脚（ふつう）
+		Head,  // 頭に当たったが倒れていない（1 回に出せる上限まで多く）
+		Heavy, // 部位が飛んだ・倒した
+		Burst, // 頭が弾けた（上限の血しぶきを 3 方向へ）
+	};
 
 	EffectManager();
 	EffectManager( const EffectManager& ) = delete;
@@ -37,9 +45,9 @@ public:
 	// 弾が物（建物・車・地面・拾える物）に当たった所に、弾痕と砂ぼこりを出す。
 	// blocker: 当たった物。物が消えるとき detach で弾痕を一緒に消すための目印で、中身は読まない。nullptr 不可。
 	void spawnSurfaceImpact( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, const IRayBlocker* blocker );
-	// 弾がゾンビ（死体も）に当たった所に血しぶきを出す。part で量と大きさを変える（頭は多く大きく）。
+	// 弾がゾンビ（死体も）に当たった所に血しぶきを出す。size で量と大きさを変える（頭は多く大きく）。
 	// direction: 弾の進む向き（長さ1）。
-	void spawnBloodHit( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, BodyPart part );
+	void spawnBloodHit( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, BloodHitSize size );
 	// 撃たれたゾンビの後ろの物（建物・車・地面・拾える物）の面に、飛び散った血の跡を付ける（BloodStain_Plan.txt）。
 	// point / normal / blocker: 付ける面（HitWorld::Hit の値）。direction: 弾の進む向き（長さ1。筋をこの向きへ伸ばす）。
 	void spawnBloodSplatter( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal,

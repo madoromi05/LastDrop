@@ -1,7 +1,7 @@
 {
     "mode": "static",
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/Post_Apocalyptic_UAZ_textures/Post_Apocalyptic_UAZ_atlas.fbx",
-    "out_path": "../../Resource/uaz.txt",
+    "out_path": "../../Resource/Model/Prop/uaz.txt",
     "split_vertices": true,
     "max_triangles": 30000,
     "scale": 0.85,
@@ -10,9 +10,9 @@
         { "object": "_other_source.", "min": [ 1.35, -0.17, 1.75], "max": [ 1.6, -0.15, 2.1] },
         { "object": "_other_source.", "min": [-1.35, -0.17, 1.75], "max": [-1.15, -0.15, 2.1] }
     ],
-    "mesh_texture": "Resource/uaz_albedo.tga",
-    "mesh_normalmap": "Resource/uaz_normal.tga",
-    "mesh_orm": "Resource/uaz_orm.tga",
+    "mesh_texture": "Resource/Texture/Prop/uaz_albedo.tga",
+    "mesh_normalmap": "Resource/Texture/Prop/uaz_normal.tga",
+    "mesh_orm": "Resource/Texture/Prop/uaz_orm.tga",
     "material_params": {
         "roughness": 1.0,
         "metallic": 1.0,

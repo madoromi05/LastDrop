@@ -11,7 +11,7 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/dust_gen.py [出力.tga]
-#   出力を省くと Resource/impact_dust.tga に書く。
+#   出力を省くと Resource/Texture/Effect/impact_dust.tga に書く。
 # =====================================================================
 
 import math
@@ -20,7 +20,7 @@ import sys
 
 from tga_image import over, smooth_step, to_byte, write_tga
 
-DEFAULT_OUTPUT = "Resource/impact_dust.tga"
+DEFAULT_OUTPUT = "Resource/Texture/Effect/impact_dust.tga"
 
 SIZE = 64   # 2 の累乗（bullet_hole_gen.py と同じ理由）
 SEED = 7622

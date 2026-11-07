@@ -10,11 +10,11 @@ using namespace GameLib::Math;
 namespace{
 	// 芯は 2×2 のます目に 4 つの形（tools/muzzle_flash_gen.py）。撃つたびに 1 つを選ぶ（コマ送りではない）。
 	// 2 枚とも、作った TGA を tools/texture_to_dds.ps1 で DDS にした物を読む。
-	const char* kCoreTextureFile = "Resource/muzzle_flash_sheet.dds";
+	const char* kCoreTextureFile = "Resource/Texture/Effect/muzzle_flash_sheet.dds";
 	const int kCoreShapeColumns = 2;
 	const int kCoreShapeRows = 2;
 	const int kCoreShapeNumber = kCoreShapeColumns * kCoreShapeRows;
-	const char* kGlowTextureFile = "Resource/muzzle_glow.dds";
+	const char* kGlowTextureFile = "Resource/Texture/Effect/muzzle_glow.dds";
 	const unsigned kRandomSeed = 5630u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
 	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる（2026-10-17 ユーザー指定）。

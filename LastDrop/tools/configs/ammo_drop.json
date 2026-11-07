@@ -1,7 +1,7 @@
 {
     "mode": "static",
     "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/弾丸/Rigged_FBX/Rigged_FBX/7.62 NATO FBX/SWK_7.62_Nato_Full.fbx",
-    "out_path": "../../Resource/ammo_drop.txt",
+    "out_path": "../../Resource/Model/Weapon/ammo_drop.txt",
     "split_vertices": true,
     "scale": 0.0225,
     "rotation": [90.0, 0.0, 0.0],
@@ -12,9 +12,9 @@
         "mesh_texture": "C:/Users/mador/Downloads/ゾンビゲーム/弾丸/Textures/Textures/7.62 NATO Textures/PBR/bullets_762 nato_BaseColor.png",
         "mesh_normalmap": "C:/Users/mador/Downloads/ゾンビゲーム/弾丸/Textures/Textures/7.62 NATO Textures/PBR/bullets_762 nato_Normal.png"
     },
-    "mesh_texture": "Resource/bullet_albedo.tga",
-    "mesh_normalmap": "Resource/bullet_normal.tga",
-    "mesh_orm": "Resource/bullet_orm.tga",
+    "mesh_texture": "Resource/Texture/Weapon/bullet_albedo.tga",
+    "mesh_normalmap": "Resource/Texture/Weapon/bullet_normal.tga",
+    "mesh_orm": "Resource/Texture/Weapon/bullet_orm.tga",
     "mesh_orm_export": false,
     "material_params": {
         "roughness": 1.0,

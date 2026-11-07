@@ -10,7 +10,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// tools/smoke_flipbook_gen.py で作る（4×4 のます目に 16 コマ）。その TGA を tools/texture_to_dds.ps1 で DDS にした物を読む。
-	const char* kTextureFile = "Resource/impact_smoke_sheet.dds";
+	const char* kTextureFile = "Resource/Texture/Effect/impact_smoke_sheet.dds";
 	const int kFrameColumns = 4;
 	const int kFrameRows = 4;
 	const int kFrameNumber = kFrameColumns * kFrameRows;

@@ -14,7 +14,7 @@
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
 #   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/blood_stain_gen.py [出力.tga] [法線の出力.tga]
-#   出力を省くと Resource/blood_stain.tga と Resource/blood_stain_normal.tga に書く。その後 tools/texture_to_dds.ps1 blood_stain で DDS にする。
+#   出力を省くと Resource/Texture/Effect/blood_stain.tga と Resource/Texture/Effect/blood_stain_normal.tga に書く。その後 tools/texture_to_dds.ps1 blood_stain で DDS にする。
 # =====================================================================
 
 import math
@@ -23,8 +23,8 @@ import sys
 
 from tga_image import smooth_step, to_byte, write_tga
 
-DEFAULT_OUTPUT = "Resource/blood_stain.tga"
-DEFAULT_NORMAL_OUTPUT = "Resource/blood_stain_normal.tga"
+DEFAULT_OUTPUT = "Resource/Texture/Effect/blood_stain.tga"
+DEFAULT_NORMAL_OUTPUT = "Resource/Texture/Effect/blood_stain_normal.tga"
 
 # 絵の大きさ（ピクセル。2 の累乗）と、1 種類の絵の大きさ（2×2 に並べる）。
 SIZE = 256

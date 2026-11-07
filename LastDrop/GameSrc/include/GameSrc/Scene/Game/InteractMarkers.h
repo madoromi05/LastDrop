@@ -39,7 +39,7 @@ private:
 		bool targeted;                   // 見ている物か（大きくして「E」）
 	};
 
-	GameLib::Graphics::Texture mTexture;         // ひし形の絵（Resource/ui_interact_mark.tga）。読めなければ四角で代わりに描く
+	GameLib::Graphics::Texture mTexture;         // ひし形の絵（Resource/UI/ui_interact_mark.tga）。読めなければ四角で代わりに描く
 	bool mHasTexture;                            // mTexture が読めたか（update で確かめる）
 	std::vector< InteractionSystem::NearbyInteractable > mNearby; // collectNearby の答えを受ける（毎回作り直さないよう持っておく）
 	std::vector< Mark > mMarks;

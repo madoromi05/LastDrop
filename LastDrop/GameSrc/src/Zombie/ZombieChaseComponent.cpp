@@ -14,11 +14,12 @@
 
 #include "GameLib/GameLib.h"
 
-ZombieChaseComponent::ZombieChaseComponent( int sightPhase, int wanderSeed, float swayPeriodSeconds, float swayStartPhase ) :
+ZombieChaseComponent::ZombieChaseComponent( int sightPhase, int wanderSeed, float swayPeriodSeconds, float swayStartPhase, bool runner ) :
 	mSightPhase( sightPhase ),
 	mWanderSeed( wanderSeed ),
 	mSwayPeriodSeconds( swayPeriodSeconds ),
 	mSwayStartPhase( swayStartPhase ),
+	mRunner( runner ),
 	mPosition( nullptr ),
 	mAngleY( nullptr ),
 	mMesh( nullptr ),
@@ -35,7 +36,7 @@ void ZombieChaseComponent::awake() {
 	const CharacterColliderComponent* collider = requireComponent< CharacterColliderComponent >();
 	// 仲間の並び（ZombieCrowd）に自分を名乗るのは、物そのもの（ポインタを比べるだけ）。
 	mLocomotion = std::make_unique< ZombieLocomotion >( gameObject(), shared< NavMesh >(), shared< PathBudget >(), &collider->mover(),
-		mSightPhase, mWanderSeed );
+		mSightPhase, mWanderSeed, mRunner );
 }
 
 void ZombieChaseComponent::start() {
@@ -68,8 +69,12 @@ ZombieLocomotion::Intent ZombieChaseComponent::think( const ChaseTarget* target,
 }
 
 void ZombieChaseComponent::walk( const ZombieLocomotion::Intent& intent, const ZombieCrowd* crowd ) {
-	// 向きを変えている最中も、歩きたいなら歩くアニメにする（その場で向きを変える動きに見せる）。
-	mAnimations->setWalking( intent.walking );
+	// 向きを変えている最中も、歩きたいなら歩く（走る）アニメにする（その場で向きを変える動きに見せる）。
+	ZombieAnimationSet::Gait gait = ZombieAnimationSet::Gait::Stand;
+	if ( intent.walking ) {
+		gait = intent.running ? ZombieAnimationSet::Gait::Run : ZombieAnimationSet::Gait::Walk;
+	}
+	mAnimations->setGait( gait );
 	if ( intent.walking && intent.facing ) {
 		*mPosition += mLocomotion->walkStep( mAnimations->walkDistanceThisTick(), *mAngleY );
 	} else if ( !intent.walking && mLocomotion->mode() == ZombieChase::Mode::Chase ) {
@@ -87,6 +92,10 @@ void ZombieChaseComponent::updateSway( const ChaseTarget* target, bool pursuing 
 float ZombieChaseComponent::swayStrength( const ChaseTarget* target, bool pursuing ) const {
 	// 遠くでは揺らさない（遠くから頭を狙う楽しさは残す）。音で探しに来る・うろつく間も揺らさない。
 	if ( !target || !pursuing || mLocomotion->mode() != ZombieChase::Mode::Chase ) {
+		return 0.f;
+	}
+	// 走る体は揺らさない（走りのアニメ自体が大きく動くので、揺れを足すと狙えなくなる。脚が傷んで歩きに落ちたら揺れる。R4_Plan.txt Q6）。
+	if ( mLocomotion->isRunner() ) {
 		return 0.f;
 	}
 	const ZombieUncertaintyParams& params = zombieUncertaintyParams();

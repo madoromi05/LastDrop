@@ -65,6 +65,9 @@ public:
 	void flinch();
 	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）。
 	void shakeOnGrab();
+	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間に呼ぶ。絵だけを少し揺らす（弾道は動かさない。HitFeel_Plan.txt Q3）。
+	// headBurst: 頭が弾けた（部位が飛んだより少し大きく揺らす）。
+	void shakeOnHeavyHit( bool headBurst );
 	// 視点を target（ワールド座標）の方へ、決まった時間をかけて向け始める（ゾンビにつかまれた瞬間に、その顔を見る）。
 	// 向けている間もマウスで回せる（回した分はそのまま足される）。続けて呼ぶと、その時点の向きから向け直す。
 	void lookToward( const GameLib::Math::Vector3& target );

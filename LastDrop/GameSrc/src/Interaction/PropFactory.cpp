@@ -13,11 +13,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	const char* kVehicleFile = "Resource/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
-	const char* kFuelCanFile = "Resource/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
+	const char* kVehicleFile = "Resource/Model/Prop/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
+	const char* kFuelCanFile = "Resource/Model/Prop/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上。2026-11-08 に metal_jerrycan へ差し替え）
+	const char* kFireHydrantFile = "Resource/Model/Prop/fire_hydrant.txt"; // tools/configs/fire_hydrant_atlas.json → fire_hydrant.json で変換（同上）
 	// ゴミ箱・木箱は tools/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上。R3_Plan.txt Q2）。
-	const char* kDumpsterFile = "Resource/dumpster.txt";
-	const char* kCrateFile = "Resource/crate.txt";
+	const char* kDumpsterFile = "Resource/Model/Prop/dumpster.txt";
+	const char* kCrateFile = "Resource/Model/Prop/crate.txt";
 	// 落ちた物の形のファイルは物の表（ItemCatalog の groundFile）、落ちている銃の形のファイルは銃ごとの表（WeaponCatalog の groundFile）にある。
 
 	// ── 物の名前（確認用。F6 のエディタの物の一覧・デバッグ出力。ゲームの判断はタグで行う）──
@@ -29,6 +30,7 @@ namespace{
 	const char* kEscapeCarName = "EscapeCar";
 	const char* kDumpsterName = "Dumpster";
 	const char* kCrateName = "Crate";
+	const char* kFireHydrantName = "FireHydrant";
 
 	const int kFuelPerCan = 1;
 	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）。
@@ -45,6 +47,7 @@ PropFactory::PropFactory( MeshCache* meshes ) :
 	// 車と缶は粗い形（LOD）も読む（OptimizationC_Plan.txt Q7。弾の箱は小さく、2 画素未満で消えるので段を持たない）。
 	mVehicleShapes( StaticMeshLods::request( meshes, kVehicleFile ) ),
 	mFuelCanShapes( StaticMeshLods::request( meshes, kFuelCanFile ) ),
+	mFireHydrantShapes( StaticMeshLods::request( meshes, kFireHydrantFile ) ),
 	mDumpsterShapes( meshes->staticMesh( kDumpsterFile ) ),
 	mCrateShapes( meshes->staticMesh( kCrateFile ) ) {
 	ASSERT( meshes && "PropFactory : meshes is null." );
@@ -91,6 +94,17 @@ GameObject* PropFactory::spawnEscapeCar( GameObjectWorld* world, const Vector3& 
 	GameObject* obj = createProp( world, GameObjectTag::EscapeCar, kEscapeCarName, mVehicleShapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
 	obj->addComponent< EscapeCarComponent >( requiredFuel ); // 車全体を見れば給油できる（給油口は作らない）
+	world->spawn( obj );
+	return obj;
+}
+
+GameObject* PropFactory::spawnFireHydrant( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
+	if ( !mFireHydrantShapes.full()->isReady() ) {
+		return nullptr;
+	}
+	// 背丈 0.8m・幅 0.3m ほどの細い物なので、小さすぎれば描かない側（Small）で間引く。
+	GameObject* obj = createProp( world, GameObjectTag::FireHydrant, kFireHydrantName, mFireHydrantShapes, position, yawDegree,
+		DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
 	world->spawn( obj );
 	return obj;
 }

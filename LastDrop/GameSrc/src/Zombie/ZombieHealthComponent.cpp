@@ -7,6 +7,7 @@
 #include "GameSrc/Zombie/ZombieChaseComponent.h"
 #include "GameSrc/Zombie/ZombieDismemberComponent.h"
 #include "GameSrc/Zombie/ZombieRootMotionComponent.h"
+#include "GameSrc/Zombie/ZombieRunParams.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
@@ -60,6 +61,10 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
 	float dealt = totalBefore - mHealth.total();
 	mLocomotion->alert(); // 撃たれたら、見えていなくても気付く
+	// 走る体は、脚が傷んだらもう走らない（歩きに落ちる。脚を撃って足止めできる。R4_Plan.txt Q7）。
+	if ( mHealth.weakestLegRatio() <= zombieRunParams().legSlowRatio ) {
+		mLocomotion->stopRunning();
+	}
 	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す。
 	mFlinch->push( damage.part, mMesh->toRootDirection( damage.direction ) );
 	// 倒れる 1 発で部位も 0 になったら、切れてから倒れる（頭を撃って倒したときは、頭が飛ぶ）。

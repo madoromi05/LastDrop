@@ -11,9 +11,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 立っているゾンビの目標の数。2026-11-05 に給油で増やす決まり（+5・上限 50）を消した（車のゴールをやめた。R2_Plan.txt Q15）。
-	// 時間・日で増やすのは段階R4 で決める。
-	const int kTargetCount = 30;
+	// 立っているゾンビの目標の数は、作るときに受け取る（日の条件で変わる。DayConditionEffect::zombieCount）。
 	// 減ったら、これだけ待って 1 体補う（秒）。倒した直後に湧かないように。
 	const float kRefillSeconds = 10.f;
 	const int kRefillTicks = GameTime::secondsToTicks( kRefillSeconds );
@@ -30,7 +28,7 @@ namespace{
 }
 
 ZombieSpawner::ZombieSpawner( const std::vector< Vector3 >& candidates, const HitWorld* hitWorld,
-const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int randomSeed ) :
+const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int randomSeed, int targetCount ) :
 	mCandidates( candidates ),
 	mHitWorld( hitWorld ),
 	mCollisionWorld( collisionWorld ),
@@ -38,14 +36,14 @@ const CollisionWorld* collisionWorld, const BodyFootprint* footprint, int random
 	mRandom( Random::create( randomSeed ) ),
 	mPlacedInitial( false ),
 	mRefillTicks( kRefillTicks ),
-	mTargetCount( 0 ),
+	mTargetCount( targetCount ),
 	mStandingCount( 0 ) {
 	ASSERT( hitWorld && collisionWorld && footprint && "ZombieSpawner : world is null." );
+	ASSERT( targetCount > 0 && "ZombieSpawner : targetCount must be positive." );
 }
 
 void ZombieSpawner::update( const View& view, std::vector< Order >* out ) {
 	ASSERT( out && "ZombieSpawner : out is null." );
-	mTargetCount = kTargetCount;
 	mStandingCount = view.standingZombies;
 	if ( mCandidates.empty() ) {
 		return;

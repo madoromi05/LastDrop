@@ -12,8 +12,8 @@ using namespace GameLib::Math;
 
 namespace{
 	// tools/blood_stain_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 blood_stain で DDS にする）。
-	const char* kTextureFile = "Resource/blood_stain.dds";
-	const char* kNormalMapFile = "Resource/blood_stain_normal.dds";
+	const char* kTextureFile = "Resource/Texture/Effect/blood_stain.dds";
+	const char* kNormalMapFile = "Resource/Texture/Effect/blood_stain_normal.dds";
 
 	// 同時に残す数（BloodStain_Plan.txt Q4。ZombieHitFeedback_Plan.txt 4 章）。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す。
 	const int kCapacity = 32;

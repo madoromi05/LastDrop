@@ -4,9 +4,10 @@
 #include "GameSrc/Interaction/ItemGrid.h"
 #include "GameSrc/Raid/DayResult.h"
 #include "GameSrc/Raid/Score.h"
+#include "GameSrc/Raid/DayCondition.h"
 
 // 5 日間の今の様子と、5 日間をまたいで残る物の持ち主（R2_Plan.txt 5 章）。起動から終了まで 1 つだけ（GameResources が持つ。GameSettings と同じ扱い）。
-// ・今の回：何日目か・倉庫とカバン（ItemGrid）・ここまでに倒した数
+// ・今の回：何日目か・倉庫とカバン（ItemGrid）・ここまでに倒した数・日ごとの条件（DayCondition_Plan.txt）
 // ・回をまたいで残る：ハイスコア（段階R5 で強化の段を足す）
 // ・前の結果：最後の 1 日の結果（DayResult）・最後の 5 日間の終わり（RunEnd）。結果・スコアの画面が読む
 // 何をどう変えるか（出撃・脱出・ゲームオーバーで何が残るか）は RunRules が決める。ここは持つのと、ファイル（save.xml）へ書く・読むだけ。
@@ -31,6 +32,10 @@ public:
 	int kills() const;               // 前の日までに倒した数（今の日の分は脱出・ゲームオーバーで足す）
 	void setDay( int day );
 	void setKills( int kills );
+	// 何日目にどの条件か（day: 1〜kDayCount）。5 日間の始めに RunRules が 5 日分を決めて保存する
+	// （その日をやり直しても引き直せない。DayCondition_Plan.txt Q3）。
+	DayCondition condition( int day ) const;
+	void setCondition( int day, DayCondition condition );
 
 	// ── 回をまたいで残る ──
 	int bestScore() const;
@@ -59,6 +64,7 @@ private:
 	ItemGrid mStash;
 	ItemGrid mBag;
 	int mKills;
+	DayCondition mConditions[ kDayCount ]; // 日 − 1 で引く
 	int mBestScore;
 	DayResult mLastDay;
 	RunEnd mLastRunEnd;

@@ -6,11 +6,26 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 血しぶきの量と大きさの倍率。頭は多く大きく飛ばす（当たった手応えを一番強くする部位）。
-	const float kBodyBloodScale = 1.f;
-	const float kHeadBloodScale = 1.5f;
+	// 血しぶきの量と大きさの倍率（1 回は BloodSpray::kMaxScale まで。HitFeel_Plan.txt）。
+	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（2026-11-06 ユーザー指定。頭は 1.5 → 上限）。
+	const float kBodyBloodScale = 0.8f;                 // ふつう（少し控えめにして、重い命中との差を作る）
+	const float kHeadBloodScale = BloodSpray::kMaxScale; // 頭に当たった（倒れていない）
+	const float kHeavyBloodScale = 1.2f;                // 部位が飛んだ・倒した（切り口からは別に kSeverBloodScale が出る）
 	// 部位が千切れたときに切り口から出す血しぶきの倍率。当たったときより大きく、一番多く出す（BloodSpray::kMaxDropNumber まで）。
-	const float kSeverBloodScale = 2.f;
+	const float kSeverBloodScale = BloodSpray::kMaxScale;
+	// 頭が弾けたときは、上限の血しぶきを弾の向き・真上・撃った側の 3 方向へ出す（1 回では上限を超えられないため）。
+	const float kBurstBloodScale = BloodSpray::kMaxScale;
+	const Vector3 kUp( 0.f, 1.f, 0.f );
+	const float kReverse = -1.f;
+
+	float bloodHitScale( EffectManager::BloodHitSize size ) {
+		switch ( size ) {
+			case EffectManager::BloodHitSize::Head:  return kHeadBloodScale;
+			case EffectManager::BloodHitSize::Heavy: return kHeavyBloodScale;
+			case EffectManager::BloodHitSize::Burst: return kBurstBloodScale;
+			default:                                 return kBodyBloodScale;
+		}
+	}
 
 	// 血の跡の幅の半分（m。BloodStain_Plan.txt。ZombieHitFeedback_Plan.txt 4 章の 25cm・頭 35cm）。
 	// 滴の跡は飛び散った血の半分（落ちた滴だけなので小さい）。
@@ -31,8 +46,15 @@ void EffectManager::spawnSurfaceImpact( const Vector3& point, const Vector3& nor
 	mImpactDust.spawn( point, normal );
 }
 
-void EffectManager::spawnBloodHit( const Vector3& point, const Vector3& direction, BodyPart part ) {
-	mBloodSpray.spawn( point, direction, ( part == BodyPart::Head ) ? kHeadBloodScale : kBodyBloodScale );
+void EffectManager::spawnBloodHit( const Vector3& point, const Vector3& direction, BloodHitSize size ) {
+	mBloodSpray.spawn( point, direction, bloodHitScale( size ) );
+	if ( size != BloodHitSize::Burst ) {
+		return;
+	}
+	Vector3 back;
+	back.setMul( direction, kReverse );
+	mBloodSpray.spawn( point, kUp, kBurstBloodScale );   // 真上
+	mBloodSpray.spawn( point, back, kBurstBloodScale );  // 撃った側
 }
 
 void EffectManager::spawnBloodSplatter( const Vector3& point, const Vector3& normal, const Vector3& direction,

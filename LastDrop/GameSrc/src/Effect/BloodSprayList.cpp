@@ -9,7 +9,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const char* kTextureFile = "Resource/blood_drop.dds"; // tools/blood_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 で DDS にする）
+	const char* kTextureFile = "Resource/Texture/Effect/blood_drop.dds"; // tools/blood_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 で DDS にする）
 
 	// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.4 秒で消えるので、ふだんは 4 回分ほど）。
 	const int kCapacity = 16;

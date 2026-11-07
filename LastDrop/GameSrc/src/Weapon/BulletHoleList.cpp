@@ -12,8 +12,8 @@ using namespace GameLib::Math;
 
 namespace{
 	// tools/bullet_hole_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 で DDS にする）。
-	const char* kTextureFile = "Resource/bullet_hole.dds";
-	const char* kNormalMapFile = "Resource/bullet_hole_normal.dds";
+	const char* kTextureFile = "Resource/Texture/Effect/bullet_hole.dds";
+	const char* kNormalMapFile = "Resource/Texture/Effect/bullet_hole_normal.dds";
 
 	// 同時に残す数（2026-10-14 ユーザー指定）。超えたら一番古い物から消す。
 	const int kCapacity = 16;

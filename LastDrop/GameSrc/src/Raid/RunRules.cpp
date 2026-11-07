@@ -3,10 +3,39 @@
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Math/Random.h"
+#include "Framework.h"
+#include <algorithm>
 #include <cmath>
+#include <iterator>
+#include <utility>
 
 namespace{
 	const int kFirstDay = 1;
+
+	// 5 日の条件の並べ方（DayCondition_Plan.txt Q2）：1 日目はふつう（町を覚える日）・5 日目は群れ（山場を最終日にまとめる）・
+	// その間は停電・霧・雨を 1 回ずつ混ぜる（同じ条件が続かない・群れは 1 回だけ）。並べ方を変えるときはここだけを直す。
+	const DayCondition kFirstDayCondition = DayCondition::Normal;
+	const DayCondition kLastDayCondition = DayCondition::Horde;
+	const DayCondition kMiddleConditions[] = { DayCondition::Blackout, DayCondition::Fog, DayCondition::Rain };
+	const int kMiddleConditionNumber = sizeof( kMiddleConditions ) / sizeof( kMiddleConditions[ 0 ] );
+	const int kFirstAndLastDays = 2;
+	static_assert( kMiddleConditionNumber + kFirstAndLastDays == RunState::kDayCount, "the conditions must fill every day" );
+
+	// 5 日分の条件を決める（5 日間の始めに 1 回。遊ぶたびに変わるよう、起動からの時間を種にする）。
+	void rollConditions( RunState* run ) {
+		DayCondition middle[ kMiddleConditionNumber ];
+		std::copy( std::begin( kMiddleConditions ), std::end( kMiddleConditions ), middle );
+		GameLib::Math::Random random = GameLib::Math::Random::create( static_cast< int >( GameLib::Framework::instance().time() ) );
+		for ( int i = kMiddleConditionNumber - 1; i > 0; --i ) { // Fisher–Yates
+			std::swap( middle[ i ], middle[ random.getInt( i + 1 ) ] );
+		}
+		run->setCondition( kFirstDay, kFirstDayCondition );
+		for ( int i = 0; i < kMiddleConditionNumber; ++i ) {
+			run->setCondition( kFirstDay + 1 + i, middle[ i ] );
+		}
+		run->setCondition( RunState::kDayCount, kLastDayCondition );
+	}
 
 	// 始めの倉庫（1 日目・ゲームオーバーの後。R2_Plan.txt Q14）。9mm の弾 48 発＝1 マス 24 発 × 2 マス。
 	struct StartItem{
@@ -67,6 +96,7 @@ void startNewRun( RunState* run ) {
 	run->bag().placeAnywhere( gun );
 	run->setDay( kFirstDay );
 	run->setKills( 0 );
+	rollConditions( run ); // 5 日分を始めに決める（その日をやり直しても引き直せない。DayCondition_Plan.txt Q3）
 }
 
 void loadOrStart( RunState* run ) {

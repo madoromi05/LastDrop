@@ -4,7 +4,9 @@
 #include "GameLib/PseudoXml/Document.h"
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/PseudoXml/Attribute.h"
+#include <algorithm>
 #include <cstring>
+#include <iterator>
 #include <filesystem>
 #include <fstream>
 #include <sstream>
@@ -16,12 +18,15 @@ namespace{
 	// 置き場所は settings.xml と同じく、起動した場所。
 	const char* kFilePath = "save.xml";
 	const char* kTemporarySuffix = ".tmp";
-	const int kVersion = 1; // 形を変えたら上げる（古いファイルは、足りない項目を既定値で読む）
+	// 形を変えたら上げる（古いファイルは、足りない項目を既定値で読む）。
+	// 2：日ごとの条件（<Day>）を足した（DayCondition_Plan.txt。版 1 のファイルは全部ふつうの日として読む）。
+	const int kVersion = 2;
 
-	//   <Save version="1">
+	//   <Save version="2">
 	//     <Run day="2" kills="31">
 	//       <Grid name="stash" columns="6" rows="8"> <Item cell="0" item="ammo_9mm" amount="48"/> … </Grid>
 	//       <Grid name="bag" columns="2" rows="4"> … </Grid>
+	//       <Day day="1" condition="normal"/> … <Day day="5" condition="horde"/>
 	//     </Run>
 	//     <Record bestScore="3960"/>
 	//   </Save>
@@ -29,6 +34,7 @@ namespace{
 	const char* kRunName = "Run";
 	const char* kGridName = "Grid";
 	const char* kItemName = "Item";
+	const char* kDayName = "Day";
 	const char* kRecordName = "Record";
 	const char* kAttrVersion = "version";
 	const char* kAttrDay = "day";
@@ -41,6 +47,7 @@ namespace{
 	const char* kAttrAmount = "amount";
 	const char* kAttrLoaded = "loaded";
 	const char* kAttrBestScore = "bestScore";
+	const char* kAttrCondition = "condition";
 	const char* kStashGridName = "stash";
 	const char* kBagGridName = "bag";
 
@@ -48,7 +55,9 @@ namespace{
 	const int kRunAttributeNumber = 2;   // day・kills
 	const int kGridAttributeNumber = 3;  // name・columns・rows
 	const int kItemAttributeNumber = 4;  // cell・item・amount・loaded
-	const int kRunChildNumber = 2;       // 倉庫・カバン
+	const int kDayAttributeNumber = 2;   // day・condition
+	const int kGridChildNumber = 2;      // 倉庫・カバン
+	const int kRunChildNumber = kGridChildNumber + RunState::kDayCount; // 倉庫・カバン ＋ 日ごとの条件
 	const int kSaveChildNumber = 2;      // Run・Record
 
 	bool isNamed( const PseudoXml::ConstElement& e, const char* name ) {
@@ -143,6 +152,7 @@ RunState::RunState() :
 	mKills( 0 ),
 	mBestScore( 0 ),
 	mRunEndPending( false ) {
+	std::fill( std::begin( mConditions ), std::end( mConditions ), DayCondition::Normal );
 }
 
 int RunState::day() const {
@@ -176,6 +186,16 @@ void RunState::setDay( int day ) {
 
 void RunState::setKills( int kills ) {
 	mKills = kills;
+}
+
+DayCondition RunState::condition( int day ) const {
+	ASSERT( day >= kFirstDay && day <= kDayCount && "RunState::condition : bad day." );
+	return mConditions[ day - kFirstDay ];
+}
+
+void RunState::setCondition( int day, DayCondition condition ) {
+	ASSERT( day >= kFirstDay && day <= kDayCount && "RunState::setCondition : bad day." );
+	mConditions[ day - kFirstDay ] = condition;
 }
 
 int RunState::bestScore() const {
@@ -228,6 +248,13 @@ bool RunState::save() const {
 	run.setChildNumber( kRunChildNumber );
 	writeGrid( run.child( 0 ), kStashGridName, mStash );
 	writeGrid( run.child( 1 ), kBagGridName, mBag );
+	for ( int i = 0; i < kDayCount; ++i ) {
+		PseudoXml::Element day = run.child( kGridChildNumber + i );
+		day.setName( kDayName );
+		day.setAttributeNumber( kDayAttributeNumber );
+		day.attribute( 0 ).set( kAttrDay, i + kFirstDay );
+		day.attribute( 1 ).set( kAttrCondition, dayConditionEffect( mConditions[ i ] ).saveName );
+	}
 
 	PseudoXml::Element record = save.child( 1 );
 	record.setName( kRecordName );
@@ -280,6 +307,8 @@ bool RunState::load() {
 		int day = kFirstDay;
 		int kills = 0;
 		int bestScore = 0;
+		DayCondition conditions[ kDayCount ];
+		std::fill( std::begin( conditions ), std::end( conditions ), DayCondition::Normal ); // 版 1 のファイルは全部ふつう
 		for ( int j = 0; j < save.childNumber(); ++j ) {
 			PseudoXml::ConstElement e = save.child( j );
 			if ( isNamed( e, kRunName ) ) {
@@ -287,6 +316,13 @@ bool RunState::load() {
 				kills = intAttribute( e, kAttrKills, 0 );
 				for ( int k = 0; k < e.childNumber(); ++k ) {
 					PseudoXml::ConstElement grid = e.child( k );
+					if ( isNamed( grid, kDayName ) ) {
+						int index = intAttribute( grid, kAttrDay, 0 ) - kFirstDay;
+						if ( index >= 0 && index < kDayCount ) {
+							conditions[ index ] = dayConditionFromSaveName( textAttribute( grid, kAttrCondition ) );
+						}
+						continue;
+					}
 					const char* name = textAttribute( grid, kAttrName );
 					if ( !isNamed( grid, kGridName ) || !name ) {
 						continue;
@@ -307,6 +343,7 @@ bool RunState::load() {
 		mBestScore = ( bestScore < 0 ) ? 0 : bestScore;
 		mStash = stash;
 		mBag = bag;
+		std::copy( std::begin( conditions ), std::end( conditions ), std::begin( mConditions ) );
 		return true;
 	}
 	return false;

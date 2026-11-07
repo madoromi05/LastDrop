@@ -1,7 +1,7 @@
 {
-    "output": "Resource/building_orm.tga",
+    "output": "Resource/Texture/Map/building_orm.tga",
     "size": 2048,
-    "albedo": "Resource/building_albedo.tga",
+    "albedo": "Resource/Texture/Map/building_albedo.tga",
     "rules": [
         { "name": "black",    "value": [0.0, 0.08],                                           "roughness": 0.8,  "metallic": 0.0 },
         { "name": "concrete", "saturation": [0.0, 0.15],                                      "roughness": 0.9,  "metallic": 0.0 },

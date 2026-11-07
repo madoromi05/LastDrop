@@ -28,7 +28,7 @@ struct PostProcessParams{
 	float shadowsEnd = 0.3f;       // 暗部の重みが 0 になる明るさ（Unity URP の Shadows Midtones Highlights の初期値と同じ）
 	float highlightsStart = 0.55f; // 明部の重みが付き始める明るさ（同上）
 
-	// ── 色の表（LUT。MoonStarsLut_Plan.txt 6 章）── Resource/lut.tga を読んでいる間だけ効く。グレーディングの後の色を、表で引いた色へ寄せる割合
+	// ── 色の表（LUT。MoonStarsLut_Plan.txt 6 章）── Resource/UI/lut.tga を読んでいる間だけ効く。グレーディングの後の色を、表で引いた色へ寄せる割合
 	float lutStrength = 1.f;       // 0 で gradeColor のまま、1 で表の色（タルコフの色のフィルタの強さと同じ扱い）
 
 	// ── FXAA（NightFinish_Plan.txt 8 章）── 輝度の差で輪郭を見つけ、輪郭を横切る向きに隣の画素と混ぜる
@@ -66,8 +66,8 @@ bool& ditherEnabled();
 // 色の表（LUT）の F6 のボタンと表示（MoonStarsLut_Plan.txt 7・8 章）。ボタンが要求を立て、PostProcess が次の endScene で行って下ろす。
 // 起動中ずっと 1 つ（PostProcess.cpp が持つ）。
 struct ColorLutControl{
-	bool exportRequested = false; // 今の色の調整を Resource/lut_export.tga に書き出す
-	bool reloadRequested = false; // Resource/lut.tga を読み直す
+	bool exportRequested = false; // 今の色の調整を Resource/UI/lut_export.tga に書き出す
+	bool reloadRequested = false; // Resource/UI/lut.tga を読み直す
 	bool loaded = false;          // 今 lut.tga を引けるか（PostProcess が毎フレーム書く。F6 の表示用）
 };
 ColorLutControl& colorLutControl();
