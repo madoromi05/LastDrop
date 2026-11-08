@@ -3,37 +3,25 @@
 
 #include "GameSrc/Scene/IScene.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
-#include "GameSrc/Scene/Game/World/WorldRenderer.h"
+#include "GameSrc/Scene/Game/World/SceneRenderer.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Player/Camera/FirstPersonControl.h"
 #include "GameSrc/Player/PlayerBodySounds.h"
-#include "GameSrc/Scene/Game/Sound/ZombieHitSounds.h"
-#include "GameSrc/Scene/Game/Sound/SurfaceHitSounds.h"
-#include "GameSrc/Scene/Game/Sound/ZombieAttackSounds.h"
+#include "GameSrc/Scene/Game/Sound/CombatSounds.h"
 #include "GameSrc/Scene/Game/Hud/PlayerDamageView.h"
 #include "GameSrc/Scene/Game/Hud/RaidHud.h"
 #include "GameSrc/Scene/Game/Hud/AmmoHud.h"
 #include "GameSrc/Scene/Game/Hud/AmmoHudVisibility.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Scene/Game/Hud/InteractMarkers.h"
+#include "GameSrc/Scene/Game/Screen/ModalController.h"
 #include "GameSrc/Scene/Game/Screen/PauseMenu.h"
 #include "GameSrc/Scene/Game/Screen/InventoryScreen.h"
 #include "GameSrc/Scene/Game/Screen/LootScreen.h"
 #include "GameSrc/Interaction/Loot/LootSearch.h"
 #include "GameSrc/Audio/AudioEngine.h"
 #include "GameSrc/World/GameObjectHandle.h"
-#include "GameSrc/Render/PostProcess/PostProcess.h"
-#include "GameSrc/Render/Lighting/GBuffer.h"
-#include "GameSrc/Render/Lighting/DeferredLighting.h"
-#include "GameSrc/Render/PostProcess/AmbientOcclusion.h"
-#include "GameSrc/Render/PostProcess/ScreenSpaceReflection.h"
-#include "GameSrc/Render/PostProcess/TemporalJitter.h"
-#include "GameSrc/Render/PostProcess/TemporalAntiAliasing.h"
-#include "GameSrc/Render/Lighting/LightList.h"
-#include "GameSrc/Render/Shadow/ShadowMap.h"
-#include "GameSrc/Render/Shadow/CascadedShadowMap.h"
-#include "GameSrc/Render/Lighting/LightingParams.h"
 #include "GameSrc/Scene/Game/Hud/GameDebugOverlay.h"
 #include "GameSrc/Scene/Game/GameLoader.h"
 #include "GameSrc/Scene/LoadingScreen.h"
@@ -45,7 +33,6 @@ enum class PlayerCondition;
 #endif
 
 class GameResources;
-class DrawCulling;
 class EscapeCarComponent;
 
 // ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
@@ -153,19 +140,6 @@ private:
 	const char* openedTitle() const;
 	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
 	ItemId equippedWeapon() const;
-	// 描画の設定（奥行き・カリング）と、今のフレームのライトの一覧（月・補助光・懐中電灯・マズルフラッシュ・街灯・空・環境光）を作って付ける。
-	// camera：描くカメラ（目の位置はライトを選ぶ順番、目・向き・画角は月の影の枚の範囲に使う）。
-	void setupLights( const FirstPersonCamera& camera );
-	// 月（平行光）を一覧へ足す。強さがあれば、影の 3 枚（CSM）の行列を決めて影のマップを付ける（Shadow_Plan.txt 6 章）。
-	void addMoon( const LightingParams& params, const FirstPersonCamera& camera );
-	// 自キャラの懐中電灯が付いていて銃を持っていれば、銃口の前から銃の向きへ照らすスポットを一覧へ足す（PbrNightLighting_Plan.txt 9 章）。
-	void addFlashlight( const LightingParams& params );
-	// 影のマップを描く（懐中電灯・月の 3 枚）。setupLights の後、G-Buffer の前に呼ぶ。終わったら描く行列を camera へ戻す。
-	void drawShadowMaps( const FirstPersonCamera& camera );
-	// 目から見る絵の、描くかどうか（OptimizationA_Plan.txt 6 章）。描く距離は霧から決める（霧を切っている間は距離で間引かない）。
-	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
-	// 今日の霧が半分になる距離（調整値 × 今日の条件。調整値そのものは変えない。DayCondition_Plan.txt）。霧の絵と描く距離の両方に使う。
-	float fogHalfDistance() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
 	// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
@@ -202,16 +176,14 @@ private:
 	GameResources* mResources;   // 借りているだけ
 	// 世界。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）。
 	GameWorld mWorld;
-	// 世界を描く（View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）。
-	WorldRenderer mRenderer;
+	// 世界を画面へ写す（ディファードのパイプライン。View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）。
+	SceneRenderer mSceneRenderer;
 	Inventory mInventory;
 	Interactor mInteractor;
 	InteractMarkers mInteractMarkers; // 使える物の上のマーク（文字の案内の代わり）
 	FirstPersonControl mControl;
 	PlayerBodySounds mBodySounds;
-	ZombieHitSounds mZombieHitSounds;
-	SurfaceHitSounds mSurfaceHitSounds;
-	ZombieAttackSounds mZombieAttackSounds;
+	CombatSounds mCombatSounds; // 戦闘の結果の効果音（ゾンビ命中・物命中・攻撃された）をまとめて鳴らす
 	PlayerDamageView mDamageView;
 	RaidHud mHud;
 	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数（AmmoHud_Plan.txt）
@@ -224,33 +196,18 @@ private:
 	InventoryScreen mInventoryScreen;
 	LootScreen mLootScreen;
 	LootSearch mLootSearch;
-	PostProcess mPostProcess; // シーンを中間の描画先へ描き、シェーダを通して画面へ写す
-	GBuffer mGBuffer;                   // 不透明な物の面の情報（ディファードで描く間。GBuffer_Plan.txt 5 章）
-	DeferredLighting mDeferredLighting; // G-Buffer を読んで照らす・中身を見せる
-	AmbientOcclusion mAmbientOcclusion; // SSAO（G-Buffer の後に作る。SsaoTranslucent_Plan.txt 5 章）
-	ScreenSpaceReflection mReflection;  // 映り込み（ライティングの後に作る。SsrDecalMaterial_Plan.txt 7 章）
-	TemporalJitter mJitter;             // TAA の画面のずらし（描くたびに進める。Taa_Plan.txt 5 章）
-	TemporalAntiAliasing mTaa;          // TAA（霧の後に混ぜる。Taa_Plan.txt 7 章）
-	const FirstPersonCamera* mTaaCamera = nullptr; // 前のフレームに見ていたカメラ（替わったら TAA の履歴を捨てる）。目印だけで読まない
-	LightList mLights;                  // 今のフレームのライト（setupLights で作り直す）
-	ShadowMap mFlashlightShadow;        // 懐中電灯の影のマップ（Shadow_Plan.txt 5 章）
-	bool mFlashlightCastsShadow;        // このフレームに懐中電灯の影を描くか（付いていて銃を持っている間。addFlashlight が決める）
-	GameLib::Math::Matrix44 mFlashlightShadowMatrix; // 懐中電灯の影のマップの、光の側の射影×ビュー
-	CascadedShadowMap mMoonShadow;      // 月の影の 3 枚（Shadow_Plan.txt 6 章）
-	bool mMoonCastsShadow;              // このフレームに月の影を描くか（月に強さがある間。addMoon が決める）
+	// 全画面のモーダル（一時停止・カバン・漁り）の状態と、開閉の共通遷移（音を止める・カーソル）。mControl と音を借りるので、その後に宣言する。
+	ModalController mModals;
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
 	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）
 #endif
 	bool mReady; // 世界の配置が済んだか
-	bool mPaused; // 一時停止しているか
-	bool mBagOpen; // カバンを開いているか（開いている間も世界は止まっている）
 	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 	// E で拾って、入れるマスを選んでいる物（無ければ nullptr）。借りているだけ（カバンを開いている間は世界が止まり、拾う物は消えない）。
 	IInteractable* mOffer;
-	bool mLootOpen;               // 中を見る画面を開いているか（開いている間も世界は止まっている）
-	GameObjectHandle mLootTarget; // 中を見ている場所の物（車・ゴミ箱・木箱・死体）
+	GameObjectHandle mLootTarget; // 中を見ている場所の物（車・ゴミ箱・木箱・死体。モーダルが Loot の間だけ有効）
 	AudioEngine::LoopHandle mSearchSound; // 開けている間の音（開けていなければ kInvalidLoop）
 	AudioEngine::LoopHandle mEngineSound; // 脱出の車のエンジンの音（掛かっていなければ kInvalidLoop）
 };

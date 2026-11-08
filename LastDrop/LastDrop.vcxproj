@@ -481,12 +481,14 @@
     <ClCompile Include="GameSrc\src\Scene\Game\GameScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\GameWorld.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\WorldRenderer.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\World\SceneRenderer.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\WorldBuilder.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\EffectManager.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\CombatResolver.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\InteractionSystem.cpp" />
     <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonControl.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\ModalController.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\PauseMenu.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\ItemIcons.cpp" />
@@ -532,6 +534,7 @@
     <ClCompile Include="GameSrc\src\Player\Camera\AimSway.cpp" />
     <ClCompile Include="GameSrc\src\Render\Flipbook.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\PlayerDamageView.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Sound\CombatSounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Sound\ZombieAttackSounds.cpp" />
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
     <ClCompile Include="GameSrc\src\Math\AngleMath.cpp" />
@@ -975,6 +978,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\GameWorld.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\WorldRenderer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\SceneRenderer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\WorldBuilder.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\EffectManager.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\CombatResolver.h" />
@@ -983,6 +987,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\LookParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Body\WeaponPoseParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ModalController.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\PauseMenu.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\InventoryScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemIcons.h" />
@@ -1032,6 +1037,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\AimSwayParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Flipbook.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\PlayerDamageView.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Sound\CombatSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Sound\ZombieAttackSounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ChaseTarget.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h" />
