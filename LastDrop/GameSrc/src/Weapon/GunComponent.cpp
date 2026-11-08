@@ -1,5 +1,5 @@
 #include "GameSrc/Weapon/GunComponent.h"
-#include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Interaction/Item/Inventory.h"
 
 #include <algorithm>
 

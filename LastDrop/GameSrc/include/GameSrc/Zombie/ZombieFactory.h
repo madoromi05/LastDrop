@@ -2,7 +2,7 @@
 #define INCLUDED_ZOMBIE_FACTORY_H
 
 #include "GameLib/Math/Vector3.h"
-#include "GameSrc/Zombie/ZombieAnimationSet.h"
+#include "GameSrc/Zombie/Animation/ZombieAnimationSet.h"
 
 class ZombieModel;
 class ZombieBrainComponent;

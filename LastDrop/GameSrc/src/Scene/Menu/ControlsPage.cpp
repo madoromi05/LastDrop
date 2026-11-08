@@ -2,8 +2,8 @@
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/UI/UiCanvas.h"
 #include "GameSrc/UI/UiScreen.h"
-#include "GameSrc/UI/UiLabel.h"
-#include "GameSrc/UI/UiButton.h"
+#include "GameSrc/UI/Widget/UiLabel.h"
+#include "GameSrc/UI/Widget/UiButton.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"

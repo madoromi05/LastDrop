@@ -1,8 +1,8 @@
 #include "GameSrc/Scene/Menu/MenuLayout.h"
 #include "GameSrc/UI/UiCanvas.h"
 #include "GameSrc/UI/UiScreen.h"
-#include "GameSrc/UI/UiLabel.h"
-#include "GameSrc/UI/UiButton.h"
+#include "GameSrc/UI/Widget/UiLabel.h"
+#include "GameSrc/UI/Widget/UiButton.h"
 
 #include "GameLib/GameLib.h"
 #include <memory>

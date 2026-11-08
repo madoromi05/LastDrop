@@ -1,6 +1,6 @@
 #include "GameSrc/Player/PlayerLocomotionComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
-#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"

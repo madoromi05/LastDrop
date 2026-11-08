@@ -2,9 +2,9 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/StaticModelComponent.h"
-#include "GameSrc/Interaction/ItemComponent.h"
+#include "GameSrc/Interaction/Item/ItemComponent.h"
 #include "GameSrc/Interaction/PickupComponent.h"
-#include "GameSrc/Interaction/LootContainerComponent.h"
+#include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
 

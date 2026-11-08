@@ -2,37 +2,39 @@
 #define INCLUDED_GAME_SCENE_H
 
 #include "GameSrc/Scene/IScene.h"
-#include "GameSrc/Scene/Game/GameWorld.h"
-#include "GameSrc/Scene/Game/WorldRenderer.h"
-#include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Scene/Game/World/GameWorld.h"
+#include "GameSrc/Scene/Game/World/WorldRenderer.h"
+#include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Interaction/Interactor.h"
-#include "GameSrc/Player/FirstPersonControl.h"
+#include "GameSrc/Player/Camera/FirstPersonControl.h"
 #include "GameSrc/Player/PlayerBodySounds.h"
-#include "GameSrc/Scene/Game/ZombieHitSounds.h"
-#include "GameSrc/Scene/Game/SurfaceHitSounds.h"
-#include "GameSrc/Scene/Game/ZombieAttackSounds.h"
-#include "GameSrc/Scene/Game/PlayerDamageView.h"
-#include "GameSrc/Scene/Game/RaidHud.h"
+#include "GameSrc/Scene/Game/Sound/ZombieHitSounds.h"
+#include "GameSrc/Scene/Game/Sound/SurfaceHitSounds.h"
+#include "GameSrc/Scene/Game/Sound/ZombieAttackSounds.h"
+#include "GameSrc/Scene/Game/Hud/PlayerDamageView.h"
+#include "GameSrc/Scene/Game/Hud/RaidHud.h"
+#include "GameSrc/Scene/Game/Hud/AmmoHud.h"
+#include "GameSrc/Scene/Game/Hud/AmmoHudVisibility.h"
 #include "GameSrc/Raid/RaidSession.h"
-#include "GameSrc/Scene/Game/InteractMarkers.h"
-#include "GameSrc/Scene/Game/PauseMenu.h"
-#include "GameSrc/Scene/Game/InventoryScreen.h"
-#include "GameSrc/Scene/Game/LootScreen.h"
-#include "GameSrc/Interaction/LootSearch.h"
+#include "GameSrc/Scene/Game/Hud/InteractMarkers.h"
+#include "GameSrc/Scene/Game/Screen/PauseMenu.h"
+#include "GameSrc/Scene/Game/Screen/InventoryScreen.h"
+#include "GameSrc/Scene/Game/Screen/LootScreen.h"
+#include "GameSrc/Interaction/Loot/LootSearch.h"
 #include "GameSrc/Audio/AudioEngine.h"
 #include "GameSrc/World/GameObjectHandle.h"
-#include "GameSrc/Render/PostProcess.h"
-#include "GameSrc/Render/GBuffer.h"
-#include "GameSrc/Render/DeferredLighting.h"
-#include "GameSrc/Render/AmbientOcclusion.h"
-#include "GameSrc/Render/ScreenSpaceReflection.h"
-#include "GameSrc/Render/TemporalJitter.h"
-#include "GameSrc/Render/TemporalAntiAliasing.h"
-#include "GameSrc/Render/LightList.h"
-#include "GameSrc/Render/ShadowMap.h"
-#include "GameSrc/Render/CascadedShadowMap.h"
-#include "GameSrc/Render/LightingParams.h"
-#include "GameSrc/Scene/Game/GameDebugOverlay.h"
+#include "GameSrc/Render/PostProcess/PostProcess.h"
+#include "GameSrc/Render/Lighting/GBuffer.h"
+#include "GameSrc/Render/Lighting/DeferredLighting.h"
+#include "GameSrc/Render/PostProcess/AmbientOcclusion.h"
+#include "GameSrc/Render/PostProcess/ScreenSpaceReflection.h"
+#include "GameSrc/Render/PostProcess/TemporalJitter.h"
+#include "GameSrc/Render/PostProcess/TemporalAntiAliasing.h"
+#include "GameSrc/Render/Lighting/LightList.h"
+#include "GameSrc/Render/Shadow/ShadowMap.h"
+#include "GameSrc/Render/Shadow/CascadedShadowMap.h"
+#include "GameSrc/Render/Lighting/LightingParams.h"
+#include "GameSrc/Scene/Game/Hud/GameDebugOverlay.h"
 #include "GameSrc/Scene/Game/GameLoader.h"
 #include "GameSrc/Scene/LoadingScreen.h"
 #ifdef ZF_EDITOR
@@ -126,6 +128,8 @@ private:
 	void cancelLootSearch();
 	// 今の待ち（mLootSearch）が漁るのか給油なのか（HUD の棒の文字。待っている相手が脱出の車なら給油）。
 	RaidHud::ProgressKind waitingKind() const;
+	// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）。
+	void addAmmoHud();
 	// 開けている途中を 1 ティック進める（update から。commandInterrupts: このティックの操作が取りやめの操作だったか）。
 	// 攻撃された・死んだ・1 日が終わったも取りやめ。開け終わったら中を見る画面を開く（脱出の車なら、ガソリンを入れる）。
 	void updateLootSearch( bool commandInterrupts );
@@ -207,6 +211,8 @@ private:
 	ZombieAttackSounds mZombieAttackSounds;
 	PlayerDamageView mDamageView;
 	RaidHud mHud;
+	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数（AmmoHud_Plan.txt）
+	AmmoHudVisibility mAmmoHudVisibility; // 弾数を出す時間と濃さ（覗いている・リロード中と、その後 2 秒）
 	RaidSession mSession; // 町の 1 日（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）。
 	GameLoader mLoader;

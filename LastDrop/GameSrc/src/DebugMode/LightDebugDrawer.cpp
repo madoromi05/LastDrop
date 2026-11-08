@@ -1,5 +1,5 @@
 #include "GameSrc/DebugMode/LightDebugDrawer.h"
-#include "GameSrc/Render/LightList.h"
+#include "GameSrc/Render/Lighting/LightList.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/Graphics/Enum.h"

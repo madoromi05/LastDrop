@@ -1,6 +1,6 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
-#include "GameSrc/Zombie/ZombieStateComponent.h"
-#include "GameSrc/Zombie/ZombieChaseComponent.h"
+#include "GameSrc/Zombie/Component/ZombieStateComponent.h"
+#include "GameSrc/Zombie/Component/ZombieChaseComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/World/GameObjectWorld.h"

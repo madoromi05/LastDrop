@@ -1,5 +1,5 @@
 #include "GameSrc/Interaction/EscapeCarComponent.h"
-#include "GameSrc/Interaction/ItemCatalog.h"
+#include "GameSrc/Interaction/Item/ItemCatalog.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Profiling/Profiler.h"

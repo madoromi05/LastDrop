@@ -1,7 +1,7 @@
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Collision/MeshWallBuilder.h"
 #include "GameSrc/Collision/CollisionWorld.h"
-#include "GameSrc/Render/DrawCulling.h"
+#include "GameSrc/Render/Culling/DrawCulling.h"
 
 #include "GameLib/GameLib.h"
 

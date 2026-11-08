@@ -1,6 +1,6 @@
 #include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Interaction/IInteractable.h"
-#include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Interaction/Item/Inventory.h"
 
 #include "GameLib/GameLib.h"
 

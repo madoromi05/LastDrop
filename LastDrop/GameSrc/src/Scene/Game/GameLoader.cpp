@@ -1,5 +1,5 @@
 #include "GameSrc/Scene/Game/GameLoader.h"
-#include "GameSrc/Scene/Game/GameWorld.h"
+#include "GameSrc/Scene/Game/World/GameWorld.h"
 #include "GameSrc/Render/MeshCache.h"
 
 #include "GameLib/GameLib.h"

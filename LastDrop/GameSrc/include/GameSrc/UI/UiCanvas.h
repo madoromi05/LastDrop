@@ -2,8 +2,8 @@
 #define INCLUDED_UI_CANVAS_H
 
 #include "GameSrc/UI/IUiElement.h"
-#include "GameSrc/UI/IUiSelectable.h"
-#include "GameSrc/UI/IUiAdjustable.h"
+#include "GameSrc/UI/Widget/IUiSelectable.h"
+#include "GameSrc/UI/Widget/IUiAdjustable.h"
 #include <memory>
 #include <type_traits>
 #include <vector>

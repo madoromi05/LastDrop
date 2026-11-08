@@ -3,8 +3,8 @@
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Raid/RunState.h"
 #include "GameSrc/Raid/RaidParams.h"
-#include "GameSrc/UI/UiLabel.h"
-#include "GameSrc/UI/UiButton.h"
+#include "GameSrc/UI/Widget/UiLabel.h"
+#include "GameSrc/UI/Widget/UiButton.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"

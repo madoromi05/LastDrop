@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DAY_RESULT_H
 #define INCLUDED_DAY_RESULT_H
 
-#include "GameSrc/Interaction/ItemGrid.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
 #include <vector>
 
 // 1 日（1 回の出撃）の終わり方（R2_Plan.txt Q1・Q12）。

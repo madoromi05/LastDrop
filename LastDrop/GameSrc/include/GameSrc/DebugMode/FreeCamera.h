@@ -1,7 +1,7 @@
 #ifndef INCLUDED_FREE_CAMERA_H
 #define INCLUDED_FREE_CAMERA_H
 
-#include "GameSrc/Player/FirstPersonCamera.h"
+#include "GameSrc/Player/Camera/FirstPersonCamera.h"
 
 // 自キャラとは別の、町やゾンビを見て回る確認用のカメラ（2026-10-20 ユーザー指定。Debug・Profile ビルドだけで使う）。
 // F4（InputDebugFreeCamera）で使う・やめるを切り替える。使っている間は:

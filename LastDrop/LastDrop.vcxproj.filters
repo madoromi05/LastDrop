@@ -1,6 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="GameSrc\Player\Camera">
+      <UniqueIdentifier>{6eb9b26d-3bfa-47c9-ac6b-2aeb7aae0ae4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Player\Body">
+      <UniqueIdentifier>{e436e748-84cc-4d79-8116-f6fc4f512261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Interaction\Item">
+      <UniqueIdentifier>{c27db37d-707e-489b-bb93-eec904f08afd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Interaction\Loot">
+      <UniqueIdentifier>{7cf4f97d-439e-4bf7-8379-f954a96c61bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\UI\Widget">
+      <UniqueIdentifier>{31e66fb5-a4cd-4c73-94dd-52cf1660ad60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Weapon\Recoil">
+      <UniqueIdentifier>{1e0cd1cf-a8f5-465c-8dc2-00ac6f033735}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Weapon\Bullet">
+      <UniqueIdentifier>{5eeb8056-b748-4658-8b9c-c8679d96d6d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Component">
+      <UniqueIdentifier>{f3e4987e-9894-42df-912e-3059b2e086f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Move">
+      <UniqueIdentifier>{e06c52af-aafc-45e2-bd11-445fe86158a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Attack">
+      <UniqueIdentifier>{e79dd6f0-e348-4fdf-8fca-0fc9758c2de0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Damage">
+      <UniqueIdentifier>{339604c0-296d-42d0-bde3-4920d88ed831}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Crawl">
+      <UniqueIdentifier>{23c28ee9-bdcf-4c50-af5a-940b13ce279c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Zombie\Animation">
+      <UniqueIdentifier>{77a7d541-0ee4-4dba-8f5e-c2bd2810aad9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\Lighting">
+      <UniqueIdentifier>{a784deae-5bcc-40fb-83ea-fd87907925e9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\Shadow">
+      <UniqueIdentifier>{f0a11e87-30e4-4c26-b774-47665547910c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\PostProcess">
+      <UniqueIdentifier>{adb81beb-8953-4c89-921c-1e0e2610ed9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Render\Culling">
+      <UniqueIdentifier>{83c356a6-5b17-46a4-93db-fd5a13c6925c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Game\World">
+      <UniqueIdentifier>{cc6f6714-c546-4bc3-bc12-b5e6425bae84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Game\Screen">
+      <UniqueIdentifier>{48bebe5d-8646-41f6-aaa5-df4a2eac022b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Game\Hud">
+      <UniqueIdentifier>{88e6e636-e0b1-4b27-bd6d-2216b65b42ac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameSrc\Scene\Game\Sound">
+      <UniqueIdentifier>{c5b85ae4-1bef-4e58-8267-adc5e1586a32}</UniqueIdentifier>
+    </Filter>
     <Filter Include="ソース ファイル">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
@@ -139,41 +202,41 @@
   </ItemGroup>
   <ItemGroup>
     <!-- ゲームコード -->
-    <ClCompile Include="GameSrc\src\Render\CascadeRefresh.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Shadow\CascadeRefresh.cpp">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\LodSelector.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Culling\LodSelector.cpp">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotionComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieRootMotionComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieFactory.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieDismemberComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieChaseComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieChaseComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieStateComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieStateComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieCrawlComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieAttackComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieAttackComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieHealthComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieHealthComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCorpseComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieCorpseComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieBrainComponent.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Component\ZombieBrainComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\World\GameObjectHandle.cpp">
       <Filter>GameSrc\World</Filter>
@@ -196,11 +259,11 @@
     <ClCompile Include="GameSrc\src\Player\PlayerFactory.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\HoldComponent.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Body\HoldComponent.cpp">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\FirstPersonBodyComponent.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Body\FirstPersonBodyComponent.cpp">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\PickupComponent.cpp">
       <Filter>GameSrc\Interaction</Filter>
@@ -439,41 +502,41 @@
     <ClCompile Include="GameLib\src\Profiling\SystemInfo.cpp">
       <Filter>GameLib\Profiling</Filter>
     </ClCompile>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\CascadeRefresh.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\CascadeRefresh.h">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\LodSelector.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Culling\LodSelector.h">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotionComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieRootMotionComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealthComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieHealthComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDismemberComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieDismemberComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCorpseComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieCorpseComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChaseComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieChaseComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStateComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieStateComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieCrawlComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieBrainComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieBrainComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieAttackComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\World\UpdatePhase.h">
       <Filter>GameSrc\World</Filter>
@@ -499,11 +562,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFactory.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\HoldComponent.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\HoldComponent.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBodyComponent.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\FirstPersonBodyComponent.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PickupComponent.h">
       <Filter>GameSrc\Interaction</Filter>
@@ -511,8 +574,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PropFactory.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemComponent.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemComponent.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h">
       <Filter>GameSrc\Effect</Filter>
@@ -819,8 +882,8 @@
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshBatch.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\HeldItem.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Body\HeldItem.cpp">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshInstance.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
@@ -852,14 +915,14 @@
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp">
       <Filter>GameSrc\Collision</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\ItemCatalog.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Item\ItemCatalog.cpp">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\Inventory.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Item\Inventory.cpp">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\ItemGrid.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Item\ItemGrid.cpp">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Raid\RaidParams.cpp">
       <Filter>GameSrc\Raid</Filter>
@@ -882,20 +945,20 @@
     <ClCompile Include="GameSrc\src\Raid\DayCondition.cpp">
       <Filter>GameSrc\Raid</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\ItemTransfer.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Item\ItemTransfer.cpp">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\ItemGridView.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\ItemGridView.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\LootParams.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Loot\LootParams.cpp">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\LootTable.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Loot\LootTable.cpp">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\LootContainerComponent.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Loot\LootContainerComponent.cpp">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\FireProbe.cpp">
       <Filter>GameSrc\DebugMode</Filter>
@@ -912,17 +975,23 @@
     <ClCompile Include="GameSrc\src\Scene\LoadingScreen.cpp">
       <Filter>GameSrc\Scene</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\LootSearch.cpp">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClCompile Include="GameSrc\src\Interaction\Loot\LootSearch.cpp">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\GridPairPicker.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\GridPairPicker.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\LootScreen.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\LootScreen.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\RaidHud.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\RaidHud.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHud.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Base\BaseScene.cpp">
       <Filter>GameSrc\Scene\Base</Filter>
@@ -957,14 +1026,14 @@
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp">
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\UI\UiLabel.cpp">
-      <Filter>GameSrc\UI</Filter>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiLabel.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\UI\UiButton.cpp">
-      <Filter>GameSrc\UI</Filter>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiButton.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\UI\UiSlider.cpp">
-      <Filter>GameSrc\UI</Filter>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiSlider.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp">
       <Filter>GameSrc\UI</Filter>
@@ -1020,53 +1089,53 @@
     <ClCompile Include="GameSrc\src\Hit\GroundGrid.cpp">
       <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\PostProcess.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\PostProcess.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\GBuffer.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Lighting\GBuffer.cpp">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\DeferredLighting.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Lighting\DeferredLighting.cpp">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\RenderPass.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\LightList.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Lighting\LightList.cpp">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\LightingParams.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Lighting\LightingParams.cpp">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\ShadowMap.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Shadow\ShadowMap.cpp">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\CascadedShadowMap.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Shadow\CascadedShadowMap.cpp">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\AmbientOcclusion.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\AmbientOcclusion.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\HiZBuffer.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\HiZBuffer.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\ScreenSpaceReflection.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\ScreenSpaceReflection.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\DecalBatch.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\TemporalJitter.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\TemporalJitter.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\ColorLut.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\ColorLut.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\TemporalAntiAliasing.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\TemporalAntiAliasing.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\Bloom.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\PostProcess\Bloom.cpp">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp">
       <Filter>GameSrc\Core</Filter>
@@ -1080,11 +1149,11 @@
     <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp">
       <Filter>GameSrc\Scene\Test</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\FirstPersonCamera.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonCamera.cpp">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\FirstPersonBody.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Body\FirstPersonBody.cpp">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\WeaponStance.cpp">
       <Filter>GameSrc\Weapon</Filter>
@@ -1095,8 +1164,8 @@
     <ClCompile Include="GameSrc\src\Weapon\Magazine.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\HeldMagazine.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Body\HeldMagazine.cpp">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Weapon\WeaponReload.cpp">
       <Filter>GameSrc\Weapon</Filter>
@@ -1104,23 +1173,23 @@
     <ClCompile Include="GameSrc\src\Weapon\WeaponCatalog.cpp">
       <Filter>GameSrc\Weapon</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\WeaponRecoil.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Recoil\WeaponRecoil.cpp">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\ViewRecoil.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Recoil\ViewRecoil.cpp">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\AimRecoil.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Recoil\AimRecoil.cpp">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\Bullet.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Bullet\Bullet.cpp">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\BulletList.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Bullet\BulletList.cpp">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Weapon\BulletHoleList.cpp">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClCompile Include="GameSrc\src\Weapon\Bullet\BulletHoleList.cpp">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\ImpactDust.cpp">
       <Filter>GameSrc\Effect</Filter>
@@ -1167,41 +1236,41 @@
     <ClCompile Include="GameSrc\src\Scene\Game\GameScene.cpp">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\GameWorld.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\GameWorld.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\WorldRenderer.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\WorldRenderer.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\WorldBuilder.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\WorldBuilder.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\EffectManager.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\EffectManager.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\CombatResolver.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\CombatResolver.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\InteractionSystem.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\World\InteractionSystem.cpp">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\FirstPersonControl.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonControl.cpp">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\PauseMenu.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\PauseMenu.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\InventoryScreen.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryScreen.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\ItemIcons.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\ItemIcons.cpp">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\GameDebugOverlay.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\GameDebugOverlay.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\GameResources.cpp">
       <Filter>GameSrc\Scene</Filter>
@@ -1209,23 +1278,23 @@
     <ClCompile Include="GameSrc\src\Hit\HitboxLayout.cpp">
       <Filter>GameSrc\Hit</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieModel.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieModel.cpp">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieFlinch.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieFlinch.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieSway.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieSway.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieFlinchLayout.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieFlinchLayout.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawl.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Crawl\ZombieCrawl.cpp">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlLayout.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Crawl\ZombieCrawlLayout.cpp">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BoneNamePattern.cpp">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
@@ -1233,98 +1302,98 @@
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\BonePoseModifierChain.cpp">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieSeverLayout.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieSeverLayout.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieDismemberment.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieDismemberment.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\SeveredLimb.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimb.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\SeveredLimbList.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimbList.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieChase.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieChase.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombiePath.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombiePath.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrowd.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieCrowd.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\World\GameObjectWorld.cpp">
       <Filter>GameSrc\World</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieStride.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieStride.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotion.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieRootMotion.cpp">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieSpawner.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieAttack.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Attack\ZombieAttack.cpp">
+      <Filter>GameSrc\Zombie\Attack</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawler.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Crawl\ZombieCrawler.cpp">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieDamageReaction.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieDamageReaction.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\ZombieUncertaintyParams.cpp">
       <Filter>GameSrc\Zombie</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieRunParams.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieRunParams.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\AnimationThrottle.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Animation\AnimationThrottle.cpp">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieAnimationSet.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieAnimationSet.cpp">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieAttackReach.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Attack\ZombieAttackReach.cpp">
+      <Filter>GameSrc\Zombie\Attack</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieLocomotion.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieLocomotion.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCorpse.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieCorpse.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieCrawlBody.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Crawl\ZombieCrawlBody.cpp">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieStagger.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieStagger.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieRootMotionSpan.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieRootMotionSpan.cpp">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Player\PlayerHealth.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\CameraShake.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Camera\CameraShake.cpp">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\AimPunch.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Camera\AimPunch.cpp">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Player\AimSway.cpp">
-      <Filter>GameSrc\Player</Filter>
+    <ClCompile Include="GameSrc\src\Player\Camera\AimSway.cpp">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Flipbook.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\PlayerDamageView.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\PlayerDamageView.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\ZombieAttackSounds.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Sound\ZombieAttackSounds.cpp">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp">
       <Filter>GameSrc\Math</Filter>
@@ -1338,20 +1407,20 @@
     <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp">
       <Filter>GameSrc\Math</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\ZombieHealth.cpp">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieHealth.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\ZombieHealthBars.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\ZombieHealthBars.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\InteractMarkers.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\InteractMarkers.cpp">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\ZombieHitSounds.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Sound\ZombieHitSounds.cpp">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Game\SurfaceHitSounds.cpp">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Game\Sound\SurfaceHitSounds.cpp">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Effect\BloodSpray.cpp">
       <Filter>GameSrc\Effect</Filter>
@@ -1362,11 +1431,11 @@
     <ClCompile Include="GameSrc\src\Effect\BloodSprayList.cpp">
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\DrawCulling.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Culling\DrawCulling.cpp">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Render\ViewFrustum.cpp">
-      <Filter>GameSrc\Render</Filter>
+    <ClCompile Include="GameSrc\src\Render\Culling\ViewFrustum.cpp">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp">
       <Filter>GameSrc\Scene\Menu</Filter>
@@ -1784,8 +1853,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshBatch.h">
       <Filter>GameSrc\Render\StaticMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldItem.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\HeldItem.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshInstance.h">
       <Filter>GameSrc\Render\StaticMesh</Filter>
@@ -1832,14 +1901,14 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h">
       <Filter>GameSrc\Collision</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemCatalog.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemCatalog.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Inventory.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\Inventory.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemGrid.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemGrid.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidParams.h">
       <Filter>GameSrc\Raid</Filter>
@@ -1868,20 +1937,20 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\ItemTransfer.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemTransfer.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemGridView.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemGridView.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootParams.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootParams.h">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootTable.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootTable.h">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootContainerComponent.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootContainerComponent.h">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FireProbe.h">
       <Filter>GameSrc\DebugMode</Filter>
@@ -1898,17 +1967,23 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\LoadingScreen.h">
       <Filter>GameSrc\Scene</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\LootSearch.h">
-      <Filter>GameSrc\Interaction</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootSearch.h">
+      <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GridPairPicker.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\GridPairPicker.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\LootScreen.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\LootScreen.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\RaidHud.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\RaidHud.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHud.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\BaseScene.h">
       <Filter>GameSrc\Scene\Base</Filter>
@@ -1952,23 +2027,23 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\IUiElement.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiSelectable.h">
-      <Filter>GameSrc\UI</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiSelectable.h">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\UiLabel.h">
-      <Filter>GameSrc\UI</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiLabel.h">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\UiButton.h">
-      <Filter>GameSrc\UI</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiButton.h">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\IUiAdjustable.h">
-      <Filter>GameSrc\UI</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiAdjustable.h">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\UiSlider.h">
-      <Filter>GameSrc\UI</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiSlider.h">
+      <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h">
       <Filter>GameSrc\UI</Filter>
@@ -2060,71 +2135,71 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IRayBlocker.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\PostProcess.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\GBuffer.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\GBuffer.h">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\DeferredLighting.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\DeferredLighting.h">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\LightList.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\LightList.h">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\LightingParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\LightingParams.h">
+      <Filter>GameSrc\Render\Lighting</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowMap.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\ShadowMap.h">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\CascadedShadowMap.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\CascadedShadowMap.h">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\ShadowParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\ShadowParams.h">
+      <Filter>GameSrc\Render\Shadow</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\AmbientOcclusion.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\AmbientOcclusion.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\SsaoParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\SsaoParams.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\PuddleParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\PuddleParams.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\HiZBuffer.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\HiZBuffer.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\ScreenSpaceReflection.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\ScreenSpaceReflection.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\SsrParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\SsrParams.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\DecalBatch.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalJitter.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\TemporalJitter.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\ColorLut.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\ColorLut.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\TemporalAntiAliasing.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\TemporalAntiAliasing.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\TaaParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\TaaParams.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcessParams.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\PostProcessParams.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\Bloom.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\PostProcess\Bloom.h">
+      <Filter>GameSrc\Render\PostProcess</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h">
       <Filter>GameSrc\Core</Filter>
@@ -2138,11 +2213,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h">
       <Filter>GameSrc\Scene\Test</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonCamera.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\FirstPersonCamera.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonBody.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\FirstPersonBody.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h">
       <Filter>GameSrc\Weapon</Filter>
@@ -2156,8 +2231,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\Magazine.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\HeldMagazine.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\HeldMagazine.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponReload.h">
       <Filter>GameSrc\Weapon</Filter>
@@ -2165,23 +2240,23 @@
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponCatalog.h">
       <Filter>GameSrc\Weapon</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponRecoil.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Recoil\WeaponRecoil.h">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\ViewRecoil.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Recoil\ViewRecoil.h">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\AimRecoil.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Recoil\AimRecoil.h">
+      <Filter>GameSrc\Weapon\Recoil</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet\Bullet.h">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletList.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet\BulletList.h">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Weapon\BulletHoleList.h">
-      <Filter>GameSrc\Weapon</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Weapon\Bullet\BulletHoleList.h">
+      <Filter>GameSrc\Weapon\Bullet</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\ImpactDust.h">
       <Filter>GameSrc\Effect</Filter>
@@ -2240,47 +2315,47 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameScene.h">
       <Filter>GameSrc\Scene\Game</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameWorld.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\GameWorld.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\WorldRenderer.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\WorldRenderer.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\WorldBuilder.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\WorldBuilder.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\EffectManager.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\EffectManager.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\CombatResolver.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\CombatResolver.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InteractionSystem.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\InteractionSystem.h">
+      <Filter>GameSrc\Scene\Game\World</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\FirstPersonControl.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\FirstPersonControl.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\LookParams.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\LookParams.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\WeaponPoseParams.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Body\WeaponPoseParams.h">
+      <Filter>GameSrc\Player\Body</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PauseMenu.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\PauseMenu.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InventoryScreen.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\InventoryScreen.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ItemIcons.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemIcons.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameDebugOverlay.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\GameDebugOverlay.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\GameResources.h">
       <Filter>GameSrc\Scene</Filter>
@@ -2288,26 +2363,26 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxLayout.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModel.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieModel.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieModelComponent.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieModelComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinch.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieFlinch.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSway.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieSway.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFlinchLayout.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieFlinchLayout.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawl.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Crawl\ZombieCrawl.h">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlLayout.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Crawl\ZombieCrawlLayout.h">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BoneNamePattern.h">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
@@ -2315,110 +2390,110 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifierChain.h">
       <Filter>GameSrc\Render\SkinnedMesh</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSeverLayout.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieSeverLayout.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDismemberment.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieDismemberment.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimb.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimb.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\SeveredLimbList.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimbList.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieChase.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieChase.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombiePath.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombiePath.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowd.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieCrowd.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrowdParams.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieCrowdParams.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRunParams.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieRunParams.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackParams.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackParams.h">
+      <Filter>GameSrc\Zombie\Attack</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottle.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\AnimationThrottle.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\AnimationThrottleParams.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\AnimationThrottleParams.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStride.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieStride.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotion.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieRootMotion.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieSpawner.h">
       <Filter>GameSrc\Zombie</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttack.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttack.h">
+      <Filter>GameSrc\Zombie\Attack</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawler.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Crawl\ZombieCrawler.h">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieDamageReaction.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieDamageReaction.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAnimationSet.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieAnimationSet.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieAttackReach.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackReach.h">
+      <Filter>GameSrc\Zombie\Attack</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieLocomotion.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieLocomotion.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCorpse.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieCorpse.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieCrawlBody.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Crawl\ZombieCrawlBody.h">
+      <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieStagger.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieStagger.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieRootMotionSpan.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieRootMotionSpan.h">
+      <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealth.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\CameraShake.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\CameraShake.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\AimPunch.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\AimPunch.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\AimSway.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\AimSway.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Player\AimSwayParams.h">
-      <Filter>GameSrc\Player</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\AimSwayParams.h">
+      <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\Flipbook.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerDamageView.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\PlayerDamageView.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieAttackSounds.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Sound\ZombieAttackSounds.h">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ChaseTarget.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ChaseTarget.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h">
       <Filter>GameSrc\Math</Filter>
@@ -2432,8 +2507,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Math\ScalarMath.h">
       <Filter>GameSrc\Math</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieHealth.h">
-      <Filter>GameSrc\Zombie</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieHealth.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h">
       <Filter>GameSrc\Hit</Filter>
@@ -2441,17 +2516,17 @@
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h">
       <Filter>GameSrc\Hit</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHealthBars.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\ZombieHealthBars.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\InteractMarkers.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\InteractMarkers.h">
+      <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\ZombieHitSounds.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Sound\ZombieHitSounds.h">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\SurfaceHitSounds.h">
-      <Filter>GameSrc\Scene\Game</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Sound\SurfaceHitSounds.h">
+      <Filter>GameSrc\Scene\Game\Sound</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSpray.h">
       <Filter>GameSrc\Effect</Filter>
@@ -2462,11 +2537,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Effect\BloodSprayList.h">
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\DrawCulling.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Culling\DrawCulling.h">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Render\ViewFrustum.h">
-      <Filter>GameSrc\Render</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\Culling\ViewFrustum.h">
+      <Filter>GameSrc\Render\Culling</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h">
       <Filter>GameSrc\Scene\Menu</Filter>

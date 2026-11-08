@@ -2,7 +2,7 @@
 #define INCLUDED_WEAPON_CATALOG_H
 
 #include "GameLib/Math/Vector3.h"
-#include "GameSrc/Interaction/ItemCatalog.h"
+#include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include "GameSrc/Audio/SoundCatalog.h"
 
 // 銃の種類。増やすときはここに1つ足し、WeaponCatalog.cpp の表にも1行足す（ここを見れば全種類が分かる）。

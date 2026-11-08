@@ -169,7 +169,10 @@ public:
 	void postUpdate(){
 		// デバッグ文字・2D は画素をにじませない。
 		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
-		Profiling::drawOverlay(); // 右上の計測の数字（ImGui。エディタを開いている間は出さない）
+		{
+			PROFILE_SCOPE( "PerfOverlay" );
+			Profiling::drawOverlay(); // 右上の計測の数字（ImGui。エディタを開いている間は出さない）
+		}
 		{
 			PROFILE_SCOPE( "DebugString" );
 			mDebugStringRenderer.draw();

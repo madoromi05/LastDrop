@@ -3,7 +3,7 @@
 
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Interaction/IInteractable.h"
-#include "GameSrc/Interaction/ItemGrid.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
 
 // 今日の脱出の車の給油口（FuelEscapeLoading_Plan.txt 3 章・FuelPort_Plan.txt。2026-11-06 にマス目へ入れる形へ変えた）。
 // 見て E を押すと、漁れる場所と同じ画面で給油口のマス目（ガソリン 1 個分 × 要る数）を見せる（開けるのは呼ぶ側）。

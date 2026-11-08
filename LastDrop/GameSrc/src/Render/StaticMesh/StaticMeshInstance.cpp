@@ -2,7 +2,7 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 #include "GameSrc/Math/PlacementMatrix.h"
 #include "GameSrc/Hit/HitMath.h"
-#include "GameSrc/Render/ViewFrustum.h"
+#include "GameSrc/Render/Culling/ViewFrustum.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Matrix34.h"

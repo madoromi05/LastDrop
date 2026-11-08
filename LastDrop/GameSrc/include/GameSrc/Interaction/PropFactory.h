@@ -2,9 +2,9 @@
 #define INCLUDED_PROP_FACTORY_H
 
 #include "GameSrc/World/GameObjectTag.h"
-#include "GameSrc/Interaction/ItemGrid.h"
-#include "GameSrc/Interaction/LootTable.h"
-#include "GameSrc/Render/DrawCulling.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
+#include "GameSrc/Interaction/Loot/LootTable.h"
+#include "GameSrc/Render/Culling/DrawCulling.h"
 #include "GameSrc/Component/BoxColliderComponent.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"

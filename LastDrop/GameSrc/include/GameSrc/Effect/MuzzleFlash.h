@@ -3,7 +3,7 @@
 
 #include "GameSrc/Render/LitQuadBatch.h"
 #include "GameSrc/Render/Flipbook.h"
-#include "GameSrc/Render/LightList.h"
+#include "GameSrc/Render/Lighting/LightList.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix44.h"
 #include "GameLib/Graphics/Texture.h"

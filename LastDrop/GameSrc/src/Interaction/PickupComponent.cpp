@@ -1,6 +1,6 @@
 #include "GameSrc/Interaction/PickupComponent.h"
-#include "GameSrc/Interaction/ItemComponent.h"
-#include "GameSrc/Interaction/Inventory.h"
+#include "GameSrc/Interaction/Item/ItemComponent.h"
+#include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Component/StaticModelComponent.h"
 #include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/World/GameObject.h"

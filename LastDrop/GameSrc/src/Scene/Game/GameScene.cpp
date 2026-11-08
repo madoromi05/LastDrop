@@ -1,8 +1,8 @@
 #include "GameSrc/Scene/Game/GameScene.h"
 #include "GameSrc/Scene/GameResources.h"
 #include "GameSrc/Player/PlayerComponent.h"
-#include "GameSrc/Player/FirstPersonBodyComponent.h"
-#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
+#include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/LightComponent.h"
@@ -10,18 +10,18 @@
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Scene/SceneManager.h"
-#include "GameSrc/Render/DrawCulling.h"
-#include "GameSrc/Render/LightingParams.h"
-#include "GameSrc/Render/ShadowParams.h"
-#include "GameSrc/Render/SsrParams.h"
-#include "GameSrc/Render/PostProcessParams.h"
+#include "GameSrc/Render/Culling/DrawCulling.h"
+#include "GameSrc/Render/Lighting/LightingParams.h"
+#include "GameSrc/Render/Shadow/ShadowParams.h"
+#include "GameSrc/Render/PostProcess/SsrParams.h"
+#include "GameSrc/Render/PostProcess/PostProcessParams.h"
 #include "GameSrc/DebugMode/EditorWindow.h"
 #include "GameSrc/Raid/RunRules.h"
 #include "GameSrc/Raid/RaidParams.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Interaction/IInteractable.h"
-#include "GameSrc/Interaction/LootContainerComponent.h"
-#include "GameSrc/Interaction/LootParams.h"
+#include "GameSrc/Interaction/Loot/LootContainerComponent.h"
+#include "GameSrc/Interaction/Loot/LootParams.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
 #include "GameSrc/Core/GameTime.h"
 
@@ -93,6 +93,7 @@ GameScene::GameScene( GameResources* resources ) :
 	mSurfaceHitSounds( &resources->audio() ),
 	mZombieAttackSounds( &resources->audio() ),
 	mHud( &resources->uiRenderer() ),
+	mAmmoHud( &resources->uiRenderer() ),
 	// 脱出の車の置き場所は毎日変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
 	mSession( mWorld.map().escapeCarSpots(), Framework::instance().time() ),
 	mLoader( &mWorld, &resources->meshes(), mSession.escapeCarSpot() ),
@@ -476,10 +477,28 @@ ItemId GameScene::equippedWeapon() const {
 	return gun ? gun->spec().item : ITEM_NONE;
 }
 
+void GameScene::addAmmoHud() {
+	const GunComponent* gun = HoldComponent::heldGun( mWorld.player() );
+	// 消えていく途中に銃を手放した（捨てた・死んだ）ら、その場で出すのをやめる（出す物が無い）。
+	if ( !gun || !mAmmoHudVisibility.isVisible() ) {
+		return;
+	}
+	AmmoHud::Ammo ammo;
+	ammo.weapon = gun->spec().item;
+	ammo.rounds = gun->magazineRounds();
+	ammo.capacity = gun->spec().magazineCapacity;
+	ammo.reserve = mInventory.count( gun->spec().ammo );
+	mAmmoHud.add( ammo, mAmmoHudVisibility.opacity() );
+}
+
 void GameScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
 	// 2回目以降のこのシーン（次の日の出撃）では、もう構築済みなのですぐに並べられる。
-	bool allReady = mResources->meshes().update();
+	bool allReady = false;
+	{
+		PROFILE_SCOPE( "Game.meshes" );
+		allReady = mResources->meshes().update();
+	}
 	if ( !mReady ) {
 		// ロードは 1 回の描画に 1 段階ずつ（間にロード画面を描き、窓のメッセージを回す。FuelEscapeLoading_Plan.txt 6 章）。
 		if ( !mLoader.advance( allReady ) ) {
@@ -492,7 +511,10 @@ void GameScene::beginFrame() {
 		mFireProbe.markReady();
 #endif
 	}
-	handleFrameInput();
+	{
+		PROFILE_SCOPE( "Game.input" );
+		handleFrameInput();
+	}
 #ifdef ZF_EDITOR
 	probeFire();
 #endif
@@ -630,15 +652,28 @@ void GameScene::update() {
 	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる。
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
-	mZombieHitSounds.play( mWorld.combat().zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
-	shakeOnHeavyHits(); // 揺れも同じ出来事を読む（次の updateViewEffects から効く）
-	mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
-	updatePlayerDamage();
-	updateRaid();
-	updateLootSearch( commandInterruptsSearch ); // 攻撃された・死んだ・1 日が終わったも読むので、その後に
+	{
+		PROFILE_SCOPE( "Game.hitFeedback" );
+		mZombieHitSounds.play( mWorld.combat().zombieHitsThisTick() ); // このティックに当たった分だけ鳴らす（次の update で入れ替わるので、ここで読む）
+		shakeOnHeavyHits(); // 揺れも同じ出来事を読む（次の updateViewEffects から効く）
+		mSurfaceHitSounds.play( mWorld.combat().surfaceHitsThisTick() ); // 物に当たった分も同じ（読む決まりも同じ）
+	}
+	{
+		PROFILE_SCOPE( "Game.damage" );
+		updatePlayerDamage();
+	}
+	{
+		PROFILE_SCOPE( "Game.raid" );
+		updateRaid();
+	}
+	{
+		PROFILE_SCOPE( "Game.loot" );
+		updateLootSearch( commandInterruptsSearch ); // 攻撃された・死んだ・1 日が終わったも読むので、その後に
+	}
 	if ( mLootOpen ) {
 		return; // 開け終わって中を見る画面を開いた（世界を止めたので、同じ描画の残りのティックも進めない）
 	}
+	PROFILE_SCOPE( "Game.view" ); // ここから update の終わりまで
 	GameObject* player = mWorld.player();
 	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
 	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
@@ -649,6 +684,9 @@ void GameScene::update() {
 #ifdef ZF_EDITOR
 	mFireProbe.onTick( gun && gun->firedThisTick(), gun && gun->dryFiredThisTick() );
 #endif
+	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない。AmmoHud_Plan.txt Q1）。
+	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
+	mAmmoHudVisibility.update( hold && gun && ( hold->isAiming() || gun->isReloading() ) );
 	mControl.updateViewEffects( shotRecoil, player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
 	if ( player ) {
 		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
@@ -826,6 +864,7 @@ void GameScene::draw() {
 #endif
 		// 使える物の上のマーク（積むだけ。すぐ下の HUD の描画でまとめて描かれる）。
 		mInteractMarkers.add( camera, &mResources->uiRenderer() );
+		addAmmoHud(); // 右下の弾数（積むだけ。同じく HUD の描画でまとめて描かれる）
 		// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
 		mHud.draw( mSession, mResources->run().day(), mWorld.dayCondition(), mLootSearch.isSearching() ? mLootSearch.progress() : kNoSearch, waitingKind() );
 	}

@@ -6,7 +6,7 @@
 #include "GameSrc/Collision/ICollisionBody.h"
 #include "GameSrc/Collision/BodyFootprint.h"
 #include "GameSrc/Player/PlayerCommand.h"
-#include "GameSrc/Player/AimSway.h"
+#include "GameSrc/Player/Camera/AimSway.h"
 #include <memory>
 
 class Inventory;

@@ -1,6 +1,6 @@
 #include "GameSrc/Player/PlayerBodySounds.h"
 #include "GameSrc/Player/PlayerLocomotionComponent.h"
-#include "GameSrc/Player/HoldComponent.h"
+#include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/LightComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"

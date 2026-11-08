@@ -4,7 +4,7 @@
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Weapon/FireControl.h"
 #include "GameSrc/Weapon/Magazine.h"
-#include "GameSrc/Weapon/WeaponRecoil.h"
+#include "GameSrc/Weapon/Recoil/WeaponRecoil.h"
 #include "GameSrc/Weapon/WeaponReload.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 

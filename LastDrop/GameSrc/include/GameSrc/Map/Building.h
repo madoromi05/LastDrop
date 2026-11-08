@@ -4,7 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
-#include "GameSrc/Render/LodSelector.h"
+#include "GameSrc/Render/Culling/LodSelector.h"
 #include "GameSrc/Hit/IRayBlocker.h"
 
 class DrawCulling;

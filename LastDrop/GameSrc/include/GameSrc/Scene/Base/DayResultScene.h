@@ -2,9 +2,9 @@
 #define INCLUDED_DAY_RESULT_SCENE_H
 
 #include "GameSrc/Scene/IScene.h"
-#include "GameSrc/Scene/Game/ItemIcons.h"
-#include "GameSrc/Scene/Game/ItemGridView.h"
-#include "GameSrc/Interaction/ItemGrid.h"
+#include "GameSrc/Scene/Game/Screen/ItemIcons.h"
+#include "GameSrc/Scene/Game/Screen/ItemGridView.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameSrc/Raid/DayResult.h"
 #include "GameSrc/UI/UiScreen.h"
 

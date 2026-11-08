@@ -2,8 +2,8 @@
 #define INCLUDED_STASH_SCREEN_H
 
 #include "GameSrc/UI/UiRect.h"
-#include "GameSrc/Scene/Game/ItemIcons.h"
-#include "GameSrc/Scene/Game/GridPairPicker.h"
+#include "GameSrc/Scene/Game/Screen/ItemIcons.h"
+#include "GameSrc/Scene/Game/Screen/GridPairPicker.h"
 #include "GameLib/Math/Vector2.h"
 
 class UiRenderer;

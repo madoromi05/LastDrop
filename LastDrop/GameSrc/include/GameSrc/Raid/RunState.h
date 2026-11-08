@@ -1,7 +1,7 @@
 #ifndef INCLUDED_RUN_STATE_H
 #define INCLUDED_RUN_STATE_H
 
-#include "GameSrc/Interaction/ItemGrid.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameSrc/Raid/DayResult.h"
 #include "GameSrc/Raid/Score.h"
 #include "GameSrc/Raid/DayCondition.h"

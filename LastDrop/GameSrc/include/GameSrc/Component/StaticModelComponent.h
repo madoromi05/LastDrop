@@ -6,8 +6,8 @@
 #include "GameSrc/Hit/IRayBlocker.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
 #include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
-#include "GameSrc/Render/LodSelector.h"
-#include "GameSrc/Render/DrawCulling.h"
+#include "GameSrc/Render/Culling/LodSelector.h"
+#include "GameSrc/Render/Culling/DrawCulling.h"
 
 class StaticMeshData;
 

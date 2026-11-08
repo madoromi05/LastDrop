@@ -1,7 +1,7 @@
 #ifndef INCLUDED_I_INTERACTABLE_H
 #define INCLUDED_I_INTERACTABLE_H
 
-#include "GameSrc/Interaction/ItemGrid.h"
+#include "GameSrc/Interaction/Item/ItemGrid.h"
 
 class Inventory;
 
