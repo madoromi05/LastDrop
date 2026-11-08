@@ -1,0 +1,44 @@
+#ifndef INCLUDED_GAME_EDITOR_BRIDGE_H
+#define INCLUDED_GAME_EDITOR_BRIDGE_H
+
+#include "GameSrc/DebugMode/FireProbe.h"
+
+class GameWorld;
+class Inventory;
+class RaidSession;
+class RunState;
+class FirstPersonCamera;
+class FirstPersonControl;
+class ModalController;
+
+// 本編のシーンと、確認用の道具（F6 のエディタ・確認用のキー・FireProbe）をつなぐ係
+// （SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 7-2。2026-11-09 GameScene から分けた）。
+// GameScene は ZF_EDITOR のとき（Debug・Profile）だけこれを持つ（Release には持たない。ファイルは他の確認用の道具と同じく、どの構成でもビルドする）。
+// 観察用カメラ（FreeCamera）と確認用の表示（GameDebugOverlay）は持たない（どのカメラで描くか・パイプラインの途中に挟む、が描画の順番そのものなので、シーンに残す）。
+class GameEditorBridge{
+public:
+	GameEditorBridge();
+	// シーンを抜けるので、エディタへ渡した物を外す（消えた世界・カバンを指し続けないように）。無敵の表示も OFF に戻す。
+	~GameEditorBridge();
+	GameEditorBridge( const GameEditorBridge& ) = delete;
+	GameEditorBridge& operator=( const GameEditorBridge& ) = delete;
+
+	// 出撃のロードが終わった（FireProbe が、そこから記録を始める）。
+	void markReady();
+	// 描画ごとに、F5（自キャラの無敵の切り替え）を読み、F6 のエディタへ今の物を渡す（エディタの欄が読む・書く）。
+	// 世界・カバン・1 日・5 日間はどれも借りるだけ（このシーンの間だけ指す）。
+	void publish( GameWorld* world, Inventory* inventory, RaidSession* session, RunState* run );
+	// F9 で、自キャラの前にゾンビを出す（世界を変えるので、読むだけの GameDebugOverlay ではなくここ）。ティックの間に呼ぶ。
+	// camera: 自キャラの視点（向いている方へ出す）。
+	void spawnZombiesOnKey( GameWorld* world, const FirstPersonCamera& camera );
+	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録。FuelEscapeLoading_Plan.txt F-0）。
+	// freeCamera: 観察用カメラを使っているか。
+	void probeFrame( const GameWorld& world, const FirstPersonControl& control, const ModalController& modals, bool freeCamera );
+	// このティックに撃った・空撃ちしたかを FireProbe へ渡す（GameWorld::update の後）。
+	void probeTick( const GameWorld& world );
+
+private:
+	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）
+};
+
+#endif

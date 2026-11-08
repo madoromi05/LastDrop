@@ -7,9 +7,7 @@
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Player/Camera/FirstPersonControl.h"
-#include "GameSrc/Player/PlayerBodySounds.h"
-#include "GameSrc/Scene/Game/Sound/CombatSounds.h"
-#include "GameSrc/Scene/Game/Hud/PlayerDamageView.h"
+#include "GameSrc/Scene/Game/PlayerFeedback.h"
 #include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Scene/Game/Screen/ModalController.h"
@@ -24,7 +22,7 @@ enum class PlayerCondition;
 
 #ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
-#include "GameSrc/DebugMode/FireProbe.h"
+#include "GameSrc/Scene/Game/GameEditorBridge.h"
 #endif
 
 class GameResources;
@@ -46,11 +44,8 @@ class EscapeCarComponent;
 //   世界を描く                          … WorldRenderer
 //   入力と視点                          … FirstPersonControl
 //   見ている物を使う                    … Interactor（持ち物は Inventory）
-//   足音・装備の音                      … PlayerBodySounds
-//   弾がゾンビに当たった音              … ZombieHitSounds
-//   弾が物（建物・地面・車）に当たった音… SurfaceHitSounds
-//   ゾンビがつかんだ・噛んだ音          … ZombieAttackSounds
-//   攻撃された・死んだ後の見せ方の量    … PlayerDamageView（画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
+//   出来事を自キャラへ返す（当たった音・揺れ・攻撃された反応・足音・反動とぶれ）… PlayerFeedback
+//     （攻撃された・死んだ後の見せ方の量は PlayerDamageView。画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
 //   1 日の時間・脱出点・終わり方        … RaidSession（終わった後に何を残すかは RunRules）
 //   HUD                                 … RaidHud
 //   一時停止のメニュー                  … PauseMenu
@@ -59,6 +54,7 @@ class EscapeCarComponent;
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
+//   F6 のエディタ・確認用のキー（F5・F9）・FireProbe（Debug・Profile だけ）… GameEditorBridge
 // 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
 class GameScene : public IScene{
 public:
@@ -83,25 +79,12 @@ private:
 	ItemId equippedWeapon() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
-	// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める。
-	// 暗くなり終わったらゲームオーバー画面へ（1ティックに1回、GameWorld::update の後）。
-	void updatePlayerDamage();
-	// このティックの命中のうち、部位が飛んだ・頭が弾けた物だけ画面を少し揺らす（ふつうと倒しただけは揺らさない。HitFeel_Plan.txt Q3）。
-	// 1ティックに1回、GameWorld::update の後。
-	void shakeOnHeavyHits();
-	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、updatePlayerDamage の後）。
+	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、PlayerFeedback::reactToCombat の後）。
 	// 脱出：銃の弾倉の数をカバンへ書き戻してから finishDay → 1 日の結果。時間切れ：failDay → 5 日間の終わり。
 	// 死んだ：暗くなり終わるのを待ってから failDay → 5 日間の終わり。
 	void updateRaid();
 	// 終わった日を RunRules へ渡して、次のシーンへの切り替えを予約する（1 回だけ）。
 	void finishRaid();
-#ifdef ZF_EDITOR
-	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
-	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
-	void spawnDebugZombies();
-	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録。FuelEscapeLoading_Plan.txt F-0）。
-	void probeFire();
-#endif
 	// ロードの後の、描画ごとの操作の読み取り（一時停止・カバン・中を見る画面・視点と移動）。beginFrame から。
 	void handleFrameInput();
 	float aimWeight() const;     // 自キャラの覗き具合（0〜1。自キャラがいなければ 0）
@@ -118,9 +101,8 @@ private:
 	Inventory mInventory;
 	Interactor mInteractor;
 	FirstPersonControl mControl;
-	PlayerBodySounds mBodySounds;
-	CombatSounds mCombatSounds; // 戦闘の結果の効果音（ゾンビ命中・物命中・攻撃された）をまとめて鳴らす
-	PlayerDamageView mDamageView;
+	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）。
+	PlayerFeedback mFeedback;
 	// 遊んでいる間の画面表示（1 日の棒・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する。
 	HudController mHud;
 	RaidSession mSession; // 町の 1 日（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
@@ -136,7 +118,7 @@ private:
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
-	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）
+	GameEditorBridge mEditor; // F6 のエディタ・F5・F9・FireProbe
 #endif
 	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 };

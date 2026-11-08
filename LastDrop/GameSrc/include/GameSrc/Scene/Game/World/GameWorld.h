@@ -1,47 +1,35 @@
 #ifndef INCLUDED_GAME_WORLD_H
 #define INCLUDED_GAME_WORLD_H
 
-#include "GameSrc/Map/TownMap.h"
-#include "GameSrc/Map/TownGround.h"
-#include "GameSrc/Map/NavMesh.h"
-#include "GameSrc/Map/PathBudget.h"
-#include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Hit/HitWorld.h"
-#include "GameSrc/Zombie/Animation/ZombieModel.h"
-#include "GameSrc/Zombie/Component/ZombieBrainComponent.h"
-#include "GameSrc/Zombie/ZombieFactory.h"
-#include "GameSrc/Zombie/ZombieSpawner.h"
-#include "GameSrc/Zombie/Move/ZombieCrowd.h"
-#include "GameSrc/Zombie/Move/ChaseTarget.h"
 #include "GameSrc/World/GameObjectWorld.h"
-#include "GameSrc/Map/Building.h"
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/PlayerFactory.h"
 #include "GameSrc/Interaction/PropFactory.h"
 #include "GameSrc/Weapon/Bullet/BulletList.h"
-#include "GameSrc/Scene/Game/World/WorldBuilder.h"
+#include "GameSrc/Scene/Game/World/TownEnvironment.h"
+#include "GameSrc/Scene/Game/World/ZombieDirector.h"
 #include "GameSrc/Scene/Game/World/EffectManager.h"
 #include "GameSrc/Scene/Game/World/CombatResolver.h"
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
 #include "GameSrc/Raid/DayCondition.h"
 #include "GameLib/Math/Vector3.h"
-#include "GameLib/Math/Random.h"
-#include <memory>
-#include <optional>
 #include <vector>
 
 class MeshCache;
 class TownCache;
-class SkinnedMeshData;
 class StaticMeshData;
 class Inventory;
 class PlayerComponent;
 
 // 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
 // 飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
-// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt。2026-11-02 分けた）：
-//   最初に町を組み立てる         … WorldBuilder（置物の部品の並びは PropFactory、自キャラは PlayerFactory、ゾンビは ZombieFactory）
+// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt。2026-11-02 分けた。
+// 町とゾンビは SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt で 2026-11-09 に分けた）：
+//   町（地図・地面・建物・歩ける床・隠れの表） … TownEnvironment（組み立ては WorldBuilder、置物の部品の並びは PropFactory）
+//   ゾンビの数と周り・音を知らせる     … ZombieDirector（組み立ては ZombieFactory、音は ZombieHearing）
+//   自キャラ                       … PlayerFactory（自キャラの足音・銃声は、自キャラの PlayerNoiseComponent が ZombieHearing へ）
 //   弾痕・砂ぼこり・血・千切れた部位 … EffectManager
 //   当たった後に何が起きるか     … CombatResolver（出来事の並びも持つ）
 //   見て E で使う物を探す         … InteractionSystem
@@ -66,10 +54,10 @@ public:
 
 	// ロード
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
-	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（WorldBuilder）。
+	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（TownEnvironment）。
 	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号。RaidSession が選ぶ）。
 	void buildTown( int escapeCarSpot );
-	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。buildTown の後。
+	// ゾンビの歩ける床を TownCache から借りて、共有の棚へ置く（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。buildTown の後。
 	void buildNavMesh();
 	// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後。
 	void buildVisibility();
@@ -78,9 +66,9 @@ public:
 	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
 	// 1ティック進める
-	//   Input（自キャラが操作どおりに動く・撃つ）→ 撃ったなら弾を出し、近くのゾンビに銃声を聞かせる → 弾を飛ばし、当たった所を CombatResolver が解決
-	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす）→
-	//   Late（銃口が光る）→ 沈み終わった死体と、消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
+	//   Input（自キャラが操作どおりに動く・撃つ。足音・銃声をゾンビへ知らせる）→ 撃ったなら弾を出す → 弾を飛ばし、当たった所を CombatResolver が解決
+	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす。沈み終えた死体は自分で消える印を付ける）→
+	//   Late（銃口が光る）→ 消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）。
 	// command / cameraYaw / cameraPitch / inventory: PlayerComponent::setInput へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）。
 	// viewDirection: 弾を出す向き（長さ1。FirstPersonCamera::weaponDirection）。弾は自キャラの目からこの向きへ飛ぶ
 	//                （画面の中央から、照準のぶれの分だけずれた所＝銃が向いている所へ飛ぶ）。
@@ -110,14 +98,11 @@ public:
 	EffectManager& effects();
 
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
-	const TownMap& map() const;							// 町のどこに何を置くか
+	const TownEnvironment& town() const;                // 町（地図・道路と歩道・建物・歩ける床・隠れの表）
+	const ZombieDirector& zombies() const;              // ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
 	const DayConditionEffect& dayCondition() const;		// 今日の条件（街灯・霧・HUD はシーンがここから読む）
-	const NavMesh& navMesh() const;					// 町の歩ける床の形（確認用の表示が、床の縁を描くのに使う）
-	const TownGround& ground() const;					// 道路と歩道（足元の材質を聞ける）
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
 	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
-	const std::vector< Building >& buildings() const;	// 建てた建物（place の後は増えない）
-	const TownVisibility& visibility() const;			// 建物・ゾンビの隠れの表（簡易 PVS。place で作る）
 	const BulletList& bullets() const;					// 飛んでいる弾
 	// 自キャラの物（部品は PlayerComponent の説明）。place の前・構築に失敗して置けなかったときは nullptr。
 	// 返すポインタはこの世界がある間使える（自キャラは消えない）。
@@ -127,87 +112,44 @@ public:
 	// 自キャラが居ない・その部品を外していれば nullptr。
 	const IHittable* playerTarget() const;
 	const ICollisionBody* playerBody() const;
-	// 銃の物 item（ITEM_KIND_WEAPON）の弾倉に入っている弾の数（銃が無ければ 0）・入れる（弾倉の大きさまでに収める）。
-	// 拠点で覚えた数を出撃の始めに入れ、脱出したときに読み出す（R2_Plan.txt Q13）。銃は 1 種類 1 丁なので、種類で引ける。
-	int magazineRounds( ItemId item ) const;
-	void setMagazineRounds( ItemId item, int rounds );
 	// 世界に置いた物（自キャラ・銃・ゾンビ・落ちている物・車…）。確認用の表示が forEach< ZombieStateComponent > で
 	// ゾンビ全員（倒れている途中・死体も含む）の体力・通り道を読む、F6 のエディタが物の一覧を出す、WorldRenderer が描くのに使う。
+	// 書ける方は、update の外で部品の値を入れる係（弾倉の数を入れる MagazineSync）だけが使う（物を増やす・消すのは世界の中の係）。
 	const GameObjectWorld& objects() const;
+	GameObjectWorld& objects();
 	// 自キャラが死んだか（自キャラが居なければ false）。
 	bool isPlayerDead() const;
-	// ゾンビを湧かせる係（確認用の表示が、立っている数・目標の数・次に湧くまでを読む）。ゾンビの形が無ければ nullptr。
-	const ZombieSpawner* zombieSpawner() const;
 
 private:
 	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の ★6）。
 	// 自キャラ（と手に持つ銃）を町の出発点へ置く（place から。組み立ては mPlayerFactory）。
 	void placePlayer();
-	// position（撃った瞬間の自キャラの足元）で銃声がした。届く距離の内のゾンビへ知らせる（update で撃ったティックに）。
-	void alertZombiesToGunshot( const GameLib::Math::Vector3& position );
-	// 0.3 秒ごとに、自キャラの歩き方で決まる距離（歩き 5m・走り 18m）の内のゾンビへ足音を聞かせる（update で毎ティック。
-	// SummaryPlan/個別仕様/ZombieFootstepHearing_Plan.txt）。
-	void alertZombiesToFootsteps();
-	// ゾンビの Think の段を動かし、腕の当たりを CombatResolver へ渡し、沈み終わった死体に消す印を付ける（update から）。
-	// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
-	void updateZombies();
-	// 立っているゾンビの数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawnZombie する（update の最後から）。
-	// cameraYaw: カメラの水平の向き（度）。
-	void spawnZombiesFromSpawner( float cameraYaw );
 
 	// 今日の条件の効き目（DayCondition.cpp の表の 1 行。借りているだけ）。
 	const DayConditionEffect& mDay;
-	// 町のどこに何を置くか。
-	TownMap mMap;
-	// 町の決まった形の持ち主（GameResources が持つ。借りているだけ）。
-	TownCache* mTown;
-	// 町の歩ける床の形（ゾンビが建物を回り込む通り道を聞く）。buildNavMesh で mTown から借りる（それまでは nullptr）。
-	NavMesh* mNavMesh;
-	int mEscapeCarSpot; // 今日の脱出の車の置き場所（buildTown で受け取る。歩ける床を選ぶのに使う）
-	// 1 ティックに道を探してよい回数を配る（OptimizationC_Plan.txt 6 章）。ゾンビの通り道が借りるので、ゾンビより先に宣言する。
-	PathBudget mPathBudget;
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する。
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;
-	WorldBuilder mBuilder;					// 町を組み立てる
-	const StaticMeshData* mBulletData;    // どれも MeshCache から借りる。飛ぶ弾
-	const SkinnedMeshData* mZombieData;
-	TownGround mGround;						// 道路と歩道（見た目・弾の当たり判定・足元の材質）
+	// 町。名簿が地面・建物を指すので、名簿より先に宣言する（mPropFactory を借りるので、その後に宣言する）。
+	TownEnvironment mTown;
+	const StaticMeshData* mBulletData;    // MeshCache から借りる。飛ぶ弾
 	CollisionWorld mCollisionWorld;			// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する
 	HitWorld mHitWorld;
 	BulletList mBullets;			// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）。
 	EffectManager mEffects;	// 弾痕・砂ぼこり・血しぶき・千切れた部位
 	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）。
 	std::vector< BulletList::Impact > mImpacts;
-	// ゾンビ全員で共有する決まりごと
-	std::unique_ptr< ZombieModel > mZombieModel;
-	// ゾンビの Think の段で全員が読む、このティックの周り（追う先・仲間の位置・攻撃に行っている体）。ゾンビが借りるので、ゾンビより先に宣言する。
-	ZombieBrainComponent::TickContext mZombieContext;
-	ChaseTarget mChaseTarget; // mZombieContext.target が指す（自キャラが居る間）
-	std::optional< AnimationView > mAnimationView; // mZombieContext.view が指す（setAnimationView の後）
-	// 立って歩けるゾンビの位置の並び（updateZombies の頭で作り直し、mZombieContext から全員が読む。毎回確保し直さないために持つ）。
-	ZombieCrowd mCrowd;
-	// ゾンビを部品から組み立てる。mZombieModel を借りる（mNavMesh・名簿・mZombieContext は部品が mObjects の共有の棚から引く）。
-	std::unique_ptr< ZombieFactory > mZombieFactory;
+	// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）。
+	ZombieDirector mZombies;
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ
 	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt）。
-	// 物が名簿・mZombieModel・mNavMesh・mZombieContext を借りるので、それらより後に宣言する（＝先に破棄される）。
+	// 物が名簿・町の歩ける床・mZombies の物を借りるので、それらより後に宣言する（＝先に破棄される）。
 	GameObjectWorld mObjects;
-	// 当たった後を解決する・使う物を探す。mObjects・mEffects・名簿・mPropFactory を借りるので、それらより後に宣言する。
+	// 当たった後を解決する・使う物を探す。mObjects・mEffects・名簿を借りるので、それらより後に宣言する。
 	CombatResolver mCombat;
 	InteractionSystem mInteraction;
 	GameObject* mPlayer;             // 自キャラの物（mObjects が持つ。置けなければ nullptr）
 	PlayerComponent* mPlayerControl; // 自キャラの操作を読む部品（同上）
-	GameLib::Math::Random mZombieRandom; // 倒れ方（死亡アニメ）・湧かせ方の種を選ぶ（place で種を決める）
-	int mZombieNumber;                   // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
-	int mFootstepNoiseTicks;             // 次に足音を聞かせるまでのティック（alertZombiesToFootsteps）
-	// いつ・どこにゾンビを湧かせるか。名簿（mHitWorld・mCollisionWorld）と mZombieModel の体の大きさを借りるので、それらより後に宣言する。
-	std::unique_ptr< ZombieSpawner > mZombieSpawner;
-	std::vector< ZombieSpawner::Order > mSpawnOrders; // このティックに出す所（毎回確保し直さないために持つ）
-	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）。
-	std::vector< Building > mBuildings;
-	// 建物の隠れの表。buildVisibility で mTown から借りる（それまでは nullptr）。
-	const TownVisibility* mVisibility;
 };
 
 #endif

@@ -1,5 +1,7 @@
 #include "GameSrc/Scene/Game/Hud/GameDebugOverlay.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
+#include "GameSrc/Map/TownVisibility.h"
+#include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
@@ -115,7 +117,7 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 	}
 	mZombieHealthBars.add( world, camera, renderer );
 	// 湧く仕組みの様子（立っている数 / 目標の数・次に湧くまで）。足りている間の秒数は補充の間隔のまま止まっている。
-	const ZombieSpawner* spawner = world.zombieSpawner();
+	const ZombieSpawner* spawner = world.zombies().spawner();
 	if ( spawner ) {
 		char text[ kDebugTextSize ];
 		std::snprintf( text, sizeof( text ), "Zombies: %d/%d  Next spawn: %.1fs",
@@ -123,7 +125,7 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), text );
 	}
 	// 簡易 PVS（OptimizationC_Plan.txt 7 章）。ますの外（町の外・建物の足元・高い所）では使わない。
-	const TownVisibility& visibility = world.visibility();
+	const TownVisibility& visibility = world.town().visibility();
 	char pvsText[ kDebugTextSize ];
 	int cell = visibility.cellAt( camera.eyePosition() );
 	if ( !pvsEnabled() ) {
@@ -132,7 +134,7 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 		std::snprintf( pvsText, sizeof( pvsText ), "PVS: no cell (draw all)" );
 	} else {
 		int hidden = 0;
-		int buildingNumber = static_cast< int >( world.buildings().size() );
+		int buildingNumber = static_cast< int >( world.town().buildings().size() );
 		for ( int b = 0; b < buildingNumber; ++b ) {
 			hidden += visibility.showsBuilding( cell, b ) ? 0 : 1;
 		}
@@ -177,7 +179,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
 	if ( mShowZombieHealth ) {
-		mZombiePathDrawer.draw( world.objects(), world.navMesh(), camera.projectionViewMatrix() );
+		mZombiePathDrawer.draw( world.objects(), world.town().navMesh(), camera.projectionViewMatrix() );
 	}
 	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
 }

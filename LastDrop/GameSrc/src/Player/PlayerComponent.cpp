@@ -2,6 +2,7 @@
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
 #include "GameSrc/Player/PlayerLocomotionComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
+#include "GameSrc/Player/Body/ArmPoseComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
@@ -119,8 +120,9 @@ void PlayerComponent::update() {
 	// リロード中も撃てない（銃を下げて弾倉を替えている）。
 	fire( hold && hold->isWeaponInHand() && !running && !reloading, command.fireHeld );
 	mBody->body().setRecoil( gun ? gun->recoilKick() : kNoRecoil );
-	if ( hold ) {
-		hold->updateArms( next );
+	// 腕の効き具合（両手持ち・胸元への寄せ・リロードの腕）。外せる部品（無ければ腕は体のアニメのまま）。
+	if ( ArmPoseComponent* arms = getComponent< ArmPoseComponent >() ) {
+		arms->update( next );
 	}
 	// 入力を離しても最後に進んでいた向きへ減速しながら進み、止まる。
 	float speedScale = health ? health->health().walkSpeedScale() : kFullSpeedScale;
@@ -166,7 +168,8 @@ AimSwayBody PlayerComponent::aimSwayBody() const {
 	body.walkRate = mLocomotion->walkRate();
 	body.gaitPhase = mLocomotion->gaitPhase();
 	body.gaitCycling = mLocomotion->gait() != GAIT_STILL;
-	body.carryWeight = hold ? hold->carryWeight() : kNoWeight;
+	const ArmPoseComponent* arms = getComponent< ArmPoseComponent >();
+	body.carryWeight = arms ? arms->carryWeight() : kNoWeight;
 	body.danger = health && health->health().condition() == PlayerCondition::Danger;
 	return body;
 }

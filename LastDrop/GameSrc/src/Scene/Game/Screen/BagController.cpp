@@ -58,7 +58,7 @@ bool BagController::offeredStack( ItemStack* out ) const {
 	}
 	// 銃は弾倉の数を銃の物から読む（拾った銃のマスにも「30/30」が出るように）。
 	if ( weaponForItem( out->item ) != WEAPON_NONE ) {
-		out->loadedRounds = mWorld->magazineRounds( out->item );
+		out->loadedRounds = magazineRoundsOf( mWorld->objects(), out->item );
 	}
 	return true;
 }

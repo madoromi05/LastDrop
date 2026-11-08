@@ -1,0 +1,249 @@
+================================================================================
+ 大きいクラス 5 つを分ける（GameWorld・HoldComponent・FirstPersonBody・FirstPersonControl・GameScene）の計画メモ
+ 作成日：2026-11-09
+ 状態：2026-11-09 ユーザー「お願いします」で ★1〜6 すべて A に決定。実装した。
+       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）。コミットはしていない
+       仕様からの違い：
+        ・ZombieDirector は GameWorld のコンストラクタの中で provideShared を呼ぶ（物の並びより先に宣言するので、作る時はまだ棚に置けない）
+        ・TownEnvironment に visibilityIfEnabled（F6 の PVS が OFF・表がまだ無いなら nullptr）を足した（アニメの間引きが使う。描く側は前のまま）
+        ・弾倉の数は MagazineSync の magazineRoundsOf（BagController も使う）と restoreMagazineRounds の中へ
+        ・ArmPoseComponent は HoldComponent を requireComponent しない（Hold は外せる部品のまま。使う所で getComponent）
+        ・GameEditorBridge は FreeCamera・FireProbe と同じく、ファイルはどの構成でもビルドする（GameScene が持つのは ZF_EDITOR のときだけ）
+        ・計測の印の名前（World.alert・Game.hitFeedback・Game.damage・Game.view）は前の CSV と比べられるよう、そのまま残した
+       分けた後の行数：GameWorld.cpp 463→239・HoldComponent.cpp 344→258・FirstPersonBody.cpp 493→96・
+                       FirstPersonControl.cpp 267→163・GameScene.cpp 525→383
+ 依頼：「優先度：高」の 5 クラスで、分けられる所は分ける。コンポーネント指向を意識する
+ 前の段階：GameWorldSplit_Plan.txt（描画・組み立て・エフェクト・命中・使う物を分けた。ゾンビの群れは未着手と書いた所）
+           ComponentSystem3_Plan.txt（共有の棚 provide / shared・awake / start・必須と任意の部品）
+           GameScene の分割（SceneRenderer・ModalController・CombatSounds・Bag/LootController・HudController・LoadingPhase。11-09）
+ 手本のゲームの調査：作り直しで遊び方は変えないので、タルコフの調査は無し
+ 決まり：遊びは変えない（作り直しだけ）。変わってしまう所は 8 章に全部書く
+================================================================================
+
+0. コンポーネント指向をどこで使うか（この作り直しの考え方）
+ このゲームの「部品を組み合わせて物を作る」は 3 つの層がある。分けた物は、どれもこのどこかへ入れる。
+   ① 物の層（GameObject に付ける Component）
+      … 1 つの物が持つ「できること」。自キャラ・ゾンビ・銃・置物。付け外しで物の性質が変わる
+   ② 姿勢の層（BonePoseModifier を BonePoseModifierChain でつなぐ）
+      … 1 体の骨の書き換えを、小さな段の組み合わせで作る。ゾンビ（のけぞり→潰す）で使っている形を自キャラにも使う
+   ③ 世界・画面の係（普通のクラス。GameWorld や GameScene が持つ）
+      … 物を何体もまとめて扱う仕事（湧かせる・音を知らせる）と、物ではない物（カメラ・画面・音・デバッグ）
+ 判断の決まり：
+   ・1 つの物だけで完結する仕事 → ①（部品にする）
+   ・何体もの物をまとめて扱う仕事 → ③（係にする）。部品からは共有の棚（shared< T >）で引く
+   ・カメラ・UI・音・デバッグは GameObject にしない（描画ごとに動く物で、ティックで動く GameObjectWorld の外にあるため。
+     世界（Model）は音を知らない、という今の決まりも守る）
+
+1. 今それぞれが持っている仕事
+ 1-1 GameWorld（実装 463 行・ヘッダ 213 行・メンバー約 40）
+   ① 状態と 1 ティックの順番（本来の仕事）
+   ② 町（地図・地面・建物の並び・NavMesh・見える範囲の表）を作って持つ。作った後は読まれるだけ
+   ③ ゾンビの数の管理（設計図・作る係・乱数・何体目か・湧かせる係・湧く予定の並び・アニメの名前）
+   ④ ゾンビの周り（群れ・追う先 ChaseTarget・TickContext・道探しの回数・アニメの間引きの視点）と、Think の前後の準備と後片付け
+   ⑤ 音を知らせる（銃声・足音・物音。距離・間隔・雨の倍率）
+   ⑥ 沈み終えた死体を消す
+   ⑦ 弾倉の数の読み書き（MagazineSync だけが使う）
+ 1-2 HoldComponent（実装 344 行・メンバー約 25）
+   ① 手に何を持つか（銃を探す・付ける・カバンと合わせる・銃口・描く・弾倉）
+   ② 構え（WeaponStance へ渡すだけ）とリロードの始め方
+   ③ 腕のアニメのポーズ（取り出す係・ポーズ 5 本と「持っているか」3 つ・混ぜ方・効き具合 2 つ）
+ 1-3 FirstPersonBody（実装 493 行・メンバー約 30）
+   apply の中の 9 段：腕の差し替え／背骨を曲げる／両手で持つ／胸元へ抱える／目の位置／照準を目へ／ぶれ／反動／銃を囲む箱
+   9 段が全部、同じメンバー（骨の番号・持ち方・ピッチ・目の位置）を読み書きしている
+ 1-4 FirstPersonControl（実装 267 行）
+   ① 視点を回す（マウス・スティック・感度）
+   ② 操作を作る（移動・走る・押した瞬間・撃つの抑止）
+   ③ 画面の揺れ（反動 3 つ・揺れ・照準のぶれ・ためたマウスの回転）
+   ④ 相手の顔へ向ける（lookToward）
+   ⑤ カーソルの固定、カメラを置く
+ 1-5 GameScene（実装 525 行）
+   ① 順番と画面の振り分け（本来の仕事）
+   ② エディタとのつなぎ（F5 無敵・EditorWindow へ 6 つ渡す・F9 のゾンビ・FireProbe）
+   ③ このティックの出来事を自キャラへ返す（強い命中で揺らす・噛まれた/つかまれたの反応・攻撃の音・赤み/暗転・
+      反動とぶれをカメラと体へ・弾数の表示・体の音）
+
+2. 分けた後の形
+
+   GameScene
+     ├─ GameWorld（状態と 1 ティックの順番）
+     │    ├─ TownEnvironment … 町（地図・地面・建物・NavMesh・見える範囲）を作って持つ ★1
+     │    │    └─ WorldBuilder（今のまま）
+     │    ├─ ZombieDirector  … ゾンビの数と周り（湧かせる・群れ・追う先・Think の前後）
+     │    │    └─ ZombieHearing … 音をゾンビへ知らせる（共有の棚に置く）★2
+     │    └─ （今のまま）EffectManager・CombatResolver・InteractionSystem・PropFactory・PlayerFactory
+     ├─ PlayerFeedback   … このティックの出来事を自キャラの視点・音・画面へ返す ★5
+     ├─ GameEditorBridge … ZF_EDITOR のときだけ。エディタ・確認用のキー・FireProbe ★5
+     └─ FirstPersonControl（窓口。口は変えない）
+          ├─ CommandReader … 操作を作る
+          ├─ ViewEffects   … 反動・揺れ・ぶれ
+          └─ LookPull      … 相手の顔へ向ける
+
+   自キャラの GameObject（部品の並び。太字が新しい部品）
+     Transform・SkinnedModel・FirstPersonBody・Hold・【ArmPose】・PlayerLocomotion・PlayerHealth・Hitbox・
+     CharacterCollider・PlayerComponent・【PlayerNoise】
+   FirstPersonBody の中（姿勢の層）
+     ArmOverridePose → SpineBendPose → EyePoint → WeaponPlacePose → WeaponFeelPose → WeaponBounds（★3）
+
+  依存は一方通行：
+    GameScene → PlayerFeedback / GameEditorBridge → GameWorld → ZombieDirector → ZombieHearing
+    PlayerNoiseComponent → ZombieHearing（棚から引く。GameWorld を知らない）
+    ArmPoseComponent → HoldComponent → FirstPersonBodyComponent（Hold は ArmPose を知らない）
+
+3. GameWorld を分ける
+
+ 3-1 TownEnvironment（Scene/Game/World/TownEnvironment.h）★1
+  ・持つ物：TownMap・TownGround・建物の並び・NavMesh*（TownCache から借りる）・TownVisibility*（同じ）・WorldBuilder・
+           脱出の車の置き場所の番号・TownCache*
+  ・移す関数：buildTown・buildNavMesh・buildVisibility の中身（ロードの段は今のまま GameWorld の関数から呼ぶ。GameLoader は変えない）
+  ・読み口：map()・ground()・buildings()・navMesh()・visibility()
+  ・名簿 2 つ（CollisionWorld・HitWorld）と物の並びは GameWorld のまま（町だけの物ではないため）。作るときに引数で借りる
+  ・NavMesh を棚へ置く（provide）のは GameWorld（棚の持ち主なので）
+
+ 3-2 ZombieDirector（Scene/Game/World/ZombieDirector.h）
+  ・持つ物：ゾンビの形のデータ・ZombieModel・ZombieFactory・乱数・何体目か・ZombieSpawner・湧く予定の並び・
+           群れ（ZombieCrowd）・追う先（ChaseTarget）・TickContext・PathBudget・アニメの間引きの視点・ZombieHearing
+  ・アニメの名前の定数（walk・run・death1/2・gethit・idle1・atack3）も GameWorld.cpp から移す
+  ・関数：
+     setup( map )                    … placeActors のゾンビの所（設計図・作る係・湧かせる係）
+     spawn( position, yaw )          … 今の spawnZombie（F9 の確認用からも呼ぶ）
+     beginTick()                     … 道探しの回数を戻す
+     setAnimationView( … )           … 今のまま
+     prepareThink( player )          … 追う先・攻撃に行っている体・群れを作る（今の updateZombies の前半）
+     finishThink( player )           … つかまれているかを自キャラへ（今の updateZombies の後半）
+     spawnFromSpawner( player, yaw ) … 今のまま
+     hearing()・spawner()
+  ・GameWorld::update の順番は変えない（順番を持つのは GameWorld）：
+     … → effects → director.prepareThink → objects.update( Think ) → combat.resolveZombieAttacks → director.finishThink → Late → flush → spawnFromSpawner
+  ・TickContext・PathBudget を棚へ置くのは Director（ゾンビの部品しか使わないため）
+
+ 3-3 ZombieHearing（Zombie/Move/ZombieHearing.h）★2
+  ・音を「何体ものゾンビ」へ知らせる係。共有の棚に置き、音を立てる側（部品・係）は shared< ZombieHearing >() で引く
+  ・関数：hearGunshot( position )・hearNoise( position )（今の alertZombiesToNoise。銃声と同じ）・hearFootsteps( feet, range )
+  ・銃声の届く距離 30m と雨の日の倍率はここ（世界の決まり）。歩き 5m・走り 18m と 0.3 秒の間隔は音を立てる側（3-4）
+
+ 3-4 PlayerNoiseComponent（Player/PlayerNoiseComponent.h。自キャラの部品）★2
+  ・自キャラが立てる音（足音・銃声）をゾンビへ知らせる部品。Input の段で、PlayerComponent の後に動く
+    （付ける順で段の中の順番が決まるので、PlayerFactory で PlayerComponent の後に付ける）
+  ・足音：0.3 秒ごとに、歩き方（PlayerLocomotion の gait）の距離で hearFootsteps
+  ・銃声：持っている銃がこのティックに撃ったら（HoldComponent::heldGun）、足元で hearGunshot
+  ・外してよい部品にする（外すとゾンビが自キャラの音を聞かない。確認用）
+  ・GameWorld に残るのは「弾を出す」だけ（BulletList は世界の物なので）
+
+ 3-5 死体は自分で消える
+  ・ZombieCorpseComponent::update の最後で、沈み終えたら自分の物を destroyLater する（物の寿命は物が決める）
+  ・GameWorld の「沈み終えた死体を探して消す」は無くなる。destroyLater は flush まで待つので、消える時刻は今と同じティック
+
+ 3-6 弾倉の数 ★6
+  ・magazineRounds・setMagazineRounds の中身（forEach< GunComponent >）を MagazineSync へ移す
+  ・そのために GameWorld に非 const の objects() を足す
+
+ 3-7 GameWorld に残るもの
+  ・名簿 2 つ・飛ぶ弾・エフェクト・物の並び・命中・使う物・PlayerFactory・PropFactory・自キャラ・dropItem（PropFactory を使う 6 行なので残す）
+  ・1 ティックの順番と、ロードの段（buildTown など。中身は TownEnvironment と ZombieDirector を呼ぶだけ）
+  ・見込み：実装 463 → 約 200 行・メンバー約 40 → 約 15
+
+4. HoldComponent を分ける
+
+ 4-1 ArmPoseComponent（Player/Body/ArmPoseComponent.h。自キャラの部品）★4
+  ・腕のアニメのポーズの部品。今の updateArms・armSampler・blendPoses と、ポーズ 5 本・「持っているか」3 つ・効き具合 2 つを移す
+  ・start で HoldComponent・FirstPersonBodyComponent・SkinnedModelComponent を requireComponent
+  ・銃が替わったのは自分で気付く（update のたび、持っている銃が前と違えば、構えのポーズを取り直す）。
+    だから HoldComponent は ArmPoseComponent を知らなくてよい（依存が一方通行のまま）
+  ・関数：update( next )（今の updateArms）・carryWeight()
+  ・PlayerComponent は hold->updateArms・hold->carryWeight の代わりにこれを呼ぶ（外せる部品にして、無ければ体のアニメの腕のまま）
+ 4-2 HoldComponent に残るもの
+  ・手に何を持つか（銃を探す・付ける・カバンと合わせる・銃口・描く・弾倉）・構え・リロードの始め方
+  ・見込み：実装 344 → 約 230 行・メンバー約 25 → 約 15
+  ・構え（WeaponStance）は今でも別のクラスで、HoldComponent は渡すだけ。部品にすると読む所（約 10 か所）を全部変えるのに
+    分かりやすさがあまり変わらないので、今回は分けない
+
+5. FirstPersonBody を分ける ★3
+
+ 5-1 FirstPersonRig（Player/Body/Pose/FirstPersonRig.h）
+  ・どの段も読む物をまとめた構造体：骨の番号（背骨と付いて回る骨・腕・右手・頭・胸）・持っている銃（手の骨・持ち方・サイトの目の点・
+    支える手と銃の上の点・銃の大きさ）・ピッチ・目の位置
+  ・FirstPersonBody が持ち、段は借りて読む（目の位置だけ EyePoint が書く）
+ 5-2 段（どれも BonePoseModifier。Player/Body/Pose/ に置く）
+     ArmOverridePose … 腕の差し替え（今の overrideArms）
+     SpineBendPose   … 背骨を曲げる（bendSpine）
+     EyePoint        … 目の位置を決める（updateEyePosition。骨は動かさず測るだけ）
+     WeaponPlacePose … 両手で持つ・胸元へ抱える・照準を目へ（holdWithBothHands・carryAtChest・alignSightToEye）
+     WeaponFeelPose  … ぶれ・反動（swayWeapon・kickWeapon）
+     WeaponBounds    … 銃を囲む箱（updateWeaponBounds。測るだけ）
+  ・同じ名前の手助け（alignWeapon・transformBones など）は Pose/PoseMath.h へ
+ 5-3 FirstPersonBody に残るもの
+  ・段を作って BonePoseModifierChain へ足す・setPitch などの窓口（今と同じ口。PlayerComponent・HoldComponent は変えない）
+  ・見込み：実装 493 → 約 120 行。段は 1 つ 40〜120 行
+ 5-4 順番を 1 か所だけ変える：目の位置を「両手で持つ・胸元へ」の前に決める
+  ・前は 両手→胸元→目 の順。目は頭の骨から決まり、両手・胸元が動かすのは腕と右手の骨だけ（頭は入っていない）ので、答えは同じ
+  ・こうすると「銃を置く 3 つ」を 1 つの段にまとめられる
+
+6. FirstPersonControl を分ける
+  ・FirstPersonControl は窓口として残し、口は変えない（GameScene・ModalController・BagController は変えない）
+  ・CommandReader（Player/Camera/CommandReader.h）… 移動・走る・押した瞬間・撃つの抑止（read・clear・consumePressed・command）
+  ・ViewEffects（Player/Camera/ViewEffects.h）   … 反動 3 つ・揺れ・照準のぶれ・ためたマウスの回転・揺れの強さの定数
+                                                  （update( 反動, 体, カメラ )・flinch・shakeOnGrab・shakeOnHeavyHit）
+  ・LookPull（Player/Camera/LookPull.h）         … 相手の顔へ決まった時間で向ける（start・update）
+  ・残るもの：カメラ・視点を回す（感度）・カーソルの固定・カメラを置く。見込み 267 → 約 130 行
+  ・部品（Component）にしない：カメラは描画ごとに動き、ティックで動く世界の外にあるため（0 章）
+
+7. GameScene を分ける ★5
+ 7-1 PlayerFeedback（Scene/Game/PlayerFeedback.h）
+  ・このティックの出来事を、自キャラの視点・音・画面へ返す係
+  ・持つ物：CombatSounds・PlayerBodySounds・PlayerDamageView（今 GameScene が持っている 3 つ）
+  ・関数：
+     reactToCombat( world, control )      … 強い命中で揺らす・噛まれた/つかまれたの反応・攻撃の音・顔へ向ける・赤み/暗転（今の hitFeedback と damage の所）
+     syncView( world, control, hud )      … 反動とぶれをカメラと体へ・弾数の表示・体の音（今の update の後半 Game.view）
+     eyeDrop()・damageEffect()・isFadedOut()（draw と updateRaid が読む）
+  ・GameScene::update の順番は変えない：世界 → reactToCombat → レイド → 漁る → syncView
+ 7-2 GameEditorBridge（Scene/Game/GameEditorBridge.h。ZF_EDITOR のときだけ作る）
+  ・持つ物：FireProbe
+  ・移す物：F5 の無敵・EditorWindow へ渡す 6 つ（とシーンを抜けるときに外す 6 つ）・F9 のゾンビ（spawnDebugZombies と定数）・
+           probeFire・FireProbe の markReady と onTick
+  ・観察用カメラ（FreeCamera）と GameDebugOverlay は GameScene に残す（どのカメラで描くか・パイプラインの途中に挟む、が描画の順番そのものなので）
+ 7-3 見込み：GameScene.cpp 525 → 約 360 行。#ifdef ZF_EDITOR が 7 か所 → 3 か所
+
+8. 遊びが変わる所（無いはずの物も含めて全部）
+  ・足音・銃声を知らせる時刻：前は Input の段の後、今度は Input の段の中（PlayerComponent の後）。どちらも弾とゾンビの前なので同じティックに届く
+  ・死体を消す印を付ける時刻：Think の後 → Think の途中。消えるのは flush なので同じ
+  ・腕のポーズを取り直す時刻：銃を付けた瞬間 → 次の ArmPose の update。銃を付けるのは PlayerComponent の中で updateArms の前なので同じティック
+  ・目の位置を決める順番（5-4）：答えは同じ
+  → 見た目・当たり・音は変わらない。乱数の並びも変えない（ゾンビの乱数は Director へそのまま移す）
+
+9. ★ 決めてほしいこと（おすすめは全部 A）
+ ★1 町の読み方
+     A) world.town().ground() の形に変える（呼ぶ所 約 12 か所を直す。GameWorld のヘッダが短くなる）
+     B) GameWorld に今の読み口を残し、中で TownEnvironment へ渡す
+ ★2 自キャラの立てる音
+     A) PlayerNoiseComponent（自キャラの部品）が ZombieHearing（棚）へ知らせる
+     B) 部品にせず、ZombieDirector の関数へ移すだけ
+ ★3 FirstPersonBody
+     A) 段ごとの BonePoseModifier にして BonePoseModifierChain でつなぐ。FirstPersonBody は窓口として残す
+     B) FirstPersonBody を無くし、FirstPersonBodyComponent が段を持つ（呼ぶ所が全部変わる）
+ ★4 腕のポーズ
+     A) ArmPoseComponent（自キャラの部品。外せる）
+     B) 部品にせず、HoldComponent が持つ普通のクラス
+ ★5 GameScene
+     A) PlayerFeedback と GameEditorBridge の 2 つ
+     B) GameEditorBridge だけ
+ ★6 弾倉の数
+     A) MagazineSync へ移す（GameWorld に非 const の objects() を足す）
+     B) GameWorld に残す
+
+10. 作る順番
+  段1 GameWorld（TownEnvironment → ZombieDirector・ZombieHearing → PlayerNoise → 死体 → 弾倉）
+  段2 HoldComponent（ArmPoseComponent）
+  段3 FirstPersonBody（Rig と段）
+  段4 FirstPersonControl（CommandReader・ViewEffects・LookPull）
+  段5 GameScene（PlayerFeedback・GameEditorBridge）
+  ・段ごとに Debug でビルドし、最後に Debug・Profile・Release の 3 つでビルドする
+  ・新しいファイルは vcxproj と filters へ足す（Visual Studio が開いたままだと登録が消えることがあるので、閉じておいてほしい）
+  ・コミットはしない（頼まれたら）
+
+11. 遊んで確かめること（画面確認）
+  ・ゾンビが湧く・追ってくる・つかんで噛む・死体が沈んで消える
+  ・歩くと 5m、走ると 18m のゾンビが気付く・撃つと 30m が寄ってくる・給油の音で寄ってくる
+  ・ライフルと拳銃を持ち替える・覗く・走って胸元に抱える・リロード（拳銃の腕が跳ねない）
+  ・撃った反動・揺れ・噛まれた怯み・つかまれて顔を向ける
+  ・F5 無敵・F6 の欄・F9 のゾンビ・F4 観察用カメラ
+================================================================================

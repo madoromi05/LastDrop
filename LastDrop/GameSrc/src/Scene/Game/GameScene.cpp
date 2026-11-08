@@ -15,7 +15,6 @@
 #include "GameSrc/Render/Shadow/ShadowParams.h"
 #include "GameSrc/Render/PostProcess/SsrParams.h"
 #include "GameSrc/Render/PostProcess/PostProcessParams.h"
-#include "GameSrc/DebugMode/EditorWindow.h"
 #include "GameSrc/Raid/RunRules.h"
 #include "GameSrc/Raid/RaidParams.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
@@ -41,21 +40,10 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
-	const float kNoShotRecoil = 0.f;   // 撃っていないティックの反動の大きさ（FirstPersonControl::updateViewEffects）
 	// カバンの画面の見出しの下に出す、今日の脱出の車の場所（FuelEscapeLoading_Plan.txt Q14）。
 	const char* kExitsPrefix = "脱出の車：";
 	const char* kExitsSeparator = " / ";
 	const float kNoSearch = -1.f;        // HUD に「探している」の棒を出さない（RaidHud::draw。漁り/給油の本体は LootController）
-
-#ifdef ZF_EDITOR
-	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
-	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
-	const int kDebugSpawnNumber = 1;
-	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
-	const float kDebugSpawnSpacing = 1.2f;
-	const float kFaceBackDegree = 180.f; // 自キャラの方を向かせる
-	const float kHalf = 0.5f;
-#endif
 }
 
 GameScene::GameScene( GameResources* resources ) :
@@ -65,12 +53,11 @@ GameScene::GameScene( GameResources* resources ) :
 	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
 	mInventory( resources->run().bag() ), // 拠点のカバンの写し（町の中で変わっても、拠点のカバンは脱出するまで変えない。R2_Plan.txt Q3）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
-	mControl( mWorld.map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
-	mBodySounds( &resources->audio(), &mWorld.ground(), mWorld.map().groundZones() ),
-	mCombatSounds( &resources->audio() ),
+	mControl( mWorld.town().map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
+	mFeedback( &resources->audio(), &mWorld.town() ), // 出来事を自キャラの視点・音・画面へ返す
 	mHud( &mWorld, &mInventory, &resources->uiRenderer() ), // 遊び中の画面表示（棒・弾数・マーク）
 	// 脱出の車の置き場所は毎日変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
-	mSession( mWorld.map().escapeCarSpots(), Framework::instance().time() ),
+	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),
 	// 出撃のロード段階（mSession が選んだ脱出の車の置き場所を使うので、その後に並べる）
 	mLoad( &mWorld, &resources->meshes(), mSession.escapeCarSpot(), &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
@@ -86,12 +73,7 @@ GameScene::~GameScene() {
 	if ( mModals.isOpen() ) {
 		mResources->audio().setPaused( false );
 	}
-	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
-	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
-	EditorWindow::setInventory( nullptr ); // カバンも同じ
-	EditorWindow::setRaid( nullptr );
-	EditorWindow::setRun( nullptr );
-	EditorWindow::setInteraction( nullptr );
+	// エディタへ渡した物は mEditor の破棄で外れる（世界より先に破棄される）。
 }
 
 void GameScene::pause() {
@@ -135,7 +117,7 @@ void GameScene::beginFrame() {
 		restoreMagazineRounds( mInventory, mWorld ); // 銃の物を作った後に、拠点で覚えた弾倉の数を入れる
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 #ifdef ZF_EDITOR
-		mFireProbe.markReady();
+		mEditor.markReady();
 #endif
 	}
 	{
@@ -143,7 +125,7 @@ void GameScene::beginFrame() {
 		handleFrameInput();
 	}
 #ifdef ZF_EDITOR
-	probeFire();
+	mEditor.probeFrame( mWorld, mControl, mModals, isFreeCameraActive() ); // 撃つボタンの記録（FireProbe）
 #endif
 }
 
@@ -175,27 +157,9 @@ void GameScene::handleFrameInput() {
 		mBag.open();
 		return;
 	}
-
 #ifdef ZF_EDITOR
-	// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug と Profile ビルドだけで効く）。
-	if (InputDebugInvincible()) {
-		GameObject* player = mWorld.player();
-		if (player) {
-			if ( PlayerHealthComponent* health = player->getComponent< PlayerHealthComponent >() ) { // 外せる部品（無ければ元から死なない）
-				health->toggleInvincible();
-			}
-		}
-	}
-	// F6 のエディタの一番上に出す。
-	const PlayerHealthComponent* playerHealth = mWorld.player() ? mWorld.player()->getComponent< PlayerHealthComponent >() : nullptr;
-	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
-	EditorWindow::setObjects( &mWorld.objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
-	EditorWindow::setInventory( &mInventory );     // F6 の Inventory の欄（物を足す・行を増やす）
-	EditorWindow::setRaid( &mSession );            // F6 の Raid の欄（残り時間・すぐ脱出）
-	EditorWindow::setRun( &mResources->run() );    // 同じ欄の、日・保存を消す
-	EditorWindow::setInteraction( &mWorld.interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
-
-
+	// F5（無敵）を読み、F6 のエディタへ今の物を渡す。
+	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->run() );
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
 	mFreeCamera.handleToggle( mControl.camera() );
 #endif
@@ -211,62 +175,9 @@ void GameScene::handleFrameInput() {
 #ifdef ZF_EDITOR
 	mFreeCamera.look(); // 使っていなければ何もしない。カーソルロックの切り替え（readInputIdle）の後に読む
 	mDebug.handleInput();
-	if ( InputDebugSpawnZombie() ) {
-		spawnDebugZombies();
-	}
+	mEditor.spawnZombiesOnKey( &mWorld, mControl.camera() ); // F9
 #endif
 }
-
-#ifdef ZF_EDITOR
-void GameScene::spawnDebugZombies() {
-	const GameObject* player = mWorld.player();
-	if ( !player ) {
-		return;
-	}
-	// 視点の水平の向きの前と右（PlayerLocomotionComponent::readMoveDirection の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）。
-	float yaw = mControl.camera().yaw();
-	Vector3 forward( Math::sin( yaw ), 0.f, Math::cos( yaw ) );
-	Vector3 right( -Math::cos( yaw ), 0.f, Math::sin( yaw ) );
-	Vector3 center;
-	center.setMadd( player->getComponent< TransformComponent >()->position(), forward, kDebugSpawnDistance );
-	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）。
-	float firstOffset = -kDebugSpawnSpacing * static_cast< float >( kDebugSpawnNumber - 1 ) * kHalf;
-	for ( int i = 0; i < kDebugSpawnNumber; ++i ) {
-		Vector3 position;
-		position.setMadd( center, right, firstOffset + kDebugSpawnSpacing * static_cast< float >( i ) );
-		if ( !mWorld.spawnZombie( position, yaw + kFaceBackDegree ) ) {
-			break; // 上限に達した
-		}
-	}
-}
-
-void GameScene::probeFire() {
-	FireProbe::FrameState frame;
-	frame.rawFireHeld = InputFireHeld();
-	frame.commandFire = mControl.command().fireHeld;
-	frame.suppressed = mControl.isFireSuppressed();
-	frame.cursorLocked = mControl.isCursorLocked();
-	frame.windowActive = GameLib::WindowCreator().isActive();
-	frame.paused = mModals.isPause();
-	frame.bagOpen = mModals.isBag();
-	frame.lootOpen = mModals.isLoot();
-	frame.freeCamera = isFreeCameraActive();
-	frame.dead = mWorld.isPlayerDead();
-	FireProbe::GunState gunState = {};
-	const GameObject* player = mWorld.player();
-	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
-	const GunComponent* gun = HoldComponent::heldGun( player );
-	if ( hold && gun ) {
-		gunState.hasGun = true;
-		gunState.inHand = hold->isWeaponInHand();
-		gunState.aiming = hold->isAiming();
-		gunState.reloading = gun->isReloading();
-		gunState.running = mControl.command().run;
-		gunState.rounds = gun->magazineRounds();
-	}
-	mFireProbe.onFrame( frame, gunState );
-}
-#endif
 
 void GameScene::update() {
 	if ( !mLoad.isReady() || mModals.isOpen() || mRaidFinished ) {
@@ -280,15 +191,8 @@ void GameScene::update() {
 	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる。
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
 	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
-	{
-		PROFILE_SCOPE( "Game.hitFeedback" );
-		mCombatSounds.playHits( mWorld.combat() ); // ゾンビ・物に当たった音（このティックに当たった分だけ。次の update で入れ替わるので、ここで読む）
-		shakeOnHeavyHits(); // 揺れも同じ出来事を読む（次の updateViewEffects から効く）
-	}
-	{
-		PROFILE_SCOPE( "Game.damage" );
-		updatePlayerDamage();
-	}
+	// 撃った手応え（当たった音・強い命中の揺れ）と、攻撃された反応（顔を向ける・怯み・音・赤み）。計測の印は中で Game.hitFeedback・Game.damage。
+	mFeedback.reactToCombat( mWorld, &mControl );
 	{
 		PROFILE_SCOPE( "Game.raid" );
 		updateRaid();
@@ -301,25 +205,11 @@ void GameScene::update() {
 		return; // 開け終わって中を見る画面を開いた（世界を止めたので、同じ描画の残りのティックも進めない）
 	}
 	PROFILE_SCOPE( "Game.view" ); // ここから update の終わりまで
-	GameObject* player = mWorld.player();
-	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
-	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
-	// 攻撃された怯み・揺れ（updatePlayerDamage で受けた分）もここでカメラへ渡す。
-	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
-	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）。
-	float shotRecoil = ( gun && gun->firedThisTick() ) ? gun->spec().recoilScale : kNoShotRecoil;
 #ifdef ZF_EDITOR
-	mFireProbe.onTick( gun && gun->firedThisTick(), gun && gun->dryFiredThisTick() );
+	mEditor.probeTick( mWorld ); // 撃った・空撃ちしたティック（FireProbe）
 #endif
-	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない。AmmoHud_Plan.txt Q1）。
-	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
-	mHud.updateAmmoVisibility( hold && gun && ( hold->isAiming() || gun->isReloading() ) );
-	mControl.updateViewEffects( shotRecoil, player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
-	if ( player ) {
-		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
-		player->getComponent< FirstPersonBodyComponent >()->setWeaponSway( mControl.camera().weaponSwayYaw(), mControl.camera().weaponSwayPitch() );
-		mBodySounds.update( *player );
-	}
+	// 反動とぶれをカメラと体へ・右下の弾数を出すか・体の音（反動・揺れ・ぶれは次のティックの絵から効く）。
+	mFeedback.syncView( mWorld, &mControl, &mHud );
 #ifdef ZF_EDITOR
 	mFreeCamera.move(); // 使っていなければ何もしない
 #endif
@@ -335,7 +225,7 @@ void GameScene::draw() {
 		mLoad.drawLoadingScreen( mResources->run().day() );
 		return;
 	}
-	mControl.setEyeDrop( mDamageView.eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
+	mControl.setEyeDrop( mFeedback.damageView().eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
 	const GameObject* player = mWorld.player();
 	if ( player ) {
 		Vector3 eye = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
@@ -359,7 +249,8 @@ void GameScene::draw() {
 	}
 	// 世界を画面へ写す（ディファードのパイプラインは SceneRenderer が持つ。GBuffer_Plan.txt〜Taa_Plan.txt）。
 	// 攻撃された瞬間の赤み・痛み・死んだ後の暗さは、この写すときに効く（PlayerDamageView から渡す）。
-	SceneRenderer::DamagePostEffect damage = { mDamageView.damageFlash(), mDamageView.pain(), mDamageView.fade() };
+	const PlayerDamageView& damageView = mFeedback.damageView();
+	SceneRenderer::DamagePostEffect damage = { damageView.damageFlash(), damageView.pain(), damageView.fade() };
 	mSceneRenderer.render( camera, damage
 #ifdef ZF_EDITOR
 		, &mDebug // 当たり判定・ライトの表示（パイプラインの途中に挟むので渡す）
@@ -456,39 +347,6 @@ bool GameScene::isFreeCameraActive() const {
 #endif
 }
 
-void GameScene::shakeOnHeavyHits() {
-	typedef CombatResolver::ZombieHit::Weight Weight;
-	for ( const CombatResolver::ZombieHit& hit : mWorld.combat().zombieHitsThisTick() ) {
-		if ( hit.weight == Weight::Severed || hit.weight == Weight::HeadBurst ) {
-			mControl.shakeOnHeavyHit( hit.weight == Weight::HeadBurst );
-		}
-	}
-}
-
-void GameScene::updatePlayerDamage() {
-	bool hit = false;
-	for ( const CombatResolver::ZombieAttackEvent& event : mWorld.combat().zombieAttacksThisTick() ) {
-		switch ( event.kind ) {
-			case CombatResolver::ZombieAttackEvent::Kind::Grab:
-				mControl.lookToward( event.point ); // つかんだゾンビの顔を見る（その後はマウスで自由に回せる）
-				mControl.shakeOnGrab();
-				break;
-			case CombatResolver::ZombieAttackEvent::Kind::Hit:
-				mControl.flinch(); // 狙いが跳ね、絵が大きく揺れる
-				hit = true;
-				break;
-		}
-	}
-	mCombatSounds.playAttacks( mWorld.combat() );
-	mControl.updateLookPull(); // 揺れ・反動をカメラへ渡す updateViewEffects より前に
-	const GameObject* player = mWorld.player();
-	const float kFullHealthRatio = 1.f; // 自キャラがいないときは赤くしない
-	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr; // 外せる部品
-	const PlayerHealth* health = healthComponent ? &healthComponent->health() : nullptr;
-	float healthRatio = health ? health->current() / health->maxHealth() : kFullHealthRatio;
-	mDamageView.update( hit, healthRatio, mWorld.isPlayerDead() );
-}
-
 void GameScene::updateRaid() {
 	const GameObject* player = mWorld.player();
 	if ( player ) {
@@ -500,7 +358,7 @@ void GameScene::updateRaid() {
 		finishRaid();
 		break;
 	case RaidEnding::Killed:
-		if ( mDamageView.isFadedOut() ) {
+		if ( mFeedback.damageView().isFadedOut() ) {
 			finishRaid(); // 崩れて真っ暗になるのを見せてから
 		}
 		break;

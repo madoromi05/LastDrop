@@ -4,6 +4,7 @@
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/World/GameObject.h"
+#include "GameSrc/World/GameObjectWorld.h"
 
 using namespace GameLib::Math;
 
@@ -47,6 +48,11 @@ void ZombieCorpseComponent::update() {
 		case ZombieStateComponent::State::Alive:
 		case ZombieStateComponent::State::Downed:
 			break;
+	}
+	// 沈み終えたら、自分の物を消す印を付ける（物の寿命は物が決める。HighPrioritySplit_Plan.txt 3-5）。
+	// 消えるのは全員の更新が済んだ後の flush（並びをたどっている最中には消えない）。2 回付けても 1 回にまとまる。
+	if ( isGone() ) {
+		gameObject()->world()->destroyLater( gameObject() );
 	}
 }
 

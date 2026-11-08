@@ -220,7 +220,7 @@ void SceneRenderer::setupLights( const FirstPersonCamera& camera ) {
 	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）。
 	float streetLightIntensity = params.streetLightIntensity * mWorld->dayCondition().streetLightScale;
 	if ( streetLightIntensity > 0.f ) {
-		for ( const TownPlacement& spot : mWorld->map().streetLights() ) {
+		for ( const TownPlacement& spot : mWorld->town().map().streetLights() ) {
 			Vector3 position( spot.x, spot.y + params.streetLightHeight, spot.z );
 			mLights.add( pointLight( position, params.streetLightColor, streetLightIntensity, params.streetLightRange ) );
 		}
@@ -350,7 +350,7 @@ DrawCulling SceneRenderer::cameraCulling( const FirstPersonCamera& camera ) cons
 	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( fogHalfDistance() ) : kNoDrawDistance; // 霧の日は描く距離も縮む
 	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える。
 	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない。OptimizationC_Plan.txt Q5）。
-	const TownVisibility* visibility = pvsEnabled() ? &mWorld->visibility() : nullptr;
+	const TownVisibility* visibility = pvsEnabled() ? &mWorld->town().visibility() : nullptr;
 	return DrawCulling::forCamera( camera.projectionViewMatrix(), camera.eyePosition(), drawDistance, camera.fieldOfView(),
 		mPostProcess.sceneDepth().height(), visibility );
 }

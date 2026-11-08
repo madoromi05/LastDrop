@@ -42,7 +42,7 @@ WorldRenderer::WorldRenderer( const GameWorld* world, EffectManager* effects ) :
 void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye ) {
 	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる。
 	mBuildingDrawOrder.clear();
-	for ( const Building& building : mWorld->buildings() ) {
+	for ( const Building& building : mWorld->town().buildings() ) {
 		Vector3 toBuilding;
 		toBuilding.setSub( building.position(), eye );
 		mBuildingDrawOrder.emplace_back( toBuilding.squareLength(), &building );
@@ -60,7 +60,7 @@ void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye )
 	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
 	Profiling::gpuMark( "Props" );
 	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く。
-	mWorld->ground().draw( culling.frustum() );
+	mWorld->town().ground().draw( culling.frustum() );
 	Profiling::gpuMark( "Ground" );
 }
 
@@ -102,7 +102,7 @@ void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includes
 	drawZombies( culling );
 	mEffects->drawSeveredLimbs( culling );
 	beginBuildings();
-	for ( const Building& building : mWorld->buildings() ) {
+	for ( const Building& building : mWorld->town().buildings() ) {
 		addBuilding( building, culling );
 	}
 	endBuildings();
@@ -115,7 +115,7 @@ void WorldRenderer::beginBuildings() {
 }
 
 int WorldRenderer::buildingIndex( const Building& building ) const {
-	return static_cast< int >( &building - mWorld->buildings().data() );
+	return static_cast< int >( &building - mWorld->town().buildings().data() );
 }
 
 void WorldRenderer::addBuilding( const Building& building, const DrawCulling& culling ) {

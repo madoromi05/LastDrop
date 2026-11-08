@@ -3,17 +3,19 @@
 
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Player/PlayerCommand.h"
-#include "GameSrc/Player/Camera/AimPunch.h"
-#include "GameSrc/Player/Camera/CameraShake.h"
 #include "GameSrc/Player/Camera/AimSway.h"
-#include "GameSrc/Weapon/Recoil/ViewRecoil.h"
-#include "GameSrc/Weapon/Recoil/AimRecoil.h"
+#include "GameSrc/Player/Camera/CommandReader.h"
+#include "GameSrc/Player/Camera/ViewEffects.h"
+#include "GameSrc/Player/Camera/LookPull.h"
 #include "GameLib/Math/Vector3.h"
 
 struct GameSettings;
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）。
+// 中身は係へ任せる（SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 6 章。2026-11-09 分けた。外から呼ぶ口は前のまま）：
+//   操作を作る … CommandReader　／　反動・揺れ・照準のぶれ … ViewEffects　／　相手の顔へ向ける … LookPull
+//   ここに残るのは、視点を回す（感度）・カーソルの固定・カメラを置く、と係を呼ぶ順番。
 //
 // マウスはカーソルロック（GameLib::Input::Manager）で読む。解除は一時停止（GameScene が unlockCursor）、解除中のクリックで再ロック。
 // 解除中は視点を回さない（カーソルが自由に動く間の移動量を視点に入れると、画面外の操作で回ってしまうため）。
@@ -88,23 +90,9 @@ private:
 
 	const GameSettings* mSettings; // 借りているだけ（視点の感度）
 	FirstPersonCamera mCamera;
-	PlayerCommand mCommand;
-	ViewRecoil mRecoil;     // 1 発ごとに跳ねて戻る視点の反動（狙いへ足す）
-	AimRecoil mAimRecoil;   // 連射でたまる弾道のずれ（狙いへ足す）
-	AimPunch mAimPunch;     // 攻撃された瞬間の怯み（狙いへ足す）
-	CameraShake mShake;     // 見える絵の揺れ（描く行列だけへ足す）
-	AimSway mSway;          // 照準のぶれ（銃と弾の向きだけへ足す）
-	// readInput でマウスが回した角度（度）のうち、まだぶれ（振り向きの遅れ）へ渡していない分。
-	// マウスは描画ごと、ぶれはティックごとに進むので、ためておいて次のティックで使い切る。
-	float mPendingLookYaw;
-	float mPendingLookPitch;
-	// lookToward で残っている回す量（度）と、残りのティック数（0 なら向けていない）。
-	float mPullYaw;
-	float mPullPitch;
-	int mPullTicks;
-	// 撃つ入力を一度離すまで、撃つ操作を出さないか。次のクリックを「撃つ」にしないための印:
-	// メニューのボタンを押したままシーンに入ったとき（始めは true）と、解除中のクリックでロックし直したとき。
-	bool mFireSuppressed;
+	CommandReader mCommands; // 操作（移動・押した瞬間・撃つの抑止）
+	ViewEffects mEffects;    // 反動・揺れ・照準のぶれ
+	LookPull mLookPull;      // つかまれたときに相手の顔へ向ける
 	float mEyeDrop; // setEyeDrop の値（m）
 };
 
