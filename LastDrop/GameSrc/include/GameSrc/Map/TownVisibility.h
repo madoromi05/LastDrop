@@ -7,7 +7,6 @@
 #include <vector>
 
 class Building;
-class HitWorld;
 
 // 簡易 PVS：町を上から見た 4m のますごとに「そこから見えうる建物」と「見えうるます」を、読み込みの時に前もって作って持つ
 // （SummaryPlan/個別仕様/OptimizationC_Plan.txt 7 章）。実行中は表を引くだけ。
@@ -41,12 +40,11 @@ public:
 	bool showsPoint( int viewCell, const GameLib::Math::Vector3& position ) const;
 	// ますの範囲（上から見た四角。y は 0）。確認用の表示（F3）に使う。
 	void cellBounds( int cell, GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;
+	// ますの数（町を覆う 4m のます。表が無ければ 0）・cell が目の来うるます（建物の足元でない）か。確かめ（TownVisibilityCheck）が使う。
+	int cellCount() const;
+	bool isOpenCell( int cell ) const;
 
-#ifdef _DEBUG
-	// 3D の線（hitWorld）で、乱数の点から PVS が「見えない」とした建物を確かめ、3D では見えた数を出力へ書く（Q6）。
-	// buildings：build に渡した物と同じ並び。見落としが 0 でなければ、点の間隔か縮める幅を見直す。
-	void verify( const std::vector< Building >& buildings, const HitWorld& hitWorld ) const;
-#endif
+	// 3D の線での確かめは DebugMode/TownVisibilityCheck（2026-11-09 にここから分けた。MidPrioritySplit_Plan.txt 3 章）。
 
 private:
 	// 上から見た建物 1 軒。
@@ -55,6 +53,16 @@ private:
 		float height;                 // 一番高い所（y）
 		float blockMinX, blockMinZ, blockMaxX, blockMaxZ; // 遮る長方形（体の高さの壁を囲む箱を少し縮めた物）
 	};
+
+	// ── 表を作る段（build から、この順に呼ぶ。後の段は前の段の結果を読む）──
+	// 建物の足元と遮る長方形を作り、町を囲む範囲を townMin / townMax へ書く。目を使ってよい高さもここで決める。
+	void buildFootprints( const std::vector< Building >& buildings, GameLib::Math::Vector3* townMin, GameLib::Math::Vector3* townMax );
+	// 町をますに分け、目が来うるます（真ん中が建物の壁の長方形に入らない）に印を付ける。
+	void markOpenCells( const GameLib::Math::Vector3& townMin, const GameLib::Math::Vector3& townMax );
+	// ますごとの見えうる建物（ますの見る点のどれかから見えうる建物）。
+	void bakeBuildingVisibility();
+	// ますごとの見えうるます（ゾンビ用。四隅のどれかどうしが見通せれば見えうる）。
+	void bakeCellVisibility();
 
 	// 2D の線分 (ax,az)→(bx,bz) を、高さ minHeight 以上の建物（ignore 番を除く）が遮るか。
 	bool isBlocked( float ax, float az, float bx, float bz, float minHeight, int ignore ) const;

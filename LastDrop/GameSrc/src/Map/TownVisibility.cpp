@@ -1,9 +1,6 @@
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Collision/MeshWallBuilder.h"
-#ifdef _DEBUG
-#include "GameSrc/Hit/HitWorld.h"
-#endif
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -94,9 +91,21 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 	if ( buildings.empty() ) {
 		return;
 	}
+	// 段ごとに作る（MidPrioritySplit_Plan.txt 3 章）。後の段は前の段の結果を読む。
+	Vector3 townMin;
+	Vector3 townMax;
+	buildFootprints( buildings, &townMin, &townMax );
+	markOpenCells( townMin, townMax );
+	bakeBuildingVisibility();
+	bakeCellVisibility();
+	int openNumber = static_cast< int >( std::count( mCellOpen.begin(), mCellOpen.end(), true ) );
+	GameLib::cout << "TownVisibility: " << openNumber << " / " << cellCount() << " cells, " << static_cast< int >( mFootprints.size() ) << " buildings" << GameLib::endl;
+}
+
+void TownVisibility::buildFootprints( const std::vector< Building >& buildings, Vector3* townMin, Vector3* townMax ) {
 	// ── 建物の足元と、遮る長方形のます ──
-	Vector3 townMin( buildings.front().mesh().boundsMin() );
-	Vector3 townMax( buildings.front().mesh().boundsMax() );
+	*townMin = buildings.front().mesh().boundsMin();
+	*townMax = buildings.front().mesh().boundsMax();
 	mMaxEyeHeight = buildings.front().mesh().boundsMax().y;
 	for ( const Building& building : buildings ) {
 		const Vector3& boundsMin = building.mesh().boundsMin();
@@ -113,26 +122,27 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 		footprint.blockMaxX = walls.boundsMax().x - kOccluderInset;
 		footprint.blockMaxZ = walls.boundsMax().z - kOccluderInset;
 		mFootprints.push_back( footprint );
-		townMin.x = std::min( townMin.x, boundsMin.x );
-		townMin.z = std::min( townMin.z, boundsMin.z );
-		townMax.x = std::max( townMax.x, boundsMax.x );
-		townMax.z = std::max( townMax.z, boundsMax.z );
+		townMin->x = std::min( townMin->x, boundsMin.x );
+		townMin->z = std::min( townMin->z, boundsMin.z );
+		townMax->x = std::max( townMax->x, boundsMax.x );
+		townMax->z = std::max( townMax->z, boundsMax.z );
 		mMaxEyeHeight = std::min( mMaxEyeHeight, boundsMax.y );
 	}
 	mMaxEyeHeight -= kEyeHeightMargin;
-	mOccluders.reset( townMin, townMax, kCellSize );
+	mOccluders.reset( *townMin, *townMax, kCellSize );
 	for ( int i = 0; i < static_cast< int >( mFootprints.size() ); ++i ) {
 		const Footprint& f = mFootprints[ i ];
 		mOccluders.add( i, Vector3( f.blockMinX, 0.f, f.blockMinZ ), Vector3( f.blockMaxX, 0.f, f.blockMaxZ ) );
 	}
+}
 
+void TownVisibility::markOpenCells( const Vector3& townMin, const Vector3& townMax ) {
 	// ── ます ──
 	mMinX = townMin.x;
 	mMinZ = townMin.z;
 	mCountX = static_cast< int >( std::ceil( ( townMax.x - townMin.x ) / kCellSize ) );
 	mCountZ = static_cast< int >( std::ceil( ( townMax.z - townMin.z ) / kCellSize ) );
-	const int cellNumber = mCountX * mCountZ;
-	mCellOpen.assign( cellNumber, false );
+	mCellOpen.assign( cellCount(), false );
 	for ( int z = 0; z < mCountZ; ++z ) {
 		for ( int x = 0; x < mCountX; ++x ) {
 			float centerX = mMinX + ( x + kHalf ) * kCellSize;
@@ -147,8 +157,11 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 			mCellOpen[ cellIndex( x, z ) ] = open;
 		}
 	}
+}
 
+void TownVisibility::bakeBuildingVisibility() {
 	// ── 見る点（ますを kViewSteps に分けた格子の点）ごとの、見えうる建物。隣り合うますで同じ点を使うので 1 回だけ求める ──
+	const int cellNumber = cellCount();
 	const int buildingNumber = static_cast< int >( mFootprints.size() );
 	const float viewStep = kCellSize / kViewSteps;
 	const int viewCountX = mCountX * kViewSteps + 1;
@@ -198,10 +211,13 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 			}
 		}
 	}
+}
+
+void TownVisibility::bakeCellVisibility() {
+	// ── ますどうし（ゾンビ用）。四隅のどれかどうしが見通せれば見えうる。点の組の答えは覚えて使い回す ──
+	const int cellNumber = cellCount();
 	const int vertexCountX = mCountX + 1;
 	const int vertexNumber = vertexCountX * ( mCountZ + 1 );
-
-	// ── ますどうし（ゾンビ用）。四隅のどれかどうしが見通せれば見えうる。点の組の答えは覚えて使い回す ──
 	mCellWords = wordsFor( cellNumber );
 	mCellBits.assign( static_cast< size_t >( cellNumber ) * mCellWords, 0u );
 	std::vector< signed char > vertexPairs( static_cast< size_t >( vertexNumber ) * vertexNumber, kUnknown );
@@ -243,8 +259,15 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 			}
 		}
 	}
-	int openNumber = static_cast< int >( std::count( mCellOpen.begin(), mCellOpen.end(), true ) );
-	GameLib::cout << "TownVisibility: " << openNumber << " / " << cellNumber << " cells, " << buildingNumber << " buildings" << GameLib::endl;
+}
+
+int TownVisibility::cellCount() const {
+	return mCountX * mCountZ;
+}
+
+bool TownVisibility::isOpenCell( int cell ) const {
+	ASSERT( cell >= 0 && cell < cellCount() && "TownVisibility::isOpenCell : bad cell." );
+	return mCellOpen[ cell ];
 }
 
 bool TownVisibility::isReady() const {
@@ -370,82 +393,6 @@ bool TownVisibility::hasBit( const std::vector< std::uint32_t >& bits, int row, 
 void TownVisibility::setBit( std::vector< std::uint32_t >* bits, int row, int rowWords, int column ) {
 	( *bits )[ static_cast< size_t >( row ) * rowWords + column / kBitsPerWord ] |= 1u << ( column % kBitsPerWord );
 }
-
-#ifdef _DEBUG
-namespace{
-	// 確かめる点の数・目の高さ（m）・建物の面の上に置く点の間隔と高さ（m）。
-	const int kVerifyPoints = 50;
-	const float kVerifyEyeHeight = 1.6f;
-	const float kVerifySpacing = 4.f;
-	// 面の上の点の高さ（建物の高さに対する割合）。屋根より上の点（建物ではない所）を見ないように、高さの中に収める。
-	const float kVerifyHeightRatios[] = { 0.2f, 0.5f, 0.85f };
-	const int kVerifyReportedMisses = 5; // 出力へ詳しく書く見落としの数
-	const float kVerifyOffset = 0.1f; // 面の点を箱から外へずらす幅（m）
-	const unsigned kVerifySeed = 12345u;
-}
-
-void TownVisibility::verify( const std::vector< Building >& buildings, const HitWorld& hitWorld ) const {
-	if ( !isReady() ) {
-		return;
-	}
-	unsigned random = kVerifySeed;
-	auto next = [ &random ]() { random = random * 1664525u + 1013904223u; return random >> 8; };
-	int tested = 0;
-	int misses = 0;
-	int hiddenPairs = 0;
-	for ( int attempt = 0; tested < kVerifyPoints && attempt < kVerifyPoints * 100; ++attempt ) {
-		int cell = static_cast< int >( next() % static_cast< unsigned >( mCountX * mCountZ ) );
-		if ( !mCellOpen[ cell ] ) {
-			continue;
-		}
-		Vector3 boundsMin;
-		Vector3 boundsMax;
-		cellBounds( cell, &boundsMin, &boundsMax );
-		Vector3 eye( boundsMin.x + kCellSize * ( next() % 1000 ) / 1000.f, kVerifyEyeHeight, boundsMin.z + kCellSize * ( next() % 1000 ) / 1000.f );
-		if ( cellAt( eye ) != cell ) {
-			continue;
-		}
-		++tested;
-		for ( int b = 0; b < static_cast< int >( buildings.size() ); ++b ) {
-			if ( showsBuilding( cell, b ) ) {
-				continue;
-			}
-			++hiddenPairs;
-			const Footprint& f = mFootprints[ b ];
-			// 箱の 4 面の上の点へ 3D の線を撃ち、何にも当たらないか、最初に当たるのがその建物なら「3D では見えた」。
-			bool seen = false;
-			Vector3 seenTarget;
-			for ( float ratio : kVerifyHeightRatios ) {
-				float height = f.height * ratio;
-				for ( int side = 0; side < 4 && !seen; ++side ) {
-					bool alongX = ( side < 2 );
-					float fixed = ( side == 0 ) ? f.minZ - kVerifyOffset : ( side == 1 ) ? f.maxZ + kVerifyOffset :
-						( side == 2 ) ? f.minX - kVerifyOffset : f.maxX + kVerifyOffset;
-					float from = alongX ? f.minX : f.minZ;
-					float to = alongX ? f.maxX : f.maxZ;
-					for ( float s = from; s <= to && !seen; s += kVerifySpacing ) {
-						Vector3 target = alongX ? Vector3( s, height, fixed ) : Vector3( fixed, height, s );
-						Vector3 delta;
-						delta.setSub( target, eye );
-						HitWorld::Hit hit;
-						seen = !hitWorld.raycastBlockers( eye, delta, &hit ) || hit.blocker == &buildings[ b ];
-						seenTarget = target;
-					}
-				}
-			}
-			if ( seen ) {
-				if ( misses < kVerifyReportedMisses ) {
-					GameLib::cout << "  miss: eye (" << eye.x << ", " << eye.z << ") cell " << cell << " building " << b << " target (" << seenTarget.x
-						<< ", " << seenTarget.y << ", " << seenTarget.z << ")" << GameLib::endl;
-				}
-				++misses;
-			}
-		}
-	}
-	GameLib::cout << "TownVisibility verify: " << tested << " points, " << hiddenPairs << " hidden buildings, " << misses
-		<< " seen in 3D (should be 0)" << GameLib::endl;
-}
-#endif
 
 bool& pvsEnabled() {
 	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）

@@ -3,8 +3,8 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix34.h"
-#include "GameLib/Scene/Tree.h"
 #include "GameLib/Scene/Animation.h"
+#include "GameSrc/Render/SkinnedMesh/AnimationPlayer.h"
 #include <vector>
 
 class SkinnedMeshData;
@@ -14,18 +14,19 @@ class BonePoseModifier;
 // 頂点・重み・テクスチャ・アニメは SkinnedMeshData を借りる（所有しない）。
 // 同じキャラを何体出すときも、データは1つでインスタンスだけ増やせばよい。
 //
+// アニメの再生（時刻・クロスフェード・ポーズを求める）は AnimationPlayer（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 6 章）。
+// ここはアニメの口を残して中で渡し、そのポーズに書き換えを掛けて、置き場所へ置いて描く。
 // アニメの切り替えは2通り。setAnimation は即座に切り替え、crossFadeTo は切り替え直前に見えていたポーズから
-// 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。混ぜるのはボーンごとの姿勢行列（MatrixBlend）。
+// 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。
 //
 // 頂点の変形は GPU が行う（SkinnedMeshData::draw）。1体ごとに持つのは骨格とポーズだけで、頂点の数には比例しない。
 // コピーすると骨格を2体で共有してしまうので、コピーは禁止（std::unique_ptr 等で持つ）。
 class SkinnedMeshInstance{
 public:
-	// アニメの再生のしかた。
-	enum PlayMode{
-		PLAY_LOOP, // 最後まで来たら始めへ戻る（歩き・待機）
-		PLAY_ONCE, // 最後のフレームで止まる（倒れる）
-	};
+	// アニメの再生のしかた（中身は AnimationPlayer::PlayMode。SkinnedMeshInstance::PLAY_ONCE の形で書けるよう名前を残す）。
+	typedef AnimationPlayer::PlayMode PlayMode;
+	static const PlayMode PLAY_LOOP = AnimationPlayer::PLAY_LOOP; // 最後まで来たら始めへ戻る（歩き・待機）
+	static const PlayMode PLAY_ONCE = AnimationPlayer::PLAY_ONCE; // 最後のフレームで止まる（倒れる）
 
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       このインスタンスより長く生きていること（MeshCache が持つ）。
@@ -94,39 +95,19 @@ public:
 	GameLib::Math::Vector3 toRootPoint( const GameLib::Math::Vector3& worldPoint ) const;
 
 private:
-	// アニメの時刻とクロスフェードの進みを 1 ティック進め、このティックに見せる時刻を返す（update と advance の共通の所）。
-	float advanceClock();
-	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きする（フェードの進みは advanceClock が数える）。
-	void blendFadingPose();
-	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前。
-	float lastFrameTime() const;
-	// 体のポーズ（体の書き換えが無ければ mBonePose、あれば mBodyPose）。
+	// 体のポーズ（体の書き換えが無ければアニメのポーズ、あれば mBodyPose）。
 	const std::vector< GameLib::Math::Matrix34 >& bodyPose() const;
 
 	const SkinnedMeshData* mData;
-	GameLib::Scene::Tree mSkeleton;						// この体だけのポーズ。根は原点・向き0のまま（置き場所は骨の行列を求めるとき＝computeSkinMatrices で掛ける）
-	GameLib::Scene::Animation mAnimation;				// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
-	float mTime;										// 次の update で使うアニメ時刻（フレーム）
-	// 今見えているアニメ時刻（最後の update で使った時刻）。再生の速さが途中で変わっても、見えている時刻を正しく答えるために分けて持つ。
-	float mShownTime;
-	float mPlaybackRate;								// 1 回の update で進めるアニメ時刻（フレーム）
-	PlayMode mPlayMode;									// 再生中のアニメの再生のしかた
-
-	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）。
-	// クロスフェード中にキャラが移動・旋回しても、切り替え前のポーズが元の場所に取り残されないようにするため。
-	std::vector< GameLib::Math::Matrix34 > mBonePose;		// 今フレームに見せるポーズ（フェード中は混ぜた後）
-	// 実際に見せるポーズ（mBonePose に書き換えを掛けた写し）。書き換えを mBonePose に直接入れると、
+	AnimationPlayer mPlayer; // アニメの再生（骨格・時刻・クロスフェード・アニメのポーズ）
+	// 実際に見せるポーズ（アニメのポーズに書き換えを掛けた写し）。書き換えをアニメのポーズに直接入れると、
 	// クロスフェードの混ぜ元にも入り込み、混ぜた後にもう一度掛かって二重になるため分けて持つ。
 	std::vector< GameLib::Math::Matrix34 > mShownPose;
 	BonePoseModifier* mPoseModifier;				// 無ければ nullptr（アニメのポーズをそのまま見せる）
-	// 体の書き換えを掛けた写し（mBonePose ＋ mBodyPoseModifier）。当たり判定と、見せるポーズの元にする。
-	// mBonePose に直接入れないのは、mShownPose と同じくクロスフェードの混ぜ元に入り込ませないため。
+	// 体の書き換えを掛けた写し（アニメのポーズ ＋ mBodyPoseModifier）。当たり判定と、見せるポーズの元にする。
+	// アニメのポーズに直接入れないのは、mShownPose と同じくクロスフェードの混ぜ元に入り込ませないため。
 	std::vector< GameLib::Math::Matrix34 > mBodyPose;
-	BonePoseModifier* mBodyPoseModifier;			// 無ければ nullptr（mBodyPose は使わず mBonePose を体のポーズとみなす）
-	std::vector< GameLib::Math::Matrix34 > mFadeFromPose;	// 切り替え直前に見えていたポーズ（フェード中だけ使う）
-	float mFadeFrames;									// フェードの長さ（フレーム）。0 ならフェードしていない
-	float mFadeElapsed;									// フェード開始からの経過（フレーム）
-	bool mHasPose;										// mBonePose を一度でも計算したか（まだ何も見せていないならフェードしない）
+	BonePoseModifier* mBodyPoseModifier;			// 無ければ nullptr（mBodyPose は使わずアニメのポーズを体のポーズとみなす）
 
 	// 描くときに求める骨の行列（ボーン数ぶん）。毎回確保し直さないための作業領域なので、const の draw から書けるよう mutable にする。
 	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;

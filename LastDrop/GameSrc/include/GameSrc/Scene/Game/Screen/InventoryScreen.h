@@ -8,6 +8,7 @@
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameLib/Math/Vector2.h"
 #include "GameSrc/Scene/Game/Screen/EcgView.h"
+#include "GameSrc/Scene/Game/Screen/InventoryCursor.h"
 
 class UiRenderer;
 class Inventory;
@@ -18,22 +19,13 @@ enum class PlayerCondition;
 // 町で E で拾うと、拾った物を持った状態で開き、入れるマスを選ぶ
 // 後ろの町が透けるよう、暗くする板とマスの背景は半透明（Q6）。
 // 物は絵（ItemIcons）で見せ、重ねられる物だけ数を右下に、銃は弾倉の数を左下に出す。名前は選んだ物だけを下の欄に出す
-// 持つのは画面の入力と描画と「今どこを選んでいるか」だけ。世界・音を止める・動かし直すのと、捨てた物を足元に置く・銃を持ち替えるのは本編（GameScene）
+// 持つのは画面の入力と描画だけ。「今どこを選んで、何をしている途中か」は InventoryCursor（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 7 章）。
+// 世界は触らない：世界・音を止める・動かし直すのと、捨てた物を足元に置く・銃を持ち替えるのは本編（GameScene）
 // （PauseMenu と同じ分け方。画面から世界を触らない）。動かす（並べ替え）はカバンの中だけで済むので、ここから Inventory に頼む。
 class InventoryScreen{
 public:
-	struct Request{
-		enum Kind{
-			NONE,  // 何もしない
-			DROP,  // cell の物を取り出して足元に置く
-			EQUIP, // cell の銃を手に持つ
-			USE,   // cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11）
-			PLACE, // 拾った物を cell を指した所へ入れる（入る数は本編が Inventory::countPlaceableInto で決める）
-			QUICK_PLACE, // 拾った物をおまかせで入れる
-		};
-		Kind kind;
-		int cell; // 物の中身を持つマス（NONE なら使わない）
-	};
+	// 本編への頼み（中身は InventoryCursor::Request。BagController が InventoryScreen::Request の形で読む）。
+	typedef InventoryCursor::Request Request;
 
 	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること。
 	explicit InventoryScreen( UiRenderer* renderer );
@@ -60,24 +52,6 @@ public:
 	void draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming, PlayerCondition condition );
 
 private:
-	enum class Mode{
-		Browse, // マスを選んでいる
-		Menu,   // 選んだ物のメニュー（Equip / Drop / Move / Cancel のうち、その物に使える物）を出している
-		Moving, // 物を持ち上げ、置く所を選んでいる
-		Placing, // 拾った物（マス目の外）を持ち、入れる所を選んでいる
-	};
-
-	// マス目が外から変わった（F6 で行を減らした）ときに、無くなったマス・物を指していたら選び直す・取りやめる。
-	void forgetStale( const ItemGrid& grid );
-	// 上下左右でマスを選び直す（端で止まる）。
-	void moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& grid );
-	// 選んでいる物のメニューを出す（その物に使える項目だけを並べる）。
-	void openMenu( const ItemGrid& grid, ItemId equipped, bool injured );
-	// メニューの選んだ項目を行う。捨てる・持つなら、本編への答えを返す。
-	Request activateMenu( const ItemGrid& grid );
-	// 置く所を決めた。動かせたら（取りやめも）Browse へ戻る。入らない所なら何もしない。
-	void place( Inventory* inventory );
-
 	// マス目を画面の真ん中に置く（ItemGridView へ渡す。画面の幅は窓で変わるので、読む・描く前に毎回）。
 	void layout( const ItemGrid& grid );
 	// ── 並べる位置（画素。画面上の位置。UiAnchor の中央を足し済み）──
@@ -93,14 +67,7 @@ private:
 	ItemIcons mIcons;      // 物の絵（作った時に読み込みを始める）
 	ItemGridView mView;    // マス目を描く（mIcons を借りるので、mIcons より後に宣言する）
 	EcgView mEcg;		   // 左下に心電図
-	Mode mMode;
-	int mSelected;   // 選んでいるマス
-	// 出しているメニューの項目（MenuItem の番号を並べた物）と数。項目は物によって変わる（Equip は銃だけ・Use は包帯だけ）。
-	static const int kMenuCapacity = 5;
-	int mMenuItems[ kMenuCapacity ];
-	int mMenuCount;
-	int mMenuChoice; // メニューで選んでいる項目（mMenuItems の何番目か）
-	int mMovingFrom; // 持ち上げている物の中身を持つマス（Moving の間）
+	InventoryCursor mCursor; // 今どこを選んで、何をしている途中か
 	GameLib::Math::Vector2 mPreviousCursor; // 前回のカーソルの位置（動いたかどうかを決めるため）
 };
 

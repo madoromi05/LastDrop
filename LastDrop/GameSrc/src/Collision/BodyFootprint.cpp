@@ -1,5 +1,6 @@
 #include "GameSrc/Collision/BodyFootprint.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
+#include "GameSrc/Render/SkinnedMesh/SkinnedMeshShape.h"
 #include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
@@ -45,7 +46,7 @@ BodyFootprint::BodyFootprint( const SkinnedMeshData* data, const char* boneNameP
 	}
 	Vector3 low;
 	Vector3 high;
-	if ( !data->computeRestBounds( mask, &low, &high ) ) {
+	if ( !SkinnedMeshShape::computeRestBounds( *data, mask, &low, &high ) ) {
 		GameLib::cout << "BodyFootprint: no vertex for footprint: " << boneNamePrefix << GameLib::endl;
 		return;
 	}

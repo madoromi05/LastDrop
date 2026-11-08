@@ -23,6 +23,7 @@
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Raid/RunState.h"
+#include "GameSrc/Raid/RunStateFile.h"
 #include "GameSrc/Raid/RunRules.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
@@ -219,12 +220,12 @@ namespace{
 			ImGui::PopID();
 		}
 		if ( ImGui::SmallButton( "Save" ) ) {
-			gRun->save();
+			RunStateFile::save( *gRun );
 		}
 		ImGui::SameLine();
 		// 保存を消して 1 日目から（ハイスコアも消す）。町の中で押すと、今の日はそのまま続き、終わった時の結果が新しい回に入る。
 		if ( ImGui::SmallButton( "Erase save" ) ) {
-			RunState::erase();
+			RunStateFile::erase();
 			gRun->setBestScore( 0 );
 			RunRules::startNewRun( gRun );
 		}

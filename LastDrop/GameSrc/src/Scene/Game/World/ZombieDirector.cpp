@@ -4,7 +4,7 @@
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/CharacterColliderComponent.h"
-#include "GameSrc/Player/PlayerComponent.h"
+#include "GameSrc/Player/PlayerGrabComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
 #include "GameSrc/Zombie/Component/ZombieStateComponent.h"
@@ -128,7 +128,9 @@ void ZombieDirector::prepareThink( const GameObject* player ) {
 		mChaseTarget.position = player->getComponent< TransformComponent >()->position();
 		mChaseTarget.eyePosition = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
 		// 体力の部品を外した自キャラ（死なない）も襲う。つかまれている間・離された直後は、ほかのゾンビもつかまない。
-		mChaseTarget.attackable = ( !health || health->canBeAttacked() ) && player->getComponent< PlayerComponent >()->canBeGrabbed();
+		// つかまれる部品（PlayerGrabComponent）を外した自キャラは襲わない。
+		const PlayerGrabComponent* grab = player->getComponent< PlayerGrabComponent >();
+		mChaseTarget.attackable = ( !health || health->canBeAttacked() ) && grab && grab->canBeGrabbed();
 		mChaseTarget.attackTaken = false; // 体ごとに決め直す（ZombieBrainComponent::update）
 		mChaseTarget.body = player->getComponent< CharacterColliderComponent >(); // 外していれば nullptr
 		mContext.target = &mChaseTarget;
@@ -151,14 +153,15 @@ void ZombieDirector::prepareThink( const GameObject* player ) {
 }
 
 void ZombieDirector::finishThink( GameObject* player ) {
-	if ( !player ) {
+	PlayerGrabComponent* grab = player ? player->getComponent< PlayerGrabComponent >() : nullptr; // 外せる部品
+	if ( !grab ) {
 		return;
 	}
 	bool held = false;
 	mObjects->forEach< ZombieAttackComponent >( [ &held ]( const ZombieAttackComponent& attack ) {
 		held = held || attack.isHoldingTarget();
 	} );
-	player->getComponent< PlayerComponent >()->setHeld( held );
+	grab->setHeld( held );
 }
 
 void ZombieDirector::spawnFromSpawner( const GameObject* player, float cameraYaw ) {

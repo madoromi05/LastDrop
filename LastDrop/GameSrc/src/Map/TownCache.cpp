@@ -1,4 +1,7 @@
 #include "GameSrc/Map/TownCache.h"
+#ifdef _DEBUG
+#include "GameSrc/DebugMode/TownVisibilityCheck.h"
+#endif
 #include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Map/Building.h"
@@ -31,7 +34,7 @@ const TownVisibility* TownCache::visibility( const std::vector< Building >& buil
 		mVisibility->build( buildings );
 #ifdef _DEBUG
 		LOAD_SCOPE( "town", "TownVisibility::verify" );
-		mVisibility->verify( buildings, hitWorld );
+		TownVisibilityCheck::run( *mVisibility, buildings, hitWorld ); // 3D の線で表を確かめる（DebugMode）
 #else
 		( void )hitWorld; // 確かめるのは Debug だけ
 #endif

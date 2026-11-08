@@ -7,6 +7,7 @@
 #include "GameSrc/Component/LightComponent.h"
 #include "GameSrc/Player/PlayerComponent.h"
 #include "GameSrc/Player/PlayerNoiseComponent.h"
+#include "GameSrc/Player/PlayerGrabComponent.h"
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
@@ -50,7 +51,8 @@ bool PlayerFactory::isReady() const {
 GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
 	// HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。付ける順は自由
 	// （部品は awake で自分の物を作り、start で隣の部品を借りる。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）。
-	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerNoise）は、行を消せばその振る舞いだけ無くなる（素手・腕はアニメのまま・死なない・撃たれない・音を立てない）。
+	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise）は、行を消せばその振る舞いだけ無くなる
+	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない）。
 	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く。
 	// 音は、動いた後の足元・撃った後の銃を読むため）。
 	std::vector< const GameObject* > weapons;
@@ -67,6 +69,7 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 	obj->addComponent< PlayerHealthComponent >();
 	obj->addComponent< HitboxComponent >( mPlayerData, kBoneNamePrefix );
 	obj->addComponent< CharacterColliderComponent >();
+	obj->addComponent< PlayerGrabComponent >();
 	obj->addComponent< PlayerComponent >();
 	obj->addComponent< PlayerNoiseComponent >(); // PlayerComponent の後（上の説明）
 	world->spawn( obj );

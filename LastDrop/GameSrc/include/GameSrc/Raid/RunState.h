@@ -10,10 +10,11 @@
 // ・今の回：何日目か・倉庫とカバン（ItemGrid）・ここまでに倒した数・日ごとの条件（DayCondition_Plan.txt）
 // ・回をまたいで残る：ハイスコア（段階R5 で強化の段を足す）
 // ・前の結果：最後の 1 日の結果（DayResult）・最後の 5 日間の終わり（RunEnd）。結果・スコアの画面が読む
-// 何をどう変えるか（出撃・脱出・ゲームオーバーで何が残るか）は RunRules が決める。ここは持つのと、ファイル（save.xml）へ書く・読むだけ。
-// 保存の書き方は GameSettings と同じ（PseudoXml を文字列にして fstream）。形は R2_Plan.txt 7 章。
+// 何をどう変えるか（出撃・脱出・ゲームオーバーで何が残るか）は RunRules が決める。ここは持つだけ。
+// ファイル（save.xml）へ書く・読むのは RunStateFile（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 2 章）。
 class RunState{
 public:
+	static const int kFirstDay = 1;        // 1 日目の番号（日は 1〜kDayCount）
 	static const int kDayCount = 5;        // 何日生き残ればクリアか（ユーザーの決定 2026-11-05）
 	static const int kStashColumns = 6;    // 倉庫は 6 × 8（48 マス。R2_Plan.txt Q7）
 	static const int kStashRows = 8;
@@ -50,14 +51,6 @@ public:
 	bool isRunEndPending() const;
 	void setRunEndPending( bool pending );
 
-	// ── ファイル ──
-	// save.xml から読む。ファイルが無い・壊れているときは false を返し、中身は変えない（呼ぶ側が 1 日目で始める）。
-	// 読めない物の名前・マスからはみ出す物は読み飛ばす（ファイルを手で直しても止まらない）。
-	bool load();
-	// save.xml へ書く（save.xml.tmp に書いてから入れ替える。書く途中で落ちても前のファイルが残る）。書けなければ false（遊ぶのは続けられる）。
-	bool save() const;
-	// save.xml を消す（F6 の Raid 欄。次の load は false になり、1 日目から）。
-	static void erase();
 
 private:
 	int mDay;

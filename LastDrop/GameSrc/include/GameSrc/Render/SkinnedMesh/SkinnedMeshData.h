@@ -19,7 +19,7 @@ class SkinningPipeline;
 
 // 線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。変形は GPU で行う（SkinningPipeline）。1体ぶんの状態は持たず、同じキャラ全員で共有する。
 // 持つもの: レスト姿勢の頂点＋ボーン重み（CPU 側と、GPU へ送った頂点バッファ）＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
-// CPU 側の頂点は当たり判定の箱づくり（collectBoneSpaceVertices など）に使うので、GPU へ送った後も残す。
+// CPU 側の頂点は当たり判定の箱づくり（SkinnedMeshShape）に使うので、GPU へ送った後も残す。
 // 見た目は「パーツ」（インデックスの範囲＋MeshMaterial）単位で持つ。体と髪でテクスチャが別のモデルは複数パーツになる。
 // 頂点・スキニングは全パーツ共通なので、パーツが増えても変形の負荷は増えない（描画呼び出しが増えるだけ）。
 // 1体ごとのポーズ・位置は SkinnedMeshInstance が持ち、computeSkinMatrices() / draw() にこのデータを使う。
@@ -67,16 +67,14 @@ public:
 	int findBone( const char* nodeName ) const;
 	// ボーン番号から Tree のノード名。範囲外なら空文字列。腕の骨を名前の頭でまとめて探すときなどに使う。
 	const char* boneName( int boneIndex ) const;
-	// 一番強く付いている骨が boneMask で true の頂点を集め、anchorBone の空間（レスト姿勢で bindInverse を掛けた所）へ移して out に入れる。
-	// 部位ごとの当たり判定の箱を、モデルの形に沿わせて作るのに使う。
-	// boneMask: boneNumber() 個ぶん。対象の骨なら true。anchorBone: 箱を置く骨の番号。out: 出力先（前の中身は捨てる）。nullptr 不可。
-	void collectBoneSpaceVertices( const std::vector< bool >& boneMask, int anchorBone, std::vector< GameLib::Math::Vector3 >* out ) const;
-	// bone の関節の位置（レスト姿勢）を、anchorBone の空間で返す。部位の箱の長い辺を、関節を結ぶ向きに合わせるのに使う。
-	GameLib::Math::Vector3 boneSpaceJointPosition( int anchorBone, int bone ) const;
-	// 一番強く付いている骨が boneMask で true の頂点を、レスト姿勢のモデルの空間（置き場所・向きを掛ける前。単位は表示と同じ m）で囲む。
-	// 移動の当たり判定の大きさ（体を真上から囲む長方形）を、モデルの形から決めるのに使う。
-	// boundsMin / boundsMax: 出力先。nullptr 不可。対象の頂点が1つも無ければ false（出力は変えない）。
-	bool computeRestBounds( const std::vector< bool >& boneMask, GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;
+	// ── レスト姿勢の頂点（当たり判定の形を決める SkinnedMeshShape が読む。2026-11-09 に問い合わせをそちらへ分けた）──
+	int vertexNumber() const;
+	// 頂点 i のレスト姿勢の位置（モデル空間）。i: 0〜vertexNumber()-1。
+	const GameLib::Math::Vector3& restPosition( int i ) const;
+	// 頂点 i に一番強く付いている骨の番号（重みは大きい順とは限らないので全部見て選ぶ）。
+	int strongestBone( int i ) const;
+	// 骨 bone の bindInverse（レスト姿勢のモデル空間 → 骨の空間）。
+	const GameLib::Math::Matrix34& bindInverse( int bone ) const;
 	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）。
 	GameLib::Scene::Tree createSkeleton() const;
 	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。
@@ -100,8 +98,6 @@ public:
 private:
 	// CPU 側の頂点（レスト姿勢＋骨の番号と重み）を、GPU スキニング用の頂点バッファへ写す。finish で1回だけ呼ぶ。
 	void uploadGpuVertices();
-	// collectBoneSpaceVertices / computeRestBounds の中身。対象の頂点を transform で移して out に入れる。
-	void collectVertices( const std::vector< bool >& boneMask, const GameLib::Math::Matrix34& transform, std::vector< GameLib::Math::Vector3 >* out ) const;
 
 	// 1頂点分のレストデータと影響ボーン。
 	struct Vertex{

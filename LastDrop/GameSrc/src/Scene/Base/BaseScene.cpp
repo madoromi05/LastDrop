@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Base/BaseScene.h"
 #include "GameSrc/Scene/GameResources.h"
+#include "GameSrc/Raid/RunStateFile.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Raid/RunRules.h"
 #include "GameSrc/Core/Pad.h"
@@ -26,7 +27,7 @@ BaseScene::BaseScene( GameResources* resources ) :
 
 BaseScene::~BaseScene() {
 	// 動かした物を書く（タイトルへ戻る・窓を閉じる・出撃のどれでも。出撃は RunRules::deploy でも書くが、同じ中身なので 2 回でも困らない）。
-	mResources->run().save();
+	RunStateFile::save( mResources->run() );
 	EditorWindow::setRun( nullptr );
 }
 

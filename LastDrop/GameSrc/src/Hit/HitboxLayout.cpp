@@ -1,5 +1,6 @@
 #include "GameSrc/Hit/HitboxLayout.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
+#include "GameSrc/Render/SkinnedMesh/SkinnedMeshShape.h"
 #include "GameSrc/Math/BoxFitter.h"
 
 #include "GameLib/GameLib.h"
@@ -87,14 +88,14 @@ HitboxLayout::HitboxLayout( const SkinnedMeshData* data, const char* boneNamePre
 			markBones( data, boneNamePrefix, name, &mask );
 		}
 		std::vector< Vector3 > points;
-		data->collectBoneSpaceVertices( mask, anchor, &points );
+		SkinnedMeshShape::collectBoneSpaceVertices( *data, mask, anchor, &points );
 		// 長い辺の向き（箱を付ける骨の空間で）。関節が見つからなければ渡さない（頂点の広がりから決める）。
 		int axisFrom = findBone( data, boneNamePrefix, definition.axisFrom );
 		int axisTo = findBone( data, boneNamePrefix, definition.axisTo );
 		Vector3 longAxis;
 		const Vector3* longAxisOrNull = nullptr;
 		if ( axisFrom >= 0 && axisTo >= 0 ) {
-			longAxis.setSub( data->boneSpaceJointPosition( anchor, axisTo ), data->boneSpaceJointPosition( anchor, axisFrom ) );
+			longAxis.setSub( SkinnedMeshShape::boneSpaceJointPosition( *data, anchor, axisTo ), SkinnedMeshShape::boneSpaceJointPosition( *data, anchor, axisFrom ) );
 			longAxisOrNull = &longAxis;
 		}
 

@@ -4,6 +4,7 @@
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Player/PlayerGrabComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
@@ -34,17 +35,12 @@ namespace{
 	const float kNoRecoil = 0.f; // 銃を持っていないときの反動
 	const float kNoWeight = 0.f; // 持つ部品が無いときの覗き具合・抱えている割合（素手）
 	const float kFullSpeedScale = 1.f; // 体力の部品が無いときの歩く速さの倍率（傷ついていない）
-	// ゾンビに離されてから、またつかまれるようになるまで（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章）。
-	const float kGrabCooldownSeconds = 1.f;
-	const int kGrabCooldownTicks = GameTime::secondsToTicks( kGrabCooldownSeconds );
 }
 
 PlayerComponent::PlayerComponent() :
 	mCameraYaw( 0.f ),
 	mCameraPitch( 0.f ),
 	mInventory( nullptr ),
-	mHeld( false ),
-	mGrabCooldownTicks( 0 ),
 	mTransform( nullptr ),
 	mModel( nullptr ),
 	mBody( nullptr ),
@@ -210,27 +206,11 @@ PlayerCommand PlayerComponent::allowedCommand( const PlayerCommand& command ) co
 		allowed.flashlightPressed = false;
 		return allowed;
 	}
-	if ( mHeld ) {
+	const PlayerGrabComponent* grab = getComponent< PlayerGrabComponent >(); // 外せる部品（無ければ、つかまれない）
+	if ( grab && grab->isHeld() ) {
 		allowed.forward = 0.f; // つかまれている間は動けない（撃って振りほどく）
 		allowed.strafe = 0.f;
 		allowed.run = false;
 	}
 	return allowed;
-}
-
-void PlayerComponent::setHeld( bool held ) {
-	if ( mHeld && !held ) {
-		mGrabCooldownTicks = kGrabCooldownTicks; // 離された
-	} else if ( !held && mGrabCooldownTicks > 0 ) {
-		--mGrabCooldownTicks;
-	}
-	mHeld = held;
-}
-
-bool PlayerComponent::isHeld() const {
-	return mHeld;
-}
-
-bool PlayerComponent::canBeGrabbed() const {
-	return !mHeld && mGrabCooldownTicks <= 0;
 }

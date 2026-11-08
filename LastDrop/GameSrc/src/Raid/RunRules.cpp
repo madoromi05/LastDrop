@@ -1,5 +1,6 @@
 #include "GameSrc/Raid/RunRules.h"
 #include "GameSrc/Raid/RaidParams.h"
+#include "GameSrc/Raid/RunStateFile.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
 #include "GameLib/GameLib.h"
@@ -76,7 +77,7 @@ namespace{
 		run->setLastRunEnd( end );
 		run->setRunEndPending( true );
 		RunRules::startNewRun( run );
-		run->save();
+		RunStateFile::save( *run );
 	}
 }
 
@@ -101,14 +102,14 @@ void startNewRun( RunState* run ) {
 
 void loadOrStart( RunState* run ) {
 	ASSERT( run && "RunRules::loadOrStart : run is null." );
-	if ( !run->load() ) {
+	if ( !RunStateFile::load( run ) ) {
 		startNewRun( run );
 	}
 }
 
 void deploy( RunState* run ) {
 	ASSERT( run && "RunRules::deploy : run is null." );
-	run->save();
+	RunStateFile::save( *run );
 }
 
 void finishDay( RunState* run, const DayResult& day, const ItemGrid& bagAfterRaid ) {
@@ -125,7 +126,7 @@ void finishDay( RunState* run, const DayResult& day, const ItemGrid& bagAfterRai
 		return;
 	}
 	run->setDay( run->day() + 1 );
-	run->save();
+	RunStateFile::save( *run );
 }
 
 void failDay( RunState* run, const DayResult& day ) {

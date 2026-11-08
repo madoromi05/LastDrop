@@ -39,16 +39,8 @@ namespace{
 	const float kEcgWidth = 210.f;
 	const float kEcgHeight = 56.f;
 
-	// メニューの項目（全部）。物ごとに、使える物だけを上からこの順に並べる（openMenu）。
-	enum MenuItem{
-		MENU_EQUIP, // 銃を手に持つ（手に持っていない銃だけ）
-		MENU_USE,   // 包帯を使う（体力が減っているときだけ。R3_Plan.txt Q11）
-		MENU_DROP,
-		MENU_MOVE,
-		MENU_CANCEL,
-		MENU_ITEM_NUMBER,
-	};
-	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "装備", "使う", "捨てる", "動かす", "やめる" };
+	// メニューの項目の文字（InventoryCursor::MenuItem の順）。
+	const char* const kMenuLabels[] = { "装備", "使う", "捨てる", "動かす", "やめる" };
 	// 手に持っている銃の印（マスの左上）。
 	const char* kEquippedMark = "E";
 
@@ -96,47 +88,26 @@ InventoryScreen::InventoryScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
 	mView( renderer, &mIcons ),
 	mEcg( renderer ),
-	mMode( Mode::Browse ),
-	mSelected( 0 ),
-	mMenuCount( 0 ),
-	mMenuChoice( 0 ),
-	mMovingFrom( kNone ),
 	mPreviousCursor( 0.f, 0.f ) {
-	static_assert( MENU_ITEM_NUMBER == kMenuCapacity, "kMenuCapacity must hold every MenuItem" );
+	static_assert( sizeof( kMenuLabels ) / sizeof( kMenuLabels[ 0 ] ) == InventoryCursor::MENU_ITEM_NUMBER, "kMenuLabels must name every MenuItem" );
 	ASSERT( mRenderer && "InventoryScreen : renderer is null." );
 	mView.setCellAlpha( kPanelAlpha );
 }
 
 void InventoryScreen::openForPlacing( const Inventory& inventory, const ItemStack& incoming ) {
-	mMode = Mode::Placing;
-	mSelected = 0;
-	for ( int cell = 0; cell < inventory.grid().cellCount(); ++cell ) {
-		if ( inventory.countPlaceableInto( cell, incoming ) > 0 ) {
-			mSelected = cell; // 入る最初のマス（決定を 1 回押すだけで入れられるように）
-			break;
-		}
-	}
+	mCursor.openForPlacing( inventory, incoming );
 }
 
 bool InventoryScreen::isPlacing() const {
-	return mMode == Mode::Placing;
+	return mCursor.isPlacing();
 }
 
 void InventoryScreen::open() {
-	mMode = Mode::Browse;
-	mSelected = 0;
-	mMenuCount = 0;
-	mMenuChoice = 0;
-	mMovingFrom = kNone;
+	mCursor.open();
 }
 
 bool InventoryScreen::back() {
-	if ( mMode == Mode::Browse ) {
-		return false;
-	}
-	mMode = Mode::Browse;
-	mMovingFrom = kNone;
-	return true;
+	return mCursor.back();
 }
 
 InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, ItemId equipped, bool injured, const ItemStack* incoming ) {
@@ -145,149 +116,54 @@ InventoryScreen::Request InventoryScreen::handleInput( Inventory* inventory, Ite
 	UiInput input = UiInput::read( mPreviousCursor );
 	mPreviousCursor = input.cursor;
 	const ItemGrid& grid = inventory->grid();
-	forgetStale( grid );
+	mCursor.forgetStale( grid );
 	layout( grid );
-	if ( mMode == Mode::Placing && !incoming ) {
-		mMode = Mode::Browse; // 拾う物が無くなった（全部入れた）
-	}
+	mCursor.endPlacingIfEmpty( incoming );
 
-	if ( mMode == Mode::Menu ) {
+	// 入力を読んで、マウスの下の物（項目・マス）と押したキーを、選んでいる状態（InventoryCursor）へ伝える。
+	if ( mCursor.mode() == InventoryCursor::Mode::Menu ) {
 		int pointed = menuAt( grid, input.cursor );
 		if ( input.cursorMoved && pointed != kNone ) {
-			mMenuChoice = pointed;
+			mCursor.selectMenu( pointed );
 		}
 		if ( input.upPressed ) {
-			mMenuChoice = std::max( mMenuChoice - 1, 0 );
+			mCursor.menuUp();
 		}
 		if ( input.downPressed ) {
-			mMenuChoice = std::min( mMenuChoice + 1, mMenuCount - 1 );
+			mCursor.menuDown();
 		}
 		if ( input.clicked ) {
 			if ( pointed == kNone ) {
-				mMode = Mode::Browse; // メニューの外を押したら閉じる
+				mCursor.closeMenu(); // メニューの外を押したら閉じる
 				return nothing;
 			}
-			mMenuChoice = pointed;
-			return activateMenu( grid );
+			mCursor.selectMenu( pointed );
+			return mCursor.activateMenu( grid );
 		}
 		if ( input.decidePressed ) {
-			return activateMenu( grid );
+			return mCursor.activateMenu( grid );
 		}
 		return nothing;
 	}
 
 	// Browse・Moving・Placing は、どれもマスを選ぶ（Moving・Placing は置く所を選ぶ）。
 	int pointed = mView.cellAt( grid, input.cursor );
-	if ( input.cursorMoved && pointed != kNone ) {
-		mSelected = pointed;
+	if ( input.cursorMoved ) {
+		mCursor.selectCell( pointed );
 	}
-	moveSelection( input.upPressed, input.downPressed, input.leftPressed, input.rightPressed, grid );
-	if ( mMode == Mode::Placing && InputQuickPlace() ) {
+	mCursor.moveSelection( input.upPressed, input.downPressed, input.leftPressed, input.rightPressed, grid );
+	if ( mCursor.isPlacing() && InputQuickPlace() ) {
 		return { Request::QUICK_PLACE, kNone };
 	}
 	bool decided = input.decidePressed;
 	if ( input.clicked && pointed != kNone ) {
-		mSelected = pointed;
+		mCursor.selectCell( pointed );
 		decided = true;
 	}
 	if ( !decided ) {
 		return nothing;
 	}
-	if ( mMode == Mode::Placing ) {
-		// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）。
-		return ( inventory->countPlaceableInto( mSelected, *incoming ) > 0 ) ? Request{ Request::PLACE, mSelected } : nothing;
-	}
-	if ( mMode == Mode::Moving ) {
-		place( inventory );
-	} else if ( grid.ownerCell( mSelected ) != kNone ) {
-		openMenu( grid, equipped, injured );
-	}
-	return nothing;
-}
-
-void InventoryScreen::forgetStale( const ItemGrid& grid ) {
-	// F6 で行を減らした・物を足したときに、消えたマスや、もう無い物を指したままにしない。
-	mSelected = std::min( mSelected, grid.cellCount() - 1 );
-	if ( mMode == Mode::Moving && ( mMovingFrom >= grid.cellCount() || grid.ownerCell( mMovingFrom ) != mMovingFrom ) ) {
-		back();
-	}
-	if ( mMode == Mode::Menu && grid.ownerCell( mSelected ) == kNone ) {
-		back();
-	}
-}
-
-void InventoryScreen::moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& grid ) {
-	int row = mSelected / grid.columns();
-	int column = mSelected % grid.columns();
-	if ( up ) {
-		row = std::max( row - 1, 0 );
-	}
-	if ( down ) {
-		row = std::min( row + 1, grid.rows() - 1 );
-	}
-	if ( left ) {
-		column = std::max( column - 1, 0 );
-	}
-	if ( right ) {
-		column = std::min( column + 1, grid.columns() - 1 );
-	}
-	mSelected = row * grid.columns() + column;
-}
-
-void InventoryScreen::openMenu( const ItemGrid& grid, ItemId equipped, bool injured ) {
-	ItemId item = grid.stackAt( grid.ownerCell( mSelected ) ).item;
-	mMenuCount = 0;
-	// 銃で、まだ手に持っていなければ Equip を一番上に（拾った銃をすぐ持てるように）。
-	if ( weaponForItem( item ) != WEAPON_NONE && item != equipped ) {
-		mMenuItems[ mMenuCount++ ] = MENU_EQUIP;
-	}
-	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない。R3_Plan.txt Q11）。
-	if ( itemSpec( item ).kind == ITEM_KIND_MEDICAL && injured ) {
-		mMenuItems[ mMenuCount++ ] = MENU_USE;
-	}
-	mMenuItems[ mMenuCount++ ] = MENU_DROP;
-	mMenuItems[ mMenuCount++ ] = MENU_MOVE;
-	mMenuItems[ mMenuCount++ ] = MENU_CANCEL;
-	mMenuChoice = 0;
-	mMode = Mode::Menu;
-}
-
-InventoryScreen::Request InventoryScreen::activateMenu( const ItemGrid& grid ) {
-	Request request = { Request::NONE, grid.ownerCell( mSelected ) };
-	mMode = Mode::Browse;
-	switch ( mMenuItems[ mMenuChoice ] ) {
-	case MENU_EQUIP:
-		request.kind = Request::EQUIP;
-		break;
-	case MENU_USE:
-		request.kind = Request::USE;
-		break;
-	case MENU_DROP:
-		request.kind = Request::DROP;
-		break;
-	case MENU_MOVE:
-		mMovingFrom = request.cell;
-		mMode = Mode::Moving;
-		break;
-	default:
-		break; // Cancel
-	}
-	return request;
-}
-
-void InventoryScreen::place( Inventory* inventory ) {
-	const ItemGrid& grid = inventory->grid();
-	ItemId item = grid.stackAt( mMovingFrom ).item;
-	// 元の場所を選んだら取りやめ（動かさない）。
-	if ( grid.placementCell( item, mSelected ) == mMovingFrom ) {
-		back();
-		return;
-	}
-	if ( !inventory->canMove( mMovingFrom, mSelected ) ) {
-		return; // 入らない所。赤い枠のまま、別の所を選んでもらう
-	}
-	inventory->move( mMovingFrom, mSelected );
-	back();
+	return mCursor.decide( inventory, equipped, injured, incoming );
 }
 
 void InventoryScreen::layout( const ItemGrid& grid ) {
@@ -298,14 +174,14 @@ UiRect InventoryScreen::menuRect( const ItemGrid& grid, int index ) const {
 	Vector2 origin = gridOrigin( grid );
 	UiRect rect;
 	rect.left = origin.x + gridWidth( grid ) + kMenuGap;
-	rect.top = mView.cellRect( grid, mSelected ).top + index * ( kMenuHeight + kMenuSpacing );
+	rect.top = mView.cellRect( grid, mCursor.selected() ).top + index * ( kMenuHeight + kMenuSpacing );
 	rect.width = kMenuWidth;
 	rect.height = kMenuHeight;
 	return rect;
 }
 
 int InventoryScreen::menuAt( const ItemGrid& grid, const Vector2& point ) const {
-	for ( int i = 0; i < mMenuCount; ++i ) {
+	for ( int i = 0; i < mCursor.menuCount(); ++i ) {
 		if ( menuRect( grid, i ).contains( point ) ) {
 			return i;
 		}
@@ -315,7 +191,7 @@ int InventoryScreen::menuAt( const ItemGrid& grid, const Vector2& point ) const 
 
 void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming, PlayerCondition condition ) {
 	const ItemGrid& grid = inventory.grid();
-	forgetStale( grid );
+	mCursor.forgetStale( grid );
 	layout( grid );
 	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）。
 	UiRect screen;
@@ -331,10 +207,10 @@ void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const c
 		Vector2 exitsLine( heading.x, gridOrigin( grid ).y - kExitsGap );
 		mRenderer->addText( exits, exitsLine, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
 	}
-	mView.drawCells( grid, ( mMode == Mode::Moving ) ? mMovingFrom : kNone );
+	mView.drawCells( grid, ( mCursor.mode() == InventoryCursor::Mode::Moving ) ? mCursor.movingFrom() : kNone );
 	mView.drawMark( grid, equipped, kEquippedMark );
 	drawSelection( inventory, incoming );
-	if ( mMode == Mode::Menu ) {
+	if ( mCursor.mode() == InventoryCursor::Mode::Menu ) {
 		drawMenu( grid );
 	}
 	drawFooter( grid, incoming );
@@ -350,48 +226,53 @@ void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const c
 
 void InventoryScreen::drawSelection( const Inventory& inventory, const ItemStack* incoming ) {
 	const ItemGrid& grid = inventory.grid();
-	if ( mMode == Mode::Placing && incoming ) {
+	const int selected = mCursor.selected();
+	const int movingFrom = mCursor.movingFrom();
+	if ( mCursor.mode() == InventoryCursor::Mode::Placing && incoming ) {
 		// 入れようとしている所に、拾った物を薄く重ね、その大きさの枠。入らない所は赤（入るのは空き・同じ物に重ねるだけ）。
-		int target = grid.placementCell( incoming->item, mSelected );
-		bool fits = inventory.countPlaceableInto( mSelected, *incoming ) > 0;
+		int target = grid.placementCell( incoming->item, selected );
+		bool fits = inventory.countPlaceableInto( selected, *incoming ) > 0;
 		mView.drawGhost( grid, target, *incoming );
 		mView.addFrame( mView.spanRect( grid, target, itemSpec( incoming->item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
 		return;
 	}
-	if ( mMode == Mode::Moving ) {
+	if ( mCursor.mode() == InventoryCursor::Mode::Moving ) {
 		// 置く所に、持ち上げている物の大きさの枠。入らない所は赤。
-		ItemId item = grid.stackAt( mMovingFrom ).item;
-		int target = grid.placementCell( item, mSelected );
-		bool fits = ( target == mMovingFrom ) || inventory.canMove( mMovingFrom, mSelected );
+		ItemId item = grid.stackAt( movingFrom ).item;
+		int target = grid.placementCell( item, selected );
+		bool fits = ( target == movingFrom ) || inventory.canMove( movingFrom, selected );
 		mView.addFrame( mView.spanRect( grid, target, itemSpec( item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
 		return;
 	}
 	// 物のマスなら、その物全体（2 マスの物は 1 行）に枠。
-	int owner = grid.ownerCell( mSelected );
+	int owner = grid.ownerCell( selected );
 	if ( owner == kNone ) {
-		mView.addFrame( mView.cellRect( grid, mSelected ), kFrameThickness, kSelectColor );
+		mView.addFrame( mView.cellRect( grid, selected ), kFrameThickness, kSelectColor );
 	} else {
 		mView.addFrame( mView.spanRect( grid, owner, itemSpec( grid.stackAt( owner ).item ).cellSize ), kFrameThickness, kSelectColor );
 	}
 }
 
 void InventoryScreen::drawMenu( const ItemGrid& grid ) {
-	for ( int i = 0; i < mMenuCount; ++i ) {
+	for ( int i = 0; i < mCursor.menuCount(); ++i ) {
 		UiRect rect = menuRect( grid, i );
-		bool selected = ( i == mMenuChoice );
+		bool selected = ( i == mCursor.menuChoice() );
 		mRenderer->addRect( rect, selected ? kMenuSelectedColor : kMenuPlateColor );
-		mRenderer->addText( kMenuLabels[ mMenuItems[ i ] ], rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, selected ? kMenuSelectedTextColor : kTextColor );
+		mRenderer->addText( kMenuLabels[ mCursor.menuItem( i ) ], rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, selected ? kMenuSelectedTextColor : kTextColor );
 	}
 }
 
 void InventoryScreen::drawFooter( const ItemGrid& grid, const ItemStack* incoming ) {
+	const int selected = mCursor.selected();
+	const int movingFrom = mCursor.movingFrom();
+	const InventoryCursor::Mode mode = mCursor.mode();
 	Vector2 position( UiLayout::anchorX( UI_ANCHOR_CENTER ), gridOrigin( grid ).y + gridHeight( grid ) + kFooterGap );
-	int owner = grid.ownerCell( mSelected );
+	int owner = grid.ownerCell( selected );
 	const char* name = ( owner == kNone ) ? kEmptyName : itemSpec( grid.stackAt( owner ).item ).name;
 	char text[ kTextSize ];
-	if ( mMode == Mode::Moving ) {
-		name = itemSpec( grid.stackAt( mMovingFrom ).item ).name; // 持ち上げている物
-	} else if ( mMode == Mode::Placing && incoming ) {
+	if ( mode == InventoryCursor::Mode::Moving ) {
+		name = itemSpec( grid.stackAt( movingFrom ).item ).name; // 持ち上げている物
+	} else if ( mode == InventoryCursor::Mode::Placing && incoming ) {
 		// 拾って持っている物（重ねられる物は、まだ入れていない数も）。
 		const ItemSpec& spec = itemSpec( incoming->item );
 		if ( spec.stackSize > 1 ) {
@@ -403,11 +284,11 @@ void InventoryScreen::drawFooter( const ItemGrid& grid, const ItemStack* incomin
 	}
 	mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	const char* hint = kBrowseHint;
-	if ( mMode == Mode::Menu ) {
+	if ( mode == InventoryCursor::Mode::Menu ) {
 		hint = kMenuHint;
-	} else if ( mMode == Mode::Placing ) {
+	} else if ( mode == InventoryCursor::Mode::Placing ) {
 		hint = kPlacingHint;
-	} else if ( mMode == Mode::Moving ) {
+	} else if ( mode == InventoryCursor::Mode::Moving ) {
 		hint = kMovingHint;
 	}
 	position.y += kFooterLineHeight;
