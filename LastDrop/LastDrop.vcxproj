@@ -236,6 +236,7 @@
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\ItemCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\Inventory.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\Item\MagazineSync.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\ItemGrid.cpp" />
     <ClCompile Include="GameSrc\src\Raid\RaidParams.cpp" />
     <ClCompile Include="GameSrc\src\Raid\RaidClock.cpp" />
@@ -254,9 +255,11 @@
     <ClCompile Include="GameSrc\src\Map\TownCache.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameLoader.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\LoadingPhase.cpp" />
     <ClCompile Include="GameSrc\src\Scene\LoadingScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\GridPairPicker.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\LootScreen.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Hud\HudController.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\RaidHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp" />
@@ -489,6 +492,8 @@
     <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonControl.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerBodySounds.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\ModalController.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\BagController.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\LootController.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\PauseMenu.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\ItemIcons.cpp" />
@@ -840,6 +845,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Collision\IGroundHeight.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\Inventory.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\MagazineSync.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemGrid.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidClock.h" />
@@ -860,9 +866,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameLoader.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\LoadingPhase.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\LoadingScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\GridPairPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\LootScreen.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\HudController.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\RaidHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h" />
@@ -988,6 +996,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\Body\WeaponPoseParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerBodySounds.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ModalController.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\BagController.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\LootController.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\PauseMenu.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\InventoryScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemIcons.h" />

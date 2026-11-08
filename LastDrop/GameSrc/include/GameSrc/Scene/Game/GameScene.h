@@ -10,21 +10,16 @@
 #include "GameSrc/Player/PlayerBodySounds.h"
 #include "GameSrc/Scene/Game/Sound/CombatSounds.h"
 #include "GameSrc/Scene/Game/Hud/PlayerDamageView.h"
-#include "GameSrc/Scene/Game/Hud/RaidHud.h"
-#include "GameSrc/Scene/Game/Hud/AmmoHud.h"
-#include "GameSrc/Scene/Game/Hud/AmmoHudVisibility.h"
+#include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Raid/RaidSession.h"
-#include "GameSrc/Scene/Game/Hud/InteractMarkers.h"
 #include "GameSrc/Scene/Game/Screen/ModalController.h"
 #include "GameSrc/Scene/Game/Screen/PauseMenu.h"
-#include "GameSrc/Scene/Game/Screen/InventoryScreen.h"
-#include "GameSrc/Scene/Game/Screen/LootScreen.h"
-#include "GameSrc/Interaction/Loot/LootSearch.h"
+#include "GameSrc/Scene/Game/Screen/BagController.h"
+#include "GameSrc/Scene/Game/Screen/LootController.h"
 #include "GameSrc/Audio/AudioEngine.h"
 #include "GameSrc/World/GameObjectHandle.h"
 #include "GameSrc/Scene/Game/Hud/GameDebugOverlay.h"
-#include "GameSrc/Scene/Game/GameLoader.h"
-#include "GameSrc/Scene/LoadingScreen.h"
+#include "GameSrc/Scene/Game/LoadingPhase.h"
 enum class PlayerCondition;
 
 #ifdef ZF_EDITOR
@@ -82,63 +77,9 @@ private:
 	void resume();
 	// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない。
 	void handlePausedInput();
-	// カバンを開く・閉じる。止め方は一時停止と同じ（世界を進めず、音を止め、カーソルを外す）。
-	// 開けるのは、自キャラが生きていて、観察用カメラを使っていない間だけ。
-	bool canOpenBag() const;
-	void openBag();
-	void closeBag();
-	// カバンを開いている間の入力（Tab・ESC で閉じる・マスの操作・捨てた物を足元に置く・銃を持ち替える）。ほかの入力は読まない。
-	void handleBagInput();
-	// cell の物を取り出して、自キャラの足元に置く（置けなければカバンへ戻す）。
-	void dropFromBag( int cell );
-	// E で拾った物 offer を持った状態でカバンを開く（入れるマスを選ぶ。InventoryPickup_Plan.txt Q3）。
-	void startPlacing( IInteractable* offer );
-	// 拾って持っている物（銃なら弾倉の数も入れる）を out へ。持っていなければ false。
-	bool offeredStack( ItemStack* out ) const;
-	// 拾った物を cell を指した所へ入る分だけ入れる・おまかせで入れる。全部入ったらカバンを閉じる。
-	void placeOffered( int cell );
-	void quickPlaceOffered();
-	// 拾った物を全部入れたら、拾うのを終えてカバンを閉じる。
-	void finishPlacingIfDone();
-	// カバンの cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11。世界は止まっているので、すぐ効く）。
-	void useFromBag( int cell );
-	// 体力が減っているか（カバンの画面の「使う」を出すか）。自キャラが居なければ false。
-	bool isPlayerInjured() const;
-	PlayerCondition playerCondition() const;
-	// ── 漁れる場所──
-	// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める（開けている音を鳴らす）。
-	// 脱出の車は待たずに給油口を開く
-	void beginLoot( IInteractable* opened );
-	// ── 脱出の車──
-	// 給油口に要る数を入れて閉じた。漁るのと同じ待ち方（LootSearch・取りやめも同じ）で、給油し始める。
-	void beginRefuel( EscapeCarComponent* car );
-	// 給油の待ちを終えた。給油口のガソリンを使ってエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）。
-	void finishRefuel( EscapeCarComponent* car );
-	// 開けている途中を取りやめる（音を止める）。開けていなければ何もしない。
-	void cancelLootSearch();
-	// 今の待ち（mLootSearch）が漁るのか給油なのか（HUD の棒の文字。待っている相手が脱出の車なら給油）。
-	RaidHud::ProgressKind waitingKind() const;
-	// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）。
-	void addAmmoHud();
-	// 開けている途中を 1 ティック進める（update から。commandInterrupts: このティックの操作が取りやめの操作だったか）。
-	// 攻撃された・死んだ・1 日が終わったも取りやめ。開け終わったら中を見る画面を開く（脱出の車なら、ガソリンを入れる）。
-	void updateLootSearch( bool commandInterrupts );
-	// 操作 command が、開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器を出し入れ）。
-	static bool interruptsLootSearch( const PlayerCommand& command );
-	// 中を見る画面を開く・閉じる。止め方はカバンと同じ（世界を進めず、音を止め、カーソルを外す）。
-	// target: 漁れる場所か脱出の車の物。lootRule: 右のマス目に入れてよい物（給油口は GridRule::FuelOnly）。
-	// 給油口に要る数を入れて閉じたら、給油し始める。
-	void openLoot( GameObject* target, GridRule lootRule );
-	void closeLoot();
-	// 中を見る画面を開いている間の入力（ESC・E・Tab で閉じる・マスの操作）。ほかの入力は読まない。
-	void handleLootInput();
-	// 中を見ている場所・給油口の車（消えた・開いていなければ nullptr）。
-	LootContainerComponent* lootTarget() const;
-	EscapeCarComponent* fuelPortTarget() const;
-	// 中を見ているマス目と、右の見出し（消えた・開いていなければ nullptr）。
-	ItemGrid* openedGrid() const;
-	const char* openedTitle() const;
-	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。カバンの画面の「E」の印と Equip に使う。
+	// カバン（持ち物のマス目）は BagController、漁れる場所・給油は LootController、遊び中の画面表示は HudController が持つ。
+	// カバンを開けるのは自キャラが生きていて観察用カメラを使っていない間だけ（handleFrameInput で判定）。
+	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。各画面のマスの印に使う。
 	ItemId equippedWeapon() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
@@ -154,10 +95,6 @@ private:
 	void updateRaid();
 	// 終わった日を RunRules へ渡して、次のシーンへの切り替えを予約する（1 回だけ）。
 	void finishRaid();
-	// カバンの銃のマスへ、銃の物の弾倉の数を書き戻す（脱出したとき。R2_Plan.txt Q13）。
-	void storeMagazineRounds();
-	// 拠点で覚えた弾倉の数を、カバンの銃の物へ入れる（世界を並べた後に 1 回）。
-	void restoreMagazineRounds();
 #ifdef ZF_EDITOR
 	// F9（InputDebugSpawnZombie）で、自キャラの前にゾンビを横並びで出す（確認用。Release にはキーも処理も残さない）。
 	// 世界を変えるので、読むだけの GameDebugOverlay ではなくここで行う。beginFrame から（ティックの間に呼ぶ）。
@@ -180,36 +117,28 @@ private:
 	SceneRenderer mSceneRenderer;
 	Inventory mInventory;
 	Interactor mInteractor;
-	InteractMarkers mInteractMarkers; // 使える物の上のマーク（文字の案内の代わり）
 	FirstPersonControl mControl;
 	PlayerBodySounds mBodySounds;
 	CombatSounds mCombatSounds; // 戦闘の結果の効果音（ゾンビ命中・物命中・攻撃された）をまとめて鳴らす
 	PlayerDamageView mDamageView;
-	RaidHud mHud;
-	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数（AmmoHud_Plan.txt）
-	AmmoHudVisibility mAmmoHudVisibility; // 弾数を出す時間と濃さ（覗いている・リロード中と、その後 2 秒）
+	// 遊んでいる間の画面表示（1 日の棒・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する。
+	HudController mHud;
 	RaidSession mSession; // 町の 1 日（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）。
-	GameLoader mLoader;
-	LoadingScreen mLoadingScreen;
+	LoadingPhase mLoad;
 	PauseMenu mPauseMenu;
-	InventoryScreen mInventoryScreen;
-	LootScreen mLootScreen;
-	LootSearch mLootSearch;
 	// 全画面のモーダル（一時停止・カバン・漁り）の状態と、開閉の共通遷移（音を止める・カーソル）。mControl と音を借りるので、その後に宣言する。
 	ModalController mModals;
+	// カバン（持ち物のマス目）の開閉と操作。mInventory/mWorld/mControl/mModals を借りるので、その後に宣言する。
+	BagController mBag;
+	// 漁れる場所・給油の待ちと中を見る画面。mWorld/mInventory/音/mModals/mSession を借りるので、その後に宣言する。
+	LootController mLoot;
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
 	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）
 #endif
-	bool mReady; // 世界の配置が済んだか
 	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
-	// E で拾って、入れるマスを選んでいる物（無ければ nullptr）。借りているだけ（カバンを開いている間は世界が止まり、拾う物は消えない）。
-	IInteractable* mOffer;
-	GameObjectHandle mLootTarget; // 中を見ている場所の物（車・ゴミ箱・木箱・死体。モーダルが Loot の間だけ有効）
-	AudioEngine::LoopHandle mSearchSound; // 開けている間の音（開けていなければ kInvalidLoop）
-	AudioEngine::LoopHandle mEngineSound; // 脱出の車のエンジンの音（掛かっていなければ kInvalidLoop）
 };
 
 #endif
