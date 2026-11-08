@@ -7,21 +7,21 @@
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameLib/Math/Vector2.h"
+#include "GameSrc/Scene/Game/Screen/EcgView.h"
 
 class UiRenderer;
 class Inventory;
+enum class PlayerCondition;
 
 // カバンの画面（Tab）。止めた本編の画の上に半透明の黒を重ね、マス目（2 列 × 行）と、選んだ物のメニュー（Equip / Drop / Move / Cancel）を出す。
-// Equip は銃だけに出す（手に持っている銃には出さない）。手に持っている銃のマスには「E」の印（Pistol_Plan.txt Q2）。
-// 町で E で拾うと、拾った物を持った状態で開き、入れるマスを選ぶ（InventoryPickup_Plan.txt Q3。F でおまかせ）。
+// Equip は銃だけに出す（手に持っている銃には出さない）。手に持っている銃のマスには「E」の印
+// 町で E で拾うと、拾った物を持った状態で開き、入れるマスを選ぶ
 // 後ろの町が透けるよう、暗くする板とマスの背景は半透明（Q6）。
-// 物は絵（ItemIcons）で見せ、重ねられる物だけ数を右下に、銃は弾倉の数を左下に出す。名前は選んだ物だけを下の欄に出す（SummaryPlan/個別仕様/ItemIcon_Plan.txt）。
+// 物は絵（ItemIcons）で見せ、重ねられる物だけ数を右下に、銃は弾倉の数を左下に出す。名前は選んだ物だけを下の欄に出す
 // 持つのは画面の入力と描画と「今どこを選んでいるか」だけ。世界・音を止める・動かし直すのと、捨てた物を足元に置く・銃を持ち替えるのは本編（GameScene）
 // （PauseMenu と同じ分け方。画面から世界を触らない）。動かす（並べ替え）はカバンの中だけで済むので、ここから Inventory に頼む。
-// SummaryPlan/個別仕様/GridInventory_Plan.txt。
 class InventoryScreen{
 public:
-	// handleInput の答え（本編にしてほしいこと）。
 	struct Request{
 		enum Kind{
 			NONE,  // 何もしない
@@ -57,7 +57,7 @@ public:
 	// equipped: 手に持っている銃の物（素手なら ITEM_NONE。そのマスに「E」の印を出す）。
 	// exits: 見出しの下に出す、開いている脱出点の文字（「Exits: North / East」。R2_Plan.txt Q10）。nullptr なら出さない。
 	// incoming: 拾って持っている物（isPlacing の間。それ以外は nullptr）。
-	void draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming );
+	void draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming, PlayerCondition condition );
 
 private:
 	enum class Mode{
@@ -92,6 +92,7 @@ private:
 	UiRenderer* mRenderer; // 借りているだけ
 	ItemIcons mIcons;      // 物の絵（作った時に読み込みを始める）
 	ItemGridView mView;    // マス目を描く（mIcons を借りるので、mIcons より後に宣言する）
+	EcgView mEcg;		   // 左下に心電図
 	Mode mMode;
 	int mSelected;   // 選んでいるマス
 	// 出しているメニューの項目（MenuItem の番号を並べた物）と数。項目は物によって変わる（Equip は銃だけ・Use は包帯だけ）。

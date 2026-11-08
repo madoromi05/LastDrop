@@ -112,12 +112,6 @@
     <Filter Include="GameLib\DebugUi">
       <UniqueIdentifier>{9C3E5A71-2B64-4D8F-A1E0-7F5B3D2C6E49}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameLib\ThirdParty\imgui">
-      <UniqueIdentifier>{4B8D1F26-7C3A-4E95-B0D2-8A6E1C5F3B70}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GameLib\ThirdParty\recastnavigation">
-      <UniqueIdentifier>{6E2F9A41-3D7C-4B58-9E16-C0A5B8D4F273}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameLib\WindowCreator">
       <UniqueIdentifier>{A1B2C3D4-E5F6-7890-ABCD-EF123456789A}</UniqueIdentifier>
     </Filter>
@@ -657,138 +651,6 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningPanel.h">
       <Filter>GameSrc\DebugMode</Filter>
-    </ClInclude>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_draw.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_tables.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_widgets.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.cpp">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClCompile>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourMath.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourStatus.h">
-      <Filter>GameLib\ThirdParty\recastnavigation</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_internal.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_rectpack.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_textedit.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_truetype.h">
-      <Filter>GameLib\ThirdParty\imgui</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Profiling\FrameRecorder.h">
       <Filter>GameLib\Profiling</Filter>
@@ -1457,6 +1319,81 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Render\StaticMesh\StaticMeshMerger.cpp">
       <Filter>GameSrc\Render\StaticMesh</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_draw.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_tables.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_widgets.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastArea.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastContour.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastFilter.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastLayers.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMesh.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastMeshDetail.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRasterization.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastRegion.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\EcgView.cpp">
+      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2601,6 +2538,69 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\WindowCreator\Resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_win32.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_internal.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_rectpack.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_textedit.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\imgui\imstb_truetype.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\Recast.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAlloc.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Recast\RecastAssert.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAlloc.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourAssert.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourCommon.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourMath.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMesh.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshBuilder.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNavMeshQuery.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourNode.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\ThirdParty\recastnavigation\Detour\DetourStatus.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\EcgView.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

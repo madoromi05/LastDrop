@@ -303,6 +303,12 @@ bool GameScene::isPlayerInjured() const {
 	return health && health->health().isInjured();
 }
 
+PlayerCondition GameScene::playerCondition() const {
+	const GameObject* player = mWorld.player();
+	const PlayerHealthComponent* health = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
+	return health ? health->health().condition() : PlayerCondition::Fine;
+}
+
 void GameScene::beginLoot( IInteractable* opened ) {
 	LootContainerComponent* container = mWorld.interaction().findContainer( opened );
 	if ( !container ) {
@@ -852,7 +858,7 @@ void GameScene::draw() {
 		std::string exits = kExitsPrefix + RaidHud::exitNames( mSession.extraction(), kExitsSeparator );
 		ItemStack incoming;
 		bool placing = mInventoryScreen.isPlacing() && offeredStack( &incoming );
-		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr ); // カバンの画面も同じ（HUD は描かない）
+		mInventoryScreen.draw( mInventory, equippedWeapon(), exits.c_str(), placing ? &incoming : nullptr, playerCondition() ); // カバンの画面も同じ（HUD は描かない）
 	} else if ( mLootOpen && openedGrid() ) {
 		mLootScreen.draw( mInventory.grid(), *openedGrid(), openedTitle(), equippedWeapon() );
 	} else {

@@ -37,6 +37,8 @@
 #include "GameSrc/Scene/Game/Hud/GameDebugOverlay.h"
 #include "GameSrc/Scene/Game/GameLoader.h"
 #include "GameSrc/Scene/LoadingScreen.h"
+enum class PlayerCondition;
+
 #ifdef ZF_EDITOR
 #include "GameSrc/DebugMode/FreeCamera.h"
 #include "GameSrc/DebugMode/FireProbe.h"
@@ -115,11 +117,12 @@ private:
 	void useFromBag( int cell );
 	// 体力が減っているか（カバンの画面の「使う」を出すか）。自キャラが居なければ false。
 	bool isPlayerInjured() const;
-	// ── 漁れる場所（R3_Plan.txt 5 章）──
+	PlayerCondition playerCondition() const;
+	// ── 漁れる場所──
 	// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める（開けている音を鳴らす）。
-	// 脱出の車は待たずに給油口を開く（FuelPort_Plan.txt）。
+	// 脱出の車は待たずに給油口を開く
 	void beginLoot( IInteractable* opened );
-	// ── 脱出の車（FuelEscapeLoading_Plan.txt 3 章・FuelPort_Plan.txt）──
+	// ── 脱出の車──
 	// 給油口に要る数を入れて閉じた。漁るのと同じ待ち方（LootSearch・取りやめも同じ）で、給油し始める。
 	void beginRefuel( EscapeCarComponent* car );
 	// 給油の待ちを終えた。給油口のガソリンを使ってエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）。

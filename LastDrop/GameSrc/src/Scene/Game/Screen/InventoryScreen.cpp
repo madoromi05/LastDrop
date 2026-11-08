@@ -6,6 +6,7 @@
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Core/Pad.h"
+#include "GameSrc/Player/PlayerHealth.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -33,6 +34,10 @@ namespace{
 	const float kMenuHeight = 28.f;
 	const float kMenuSpacing = 4.f;
 	const float kFrameThickness = 2.f;
+	// 左下の心電図パネルの位置と大きさ
+	const float kEcgMargin = 14.f;
+	const float kEcgWidth = 210.f;
+	const float kEcgHeight = 56.f;
 
 	// メニューの項目（全部）。物ごとに、使える物だけを上からこの順に並べる（openMenu）。
 	enum MenuItem{
@@ -41,7 +46,6 @@ namespace{
 		MENU_DROP,
 		MENU_MOVE,
 		MENU_CANCEL,
-
 		MENU_ITEM_NUMBER,
 	};
 	const char* const kMenuLabels[ MENU_ITEM_NUMBER ] = { "装備", "使う", "捨てる", "動かす", "やめる" };
@@ -91,6 +95,7 @@ namespace{
 InventoryScreen::InventoryScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
 	mView( renderer, &mIcons ),
+	mEcg( renderer ),
 	mMode( Mode::Browse ),
 	mSelected( 0 ),
 	mMenuCount( 0 ),
@@ -308,7 +313,7 @@ int InventoryScreen::menuAt( const ItemGrid& grid, const Vector2& point ) const 
 	return kNone;
 }
 
-void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming ) {
+void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming, PlayerCondition condition ) {
 	const ItemGrid& grid = inventory.grid();
 	forgetStale( grid );
 	layout( grid );
@@ -333,6 +338,13 @@ void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const c
 		drawMenu( grid );
 	}
 	drawFooter( grid, incoming );
+	// 左下に心電図を積む（暗くする板と同じく Framework の画面サイズで位置を決める）。
+	UiRect ecgArea;
+	ecgArea.left = kEcgMargin;
+	ecgArea.top = static_cast< float >( Framework::instance().height() ) - kEcgMargin - kEcgHeight;
+	ecgArea.width = kEcgWidth;
+	ecgArea.height = kEcgHeight;
+	mEcg.draw( ecgArea, condition );
 	mRenderer->draw();
 }
 

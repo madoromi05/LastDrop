@@ -182,6 +182,7 @@
     <!-- ゲームコード -->
     <ClCompile Include="GameSrc\src\Render\Shadow\CascadeRefresh.cpp" />
     <ClCompile Include="GameSrc\src\Render\Culling\LodSelector.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Game\Screen\EcgView.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieRootMotionComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFactory.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieDismemberComponent.cpp" />
@@ -661,6 +662,7 @@
   <ItemGroup>
     <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\CascadeRefresh.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Culling\LodSelector.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\EcgView.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieRootMotionComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieHealthComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h" />
