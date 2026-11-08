@@ -10,7 +10,7 @@ enum class PlayerCondition;
 // 線を引く命令が無いので、UiRenderer::addRect（細い長方形）を横に並べて折れ線にする
 // （ItemGridView::addFrame と同じ考え方）。状態は持たない（渡された condition を描くだけ）。
 // UiRenderer::draw は呼ばない（積むだけ。使う側＝InventoryScreen が最後に 1 回）。
-class EcgView {
+class EcgView{
 public:
 	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この部品より長く生きていること。
 	explicit EcgView( UiRenderer* renderer );

@@ -23,6 +23,7 @@ public:
 	enum Type{
 		TYPE_TRIANGLE_TRANSFORMED,
 		TYPE_TRIANGLE,
+		TYPE_TRIANGLE_SCREEN, // スクリーン座標(画素)の三角形。TYPE_RECTANGLE と同じ画素→クリップ空間変換で描く（長方形では作れない斜めの UI 線など）
 		TYPE_LINE,
 		TYPE_POINT,
 		TYPE_RECTANGLE,
@@ -320,6 +321,48 @@ public:
 
 		mVertexPosition += 6;
 	}
+	// スクリーン座標(画素)の三角形。addRectangle と同じ画素→クリップ空間変換で描くので、長方形では作れない斜めの形（UI の線など）に使える。
+	void addScreenTriangle(
+	const Vector2& p0,
+	const Vector2& p1,
+	const Vector2& p2,
+	const Vector2& t0,
+	const Vector2& t1,
+	const Vector2& t2,
+	unsigned c0,
+	unsigned c1,
+	unsigned c2 ){
+		ASSERT( ( mVertexPosition + 3 ) <= mVertexCapacity );
+		ASSERT( mLockedVertexBuffer );
+
+		Batch* b = &mBatches[ mBatchPosition ];
+		if ( b->mPrimitiveNumber > 0 ){
+			if ( b->mType != TYPE_TRIANGLE_SCREEN ){
+				b = addBatch();
+			}
+		}
+		b->mType = TYPE_TRIANGLE_SCREEN;
+		++b->mPrimitiveNumber;
+
+		Vertex* v = mLockedVertexBuffer + mVertexPosition;
+
+		v[ 0 ].mPosition.set( p0.x, p0.y, 0.f );
+		v[ 0 ].mNormal = 0.f;
+		v[ 0 ].mColor = c0;
+		v[ 0 ].mUv = t0;
+
+		v[ 1 ].mPosition.set( p1.x, p1.y, 0.f );
+		v[ 1 ].mNormal = 0.f;
+		v[ 1 ].mColor = c1;
+		v[ 1 ].mUv = t1;
+
+		v[ 2 ].mPosition.set( p2.x, p2.y, 0.f );
+		v[ 2 ].mNormal = 0.f;
+		v[ 2 ].mColor = c2;
+		v[ 2 ].mUv = t2;
+
+		mVertexPosition += 3;
+	}
 	void draw(){
 		//フレームIDチェック
 		unsigned fid = Manager().frameId();
@@ -397,7 +440,7 @@ public:
 				transformChanged = true;
 			}
 			//これをセットするかどうかはプリミティブタイプによる
-			if ( b.mType == TYPE_RECTANGLE ){ //クリップ空間化行列をセット
+			if ( b.mType == TYPE_RECTANGLE || b.mType == TYPE_TRIANGLE_SCREEN ){ //スクリーン座標→クリップ空間化行列をセット
 				m.setProjectionViewMatrix( screenToClipTransform );
 				specialTransform = true;
 			}else if ( b.mType == TYPE_TRIANGLE_TRANSFORMED ){
@@ -413,6 +456,7 @@ public:
 				switch ( b.mType ){
 					case TYPE_TRIANGLE_TRANSFORMED:
 					case TYPE_TRIANGLE:
+					case TYPE_TRIANGLE_SCREEN:
 					case TYPE_RECTANGLE:
 						prim = PRIMITIVE_TRIANGLE;
 						break;
@@ -529,7 +573,18 @@ unsigned c0,
 unsigned c1,
 unsigned c2 ){
 	Vector2 t( 0.f, 0.f ); //ダミーのUV
-	mImpl->addTriangle( p0, p1, p2, t, t, t, c0, c1, c2 ); 
+	mImpl->addTriangle( p0, p1, p2, t, t, t, c0, c1, c2 );
+}
+
+void PrimitiveRenderer::addScreenTriangle(
+const Vector2& p0,
+const Vector2& p1,
+const Vector2& p2,
+unsigned c0,
+unsigned c1,
+unsigned c2 ){
+	Vector2 t( 0.f, 0.f ); //ダミーのUV
+	mImpl->addScreenTriangle( p0, p1, p2, t, t, t, c0, c1, c2 );
 }
 
 void PrimitiveRenderer::addLine(

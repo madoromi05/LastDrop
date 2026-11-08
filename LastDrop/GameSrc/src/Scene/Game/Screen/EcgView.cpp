@@ -7,32 +7,26 @@
 #include "Framework.h"
 #include <cmath> 
 
+using GameLib::Math::Vector2;
+
 namespace {
 	// 1 拍の形（横 t=0..1、縦 h は基線からの高さ。上が +）
 	struct Point { float t; float h; };
 	const Point kBeat[] = {
-		{ 0.00f, 0.f }, { 0.42f, 0.f }, { 0.46f, -0.15f }, { 0.50f, 1.0f },
-		{ 0.54f, -0.28f }, { 0.58f, 0.f }, { 1.00f, 0.f }
+	{ 0.00f,  0.00f }, { 0.10f,  0.00f },
+	{ 0.15f,  0.12f }, { 0.20f,  0.00f }, // P 波（小さな山）
+	{ 0.30f,  0.00f },
+	{ 0.33f, -0.10f }, // Q（小さく下）
+	{ 0.36f,  1.00f }, // R（鋭く上）
+	{ 0.39f, -0.30f }, // S（下）
+	{ 0.43f,  0.00f }, { 0.60f,  0.00f },
+	{ 0.70f,  0.24f }, { 0.80f,  0.00f }, // T 波（丸い山）
+	{ 1.00f,  0.00f }
 	};
 	const int kBeatPoints = sizeof( kBeat ) / sizeof( kBeat[0] );
 
-	// t（0..1）における拍の高さ。制御点を直線でつなぐ。
-	float beatHeight( float t ) {
-		for (int i = 1; i < kBeatPoints; ++i) {
-			if (t <= kBeat[i].t) {
-				const Point& a = kBeat[i - 1];
-				const Point& b = kBeat[i];
-				const float span = b.t - a.t;
-				const float u = ( span > 0.f ) ? ( t - a.t ) / span : 0.f;
-				return a.h + ( b.h - a.h ) * u;
-			}
-		}
-		return 0.f;
-	}
-
 	// 波形の見た目
 	const float kThickness = 2.4f; // 線の太さ（画素）
-	const float kStep = 2.f;       // x を進める刻み（画素。小さいほど滑らか）
 	const float kHalf = 0.5f;
 
 	struct EcgStyle {
@@ -52,6 +46,22 @@ namespace {
 			return {VertexColor::pack( 0.23f, 0.82f, 0.41f ), 22.f, 4, 60.f}; // 緑・規則正しく高い・普通
 		}
 	}
+
+	// a→b（x は左→右の前提）を area の左右 [left,right] で水平に切ってから積む。
+	// 線を引く命令にクリップが無いので、はみ出す端は線上の点を内分して境界へ寄せる（パネルからはみ出させない）。
+	void addClippedLine( UiRenderer* renderer, const Vector2& a, const Vector2& b, float left, float right, unsigned color ) {
+		const float span = b.x - a.x;
+		if (span <= 0.f) {
+			return; // 同じ x（拍のつなぎ目など）は積まない
+		}
+		if (b.x < left || a.x > right) {
+			return; // 全部 area の外
+		}
+		float x0 = a.x, y0 = a.y, x1 = b.x, y1 = b.y;
+		if (x0 < left)  { y0 = a.y + ( b.y - a.y ) * ( left  - a.x ) / span; x0 = left; }
+		if (x1 > right) { y1 = a.y + ( b.y - a.y ) * ( right - a.x ) / span; x1 = right; }
+		renderer->addLine( Vector2( x0, y0 ), Vector2( x1, y1 ), kThickness, color );
+	}
 }
 
 EcgView::EcgView( UiRenderer* renderer ) :
@@ -66,29 +76,37 @@ void EcgView::draw( const UiRect& area, PlayerCondition condition ) {
 	const unsigned kPanelColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.35f );
 	mRenderer->addRect( area, kPanelColor );
 
-	// 波線。線を引く命令が無いので、縦長の長方形を横に並べて折れ線にする。
+	// 波線。等間隔サンプリングではなく、1拍の制御点をそのまま画素座標へ置いて線で結ぶ。
+	// こうすると鋭い R 波の頂点が必ず頂点として描かれ、スクロールしても高さがブレない（アンダーサンプリングを避ける）。
 	const float baseline = area.top + area.height * kHalf;
 	const float beatWidth = area.width / style.beatCount;
+	const float left = area.left;
+	const float right = area.left + area.width;
 
 	// 実時間（ミリ秒）から横ずらし量を出し、右→左へ流す。1 時間でひとまわり（大きい値での精度落ちを避ける）。
 	const float seconds = ( GameLib::Framework::instance().time() % 3600000u ) * 0.001f;
 	const float scroll = seconds * style.speed; // 画素
 
-	float prevLocalX = 0.f;
-	float prevY = baseline - beatHeight( fmodf( scroll, beatWidth ) / beatWidth ) * style.amplitude;
-	for (float localX = kStep; localX <= area.width; localX += kStep) {
-		const float t = fmodf( localX + scroll, beatWidth ) / beatWidth; // 時間ぶんずらした位相（0..1）
-		const float y = baseline - beatHeight( t ) * style.amplitude;
+	// area に掛かる拍の範囲（端で切れる拍も拾えるよう前後に1拍ずつ余裕を持たせる）。
+	const int beatBegin = static_cast< int >( floorf( ( left  + scroll ) / beatWidth ) ) - 1;
+	const int beatEnd   = static_cast< int >( floorf( ( right + scroll ) / beatWidth ) ) + 1;
 
-		// 前の点と今の点の y の間を、太さぶん膨らませた縦長の長方形で埋める。
-		UiRect seg;
-		seg.left = area.left + prevLocalX;
-		seg.width = ( localX - prevLocalX ) + kThickness;
-		seg.top = ( ( prevY < y ) ? prevY : y ) - kThickness * kHalf;
-		seg.height = fabsf( y - prevY ) + kThickness;
-		mRenderer->addRect( seg, style.color );
-
-		prevLocalX = localX;
-		prevY = y;
+	bool hasPrev = false;
+	Vector2 prev( 0.f, 0.f );
+	for (int beat = beatBegin; beat <= beatEnd; ++beat) {
+		for (int i = 0; i < kBeatPoints; ++i) {
+			// 波形座標（拍の通し位置）→ 画面 x。scroll が増えると左へ流れる。
+			const float waveX = ( static_cast< float >( beat ) + kBeat[ i ].t ) * beatWidth;
+			const Vector2 cur( waveX - scroll, baseline - kBeat[ i ].h * style.amplitude );
+			if (hasPrev) {
+				addClippedLine( mRenderer, prev, cur, left, right, style.color );
+			}
+			// つなぎ目を丸くつないで隙間を消す（線の太さと同じ直径）。パネル内の点だけに置く（端の外ははみ出すので置かない）。
+			if (cur.x >= left && cur.x <= right) {
+				mRenderer->addDisc( cur, kThickness * kHalf, style.color );
+			}
+			prev = cur;
+			hasPrev = true;
+		}
 	}
 }

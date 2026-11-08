@@ -32,6 +32,10 @@ public:
 
 	// 塗りつぶした長方形を積む。color: VertexColor::pack の並び。
 	void addRect( const UiRect& rect, unsigned color );
+	// 太さ thickness の線分を a→b に積む（回転した長方形＝三角形2枚）。斜めにも引ける（心電図などの折れ線）。
+	void addLine( const GameLib::Math::Vector2& a, const GameLib::Math::Vector2& b, float thickness, unsigned color );
+	// 塗りつぶした丸（半径 radius）を center に積む。折れ線のつなぎ目に太さと同じ直径で置くと、角が丸くつながり隙間が消える。
+	void addDisc( const GameLib::Math::Vector2& center, float radius, unsigned color );
 	// 絵を rect いっぱいに貼った長方形を積む（カバンの物の絵。SummaryPlan/個別仕様/ItemIcon_Plan.txt）。
 	// texture: 読み終えた絵（isReady が true・isError が false）。画面は sRGB ではないので、絵は TEXTURE_COLOR_SPACE_LINEAR で読んだ物
 	// （色の変換をせずに、画像の色のまま出す）。color: 絵に掛ける色（白でそのまま。a で薄くする）。
@@ -45,11 +49,8 @@ public:
 private:
 	// 長方形の描き方（半透明に混ぜる・奥行きを見ない・裏も描く）を、これから積む長方形に設定する。
 	// PrimitiveRenderer の描き方の設定は「設定した後に積んだもの」にだけ効く（積み終えた後で設定すると、空のまとまりに掛かるだけ）。
-	// そのため積む前（作った直後と、描き終えた直後）に呼ぶ。2026-10-21 まで draw の中で積んだ後に設定していて、半透明が効いていなかった。
 	void prepareRectState();
 	// 実際の画面（バックバッファ）がゲームの座標の何倍の細かさかを求め、変わっていたらフォントをその細かさで作り直す。
-	// 座標の高さ（480）の大きさで作った文字の絵を大きな画面へ引き伸ばすと、ドットのまま拡大されて縁がギザギザになるため。
-	// 置く位置と大きさは座標のままにし、絵だけを細かくする（StringRenderer::setGlyphScale で割って並べる）。
 	void fitFontsToScreen();
 	// text を size の文字で書いたときの幅（画素）。中央に揃えるのに使う。
 	float textWidth( const char* text, UiTextSize size );

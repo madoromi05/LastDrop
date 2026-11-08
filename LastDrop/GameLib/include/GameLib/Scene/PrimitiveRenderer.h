@@ -72,6 +72,14 @@ public:
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff,
 		unsigned color2 = 0xffffffff );
+	///スクリーン座標(画素)で三角形を描く。addRectangle と同じ座標系で、長方形では作れない斜めの形（UI の線など）に使う。テクスチャなし。
+	void addScreenTriangle(
+		const Vector2& pos0,
+		const Vector2& pos1,
+		const Vector2& pos2,
+		unsigned color0 = 0xffffffff,
+		unsigned color1 = 0xffffffff,
+		unsigned color2 = 0xffffffff );
 	///線分を描く。
 	void addLine(
 		const Vector3& pos0,

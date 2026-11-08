@@ -5,6 +5,7 @@
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/Texture.h"
+#include <cmath>
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -24,11 +25,13 @@ namespace{
 	const bool kProportional = true; // 文字ごとの幅（読みやすい）。中央揃えは textWidth で実際の幅を測るので困らない
 	const bool kAntialias = true;
 
-	// 積める量。画面1枚ぶんのボタン・HUD に十分な数。足りなくなったら増やす（超えると ASSERT で止まる）。
+	// 積める量（長方形換算）。画面1枚ぶんのボタン・HUD に十分な数。足りなくなったら増やす（超えると ASSERT で止まる）。
 	// 文字は、確認用のゾンビの体力表示（1体に最大 12 行・約 100 文字。ゾンビは上限 10 体の想定）も入る量にしてある。
-	const int kRectCapacity = 256;
+	// 心電図は折れ線のつなぎ目ごとに丸い点（ディスク＝三角形 kDiscSegments 枚）を積むので、その分の余裕も見込む。
+	const int kRectCapacity = 512;
 	const int kVerticesPerRect = 6; // 長方形は三角形2つ
 	const int kBatchCapacity = 64;
+	const int kDiscSegments = 8; // 丸い点を何枚の三角形で描くか（多いほど滑らかだが重い。UI の小さな点なので 8 で十分）
 	const int kCharCapacity = 4096;
 	const int kTextCapacity = 256;
 
@@ -77,6 +80,41 @@ void UiRenderer::addRect( const UiRect& rect, unsigned color ) {
 	// 前に積んだ絵が付いたままにならないように外す（PrimitiveRenderer は、絵が変わったときだけ描くまとまりを分ける）。
 	mPrimitives.setTexture( Graphics::Texture() );
 	mPrimitives.addRectangle( Vector2( rect.left, rect.top ), Vector2( rect.right(), rect.bottom() ), color );
+}
+
+void UiRenderer::addLine( const Vector2& a, const Vector2& b, float thickness, unsigned color ) {
+	const Vector2 d( b.x - a.x, b.y - a.y );
+	const float length = sqrtf( d.x * d.x + d.y * d.y );
+	if (length < 1e-4f) {
+		return; // 長さ 0 の線は積まない（0 割り防止）
+	}
+	// 線に垂直な向きへ、太さの半分だけ広げた 4 隅を作る（回転した長方形）。
+	const float half = thickness * kHalf;
+	const Vector2 n( -d.y / length * half, d.x / length * half );
+	const Vector2 a0( a.x - n.x, a.y - n.y );
+	const Vector2 a1( a.x + n.x, a.y + n.y );
+	const Vector2 b0( b.x - n.x, b.y - n.y );
+	const Vector2 b1( b.x + n.x, b.y + n.y );
+	mPrimitives.setTexture( Graphics::Texture() ); // 絵なし（長方形と同じ扱い）
+	// スクリーン座標(画素)のまま積む。addRectangle と同じ座標系で描かれる（addTriangle は単位行列で描かれ、画素座標だと画面外に飛ぶ）。
+	mPrimitives.addScreenTriangle( a0, a1, b1, color, color, color );
+	mPrimitives.addScreenTriangle( a0, b1, b0, color, color, color );
+}
+
+void UiRenderer::addDisc( const Vector2& center, float radius, unsigned color ) {
+	if (radius <= 0.f) {
+		return;
+	}
+	// 中心から放射状に三角形を並べた扇で、塗りつぶした丸を作る（折れ線のつなぎ目を丸くつないで隙間を消す）。
+	const float kTwoPi = 6.2831853f;
+	mPrimitives.setTexture( Graphics::Texture() ); // 絵なし（長方形・線と同じ扱い）
+	Vector2 prev( center.x + radius, center.y ); // 角度 0 の点
+	for ( int i = 1; i <= kDiscSegments; ++i ) {
+		const float angle = kTwoPi * static_cast< float >( i ) / static_cast< float >( kDiscSegments );
+		const Vector2 cur( center.x + radius * cosf( angle ), center.y + radius * sinf( angle ) );
+		mPrimitives.addScreenTriangle( center, prev, cur, color, color, color );
+		prev = cur;
+	}
 }
 
 void UiRenderer::addImage( const UiRect& rect, const Graphics::Texture& texture, unsigned color ) {
