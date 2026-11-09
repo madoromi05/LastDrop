@@ -19,7 +19,7 @@ public:
 
 	// filename の絵を返す（初めてなら読み込みを始める。読み込みは非同期で、進めるのは使う側の MeshMaterial::updateLoading）。
 	// filename: nullptr・空文字列は不可。
-	// colorSpace: アルベドは SRGB、法線マップは LINEAR（LinearToneMap_Plan.txt 3 章）。
+	// colorSpace: アルベドは SRGB、法線マップは LINEAR。
 	//   同じファイルを違う指定で頼むと ASSERT で止める（1 枚の絵は 1 つの読み方しかできないため）。
 	GameLib::Graphics::Texture load( const char* filename, GameLib::Graphics::TextureColorSpace colorSpace );
 

@@ -10,7 +10,7 @@
 class FirstPersonCamera;
 
 // 視点の手触り（撃った反動・揺れ・照準のぶれ）をまとめて進め、カメラへ渡す係
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。2026-11-09 FirstPersonControl から分けた。中身の仕様は CameraShake_Recoil_Plan.txt）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章）。
 //   狙いのずれ … 1 発ごとに跳ねて戻る反動（ViewRecoil）・連射でたまる弾道のずれ（AimRecoil）・攻撃された怯み（AimPunch）。カメラごと動き、弾の向きに入る
 //   見える絵の揺れ … CameraShake（描く行列だけ）
 //   照準のぶれ … AimSway（銃と弾の向きだけ。画面の中央は動かさない）
@@ -29,7 +29,7 @@ public:
 	void flinch();
 	// つかまれた瞬間。絵だけを揺らす（狙いは LookPull で相手の顔へ向けるので、跳ねさせない）。
 	void shakeOnGrab();
-	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間。絵だけを少し揺らす（弾道は動かさない。HitFeel_Plan.txt Q3）。
+	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間。絵だけを少し揺らす（弾道は動かさない）。
 	// headBurst: 頭が弾けた（部位が飛んだより少し大きく揺らす）。
 	void shakeOnHeavyHit( bool headBurst );
 

@@ -11,7 +11,7 @@ class GameObject;
 // 呼ぶ側（GameScene が操作と出来事から interrupted を作る）。Interactor に足すと「見る係」と「待つ係」が混ざるので分けた。
 // 場所は GameObjectHandle で指す（開けている間に物が消えても、消えた物を指したままにならない）。
 // 世界が止まっている間（一時停止・カバン）は tick を呼ばないので、待つ時間も止まる。
-// 2026-11-05 から、脱出の車への給油（給油口を閉じた後の RaidParams::refuelSeconds）も同じ待ち方をする（FuelEscapeLoading_Plan.txt Q4・FuelPort_Plan.txt）。
+// 脱出の車への給油（給油口を閉じた後の RaidParams::refuelSeconds）も同じ待ち方をする。
 // 待つ物は GameObject で受け取り、待ち終えた後に何をするか（中を見る・給油）は呼ぶ側が物の部品で決める。
 class LootSearch{
 public:

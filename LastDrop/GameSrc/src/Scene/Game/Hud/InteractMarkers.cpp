@@ -12,7 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ（Q1）。
+	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ。
 	const float kMarkDistance = 4.f;
 
 	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）。
@@ -24,7 +24,7 @@ namespace{
 	const float kHalf = 0.5f;
 
 	const unsigned kUsableColor = VertexColor::WHITE;
-	const unsigned kUnusableColor = VertexColor::pack( 0.45f, 0.45f, 0.45f ); // 使えない物（Q3）
+	const unsigned kUnusableColor = VertexColor::pack( 0.45f, 0.45f, 0.45f ); // 使えない物
 	const unsigned kKeyColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );     // 白いひし形の上の「E」
 	const char* kKeyText = "E";
 

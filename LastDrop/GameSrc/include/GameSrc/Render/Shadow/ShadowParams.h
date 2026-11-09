@@ -15,7 +15,7 @@ struct ShadowParams{
 	// 懐中電灯の影のマップの、近い面（m。光から）。小さすぎると遠くの深度の細かさが落ちる
 	float flashlightNearClip = 0.1f;
 
-	// ── 月の影（CSM 3 枚。Shadow_Plan.txt 6 章）── 各枚の受け持ちの奥の端（m。カメラの向きに沿った距離。小さい順）
+	// ── 月の影（CSM 3 枚） ── 各枚の受け持ちの奥の端（m。カメラの向きに沿った距離。小さい順）
 	float moonCascadeEnd0 = 8.f;
 	float moonCascadeEnd1 = 25.f;
 	float moonCascadeEnd2 = 80.f;  // これより先は月の影を付けない（町は端から端まで約 115m）
@@ -23,7 +23,7 @@ struct ShadowParams{
 	float moonCascadeBlend = 0.1f;
 	// 枚の範囲より月の側へ、影を落とす物を拾う長さ（m）。枚の外にある高い建物の影も落ちるように
 	float moonCasterMargin = 40.f;
-	// ── 月の影の描き直しの間引き（OptimizationA_Plan.txt 7 章。Q4）── 手前の枚は毎フレーム描く
+	// ── 月の影の描き直しの間引き ── 手前の枚は毎フレーム描く
 	// 2 枚目・3 枚目を何フレームに 1 回描き直すか（整数に丸めて使う。1 で毎フレーム）。2・4 なら同じフレームに重ならない
 	float moonCascadeInterval1 = 2.f;
 	float moonCascadeInterval2 = 4.f;
@@ -53,7 +53,7 @@ struct ShadowParams{
 
 // 起動中ずっと 1 つだけの調整値（ShadowMap.cpp が持つ）。
 ShadowParams& shadowParams();
-// 影を描くか（F6 → Render の Shadows。見比べと計測用。Shadow_Plan.txt 9・11 章）。false の間は影のパスごと描かず、ライトも影を読まない。
+// 影を描くか（F6 → Render の Shadows。見比べと計測用）。false の間は影のパスごと描かず、ライトも影を読まない。
 // 起動中ずっと 1 つ（ShadowMap.cpp が持つ。初期値 true。Release では true のまま）。
 bool& shadowsEnabled();
 

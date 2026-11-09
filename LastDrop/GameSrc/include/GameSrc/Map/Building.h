@@ -31,7 +31,7 @@ public:
 	void addCollidersTo( CollisionWorld* world ) const;
 	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く。
 	void draw( const DrawCulling& culling ) const;
-	// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く（OptimizationA_Plan.txt 8-3）。
+	// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く。
 	bool shows( const DrawCulling& culling ) const;
 	// 見た目（元の形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む。
 	const StaticMeshInstance& mesh() const;

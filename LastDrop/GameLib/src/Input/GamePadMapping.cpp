@@ -36,7 +36,7 @@ struct GamePadLayout{
 
 namespace{
 	// Sony のパッド（DualSense・DualShock 4）。どちらも DirectInput では同じ並び。
-	// 2026-11-02 DualSense（Bluetooth）でボタン 14・軸 6（X Y Z Rx Ry Rz）・POV 1 を確認。
+	// DualSense（Bluetooth）は、ボタン 14・軸 6（X Y Z Rx Ry Rz）・POV 1 として見える。
 	// ボタンの番号は DualShock 4 / DualSense の一般的な並び（実機で押して確かめる。F6 の Pad の欄）。
 	// PS ボタン（12）とタッチパッドの押し込み（13）は使わない。L2/R2 は押し込むとオンになるボタン（6・7）で読み、軸（Rx・Ry）は使わない。
 	const GamePadLayout kSonyLayout = {

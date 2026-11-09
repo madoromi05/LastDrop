@@ -19,7 +19,7 @@ public:
 	explicit ZombieFlinch( const ZombieFlinchLayout* layout );
 
 	// part に当たった弾で押す。direction: 弾の進む向き（長さ1。骨格の根の空間＝置き場所と向きを掛ける前）。
-	// 押す角度は、まとまりごとの角度に ZombieStaggerParams::flinchScale を掛けた物（2026-11-09 に大きくした。ZombieStagger_Plan.txt 9 章）。
+	// 押す角度は、まとまりごとの角度に ZombieStaggerParams::flinchScale を掛けた物。
 	void push( BodyPart part, const GameLib::Math::Vector3& direction );
 	// 噛むときに、首と背骨を rootDirection（骨格の根の空間。長さ1）へ突き出す（噛むアニメが無いので、顔を相手へ近づける代わり）。
 	// 首は 2 回・背骨は 1 回押す（首は 1 回 20°なので 40°、背骨は 12°。のけぞりの倍率は掛けない）。のけぞりと同じく、すぐ曲がって 0.25 秒で戻る。

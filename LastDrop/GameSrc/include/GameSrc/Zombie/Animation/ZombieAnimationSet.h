@@ -17,7 +17,7 @@ struct ZombieAnimationNames{
 	const char* move;
 	float moveStartTime;
 	const char* idle;    // 立ち止まっているときのアニメ。nullptr なら立ち止まっている間も歩くアニメのまま
-	// その場で走るアニメ（zombie@run。R4_Plan.txt）。nullptr ならどの体も走らない（走る体に選ばれても歩く）。
+	// その場で走るアニメ（zombie@run）。nullptr ならどの体も走らない（走る体に選ばれても歩く）。
 	const char* run;
 	// 倒れるときのアニメ（脚を失って倒れるときにも使う）。nullptr なら体力が 0 になっても・脚を失っても倒れない
 	// （確認用。体力は減って 0 で止まる）

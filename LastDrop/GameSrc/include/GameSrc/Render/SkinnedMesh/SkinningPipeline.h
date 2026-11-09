@@ -10,7 +10,7 @@
 // スキンメッシュを GPU で変形して描く道具一式（シェーダと、骨の行列を渡す定数バッファ）。
 // シェーダは 3 つ：その場で色を出す Resource/Shader/SkinnedMesh.hlsl、G-Buffer へ描く SkinnedMeshGBuffer.hlsl、
 // 影のマップへ深度だけ描く SkinnedMeshShadow.hlsl（Shadow_Plan.txt 4 章）。
-// どちらで描くかは begin のときの RenderPass で選ぶ（GBuffer_Plan.txt 6-2）。
+// どちらで描くかは begin のときの RenderPass で選ぶ。
 // 全スキンメッシュで1つを共有する（MeshCache が1つ作り、SkinnedMeshData へ貸す）。同じシェーダを何度もコンパイルしないため。
 // 使い方: begin( 骨の行列 ) → いつも通りパーツを描く（MeshMaterial::apply → drawIndexed）→ end
 class SkinningPipeline{

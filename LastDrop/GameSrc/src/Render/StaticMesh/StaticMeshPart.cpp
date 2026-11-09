@@ -114,7 +114,7 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	Graphics::Manager m = Graphics::Manager::instance();
 	// G-Buffer へ描く間は、固定パイプラインの代わりに G-Buffer へ書くシェーダで描く（材質の値は apply が渡した物をそのまま読む）。
 	// シェーダは MeshMaterial::apply では選ばない（キャラも apply を通り、キャラのシェーダを上書きしてしまうため）。
-	// 影の間は、影のマップへ深度だけ描くシェーダ（Shadow_Plan.txt 4 章）。
+	// 影の間は、影のマップへ深度だけ描くシェーダ。
 	if ( RenderPass::current() == RenderPassKind::GBuffer || RenderPass::current() == RenderPassKind::Shadow ) {
 		m.setShader( RenderPass::staticMeshShader() );
 	}

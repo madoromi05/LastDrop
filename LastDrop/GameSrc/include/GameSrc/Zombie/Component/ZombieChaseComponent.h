@@ -17,11 +17,11 @@ struct ChaseTarget;
 // 通り道を出す。SummaryPlan/個別仕様/ゾンビ/ZombieChase_Plan.txt・ZombiePath_Plan.txt）と、近づくと胴を左右に揺らすフラつき（ZombieSway）。
 // 立っている体が考えて（見て・行き先を決め・向きを変え）歩く・追いついたら横へよける、と揺れの強さを決めるのもここ。
 // 歩く・滑るのは同じ物の CharacterColliderComponent の移動を借りる。攻撃のことは知らない
-// （「考える → 攻撃を始めるか → 歩く」の順に呼ぶのは ZombieBrainComponent。SummaryPlan/個別仕様/設計と分割/ZombieBrainSplit_Plan.txt）。
+// （「考える → 攻撃を始めるか → 歩く」の順に呼ぶのは ZombieBrainComponent）。
 class ZombieChaseComponent : public Component{
 public:
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号（何体目か）。wanderSeed: うろつく先・立つ長さを選ぶ乱数の種。
-	// swayPeriodSeconds / swayStartPhase: 揺れの周期・始めの位相（ZombieSway）。runner: 走る体か（R4_Plan.txt Q1）。
+	// swayPeriodSeconds / swayStartPhase: 揺れの周期・始めの位相（ZombieSway）。runner: 走る体か。
 	// 建物を回り込む通り道を聞く町の床の形（NavMesh）は共有の棚から、フラつきの骨の設計図は ZombieModelComponent から、awake で引く。
 	ZombieChaseComponent( int sightPhase, int wanderSeed, float swayPeriodSeconds, float swayStartPhase, bool runner );
 	~ZombieChaseComponent();

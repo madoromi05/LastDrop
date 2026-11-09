@@ -20,7 +20,7 @@ cbuffer GBufferMaterial : register(b3)
     float4 gSurface; // x: 粗さ  y: 金属  z: 発光の強さ  w: 水たまりを書くか（0 か 1。道路だけ 1）
 };
 
-// 書く側だけが読む物（SsrDecalMaterial_Plan.txt 5・6 章）。番号は読む側（t2〜t5・SSAO の t10）と重ならない所。
+// 書く側だけが読む物。番号は読む側（t2〜t5・SSAO の t10）と重ならない所。
 // 材質の画像（r AO・g 粗さ・b 金属）。無い材質には白 1 画素が付く（RenderPass::setSurface）ので、数値 × 画像 = 数値のまま。
 Texture2D gOrmMap     : register(t11);
 // 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/texgen/puddle_gen.py）。ワールドの x・z で読む。
@@ -30,12 +30,12 @@ cbuffer GBufferPassConstants : register(b4)
 {
     float4 gPuddleShape;   // x: しきい値（模様の値がこれより大きい所が水たまり）  y: 濡れた縁の幅  z: 1 / 模様 1 枚の大きさ（m）  w: 使わない
     float4 gPuddleSurface; // x: 水たまりの粗さ  y: 濡れた路面の粗さ  z: 濡れた所の色に掛ける数  w: 使わない
-    float4 gMotion;        // x: 動きの種類（0 動かない物・0.5 ゾンビなど動く物・1 手元。Taa_Plan.txt 6 章）。RT1 の a に書く  yzw: 使わない
+    float4 gMotion;        // x: 動きの種類（0 動かない物・0.5 ゾンビなど動く物・1 手元）。RT1 の a に書く  yzw: 使わない
 };
 static const float kPuddleEdge = 0.02;  // 濡れた路面から水たまりへ変わる幅（模様の値で。狭いほど水面の縁がくっきり）
 static const float kPuddleMinUp = 0.9;  // 面の上向きの度合い（法線の y）がこれより小さい面（縁石の側面・壁）には水が溜まらない
 
-// 道路に雨上がりの水たまりを書き込む（SsrDecalMaterial_Plan.txt 6-2）。水たまりの周りは濡れて暗く・つやが出て、
+// 道路に雨上がりの水たまりを書き込む。水たまりの周りは濡れて暗く・つやが出て、
 // 水たまりの中は鏡に近いつやで、法線は面の向きそのまま（水面は平ら。凹凸の法線マップを消す）。
 void applyPuddle(float3 worldPosition, float3 geometricNormal, inout float3 albedo, inout float3 n, inout float roughness)
 {

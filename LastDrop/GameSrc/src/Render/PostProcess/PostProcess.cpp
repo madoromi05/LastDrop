@@ -52,7 +52,7 @@ namespace{
 		float painBlurLength;
 		float painBlurInner;
 		float painDarken;
-		// カラーグレーディングとディザ（NightFinish_Plan.txt 6・7 章）
+		// カラーグレーディングとディザ
 		float whiteBalance[ kColorChannels ]; // 色温度から作った r・g・b の倍率（明るさが変わらないよう割り戻し済み）
 		float saturation;
 		float contrast;
@@ -62,9 +62,9 @@ namespace{
 		float shadowsColor[ kColorChannels ];   // sRGB（シェーダでリニアへ直す）
 		float ditherAmount;                     // 足すノイズの幅（画面の色の 1 段＝1/255。0 で無し）
 		float midtonesColor[ kColorChannels ];
-		float noiseFrame;                       // ディザのノイズのフレームの番号（Taa_Plan.txt 8 章）
+		float noiseFrame;                       // ディザのノイズのフレームの番号
 		float highlightsColor[ kColorChannels ];
-		float lutStrength;                      // 色の表を混ぜる強さ（表を読んでいなければ 0。MoonStarsLut_Plan.txt 6 章）
+		float lutStrength;                      // 色の表を混ぜる強さ（表を読んでいなければ 0）
 	};
 	static_assert( sizeof( PresentConstants ) % 16 == 0, "PresentConstants : keep the HLSL 16-byte layout." );
 	// ビネット。角が少し暗くなる程度（確認用なので控えめ。見た目の調整はポストプロセスを作り込むときに行う）。
@@ -75,7 +75,7 @@ namespace{
 	const float kFlashInner = 0.3f;
 	const float kFlashOuter = 1.2f;
 	const float kFlashColor[ kColorChannels ] = { 0.45f, 0.02f, 0.02f }; // 血しぶきと同じ暗い赤に寄せる
-	// 攻撃された瞬間の痛み（CameraShake_Recoil_Plan.txt の 4 章）。画面の中心へ向かう線の上を読んで平均する（放射状のぼかし）。
+	// 攻撃された瞬間の痛み。画面の中心へ向かう線の上を読んで平均する（放射状のぼかし）。
 	// kPainBlurLength: 痛み 1・画面の端で、中心までの距離の何割の長さを読むか。中心からこの距離（kPainBlurInner）より内はぼかさない。
 	const float kPainBlurLength = 0.12f;
 	const float kPainBlurInner = 0.25f;
@@ -131,7 +131,7 @@ const char* antiAliasingName( AntiAliasing mode ) {
 }
 
 AntiAliasing& antiAliasingMode() {
-	static AntiAliasing sMode = AntiAliasing::Taa; // 起動中ずっと 1 つ（F6 で書き換える。Taa_Plan.txt Q4）
+	static AntiAliasing sMode = AntiAliasing::Taa; // 起動中ずっと 1 つ（F6 で書き換える）
 	return sMode;
 }
 

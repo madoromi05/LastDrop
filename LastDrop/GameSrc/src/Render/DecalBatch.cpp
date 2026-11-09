@@ -120,7 +120,7 @@ void DecalBatch::draw( Graphics::Texture albedo, Graphics::Texture normalMap, co
 	m.setTexture( albedo );       // 法線マップも外れる（setTexture の決まり）
 	m.setNormalMap( normalMap );
 	m.setShader( mShader );
-	// 絵のアルファで、G-Buffer の色と法線に混ぜる。G-Buffer のアルファはデータ（RT1 の a は動きの種類。Taa_Plan.txt 6 章）なので書き換えない
+	// 絵のアルファで、G-Buffer の色と法線に混ぜる。G-Buffer のアルファはデータ（RT1 の a は動きの種類）なので書き換えない
 	// （BLEND_LINEAR は描画先のアルファを絵のアルファで上書きし、弾痕の下の壁が「手元」と読まれる）。
 	m.setBlendMode( Graphics::BLEND_LINEAR_KEEP_ALPHA );
 	m.enableDepthTest( false );               // 当たっているかはシェーダが深度から決める（目が箱の中でも描けるように）

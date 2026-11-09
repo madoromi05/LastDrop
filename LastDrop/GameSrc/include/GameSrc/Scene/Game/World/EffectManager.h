@@ -18,9 +18,9 @@ class ZombieModel;
 class DrawCulling;
 
 // 弾が当たった後に出る、見せるだけの物（弾痕・砂ぼこり・血しぶき・血の跡・千切れた部位）の持ち主
-// （SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-3。2026-11-02 GameWorld から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-3）。
 // 頼む側（CombatResolver）は「ここに出して」と言うだけで、いつ消えるか・どれだけ出すか（頭なら多く）はここが決める。
-// どれも GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため。GameWorld の ★1）。
+// どれも GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため）。
 // 当たり判定の名簿には載らない（千切れた部位が地面へ落ちるときに、地面を聞くだけ）。
 class EffectManager{
 public:
@@ -30,7 +30,7 @@ public:
 		Large,
 	};
 	// 弾が当たったときの血しぶきの大きさ（HitFeel_Plan.txt。どれにするかは CombatResolver が命中の重さで決める）。
-	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（2026-11-06 ユーザー指定）。
+	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す。
 	enum class BloodHitSize{
 		Body,  // 胴・腕・脚（ふつう）
 		Head,  // 頭に当たったが倒れていない（1 回に出せる上限まで多く）
@@ -48,7 +48,7 @@ public:
 	// 弾がゾンビ（死体も）に当たった所に血しぶきを出す。size で量と大きさを変える（頭は多く大きく）。
 	// direction: 弾の進む向き（長さ1）。
 	void spawnBloodHit( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, BloodHitSize size );
-	// 撃たれたゾンビの後ろの物（建物・車・地面・拾える物）の面に、飛び散った血の跡を付ける（BloodStain_Plan.txt）。
+	// 撃たれたゾンビの後ろの物（建物・車・地面・拾える物）の面に、飛び散った血の跡を付ける。
 	// point / normal / blocker: 付ける面（HitWorld::Hit の値）。direction: 弾の進む向き（長さ1。筋をこの向きへ伸ばす）。
 	void spawnBloodSplatter( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal,
 		const GameLib::Math::Vector3& direction, const IRayBlocker* blocker, BloodStainSize size );

@@ -32,7 +32,7 @@ const std::vector< const char* >& rootMotionAnimations ) :
 	mSeverLayout( data, kBoneNamePrefix ),
 	mStride( data, data->animation( walkAnimation ),
 		BoneNamePattern::find( data, kBoneNamePrefix, kLeftToeBone ), BoneNamePattern::find( data, kBoneNamePrefix, kRightToeBone ) ),
-	// 走りも同じ足先で測る（走りのアニメも腰が進まず、その場で走る。R4_Plan.txt 4 章）。
+	// 走りも同じ足先で測る（走りのアニメも腰が進まず、その場で走る）。
 	mRunStride( data, animationOrEmpty( data, runAnimation ),
 		BoneNamePattern::find( data, kBoneNamePrefix, kLeftToeBone ), BoneNamePattern::find( data, kBoneNamePrefix, kRightToeBone ) ),
 	mCrawlLayout( data, kBoneNamePrefix ) {

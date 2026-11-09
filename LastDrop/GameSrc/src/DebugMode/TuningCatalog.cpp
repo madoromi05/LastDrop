@@ -86,50 +86,50 @@ namespace{
 			"Look", "LookParams", "GameSrc/Player/LookParams.h", &lookParams ) );
 		groups.push_back( std::make_unique< TuningGroup< AimSwayParams > >(
 			"AimSway", "AimSwayParams", "GameSrc/Player/AimSwayParams.h", &aimSwayParams ) );
-		// 1 日の時間・脱出点・スコアの重み（R2_Plan.txt。遊んで決める値）。
+		// 1 日の時間・脱出点・スコアの重み（遊んで決める値）。
 		groups.push_back( std::make_unique< TuningGroup< RaidParams > >(
 			"Raid", "RaidParams", "GameSrc/Raid/RaidParams.h", &raidParams ) );
-		// 漁れる場所の開ける秒・空になる確率・包帯の効き目（R3_Plan.txt Q13。遊んで決める値）。
+		// 漁れる場所の開ける秒・空になる確率・包帯の効き目（遊んで決める値）。
 		groups.push_back( std::make_unique< TuningGroup< LootParams > >(
 			"Loot", "LootParams", "GameSrc/Interaction/LootParams.h", &lootParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
-		// つかんでいる間の距離・向きを合わせる値（ZombieAttack_Plan.txt 10 章）。
+		// つかんでいる間の距離・向きを合わせる値。
 		groups.push_back( std::make_unique< TuningGroup< ZombieAttackParams > >(
 			"ZombieAttack", "ZombieAttackParams", "GameSrc/Zombie/ZombieAttackParams.h", &zombieAttackParams ) );
-		// 撃たれたときに押し下げる距離・のけぞりの倍率（ZombieStagger_Plan.txt 9 章）。
+		// 撃たれたときに押し下げる距離・のけぞりの倍率。
 		groups.push_back( std::make_unique< TuningGroup< ZombieStaggerParams > >(
 			"ZombieStagger", "ZombieStaggerParams", "GameSrc/Zombie/Damage/ZombieStaggerParams.h", &zombieStaggerParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
-		// 走るゾンビの割合・速さ・脚の線（R4_Plan.txt。遊んで決める値）。
+		// 走るゾンビの割合・速さ・脚の線（遊んで決める値）。
 		groups.push_back( std::make_unique< TuningGroup< ZombieRunParams > >(
 			"ZombieRun", "ZombieRunParams", "GameSrc/Zombie/ZombieRunParams.h", &zombieRunParams ) );
-		// ゾンビのアニメを間引く段（OptimizationB_Plan.txt 9 章）。
+		// ゾンビのアニメを間引く段。
 		groups.push_back( std::make_unique< TuningGroup< AnimationThrottleParams > >(
 			"AnimationThrottle", "AnimationThrottleParams", "GameSrc/Zombie/AnimationThrottleParams.h", &animationThrottleParams ) );
-		// 置物の細かさの段（LOD）の境目（OptimizationC_Plan.txt 8 章）。
+		// 置物の細かさの段（LOD）の境目。
 		groups.push_back( std::make_unique< TuningGroup< LodParams > >(
 			"Lod", "LodParams", "GameSrc/Render/LodSelector.h", &lodParams ) );
-		// 露出・ブルーム（リニア化の後に合わせ直す値。LinearToneMap_Plan.txt 7 章）。
+		// 露出・ブルーム（リニア化の後に合わせ直す値）。
 		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
 			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );
-		// 月・空・環境光（夜の暗さ。PbrNightLighting_Plan.txt 7・11 章）。昼との切り替えは F6 → Render の Day / Night。
+		// 月・空・環境光（夜の暗さ）。昼との切り替えは F6 → Render の Day / Night。
 		groups.push_back( std::make_unique< TuningGroup< LightingParams > >(
 			"Lighting", "LightingParams", "GameSrc/Render/LightingParams.h", &lightingParams ) );
-		// 影を読む位置のずらし・影の濃さ（Shadow_Plan.txt 7・9 章）。
+		// 影を読む位置のずらし・影の濃さ。
 		groups.push_back( std::make_unique< TuningGroup< ShadowParams > >(
 			"Shadow", "ShadowParams", "GameSrc/Render/ShadowParams.h", &shadowParams ) );
-		// 物の隙間の暗がり（SsaoTranslucent_Plan.txt 5-4）。絵は F6 → Render の G-Buffer の SSAO で見る。
+		// 物の隙間の暗がり。絵は F6 → Render の G-Buffer の SSAO で見る。
 		groups.push_back( std::make_unique< TuningGroup< SsaoParams > >(
 			"SSAO", "SsaoParams", "GameSrc/Render/SsaoParams.h", &ssaoParams ) );
-		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6-2）。道路の材質だけに効く。
+		// 雨上がりの水たまり。道路の材質だけに効く。
 		groups.push_back( std::make_unique< TuningGroup< PuddleParams > >(
 			"Puddle", "PuddleParams", "GameSrc/Render/PuddleParams.h", &puddleParams ) );
-		// 映り込み（SsrDecalMaterial_Plan.txt 7-5）。絵は F6 → Render の G-Buffer の SSR で見る。
+		// 映り込み。絵は F6 → Render の G-Buffer の SSR で見る。
 		groups.push_back( std::make_unique< TuningGroup< SsrParams > >(
 			"SSR", "SsrParams", "GameSrc/Render/SsrParams.h", &ssrParams ) );
-		// TAA（Taa_Plan.txt 7-5）。F6 → Render のアンチエイリアスが TAA のときだけ効く。
+		// TAA。F6 → Render のアンチエイリアスが TAA のときだけ効く。
 		groups.push_back( std::make_unique< TuningGroup< TaaParams > >(
 			"TAA", "TaaParams", "GameSrc/Render/TaaParams.h", &taaParams ) );
 		return groups;

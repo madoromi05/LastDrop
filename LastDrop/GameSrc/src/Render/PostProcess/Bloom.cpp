@@ -51,7 +51,7 @@ Bloom::Bloom() {
 const Graphics::RenderTarget& Bloom::apply( const Graphics::RenderTarget& sceneColor ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	// しきい値は F6 で動かせるので、毎回書く（16 バイトだけ）。
-	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる（Bloom_Plan.txt 9 章）。
+	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる。
 	BloomConstants constants = { postProcessParams().bloomThreshold, { 0.f, 0.f, 0.f } };
 	mConstants.set( &constants, sizeof( constants ) );
 	gm.setConstantBuffer( kConstantSlot, mConstants );
@@ -63,7 +63,7 @@ const Graphics::RenderTarget& Bloom::apply( const Graphics::RenderTarget& sceneC
 		drawPass( mDownShader, mLevels[ i - 1 ], mLevels[ i ] );
 	}
 	// 小さい段から順に、1 つ大きい段へ加算する。最後に [0] へ全部の段が足される。
-	// 足し先の段は縮めるときに書いた絵がそのまま残っていて、それを土台にする（Bloom_Plan.txt 2 章）。
+	// 足し先の段は縮めるときに書いた絵がそのまま残っていて、それを土台にする。
 	gm.setBlendMode( Graphics::BLEND_ADDITIVE );
 	for ( int i = kLevelCount - 1; i > 0; --i ) {
 		drawPass( mUpShader, mLevels[ i ], mLevels[ i - 1 ] );

@@ -71,7 +71,7 @@ private:
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mDSV );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView failed" );
-		// 読み取り専用の付け方（半透明の板が、奥行きで隠れながら同じ深度を読む。SsaoTranslucent_Plan.txt 7-1）。
+		// 読み取り専用の付け方（半透明の板が、奥行きで隠れながら同じ深度を読む）。
 		dsvDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
 		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mReadOnlyDSV );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView (read only) failed" );

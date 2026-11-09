@@ -8,7 +8,7 @@ namespace Profiling{
 
 struct PerfSources;
 
-// エディタの Perf の欄の中身（計画書 4 章「見た目」・6 章・7 章）。EditorWindow が ImGui の窓の中で呼ぶ。
+// エディタの Perf の欄の中身。EditorWindow が ImGui の窓の中で呼ぶ。
 //   ・数字：frame（平均・最大・fps）、cpu / present / sleep / other、gpu、CPU と GPU のどちらが重いか
 //   ・グラフ：直近 240 フレームの frame と cpu（橙の線が予算 16.67ms）
 //   ・記録：CSV の記録の開始・停止（F7 と同じ）、書いたスパイクの JSON の数

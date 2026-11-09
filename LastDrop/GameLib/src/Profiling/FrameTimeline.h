@@ -8,7 +8,7 @@
 namespace GameLib{
 namespace Profiling{
 
-// 目標のフレームレート（2026-10-23 決定：60fps は必ず守る、144fps を目指す）。
+// 目標のフレームレート（60fps は必ず守る、144fps を目指す）。
 const double kRequiredFps = 60.0;
 const double kGoalFps = 144.0;
 // 1 フレームの予算（秒）。スパイクの判定と画面の表示に使う。
@@ -64,7 +64,7 @@ FrameTimes timesOf( const FrameRecord& frame );
 // 区間の長さ（秒）。閉じていなければ 0。
 double secondsOf( const ScopeEvent& scope );
 
-// 直近のフレームの記録を、決まった数だけ輪にして持つ（計画書 6-3）。
+// 直近のフレームの記録を、決まった数だけ輪にして持つ。
 // 画面の表示・CSV・スパイクの書き出しは、ここから読む（計測のコードは 1 つ）。
 class FrameTimeline{
 public:

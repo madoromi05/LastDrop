@@ -522,7 +522,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		gImpl->mMouseWheel = ( static_cast< short >( HIWORD( wParam ) ) > 0 ) ? 1 : -1;
 		break;
 	//押した知らせを覚えておく（1 フレームの間に押して離した短いクリックを、Input::Manager が落とさないように。
-	//GetAsyncKeyState は読んだ瞬間に押しているかしか分からないため。FuelEscapeLoading_Plan.txt Q10）。
+	//GetAsyncKeyState は読んだ瞬間に押しているかしか分からないため）。
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONDBLCLK:
 		gImpl->mMouseButtonPresses |= WindowCreator::MOUSE_PRESS_LEFT;

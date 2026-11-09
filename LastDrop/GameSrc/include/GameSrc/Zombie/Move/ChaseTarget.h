@@ -15,8 +15,8 @@ struct ChaseTarget{
 	bool attackable;
 	// ほかのゾンビが、もう攻撃に行っているか（手を伸ばしている・つかんでいる）。true の間は攻撃を始めない（一度に 1 体だけ）。
 	bool attackTaken;
-	// 移動の当たり判定（自キャラの箱）。攻撃の踏み込み（根の動き）は、これを通り抜ける（止めると手が届かないため。
-	// SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt の Q1）。借りるだけ。このティックの update の間だけ使う（覚えない）。
+	// 移動の当たり判定（自キャラの箱）。攻撃の踏み込み（根の動き）は、これを通り抜ける（止めると手が届かないため）。
+	// 借りるだけ。このティックの update の間だけ使う（覚えない）。
 	const ICollisionBody* body;
 };
 

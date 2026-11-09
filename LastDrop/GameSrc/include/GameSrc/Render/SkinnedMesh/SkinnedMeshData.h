@@ -67,7 +67,7 @@ public:
 	int findBone( const char* nodeName ) const;
 	// ボーン番号から Tree のノード名。範囲外なら空文字列。腕の骨を名前の頭でまとめて探すときなどに使う。
 	const char* boneName( int boneIndex ) const;
-	// ── レスト姿勢の頂点（当たり判定の形を決める SkinnedMeshShape が読む。2026-11-09 に問い合わせをそちらへ分けた）──
+	// ── レスト姿勢の頂点（当たり判定の形を決める SkinnedMeshShape が読む） ──
 	int vertexNumber() const;
 	// 頂点 i のレスト姿勢の位置（モデル空間）。i: 0〜vertexNumber()-1。
 	const GameLib::Math::Vector3& restPosition( int i ) const;

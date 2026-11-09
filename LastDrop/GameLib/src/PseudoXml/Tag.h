@@ -115,6 +115,6 @@ private:
 };
 
 } //namespace PseudoXml
-} //namespace GameLib 
+} //namespace GameLib
 
 #endif

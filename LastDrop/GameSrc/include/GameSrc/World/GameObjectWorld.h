@@ -13,7 +13,7 @@ class CollisionWorld;
 class HitWorld;
 
 // 世界に置く物（GameObject）の持ち主（SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt。画像の obj_manager）。
-// ・provide：世界に 1 つの物を共有の棚へ置く（部品が Component::shared で引く。ComponentSystem3_Plan.txt の B）。
+// ・provide：世界に 1 つの物を共有の棚へ置く（部品が Component::shared で引く）。
 //   載せる名簿（CollisionWorld・HitWorld）は作るときに自分で置く
 // ・create：物を作って持つ（まだ動かない）。部品を addComponent で付ける
 // ・spawn：全部の部品の awake → 全部の start を呼び、名簿へ載る部品（IWorldMember）を当たり判定の名簿へ載せ、段の並びへ入れて動かし始める

@@ -19,7 +19,7 @@ namespace{
 	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする。
 	const int kMaxStackDepth = 64;
 	// 節の箱を三角形からこれだけ広げる（m）。ぴったりの箱だと、三角形の縁にちょうど当たる線を、浮動小数の誤差で箱の方が外してしまい、
-	// 総当たりと答えが食い違う（2026-11-03 に Debug の確かめで見つかった）。当たる三角形は変わらず、箱を調べる数がわずかに増えるだけ。
+	// 総当たりと答えが食い違う。当たる三角形は変わらず、箱を調べる数がわずかに増えるだけ。
 	const float kBoundsPadding = 0.001f;
 
 	// 三角形 triangle の 3 つの頂点。
@@ -138,7 +138,7 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 	Pending stack[ kMaxStackDepth ];
 	int depth = 0;
 	float rootEnter;
-	PROFILE_COUNT( "Hit.nodes", 1 ); // 調べた箱の数（OptimizationB_Plan.txt 5 章）
+	PROFILE_COUNT( "Hit.nodes", 1 ); // 調べた箱の数
 	if ( !HitMath::segmentBoxEnterTime( origin, delta, boundsMin(), boundsMax(), &rootEnter ) ) {
 		return false;
 	}
@@ -151,7 +151,7 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 		}
 		const Node& node = mNodes[ pending.node ];
 		if ( node.triangleCount > 0 ) {
-			PROFILE_COUNT( "Hit.triangles", static_cast< double >( node.triangleCount ) ); // 調べる三角形の数（OptimizationB_Plan.txt 5 章）
+			PROFILE_COUNT( "Hit.triangles", static_cast< double >( node.triangleCount ) ); // 調べる三角形の数
 			for ( int i = node.firstChildOrTriangle; i < node.firstChildOrTriangle + node.triangleCount; ++i ) {
 				const Vector3* v0;
 				const Vector3* v1;

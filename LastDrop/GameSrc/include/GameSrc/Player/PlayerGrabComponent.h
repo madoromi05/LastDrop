@@ -3,8 +3,7 @@
 
 #include "GameSrc/World/Component.h"
 
-// 自キャラが「ゾンビにつかまれる」部品（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 4 章。
-// 2026-11-09 PlayerComponent から分けた。MidPrioritySplit_Plan.txt 8 章）。
+// 自キャラが「ゾンビにつかまれる」部品（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 4 章）。
 // つかまれているか・離されてから、またつかまれるようになるまでのクールダウンを持つ。自分では動かない（Update の段なし）。
 //   書く：ZombieDirector（ゾンビの Think の段の後に、つかんでいる体がいるかを 1 ティックに 1 回 setHeld）
 //   読む：ZombieDirector（canBeGrabbed。つかんでよいか）・PlayerComponent（isHeld。つかまれている間は動けない）

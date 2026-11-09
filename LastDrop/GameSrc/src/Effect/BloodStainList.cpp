@@ -15,7 +15,7 @@ namespace{
 	const char* kTextureFile = "Resource/Texture/Effect/blood_stain.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/blood_stain_normal.dds";
 
-	// 同時に残す数（BloodStain_Plan.txt Q4。ZombieHitFeedback_Plan.txt 4 章）。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す。
+	// 同時に残す数。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す。
 	const int kCapacity = 32;
 	// 残す時間と、薄くし始めるまでの時間（ティック）。弾痕（10 秒）より長く残し、戦った跡を見せる。
 	const int kLifeTicks = GameTime::secondsToTicks( 30.f );

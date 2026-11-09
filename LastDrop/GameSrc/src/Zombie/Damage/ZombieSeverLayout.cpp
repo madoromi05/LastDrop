@@ -17,7 +17,7 @@ namespace{
 		BodyPart parts[ kMaxParts ];           // 余りは BodyPart::Count
 		bool losesFooting;
 	};
-	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieDismember_Plan.txt の 2 章。
+	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。
 	// 足先（ToeBase）は Foot の子なので、脚と一緒に無くす（"LeftFoot*" では引けない名前のため別に書く）。
 	const BodyPart kNone = BodyPart::Count;
 	const CutDefinition kCutDefinitions[] = {

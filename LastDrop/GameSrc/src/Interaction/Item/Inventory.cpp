@@ -14,7 +14,7 @@ Inventory::Inventory( const ItemGrid& bag ) :
 bool Inventory::canAdd( ItemId id ) const {
 	int limit = itemSpec( id ).carryLimit;
 	if ( limit != kNoLimit && count( id ) >= limit ) {
-		return false; // 2 丁目の銃（R2_Plan.txt Q14）
+		return false; // 2 丁目の銃
 	}
 	return mGrid.canAddOne( id );
 }

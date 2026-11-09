@@ -15,7 +15,7 @@ namespace{
 	const float kDefaultSpecularSharpness = 8.f;
 	const float kDefaultNormalMapStrength = 0.3f;  // 標準(1)より弱めに調整した値
 	const float kOpaque                   = 1.f;   // 透明度（不透明）
-	// PBR の既定値（PbrNightLighting_Plan.txt 5 章）。書いていない材質は、つやの無い金属でない物（ゾンビの肌・服など）。
+	// PBR の既定値。書いていない材質は、つやの無い金属でない物（ゾンビの肌・服など）。
 	const float kDefaultRoughness         = 0.8f;
 	const float kDefaultMetallic          = 0.f;
 	const float kDefaultEmission          = 0.f;
@@ -102,7 +102,7 @@ bool MeshMaterial::updateLoading() {
 void MeshMaterial::apply() const {
 	PROFILE_COUNT( "Material.apply", 1 );
 	Graphics::Manager m = Graphics::Manager::instance();
-	// 色の画像と法線マップを一度に渡す。同じ材質が続くとき、GameLib が付け直しを飛ばせる（OptimizationS246_Plan.txt 3 章）。
+	// 色の画像と法線マップを一度に渡す。同じ材質が続くとき、GameLib が付け直しを飛ばせる。
 	m.setTextures( mTexture, mNormalMap );
 	m.setNormalMapStrength( mNormalMapStrength );
 	// ライティング有り。テクスチャ未設定でも陰影で立体が見えるようにする。
@@ -113,7 +113,7 @@ void MeshMaterial::apply() const {
 	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
 	m.setSpecularSharpness( mSpecularSharpness );
 	m.setTransparency( kOpaque );
-	// 2026-10-27 に全部のメッシュの三角形の向きを調べ、99.9% 以上が法線と同じ側を向いていた（表が反時計回り）ので、既定で裏を捨てる。
+	// 全部のメッシュの三角形の向きを調べると、99.9% 以上が法線と同じ側を向いていた（表が反時計回り）ので、既定で裏を捨てる。
 	m.setCullMode( mDoubleSided ? Graphics::CULL_NONE : Graphics::CULL_BACK );
 	// G-Buffer へ描く間は、PBR の材質値を G-Buffer のシェーダへ渡す（静的メッシュもキャラもここを通る）。
 	if ( RenderPass::current() == RenderPassKind::GBuffer ) {

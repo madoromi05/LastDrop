@@ -50,7 +50,7 @@ namespace{
 	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ。
 	const float kHeightProbeTop = MoveHeight::kStepOver;
 
-	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい（OptimizationS246_Plan.txt Q4）。
+	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい。
 	const float kGridCellSize = 4.f;
 }
 
@@ -140,7 +140,7 @@ bool TownGround::heightBelow( const Vector3& position, float* height ) const {
 }
 
 const TownGround::Tile* TownGround::nearestTile( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
-	// 1 フレームに何十回も呼ばれるので、区間ではなく合計の時間と回数で測る（OptimizationS246_Plan.txt 1 章）。
+	// 1 フレームに何十回も呼ばれるので、区間ではなく合計の時間と回数で測る。
 	PROFILE_TOTAL( "Ground.ms" );
 	PROFILE_COUNT( "Ground.query", 1 );
 	// 線分が上から見て通るますにかかる部品だけを調べる（足元の縦の線分なら 1 ますぶん）。

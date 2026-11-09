@@ -55,10 +55,10 @@ struct WeaponSpec{
 	float damage;             // 弾 1 発の、部位の倍率を掛ける前のダメージ
 	float recoilScale;        // 視点の跳ね上がり・弾道のずれ・画面の揺れの大きさ（ライフルが 1）
 	// 腕のポーズ（tools/configs/player.json のアニメの名前。その 1 フレーム目）。持っている間はいつも腕だけこのポーズに差し替える
-	// （脚と体は今のアニメのまま。拳銃は Shooting.fbx の構え。PistolAnimation_Plan.txt Q1）。nullptr なら体のアニメの腕のまま（ライフル）。
+	// （脚と体は今のアニメのまま。拳銃は Shooting.fbx の構え）。nullptr なら体のアニメの腕のまま（ライフル）。
 	const char* holdAnimation;
 	// 覗いていない間の腕のポーズ（その 1 フレーム目）。覗くと holdAnimation へ上がる。拳銃は、ライフルの構えの体の上で、ライフルの握りと同じ所・
-	// 同じ向きに拳銃を持たせた形（pistol_ready。PistolAnimation_Plan.txt 14-7）。
+	// 同じ向きに拳銃を持たせた形（pistol_ready）。
 	// nullptr なら覗いていない間も holdAnimation のまま。holdAnimation が nullptr の銃では使わない。
 	const char* readyAnimation;
 	// readyAnimation を作ったときの体のアニメ（その 1 フレーム目。拳銃は "rifle_idle"）。今の体のアニメ（歩き・走り）の右手が、

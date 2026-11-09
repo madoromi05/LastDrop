@@ -24,10 +24,10 @@ using namespace GameLib::Math;
 namespace{
 	const float kSearchSoundVolume = 0.6f; // 開けている間の音の大きさ（自分の手元の音。服の擦れと同じくらい）
 	const float kNoMove = 0.f;             // 移動の量がこれなら動いていない（PlayerCommand::forward / strafe）
-	// 脱出の車のエンジン（FuelEscapeLoading_Plan.txt Q5）。掛かったら、銃声と同じくゾンビが寄ってくる。
+	// 脱出の車のエンジン。掛かったら、銃声と同じくゾンビが寄ってくる。
 	const float kEngineStartVolume = 1.f;
 	const float kEngineIdleVolume = 0.7f;
-	const char* kFuelPortTitle = "給油口"; // 脱出の車を開けた画面の右の見出し（FuelPort_Plan.txt）
+	const char* kFuelPortTitle = "給油口"; // 脱出の車を開けた画面の右の見出し
 }
 
 LootController::LootController( GameWorld* world, Inventory* inventory, AudioEngine* audio, ModalController* modals, RaidSession* session,
@@ -52,13 +52,13 @@ void LootController::beginLoot( IInteractable* opened ) {
 	if ( !container ) {
 		if ( EscapeCarComponent* car = mWorld->interaction().findEscapeCar( opened ) ) {
 			cancelSearch(); // 給油の待ちの途中なら取りやめ（ガソリンは給油口に入ったまま）
-			openLoot( car->gameObject(), GridRule::FuelOnly ); // 給油口は待たずに開く（FuelPort_Plan.txt）
+			openLoot( car->gameObject(), GridRule::FuelOnly ); // 給油口は待たずに開く
 		}
 		return;
 	}
 	float seconds = container->searchSeconds();
 	if ( seconds <= 0.f ) {
-		openLoot( container->gameObject(), GridRule::Free ); // 一度開けた所は待たない（R3_Plan.txt Q6）
+		openLoot( container->gameObject(), GridRule::Free ); // 一度開けた所は待たない
 		return;
 	}
 	cancelSearch();
@@ -77,7 +77,7 @@ void LootController::beginRefuel( EscapeCarComponent* car ) {
 	mSearch.start( car->gameObject(), raidParams().refuelSeconds );
 	const GameObject* player = mWorld->player();
 	if ( player ) {
-		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない。FuelEscapeLoading_Plan.txt 改訂 2）。
+		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない）。
 		mSearchSound = mAudio->startLoopAt( SOUND_REFUEL_POUR, AudioEngine::BUS_EFFECT,
 			player->getComponent< TransformComponent >()->position(), kSearchSoundVolume );
 	}
@@ -89,7 +89,7 @@ void LootController::finishRefuel( EscapeCarComponent* car ) {
 	}
 	car->startEngine();
 	mSession->openEscape();
-	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す。Q5）。
+	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す）。
 	const Vector3& carPosition = car->getComponent< TransformComponent >()->position();
 	AudioEngine& audio = *mAudio;
 	audio.play( SOUND_CAR_ENGINE_START, AudioEngine::BUS_EFFECT, carPosition, kEngineStartVolume );
@@ -141,7 +141,7 @@ void LootController::update( bool commandInterrupts, bool raidFinished ) {
 			container->markSearched();
 			openLoot( container->gameObject(), GridRule::Free );
 		} else if ( car ) {
-			finishRefuel( car ); // 待っていたのは給油（FuelEscapeLoading_Plan.txt Q4）
+			finishRefuel( car ); // 待っていたのは給油
 		}
 		break;
 	}
@@ -160,7 +160,7 @@ void LootController::openLoot( GameObject* target, GridRule lootRule ) {
 }
 
 void LootController::closeLoot() {
-	// 給油口に要る数を入れて閉じたら給油し始める（閉じるまでは入れ直せる。FuelPort_Plan.txt）。
+	// 給油口に要る数を入れて閉じたら給油し始める（閉じるまでは入れ直せる）。
 	EscapeCarComponent* car = fuelPortTarget();
 	bool refuel = car && car->isTankFull();
 	mTarget = GameObjectHandle();

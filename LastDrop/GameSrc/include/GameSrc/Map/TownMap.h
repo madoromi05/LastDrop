@@ -35,7 +35,7 @@ struct TownTile{
 };
 
 // 脱出の車を置く候補 1 つ（FuelEscapeLoading_Plan.txt Q13）。名前は画面に出す（「脱出の車：北」）。向きは車の向き。
-// 自キャラはその日の車のそばから始める（2026-11-09 ユーザー指定。車の鼻先の前に立ち、車の方を向く）。
+// 自キャラはその日の車のそばから始める（車の鼻先の前に立ち、車の方を向く）。
 struct TownEscapeCarSpot{
 	const char* name;
 	TownPlacement placement;
@@ -51,7 +51,7 @@ struct TownEscapeCarSpot{
 // 道の上に置く物（自キャラ・車など）は、座標ではなく道の番号で持つ（町の形を変えても道の上に乗り続けるように）。
 //
 // 高さ: 車道の面が 0、歩道の面はそれより高い。キャラは高さ 0 のまま動くので、歩道の上では足が歩道に沈んで見える
-// （段差に乗る仕組みがまだ無いため。ユーザー承知）。
+// （段差に乗る仕組みがまだ無いため）。
 class TownMap{
 public:
 	TownMap();
@@ -63,8 +63,8 @@ public:
 	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ。
 	const std::vector< TownPlacement >& zombieSpawnPoints() const;
 	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
-	// 漁れる場所（R3_Plan.txt Q3。置き場所は毎日同じで、中身だけ毎日変わる。中身を決めるのは WorldBuilder）。
-	// 地面に落ちているガソリンとライフルは 2026-11-05 に消した（ガソリンはゴミ箱・木箱の中・ライフルは木箱から出る。Q5）。
+	// 漁れる場所（置き場所は毎日同じで、中身だけ毎日変わる。中身を決めるのは WorldBuilder）。
+	// 地面にはガソリンとライフルを置かない（ガソリンはゴミ箱・木箱の中、ライフルは木箱から出る）。
 	const std::vector< TownPlacement >& dumpsters() const;			// ゴミ箱（車道の端。向きは、正面〈+Z〉が道の真ん中を向く）
 	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
 	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）と、その日の自キャラの始めの位置。毎日どれに置くかは RaidSession が選ぶ。
@@ -72,7 +72,7 @@ public:
 	// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）。
 	const std::vector< TownPlacement >& fireHydrants() const;
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
-	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中（StreetLamp_Plan.txt 4 章）。
+	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中。
 	// 柱は WorldBuilder が置き、光は柱の頭（足元 + LightingParams::streetLightHeight）からシーンが出す。届く距離・色・強さも LightingParams。
 	const std::vector< TownPlacement >& streetLights() const;
 

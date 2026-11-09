@@ -10,11 +10,11 @@
 class IRayBlocker;
 
 // 弾が物（建物・車・地面・拾える物）に当たった跡。G-Buffer へデカール（DecalBatch）として、当たった面そのものに色と凹みの法線を書く
-// （SsrDecalMaterial_Plan.txt 8 章。2026-10-15 から段階 7 までは、面に貼った小さな四角い板だった：BulletHole_Plan.txt の案1）。
+// （SsrDecalMaterial_Plan.txt 8 章）。
 // 同時に残すのは決まった数まで。超えたら古い物から消し、超えなくても決まった時間で消す（途中から少しずつ薄くなる）。
 // どこに足すか（ゾンビには付けない、など）は頼む側（CombatResolver。EffectManager を通す）が決める。ここは「足す・古くする・描く」だけ。
 // 面そのものに書くので、角や窓枠の端に当たってもはみ出さない（案2 の「面に沿って切り取る」を作らずに済んだ）。
-// G-Buffer に書くので、壁や地面と同じライト・影・霧・SSAO がそのまま掛かる（2026-10-15 ユーザー指定の「壁と同じライト」のまま）。
+// G-Buffer に書くので、壁や地面と同じライト・影・霧・SSAO がそのまま掛かる。
 class BulletHoleList{
 public:
 	BulletHoleList();

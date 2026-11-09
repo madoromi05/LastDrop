@@ -116,7 +116,7 @@ void AnimationPlayer::advance() {
 
 void AnimationPlayer::update() {
 	float time = advanceClock();
-	PROFILE_COUNT( "Anim.poses", 1 ); // アニメの姿勢を求めた回数（OptimizationB_Plan.txt 5 章）
+	PROFILE_COUNT( "Anim.poses", 1 ); // アニメの姿勢を求めた回数
 	mSkeleton.updateAnimation( time );
 	mData->computeBonePose( mSkeleton, &mBonePose );
 	blendFadingPose();

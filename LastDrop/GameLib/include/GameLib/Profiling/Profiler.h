@@ -6,7 +6,7 @@
 // 呼ぶ側に #ifdef を書かなくてよい。
 // メインスレッドからだけ使う（ほかのスレッドから呼んだ区間は記録しない。区間の入れ子が崩れるため）。
 //
-// 1 フレームの時間は次のように分けて測る（計画書 2 章）。
+// 1 フレームの時間は次のように分けて測る。
 //   frame = sleep（フレーム制限の待ち）+ cpu（ゲームの処理と描画命令）+ present（Present で待たされた時間）+ other（窓のメッセージ処理）
 // 画面の右上に数字を出し、F7 で CSV に記録する。書き出し先は Profiling/<起動時刻>/（.gitignore 済み）。
 namespace GameLib{
@@ -42,7 +42,7 @@ private:
 	long long mFrameIndex; // 作ったときのフレーム（フレームをまたいだら記録しない）
 };
 
-// ── ロード（計画書 6-6）──
+// ── ロード ──
 // 起動からの "Boot"。プロセスが作られた時刻から数える（窓やデバイスを作る時間も入る）。Framework::start の先頭で呼ぶ。
 void beginBootLoad();
 // シーンの切り替えなどでロードを始める。既にロード中なら何もしない（続けて 1 つのロードとして数える）。
@@ -76,7 +76,7 @@ private:
 // name は文字列リテラル（ポインタを持ち続ける）。1 フレームに残すのは FrameRecord::kMaxEvents 個まで。
 void markEvent( const char* name );
 
-// ── 回数（計画書 OptimizationS246_Plan.txt 1 章）──
+// ── 回数 ──
 // 今のフレームの name の値に amount を足す（調べた部品の数・定数を送った回数 など）。CSV には "count.<name>" の列で出る。
 // 区間（PROFILE_SCOPE）と違い、何万回呼んでも 1 フレームに 1 つの値にまとまる。
 // name は文字列リテラル（ポインタを持ち続ける）。1 フレームに FrameRecord::kMaxCounters 種類まで。
@@ -94,7 +94,7 @@ private:
 	long long mBegin;
 };
 
-// ── GPU の時間（計画書 7 章）──
+// ── GPU の時間 ──
 // GPU に時刻を打つ。前の印からここまでが name の区間の GPU の時間になる（例："Scene" はシーンを描き終えるまで）。
 // フレームの始めと Present の前は自動で打つ。name は文字列リテラル。1 フレーム GpuTimer::kMaxMarks 個まで。
 void gpuMark( const char* name );

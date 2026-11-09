@@ -25,7 +25,7 @@ namespace{
 	const float kNoGpu = -1.f; // GPU の時間がまだ・読めなかった
 	const char* const kGpuColumnPrefix = "gpu."; // GPU の区間の列の名前の頭（例：gpu.Buildings）
 	const char* const kCountColumnPrefix = "count."; // 回数（addCount）の列の名前の頭（例：count.Ground.tiles）
-	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと（計画書 6-6 ②）。
+	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと。
 	const char* const kStatePlaying = "playing";
 	const char* const kStateLoading = "loading";
 	const char* const kStateSuspended = "suspended";

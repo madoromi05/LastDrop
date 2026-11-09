@@ -12,7 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 往復の時間割（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt の 0・4 章）──
+	// ── 往復の時間割 ──
 	// 1 往復の長さ（秒）。前半で手を前へ運び、後半で引く。左右は半周ずらすので、引くのは 1 往復に 2 回。
 	const float kStrokeSeconds = 1.25f;
 	const float kPhasePerTick = 1.f / ( kStrokeSeconds * GameTime::kTicksPerSecond );
@@ -30,7 +30,7 @@ namespace{
 	// 胸を反らせる角度（度。Spine1 で曲げる）。前腕で上体を支えた形にする（反らせすぎると手が地面に届かない）。
 	const float kChestLiftDegree = 10.f;
 
-	// ── 頭（2026-10-23 ユーザー指定「角度を変えて Player を見るように」）──
+	// ── 頭 ──
 	// 顔を向けられる範囲（度）。体の前から左右へ、水平から上・下へ。これを越える向きは、範囲の端で止める。
 	const float kMaxLookYawDegree = 70.f;
 	const float kMaxLookUpDegree = 60.f;
@@ -40,7 +40,7 @@ namespace{
 	// 顔の向きを回す速さ（度/ティック）。1 秒に 240°（相手が見えた瞬間に首が跳ねないように）。
 	const float kLookTurnPerTick = 240.f / GameTime::kTicksPerSecond;
 
-	// ── 手（2026-10-23 ユーザー指定「浮かせるのではなく地面に対して這う」）──
+	// ── 手 ──
 	// 手を突く所（肩の真下の地面から。m）。前へ伸ばし切った所と、外側へずらす量。引き終わりは、伸ばし切った所から
 	// 1 回に進む長さだけ後ろ（地面に付けたまま、体が進む分だけ手が後ろへずれる）。
 	const float kHandReachForward = 0.45f;
@@ -62,7 +62,7 @@ namespace{
 	const float kHandMinPitch = -0.6f;
 	const float kHandMaxPitch = 0.3f;
 
-	// ── 脚（2026-10-23 ユーザー指定「足も地面に対して這うように」）──
+	// ── 脚 ──
 	// 反対の側の腕を伸ばし切ったときに、太ももを外へ開く角度と、膝で足先を内へ曲げる角度（度）。どちらも真上の軸のまわり
 	// （高さを変えない＝脚は地面に付いたまま、地面に沿って曲がる）。腕で引く間に 0 へ戻る（地面を蹴る）。
 	const float kThighSpreadDegree = 25.f;

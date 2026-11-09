@@ -25,8 +25,7 @@ class PlayerComponent;
 
 // 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
 // 飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
-// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt。2026-11-02 分けた。
-// 町とゾンビは SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt で 2026-11-09 に分けた）：
+// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt）：
 //   町（地図・地面・建物・歩ける床・隠れの表） … TownEnvironment（組み立ては WorldBuilder、置物の部品の並びは PropFactory）
 //   ゾンビの数と周り・音を知らせる     … ZombieDirector（組み立ては ZombieFactory、音は ZombieHearing）
 //   自キャラ                       … PlayerFactory（自キャラの足音・銃声は、自キャラの PlayerNoiseComponent が ZombieHearing へ）
@@ -35,18 +34,18 @@ class PlayerComponent;
 //   見て E で使う物を探す         … InteractionSystem
 //   描く                         … WorldRenderer（シーンが持ち、この世界を読む。世界は描き方を知らない）
 // 名簿へ載せる・外すのは物の部品（IWorldMember）が GameObjectWorld の spawn・flush の中で行う。
-// 建物・地面・飛ぶ弾・エフェクトは GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため。★1）。
+// 建物・地面・飛ぶ弾・エフェクトは GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため）。
 //
 // 舞台は碁盤の目の町。町の周りは建物で囲んであり、外へは出られない。
 // 建物とゾンビと車は移動を止め、自キャラは当たると沿って滑る。道路と歩道は移動を止めないが、弾・視線は止める（TownGround）。
-// ガソリンは漁れる場所の箱に入っていて、脱出の車へ入れると脱出できる（FuelEscapeLoading_Plan.txt。持ち帰ると点にもなる）。
+// ガソリンは漁れる場所の箱に入っていて、脱出の車へ入れると脱出できる（持ち帰ると点にもなる）。
 // 1 日の時間・脱出点・終わり方は知らない（RaidSession。シーンが持つ）。入力・カメラ・音・HUD も知らない（シーンが、この世界を読んで動かす）。
 class GameWorld{
 public:
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから、下のロードの段階を順に呼ぶ。
 	// meshes: 設計図を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所。
 	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
-	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数。DayCondition_Plan.txt）。F6 の changeDayCondition で替わる。
+	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数）。F6 の changeDayCondition で替わる。
 	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
@@ -64,7 +63,7 @@ public:
 	// 自キャラ（と手に持つ銃）を置き、ゾンビを湧かせる係（ZombieSpawner）を作る。歩ける床の後（ゾンビが共有の棚から床を借りる）。
 	// escapeCarSpot: buildTown と同じ番号（自キャラはその車のそばから始める。TownEscapeCarSpot::playerStart）。
 	void placeActors( int escapeCarSpot );
-	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
+	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる。
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
 	// 1ティック進める
 	//   Input（自キャラが操作どおりに動く・撃つ。足音・銃声をゾンビへ知らせる）→ 撃ったなら弾を出す → 弾を飛ばし、当たった所を CombatResolver が解決
@@ -81,7 +80,7 @@ public:
 	// まだ place していない・ゾンビの形の構築に失敗した・数が上限に達しているなら出さずに false。
 	// position / yawDegree: 足元の位置と向き（度。0 は +Z）。
 	bool spawnZombie( const GameLib::Math::Vector3& position, float yawDegree );
-	// カバンから捨てた物を、自キャラの少し前（向いている方）の地面へ置く（拾い直せる。GridInventory_Plan.txt Q6）。
+	// カバンから捨てた物を、自キャラの少し前（向いている方）の地面へ置く（拾い直せる）。
 	// update の外（カバンの画面を開いて世界を止めている間）で呼ぶ。自キャラが居ない・形の構築に失敗したなら置かずに false
 	// （そのとき物は無くなる。捨てる前に呼ぶ側が確かめる手段は無いので、置けなかったことだけ返す）。
 	// cameraYaw: カメラの水平の向き（度。0 は +Z）。
@@ -127,7 +126,7 @@ public:
 	bool isPlayerDead() const;
 
 private:
-	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の ★6）。
+	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj）。
 	// 自キャラ（と手に持つ銃）を、その日の脱出の車のそばへ置く（place から。組み立ては mPlayerFactory）。
 	void placePlayer( int escapeCarSpot );
 
@@ -150,7 +149,7 @@ private:
 	// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）。
 	ZombieDirector mZombies;
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ
-	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt）。
+	// （名簿への登録・解除もここが行う）。
 	// 物が名簿・町の歩ける床・mZombies の物を借りるので、それらより後に宣言する（＝先に破棄される）。
 	GameObjectWorld mObjects;
 	// 当たった後を解決する・使う物を探す。mObjects・mEffects・名簿を借りるので、それらより後に宣言する。

@@ -51,7 +51,7 @@ struct EnvironmentLight{
 	float fogHalfDistance = 0.f;  // 距離の霧が半分になる距離（m）。0 以下なら距離の霧なし
 	float fogGroundDensity = 0.f; // 高さ 0 での高さの霧の濃さ（1/m）。0 なら高さの霧なし
 	float fogHeightHalf = 0.f;    // 高さの霧が半分に薄まる高さ（m）。0 以下なら高さで薄まらない
-	// 空に描く月の絵（MoonStarsLut_Plan.txt 4 章）。初期値は描かない。
+	// 空に描く月の絵。初期値は描かない。
 	GameLib::Math::Vector3 moonDirection; // 目から月の方への向き（長さ 1。光の進む向きの逆）
 	GameLib::Math::Vector3 moonColor;
 	float moonRadius = 0.f;        // 見かけの半径（度）
@@ -80,7 +80,7 @@ public:
 	void add( const LightSource& );
 	// 空と環境光。clear では消えない（最後に設定した値のまま。GameScene は毎フレーム調整値から設定し直す）。
 	void setEnvironment( const EnvironmentLight& );
-	// 影のマップ（Shadow_Plan.txt 4 章）。index：0〜kMaxShadowMaps−1（ライトの shadowMap に入れる番号。シェーダの t6 + index）。
+	// 影のマップ。index：0〜kMaxShadowMaps−1（ライトの shadowMap に入れる番号。シェーダの t6 + index）。
 	// projectionView：その影のマップを描いた光の側の射影×ビュー。texelSize：影のマップ 1 画素の大きさ（m）。
 	// perspective：true なら透視（スポット。texelSize は光から 1m の所の大きさで、距離を掛けて使う）、false なら正射影（月）。
 	// clear で全部外れる。
@@ -88,7 +88,7 @@ public:
 		float texelSize, bool perspective );
 	// 影を読む位置のずらしと濃さ（ShadowParams の値）。clear では消えない。
 	void setShadowSettings( float normalOffsetTexels, float lightOffsetTexels, float strength );
-	// 月の CSM の枚の選び方（Shadow_Plan.txt 6 章）。viewDirection：カメラの向き（長さ 1。奥行きはこの向きに沿って測る）。
+	// 月の CSM の枚の選び方。viewDirection：カメラの向き（長さ 1。奥行きはこの向きに沿って測る）。
 	// cascadeEnds：各枚の受け持ちの奥の端（m）。blendRatio：各枚の受け持ちの奥の何割を、次の枚と混ぜるか（境目を目立たせない）。
 	void setCascades( const GameLib::Math::Vector3& viewDirection, const float ( &cascadeEnds )[ kCascadeCount ], float blendRatio );
 	// 照らすライトを選んで定数を書き、b2 に付ける。eye：目の位置（選ぶ順番に使う）。

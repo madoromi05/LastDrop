@@ -13,9 +13,9 @@ class IHittable;
 class LootContainerComponent;
 class EscapeCarComponent;
 
-// 見て E で使える物を探す・拾われた物を消す係（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-5。2026-11-02 GameWorld から分けた）。
-// 使える物：落ちている物（カバンから捨てた物）、漁れる場所（ゴミ箱・木箱。ゾンビの死体は 2026-11-09 から漁れない。
-// どれも LootContainerComponent を持つ。R3_Plan.txt Q1・Q10）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す。
+// 見て E で使える物を探す・拾われた物を消す係（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-5）。
+// 使える物：落ちている物（カバンから捨てた物）、漁れる場所（ゴミ箱・木箱。
+// どれも LootContainerComponent を持つ）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す。
 // 何を使うと何が起きるか（持ち物が増える）は、使える部品（IInteractable）が決める。
 class InteractionSystem{
 public:
@@ -36,7 +36,7 @@ public:
 	// viewer: 視線を当てない的（目が体の中にある自キャラ）。nullptr 可。使える物が無ければ nullptr（Interactor の finder に使う）。
 	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* viewer );
 	// 目 eye から radius（m）以内にマークがあり、目とマークの間が壁・建物・ほかの物で隠れていない使える物を、全部 out の後ろへ足す
-	// （マークを出すため。InteractMarker_Plan.txt Q1・Q5）。拾われた物は入れない。死体には出さない。
+	// （マークを出すため）。拾われた物は入れない。死体には出さない。
 	// 隠れているかは弾を止める物だけで調べる（ゾンビの体では隠さない）。out: nullptr 不可。
 	void collectNearby( const GameLib::Math::Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const;
 	// interactable（Interactor::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）。
@@ -44,7 +44,7 @@ public:
 	LootContainerComponent* findContainer( const IInteractable* interactable );
 	// interactable（Interactor::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr。
 	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );
-	// ── F6 の確認用（Loot の欄。R3_Plan.txt Q13）──
+	// ── F6 の確認用（Loot の欄） ──
 	// 全部の漁れる場所の中身を決め直し、まだ開けていない形に戻す。seed: 乱数の種。
 	void rerollLoot( int seed );
 	// 全部の漁れる場所を開けたことにする（待たずに中を見られる）。

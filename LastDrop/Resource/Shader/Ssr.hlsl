@@ -1,9 +1,9 @@
 // 映り込み（SSR）を、画面の半分の大きさの描画先（RGBA16F）へ作る（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-2）。
 // 画素の位置から、目からの向きを法線で反射した向きへ進み、深度より奥へ入った所（物に当たった所）を探して、
-// その画素の「照らした後のシーンの色」を持ってくる。進み方は 2 つ（F6 → Render の Hi-Z で切り替える。HiZSsr_Plan.txt Q5）：
-//   Hi-Z（HiZSsr_Plan.txt 6 章。Uludag 2014）… 深度の縮小の段で、何も無い所を大きく飛ばして進む
+// その画素の「照らした後のシーンの色」を持ってくる。進み方は 2 つ（F6 → Render の Hi-Z で切り替える）：
+//   Hi-Z（Uludag 2014）… 深度の縮小の段で、何も無い所を大きく飛ばして進む
 //   直線 ＋ 二分探索（SsrDecalMaterial_Plan.txt Q5 の A）… 段階12 の計測が終わったら消す
-// 粗い面（HiZSsr_Plan.txt 7 章。Stachowiak 2015）は、反射の向きを GGX の見える法線の分布から画素ごとに 1 本選んでばらし、
+// 粗い面（Stachowiak 2015）は、反射の向きを GGX の見える法線の分布から画素ごとに 1 本選んでばらし、
 // ぼかし（SsrBlur.hlsl）と TAA が均す（F6 → Render の Stochastic SSR。切ると鏡の向きだけ）。
 // 出力：rgb は「映る色 × 確からしさ」、a は確からしさ（SsrCommon.hlsli）。当たらなかった・粗い面・空は 0（混ぜるパスで空の色のまま）。
 #include "GBuffer.hlsli"
@@ -19,7 +19,7 @@ cbuffer SsrConstants : register(b1)
     float4 gSsrInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
     float4 gSsrProjectionView[4];        // 射影×ビュー（行ごと）。進んだ点を画面へ戻す
     float4 gSsrMarch;                    // x: 計算する粗さの上限  y: 歩数（直線）  z: 一番遠くまで進む長さ（m）  w: 当たったとみなす厚さ（m）
-    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  z: ノイズのフレームの番号（TAA。Taa_Plan.txt 8 章）  w: 向きをばらすか（1 / 0）
+    float4 gSsrFade;                     // x: 画面の端で薄くする幅（画面に対する割合）  y: 全体の強さ  z: ノイズのフレームの番号（TAA）  w: 向きをばらすか（1 / 0）
     float4 gSsrHiZ;                      // x: Hi-Z の段の数  y: Hi-Z で進む回数の上限  z: Hi-Z で進むか（1 / 0）  w: 使わない
 };
 
@@ -33,7 +33,7 @@ static const float kHiZMinViewDepth = 0.1;
 // Hi-Z：升目の境目を越えるときに、段 0 の 1 画素のこの割合だけ先へ出す（境目の上で止まって、同じ升目を見続けないように）。
 static const float kHiZCrossOffset = 0.01;
 static const float kHiZFar = 1e30;            // 進む向きの成分が 0 の軸の「境目までの t」（いつまでも越えない）
-// ぼけた映り込み（HiZSsr_Plan.txt 7 章）。
+// ぼけた映り込み。
 static const float kStochasticMinRoughness = 0.05; // これよりなめらかな面（水たまり）は鏡の向きのまま（ばらしても見た目が変わらず、ざらつくだけ）
 static const float kRoughConfidence = 0.6;          // 粗さ kSsrSharpRoughness + kSsrRoughRange での確からしさ（ばらした 1 本が外れる分を空の色で埋める）
 static const float2 kSecondNoiseOffset = float2(37.0, 61.0); // 2 つ目の乱数の IGN を読む画素のずらし（1 つ目と同じ値にならないように）
@@ -44,7 +44,7 @@ FullScreenVertex VSMain(uint id : SV_VertexID)
     return fullScreenVertex(id);
 }
 
-// GGX の見える法線の分布から半ベクトルを 1 本選ぶ（Heitz 2018 の式そのまま。HiZSsr_Plan.txt Q6 の A）。
+// GGX の見える法線の分布から半ベクトルを 1 本選ぶ（Heitz 2018 の式そのまま）。
 // 面の向きが z の空間で、toEye：面から目への向き。alpha：粗さ²（Pbr.hlsli と同じ）。u：0〜1 の乱数 2 つ。
 float3 sampleGgxVisibleNormal(float3 toEye, float alpha, float2 u)
 {
@@ -148,7 +148,7 @@ float marchLinear(float3 position, float3 r, uint2 halfPixel, uint2 depthSize)
     return kNoHit;
 }
 
-// ワールドの位置を、画面の uv と深度の値（0 手前〜1 奥）へ。深度の値は画面の上で直線に変わる（Hi-Z はこの形で進む。HiZSsr_Plan.txt Q3）。
+// ワールドの位置を、画面の uv と深度の値（0 手前〜1 奥）へ。深度の値は画面の上で直線に変わる（Hi-Z はこの形で進む）。
 float3 projectToDevice(float3 world)
 {
     float4 p = float4(world, 1.0);
@@ -179,9 +179,9 @@ float hiZCellExit(float3 start, float3 direction, float2 cell, float2 cellCount,
     return min(t.x, t.y);
 }
 
-// Hi-Z で進む（HiZSsr_Plan.txt 6 章）。当たった所までの長さ（m）。当たらなければ kNoHit。
+// Hi-Z で進む。当たった所までの長さ（m）。当たらなければ kNoHit。
 // 光線は画面の上の (uv, 深度の値) の直線。今の段の升目の一番手前より光線が手前なら、升目の境目まで飛ばして 1 段上へ。
-// 升目の中で一番手前に届く・もう奥にいるなら、1 段下へ。段 0 で届いたら当たり。最後に厚さを見る（Q4 の A）。
+// 升目の中で一番手前に届く・もう奥にいるなら、1 段下へ。段 0 で届いたら当たり。最後に厚さを見る。
 float marchHiZ(float3 position, float3 r, uint2 depthSize)
 {
     // 光線の長さ：一番遠くまで。目の方へ向かう光線は、目の前 kHiZMinViewDepth に届く所で切る。
@@ -264,7 +264,7 @@ float marchHiZ(float3 position, float3 r, uint2 depthSize)
     {
         return kNoHit;
     }
-    // 当たった所の厚さ：光線の点が、その画素に見えている物より厚さ以上奥なら、物の裏を通った（当たらなかった。Q4 の A）。
+    // 当たった所の厚さ：光線の点が、その画素に見えている物より厚さ以上奥なら、物の裏を通った（当たらなかった）。
     float3 p = start + direction * t;
     float3 world = worldPositionFromDepth(gSsrInverseProjectionView, p.xy, p.z);
     float sceneDepth = ssrViewDepthAt(gSceneDepth, gSsrInverseProjectionView, gSsrProjectionView[3], int2(p.xy * depthSize), depthSize);
@@ -304,7 +304,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
             {
                 float3 hit = ssrProjectToScreen(gSsrProjectionView, position + r * hitDistance);
                 float3 color = gSceneColor.SampleLevel(gClampSampler, hit.xy, 0).rgb;
-                // 確からしさ：画面の端で薄く × つやの境目で薄く × 遠くまで進んだほど薄く × ばらした粗い面で少し薄く（HiZSsr_Plan.txt 7 章）。
+                // 確からしさ：画面の端で薄く × つやの境目で薄く × 遠くまで進んだほど薄く × ばらした粗い面で少し薄く。
                 float edge = min(min(hit.x, 1.0 - hit.x), min(hit.y, 1.0 - hit.y));
                 float roughFade = (gSsrFade.w > 0.5) ? lerp(1.0, kRoughConfidence, ssrRoughBlend(roughness)) : 1.0;
                 float confidence = saturate(edge / gSsrFade.x)

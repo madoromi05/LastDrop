@@ -13,7 +13,7 @@ class TownVisibility;
 // 描く側はゲームの状態を書き換えない（DrawCulling の約束）ので、ゾンビの方が自分で読みに来る形にしている。
 struct AnimationView{
 	// projectionView：カメラの射影×ビュー（TAA でずらす前）。eye：目の位置。
-	// visibility：隠れたゾンビも「映らない」にする表（nullptr なら見ない。OptimizationC_Plan.txt Q5）。viewCell：目のいるます。
+	// visibility：隠れたゾンビも「映らない」にする表（nullptr なら見ない）。viewCell：目のいるます。
 	AnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye, const TownVisibility* visibility,
 		int viewCell ) :
 		frustum( projectionView ), eye( eye ), visibility( visibility ), viewCell( viewCell ){}

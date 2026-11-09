@@ -42,7 +42,7 @@ float3 yCoCgToRgb(float3 c)
     return float3(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);
 }
 
-// 前の履歴を Catmull-Rom（なめらかな 3 次の補間）で読む。双線形で読むと、読み直すたびに 1 段ずつぼけていくため（Q5 の A）。
+// 前の履歴を Catmull-Rom（なめらかな 3 次の補間）で読む。双線形で読むと、読み直すたびに 1 段ずつぼけていくため。
 // 4×4 の 16 画素を、双線形の読み込み 5 回で近似する（四隅の 4 つは重みが小さいので読まない。Jimenez・Pettineo の方法）。
 float3 sampleHistoryCatmullRom(float2 uv, float2 size)
 {

@@ -2,7 +2,6 @@
 #define INCLUDED_TUNING_VISITORS_H
 
 // 調整値の構造体（WeaponPoseParams など）の visit を受けて、エディタで扱う項目の並びにする（Debug・Profile ビルドだけ）。
-// 計画書は SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 5-5。
 //
 // 構造体ごとの visit は v( 名前, 値, 下限, 上限, 単位 ) を項目の数だけ呼ぶ。ここではそれを 1 つの係（TuningCollector）で受けて
 // 「値の場所と範囲」の並びにし、描く・ファイルへ書く・読む・既定値と比べる・C++ にする は、その並びに対する関数で行う。

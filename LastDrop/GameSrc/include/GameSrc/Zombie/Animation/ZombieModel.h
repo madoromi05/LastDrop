@@ -25,7 +25,7 @@ public:
 	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。
 	//       この ZombieModel より長く生きていること（MeshCache が持つ）。
 	// walkAnimation: その場で歩くアニメの名前（体を進める長さの表を作る）。nullptr 不可。名前は構築中だけ使う（覚えない）。
-	// runAnimation: その場で走るアニメの名前（走る体を進める長さの表を作る。R4_Plan.txt）。nullptr なら表を作らない（走る体はいない）。
+	// runAnimation: その場で走るアニメの名前（走る体を進める長さの表を作る）。nullptr なら表を作らない（走る体はいない）。
 	// rootMotionAnimations: 根の動きを置き場所へ移すアニメの名前（攻撃・よろけ・倒れる）。名前は構築中だけ使う（覚えない）。
 	//                       見つからない名前は表を作らない（rootMotion が nullptr を返す）。
 	ZombieModel( const SkinnedMeshData* data, const char* walkAnimation, const char* runAnimation,

@@ -7,13 +7,13 @@
 using namespace GameLib;
 
 namespace{
-	// 見える絵の揺れ（CameraShake のトラウマ。0〜1）。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 3・4 章。
+	// 見える絵の揺れ（CameraShake のトラウマ。0〜1）。
 	// 射撃は 1 発ごとに足すが、射撃だけでは kFireTraumaLimit より揺らさない（連射しても揺れすぎない）。
 	const float kFireTrauma = 0.12f;
 	const float kFireTraumaLimit = 0.45f;
 	const float kZombieHitTrauma = 0.8f;
 	const float kGrabTrauma = 0.35f; // つかまれた瞬間（噛まれたときより弱く）
-	// 撃った手応えの揺れ（HitFeel_Plan.txt Q3）。部位が飛んだ＝小さく・頭が弾けた＝少し大きく。
+	// 撃った手応えの揺れ。部位が飛んだ＝小さく・頭が弾けた＝少し大きく。
 	// 噛まれた揺れより必ず弱く、連射の揺れ（上限 kFireTraumaLimit）の上に少し乗る上限にする。
 	const float kSeverTrauma = 0.15f;
 	const float kHeadBurstTrauma = 0.25f;

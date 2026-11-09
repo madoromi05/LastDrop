@@ -33,7 +33,7 @@ namespace{
 	const UiRect kRetryRect = { -110.f, 340.f, 220.f, 44.f };
 	const UiRect kTitleRect = { -110.f, 400.f, 220.f, 44.f };
 
-	// 見出しは英語（タイトル・一時停止のボタンと同じ。C6）。中の文字とボタンは日本語。
+	// 見出しは英語（タイトル・一時停止のボタンと同じ）。中の文字とボタンは日本語。
 	const char* kEscapedHeading = "ESCAPED";
 	const char* kKilledHeading = "KILLED IN ACTION";
 	const char* kTimeName = "かかった時間";

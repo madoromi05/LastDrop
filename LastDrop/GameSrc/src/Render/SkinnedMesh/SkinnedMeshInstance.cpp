@@ -33,7 +33,7 @@ void SkinnedMeshInstance::setAngleY( float degree ) {
 	mSkinStale = true;
 }
 
-// ── アニメの口（中身は AnimationPlayer。2026-11-09 に分けた。MidPrioritySplit_Plan.txt 6 章）──
+// ── アニメの口（中身は AnimationPlayer） ──
 
 void SkinnedMeshInstance::setAnimation( const char* name, float startTime, PlayMode mode ) {
 	mPlayer.setAnimation( name, startTime, mode );
@@ -150,10 +150,10 @@ void SkinnedMeshInstance::draw() const {
 	if ( !mPlayer.hasPose() ) {
 		return; // まだ update していない（見せるポーズが無い）
 	}
-	// 骨の行列は、ポーズか置き場所が変わった後に初めて描く時だけ作る。G-Buffer と影（最大 4 枚）で同じ体を何度描いても 1 回で済む
-	// （OptimizationB_Plan.txt 8 章）。置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+	// 骨の行列は、ポーズか置き場所が変わった後に初めて描く時だけ作る。G-Buffer と影（最大 4 枚）で同じ体を何度描いても 1 回で済む。
+	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
 	if ( mSkinStale ) {
-		PROFILE_COUNT( "Skin.matrices", 1 ); // 骨の行列を作った回数（OptimizationB_Plan.txt 5 章）
+		PROFILE_COUNT( "Skin.matrices", 1 ); // 骨の行列を作った回数
 		mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );
 		mSkinStale = false;
 	}

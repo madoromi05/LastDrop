@@ -12,7 +12,7 @@
 // 面に貼る絵（デカール）を、決まった数までためて描く。シェーダは Resource/Shader/Decal.hlsl。仕様は SsrDecalMaterial_Plan.txt 8 章。
 // デカール 1 つは、面の上の点を中心にした薄い箱。箱の中にある G-Buffer の面にだけ、絵の色と凹みの法線をアルファで混ぜて書く
 // （面そのものに書くので、角や窓枠からはみ出さず、面から浮かせる必要も無い）。粗さ・金属・AO（RT2）は面のまま。
-// 何を貼るか・いつ消すかは持ち主（BulletHoleList など）が決める。ここは「ためる・描く」だけ（血の跡など別の絵にも使える。Q9）。
+// 何を貼るか・いつ消すかは持ち主（BulletHoleList など）が決める。ここは「ためる・描く」だけ（血の跡など別の絵にも使える）。
 // 使い方: add を何回か → draw を、1 フレームに 1 回。GBuffer::beginDecals〜endDecals の間に呼ぶ。
 class DecalBatch{
 public:
@@ -63,7 +63,7 @@ private:
 	int mCapacity;
 };
 
-// デカールを描くか（F6 → Render の Decals。見比べと計測用。SsrDecalMaterial_Plan.txt 9 章）。false の間は弾痕が描かれない
+// デカールを描くか（F6 → Render の Decals。見比べと計測用）。false の間は弾痕が描かれない
 // （板の弾痕に戻すのではない）。起動中ずっと 1 つ（DecalBatch.cpp が持つ。初期値 true。Release では true のまま）。
 bool& decalsEnabled();
 

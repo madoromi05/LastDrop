@@ -1,4 +1,4 @@
-// 空に足す月の絵（MoonStarsLut_Plan.txt 4 章。星は 2026-10-31 に削除）。LightList.hlsli の skyColor・environmentLight から呼ぶ。
+// 空に足す月の絵（MoonStarsLut_Plan.txt 4 章）。LightList.hlsli の skyColor・environmentLight から呼ぶ。
 // 値はライトの一覧の定数（gMoonDirection・gMoonColor・gMoonHalo。LightList.cpp）。明るさ 0 なら何も足さない。
 // 町を照らす月の光（ライトの一覧の平行光）とは別：ここは見える絵だけで、地面の明るさは変えない。
 #ifndef INCLUDED_SKY_DETAIL_HLSLI

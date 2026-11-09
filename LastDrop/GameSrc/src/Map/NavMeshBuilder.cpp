@@ -18,7 +18,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ── 床の形を作る細かさ（Recast の rcConfig。値の理由は ZombieNavMesh_Plan.txt）──
+	// ── 床の形を作る細かさ（Recast の rcConfig） ──
 	// 床を区切るますの大きさ（m）。体の半径（0.4m）を 2 ますで表せる細かさ。町（約 130m 四方）で 650 ます四方になる。
 	const float kCellSize = 0.2f;
 	// 高さのますの大きさ（m）。越えられる段差（0.3m）をちょうど 3 ますで表せる。

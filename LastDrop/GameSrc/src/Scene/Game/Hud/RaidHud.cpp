@@ -27,14 +27,14 @@ namespace{
 	const unsigned kExitColor = VertexColor::pack( 0.4f, 0.95f, 0.45f ); // 脱出の知らせの色（緑）
 
 	const char* kExitsPrefix = "脱出の車：";
-	// 給油し終えた後、車のそばの円の外にいる間（FuelEscapeLoading_Plan.txt Q4）。
+	// 給油し終えた後、車のそばの円の外にいる間。
 	const char* kEngineRunningText = "エンジンがかかった：車のそばで待つ";
 	const char* kExitsSeparator = " / ";
 	const char* kExtractFormat = "脱出中 %.1f";
 
-	// 漁れる場所を開けている間の進み具合（画面の真ん中の少し下。R3_Plan.txt 6-1。輪の代わりに横の棒）。
+	// 漁れる場所を開けている間の進み具合（画面の真ん中の少し下。輪の代わりに横の棒）。
 	const char* kSearchText = "探している";
-	const char* kRefuelText = "給油中"; // 脱出の車に給油している間（FuelEscapeLoading_Plan.txt 改訂 2）
+	const char* kRefuelText = "給油中"; // 脱出の車に給油している間
 	const float kSearchBarBelowCenter = 40.f; // 棒の真ん中の、画面の真ん中からの下がり
 	const float kSearchBarWidth = 120.f;
 	const float kSearchBarHeight = 6.f;
@@ -66,7 +66,7 @@ void RaidHud::draw( const RaidSession& session, const DayConditionEffect& condit
 	float center = UiLayout::anchorX( UI_ANCHOR_CENTER );
 	float height = static_cast< float >( Framework::instance().height() );
 
-	// 始めの数秒だけ、今回の条件・脱出の車の場所（SimpleRun_Plan.txt Q5）。
+	// 始めの数秒だけ、今回の条件・脱出の車の場所。
 	if ( session.clock().elapsedSeconds() < params.exitNoticeSeconds ) {
 		mRenderer->addText( condition.title, Vector2( center, kNoticeTop + kNoticeLineHeight * kConditionLine ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kNoticeColor );
 		std::string exits = kExitsPrefix + exitNames( session.extraction(), kExitsSeparator );

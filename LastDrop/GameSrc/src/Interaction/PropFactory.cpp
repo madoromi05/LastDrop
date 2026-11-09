@@ -14,12 +14,12 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kVehicleFile = "Resource/Model/Prop/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
-	const char* kFuelCanFile = "Resource/Model/Prop/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上。2026-11-08 に metal_jerrycan へ差し替え）
+	const char* kFuelCanFile = "Resource/Model/Prop/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
 	const char* kFireHydrantFile = "Resource/Model/Prop/fire_hydrant.txt"; // tools/configs/fire_hydrant_atlas.json → fire_hydrant.json で変換（同上）
 	// 街灯は tools/configs/streetlamp.json・streetlamp_off.json で変換（同上。画像は使わず色だけ。ガラスは別の部品で発光だけ違う）。
 	const char* kStreetLampFile = "Resource/Model/Prop/streetlamp.txt";
 	const char* kStreetLampOffFile = "Resource/Model/Prop/streetlamp_off.txt";
-	// ゴミ箱・木箱は tools/modelgen/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上。R3_Plan.txt Q2）。
+	// ゴミ箱・木箱は tools/modelgen/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上）。
 	const char* kDumpsterFile = "Resource/Model/Prop/dumpster.txt";
 	const char* kCrateFile = "Resource/Model/Prop/crate.txt";
 	// 落ちた物の形のファイルは物の表（ItemCatalog の groundFile）、落ちている銃の形のファイルは銃ごとの表（WeaponCatalog の groundFile）にある。
@@ -43,7 +43,7 @@ namespace{
 }
 
 PropFactory::PropFactory( MeshCache* meshes ) :
-	// 車と缶は粗い形（LOD）も読む（OptimizationC_Plan.txt Q7。弾の箱は小さく、2 画素未満で消えるので段を持たない）。
+	// 車と缶は粗い形（LOD）も読む（弾の箱は小さく、2 画素未満で消えるので段を持たない）。
 	mVehicleShapes( StaticMeshLods::request( meshes, kVehicleFile ) ),
 	mFuelCanShapes( StaticMeshLods::request( meshes, kFuelCanFile ) ),
 	mFireHydrantShapes( StaticMeshLods::request( meshes, kFireHydrantFile ) ),

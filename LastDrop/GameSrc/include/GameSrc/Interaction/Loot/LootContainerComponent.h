@@ -8,7 +8,7 @@
 #include "GameLib/Math/Random.h"
 #include <vector>
 
-// 漁れる場所の部品（ゴミ箱・木箱。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章。ゾンビの死体には 2026-11-09 から付けない）。
+// 漁れる場所の部品（ゴミ箱・木箱。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章）。
 // 中身のマス目（2 × 3）と、どの表の場所か・もう開けたか、を持つ。どの物に付けても同じ部品（違うのは表の種類だけ）。
 // 見た目と箱は同じ物の別の部品（ゴミ箱・木箱は StaticModelComponent）。
 // 開けるまで待つのは LootSearch、中を見る画面は LootScreen（どちらも GameScene が持つ）。ここは中身と「開けたか」だけ。
@@ -16,11 +16,11 @@
 class LootContainerComponent : public Component, public IInteractable{
 public:
 	// table: どの表から中身を決めるか。random: 中身を決める乱数（作るときに 1 回だけ使う。覚えない。nullptr 不可）。
-	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し。中身を振り直しても入れ直す。FuelEscapeLoading_Plan.txt Q15）。
+	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し。中身を振り直しても入れ直す）。
 	LootContainerComponent( LootTableId table, GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed );
 
 	LootTableId table() const;
-	// もう開けたか（開けた所は、次からは待たずにすぐ開く。R3_Plan.txt Q6）。
+	// もう開けたか（開けた所は、次からは待たずにすぐ開く）。
 	bool isSearched() const;
 	// 開け終わった（LootSearch が待ち終えた・待たずに開いた）。
 	void markSearched();
@@ -32,7 +32,7 @@ public:
 	void reroll( GameLib::Math::Random* random );
 
 	// IInteractable
-	// 開けていない所はいつも使える。開けた所は、中身が残っている間だけ（空なら灰色のマーク。R3_Plan.txt Q14）。
+	// 開けていない所はいつも使える。開けた所は、中身が残っている間だけ（空なら灰色のマーク）。
 	bool canInteract( const Inventory& inventory ) const override;
 	void interact( Inventory* inventory ) override;     // 呼ばれない（Interactor は lootGrid のある物を使わずに opened へ回す）
 	bool offeredStack( ItemStack* out ) const override; // 拾う物ではないので false

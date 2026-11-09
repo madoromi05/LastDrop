@@ -4,7 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
-// 脱出できる所 1 つ（2026-11-05 から、脱出の車のそば。FuelEscapeLoading_Plan.txt）。name は画面に出す名前（TownMap の表の文字列を借りる）。
+// 脱出できる所 1 つ（FuelEscapeLoading_Plan.txt）。name は画面に出す名前（TownMap の表の文字列を借りる）。
 struct ExtractZone{
 	const char* name;
 	GameLib::Math::Vector3 position; // 円の中心（車の足元の中心）

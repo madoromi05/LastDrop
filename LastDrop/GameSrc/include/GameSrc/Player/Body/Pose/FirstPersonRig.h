@@ -8,7 +8,7 @@
 class SkinnedMeshData;
 
 // 一人称の体の書き換えの段（Player/Body/Pose/ の BonePoseModifier たち）が、みんなで読む物
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5-1。2026-11-09 FirstPersonBody から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5-1）。
 // 持ち主は FirstPersonBody。段は借りて読むだけ（目の位置だけは EyePoint が書く）。
 // 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。骨は Mixamo の名前で探し、見つからない骨は飛ばす（その部分が動かないだけで落ちない）。
 struct FirstPersonRig{

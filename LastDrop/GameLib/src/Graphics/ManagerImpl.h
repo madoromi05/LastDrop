@@ -669,7 +669,7 @@ public:
 		if ( mCaptureRequest && !mCaptureFilename.empty() ){
 			capture();
 		}
-		// Present の呼び出しだけを測る（capture も GPU を待つが、頼んだときだけなので混ぜない。計画書 2 章）。
+		// Present の呼び出しだけを測る（capture も GPU を待つが、頼んだときだけなので混ぜない）。
 		Profiling::beginPresent();
 		HRESULT hr = mSwapChain->Present( mVSync ? 1 : 0, 0 );
 		Profiling::endPresent();

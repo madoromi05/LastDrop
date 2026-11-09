@@ -88,7 +88,7 @@ namespace{
 		return static_cast< int >( std::lround( value ) );
 	}
 
-	// アニメを間引く段の名前（OptimizationB_Plan.txt 9 章。どの体が間引かれているかを頭の上で見る）。
+	// アニメを間引く段の名前（どの体が間引かれているかを頭の上で見る）。
 	const char* animationLevelName( AnimationThrottle::Level level ) {
 		switch ( level ) {
 			case AnimationThrottle::Level::Near:   return "Near";
@@ -177,11 +177,11 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	// 数字はバーの上、状態はバーの下。
 	char text[ kTextSize ];
 	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）と、
-	// 道を探す順番を待っていれば「wait」（OptimizationC_Plan.txt 6 章）。
+	// 道を探す順番を待っていれば「wait」。
 	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
 	const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
 	bool waitingForPath = chase && chase->path().isWaitingForSearch();
-	// 走る体には「R」を付ける（脚が傷んで歩きに落ちたら消える。R4_Plan.txt Q10）。
+	// 走る体には「R」を付ける（脚が傷んで歩きに落ちたら消える）。
 	bool runner = chase && chase->locomotion().isRunner();
 	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s%s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
 		brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "", runner ? " R" : "" );
@@ -198,7 +198,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
 			attackPhaseName( attack->attack().phase() ) );
 	} else if ( zombie.isCrawling() ) {
-		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
+		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え。
 		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
 	} else if ( state == ZombieStateComponent::State::Alive && zombie.getComponent< ZombieChaseComponent >()->mode() == ZombieChase::Mode::Chase && world.player() ) {
 		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため。

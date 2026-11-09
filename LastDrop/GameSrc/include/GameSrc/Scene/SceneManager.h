@@ -17,8 +17,7 @@ public:
 	enum SceneId{
 		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
 		SCENE_GAME,     // ゲーム本編（1 回の出撃）。タイトルの Start・一時停止の Retry・死んだ画面の「もう一度」の行き先。
-		SCENE_RAID_END, // 出撃の結果（クリア・死んだ。RaidEndScene）。SimpleRun_Plan.txt Q8・Q9。
-		// 2026-11-09 に 5 日間をやめ、SCENE_BASE（拠点）・SCENE_DAY_RESULT（1 日の結果）・SCENE_RUN_END（5 日間の終わり）を消した。
+		SCENE_RAID_END, // 出撃の結果（クリア・死んだ。RaidEndScene）。
 	};
 
 	static SceneManager& instance();

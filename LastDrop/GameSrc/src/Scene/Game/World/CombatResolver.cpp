@@ -36,7 +36,7 @@ namespace{
 		return ( part == BodyPart::Head || severed ) ? EffectManager::BloodStainSize::Large : EffectManager::BloodStainSize::Normal;
 	}
 
-	// 命中の重さ。重い方から調べる（頭で倒した ＞ 部位が飛んだ ＞ 倒した ＞ ふつう。HitFeel_Plan.txt Q1）。
+	// 命中の重さ。重い方から調べる（頭で倒した ＞ 部位が飛んだ ＞ 倒した ＞ ふつう）。
 	// 重さの決まりを変えるときは、ここだけを直す。
 	CombatResolver::ZombieHit::Weight chooseHitWeight( BodyPart part, bool killed, bool severed ) {
 		typedef CombatResolver::ZombieHit::Weight Weight;
@@ -49,7 +49,7 @@ namespace{
 		return killed ? Weight::Killed : Weight::Normal;
 	}
 
-	// 命中の重さ → 血しぶきの大きさ（ふつうだけ、頭かどうかで分ける。HitFeel_Plan.txt）。
+	// 命中の重さ → 血しぶきの大きさ（ふつうだけ、頭かどうかで分ける）。
 	EffectManager::BloodHitSize bloodHitSize( CombatResolver::ZombieHit::Weight weight, BodyPart part ) {
 		typedef CombatResolver::ZombieHit::Weight Weight;
 		switch ( weight ) {

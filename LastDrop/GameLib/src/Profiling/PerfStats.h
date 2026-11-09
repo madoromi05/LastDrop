@@ -45,7 +45,7 @@ private:
 	int mCount; // これまでに足した数
 };
 
-// CPU と GPU のどちらが重いか（計画書 7-2）。
+// CPU と GPU のどちらが重いか。
 enum Bound{
 	BOUND_UNKNOWN,  // GPU の時間がまだ読めていない
 	BOUND_VSYNC,    // VSync 中は、CPU も GPU も画面の更新待ちに見えるので決めない

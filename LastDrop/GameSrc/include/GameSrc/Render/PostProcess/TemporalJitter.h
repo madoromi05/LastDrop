@@ -17,7 +17,7 @@ public:
 	// 今のずらし（画素。x は右、y は下が正）。
 	float offsetX() const;
 	float offsetY() const;
-	// 今のフレームの番号（0〜kSampleNumber−1）。ノイズを毎フレーム動かすのにも使う（Taa_Plan.txt 8 章）。
+	// 今のフレームの番号（0〜kSampleNumber−1）。ノイズを毎フレーム動かすのにも使う。
 	int frameIndex() const;
 
 	static const int kSampleNumber = 8;

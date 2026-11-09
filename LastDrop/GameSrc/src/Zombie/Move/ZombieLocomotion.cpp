@@ -52,7 +52,7 @@ const HitWorld& hitWorld, const ZombieCrowd* crowd, float weaveDegree, float* an
 	intent.walking = mChase.wantsToWalk();
 	intent.facing = false;
 	intent.wandering = ( mChase.mode() == ZombieChase::Mode::Wander );
-	// 走る体は、自キャラを追う間（Chase）も、音を聞いて寄る間（Search）も走る。うろつく間は歩く（R4_Plan.txt Q3）。
+	// 走る体は、自キャラを追う間（Chase）も、音を聞いて寄る間（Search）も走る。うろつく間は歩く。
 	intent.running = mRunner && intent.walking && !intent.wandering;
 	if ( intent.wandering ) {
 		mPath.clear(); // うろつく先は近く（ZombieChase が通れる所を選ぶ）なので、通り道は使わない

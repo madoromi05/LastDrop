@@ -40,7 +40,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
-	// カバンの画面の見出しの下に出す、今回の脱出の車の場所（FuelEscapeLoading_Plan.txt Q14）。
+	// カバンの画面の見出しの下に出す、今回の脱出の車の場所。
 	const char* kExitsPrefix = "脱出の車：";
 	const char* kExitsSeparator = " / ";
 	const float kNoSearch = -1.f;        // HUD に「探している」の棒を出さない（RaidHud::draw。漁り/給油の本体は LootController）
@@ -48,10 +48,10 @@ namespace{
 
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
-	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ。SimpleRun_Plan.txt Q5・C9）。世界が持つ（F6 で今の出撃のまま替えられる）。
+	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）。
 	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
 	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
-	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾。SimpleRun_Plan.txt Q6・C4）
+	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
 	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),
@@ -141,13 +141,13 @@ void GameScene::handleFrameInput() {
 		mBag.handleInput();
 		return;
 	}
-	// 中を見る画面もカバンと同じ（R3_Plan.txt Q8）。
+	// 中を見る画面もカバンと同じ。
 	if ( mModals.isLoot() ) {
 		mLoot.handleInput();
 		return;
 	}
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）。
-	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように。R2_Plan.txt Q3）。
+	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように）。
 	if ( ( InputMenu() || !GameLib::WindowCreator().isActive() ) && !mWorld.isPlayerDead() ) {
 		pause();
 		return;
@@ -221,7 +221,7 @@ bool GameScene::isLoading() const {
 
 void GameScene::draw() {
 	if ( !mLoad.isReady() ) {
-		// ロード中は世界を描かず、ロード画面だけ（FuelEscapeLoading_Plan.txt 6 章）。
+		// ロード中は世界を描かず、ロード画面だけ。
 		mLoad.drawLoadingScreen( mWorld.dayCondition().title );
 		return;
 	}
@@ -241,13 +241,13 @@ void GameScene::draw() {
 	}
 #endif
 	const FirstPersonCamera& camera = viewCamera();
-	// このフレームで描くカメラ（観察用カメラの間はそちら）を、次のティックのゾンビのアニメの間引きのために渡す（OptimizationB_Plan.txt Q9）。
+	// このフレームで描くカメラ（観察用カメラの間はそちら）を、次のティックのゾンビのアニメの間引きのために渡す。
 	mWorld.setAnimationView( camera.projectionViewMatrix(), camera.eyePosition() );
 	{
 		PROFILE_SCOPE( "Audio" );
 		updateListener();
 	}
-	// 世界を画面へ写す（ディファードのパイプラインは SceneRenderer が持つ。GBuffer_Plan.txt〜Taa_Plan.txt）。
+	// 世界を画面へ写す（ディファードのパイプラインは SceneRenderer が持つ）。
 	// 攻撃された瞬間の赤み・痛み・死んだ後の暗さは、この写すときに効く（PlayerDamageView から渡す）。
 	const PlayerDamageView& damageView = mFeedback.damageView();
 	SceneRenderer::DamagePostEffect damage = { damageView.damageFlash(), damageView.pain(), damageView.fade() };
@@ -257,7 +257,7 @@ void GameScene::draw() {
 #endif
 	);
 	// UiRenderer は 1 回の描画に 1 回しか描けない（中の PrimitiveRenderer が 2 回目の draw で ASSERT）。
-	// 止めている間は HUD を出さず、メニューがまとめて描く（2026-10-23。HUD とメニューの両方が描いて止まっていた）。
+	// 止めている間は HUD を出さず、メニューがまとめて描く（HUD とメニューの両方が描いて止まっていた）。
 	if ( mModals.isPause() ) {
 		mPauseMenu.draw();
 	} else if ( mModals.isBag() ) {
@@ -294,15 +294,15 @@ void GameScene::updateInteraction() {
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す。
 	bool interactPressed = InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead();
 	if ( interactPressed && mLoot.isSearching() ) {
-		mLoot.cancelSearch(); // 開けている途中に E をもう一度押したら取りやめ（R3_Plan.txt Q6）
+		mLoot.cancelSearch(); // 開けている途中に E をもう一度押したら取りやめ
 		interactPressed = false;
 	}
 	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, interactPressed );
-	// 拾う物は、カバンを開いて入れるマスを選ぶ（InventoryPickup_Plan.txt Q3）。拾い終えた物は次の描画の後片付けで消える。
+	// 拾う物は、カバンを開いて入れるマスを選ぶ。拾い終えた物は次の描画の後片付けで消える。
 	if ( IInteractable* offer = mInteractor.offer() ) {
 		mBag.startPlacing( offer );
 	}
-	// 漁れる場所は、開けるまで待ってから中を見る画面を開く（R3_Plan.txt 5 章）。
+	// 漁れる場所は、開けるまで待ってから中を見る画面を開く。
 	if ( IInteractable* opened = mInteractor.opened() ) {
 		mLoot.beginLoot( opened );
 	}
@@ -368,7 +368,7 @@ void GameScene::updateRaid() {
 
 void GameScene::finishRaid() {
 	mRaidFinished = true;
-	// 持ち帰る物は無い（SimpleRun_Plan.txt Q7・Q10）ので、カバンは捨てて結果だけを渡す。
+	// 持ち帰る物は無いので、カバンは捨てて結果だけを渡す。
 	mResources->raidRecord().setLastResult( mSession.result() );
 	SceneManager::instance().requestChange( SceneManager::SCENE_RAID_END );
 }

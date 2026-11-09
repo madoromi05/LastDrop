@@ -214,7 +214,7 @@ namespace
         { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
         // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）。
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },
-        // 開発中の確認用の切り替え（旧 F1〜F5・F7・F9）は、2026-11-09 にキーをやめて F6 のエディタのボタンへ移した（ユーザー指定）。
+        // 開発中の確認用の切り替えにはキーを割り当てない（F6 のエディタのボタンで切り替える）。
         // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）。
         { CollectorId::InGame, WorkId::DebugCameraUp,   DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::DebugCameraDown, DeviceKind::Keyboard, Keyboard::KEY_CONTROL },
@@ -236,7 +236,7 @@ namespace
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
         // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）。
         { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
-        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない。InventoryPickup_Plan.txt Q4）。
+        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない）。
         { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },
 
         // ── パッド（ボタンは Xbox の並び。DualSense なども対応表で同じ並びに置き換えて読む） ──

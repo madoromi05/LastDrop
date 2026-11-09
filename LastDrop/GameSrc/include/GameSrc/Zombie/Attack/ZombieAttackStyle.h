@@ -2,7 +2,7 @@
 #define INCLUDED_ZOMBIE_ATTACK_STYLE_H
 
 // 立っているゾンビの攻撃の種類（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 11 章）。
-// 2026-11-01 腕振り → 11-05 つかみ → 11-09 腕振り、と 3 回替えたので、どちらも消さずに切り替えられる形にした。
+// 遊んで比べて替えることが多いので、どちらも消さずに切り替えられる形にしてある。
 // どちらにするかは ZombieDirector の kZombieAttackStyle の 1 か所で決める（流す攻撃のアニメもそこで一緒に替わる）。
 // 体を引きずる体は、どちらでも足元へ腕を伸ばして 1 回当てる（つかまない）。
 enum class ZombieAttackStyle{

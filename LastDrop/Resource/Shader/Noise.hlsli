@@ -1,5 +1,5 @@
 // 画素の位置だけで決まるノイズ（テクスチャ不要）。ディザ（Present.hlsl。NightFinish_Plan.txt 7 章）と
-// SSAO の点の並びを画素ごとに回す角度（Ssao.hlsl。SsaoTranslucent_Plan.txt 5-2）が同じ物を使う。
+// SSAO の点の並びを画素ごとに回す角度（Ssao.hlsl）が同じ物を使う。
 #ifndef INCLUDED_NOISE_HLSLI
 #define INCLUDED_NOISE_HLSLI
 
@@ -11,7 +11,7 @@ float interleavedGradientNoise(float2 pixel)
     return frac(kNoiseScale.z * frac(dot(pixel, kNoiseScale.xy)));
 }
 
-// フレームごとに動かす版（TAA のとき。SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 8 章）。画素の位置をフレームの番号 × 5.588238 だけずらす
+// フレームごとに動かす版（TAA のとき）。画素の位置をフレームの番号 × 5.588238 だけずらす
 // （Jimenez 2014 の方法。この歩幅だと、続くフレームで同じ画素の値が重ならずに散る）。TAA が何フレームかを均すので、同じ点の数でざらつきが減る。
 // frame：TemporalJitter::frameIndex（TAA でないときは 0 で、上の版と同じ値）。
 static const float kNoiseFrameStep = 5.588238;

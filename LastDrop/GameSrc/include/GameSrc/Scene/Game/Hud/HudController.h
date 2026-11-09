@@ -41,7 +41,7 @@ private:
 	Inventory* mInventory; // 借りているだけ
 	UiRenderer* mUi;       // 借りているだけ（マークを積むのに使う）
 	RaidHud mHud;
-	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数（AmmoHud_Plan.txt）
+	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数
 	AmmoHudVisibility mAmmoHudVisibility; // 弾数を出す時間と濃さ（覗いている・リロード中と、その後 2 秒）
 	InteractMarkers mInteractMarkers;     // 使える物の上のマーク（文字の案内の代わり）
 };

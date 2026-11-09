@@ -7,8 +7,8 @@
 using namespace GameLib;
 
 namespace{
-	// ── 上（度。ライフル〈反動の大きさ 1〉のとき。ほかの銃は反動の大きさを掛ける）──
-	// 1 発目に上がる角度。2 発目からはだんだん小さくし、kClimbShots 発目で 0 にする（数発で頭打ち。ユーザー指定）。
+	// ── 上（度。ライフル〈反動の大きさ 1〉のとき。ほかの銃は反動の大きさを掛ける） ──
+	// 1 発目に上がる角度。2 発目からはだんだん小さくし、kClimbShots 発目で 0 にする（数発で頭打ち）。
 	// 合計は kRiseFirst × (kClimbShots + 1) / 2 ＝ 3.5°。
 	const float kRiseFirst = 1.0f;
 	const int kClimbShots = 6;

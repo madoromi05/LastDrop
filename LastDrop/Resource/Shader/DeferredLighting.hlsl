@@ -1,8 +1,8 @@
 // G-Buffer を読んで画面を作る全画面のパス（DeferredLighting。GBuffer_Plan.txt 7・8 章）。2 つの使い方がある。
-//   表示が Final（0）：ライティング。PBR の式（Pbr.hlsli。PbrNightLighting_Plan.txt 4 章）で、シーンの色（HDR・リニア）へ描く。
+//   表示が Final（0）：ライティング。PBR の式（Pbr.hlsli）で、シーンの色（HDR・リニア）へ描く。
 //                    何も描かれていない画素には空を描く（LightList.hlsli の skyColor。7 章）
 //   それ以外       ：G-Buffer の中身の表示。ToneMap を通さず、PostProcess の後に画面（バックバッファ・ガンマの色）へ直接写す
-// 霧はここでは掛けない（次の霧のパス Fog.hlsl。NightFinish_Plan.txt 5-1）。霧の量の表示（Fog）だけ同じ式を読む。
+// 霧はここでは掛けない（次の霧のパス Fog.hlsl）。霧の量の表示（Fog）だけ同じ式を読む。
 #include "GBuffer.hlsli"
 #include "Pbr.hlsli"
 #include "DeferredConstants.hlsli"
@@ -33,19 +33,19 @@ static const float3 kMotionFirstPersonColor = float3(1.0, 0.25, 0.25);
 static const float kMotionMovingThreshold = 0.25;      // これより大きければ動く物
 static const float kMotionFirstPersonThreshold = 0.75; // これより大きければ手元
 
-// SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ。SsrDecalMaterial_Plan.txt 7 章）。
+// SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ）。
 // 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl。
 Texture2D gReflection : register(t13);
 Texture2D<float> gHiZView : register(t15); // 表示の Hi-Z だけが読む（DeferredLighting.cpp の kHiZViewSlot）
 static const float kMinConfidence = 1e-3; // SSR color の表示で、これより確からしさが小さい所は黒（0 で割らない）
 
-// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き。SsaoTranslucent_Plan.txt 5 章）。番号は DeferredLighting.cpp の kOcclusionSlot。
+// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き）。番号は DeferredLighting.cpp の kOcclusionSlot。
 // ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）。
 Texture2D gOcclusion : register(t10);
 
 static const float3 kNothingColor = float3(0.0, 0.0, 0.0);
 
-// ── 影の表示（Shadow_Plan.txt 9 章。ライトの一覧と影のマップを付けて描く。GameScene::draw）──
+// ── 影の表示（ライトの一覧と影のマップを付けて描く。GameScene::draw） ──
 // 月の影の枚ごとの色（1 枚目 赤・2 枚目 緑・3 枚目 青）。下の絵の明るさに掛けて、どこが何枚目かを見る。
 static const float3 kCascadeColors[3] = { float3(1.0, 0.25, 0.25), float3(0.25, 1.0, 0.25), float3(0.25, 0.5, 1.0) };
 static const float kCascadeBaseBrightness = 0.3; // 下の絵が真っ黒でも枚の色が見えるよう、明るさの下限
@@ -114,9 +114,9 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     {
         Surface s;
         s.position = reconstructWorldPosition(p.uv, depth);
-        s.normal = normalize(gGBufferNormal.Load(pixel).xyz); // デカールが混ぜた法線は長さが 1 でない（SsrDecalMaterial_Plan.txt 8-2）
+        s.normal = normalize(gGBufferNormal.Load(pixel).xyz); // デカールが混ぜた法線は長さが 1 でない
         s.albedo = gGBufferAlbedo.Load(pixel).rgb;
-        // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない。SsaoTranslucent_Plan.txt Q4）。
+        // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない）。
         s.occlusion = material.r * upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(s.position));
         s.roughness = material.g;
         s.metallic = material.b;

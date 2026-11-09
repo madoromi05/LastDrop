@@ -21,7 +21,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── F6 の Spawn zombie でゾンビを出す（確認用。旧 F9。 ユーザー指定：8m 前に 1 体）──
+	// ── F6 の Spawn zombie でゾンビを出す（確認用。8m 前に 1 体） ──
 	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
 	const int kDebugSpawnNumber = 1;
 	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
@@ -49,7 +49,7 @@ void GameEditorBridge::markReady() {
 }
 
 void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera ) {
-	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（旧 F5。Debug と Profile ビルドだけで効く）。
+	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（Debug と Profile ビルドだけで効く）。
 	GameObject* player = world->player();
 	bool& invincibleRequested = debugSwitches().toggleInvincible;
 	if ( invincibleRequested && player ) {

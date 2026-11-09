@@ -16,7 +16,7 @@ namespace{
 	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）。
 	const float kMarkAboveTop = 0.15f;
 
-	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱。R3_Plan.txt Q1）と、脱出の車。無ければ nullptr。
+	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱）と、脱出の車。無ければ nullptr。
 	IInteractable* interactableOf( GameObject* object ) {
 		if ( PickupComponent* pickup = object->getComponent< PickupComponent >() ) {
 			return pickup;
@@ -79,7 +79,7 @@ void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::ve
 		}
 		out->push_back( NearbyInteractable{ interactable, mark } );
 	} );
-	// ゾンビの死体は 2026-11-09 から漁れない（ユーザー指定）ので、マークも出さない。
+	// ゾンビの死体は漁れないので、マークも出さない。
 }
 
 void InteractionSystem::rerollLoot( int seed ) {
@@ -117,7 +117,7 @@ EscapeCarComponent* InteractionSystem::findEscapeCar( const IInteractable* inter
 
 IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit ) const {
 	if ( hit.target ) {
-		// キャラ（ゾンビ・その死体）は使えない（2026-11-09 から死体は漁れない。ユーザー指定）。視線はキャラで止まる。
+		// キャラ（ゾンビ・その死体）は使えない。視線はキャラで止まる。
 		return nullptr;
 	}
 	// 落ちている物・漁れる置物（弾を止める見た目の部品から、その物の使える部品をたどる）。

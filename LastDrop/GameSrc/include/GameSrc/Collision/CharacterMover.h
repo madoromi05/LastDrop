@@ -17,8 +17,8 @@ class CharacterMover{
 public:
 	// self: 動かす本人。今の当たり判定（位置・向き・大きさ）をここから読み、自分自身には当たらないよう除く。
 	//       所有権は受け取らない。nullptr 不可（持ち主が自分を渡す）。
-	// 問い合わせ先（CollisionWorld）は後から setWorld で渡す（持ち主の部品は、付けた後で共有の棚から引くため。
-	// SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）。渡す前に動かさないこと。
+	// 問い合わせ先（CollisionWorld）は後から setWorld で渡す（持ち主の部品は、付けた後で共有の棚から引くため）。
+	// 渡す前に動かさないこと。
 	explicit CharacterMover( const ICollisionBody* self );
 
 	// world: 問い合わせ先。所有権は受け取らない。nullptr 不可。この Mover より長く生きていること。1 回だけ呼ぶ。

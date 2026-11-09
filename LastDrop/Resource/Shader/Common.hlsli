@@ -24,7 +24,7 @@ cbuffer VSConstants : register(b0)
 };
 
 // 画像の色（sRGB）と、光の量に比例した数（リニア）の変換。式は GameLib/src/Graphics/ColorSpace.h・ColorSpaceHlsl.h と同じ
-// （pow 2.2 の近似ではなく、GPU が _SRGB のテクスチャを読むときと同じ式。LinearToneMap_Plan.txt 0 章）。
+// （pow 2.2 の近似ではなく、GPU が _SRGB のテクスチャを読むときと同じ式）。
 float3 srgbToLinear(float3 c)
 {
     return (c <= 0.04045) ? (c / 12.92) : pow(abs((c + 0.055) / 1.055), 2.4);

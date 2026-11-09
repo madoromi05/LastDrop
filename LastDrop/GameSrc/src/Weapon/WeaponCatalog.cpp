@@ -14,7 +14,7 @@ namespace{
 	const float kRifleRotationZ = 89.224f;
 	// 拳銃：構え（pistol_hold。tools/modelgen/pistol_reload_gen.py が Shooting.fbx の 1 フレーム目を骨ごとの向きで Ch15 に写した物）で、
 	// 右手の中指〜小指の関節と手のひらの真ん中（握りこぶしの中心）へ拳銃の握りの中心を置き、銃口が真っすぐ前・水平、上が上になる値を
-	// Blender で求めた（PistolAnimation_Plan.txt 11 章）。tools/configs/pistol_reload.json の grip と同じ値にしておく。
+	// Blender で求めた。tools/configs/pistol_reload.json の grip と同じ値にしておく。
 	const Vector3 kPistolGripInHand( -0.706f, 1.342f, -10.76f );
 	const float kPistolRotationY = -2.956f;
 	const float kPistolRotationX = -157.73f;
@@ -34,9 +34,9 @@ namespace{
 	const WeaponSpec kWeaponSpecs[ WEAPON_NUMBER ] = {
 		// WEAPON_PISTOL：手に持つ形は G2-Combat.fbx を 1.8 倍（長さ 36cm。実物 16cm の 2.25 倍）。実物の大きさだと、覗いたときに構えた両手に
 		// 隠れてサイトが見えず、1.5 倍でも手のかたまりの方が大きく見えたので大きくした。1.6 倍では覗いたとき拳銃と左手の親指の間に隙間が見えたので
-		// 1.8 倍にした（2026-11-04 ユーザー指定。一人称の手元の銃は大きめに見せる）。
+		// 1.8 倍にした（一人称の手元の銃は大きめに見せる）。
 		// 地面に落ちた形（pistol_ground.txt）は 1.2 倍のまま（道に置くと 2 倍は大きすぎる）。弾倉 12 発・セミオート。
-		// 威力は 7.62 の 6 割・反動は小さく（Pistol_Plan.txt Q4）。腕は Shooting.fbx の構え（PistolAnimation_Plan.txt）。
+		// 威力は 7.62 の 6 割・反動は小さく。腕は Shooting.fbx の構え。
 		// 銃声の素材は 9mm Glock の録音で、ライフルの素材より約 3 倍大きいので小さく鳴らす。
 		{
 			"Pistol", ITEM_PISTOL, ITEM_AMMO_9MM,
@@ -47,8 +47,8 @@ namespace{
 			{
 				// 握り：引き金の囲いより後ろ・下の部分の箱の真ん中から上へ（1.6 倍のときに 2.5cm 上げた点を 1.8 倍に伸ばした所）、左へ 0.8cm。
 				// 握りこぶしの中心に置く点を上げると、拳銃が手の中で低くなり、覗いたとき手が上がって見える。
-				// x を左（-）へずらすと、拳銃が手の中で左へ寄り、覗いたとき左手の親指が拳銃の左側に付く（どちらも 2026-11-04 ユーザー指定。
-				// Blender でゲームと同じ覗いた絵を描いて量を決めた。PistolAnimation_Plan.txt 15 章）。
+				// x を左（-）へずらすと、拳銃が手の中で左へ寄り、覗いたとき左手の親指が拳銃の左側に付く（
+				// Blender でゲームと同じ覗いた絵を描いて量を決めた）。
 				Vector3( -0.008f, -0.0268f, -0.122f ), kPistolGripInHand, kPistolRotationY, kPistolRotationX, kPistolRotationZ,
 				// 覗く目：スライドの上端（y = 0.1305）のすぐ上。z は 1.6 倍のときのまま（後ろのサイト z = -0.124 から 39cm 後ろ）。
 				// 目を離さないので、大きくした分だけ拳銃が大きく見える。

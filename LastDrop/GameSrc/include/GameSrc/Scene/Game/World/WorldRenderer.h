@@ -14,7 +14,7 @@ class Building;
 class DrawCulling;
 struct LightSource;
 
-// 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-1・★4。2026-11-02 GameWorld から分けた）。
+// 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-1）。
 // 持ち主はシーン（GameScene）。世界は描き方を知らない（描く順・間引き・パイプラインを変えても、世界の進め方は変わらない）。
 // 世界の物は const で読むだけ。エフェクト（EffectManager）だけは描くときに並べ替えるので書いてよい形で借りる。
 // 物ごとの GPU の時間を印（Profiling::gpuMark）で分ける（Buildings・Props・Ground・Player・Zombies）。
@@ -23,8 +23,8 @@ struct LightSource;
 //   drawShadowCasters（影のマップごと）→ drawStatic → drawDecals → drawFirstPerson → drawCharacters →
 //   （ライティング・霧・TAA）→ drawImpactDust → drawBloodSpray → drawMuzzleFlash
 // 動かない物は手前に来やすい物から描く：建物（目に近い順）→ 車・置物 → 地面。先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる
-// （Early-Z。Optimization_Plan.txt 2-3）。建物は形ごとにインスタンシングでまとめて描く（OptimizationA_Plan.txt 8 章。形の中では目に近い順）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
-// キャラに弾痕が乗らないようにする（SsrDecalMaterial_Plan.txt Q7）。
+// （Early-Z）。建物は形ごとにインスタンシングでまとめて描く（形の中では目に近い順）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
+// キャラに弾痕が乗らないようにする。
 class WorldRenderer{
 public:
 	// world: 描く世界。effects: world の持つエフェクト（GameWorld::effects）。どれも所有権は受け取らない。nullptr 不可。この係より長く生きていること。
@@ -33,20 +33,20 @@ public:
 	WorldRenderer& operator=( const WorldRenderer& ) = delete;
 
 	// 動かない物（建物・車・置物・地面）を描く。
-	// culling: 描くかどうか（DrawCulling::forCamera）。地面は映る範囲だけ、建物・置物は描く距離・小ささでも間引く（OptimizationA_Plan.txt 6 章）。
+	// culling: 描くかどうか（DrawCulling::forCamera）。地面は映る範囲だけ、建物・置物は描く距離・小ささでも間引く。
 	// eye: 目の位置（FirstPersonCamera::eyePosition）。建物を近い順に並べるのに使う。
 	void drawStatic( const DrawCulling& culling, const GameLib::Math::Vector3& eye );
 	// 弾痕を G-Buffer へデカールとして描く。drawStatic の後・drawFirstPerson の前に、GBuffer::beginDecals〜endDecals の間で呼ぶ。1フレームに1回まで。
 	// projectionView: カメラの射影×ビュー行列（FirstPersonCamera::projectionViewMatrix）。
 	void drawDecals( const GameLib::Math::Matrix44& projectionView );
-	// 動く物を描く。drawDecals の後に、この順に呼ぶ。TAA のために動きの種類を分けて描く（Taa_Plan.txt 6 章。
+	// 動く物を描く。drawDecals の後に、この順に呼ぶ。TAA のために動きの種類を分けて描く（
 	// 呼ぶ側が間で GBuffer::setMotion を切り替える）。drawFirstPerson：手元（自キャラ・持っている銃・弾。いつも映るので間引かない）、
 	// drawCharacters：ゾンビ・千切れた部位（culling は drawStatic と同じ物）。
 	void drawFirstPerson() const;
 	void drawCharacters( const DrawCulling& culling ) const;
-	// 影を落とす物を描く（ShadowMap::begin〜end の間。Shadow_Plan.txt 8 章）。ゾンビ・千切れた部位・建物・車・置物。
+	// 影を落とす物を描く（ShadowMap::begin〜end の間）。ゾンビ・千切れた部位・建物・車・置物。
 	// 地面（受けるだけ）と弾頭（小さく速い）は描かない。culling：光の側から見た映る範囲と、月の影なら小ささ（全部の物を間引く）。
-	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため。Q4）。
+	// includesPlayer：自キャラ（体・腕・銃）も描くか（懐中電灯の影には描かない。銃の影が画面の真ん中を埋めるため）。
 	void drawShadowCasters( const DrawCulling& culling, bool includesPlayer );
 	// 着弾の砂ぼこりを描く（半透明。ライティングの後）。
 	// viewDirection: 視線の向き（長さ1。FirstPersonCamera::viewDirection）。粒の板を画面に平行にし、カメラ側から照らすため。
@@ -80,7 +80,7 @@ private:
 
 	const GameWorld* mWorld;   // 借りているだけ
 	EffectManager* mEffects;   // 借りているだけ
-	// 建物をまとめて描く道具（OptimizationA_Plan.txt 8 章）。シェーダは G-Buffer と影の両方で使う。
+	// 建物をまとめて描く道具。シェーダは G-Buffer と影の両方で使う。
 	StaticMeshInstancing mInstancing;
 	StaticMeshBatch mBuildingBatch; // 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物を集める作業領域
 	bool mBatchesBuildings;         // beginBuildings で決めた、今の建物をまとめて描くか

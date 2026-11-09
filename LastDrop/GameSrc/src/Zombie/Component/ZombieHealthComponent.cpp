@@ -68,7 +68,7 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
 	float dealt = totalBefore - mHealth.total();
 	mLocomotion->alert(); // 撃たれたら、見えていなくても気付く
-	// 走る体は、脚が傷んだらもう走らない（歩きに落ちる。脚を撃って足止めできる。R4_Plan.txt Q7）。
+	// 走る体は、脚が傷んだらもう走らない（歩きに落ちる。脚を撃って足止めできる）。
 	if ( mHealth.weakestLegRatio() <= zombieRunParams().legSlowRatio ) {
 		mLocomotion->stopRunning();
 	}
@@ -120,7 +120,7 @@ void ZombieHealthComponent::startFalling() {
 }
 
 void ZombieHealthComponent::startDowned() {
-	// 前へ倒れるアニメ（無ければ死亡アニメ）で倒す。倒れ終わったら、その姿勢のまま腕で体を引きずる（ZombieCrawl_Plan.txt の 2 章）。
+	// 前へ倒れるアニメ（無ければ死亡アニメ）で倒す。倒れ終わったら、その姿勢のまま腕で体を引きずる。
 	mAnimations->playDowned( mPosition );
 	mState->setState( ZombieStateComponent::State::Downed );
 	stopActing();

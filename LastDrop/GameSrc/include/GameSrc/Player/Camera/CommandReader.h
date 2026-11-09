@@ -3,8 +3,8 @@
 
 #include "GameSrc/Player/PlayerCommand.h"
 
-// キー・パッドの入力を、自キャラへの操作（PlayerCommand）にまとめる係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。
-// 2026-11-09 FirstPersonControl から分けた）。視点は回さない（それは FirstPersonControl）。
+// キー・パッドの入力を、自キャラへの操作（PlayerCommand）にまとめる係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章）。
+// 視点は回さない（それは FirstPersonControl）。
 // 押した瞬間の入力（holsterPressed など）は、consumePressed で消すまで貯める。
 // 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため。
 // 撃つ入力は「一度離すまで止める」印を持つ（メニューのボタンを押したままシーンに入った・解除中のクリックでロックし直した・

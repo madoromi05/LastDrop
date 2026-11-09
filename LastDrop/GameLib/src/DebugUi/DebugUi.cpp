@@ -20,9 +20,9 @@ namespace GameLib{
 namespace DebugUi{
 
 namespace{
-	// エディタを開け閉めするキー（2026-10-23 決定。F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）。
+	// エディタを開け閉めするキー（F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）。
 	const ImGuiKey kToggleKey = ImGuiKey_F6;
-	// 開いている間、押している間だけマウスをエディタに渡すキー（2026-10-26 決定。ゲームの操作に Alt は使っていない）。
+	// 開いている間、押している間だけマウスをエディタに渡すキー（ゲームの操作に Alt は使っていない）。
 	const ImGuiKey kEditKey = ImGuiMod_Alt;
 
 	bool gCreated = false;
@@ -96,7 +96,7 @@ void beginFrame(){
 	// どちらが入力を使うかは、ImGui の前のフレームの判定で決める（ImGui のふつうの使い方）。
 	// 反映されるのは次に入力を読むとき（1 フレーム遅れ）。
 	// キーボードは「文字を打っている間」だけ止める（WantTextInput）。WantCaptureKeyboard はボタンを押している間なども
-	// 真になり、キーを押している途中で止まったり戻ったりして、1 回の F7 が 2 回に数えられた（2026-10-24 確認）。
+	// 真になり、キーを押している途中で止まったり戻ったりして、1 回の F7 が 2 回に数えられた。
 	Input::Manager().setUiCapture( editing, gOpen && io.WantTextInput );
 }
 

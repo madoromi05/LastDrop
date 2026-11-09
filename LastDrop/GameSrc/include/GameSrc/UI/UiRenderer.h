@@ -36,7 +36,7 @@ public:
 	void addLine( const GameLib::Math::Vector2& a, const GameLib::Math::Vector2& b, float thickness, unsigned color );
 	// 塗りつぶした丸（半径 radius）を center に積む。折れ線のつなぎ目に太さと同じ直径で置くと、角が丸くつながり隙間が消える。
 	void addDisc( const GameLib::Math::Vector2& center, float radius, unsigned color );
-	// 絵を rect いっぱいに貼った長方形を積む（カバンの物の絵。SummaryPlan/個別仕様/UI/ItemIcon_Plan.txt）。
+	// 絵を rect いっぱいに貼った長方形を積む（カバンの物の絵）。
 	// texture: 読み終えた絵（isReady が true・isError が false）。画面は sRGB ではないので、絵は TEXTURE_COLOR_SPACE_LINEAR で読んだ物
 	// （色の変換をせずに、画像の色のまま出す）。color: 絵に掛ける色（白でそのまま。a で薄くする）。
 	// 絵が変わるたびに描く回数が 1 つ増えるので、長方形と絵を交互に積まず、絵はまとめて積む。

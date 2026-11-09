@@ -12,7 +12,6 @@ using namespace GameLib::Math;
 
 namespace{
 	// 1 まとまりを曲げる角度の上限（度）。フルオートで当て続けても曲がりすぎないように。
-	// 2026-11-09 にのけぞりを 1.5 倍にしたので、上限も 40° から同じだけ上げた（ZombieStagger_Plan.txt 9 章）。
 	const float kMaxDegree = 60.f;
 	// 押した分が戻るまでの時間（秒）と、そのとき残っている割合。毎ティック同じ割合を掛けて、滑らかに減らす（行き過ぎない）。
 	const float kReturnSeconds = 0.25f;

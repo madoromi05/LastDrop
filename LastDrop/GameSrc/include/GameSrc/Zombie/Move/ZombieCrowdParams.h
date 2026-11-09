@@ -18,7 +18,7 @@ struct ZombieCrowdParams{
 	float sidestepReach = 0.5f;        // よける点にこれより近づいたら終わり（m）
 	float backstepDistance = 1.f;      // 左右どちらも通れないときに下がる距離（m）
 
-	// ── 道探しの分散（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 6 章）──
+	// ── 道探しの分散 ──
 	// 1 ティックに道を探して（NavMesh::findPath）よい回数。超えた体は次のティックへ回る。四捨五入して使う。
 	float pathSearchesPerTick = 2.f;
 

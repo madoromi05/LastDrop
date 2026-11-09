@@ -197,7 +197,7 @@ public:
 	// ファイルを読んでコンパイルし、成功したら作ったシェーダに差し替える。失敗したら今のシェーダのまま mError に理由を残す。
 	bool compile(){
 		using namespace ShaderDetail;
-		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい（計画書 6-6）。
+		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい。
 		LOAD_SCOPE( "shader", mFilename.c_str() );
 		// 起動中に同じファイルをコンパイル済みで、読んだファイルが変わっていなければ、その結果から作る。
 		auto cached = compiledShaders().find( mFilename );

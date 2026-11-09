@@ -13,7 +13,7 @@ struct GameSettings;
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）。
-// 中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。2026-11-09 分けた。外から呼ぶ口は前のまま）：
+// 中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。外から呼ぶ口は前のまま）：
 //   操作を作る … CommandReader　／　反動・揺れ・照準のぶれ … ViewEffects　／　相手の顔へ向ける … LookPull
 //   ここに残るのは、視点を回す（感度）・カーソルの固定・カメラを置く、と係を呼ぶ順番。
 //
@@ -67,7 +67,7 @@ public:
 	void flinch();
 	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）。
 	void shakeOnGrab();
-	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間に呼ぶ。絵だけを少し揺らす（弾道は動かさない。HitFeel_Plan.txt Q3）。
+	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間に呼ぶ。絵だけを少し揺らす（弾道は動かさない）。
 	// headBurst: 頭が弾けた（部位が飛んだより少し大きく揺らす）。
 	void shakeOnHeavyHit( bool headBurst );
 	// 視点を target（ワールド座標）の方へ、決まった時間をかけて向け始める（ゾンビにつかまれた瞬間に、その顔を見る）。

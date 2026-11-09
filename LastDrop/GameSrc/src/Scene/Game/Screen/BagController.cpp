@@ -29,7 +29,7 @@ bool BagController::canOpen() const {
 }
 
 void BagController::open() {
-	// 銃のマスの「弾倉の数/大きさ」を今の数にする（町の中では銃の物が本当の数を持つ。InventoryPickup_Plan.txt Q2）。
+	// 銃のマスの「弾倉の数/大きさ」を今の数にする（町の中では銃の物が本当の数を持つ）。
 	storeMagazineRounds( *mInventory, *mWorld );
 	mScreen.open();
 	mModals->enter( ModalController::Mode::Bag ); // 一時停止と同じ遷移(音を止め、入力を放し、カーソルを外す)
@@ -89,13 +89,13 @@ void BagController::quickPlaceOffered() {
 void BagController::finishPlacingIfDone() {
 	ItemStack rest;
 	if ( !offeredStack( &rest ) ) {
-		close(); // 全部入れた。拾う操作が長くならないよう、町へ戻す（Q3）
+		close(); // 全部入れた。拾う操作が長くならないよう、町へ戻す
 	}
 }
 
 void BagController::handleInput() {
-	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない。GridInventory_Plan.txt Q8）。
-	// ESC は拾った物を持っている・メニュー・動かしている途中なら、まずそれを取りやめる（拾うのをやめても開いたまま。Q3）。
+	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない）。
+	// ESC は拾った物を持っている・メニュー・動かしている途中なら、まずそれを取りやめる（拾うのをやめても開いたまま）。
 	if ( InputInventory() ) {
 		close();
 		return;
@@ -127,7 +127,7 @@ void BagController::handleInput() {
 		dropFromBag( request.cell );
 		break;
 	case InventoryScreen::Request::EQUIP: {
-		// 開いている間は世界が止まっているので、持ち替えの時間は作らない（RE:2 と同じ。Pistol_Plan.txt Q6）。
+		// 開いている間は世界が止まっているので、持ち替えの時間は作らない（RE:2 と同じ）。
 		GameObject* player = mWorld->player();
 		HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
 		if ( hold ) {

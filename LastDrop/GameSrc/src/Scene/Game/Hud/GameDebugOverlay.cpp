@@ -28,8 +28,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── DebugScreen の文字位置（2026-10-21 ユーザー指定：左上から左下へ。左上は体の図を置く）──
-	// 左下に、下から順に積む（2026-11-05 に左下の HUD〈Car fuel〉は無くなった）。行は下から数えた番号（0 が一番下）。
+	// ── DebugScreen の文字位置（左上は体の図を置くので、左下に出す） ──
+	// 左下に、下から順に積む。行は下から数えた番号（0 が一番下）。
 	const int kHelpColumn = 1;
 	const int kHelpLine = 0;
 	const int kShaderErrorLine = 1; // シェーダのコンパイルエラー（あるときだけ）
@@ -46,7 +46,7 @@ namespace{
 	const float kPlayerHealthLeft = 16.f; // 画面の左端からの間（画素）
 	const float kPlayerHealthTop = 16.f;  // 画面の上端からの間（画素）
 	const unsigned kPlayerHealthColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
-	// 漁れる場所の中身（F3。R3_Plan.txt Q13）。文字を出す高さ（足元から m）。
+	// 漁れる場所の中身（F3）。文字を出す高さ（足元から m）。
 	const float kLootLabelHeight = 1.6f;   // 車・ゴミ箱・木箱（車の屋根より少し上）
 	const char* kLootEmptyText = "（空）";
 	const char* kLootSeparator = "・";
@@ -104,7 +104,7 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 			spawner->standingCount(), spawner->targetCount(), spawner->secondsUntilNext() );
 		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), text );
 	}
-	// 簡易 PVS（OptimizationC_Plan.txt 7 章）。ますの外（町の外・建物の足元・高い所）では使わない。
+	// 簡易 PVS。ますの外（町の外・建物の足元・高い所）では使わない。
 	const TownVisibility& visibility = world.town().visibility();
 	char pvsText[ kDebugTextSize ];
 	int cell = visibility.cellAt( camera.eyePosition() );
@@ -201,7 +201,7 @@ void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPerso
 		if ( !ScreenProjection::worldToScreen( projectionView, position, &screen ) ) {
 			return; // カメラの後ろ
 		}
-		// 中身の名前を「・」でつなぐ（壁越しに出す。道順を考えるときの確認用。R3_Plan.txt Q13）。
+		// 中身の名前を「・」でつなぐ（壁越しに出す。道順を考えるときの確認用）。
 		std::string text = loot.isSearched() ? kLootSearchedMark : "";
 		std::vector< ItemStack > stacks = loot.contents().stacks();
 		if ( stacks.empty() ) {

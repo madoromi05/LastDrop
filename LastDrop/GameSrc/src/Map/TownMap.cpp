@@ -108,17 +108,17 @@ namespace{
 	};
 
 	// ── ゾンビ ──
-	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots。2026-11-09 ユーザー指定）。
+	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots）。
 	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）。
 	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）。
 	const float kSpawnBetweenJunctions = 0.5f;
-	// T ポーズの1体は、町の中央の北側の通り（2026-11-09 までの始めの位置）から 5m 前・少し右に、西向きに置く。
+	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く。
 	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
 	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）。
-	// 乗れない置物の車は 2026-11-05 に消した（ユーザー指定：脱出できる車と見分けが付かないため）。
+	// 乗れない置物の車は置かない（脱出できる車と見分けが付かないため）。
 	const float kLaneOffset = 0.25f * kRoadWidth; // 道の中心から車線の中心まで
-	// ── ゴミ箱と木箱（R3_Plan.txt Q3。置き場所は毎日同じ）──
+	// ── ゴミ箱と木箱（置き場所は毎日同じ） ──
 	// どれも車道の端（歩道の縁石の手前）に、長い辺を道に沿わせて置く。正面（+Z）は道の真ん中へ向ける
 	// （北の端は 0・南の端は 180・西の端は 90・東の端は -90）。ずれの 3.1〜3.2m は、車道の幅の半分（3.86m）から箱の奥行きの半分を引いた所。
 	const float kCurbSide = 3.1f;  // ゴミ箱（奥行き約 1m）
@@ -163,7 +163,7 @@ namespace{
 	const float kFaceRoadFromEast = -90.f; // 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
 	const float kFaceRoadFromWest = 90.f;
 
-	// ── 街灯（ランタン型の柱。光は柱の頭から。StreetLamp_Plan.txt 4 章）──
+	// ── 街灯（ランタン型の柱。光は柱の頭から） ──
 	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる。
 	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）。
 	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）。
@@ -172,17 +172,17 @@ namespace{
 	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）。
 	const float kLampClearance = 3.f;
 	const float kLampDodge = 4.f;
-	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり。StreetLamp_Plan.txt Q2）。区間の長さの半分。
+	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分。
 	const float kLampDarkCarDistance = 0.5f * kBlockSize;
 	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる。
 	const float kLampAlongEastWest = kAsBuilt;
 	const float kLampAlongNorthSouth = kQuarterTurn;
 
-	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13。2026-11-05 に脱出点の円から変えた）。
+	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13）。
 	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
 	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
 	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）。
-	// 自キャラはその日の車の鼻先の前に、車の方を向いて立って始める（2026-11-09 ユーザー指定。どれが脱出の車かすぐ分かるように）。
+	// 自キャラはその日の車の鼻先の前に、車の方を向いて立って始める（どれが脱出の車かすぐ分かるように）。
 	struct EscapeCarSpot{
 		const char* name;
 		StreetSpot spot;
@@ -502,7 +502,7 @@ TownMap::TownMap() :
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
-	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから（StreetLamp_Plan.txt 4 章）。
+	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから。
 	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );
 }
 

@@ -6,7 +6,6 @@
 // ゾンビの攻撃の間合い（攻撃を始めてよい・腕が届く・どれだけ寄るか）の、距離と向きの判断。状態は持たない（FlatMath と同じ形）。
 // 「攻撃のアニメがあるか・相手を攻撃してよい状態か・追っているか」など、今の状態を見る判断は Zombie が先に済ませる。
 // ここは体の位置・向きと相手の位置だけから答える（攻撃してこない・遠くから当たる、の修正の入口。SummaryPlan/個別仕様/設計と分割/ZombieSplit3_Plan.txt の 5 章）。
-// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章と ZombieCrawl_Plan.txt。
 class ZombieAttackReach{
 public:
 	// 攻撃する体の今の形（Zombie が作って渡す）。

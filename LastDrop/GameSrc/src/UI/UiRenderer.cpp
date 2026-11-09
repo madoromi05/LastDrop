@@ -12,7 +12,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。日本語の字があり、Windows 10 以降に必ずあるゴシック体。
-	// 小さくても読みやすく、英数字もきれい（英数字も同じフォントで描く。混ぜると高さと線の太さが揃わない）。JapaneseText_Plan.txt Q4。
+	// 小さくても読みやすく、英数字もきれい（英数字も同じフォントで描く。混ぜると高さと線の太さが揃わない）。
 	const char* kFontName = "Yu Gothic UI";
 	// 大きさごとの文字の高さ（ゲームの座標の画素。目安）。UiTextSize の並びと同じ順。
 	// 実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。

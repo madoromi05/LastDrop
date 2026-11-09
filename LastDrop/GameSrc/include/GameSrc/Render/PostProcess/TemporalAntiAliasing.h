@@ -20,13 +20,13 @@ public:
 	TemporalAntiAliasing( const TemporalAntiAliasing& ) = delete;
 	TemporalAntiAliasing& operator=( const TemporalAntiAliasing& ) = delete;
 
-	// 霧の後・半透明の板の前に呼ぶ（Taa_Plan.txt Q3）。sceneColor を読んで混ぜ、sceneColor へ写し戻す（描画先は sceneColor だけになる。
+	// 霧の後・半透明の板の前に呼ぶ。sceneColor を読んで混ぜ、sceneColor へ写し戻す（描画先は sceneColor だけになる。
 	// 続きを描く側が付け直す）。gbuffer：RT1 の a の動きの種類を読む。depth：G-Buffer と一緒に描いた深度。
 	// jitteredProjectionView：このフレームに描いた（ずらした）射影×ビュー。projectionView：同じカメラのずらしていない射影×ビュー。
 	// 履歴が無い（最初・invalidate の後・画面の大きさが変わった）フレームは、今の色をそのまま履歴にする。
 	void resolve( const GameLib::Graphics::RenderTarget& sceneColor, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& jitteredProjectionView, const GameLib::Math::Matrix44& projectionView );
-	// 履歴を捨てる（次の resolve は今の色だけ）。TAA を使っていないフレーム・カメラが飛んだとき（Taa_Plan.txt Q7）に呼ぶ。
+	// 履歴を捨てる（次の resolve は今の色だけ）。TAA を使っていないフレーム・カメラが飛んだときに呼ぶ。
 	void invalidate();
 	// シェーダのコンパイルエラー（混ぜるシェーダ → 写し戻すシェーダの順に、最初に見つかった物）。問題が無ければ空文字列。
 	const char* errorMessage() const;

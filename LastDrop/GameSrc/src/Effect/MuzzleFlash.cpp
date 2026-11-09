@@ -17,7 +17,7 @@ namespace{
 	const char* kGlowTextureFile = "Resource/Texture/Effect/muzzle_glow.dds";
 	const unsigned kRandomSeed = 5630u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
-	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる（2026-10-17 ユーザー指定）。
+	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる。
 	const int kLifeTicks = 5;
 
 	// ── 光の芯 ── 見た目を確かめる前の初期値。
@@ -28,7 +28,7 @@ namespace{
 	// 今は画面に出すときに 1 で切られるので、真ん中は白く飛んで見える。
 	const float kCoreBrightness = 4.f;
 	const int kCoreQuadNumber = 1;
-	const float kCoreSoftDistance = 0.1f; // 壁に刺さった所で薄くし始める奥行きの差（m。SsaoTranslucent_Plan.txt 7-2）
+	const float kCoreSoftDistance = 0.1f; // 壁に刺さった所で薄くし始める奥行きの差（m）
 
 	// ── にじみの板 ── 見た目を確かめる前の初期値。
 	const float kGlowWidth = 0.8f;      // 幅（m）
@@ -45,7 +45,7 @@ namespace{
 
 	// ── 点光源 ── 光の主役。色はにじみの板と同じ（炎の赤みより白に寄せた暖色）。見た目を確かめる前の初期値。
 	// 強さは段階 3-a まで（強さ / 距離）と 1m 先で同じ明るさになる値のまま。今は距離の 2 乗で弱まり、届く距離で 0 になる
-	// （PbrNightLighting_Plan.txt 6 章。1m 先で 1.5、2m 先で 0.37）。
+	// （1m 先で 1.5、2m 先で 0.37）。
 	const Vector3 kLightColor( 1.f, 0.75f, 0.45f );
 	const float kLightOffset = 0.05f;   // 銃口の少し前に置く（銃身の中から照らして、銃が真っ暗にならないように）
 	const float kLightIntensity = 1.5f;

@@ -7,7 +7,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	const int kOneCar = 1; // 脱出の車は出撃ごとに 1 台（FuelEscapeLoading_Plan.txt Q1）
+	const int kOneCar = 1; // 脱出の車は出撃ごとに 1 台
 }
 
 RaidSession::RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) :

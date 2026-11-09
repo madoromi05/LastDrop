@@ -54,11 +54,11 @@ void HitboxSet::removePart( BodyPart part ) {
 }
 
 bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult* hit ) const {
-	// 部位の箱へ線分を移す前に、全部を囲む箱で 1 回ふるう（外れる体は箱 1 つの判定で済む。OptimizationB_Plan.txt Q6）。
+	// 部位の箱へ線分を移す前に、全部を囲む箱で 1 回ふるう（外れる体は箱 1 つの判定で済む）。
 	if ( !mHasBounds || !HitMath::segmentTouchesBox( origin, delta, mBoundsMin, mBoundsMax ) ) {
 		return false;
 	}
-	PROFILE_COUNT( "Hit.hitboxSets", 1 ); // 部位の箱まで調べた体（OptimizationB_Plan.txt 5 章）
+	PROFILE_COUNT( "Hit.hitboxSets", 1 ); // 部位の箱まで調べた体
 	const std::vector< HitboxLayout::Box >& boxes = mLayout->boxes();
 	bool found = false;
 	for ( size_t i = 0; i < boxes.size(); ++i ) {

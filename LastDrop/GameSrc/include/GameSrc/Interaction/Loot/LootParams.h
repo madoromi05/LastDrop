@@ -11,7 +11,7 @@ struct LootParams{
 	// ── 空になる確率（0〜1。開けてみないと分からない）
 	float dumpsterEmptyChance = 0.1f; // ゴミ箱
 	float crateEmptyChance = 0.1f;    // 木箱
-	// ── 包帯（Q12。体力は 100。35 で Danger → Caution、2 つで Fine に戻る）──
+	// ── 包帯（体力は 100。35 で Danger → Caution、2 つで Fine に戻る） ──
 	float bandageHeal = 35.f;
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（RaidParams と同じ約束）。

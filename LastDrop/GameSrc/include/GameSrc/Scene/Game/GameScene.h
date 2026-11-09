@@ -35,9 +35,9 @@ class EscapeCarComponent;
 // ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、結果の画面（死んだ）へ。
 // ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。死んだ後は止めない
 // （崩れて暗くなるのを見せ切ってから結果の画面へ進むため）。
-// Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
+// Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る）。
 // 漁れる場所（ゴミ箱・木箱）を見て E を押すと開け始め（LootSearch。動く・撃つ・構える・攻撃される・E で取りやめ）、
-// 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt。
+// 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
@@ -56,7 +56,7 @@ class EscapeCarComponent;
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F6 の Debug タブ）… FreeCamera
 //   F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe（Debug・Profile だけ）… GameEditorBridge
-// 環境音（脱出のサイレン）は鳴らさない。鳴らす係の AmbienceSystem は 2026-11-09 に消した（どこからも使っていなかったため）。
+// 環境音（脱出のサイレン）は鳴らさない。
 class GameScene : public IScene{
 public:
 	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること。

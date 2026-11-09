@@ -1,7 +1,7 @@
 #ifndef INCLUDED_ZOMBIE_STAGGER_PARAMS_H
 #define INCLUDED_ZOMBIE_STAGGER_PARAMS_H
 
-// 撃たれたときの反応の大きさ（SummaryPlan/個別仕様/ゾンビ/ZombieStagger_Plan.txt の 9 章。2026-11-09 ユーザー指定「よろめきをもう少し大きく」）。
+// 撃たれたときの反応の大きさ（SummaryPlan/個別仕様/ゾンビ/ZombieStagger_Plan.txt の 9 章）。
 // 起動中に F6 のエディタで動かせる。
 //   押し下げ：よろけ（gethit）を始めたとき、弾の向きへ体を当たり判定つきで押し下げる（ZombieKnockback）。
 //             gethit の根の動きは 40 フレームで 0.17m 下がって元へ戻るだけなので、それとは別に、戻らない分を足す。

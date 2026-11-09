@@ -8,7 +8,7 @@
 // 初期値は夜（遊びの値）。昼の値は dayLightingParams()（見比べ・不具合探し用。F6 → Render の Day ボタン）。
 // 色はどれも画像の色と同じ数（sRGB）。シェーダでリニアへ直してから強さを掛ける。
 // 向きは「光が来る方」を、高さ（地平線から上へ何度）と方位（+Z から +X へ何度）で書く。
-// どれも見た目を確かめる前の初期値。夜の暗さは「明かりが無くても 15m 先のゾンビの輪郭が分かる」（Q2）に合わせて画面で決める。
+// どれも見た目を確かめる前の初期値。夜の暗さは「明かりが無くても 15m 先のゾンビの輪郭が分かる」に合わせて画面で決める。
 struct LightingParams{
 	// ── 月（平行光）── 町全体をうっすら照らす。青白く弱い
 	float moonElevation = 35.f;
@@ -27,7 +27,7 @@ struct LightingParams{
 	GameLib::Math::Vector3 skyHorizonColor = GameLib::Math::Vector3( 0.09f, 0.11f, 0.17f );
 	float skyIntensity = 1.f;  // 描く空の明るさ（環境光には効かない）
 
-	// ── 月の絵（MoonStarsLut_Plan.txt 4 章。星は 2026-10-31 に削除）── 空に足す絵だけ。町を照らす月の光（上の moon〜）の強さは変えない
+	// ── 月の絵 ── 空に足す絵だけ。町を照らす月の光（上の moon〜）の強さは変えない
 	// 月は月の光の来る方（moonElevation・moonAzimuth）に描く（影の向きとずれない）。色は moonColor
 	float moonRadius = 0.75f;        // 見かけの半径（度。本物の 0.25° は画面で小さすぎるので大きく）
 	float moonDiscIntensity = 3.f;   // 円板の明るさ（トーンマップの前の数。ブルームのしきい値 1 を少し超えて、少しにじむ）
@@ -37,22 +37,22 @@ struct LightingParams{
 	GameLib::Math::Vector3 groundColor = GameLib::Math::Vector3( 0.05f, 0.05f, 0.06f );
 	float ambientIntensity = 1.f;
 
-	// ── 霧（NightFinish_Plan.txt 5 章）── 町の奥を空へ溶かし、足元をうっすら霞ませる。色は空の地平線の色（描いている空と同じ明るさ）
-	// 距離の霧は 2 乗の指数（近くは薄いまま奥で急に濃くなる）。40m で半分のとき 15m 9%・80m 94%（夜の暗さの基準 15m を崩さない。Q2）
+	// ── 霧 ── 町の奥を空へ溶かし、足元をうっすら霞ませる。色は空の地平線の色（描いている空と同じ明るさ）
+	// 距離の霧は 2 乗の指数（近くは薄いまま奥で急に濃くなる）。40m で半分のとき 15m 9%・80m 94%（夜の暗さの基準 15m を崩さない）
 	float fogHalfDistance = 40.f;    // 距離の霧が半分になる距離（m）
-	float fogGroundDensity = 0.015f; // 車道の面での高さの霧の濃さ（1/m）。這うゾンビが 10m 先で見えること（Q3）を上限にする
+	float fogGroundDensity = 0.015f; // 車道の面での高さの霧の濃さ（1/m）。這うゾンビが 10m 先で見えることを上限にする
 	float fogHeightHalf = 1.f;       // 高さの霧が半分に薄まる高さ（m）
 
-	// ── 街灯（点光源。柱 1 本に 1 つ。TownMap::streetLights）── 道の明るい所・暗い所を作る（PbrNightLighting_Plan.txt 8 章）
+	// ── 街灯（点光源。柱 1 本に 1 つ。TownMap::streetLights） ── 道の明るい所・暗い所を作る
 	// 色はナトリウム灯風の暖かいオレンジ。強さは「真下（高さの距離）の地面で強さ / 高さ² の明るさ」になる
-	// 2026-11-09 に柱の模型（ランタン型 3.86m）を置き、光をガラスの中へ移した。前より低く数も多い（16 → 38 本）ので、
-	// 届く距離と強さを下げた（初期値。画面で合わせる。StreetLamp_Plan.txt 5 章）。
+	// 光はランタン型の柱（3.86m）のガラスの中に置く。低く数も多い（38 本）ので、届く距離と強さは抑えてある
+	// （初期値。画面で合わせる）。
 	float streetLightHeight = 3.29f; // 光の高さ（m。柱の足元〈歩道の面〉から。ランタンのガラスの真ん中。模型を変えたら合わせる）
 	float streetLightRange = 12.f;   // 届く距離（m。光から。真下から横へ届くのは √(距離² − 高さ²) ≒ 11.5m）
 	GameLib::Math::Vector3 streetLightColor = GameLib::Math::Vector3( 1.f, 0.72f, 0.42f );
 	float streetLightIntensity = 12.f;
 
-	// ── 懐中電灯（スポット。銃に付けて T で付ける。PbrNightLighting_Plan.txt 9 章）── 夜の FPS で一番効く光（段階 4 で影も付ける）
+	// ── 懐中電灯（スポット。銃に付けて T で付ける） ── 夜の FPS で一番効く光（段階 4 で影も付ける）
 	// 光は銃口の少し前に置き、銃口の向きへ照らす（照準のぶれで銃が揺れると光も揺れる）。銃より前に置くので、銃そのものは照らさない
 	float flashlightOffset = 0.05f;   // 銃口から前へ（m。後ろに置くと、点光源の近くの明るさで銃身が白く飛ぶ）
 	float flashlightRange = 25.f;     // 届く距離（m）
@@ -104,10 +104,10 @@ struct LightingParams{
 LightingParams& lightingParams();
 // 昼の値（段階 3-b までの太陽・補助光・環境光 0.4 と同じ明るさ。空は青）。見比べ用で、遊びの中では使わない。
 LightingParams dayLightingParams();
-// 霧を掛けるか（F6 → Render の Fog。見比べと計測用。NightFinish_Plan.txt 9・11 章）。false の間は霧のパスを描かず、半透明の板にも掛けない。
+// 霧を掛けるか（F6 → Render の Fog。見比べと計測用）。false の間は霧のパスを描かず、半透明の板にも掛けない。
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）。
 bool& fogEnabled();
-// 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用。MoonStarsLut_Plan.txt 8・10 章）。false の間は今までの空のグラデーションだけ。
+// 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用）。false の間は今までの空のグラデーションだけ。
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）。
 bool& skyDetailEnabled();
 // 高さと方位（度）から、その方から来る光の進む向き（長さ 1。LightList の平行光に渡す形）。

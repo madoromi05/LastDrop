@@ -33,7 +33,7 @@ public:
 
 	// 1ティック進める。ground: 落ちる先の地面（下向きの線で高さを聞く）。nullptr なら高さ 0 の平らな地面とみなす。
 	void update( const IRayBlocker* ground );
-	// culling で描くと決まった時だけ描く（小さい物として間引く。OptimizationA_Plan.txt 6 章）。
+	// culling で描くと決まった時だけ描く（小さい物として間引く）。
 	void draw( const DrawCulling& culling ) const;
 	// 沈み終わって、消してよいか。
 	bool isGone() const;

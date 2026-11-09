@@ -15,7 +15,7 @@ namespace{
 	const int kCapacity = 16;
 	const unsigned kRandomSeed = 7623u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
-	// 血の色（暗い赤。2026-10-18 ユーザー選択）。ライトが掛かる前の色。見た目を確かめる前の初期値。
+	// 血の色（暗い赤）。ライトが掛かる前の色。見た目を確かめる前の初期値。
 	const float kBloodRed = 0.35f;
 	const float kBloodGreen = 0.02f;
 	const float kBloodBlue = 0.02f;
@@ -25,7 +25,7 @@ namespace{
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
 
-	// 壁・地面に刺さった所で滴を薄くし始める奥行きの差（m。SsaoTranslucent_Plan.txt 7-2）。見た目を確かめる前の初期値。
+	// 壁・地面に刺さった所で滴を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値。
 	const float kSoftDistance = 0.15f;
 }
 

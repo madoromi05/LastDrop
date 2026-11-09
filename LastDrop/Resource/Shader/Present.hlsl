@@ -3,9 +3,9 @@
 // 露出を掛けて ACES で 0〜1 に収め（トーンマップ）、周辺を少し暗くし（ビネット）、最後に画面の色（sRGB）へ戻す。
 // 順番と理由は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt 6 章。
 // 噛まれた瞬間は周辺を赤へ寄せ・ぼかし・暗くし（真ん中は触らない）、死んだ後は全体を暗くする（PostProcess::setDamageFlash・setPain・setFade）。
-// トーンマップの直後にカラーグレーディング（夜の色）を掛け、画面の色（8bit）へ落とす直前にディザ（縞を消す弱いノイズ）を足す
-// （NightFinish_Plan.txt 4・6・7 章）。グレーディングはビネット・赤みより前（噛まれた赤みを青寄りの色温度で濁らせない）。
-// グレーディングの後に、読んであれば色の表（LUT。外の道具で直した色）を混ぜる（MoonStarsLut_Plan.txt 6 章）。
+// トーンマップの直後にカラーグレーディング（夜の色）を掛け、画面の色（8bit）へ落とす直前にディザ（縞を消す弱いノイズ）を足す。
+// グレーディングはビネット・赤みより前（噛まれた赤みを青寄りの色温度で濁らせない）。
+// グレーディングの後に、読んであれば色の表（LUT。外の道具で直した色）を混ぜる。
 #include "Common.hlsli"
 #include "Noise.hlsli" // ディザの interleavedGradientNoise（SSAO と共有）
 #include "Grading.hlsli" // 定数（PresentConstants.hlsli）・gradeColor・色の表（LUT）。表を焼く LutBake.hlsl と共有
@@ -52,7 +52,7 @@ float3 toneMapAces(float3 x)
 // 画面の色（sRGB の数）の輝度の重み（Rec.601。FXAA 3.11 と同じく、見た目の明るさの差で輪郭を探すため）。
 static const float3 kScreenLumaWeights = float3(0.299, 0.587, 0.114);
 
-// ── ディザ（NightFinish_Plan.txt 7 章）──
+// ── ディザ ──
 FullScreenVertex VSMain(uint id : SV_VertexID)
 {
     return fullScreenVertex(id);

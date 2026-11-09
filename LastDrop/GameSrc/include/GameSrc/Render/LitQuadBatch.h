@@ -31,7 +31,7 @@ struct QuadUv{
 // SsaoTranslucent_Plan.txt 7 章）。そのときは PostProcess::resumeSceneReadOnlyDepth の間に描くこと（深度を読むため）。
 // 面に貼る板（弾痕）は 0（薄くしない。薄くすると貼った面で消える）。
 // ライトの値は持たない。シーンが先に付けたライトの一覧（GameScene::setupLights → LightList::bind）でそのまま照らされる。
-// 半透明の板は、目の位置を渡して描くと奥から順に並べ替えて描く（Z ソート。EffectFlipbook_Plan.txt の 3 章）。
+// 半透明の板は、目の位置を渡して描くと奥から順に並べ替えて描く（Z ソート）。
 // 奥行きを書かないので、手前の板を先に描くと、後から描いた奥の板が手前の板の上に重なって見えるため。
 // 使い方: add を何回か → draw を、1フレームに1回。
 class LitQuadBatch{
@@ -56,7 +56,7 @@ public:
 		const GameLib::Math::Vector3& normal, unsigned color, const QuadUv& uv = QuadUv() );
 	// 色に掛ける明るさの倍率（初期値 1）。頂点の色は 1 までしか持てないので、1 を超える明るさで描きたいときに使う。
 	// 描画先は 1 を超える明るさを持てる（PostProcess の RGBA16F）。今は画面に出すときに 1 で切られるが、
-	// ブルーム（Graphics_Spec.txt 10-4）が入ると、1 を超えた所が光としてにじむ。0 以上。
+	// ブルームが入ると、1 を超えた所が光としてにじむ。0 以上。
 	void setBrightness( float brightness );
 	// ためた板を texture で描き、ためた板を捨てる。板が無ければ何もしない。
 	// 物を描いた後、ライトの一覧を付けた後（LightList::bind〜unbind の間）に、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ。
@@ -86,7 +86,7 @@ private:
 	float mSoftDistance; // 薄くし始める奥行きの差（m。0 で薄くしない）
 };
 
-// 板を物の近くで薄くするか（F6 → Render の Soft particles。見比べ用。SsaoTranslucent_Plan.txt 8 章）。false の間はどの板も薄くしない。
+// 板を物の近くで薄くするか（F6 → Render の Soft particles。見比べ用）。false の間はどの板も薄くしない。
 // 起動中ずっと 1 つ（LitQuadBatch.cpp が持つ。初期値 true。Release では true のまま）。
 bool& softParticlesEnabled();
 

@@ -21,7 +21,7 @@ namespace{
 
 	const float kHalf = 0.5f;
 
-	// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ（R2_Plan.txt 6-1）。
+	// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ。
 	const float kCellSize = 40.f;
 	const float kGridTop = 70.f;        // マス目の上端
 	const float kGridGap = 60.f;        // 倉庫とカバンの間
@@ -64,7 +64,7 @@ namespace{
 
 StashScreen::StashScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
-	// 倉庫は何丁でも、カバンは銃 1 種類 1 丁（R2_Plan.txt Q14）。
+	// 倉庫は何丁でも、カバンは銃 1 種類 1 丁。
 	mPicker( renderer, &mIcons, GridRule::Free, GridRule::CarryLimit ),
 	mOnDeploy( false ),
 	mPreviousCursor( 0.f, 0.f ) {
@@ -175,7 +175,7 @@ void StashScreen::drawDeploy( const ItemGrid& bag ) {
 	UiRect rect = deployRect( bag );
 	mRenderer->addRect( rect, mOnDeploy ? kButtonSelectedColor : kButtonColor );
 	mRenderer->addText( kDeployLabel, rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, mOnDeploy ? kButtonSelectedTextColor : kTextColor );
-	// カバンに銃が無ければ知らせる（止めはしない。R2_Plan.txt 11 章。タダの拳銃は 11-05 にやめた。InventoryPickup_Plan.txt Q1）。
+	// カバンに銃が無ければ知らせる（止めはしない）。
 	if ( !hasWeapon( bag ) ) {
 		Vector2 line( rect.center().x, rect.bottom() + kWarningGap );
 		mRenderer->addText( kNoWeaponWarning, line, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kWarningColor );
@@ -188,7 +188,7 @@ void StashScreen::drawFooter( const ItemGrid& stash, const ItemGrid& bag ) {
 	bool moving = mPicker.isMoving();
 	if ( !mOnDeploy || moving ) {
 		const ItemStack* stack = mPicker.focusedStack( stash, bag );
-		const char* name = stack ? itemSpec( stack->item ).name : kEmptyName; // 銃の弾数はマスの左下に出す（InventoryPickup_Plan.txt Q2）
+		const char* name = stack ? itemSpec( stack->item ).name : kEmptyName; // 銃の弾数はマスの左下に出す
 		mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 	}
 	const char* hint = moving ? kMovingHint : ( mOnDeploy ? kDeployHint : kBrowseHint );

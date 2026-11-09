@@ -8,7 +8,7 @@ struct ID3D11Query;
 namespace GameLib{
 namespace Profiling{
 
-// GPU の時間を D3D11 のタイムスタンプで測る（計画書 7-1）。
+// GPU の時間を D3D11 のタイムスタンプで測る。
 // フレームの始めと終わり、その間の印（gpuMark）で時刻を打ち、印と印の間をその区間の GPU の時間とする。
 // 区間の名前は、終わりの印の名前（"Scene" ならシーンを描き終えるまで）。最後の印から Present までは "Rest"。
 //
@@ -18,10 +18,7 @@ class GpuTimer{
 public:
 	static const int kLatency = 5;   // 何フレーム分のクエリを輪にして回すか
 	// 1 フレームに打てる印の数（始めと終わりは別）。超えた印は黙って捨てる。
-	// 2026-10-27 に世界を描く所を物ごとに分けて 9 個になったので、足す余地を残して 12。
-	// 2026-10-30 にグラフィック段階 6・7 の印（SSAO・SSR・SSR composite・Decals）で 16 個になり、後ろの 4 つ（Effects・PostProcess・
-	// FXAA・GBufferView）が捨てられて CSV の列から消えていた（Rest にまとめられていた）ので、足す余地を残して 20。
-	// 2026-11-02 に 19 個。グラフィック段階12 の Hi-Z で 20、段階13 のボリュームフォグで 21 になるので 24（HiZSsr_Plan.txt Q8）。
+	// 超えた印は CSV の列から消える（Rest にまとめられる）ので、印を足したらここを超えていないか確かめる。足す余地を残して 24。
 	static const int kMaxMarks = 24;
 
 	// 読めた 1 フレームぶんの結果。

@@ -12,12 +12,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ（Q4）。
+	// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ。
 	const float kCellSize = 4.f;
 	// 建物を見る点の間隔：ますの 1 辺をこの数に分けた格子の点（ますの中に (kViewSteps+1)² 点）。1 なら四隅だけ。
-	// 2（9 点）にしても Debug の確かめの見落としは 2 → 1 件にしか減らず、作る時間は 0.18 → 0.48 秒になったので 1 にした（2026-11-03）。
+	// 2（9 点）にしても Debug の確かめの見落としは 2 → 1 件にしか減らず、作る時間は 0.18 → 0.48 秒になったので 1 にした。
 	const int kViewSteps = 1;
-	// 建物の辺の上に置く「見られる点」の間隔（m。Q4）。
+	// 建物の辺の上に置く「見られる点」の間隔（m）。
 	const float kTargetSpacing = 1.f;
 	// 見られる点を辺から外へずらす幅（m）。点が自分の長方形の上に乗って、線の端が触れた扱いにならないように。
 	const float kTargetOffset = 0.05f;
@@ -81,7 +81,7 @@ TownVisibility::TownVisibility() :
 }
 
 void TownVisibility::build( const std::vector< Building >& buildings ) {
-	LOAD_SCOPE( "map", "TownVisibility" ); // 0.2 秒を超えたら、ファイルに保存して次から読む作りを足す（OptimizationC_Plan.txt 7 章）
+	LOAD_SCOPE( "map", "TownVisibility" ); // 0.2 秒を超えたら、ファイルに保存して次から読む作りを足す
 	mFootprints.clear();
 	mCellOpen.clear();
 	mBuildingBits.clear();
@@ -91,7 +91,7 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 	if ( buildings.empty() ) {
 		return;
 	}
-	// 段ごとに作る（MidPrioritySplit_Plan.txt 3 章）。後の段は前の段の結果を読む。
+	// 段ごとに作る。後の段は前の段の結果を読む。
 	Vector3 townMin;
 	Vector3 townMax;
 	buildFootprints( buildings, &townMin, &townMax );

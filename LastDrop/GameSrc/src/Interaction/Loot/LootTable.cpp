@@ -23,21 +23,19 @@ namespace{
 		LootEntry entries[ kMaxEntries ];
 	};
 
-	// 弾は、1 個でその弾の 1 マスの半分〜全部（7.62mm 15〜30 発・9mm 12〜24 発。R3_Plan.txt 7-2）。
+	// 弾は、1 個でその弾の 1 マスの半分〜全部（7.62mm 15〜30 発・9mm 12〜24 発）。
 	const int kAmmoMinDivisor = 2;
 	const int kSingleItem = 1; // 弾以外は 1 個ずつ（包帯も 1 つ。重なる数は拾ってから）
 
-	// LootTableId の順。重みと数は R3_Plan.txt 7-2 の初期値（遊んで直す）。
+	// LootTableId の順。
 	const LootSpec kSpecs[ static_cast< int >( LootTableId::Count ) ] = {
-		// ガソリンは表から出さない（町のガソリンはちょうど RaidParams::fuelCanCount 個。WorldBuilder が選んだ箱へ必ず入れる。
-		// FuelEscapeLoading_Plan.txt Q16）。車のトランクの表は改訂 2 で消した（車には物を入れない）。
+		// ガソリンは表から出さない（町のガソリンはちょうど RaidParams::fuelCanCount 個。WorldBuilder が選んだ箱へ必ず入れる）。
+		// 車のトランクの表は改訂 2 で消した（車には物を入れない）。
 		{ "ゴミ箱", 1, 3, SOUND_LOOT_SEARCH_METAL, 4, {
 			{ ITEM_AMMO_9MM, 30 }, { ITEM_BANDAGE, 25 }, { ITEM_WATCH, 30 }, { ITEM_AMMO_762, 15 } } },
-		// ライフルは表から出さない（町にちょうど RaidParams::rifleCount 丁。WorldBuilder が選んだ木箱へ、弾倉いっぱいで必ず入れる。
-		// 2026-11-09 ユーザー指定）。
+		// ライフルは表から出さない（町にちょうど RaidParams::rifleCount 丁。WorldBuilder が選んだ木箱へ、弾倉いっぱいで必ず入れる）。
 		{ "木箱", 1, 3, SOUND_LOOT_SEARCH_WOOD, 4, {
 			{ ITEM_AMMO_762, 35 }, { ITEM_AMMO_9MM, 25 }, { ITEM_BANDAGE, 20 }, { ITEM_LAPTOP, 10 } } },
-		// ゾンビの死体の表は 2026-11-09 に消した（死体は漁れない。ユーザー指定）。
 	};
 
 	// 空になる確率（LootParams。開けてみないと分からない）。

@@ -26,9 +26,9 @@ class CharacterColliderComponent;
 // どの部品も自分では動かず、ここが 1 ティックの中で決まった順に頼む（順番に意味があるため。update は段ごとの関数を順に呼ぶ）。
 // 撃つ操作からは「撃てる状態で引き金を引いているか」を決めて銃へ伝える（fire）。連射の間隔・弾の数は銃（GunComponent）が決める。
 // 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。
-// 2026-11-09 に分けた物（SummaryPlan/個別仕様/設計と分割/TickOrderSplit_Plan.txt）：
+// 別の部品に任せている物：
 //   移動の当たり判定の形 → PlayerFootprintComponent・照準のぶれの元を集める → PlayerAimSwaySource・
-//   ゾンビにつかまれている状態 → PlayerGrabComponent（HighPrioritySplit_Plan.txt。ここは動けないかを読むだけ）
+//   ゾンビにつかまれている状態 → PlayerGrabComponent（ここは動けないかを読むだけ）
 class PlayerComponent : public Component{
 public:
 	PlayerComponent();

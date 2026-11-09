@@ -36,7 +36,7 @@ void ColorLut::reload() {
 	mLoaded = false;
 	mTexture.release();
 	if ( fileExists( kLutFile ) ) {
-		// 表の数は画面の色の数のまま引く（_SRGB として読むとリニアに直されてしまう。Q3）。TGA のまま（BC7 に縮めると表に誤差が入る。Q5）。
+		// 表の数は画面の色の数のまま引く（_SRGB として読むとリニアに直されてしまう）。TGA のまま（BC7 に縮めると表に誤差が入る）。
 		mTexture = Graphics::Texture::create( kLutFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR );
 	}
 }

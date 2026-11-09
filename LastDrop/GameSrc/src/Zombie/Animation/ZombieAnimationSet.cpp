@@ -22,7 +22,7 @@ namespace{
 	const float kStaggerFadeTicks = 6.f;
 	// よろけのアニメ（gethit）を再生し始める時刻（フレーム）。gethit には撃たれた反応が 2 回続けて入っていて
 	// （0〜30 フレームで 1 回目、30 フレームで立ち姿に戻り、30〜59 フレームで 2 回目）、頭から流すと
-	// 「反応 → 立ち姿 → もう一度よろける」と 2 回に見える。左脚と両腕が大きく動く 2 回目だけを使う（2026-10-18 ユーザー指定）。
+	// 「反応 → 立ち姿 → もう一度よろける」と 2 回に見える。左脚と両腕が大きく動く 2 回目だけを使う。
 	// 終わりはアニメの最後（59 フレーム）なので、PLAY_ONCE で止まったら歩きへ戻す。
 	const float kStaggerStartTime = 30.f;
 	// よろけ終わりから歩きへ戻す長さ（ティック）。よろけの最後と歩きの始めの姿勢は大きく違う（最大 46°）ので、少し長めに混ぜる。
@@ -110,7 +110,7 @@ void ZombieAnimationSet::playDeath( Vector3* footing ) {
 }
 
 void ZombieAnimationSet::playDowned( Vector3* footing ) {
-	// 這うアニメが無いので、前へ倒れるアニメで倒し、最後の姿勢で止めて代わりにする（ZombieDismember_Plan.txt の 5 章）。
+	// 這うアニメが無いので、前へ倒れるアニメで倒し、最後の姿勢で止めて代わりにする。
 	Scene::Animation fall = mDowned ? mDowned : mDeath;
 	mMesh->crossFadeTo( fall, kDeathStartTime, kDeathFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	mRootSpan->start( mDownedRootMotion, kDeathStartTime, ZombieRootMotionSpan::Pass::AllBodies, footing );

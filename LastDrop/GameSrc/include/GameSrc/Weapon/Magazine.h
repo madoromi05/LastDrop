@@ -13,7 +13,7 @@ public:
 	int missingRounds() const;	// あと何発入るか（満タンなら 0）
 	// 1発撃って減らす。空のときは呼ばないこと（ASSERT で止める）。
 	void takeRound();
-	// 入っている弾の数を rounds にする（0〜弾倉の大きさに収める）。拠点で覚えた数を出撃の始めに戻すとき（R2_Plan.txt Q13）。
+	// 入っている弾の数を rounds にする（0〜弾倉の大きさに収める）。拠点で覚えた数を出撃の始めに戻すとき。
 	void setRounds( int rounds );
 	// count 発込める。0 以上 missingRounds 以下であること（ASSERT で止める）。
 	void load( int count );

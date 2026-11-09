@@ -77,7 +77,7 @@ void PlayerFeedback::syncView( const GameWorld& world, FirstPersonControl* contr
 	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
 	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）。
 	float shotRecoil = ( gun && gun->firedThisTick() ) ? gun->spec().recoilScale : kNoShotRecoil;
-	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない。AmmoHud_Plan.txt Q1）。
+	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない）。
 	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
 	hud->updateAmmoVisibility( hold && gun && ( hold->isAiming() || gun->isReloading() ) );
 	control->updateViewEffects( shotRecoil, player ? PlayerAimSwaySource::read( *player ) : AimSwayBody() );

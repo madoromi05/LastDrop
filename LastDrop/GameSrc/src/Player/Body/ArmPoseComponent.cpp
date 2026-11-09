@@ -117,7 +117,7 @@ void ArmPoseComponent::update( Animator::State next ) {
 	if ( mHasHoldPose ) {
 		// 腕のポーズを持つ銃（拳銃）：いつも腕を差し替える（出す・しまうのに合わせて mHoldWeight で効かせる）。
 		// 覗いていない間は覗いていない間の構え（リロード中はリロードのアニメ）、覗くと構えへ上げる（覗き具合で混ぜる）。
-		// 覗かずに撃っても腕は上げない（ライフルと同じく、構えたまま撃つ。PistolAnimation_Plan.txt 14 章 Q2）。
+		// 覗かずに撃っても腕は上げない（ライフルと同じく、構えたまま撃つ）。
 		// リロードのアニメは覗いていない間の構えから始まってそこで終わるので、差し替える物を替えても腕は跳ばない。
 		const std::vector< Matrix34 >* ready = reloadPosed ? &mReloadPose : ( mHasReadyPose ? &mReadyPose : &mHoldPose );
 		float raise = hold->aimWeight();

@@ -31,11 +31,11 @@ namespace{
 	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）。
 	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
 
-	// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6 章）。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）。
+	// 雨上がりの水たまり。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）。
 	const char* kPuddleMaskFile = "Resource/Texture/Map/puddle_mask.dds";
 	const int kPuddleMaskSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 10;
 	const int kPassSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
-	// 動きの種類を RT1 の a に書く数（Taa_Plan.txt 6 章。MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）。
+	// 動きの種類を RT1 の a に書く数（MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）。
 	const float kMotionValues[] = { 0.f, 0.5f, 1.f };
 	const float kNoCoverage = 0.f;
 	const float kWhole = 1.f;
@@ -100,7 +100,7 @@ void GBuffer::begin( Graphics::DepthTarget depth ) {
 		gm.clear( mTargets[ i ], kClearValue );
 	}
 	// G-Buffer のアルファは色の透明度ではなくデータ（RT0・RT1 は予備の 0、RT2 は発光の強さ）なので、混ぜずにそのまま書く。
-	// 前に描いた物（半透明の板・UI）のブレンドが残っていると、アルファ 0 の RT0 は何も書かれない（2026-10-28 の真っ暗の不具合）。
+	// 前に描いた物（半透明の板・UI）のブレンドが残っていると、アルファ 0 の RT0 は何も書かれない。
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	// 材質値の入れ物は描く間ずっと付けておき、中身だけ MeshMaterial::apply（RenderPass::setSurface）が物ごとに書き換える。
 	gm.setConstantBuffer( kSurfaceSlot, mSurfaceConstants );
@@ -128,7 +128,7 @@ void GBuffer::endDecals( Graphics::DepthTarget depth ) {
 	setPassConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す
 	// 材質の画像（t11）も外れている。RenderPass は「前と同じ画像なら付けない」ので、忘れさせて次の物で付け直させる。
 	// 忘れないと、後から描く自キャラ・銃・ゾンビは画像の無い t11 を読み、粗さ 0（つるつる）・AO 0 になる
-	// （2026-10-31 に見つけた。街灯のハイライトが小さく強く出て、金色に光って見えた）。
+	// （街灯のハイライトが小さく強く出て、金色に光って見えた）。
 	RenderPass::forgetSentSurface();
 }
 

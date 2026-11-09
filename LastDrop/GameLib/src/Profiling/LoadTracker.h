@@ -21,14 +21,14 @@ struct LoadItem{
 	long long frame;      // どのフレームで起きたか（スパイクの内訳と突き合わせるため）
 };
 
-// ロードの時間を測る（計画書 6-6）。
+// ロードの時間を測る。
 // 始めてから「操作できる最初の絵」の Present までを 1 回のロードとし、終わったら Profiling/<起動時刻>/load_*.json を書き出す。
 // ロード中でなくても、読み込みの件は直近のものを残しておく（プレイ中のひっかかりの原因を、スパイクの JSON に出すため）。
 class LoadTracker{
 public:
 	// 直前に終わったロード（画面に出す）。まだ無ければ name が空。
 	struct Summary{
-		static const int kSlowestCount = 5; // Perf の欄に出す、時間のかかった処理の数（計画書 6-6「出し方」）
+		static const int kSlowestCount = 5; // Perf の欄に出す、時間のかかった処理の数
 		std::string name;
 		int attempt;    // 同じ名前のロードの何回目か（Game の 2 回目は Retry。読み込み済みで速い）
 		double seconds;

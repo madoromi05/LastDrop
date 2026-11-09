@@ -29,7 +29,7 @@ public:
 
 	// 描画先を G-Buffer 3 枚と depth にし、3 枚を消す（depth は消さない。消すのは持ち主の PostProcess::beginScene）。
 	void begin( GameLib::Graphics::DepthTarget depth );
-	// デカール（DecalBatch。SsrDecalMaterial_Plan.txt 8 章）を描く間。動かない物を描いた後・動く物の前に、begin〜end の中で呼ぶ。
+	// デカール（DecalBatch）を描く間。動かない物を描いた後・動く物の前に、begin〜end の中で呼ぶ。
 	// 描画先を RT0（色）と RT1（法線）だけにし、depth は描画先から外して t5 から読めるようにする（デカールは深度から位置を戻す）。
 	void beginDecals( GameLib::Graphics::DepthTarget depth );
 	// 描画先を G-Buffer 3 枚と depth へ付け直す（消さない）。続けて動く物を描ける。

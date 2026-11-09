@@ -19,16 +19,16 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 影（Shadow_Plan.txt 5 章）──
+	// ── 影 ──
 	const int kFlashlightShadowSize = 1024; // 懐中電灯の影のマップの一辺（画素）
 	const int kFlashlightShadowIndex = 0;   // ライトの一覧の影のマップの番号（1〜3 は月の CSM に空けておく）
 	const bool kPerspectiveShadow = true;
-	const bool kWithoutPlayer = false;      // 懐中電灯の影には自キャラを描かない（銃の影が画面の真ん中を埋めるため。Q4）
-	// ── 月の影（CSM。Shadow_Plan.txt 6 章）──
-	const int kMoonShadowSize = 2048;       // 1 枚の影のマップの一辺（画素。Q3）
+	const bool kWithoutPlayer = false;      // 懐中電灯の影には自キャラを描かない（銃の影が画面の真ん中を埋めるため）
+	// ── 月の影（CSM） ──
+	const int kMoonShadowSize = 2048;       // 1 枚の影のマップの一辺（画素）
 	const int kMoonShadowFirstIndex = 1;    // ライトの一覧の影のマップの番号（1〜3 の 3 枚）
 	const bool kOrthographicShadow = false;
-	const bool kWithPlayer = true;          // 月の影には自キャラも描く（足元に自分の影が見える。Q4）
+	const bool kWithPlayer = true;          // 月の影には自キャラも描く（足元に自分の影が見える）
 	const int kEveryFrame = 1;              // 月の影の手前の枚は毎フレーム描き直す（遅れると足元の影がずれて見える）
 	const float kRoundToNearest = 0.5f;     // 調整値（float）の間隔を一番近い整数のフレームにする
 	const float kMinCascadeGap = 0.5f;      // F6 で端を逆に並べても枚の範囲が 0 にならないよう、前の端よりこれだけ奥へ揃える（m）
@@ -62,10 +62,10 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.enableDepthTest( true );
 	gm.enableDepthWrite( true );
-	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てる（2026-10-27）ので、これが効くのはそれ以外の物だけ。
+	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てるので、これが効くのはそれ以外の物だけ。
 	gm.setCullMode( Graphics::CULL_NONE );
 	// GameLib の 4 灯と環境光（固定パイプライン）は使わない。照らすのはライトの一覧だけ（ライティングのパスと半透明の板が b2 から読む）。
-	// 月・補助光・空・環境光は調整値（LightingParams。初期値は夜。PbrNightLighting_Plan.txt 7 章）から毎フレーム作る（F6 ですぐ効くように）。
+	// 月・補助光・空・環境光は調整値（LightingParams。初期値は夜）から毎フレーム作る（F6 ですぐ効くように）。
 	const LightingParams& params = lightingParams();
 	mLights.clear();
 	const ShadowParams& shadow = shadowParams();
@@ -80,8 +80,8 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	if ( mRenderer->muzzleLight( &muzzle ) ) {
 		mLights.add( muzzle );
 	}
-	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す（PbrNightLighting_Plan.txt 8 章）。
-	// 外れた柱もガラスは光ったまま（模型の発光。StreetLamp_Plan.txt Q3）。
+	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す。
+	// 外れた柱もガラスは光ったまま（模型の発光）。
 	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）。
 	float streetLightIntensity = params.streetLightIntensity * mWorld->dayCondition().streetLightScale;
 	if ( streetLightIntensity > 0.f ) {
@@ -102,7 +102,7 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 		environment.fogGroundDensity = params.fogGroundDensity;
 		environment.fogHeightHalf = params.fogHeightHalf;
 	}
-	// 月の絵（MoonStarsLut_Plan.txt 4 章）。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない。
+	// 月の絵。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない。
 	if ( skyDetailEnabled() ) {
 		environment.moonDirection.setNeg( lightDirectionFrom( params.moonElevation, params.moonAzimuth ) ); // 光の進む向きの逆が、月のある方
 		environment.moonColor = params.moonColor;
@@ -129,7 +129,7 @@ void SceneLights::addMoon( const LightingParams& params, const FirstPersonCamera
 		}
 		Graphics::Manager gm = Graphics::Manager::instance();
 		float aspect = static_cast< float >( gm.width() ) / static_cast< float >( gm.height() );
-		// 遠い枚ほど間を空けて描き直す（OptimizationA_Plan.txt 7 章）。手前の枚は毎フレーム、間隔は調整値を整数に丸める。
+		// 遠い枚ほど間を空けて描き直す。手前の枚は毎フレーム、間隔は調整値を整数に丸める。
 		CascadedShadowMap::Refresh refresh;
 		refresh.intervals[ 0 ] = kEveryFrame;
 		refresh.intervals[ 1 ] = static_cast< int >( shadow.moonCascadeInterval1 + kRoundToNearest );
@@ -169,7 +169,7 @@ void SceneLights::addFlashlight( const LightingParams& params ) {
 	LightSource flashlight = spotLight( position, muzzleDirection, params.flashlightColor, params.flashlightIntensity, params.flashlightRange,
 		innerAngle, params.flashlightOuterAngle );
 	flashlight.nearDistance = params.flashlightNearDistance;
-	// 影（Shadow_Plan.txt 5 章）。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない。
+	// 影。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない。
 	if ( shadowsEnabled() ) {
 		mFlashlightShadowMatrix = spotShadowProjectionView( position, muzzleDirection, params.flashlightOuterAngle,
 			shadowParams().flashlightNearClip, params.flashlightRange );
@@ -194,11 +194,11 @@ void SceneLights::drawShadowMaps( const FirstPersonCamera& camera ) {
 			}
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
-			// 2 枚目からは置物を一番粗い段で描く（OptimizationC_Plan.txt Q8。遠い枚は 1 画素が大きく、形の差が影に出ない）。
+			// 2 枚目からは置物を一番粗い段で描く（遠い枚は 1 画素が大きく、形の差が影に出ない）。
 			mRenderer->drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ), i >= kFirstCoarseLodCascade ),
 				kWithPlayer );
 			mMoonShadow.map( i ).end();
-			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（OptimizationA_Plan.txt 5 章。間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
+			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
 	}
 	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す。

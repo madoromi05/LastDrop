@@ -9,7 +9,7 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// 足音が届く距離（m。自キャラの足元から水平だけ。壁では切らない。SummaryPlan/個別仕様/ゾンビ/ZombieFootstepHearing_Plan.txt）。
+	// 足音が届く距離（m。自キャラの足元から水平だけ。壁では切らない）。
 	// 走りは横・後ろの目（10m）より遠くまで届き、歩きはそれより短いので、そっと歩けば後ろを抜けられる。
 	const float kWalkFootstepHearingRange = 5.f;
 	const float kRunFootstepHearingRange = 18.f;

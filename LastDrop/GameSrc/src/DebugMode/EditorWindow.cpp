@@ -64,7 +64,7 @@ namespace{
 	GameWorld* gWorld = nullptr;     // GameScene から受け取った、今の出撃の世界（今日の条件を切り替える。無ければ nullptr）
 	const char* const kRandomConditionName = "random"; // 日の条件の一覧の、固定しない（次の出撃から毎回ランダム）の行
 
-	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く。2026-11-05 に段階R3 の 3 つも足した）。
+	// F6 で出し入れする物（銃とその弾を並べて置く）。
 	// ガソリンは 2 マスの持ち帰る物なので、ここでは触らない。
 	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM, ITEM_BANDAGE, ITEM_WATCH, ITEM_LAPTOP };
 	// 一度に足す・減らす数。上限は弾を 1 回で十分に持てる数（カバンの空きのほうが先に尽きる）。
@@ -132,7 +132,7 @@ namespace{
 		ImGui::PopID();
 	}
 
-	// カバンの中身を好きに出し入れする欄（GridInventory_Plan.txt。拾いに行かずに銃と弾を試すため）。
+	// カバンの中身を好きに出し入れする欄（拾いに行かずに銃と弾を試すため）。
 	// 上に行の数・Amount・Clear、その下に 1 種類 1 行。Add / Remove は Amount の数だけ（入る分・持っている分まで）。
 	void drawInventory() {
 		if ( !gInventory ) {
@@ -166,7 +166,7 @@ namespace{
 		}
 	}
 
-	// 出撃を動かす欄（すぐ脱出・次の出撃の条件。SimpleRun_Plan.txt C9。遊んで待たずに試すため）。
+	// 出撃を動かす欄（すぐ脱出・次の出撃の条件。遊んで待たずに試すため）。
 	void drawRaid() {
 		if ( gRaid ) {
 			ImGui::Text( "Time: %.0f s   Kills: %d", gRaid->clock().elapsedSeconds(), gRaid->kills() );
@@ -181,7 +181,7 @@ namespace{
 			}
 			return;
 		}
-		// 日の条件（DayCondition_Plan.txt）。一覧から選ぶと今の出撃にすぐ効き（GameWorld::changeDayCondition）、
+		// 日の条件。一覧から選ぶと今の出撃にすぐ効き（GameWorld::changeDayCondition）、
 		// 次の出撃（Retry・もう一度）にも引き継ぐ。random は次の出撃から毎回ランダムに戻すだけ（今の出撃の条件はそのまま）。
 		if ( gWorld ) {
 			ImGui::Text( "Today: %s", dayConditionEffect( gWorld->dayConditionKind() ).saveName );
@@ -213,7 +213,7 @@ namespace{
 		}
 	}
 
-	// 漁れる場所の欄（R3_Plan.txt Q13）。開ける秒・空になる確率・包帯の効き目は Tuning の Loot。
+	// 漁れる場所の欄。開ける秒・空になる確率・包帯の効き目は Tuning の Loot。
 	void drawLoot() {
 		if ( !gInteraction ) {
 			ImGui::TextDisabled( "No raid." );
@@ -305,7 +305,7 @@ namespace{
 		}
 	}
 
-	// 確認用の切り替え（2026-11-09 に F1〜F5・F9 のキーから移した）。本編へは DebugSwitches・zombiesFrozen を通して頼む。
+	// 確認用の切り替え。本編へは DebugSwitches・zombiesFrozen を通して頼む。
 	// 頼み事（無敵・観察用カメラ・ゾンビを出す）は出撃の世界があるときだけ押せる（ロード中・タイトルで押した頼みが、後の出撃で急に効かないように）。
 	void drawDebug() {
 		DebugSwitches& switches = debugSwitches();
@@ -383,7 +383,7 @@ namespace{
 			graphics.setVSync( vsync );
 		}
 		ImGui::TextDisabled( "Turn VSync off to see CPU / GPU bound." );
-		// 町全体の光を昼・夜の値へ入れ替える（PbrNightLighting_Plan.txt 11 章。見比べ・不具合探し用。遊びは夜）。
+		// 町全体の光を昼・夜の値へ入れ替える（見比べ・不具合探し用。遊びは夜）。
 		// 細かい値は Tuning の LightingParams で動かす。
 		if ( ImGui::Button( "Night" ) ) {
 			lightingParams() = LightingParams();
@@ -394,70 +394,70 @@ namespace{
 		}
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(lighting preset)" );
-		// 影を描くか（Shadow_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Shadow）を見比べる。
+		// 影を描くか。同じ場面で切り替えて、絵と GPU の時間（gpu.Shadow）を見比べる。
 		ImGui::Checkbox( "Shadows", &shadowsEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(flashlight + moon cascades)" );
-		// 建物を形ごとにまとめて描くか（OptimizationA_Plan.txt 8-3）。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings。
+		// 建物を形ごとにまとめて描くか。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings。
 		ImGui::Checkbox( "Instancing", &instancingEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(buildings)" );
-		// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか（OptimizationC_Plan.txt 7 章）。回数は Pvs.building・Pvs.zombie。
+		// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか。回数は Pvs.building・Pvs.zombie。
 		ImGui::Checkbox( "PVS", &pvsEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(hidden buildings + zombies)" );
-		// 置物を遠くで粗い形（LOD）で描くか（OptimizationC_Plan.txt 8 章）。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles。
+		// 置物を遠くで粗い形（LOD）で描くか。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles。
 		ImGui::Checkbox( "LOD", &lodEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(car, fuel cans)" );
-		// 霧を掛けるか（NightFinish_Plan.txt 9・11 章）。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる。
+		// 霧を掛けるか。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる。
 		ImGui::Checkbox( "Fog", &fogEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(distance + height)" );
-		// 空の月の絵（MoonStarsLut_Plan.txt 8・10 章）。値は Tuning の LightingParams（moonRadius〜moonHaloFalloff）。
+		// 空の月の絵。値は Tuning の LightingParams（moonRadius〜moonHaloFalloff）。
 		// 切ると今までのグラデーションだけの空（水たまりの月も消える）。時間は gpu.Lighting。
 		ImGui::Checkbox( "Sky detail", &skyDetailEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(moon)" );
-		// SSAO を作るか（SsaoTranslucent_Plan.txt 8・10 章）。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO。
+		// SSAO を作るか。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO。
 		ImGui::Checkbox( "SSAO", &ssaoEnabled() );
 		ImGui::SameLine();
 		// ぼかしを切ると、点の並びを回したざらつきがそのまま見える（調整用）。
 		ImGui::Checkbox( "SSAO blur", &ssaoBlurEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > SSAO)" );
-		// 映り込み（SsrDecalMaterial_Plan.txt 7・9 章）。値は Tuning の SSR。切ると空と地面の色の映り込みに戻る。時間は gpu.SSR・gpu.SSR composite。
+		// 映り込み。値は Tuning の SSR。切ると空と地面の色の映り込みに戻る。時間は gpu.SSR・gpu.SSR composite。
 		ImGui::Checkbox( "SSR", &ssrEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > SSR / SSR color)" );
-		// Hi-Z（HiZSsr_Plan.txt 6・8 章）。切ると今までの直線の進み方（段階12 の計測が終わったら直線は消す）。時間は gpu.Hi-Z・gpu.SSR。
+		// Hi-Z。切ると今までの直線の進み方（段階12 の計測が終わったら直線は消す）。時間は gpu.Hi-Z・gpu.SSR。
 		ImGui::Checkbox( "Hi-Z", &hiZEnabled() );
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth( kHiZLevelSliderWidth );
 		ImGui::SliderInt( "Hi-Z view level", &hiZViewLevel(), 0, kMaxHiZViewLevel );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > Hi-Z)" );
-		// 粗い面のぼけた映り込み（HiZSsr_Plan.txt 7・8 章）。切ると鏡の向きだけ・ぼかしも今までのまま。TAA を切るとざらつくのが正しい。
+		// 粗い面のぼけた映り込み。切ると鏡の向きだけ・ぼかしも今までのまま。TAA を切るとざらつくのが正しい。
 		ImGui::Checkbox( "Stochastic SSR", &ssrStochasticEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(roughness 0.4-0.7, Tuning > SSR maxRoughness)" );
-		// 雨上がりの水たまり（SsrDecalMaterial_Plan.txt 6・9 章）。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える。
+		// 雨上がりの水たまり。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える。
 		ImGui::Checkbox( "Puddles", &puddlesEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(road only, view: G-Buffer > Roughness)" );
-		// 弾痕のデカール（SsrDecalMaterial_Plan.txt 8・9 章）。切ると弾痕が描かれない（板の弾痕に戻すのではない）。時間は gpu.Decals。
+		// 弾痕のデカール。切ると弾痕が描かれない（板の弾痕に戻すのではない）。時間は gpu.Decals。
 		ImGui::Checkbox( "Decals", &decalsEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(bullet holes)" );
-		// 半透明の板を壁・地面に刺さった所で薄くするか（SsaoTranslucent_Plan.txt 7・8 章）。切ると板の縁の線が見える。
+		// 半透明の板を壁・地面に刺さった所で薄くするか。切ると板の縁の線が見える。
 		ImGui::Checkbox( "Soft particles", &softParticlesEnabled() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(dust, blood, muzzle flash)" );
-		// カラーグレーディングとディザ（NightFinish_Plan.txt 9 章）。値は Tuning の PostProcessParams。縞は Dither を切ると見える。
+		// カラーグレーディングとディザ。値は Tuning の PostProcessParams。縞は Dither を切ると見える。
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();
 		ImGui::Checkbox( "Dither", &ditherEnabled() );
-		// 色の表（LUT。MoonStarsLut_Plan.txt 7・8 章）。Export で今の調整を Resource/UI/lut_export.tga に焼き、外の道具で直して
+		// 色の表（LUT）。Export で今の調整を Resource/UI/lut_export.tga に焼き、外の道具で直して
 		// Resource/UI/lut.tga の名前で置き、Reload で読む。強さは Tuning の PostProcessParams の lutStrength と同じ値。
 		ColorLutControl& lut = colorLutControl();
 		if ( ImGui::Button( "Export LUT" ) ) {
@@ -472,7 +472,7 @@ namespace{
 		ImGui::BeginDisabled( !lut.loaded );
 		ImGui::SliderFloat( "LUT strength", &postProcessParams().lutStrength, 0.f, 1.f );
 		ImGui::EndDisabled();
-		// アンチエイリアス（Taa_Plan.txt Q4・9 章）。Off / FXAA / TAA から 1 つ。FXAA の値は Tuning の PostProcessParams（fxaa〜）。
+		// アンチエイリアス。Off / FXAA / TAA から 1 つ。FXAA の値は Tuning の PostProcessParams（fxaa〜）。
 		// TAA は描く行列を毎フレームずらし、霧の後に履歴と混ぜる（値は Tuning の TAA。時間は gpu.TAA）。
 		AntiAliasing& antiAliasing = antiAliasingMode();
 		if ( ImGui::BeginCombo( "Anti-aliasing", antiAliasingName( antiAliasing ) ) ) {
@@ -484,7 +484,7 @@ namespace{
 			}
 			ImGui::EndCombo();
 		}
-		// G-Buffer の中身の表示（GBuffer_Plan.txt 8-2）。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す。
+		// G-Buffer の中身の表示。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す。
 		GBufferView& view = gbufferView();
 		if ( ImGui::BeginCombo( "G-Buffer", gbufferViewName( view ) ) ) {
 			for ( int i = 0; i < static_cast< int >( GBufferView::Count ); ++i ) {
@@ -530,7 +530,7 @@ void draw() {
 		ImGui::TextDisabled( "Hold Alt to use the mouse here." );
 		// どのタブを見ていても見えるよう、タブの外に置く。
 		drawActiveCheats();
-		// タブで欄を切り替える（2026-11-09 ユーザー指定）。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → パッド）。
+		// タブで欄を切り替える。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → パッド）。
 		// 窓は毎回同じ名前で作るので、ImGui が選んでいるタブを覚えている（imgui.ini は書かないので、起動し直すと Debug に戻る）。
 		if ( ImGui::BeginTabBar( "EditorTabs", ImGuiTabBarFlags_FittingPolicyScroll ) ) {
 			if ( ImGui::BeginTabItem( "Debug" ) ) {

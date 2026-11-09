@@ -39,10 +39,10 @@ namespace{
 		}
 	};
 
-	// ますの大きさ（m）。体（幅 0.5m 前後）の数倍にして、1 回の問い合わせで引くますを 1〜4 個にする（OptimizationB_Plan.txt Q4）。
+	// ますの大きさ（m）。体（幅 0.5m 前後）の数倍にして、1 回の問い合わせで引くますを 1〜4 個にする。
 	const float kGridCellSize = 4.f;
 	// 動く体をますへ入れる時に足す余裕（m）。ますを入れ直すのはティックの始めだけなので、そのティックの中で動ける分
-	// （走っても 1 ティック 0.1m 前後）より十分大きくする（Q5）。
+	// （走っても 1 ティック 0.1m 前後）より十分大きくする。
 	const float kBodyGridMargin = 0.5f;
 
 	// 長方形を向きによらず囲める円の半径（中心から隅までの長さ）。
@@ -196,7 +196,7 @@ bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, con
 			if ( !reach.touches( piece.boundsMin, piece.boundsMax ) ) {
 				continue;
 			}
-			PROFILE_COUNT( "Collide.walls", 1 ); // 細かく比べた壁のかけら（OptimizationB_Plan.txt 5 章）
+			PROFILE_COUNT( "Collide.walls", 1 ); // 細かく比べた壁のかけら
 			if ( SweepMath::sweepPiece( moving, delta, piece, &candidate ) ) {
 				keepEarlier( candidate, hit, &found );
 			}
@@ -209,7 +209,7 @@ bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, con
 			if ( filter.skips( body ) ) {
 				continue;
 			}
-			PROFILE_COUNT( "Collide.bodies", 1 ); // 細かく比べた動く体（OptimizationB_Plan.txt 5 章）
+			PROFILE_COUNT( "Collide.bodies", 1 ); // 細かく比べた動く体
 			if ( SweepMath::sweepBox( moving, delta, body->collider(), &candidate ) ) {
 				keepEarlier( candidate, hit, &found );
 			}
@@ -251,7 +251,7 @@ bool CollisionWorld::findPenetration( const BoxCollider& moving, const BodyFilte
 			if ( !reach.touches( piece.boundsMin, piece.boundsMax ) ) {
 				continue;
 			}
-			PROFILE_COUNT( "Collide.walls", 1 ); // 細かく比べた壁のかけら（OptimizationB_Plan.txt 5 章）
+			PROFILE_COUNT( "Collide.walls", 1 ); // 細かく比べた壁のかけら
 			if ( SweepMath::penetratePiece( moving, piece, &candidate ) ) {
 				keepDeeper( candidate, push, &found );
 			}
@@ -264,7 +264,7 @@ bool CollisionWorld::findPenetration( const BoxCollider& moving, const BodyFilte
 			if ( filter.skips( body ) ) {
 				continue;
 			}
-			PROFILE_COUNT( "Collide.bodies", 1 ); // 細かく比べた動く体（OptimizationB_Plan.txt 5 章）
+			PROFILE_COUNT( "Collide.bodies", 1 ); // 細かく比べた動く体
 			if ( SweepMath::penetrateBox( moving, body->collider(), &candidate ) ) {
 				keepDeeper( candidate, push, &found );
 			}

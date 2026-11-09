@@ -14,7 +14,7 @@ class BonePoseModifier;
 // 頂点・重み・テクスチャ・アニメは SkinnedMeshData を借りる（所有しない）。
 // 同じキャラを何体出すときも、データは1つでインスタンスだけ増やせばよい。
 //
-// アニメの再生（時刻・クロスフェード・ポーズを求める）は AnimationPlayer（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 6 章）。
+// アニメの再生（時刻・クロスフェード・ポーズを求める）は AnimationPlayer（MidPrioritySplit_Plan.txt 6 章）。
 // ここはアニメの口を残して中で渡し、そのポーズに書き換えを掛けて、置き場所へ置いて描く。
 // アニメの切り替えは2通り。setAnimation は即座に切り替え、crossFadeTo は切り替え直前に見えていたポーズから
 // 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。

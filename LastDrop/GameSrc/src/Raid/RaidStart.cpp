@@ -5,7 +5,7 @@
 #include "GameLib/Math/Random.h"
 
 namespace{
-	// 始めのカバンの物（銃のほか）。2026-11-09 まで始めの倉庫に入れていた 48 発を、そのままカバンへ移した（C4）。
+	// 始めのカバンの物（銃のほか）。
 	struct StartItem{
 		ItemId item;
 		int amount;
@@ -14,10 +14,10 @@ namespace{
 		{ ITEM_AMMO_9MM, 24 },
 		{ ITEM_AMMO_9MM, 24 },
 	};
-	// 始めのカバンの銃（弾倉いっぱい。InventoryPickup_Plan.txt Q1）。
+	// 始めのカバンの銃（弾倉いっぱい）。
 	const WeaponId kStartWeapon = WEAPON_PISTOL;
 
-	// 選ぶ条件の表（C2：等しく 1 つ）。ふつうを外す・群れを出にくくする（2 行入れると 2 倍）ときは、この表だけを直す。
+	// 選ぶ条件の表。ふつうを外す・群れを出にくくする（2 行入れると 2 倍）ときは、この表だけを直す。
 	const DayCondition kConditionChoices[] = {
 		DayCondition::Normal,
 		DayCondition::Blackout,

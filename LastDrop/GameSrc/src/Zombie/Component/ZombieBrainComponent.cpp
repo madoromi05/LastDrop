@@ -125,7 +125,7 @@ void ZombieBrainComponent::pose( const ChaseTarget* target, bool standing, Zombi
 	bool attacking = attack && attack->isActive(); // 攻撃を進めた（move）後に読む
 	mChase->updateSway( target, standing && !attacking ); // 姿勢を求める前に、このティックの揺れを決める
 	rebuildPoseModifiers( health );
-	// 遠い・映らない体は、姿勢を求めるティックを間引く（時刻だけ進める。OptimizationB_Plan.txt 9 章）。部位の箱は placeHitboxes で毎ティック置き直すので、
+	// 遠い・映らない体は、姿勢を求めるティックを間引く（時刻だけ進める）。部位の箱は placeHitboxes で毎ティック置き直すので、
 	// 体ごと動く所（置き場所・向き）は毎ティック正しく、腕や脚の形だけが前に求めた姿勢のまま付いて行く。
 	AnimationThrottle::Level level = AnimationThrottle::judge( mContext->view, *mHitboxes, *mPosition );
 	if ( mAnimationThrottle.shouldPose( level, mustPoseEveryTick( attack, health ) ) ) {
@@ -165,7 +165,7 @@ void ZombieBrainComponent::claimAttack( const ZombieAttackComponent* attack ) {
 }
 
 void ZombieBrainComponent::chase( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd, ZombieAttackComponent* attack ) {
-	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
+	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順。
 	ZombieLocomotion::Intent intent = mChase->think( target, hitWorld, crowd );
 	if ( attack && attack->tryStart( target ) ) {
 		return;

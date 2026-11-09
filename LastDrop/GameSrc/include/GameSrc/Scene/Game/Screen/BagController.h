@@ -22,7 +22,7 @@ public:
 	bool canOpen() const;
 	void open();
 	void close();
-	// E で拾った物 offer を持った状態で開く（入れるマスを選ぶ。InventoryPickup_Plan.txt Q3）。
+	// E で拾った物 offer を持った状態で開く（入れるマスを選ぶ）。
 	void startPlacing( IInteractable* offer );
 	// 開いている間の入力（Tab/ESC で閉じる・マス操作・使う・捨てる・持ち替え）。ほかの入力は読まない。
 	void handleInput();
@@ -38,7 +38,7 @@ private:
 	void finishPlacingIfDone();
 	// cell の物を取り出して足元に置く（置けなければ戻す）。
 	void dropFromBag( int cell );
-	// cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11）。
+	// cell の体力を戻す物（包帯）を 1 つ使う。
 	void useFromBag( int cell );
 	bool isPlayerInjured() const;
 	PlayerCondition playerCondition() const;

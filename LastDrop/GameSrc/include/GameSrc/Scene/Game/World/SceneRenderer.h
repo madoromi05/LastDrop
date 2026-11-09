@@ -45,7 +45,7 @@ public:
 	const char* firstShaderError( const char* skinningError ) const;
 
 private:
-	// ライトの一覧と影のマップは SceneLights（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 1 章）。
+	// ライトの一覧と影のマップは SceneLights。
 	// 目から見る絵の、描くかどうか（描く距離は霧から）。
 	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
 

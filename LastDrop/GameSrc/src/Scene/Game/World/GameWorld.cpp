@@ -32,7 +32,7 @@ namespace{
 		return Vector3( placement.x, placement.y, placement.z );
 	}
 
-	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形。StreetLamp_Plan.txt Q4）。
+	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形）。
 	bool lampsLit( const DayConditionEffect& day ) {
 		const float kLightsOut = 0.f;
 		return day.streetLightScale > kLightsOut;
@@ -116,9 +116,9 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	Inventory* inventory ) {
 	{
 		PROFILE_SCOPE( "World.prepare" );
-		// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回。OptimizationB_Plan.txt 7 章）。
+		// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）。
 		mCollisionWorld.refreshBodies();
-		// このティックに道を探してよい回数を戻す（OptimizationC_Plan.txt 6 章）。
+		// このティックに道を探してよい回数を戻す。
 		mZombies.beginTick();
 	}
 	{
@@ -131,7 +131,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
 	{
-		PROFILE_SCOPE( "World.alert" ); // 弾を出す所（撃ったティックだけ。前は銃声で寄せる処理も入っていたので、計測の名前はそのまま）
+		PROFILE_SCOPE( "World.alert" ); // 弾を出す所（撃ったティックだけ。計測の名前は、前の計測の CSV と列を揃えるため alert のまま）
 		const GunComponent* gun = HoldComponent::heldGun( mPlayer ); // 素手なら nullptr
 		if ( gun && gun->firedThisTick() ) {
 			// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。

@@ -7,7 +7,7 @@
 enum class GridRule{
 	Free,       // 決まり無し（倉庫。銃を何丁でも置ける）
 	CarryLimit, // ItemSpec::carryLimit を守る（カバン。銃は 1 種類 1 丁）
-	FuelOnly,   // ガソリンだけ（脱出の車の給油口。SummaryPlan/個別仕様/出撃と帰還/FuelPort_Plan.txt）
+	FuelOnly,   // ガソリンだけ（脱出の車の給油口）
 };
 
 // マス目の上で物を動かすときに、決まり（GridRule）を守れるかを調べてから動かす（拠点の倉庫 ⇔ カバン）。
@@ -20,7 +20,7 @@ namespace ItemTransfer{
 	bool canMove( const ItemGrid& source, GridRule sourceRule, int from, const ItemGrid& target, GridRule targetRule, int to );
 	// canMove が true のときだけ呼ぶこと。
 	void move( ItemGrid* source, int from, ItemGrid* target, int to );
-	// source の from の物を、別のマス目 target のおまかせの所へ動かす（漁れる場所の画面の F。R3_Plan.txt Q9）。
+	// source の from の物を、別のマス目 target のおまかせの所へ動かす（漁れる場所の画面の F）。
 	// ①同じ物で重ねられるマス → ②上の行・左の列の空き、の順に入れる（入れ替えはしない）。重ねて入りきらない分は次のマスへ続け、
 	// それでも入らない分は source に残る。1 つでも動いたら true。source と target は別のマス目であること。
 	bool quickMove( ItemGrid* source, GridRule sourceRule, int from, ItemGrid* target, GridRule targetRule );

@@ -69,7 +69,7 @@ bool AnimationThrottle::shouldPose( Level level, bool mustPose ) {
 	// 間引かない間が終わった後も、体ごとのずれ（mPhase）は保ったままの刻みに戻る。
 	bool poses = !mHasPosed || mustPose || ( ( mTick + mPhase ) % interval == 0 );
 	if ( !poses ) {
-		PROFILE_COUNT( "Anim.skipped", 1 ); // 間引いた回数（OptimizationB_Plan.txt 5 章）
+		PROFILE_COUNT( "Anim.skipped", 1 ); // 間引いた回数
 		return false;
 	}
 	mHasPosed = true;

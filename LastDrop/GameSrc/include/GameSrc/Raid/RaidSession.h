@@ -9,8 +9,8 @@
 #include <vector>
 
 // 町の中の 1 回の出撃。経った時間（RaidClock）と脱出の車のそば（ExtractionTracker）を持ち、「今終わったか・どう終わったか」を答える
-// （R2_Plan.txt 5 章。2026-11-09 に 1 回勝負へ。SimpleRun_Plan.txt）。脱出の車を置く所は、作るときに候補（北・南）から 1 つ選ぶ
-// （FuelEscapeLoading_Plan.txt Q1・Q13）。車へ要る数のガソリンを入れ終えたら（openEscape）、車のそばに居続けて脱出できる。倒した数もここで数える。
+// （R2_Plan.txt 5 章）。脱出の車を置く所は、作るときに候補（北・南）から 1 つ選ぶ。
+// 車へ要る数のガソリンを入れ終えたら（openEscape）、車のそばに居続けて脱出できる。倒した数もここで数える。
 // 物・カバンには触らない（シーンは毎ティック tick を呼び、終わったら結果を渡して次のシーンへ移るだけ）。
 class RaidSession{
 public:

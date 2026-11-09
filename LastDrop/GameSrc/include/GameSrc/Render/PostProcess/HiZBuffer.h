@@ -34,7 +34,7 @@ private:
 	GameLib::Graphics::ConstantBuffer mConstants; // 描く先の段の大きさ（段ごとに書き換える）
 };
 
-// Hi-Z で進むか（F6 → Render の Hi-Z。HiZSsr_Plan.txt Q5）。false の間は Hi-Z を作らず、映り込みは今までの直線の進み方。
+// Hi-Z で進むか（F6 → Render の Hi-Z）。false の間は Hi-Z を作らず、映り込みは今までの直線の進み方。
 // 起動中ずっと 1 つ（HiZBuffer.cpp が持つ。初期値 true。Release では true のまま）。段階12 の計測が終わったら直線の進み方と一緒に消す。
 bool& hiZEnabled();
 // G-Buffer の表示の Hi-Z で見る段（F6 → Render の Hi-Z view level。0 が一番細かい。段の数を超えたら一番粗い段）。

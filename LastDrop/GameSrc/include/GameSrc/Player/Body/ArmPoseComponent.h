@@ -15,7 +15,7 @@ class GunComponent;
 class HoldComponent;
 class FirstPersonBodyComponent;
 
-// 銃を持つ腕のポーズの部品（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 4-1。2026-11-09 HoldComponent から分けた）。
+// 銃を持つ腕のポーズの部品（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 4-1）。
 // 持っている銃（HoldComponent）と構えから、腕の効き具合を決めて一人称の体（FirstPersonBodyComponent）へ渡す：
 //   リロードで腕をアニメへ差し替える割合・両手持ち・走って胸元に抱える寄せ具合・覗き具合。
 //   腕のポーズを持つ銃（拳銃）は、構え（覗いていない間・覗いた）のアニメの 1 フレーム目を覚え、いつも腕をそれに差し替える。

@@ -12,7 +12,7 @@ class FirstPersonControl;
 class ModalController;
 
 // 本編のシーンと、確認用の道具（F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe）をつなぐ係
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 7-2。2026-11-09 GameScene から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 7-2）。
 // GameScene は ZF_EDITOR のとき（Debug・Profile）だけこれを持つ（Release には持たない。ファイルは他の確認用の道具と同じく、どの構成でもビルドする）。
 // 観察用カメラ（FreeCamera）と確認用の表示（GameDebugOverlay）は持たない（どのカメラで描くか・パイプラインの途中に挟む、が描画の順番そのものなので、シーンに残す）。
 class GameEditorBridge{
@@ -31,7 +31,7 @@ public:
 	// F6 で頼まれていたら（DebugSwitches::spawnZombies）、自キャラの前にゾンビを出す（世界を変えるので、読むだけの GameDebugOverlay ではなくここ）。
 	// ティックの間に呼ぶ。camera: 自キャラの視点（向いている方へ出す）。
 	void spawnRequestedZombies( GameWorld* world, const FirstPersonCamera& camera );
-	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録。FuelEscapeLoading_Plan.txt F-0）。
+	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録）。
 	// freeCamera: 観察用カメラを使っているか。
 	void probeFrame( const GameWorld& world, const FirstPersonControl& control, const ModalController& modals, bool freeCamera );
 	// このティックに撃った・空撃ちしたかを FireProbe へ渡す（GameWorld::update の後）。

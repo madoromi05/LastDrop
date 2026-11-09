@@ -2,7 +2,6 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// AmmoHud_Plan.txt Q3・Q4。
 	const float kLingerSeconds = 2.f;    // 覗くのをやめた・リロードを終えた後、出したままにする長さ
 	const float kFadeInSeconds = 0.15f;  // 出るときに濃くなる長さ
 	const float kFadeOutSeconds = 0.3f;  // 消えるときに薄くなる長さ

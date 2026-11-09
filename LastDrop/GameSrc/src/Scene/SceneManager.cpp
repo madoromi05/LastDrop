@@ -77,7 +77,7 @@ void SceneManager::update() {
 		PROFILE_SCOPE( "Pad" );
 		Pad::instance()->update();
 	}
-	// 計測の CSV の記録を始める／止めるのは F6 の Perf タブのボタン（2026-11-09 に F7 のキーから移した）。
+	// 計測の CSV の記録を始める／止めるのは F6 の Perf タブのボタン。
 	{
 		PROFILE_SCOPE( "Scene.beginFrame" );
 		mCurrent->beginFrame();

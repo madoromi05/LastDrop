@@ -224,7 +224,7 @@ public:
 		hr = mDevice->CreateShaderResourceView( mGpuTexture, &srvDesc, &mSRV );
 		ASSERT( SUCCEEDED( hr ) && "CreateShaderResourceView failed" );
 
-		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる。LinearToneMap_Plan.txt 10 章）。
+		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる）。
 		// 名前のある画像（ファイルから読んだ物）だけ。lock で書く画像は書き直すたびに来るので数えない。
 		if ( !mProfileName.empty() ){
 			size_t bytes = 0;
@@ -394,7 +394,7 @@ public:
 					mIsError = true;
 				}else{
 					// 画像を展開して GPU へ送るのは、ここ（最初に isReady を呼んだ描画の中）。
-					// ゲームが始まった後に初めて使うテクスチャだと、ここがプレイ中のひっかかりになる（計画書 6-6 ③）。
+					// ゲームが始まった後に初めて使うテクスチャだと、ここがプレイ中のひっかかりになる。
 					Profiling::addLoadWait( mProfileName.c_str(), mRequestedAt );
 					LOAD_SCOPE( "texture", mProfileName.c_str() );
 					if ( mExtension == EXT_DDS ) readDDS( mFile.data(), mFile.size() );
@@ -556,7 +556,7 @@ public:
 	}
 
 	// tools/convert/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）。
-	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる（LinearToneMap_Plan.txt 8-4）。
+	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる。
 	void readCompressedDds( const char* data, int size ){
 		std::string error;
 		if ( !DdsReader::read( data, size, &mCompressed, &error ) ){
@@ -672,7 +672,7 @@ public:
 		return sTables;
 	}
 	// 4 画素の、shift の位置の 8bit を平均する。asSrgb なら sRGB の色としてリニアで平均する
-	// （画像の数のまま平均すると、遠くの縮んだ絵が暗い側へ寄るため。LinearToneMap_Plan.txt 4 章）。
+	// （画像の数のまま平均すると、遠くの縮んだ絵が暗い側へ寄るため）。
 	static unsigned averageChannel( const unsigned* quad, int shift, bool asSrgb ){
 		const unsigned half = kMipSourcePixels / 2; // 四捨五入
 		unsigned sum = 0;

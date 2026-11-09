@@ -17,7 +17,7 @@ class SkinnedMeshData;
 
 // 一人称（Escape from Tarkov のような「自分の体が見える」FPS）用に、全身のポーズを書き換える。
 // 書き換えは小さな段（Player/Body/Pose/ の BonePoseModifier）に分けてあり、BonePoseModifierChain でこの順につなぐ
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5 章。2026-11-09 に 1 つのクラスから分けた）：
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5 章）：
 //   0. ArmOverridePose … リロード中・拳銃の構えで、両腕だけを別のアニメのポーズに差し替える（胸に付けて写す）
 //   1. SpineBendPose   … 視点の上下（ピッチ）ぶん背骨 3 本を曲げる（腕と銃が視線に付いてくる）
 //   2. EyePoint        … 曲げた後の頭から目の位置（カメラの視点）を決める（測るだけ）
@@ -66,7 +66,7 @@ public:
 	// followReference：pose を作ったときの体のアニメの右手（銃の手。骨格の根の空間）。nullptr なら寄せない。
 	// followHandWeight：差し替えた腕を、今の体のアニメの右手が followReference からどれだけ動いたか（位置と向き）のとおりに、
 	// まとめて動かす割合（0〜1。0 なら胸に付けて写すだけ）。拳銃の構え（pistol_ready）はライフルの止まった構え（rifle_idle）の体の上で作ってあるので、
-	// 1 にすると、歩き・走りでも拳銃はライフルの右手と同じに動き、同じ所・同じ向きで持つ（PistolAnimation_Plan.txt 14-7）。
+	// 1 にすると、歩き・走りでも拳銃はライフルの右手と同じに動き、同じ所・同じ向きで持つ。
 	// followReference は借りるだけ（次の apply まで中身を変えないこと）。
 	void setArmOverride( const std::vector< GameLib::Math::Matrix34 >* pose, float weight, float followHandWeight,
 		const GameLib::Math::Matrix34* followReference );

@@ -107,7 +107,7 @@ void InventoryCursor::openMenu( const ItemGrid& grid, ItemId equipped, bool inju
 	if ( weaponForItem( item ) != WEAPON_NONE && item != equipped ) {
 		mMenuItems[ mMenuCount++ ] = MENU_EQUIP;
 	}
-	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない。R3_Plan.txt Q11）。
+	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない）。
 	if ( itemSpec( item ).kind == ITEM_KIND_MEDICAL && injured ) {
 		mMenuItems[ mMenuCount++ ] = MENU_USE;
 	}

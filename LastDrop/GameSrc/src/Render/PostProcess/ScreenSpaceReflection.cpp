@@ -15,7 +15,7 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Ssr.hlsl";
 	const char* kBlurShaderFile = "Resource/Shader/SsrBlur.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率。SsrDecalMaterial_Plan.txt 7-1）。SsrCommon.hlsli の kSsrHalfStep と揃える。
+	// 描画先の大きさ（画面に対する倍率）。SsrCommon.hlsli の kSsrHalfStep と揃える。
 	const float kResolutionScale = 0.5f;
 
 	// Ssr.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t4 材質・t5 深度、t6 シーンの色 / b1）。
@@ -45,8 +45,8 @@ namespace{
 		float thickness;
 		float edgeFade;
 		float intensity;
-		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
-		float stochastic; // 粗い面の反射の向きをばらすか（1 / 0。HiZSsr_Plan.txt 7 章）
+		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる）
+		float stochastic; // 粗い面の反射の向きをばらすか（1 / 0）
 		float hiZLevels;        // Hi-Z の段の数
 		float hiZMaxIterations; // Hi-Z で進む回数の上限
 		float useHiZ;           // Hi-Z で進むか（1 / 0）
@@ -138,7 +138,7 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	gm.setShaderResource( kHiZSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kSceneColorSlot, Graphics::RenderTarget() );
-	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。ぼかしも粗さを読む（HiZSsr_Plan.txt 7 章）。
+	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。ぼかしも粗さを読む。
 	blur( mReflection, mBlurScratch, gbuffer, depth, inverse, projectionView, kHorizontal[ 0 ], kHorizontal[ 1 ] );
 	blur( mBlurScratch, mReflection, gbuffer, depth, inverse, projectionView, kVertical[ 0 ], kVertical[ 1 ] );
 	// 後から描く物（固定パイプライン）に残さない。

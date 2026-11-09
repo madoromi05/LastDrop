@@ -61,7 +61,7 @@ ZombieSway& ZombieChaseComponent::sway() {
 }
 
 ZombieLocomotion::Intent ZombieChaseComponent::think( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd ) {
-	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
+	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順。
 	float weaveDegree = mSway->weaveDegree( zombieUncertaintyParams().weaveDegree ); // 揺れている間は、倒れている側へ少し流れる
 	ZombieLocomotion::Intent intent = mLocomotion->thinkStanding( *mPosition, mState->eyePosition(), target, hitWorld, crowd, weaveDegree, mAngleY );
 	mMesh->setAngleY( *mAngleY ); // この後、歩かずに攻撃を始めても、向きは見た目に写しておく
@@ -94,7 +94,7 @@ float ZombieChaseComponent::swayStrength( const ChaseTarget* target, bool pursui
 	if ( !target || !pursuing || mLocomotion->mode() != ZombieChase::Mode::Chase ) {
 		return 0.f;
 	}
-	// 走る体は揺らさない（走りのアニメ自体が大きく動くので、揺れを足すと狙えなくなる。脚が傷んで歩きに落ちたら揺れる。R4_Plan.txt Q6）。
+	// 走る体は揺らさない（走りのアニメ自体が大きく動くので、揺れを足すと狙えなくなる。脚が傷んで歩きに落ちたら揺れる）。
 	if ( mLocomotion->isRunner() ) {
 		return 0.f;
 	}

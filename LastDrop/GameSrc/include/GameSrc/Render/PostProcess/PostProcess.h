@@ -16,9 +16,9 @@
 // 周辺を少し暗くして（ビネット）、最後に画面の色（sRGB）へ戻す（LinearToneMap_Plan.txt 6 章）。露出とブルームの値は PostProcessParams。
 // ビネットの所に赤を足す強さ・周りのぼかしと暗さ（攻撃された瞬間）と、全体を暗くする量（死んだ後）を外から動かせる。
 // 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）。
-// トーンマップの後にカラーグレーディング、画面の色へ戻した後にディザを掛ける（NightFinish_Plan.txt 6・7 章）。
+// トーンマップの後にカラーグレーディング、画面の色へ戻した後にディザを掛ける。
 // アンチエイリアスが FXAA（antiAliasingMode）のときは、写した結果をいったん 8bit の中間（a に輝度）へ置き、Resource/Shader/Fxaa.hlsl で輪郭を
-// なめらかにしながら画面へ写す（NightFinish_Plan.txt 8 章）。OFF のときは今までどおり画面へ直接写す。
+// なめらかにしながら画面へ写す。OFF のときは今までどおり画面へ直接写す。
 //
 // 写した後の画面には、文字（DebugScreen）など Framework が後から描く物がそのまま重なる（ポストプロセスは掛からない）。
 // 作るのは Graphics::Manager ができた後（シーンの中）。
@@ -35,7 +35,7 @@ public:
 	// 続きをシーンへ描く前に呼ぶ。
 	void resumeScene();
 	// resumeScene と同じだが、深度は奥行きの判定だけに使い（書き込まない）、同じ深度を t5 から読めるようにも付ける。
-	// 半透明の板（LitQuadBatch）を、物の近くで薄くしながら描く間に使う（SsaoTranslucent_Plan.txt 7 章）。
+	// 半透明の板（LitQuadBatch）を、物の近くで薄くしながら描く間に使う。
 	// 深度を書く物（当たり判定の表示など）を描く前に resumeScene へ戻すこと。
 	void resumeSceneReadOnlyDepth();
 	// 描画先をシーンの色だけにする（深度は外す）。深度をシェーダから読みながらシーンの色へ描くとき（ディファードのライティング）に呼ぶ。
@@ -50,7 +50,7 @@ public:
 	void setPain( float amount );
 	// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く。
 	void setFade( float amount );
-	// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0。Taa_Plan.txt 8 章）。次の endScene から効く。
+	// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）。次の endScene から効く。
 	void setNoiseFrame( int frame );
 	// 中間の描画先を画面へ写す。シーンを描き終わった後に呼ぶ。描画先は画面に戻る。
 	// GPU の印を中で打つ：「PostProcess」（ブルームと写すまで）・「FXAA」（FXAA。OFF なら区間はほぼ 0）。
@@ -71,7 +71,7 @@ private:
 	GameLib::Graphics::RenderTarget mSceneColor;   // シーンの色（1を超える明るさを持てる形式。後でトーンマップするため）
 	GameLib::Graphics::DepthTarget mSceneDepth;    // シーンの深度（後で位置の復元・霧などに読む）
 	Bloom mBloom;                                  // シーンの明るい所をにじませた絵を作る
-	ColorLut mColorLut;                            // 色の表（LUT）。読んでいれば写すときに t4 に付ける（MoonStarsLut_Plan.txt 6 章）
+	ColorLut mColorLut;                            // 色の表（LUT）。読んでいれば写すときに t4 に付ける
 	GameLib::Graphics::Shader mPresentShader;
 	GameLib::Graphics::ConstantBuffer mPresentConstants;
 	GameLib::Graphics::RenderTarget mFxaaInput;  // 写した結果（画面の色・8bit。a に輝度）。FXAA が ON のときだけ通す

@@ -11,7 +11,7 @@ class GameObject;
 class GameObjectWorld;
 
 // 自キャラと、自キャラが持てる銃（拳銃・ライフル。WeaponCatalog の全部）を部品から組み立てる（Unity のプレハブの代わり。ZombieFactory と同じ役）。
-// 部品の並び・形のファイル・名前を 1 か所で決める（2026-11-02 ユーザー指定：GameWorld から分けた）。
+// 部品の並び・形のファイル・名前を 1 か所で決める。
 // どこに置くか（TownMap::playerStart）と、置いた後に読むのは GameWorld。
 // 銃は全部ここで 1 丁ずつ作って HoldComponent へ渡す。どれを手に持つかはカバンの中身で決まる（始めは拳銃。Pistol_Plan.txt）。
 // 地面に落ちた銃（拾える物）は銃の物とは別の置物で、PropFactory が作る（銃の物は捨てても消えず、弾倉の中身を持ち続ける）。

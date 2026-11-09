@@ -20,7 +20,7 @@ class GameObject;
 class GameObjectWorld;
 
 // 置物（置物の車・漁れるゴミ箱と木箱・落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物）を部品から組み立てる
-// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt の ★5）。
+// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt）。
 // 部品の並び・形のファイル・名前・材質・中身の量を 1 か所で決める（「何で出来ているか」）。
 // どこに置くか・何個置くかは使う側（WorldBuilder：最初に置く物、GameWorld：カバンから捨てた物）が決める。
 // 形の構築に失敗していたら、どの spawn も置かずに nullptr を返す（理由は MeshCache がデバッグ出力済み。
@@ -34,25 +34,25 @@ public:
 	// どれも world へ spawn して、その物を返す。position / yawDegree: 足元の位置と向き（度。0 は +Z）。world: nullptr 不可。
 	// 漁れるゴミ箱・木箱（table は LootTableId::Dumpster か Crate）。動かない箱として名簿へ載る（ゾンビの道の図にも、回り込む角として入る）。
 	// random: 中身を決める乱数（nullptr 不可。覚えない）。
-	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し。FuelEscapeLoading_Plan.txt Q15・改訂 2）。
+	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し）。
 	GameObject* spawnLootContainer( GameObjectWorld* world, LootTableId table, const GameLib::Math::Vector3& position, float yawDegree,
 		GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed ) const;
 	// 今日の脱出の車（置物の車と同じ形・同じ動かない箱。ガソリンを入れられ、漁れない）。requiredFuel: 走るのに要るガソリンの数。
 	GameObject* spawnEscapeCar( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, int requiredFuel ) const;
 	// 消火栓（見た目の置物。動かない箱として名簿へ載る。使えない・漁れない）。
 	GameObject* spawnFireHydrant( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
-	// 街灯の柱（見た目の置物。動かない箱。StreetLamp_Plan.txt）。lit: ガラスが光る形か、消えた形か（停電の日は消えた形。Q4）。
+	// 街灯の柱（見た目の置物。動かない箱）。lit: ガラスが光る形か、消えた形か（停電の日は消えた形）。
 	// 照らす光は置かない（シーンが TownMap::streetLights から作る）。
 	GameObject* spawnStreetLamp( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, bool lit ) const;
 	// world に置いた街灯の柱を全部、ガラスが光る形（lit）か消えた形に替える（F6 で今日の条件を切り替えたとき）。world: nullptr 不可。
 	// update の外で呼ぶ。形の構築に失敗していれば替えない。
 	void relightStreetLamps( GameObjectWorld* world, bool lit ) const;
-	// 拾うと消えるガソリン（カバンから捨てたとき）。外せる箱で移動を止める（ユーザー指定）。
+	// 拾うと消えるガソリン（カバンから捨てたとき）。外せる箱で移動を止める。
 	GameObject* spawnFuel( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
 	// 地面に落ちている銃（拾うとカバンへ入る）。id: どの銃か。上を歩ける。
 	// 弾倉の中身は持たない（銃の物〈自キャラが持てる銃〉が持ち続ける。銃は 1 種類 1 丁だけなので、拾い直すと前の弾数のまま）。
 	GameObject* spawnWeaponDrop( GameObjectWorld* world, WeaponId id, const GameLib::Math::Vector3& position, float yawDegree ) const;
-	// カバンから捨てた物。落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物になり、拾い直せる（GridInventory_Plan.txt Q6）。
+	// カバンから捨てた物。落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物になり、拾い直せる。
 	// stack: 捨てた物と数（弾・包帯は数をそのまま持つ。ガソリン・銃・売れる物は 1 つ）。
 	GameObject* spawnDroppedItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;
 

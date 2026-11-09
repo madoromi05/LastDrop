@@ -17,8 +17,7 @@ struct ChaseTarget;
 // ZombieCrowd_Plan.txt・ZombieCrawl_Plan.txt）。行き先を決めるのは ZombieChase、建物を回り込む通り道は ZombiePath（どちらもここが持つ）。
 // 立っている体は、向く点に近くの仲間から離れる向きと、フラつきで倒れている側への流れを混ぜる。這っている体は混ぜない。
 // 足元と向きは持ち主（Zombie）が持ち、関数ごとに渡す。攻撃を始めてよいか・どのアニメを流すかは知らない。
-// 考える（thinkStanding / thinkCrawling）と動く（walkStep / standAside）を分けてあり、その間で持ち主が攻撃を始めるかを見る
-// （SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
+// 考える（thinkStanding / thinkCrawling）と動く（walkStep / standAside）を分けてあり、その間で持ち主が攻撃を始めるかを見る。
 class ZombieLocomotion{
 public:
 	// 向きを変える速さが違う（這っている体はゆっくり）。
@@ -32,7 +31,7 @@ public:
 		bool walking;   // 歩きたいか（ZombieChase::wantsToWalk）
 		bool facing;    // 行き先の方を向き終わったか（向きの差が大きいうちは false。まだ進まない）
 		bool wandering; // うろついているか（Wander。這っている体はその場でもがくだけ）
-		bool running;   // 走りたいか（走る体が、追う・寄る間に歩きたいとき。R4_Plan.txt Q3。這っている体は走らない）
+		bool running;   // 走りたいか（走る体が、追う・寄る間に歩きたいとき。這っている体は走らない）
 	};
 
 	// self: ZombieCrowd に自分を名乗るための持ち主（ポインタを比べるだけで、中身は読まない）。
@@ -40,7 +39,7 @@ public:
 	// mover: 壁・ほかの体に沿って滑る移動。
 	// どれも所有権は受け取らない。nullptr 不可。この部品より長く生きていること（mover は同じ Zombie のメンバで、この部品より先に宣言する）。
 	// sightPhase: 見通し・まっすぐ通れるかを調べる時刻をずらす番号。randomSeed: うろつく先・立つ長さを選ぶ乱数の種（ZombieChase）。
-	// runner: 走る体か（湧いたときに決まる。R4_Plan.txt Q1）。
+	// runner: 走る体か（湧いたときに決まる）。
 	ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, PathBudget* pathBudget, const CharacterMover* mover, int sightPhase,
 		int randomSeed, bool runner );
 	ZombieLocomotion( const ZombieLocomotion& ) = delete;
@@ -71,7 +70,7 @@ public:
 	void alert();                                              // 撃たれた。見えていなくても気付く
 	void hearNoise( const GameLib::Math::Vector3& position );  // position で銃声がした。少し遅れてから探しに来る
 	void clearPath();                                          // 通り道を捨てる（攻撃を始めた・這い始めた）
-	// 脚が傷んで、もう走らない（歩きに落ちる。戻らない。R4_Plan.txt Q7）。走る体でなければ何もしない。
+	// 脚が傷んで、もう走らない（歩きに落ちる。戻らない）。走る体でなければ何もしない。
 	void stopRunning();
 	bool isRunner() const;                                     // 走る体か（脚が傷んで走れなくなったら false）
 	ZombieChase::Mode mode() const;                            // 今の考え（Wander / Chase / Search）

@@ -24,7 +24,7 @@ namespace{
 	const float kHitCloseDistance = 0.9f;
 	// 寄る速さ（m/ティック）。0.3m を 0.5 秒で（振り下ろす約 0.47 秒の間にほぼ寄り終える）。
 	const float kReachApproachSpeed = 0.6f / GameTime::kTicksPerSecond;
-	// ── 脚を失って体を引きずる体（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）──
+	// ── 脚を失って体を引きずる体 ──
 	// 攻撃を始める間合い（m。頭から相手の足元まで、水平だけ）と、腕を伸ばし切ったときに当たる距離。
 	// 追いついて止まる距離（胸から 1.2m）で、頭は相手の足元の手前 0.7m 辺りに来るので、それより少し遠くする。
 	const float kCrawlAttackStartDistance = 0.9f;

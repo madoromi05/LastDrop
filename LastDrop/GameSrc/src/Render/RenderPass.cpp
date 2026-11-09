@@ -14,7 +14,7 @@ namespace{
 	const GameLib::Graphics::Shader* gStaticMeshShader = nullptr;     // GBuffer の間だけ指す（持ち主は GBuffer）
 	GameLib::Graphics::ConstantBuffer* gSurfaceConstants = nullptr;  // 同上
 	const GameLib::Graphics::Texture* gDefaultOrm = nullptr;         // 同上
-	// 直前に送った材質の値と画像（同じ材質が続くとき送り直さないため。OptimizationS246_Plan.txt 3 章）。
+	// 直前に送った材質の値と画像（同じ材質が続くとき送り直さないため）。
 	// G-Buffer のパスの始めに忘れる（定数の中身は GBuffer が作り直すことがあり、画像の場所は終わりに外すため）。
 	bool gHasSentSurface = false;
 	SurfaceParams gSentSurface;

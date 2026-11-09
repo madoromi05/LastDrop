@@ -20,8 +20,8 @@ public:
 	Interactor( float reach, Finder finder );
 
 	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う
-	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側。InventoryPickup_Plan.txt Q3。
-	// 漁れる場所も使わずに opened に残す。開けるまで待つ・中を見せるのは呼ぶ側。R3_Plan.txt 5 章）。
+	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側。
+	// 漁れる場所も使わずに opened に残す。開けるまで待つ・中を見せるのは呼ぶ側）。
 	// 1回の描画につき1回（押した瞬間を1回だけ拾うため）。
 	// inventory: 使うときに増やしたり減らしたりする持ち物。nullptr 不可。
 	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction,

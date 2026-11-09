@@ -41,7 +41,7 @@ cbuffer LightConstants : register(b2)
     LightData gLights[kMaxLights];
 };
 
-// 影のマップ（LightList::bindShadowMaps。Shadow_Plan.txt 4 章）。番号 0 は懐中電灯、1〜3 は月（段階 4-b）。
+// 影のマップ（LightList::bindShadowMaps）。番号 0 は懐中電灯、1〜3 は月（段階 4-b）。
 // 付いていない番号は、ライトの shadowMap がその番号を指さないので読まれない。
 Texture2D<float> gShadowMap0 : register(t6);
 Texture2D<float> gShadowMap1 : register(t7);
@@ -76,7 +76,7 @@ float2 shadowMapSize(uint index)
 }
 
 // 位置 position（法線 normal・光の方 toLight・光までの距離 lightDistance）に、index 番の影のマップのライトの光がどれだけ届くか（0〜1）。
-// にきび対策（Shadow_Plan.txt 7 章）：読む位置を法線の向きと光の方へ、影のマップの画素の大きさの何倍かだけずらす。
+// にきび対策：読む位置を法線の向きと光の方へ、影のマップの画素の大きさの何倍かだけずらす。
 float shadowVisibility(uint index, float3 position, float3 normal, float3 toLight, float lightDistance)
 {
     float4 texel = gShadowTexels[index];
@@ -107,7 +107,7 @@ float shadowVisibility(uint index, float3 position, float3 normal, float3 toLigh
     return lerp(kNoShadow, sum / kPcfSampleCount, gShadowSettings.z);
 }
 
-// 月の CSM（Shadow_Plan.txt 6 章）。first から続く 3 枚のうち、カメラからの奥行き（カメラの向きに沿った距離）で枚を選んで影を読む。
+// 月の CSM。first から続く 3 枚のうち、カメラからの奥行き（カメラの向きに沿った距離）で枚を選んで影を読む。
 // 各枚の受け持ちの奥の gCascadeEnds.w 割は、次の枚と混ぜる（枚の境目で影の細かさが急に変わって見えないように）。
 // 一番奥の枚の端より先は影を付けない（同じく端の手前で影を薄くしていく）。eye：カメラの目の位置。
 float cascadedShadowVisibility(uint first, float3 position, float3 normal, float3 toLight, float3 eye)
@@ -146,7 +146,7 @@ float3 skyGradient(float3 dir)
 
 #include "SkyDetail.hlsli"
 
-// 描く空の色（向き dir。長さ 1）。グラデーションに月の絵（模様つき）を足す（MoonStarsLut_Plan.txt 4 章）。
+// 描く空の色（向き dir。長さ 1）。グラデーションに月の絵（模様つき）を足す。
 // 月は空の明るさ（gSkyZenith.w）を掛けない：グラデーションを暗くしても、月の明るさは自分の値のまま。
 float3 skyColor(float3 dir)
 {
@@ -155,7 +155,7 @@ float3 skyColor(float3 dir)
 
 // 向き dir から来る環境光（リニア。強さ込み）。上半分は空、下半分は地面。地平線をまたぐ所はなめらかにつなぐ。
 // roughness：0 なら dir の方の色そのもの、1 なら半球全体をならした色（粗い面の映り込み・拡散の環境光はこちら）。
-// つるつるの面には月の円板も映す（水たまり・車の塗装。MoonStarsLut_Plan.txt Q1）。
+// つるつるの面には月の円板も映す（水たまり・車の塗装）。
 float3 environmentLight(float3 dir, float roughness)
 {
     float3 ground = srgbToLinear(gGround.rgb);

@@ -14,7 +14,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 見る箱を、頂点を囲む箱から四方と上へ広げる長さ（m）。2026-10-31 ユーザー承認（7.62 の弾薬を狙わずに拾えるように）。
+	// 見る箱を、頂点を囲む箱から四方と上へ広げる長さ（m）。7.62 の弾薬のような小さな物も、狙わずに拾えるように。
 	const float kLookMargin = 0.15f;
 	const float kHalf = 0.5f;
 

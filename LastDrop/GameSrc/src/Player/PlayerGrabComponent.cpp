@@ -2,7 +2,7 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// ゾンビに離されてから、またつかまれるようになるまで（秒。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章）。
+	// ゾンビに離されてから、またつかまれるようになるまで（秒）。
 	const float kGrabCooldownSeconds = 1.f;
 	const int kGrabCooldownTicks = GameTime::secondsToTicks( kGrabCooldownSeconds );
 }

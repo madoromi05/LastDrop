@@ -44,7 +44,7 @@ public:
 	bool isReloading() const;
 	WeaponReload::Cue reloadCueThisTick() const; // 直前の updateReload で来たリロードの合図（弾倉を抜く・挿す・槓桿）
 	int magazineRounds() const;     // 弾倉に入っている弾の数
-	// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき（R2_Plan.txt Q13）。
+	// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき。
 	void setMagazineRounds( int rounds );
 
 private:

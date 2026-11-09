@@ -3,8 +3,8 @@
 
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 
-// 自キャラとは別の、町やゾンビを見て回る確認用のカメラ（2026-10-20 ユーザー指定。Debug・Profile ビルドだけで使う）。
-// F6 の Debug タブの Free camera で使う・やめるを切り替える（DebugSwitches::toggleFreeCamera。2026-11-09 に F4 のキーから移した）。使っている間は:
+// 自キャラとは別の、町やゾンビを見て回る確認用のカメラ（Debug・Profile ビルドだけで使う）。
+// F6 の Debug タブの Free camera で使う・やめるを切り替える（DebugSwitches::toggleFreeCamera）。使っている間は:
 //   マウスで向きを変える（カーソルロック中だけ）。真下近くまで見下ろせる。
 //   WASD で見ている方へ前後・左右、Space で上がり Ctrl で下がる。Shift を押している間はさらに速い。
 //   壁・地面はすり抜ける（当たり判定を持たない）。

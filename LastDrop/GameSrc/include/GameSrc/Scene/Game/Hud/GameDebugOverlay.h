@@ -16,11 +16,11 @@ class UiRenderer;
 
 // 本編の確認用の表示。画面の左下（状態表示の上）に文字（DebugScreen）で出すものと、Debug・Profile ビルドだけの当たり判定の表示をまとめる。
 // ・どのビルドでも出す文字: 操作説明、シェーダのコンパイルエラー（あるときだけ）
-// ・Debug・Profile ビルド（ZF_EDITOR）だけ。どれを出すかは F6 の Debug タブで切り替える（DebugSwitches。2026-11-09 に F1〜F3 のキーから移した）:
-//   showCollision（旧 F1）: 当たり判定の表示。表示中は画面中央（視線）へ確認用の線分を撃ち、当たった所と相手を出す。
-//   showPickups（旧 F2）: 落ちている物（ガソリン）の当たり判定の箱を、壁や建物を透かして表示する。
+// ・Debug・Profile ビルド（ZF_EDITOR）だけ。どれを出すかは F6 の Debug タブで切り替える（DebugSwitches）:
+//   showCollision: 当たり判定の表示。表示中は画面中央（視線）へ確認用の線分を撃ち、当たった所と相手を出す。
+//   showPickups: 落ちている物（ガソリン）の当たり判定の箱を、壁や建物を透かして表示する。
 //   showCollision とは別で、どちらか片方だけでも出せる（当たり判定の線は手前の物に隠れるので、遠くの缶はこちらでないと見つけられない）。
-//   showZombieInfo（旧 F3）: ゾンビの体力（全体のバーと部位の数字）を頭の上に出す（ZombieHealthBars）。
+//   showZombieInfo: ゾンビの体力（全体のバーと部位の数字）を頭の上に出す（ZombieHealthBars）。
 //   表示中は左下の文字に、湧く仕組みの様子（立っている数 / 目標の数・次に湧くまで。ZombieSpawner）も出す。
 //   表示中は、建物を回り込んでいるゾンビの通り道も水色の線で描く（ZombiePathDrawer）。
 //   表示中は、街灯などの点光源の置き場所と届く範囲も描く（LightDebugDrawer。照らしている物は黄色、16 個に入らず消えている物は灰色）。
@@ -48,7 +48,7 @@ public:
 	// 表示中なら（F3）、画面の左上に、自キャラの体力の数字と状態（Fine など）を renderer に積む。
 	// 呼ぶ場所の決まりは addZombieHealth と同じ。renderer: nullptr 不可。
 	void addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const;
-	// 表示中なら（F3）、漁れる場所の上に中身の名前を壁越しに積む（R3_Plan.txt Q13）。呼ぶ場所の決まりは addZombieHealth と同じ。
+	// 表示中なら（F3）、漁れる場所の上に中身の名前を壁越しに積む。呼ぶ場所の決まりは addZombieHealth と同じ。
 	void addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
 
 private:

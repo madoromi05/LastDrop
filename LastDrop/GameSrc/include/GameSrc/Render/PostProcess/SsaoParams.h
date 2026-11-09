@@ -28,10 +28,10 @@ struct SsaoParams{
 
 // 起動中ずっと 1 つだけの調整値（AmbientOcclusion.cpp が持つ）。
 SsaoParams& ssaoParams();
-// SSAO を作るか（F6 → Render の SSAO。見比べと計測用。SsaoTranslucent_Plan.txt 8・10 章）。false の間は作らず、結果は AO 1（遮られていない）にする。
+// SSAO を作るか（F6 → Render の SSAO。見比べと計測用）。false の間は作らず、結果は AO 1（遮られていない）にする。
 // 起動中ずっと 1 つ（AmbientOcclusion.cpp が持つ。初期値 true。Release では true のまま）。
 bool& ssaoEnabled();
-// SSAO をぼかすか（F6 → Render の SSAO blur。ぼかす前のざらつきを見る調整用。SsaoTranslucent_Plan.txt 8 章）。
+// SSAO をぼかすか（F6 → Render の SSAO blur。ぼかす前のざらつきを見る調整用）。
 // 起動中ずっと 1 つ（AmbientOcclusion.cpp が持つ。初期値 true。Release では true のまま）。
 bool& ssaoBlurEnabled();
 

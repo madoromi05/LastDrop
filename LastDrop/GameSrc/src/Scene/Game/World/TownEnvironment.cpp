@@ -29,7 +29,7 @@ void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld,
 }
 
 NavMesh* TownEnvironment::buildNavMesh( const CollisionWorld& collisionWorld ) {
-	// 建物・車・ゴミ箱・木箱を名簿へ載せ終えた形を材料にする（ZombieNavMesh_Plan.txt）。2 回目からの出撃は作らずに借りる。
+	// 建物・車・ゴミ箱・木箱を名簿へ載せ終えた形を材料にする。2 回目からの出撃は作らずに借りる。
 	mNavMesh = mTown->navMesh( mEscapeCarSpot, collisionWorld );
 	return mNavMesh;
 }

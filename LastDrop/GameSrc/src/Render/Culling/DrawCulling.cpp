@@ -13,9 +13,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 画面（影のマップ）の上でこれより小さい物は描かない（画素。Q7）。
+	// 画面（影のマップ）の上でこれより小さい物は描かない（画素）。
 	const float kMinPixels = 2.f;
-	// 霧の後に残る色がこの段の数の 1 段より少なければ、見えないとみなす（8bit の色の 1 段 ＝ 1/255。Q6）。
+	// 霧の後に残る色がこの段の数の 1 段より少なければ、見えないとみなす（8bit の色の 1 段 ＝ 1/255）。
 	const float kColorSteps = 255.f;
 	const float kHalf = 0.5f;
 	const float kNoLimit = 0.f; // 距離・小ささを見ない
@@ -105,7 +105,7 @@ bool DrawCulling::showsPosed( const HitboxSet& hitboxes, Target target ) const {
 	if ( target == Target::Zombie && mVisibility ) {
 		Vector3 foot( ( boundsMin.x + boundsMax.x ) * kHalf, boundsMin.y, ( boundsMin.z + boundsMax.z ) * kHalf );
 		if ( !mVisibility->showsPoint( mViewCell, foot ) ) {
-			PROFILE_COUNT( "Pvs.zombie", 1 ); // OptimizationC_Plan.txt 5 章
+			PROFILE_COUNT( "Pvs.zombie", 1 );
 			PROFILE_COUNT( "Cull.zombie", 1 );
 			return false;
 		}
@@ -118,7 +118,7 @@ bool DrawCulling::showsPosed( const HitboxSet& hitboxes, Target target ) const {
 
 bool DrawCulling::showsBuildingIndex( int building ) const {
 	if ( mVisibility && !mVisibility->showsBuilding( mViewCell, building ) ) {
-		PROFILE_COUNT( "Pvs.building", 1 ); // OptimizationC_Plan.txt 5 章
+		PROFILE_COUNT( "Pvs.building", 1 );
 		return false;
 	}
 	return true;
@@ -146,7 +146,7 @@ const StaticMeshData* DrawCulling::chooseLod( const StaticMeshLods& shapes, LodS
 		float distance = Math::max( toCenter.length(), radius );
 		level = selector->select( radius / distance * mPixelsPerRadiusPerDistance );
 		if ( level == 1 ) {
-			PROFILE_COUNT( "Lod.1", 1 ); // OptimizationC_Plan.txt 5 章
+			PROFILE_COUNT( "Lod.1", 1 );
 		} else if ( level == 2 ) {
 			PROFILE_COUNT( "Lod.2", 1 );
 		}

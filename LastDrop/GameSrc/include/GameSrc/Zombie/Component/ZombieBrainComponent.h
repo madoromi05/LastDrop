@@ -23,7 +23,7 @@ struct ChaseTarget;
 
 // ゾンビ 1 体の部品を、1 ティックの中で呼ぶ順番を決める部品（Think の段で動く。SummaryPlan/個別仕様/設計と分割/ZombieBrainSplit_Plan.txt）。
 // 判断はそれぞれの部品が持ち、ここは順番だけを書く（順番を間違えると 1 ティック遅れの揺れが出るので、1 か所で見えるようにする）。
-// ゾンビの物の部品（ZombieFactory が付ける。付ける順は自由。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）：
+// ゾンビの物の部品（ZombieFactory が付ける。付ける順は自由）：
 //   必須：Transform（足元と向き）・ZombieModel（設計図）・SkinnedModel（見た目）・Hitbox（部位の命中）・
 //         CharacterCollider（移動の当たり判定と滑る移動）・ZombieDismember（部位欠損・引きずる腕）・ZombieRootMotion（アニメと根の動き）・
 //         ZombieState（状態と体の位置）・ZombieChase（立って追う・うろつく・道探し・フラつき）
@@ -50,10 +50,10 @@ public:
 	ZombieBrainComponent();
 
 	// position で銃声がした（届くかは持ち主が決める）。立っている（か、体を引きずっている）、よろけ・攻撃の最中でなければ、
-	// 少し遅れてからそこへ探しに来る（SummaryPlan/個別仕様/ゾンビ/ZombieHearing_Plan.txt）。
+	// 少し遅れてからそこへ探しに来る。
 	void hearNoise( const GameLib::Math::Vector3& position );
-	// 自キャラの足音がした（届くかは持ち主が決める）。聞ける体なら、撃たれたときと同じく見えていなくても気付く
-	// （SummaryPlan/個別仕様/ゾンビ/ZombieFootstepHearing_Plan.txt Q2）。聞ける条件は hearNoise と同じ。
+	// 自キャラの足音がした（届くかは持ち主が決める）。聞ける体なら、撃たれたときと同じく見えていなくても気付く。
+	// 聞ける条件は hearNoise と同じ。
 	void hearFootsteps();
 
 	// Component（必須の部品と、共有の棚の TickContext が要る）
@@ -67,7 +67,7 @@ public:
 	AnimationThrottle::Level animationLevel() const;
 
 private:
-	// ── update の段（この順に呼ぶ。SummaryPlan/個別仕様/設計と分割/TickOrderSplit_Plan.txt 4-2）──
+	// ── update の段（この順に呼ぶ） ──
 	// state は update の最初に 1 回だけ読み、各段へ渡す（段の途中で読み直さない）。attack / health は外せる部品（外されていれば nullptr）。
 	// 1. この体の追う先（攻撃の番を、自分のほかの体が取っているかを入れる）。out へ書き、追う先が無ければ nullptr を返す。
 	const ChaseTarget* targetForThisBody( ChaseTarget* out ) const;

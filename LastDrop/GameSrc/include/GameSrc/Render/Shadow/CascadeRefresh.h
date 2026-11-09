@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// 月の影（CascadedShadowMap）の 1 枚を、このフレームに描き直すかを決める（OptimizationA_Plan.txt 7 章。Q4）。
+// 月の影（CascadedShadowMap）の 1 枚を、このフレームに描き直すかを決める（OptimizationA_Plan.txt 7 章）。
 // 決まった間隔（interval フレームに 1 回）で描き直し、間のフレームは前に描いた影と行列をそのまま使う。
 // ただし前に描いた時から、カメラの向きが大きく変わった・目が大きく動いたときは、間隔を待たずにすぐ描き直す
 // （急に振り向くと、前に描いた範囲の外が映り、影が欠けるため）。

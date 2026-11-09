@@ -35,7 +35,7 @@ namespace{
 	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
 	const char* kEquippedMark = "E";
 
-	// 後ろの町を透かして見せる濃さ（町のカバンの画面と同じ 0.5。InventoryPickup_Plan.txt Q6）。
+	// 後ろの町を透かして見せる濃さ（町のカバンの画面と同じ 0.5）。
 	const float kPanelAlpha = 0.5f;
 	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );
 	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
@@ -45,7 +45,7 @@ namespace{
 
 LootScreen::LootScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
-	// カバンは銃 1 種類 1 丁（R2_Plan.txt Q14）。場所の中身は決まり無し（銃を置いていってもよい）。
+	// カバンは銃 1 種類 1 丁。場所の中身は決まり無し（銃を置いていってもよい）。
 	mPicker( renderer, &mIcons, GridRule::CarryLimit, GridRule::Free ),
 	mPreviousCursor( 0.f, 0.f ) {
 	ASSERT( mRenderer && "LootScreen : renderer is null." );
@@ -113,7 +113,7 @@ void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* ti
 	}
 	mPicker.draw( bag, loot, true );
 	mPicker.view( kBag ).drawMark( bag, equipped, kEquippedMark );
-	// 空の場所でも「何も無い」は出さない（2026-11-05 ユーザー指定。空のマス目だけで分かる）。
+	// 空の場所でも「何も無い」は出さない（空のマス目だけで分かる）。
 	drawFooter( bag, loot );
 	mRenderer->draw();
 }
@@ -126,7 +126,7 @@ void LootScreen::drawFooter( const ItemGrid& bag, const ItemGrid& loot ) {
 	char text[ kTextSize ];
 	const ItemStack* stack = mPicker.focusedStack( bag, loot );
 	if ( stack ) {
-		std::snprintf( text, sizeof( text ), "%s", itemSpec( stack->item ).name ); // 点は 2026-11-09 に消した（SimpleRun_Plan.txt C8）
+		std::snprintf( text, sizeof( text ), "%s", itemSpec( stack->item ).name );
 	} else {
 		std::snprintf( text, sizeof( text ), "%s", kEmptyName );
 	}

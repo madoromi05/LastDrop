@@ -19,7 +19,7 @@ cbuffer PresentConstants : register(b1) // PostProcess.cpp の PresentConstants 
     float gPainBlurLength;   // 痛み1・画面の端で、中心までの距離の何割の長さを読んでぼかすか
     float gPainBlurInner;    // ぼかし始める距離（画面中心0〜上下左右の端1）。これより内（照準の周り）はぼかさない
     float gPainDarken;       // 痛み1のとき、ビネットの暗さに足す量
-    // ── カラーグレーディングとディザ（NightFinish_Plan.txt 6・7 章。PostProcessParams）──
+    // ── カラーグレーディングとディザ（PostProcessParams） ──
     float3 gWhiteBalance;    // 色温度から作った r・g・b の倍率（明るさが変わらないよう割り戻し済み）
     float gSaturation;       // 彩度（1 でそのまま）
     float gContrast;         // コントラスト（中間の灰色を中心に。1 でそのまま）
@@ -29,9 +29,9 @@ cbuffer PresentConstants : register(b1) // PostProcess.cpp の PresentConstants 
     float3 gShadowsColor;    // 暗部に掛ける色（sRGB。白でそのまま）
     float gDitherAmount;     // 足すノイズの幅（画面の色の 1 段。0 で無し）
     float3 gMidtonesColor;   // 中間に掛ける色
-    float gNoiseFrame;       // ディザのノイズのフレームの番号（TAA のとき毎フレーム変わる。それ以外は 0。Taa_Plan.txt 8 章）
+    float gNoiseFrame;       // ディザのノイズのフレームの番号（TAA のとき毎フレーム変わる。それ以外は 0）
     float3 gHighlightsColor; // 明部に掛ける色
-    float gLutStrength;      // 色の表（LUT）を混ぜる強さ（0 で引かない。Grading.hlsli の applyLut。MoonStarsLut_Plan.txt 6 章）
+    float gLutStrength;      // 色の表（LUT）を混ぜる強さ（0 で引かない。Grading.hlsli の applyLut）
 };
 
 #endif

@@ -13,7 +13,7 @@ namespace{
 	// 着弾音も連射で続くので、足音と同じ数を持つ。金属は響きが長く聞き分けやすいので少なめ。
 	const int kImpactVariations = 4;
 	const int kImpactMetalVariations = 3;
-	// 倒れる音は続けて倒すと重なるので 2 つ持つ（HitFeel_Plan.txt）。
+	// 倒れる音は続けて倒すと重なるので 2 つ持つ。
 	const int kBodyFallVariations = 2;
 
 	// ── 素材の出どころ ──
@@ -50,13 +50,13 @@ namespace{
 	const float kBodyFallMinDistance = 2.f;
 	const float kBodyFallMaxDistance = 30.f;
 	// 物に当たった音（着弾音）。まずはゾンビに当たった音と同じ距離から始め、耳で直す。
-	// タルコフも物への着弾と体への命中の聞こえる距離を別々に調整しているので、定数を分けておく（ImpactSound_Plan.txt 1 章）。
+	// タルコフも物への着弾と体への命中の聞こえる距離を別々に調整しているので、定数を分けておく。
 	const float kImpactMinDistance = 3.f;
 	const float kImpactMaxDistance = 40.f;
 	// サイレンは遠くから鳴る大きな音。近くでは減衰させず、マップの端からでも聞こえるようにする。
 	const float kSirenMinDistance = 30.f;
 	const float kSirenMaxDistance = 800.f;
-	// 脱出の車のエンジン（FuelEscapeLoading_Plan.txt Q5）。ゾンビを呼ぶ音なので、遠くまで聞こえる（銃声より近い）。
+	// 脱出の車のエンジン。ゾンビを呼ぶ音なので、遠くまで聞こえる（銃声より近い）。
 	const float kEngineMinDistance = 3.f;
 	const float kEngineMaxDistance = 80.f;
 
@@ -100,7 +100,7 @@ namespace{
 		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
 		// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
 		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },
-		// 2026-11-06 頭に当たった音（hit_head）をやめた所に入れた（後ろの番号がずれないように。合成は BodyFallSynth.cpp）。
+		// 合成は BodyFallSynth.cpp。
 		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart },
 		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
 		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
@@ -109,12 +109,12 @@ namespace{
 		// 聞こえる距離はライフルの銃声と同じ。素材は頭に無音が無い。
 		// 元の素材名: "Weapon Gun Pistol 9mm Glock Single Shot Interior Shooting Range Short 01.wav"
 		{ "pistol_shot",       kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kFromStart },
-		// 漁る音（R3_Plan.txt Q7）。自分の手元の音なので、装備の音と同じ距離。ループはテイク 1 つ（継ぎ目は SoundGen が畳む）。
+		// 漁る音。自分の手元の音なので、装備の音と同じ距離。ループはテイク 1 つ（継ぎ目は SoundGen が畳む）。
 		// ゾンビに聞かせるかは段階R4 で決める（今は鳴らすだけ）。
 		{ "loot_search_metal", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 		{ "loot_search_wood",  kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 		{ "loot_search_cloth", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		// 脱出の車（FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）。
+		// 脱出の車。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）。
 		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
 		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
 		// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）。

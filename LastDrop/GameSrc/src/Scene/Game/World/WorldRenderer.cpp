@@ -138,7 +138,7 @@ void WorldRenderer::endBuildings() {
 }
 
 void WorldRenderer::drawZombies( const DrawCulling& culling ) const {
-	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く（OptimizationA_Plan.txt 6-1）。
+	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く。
 	mWorld->objects().forEach< ZombieBrainComponent >( [ &culling ]( const ZombieBrainComponent& zombie ) {
 		const GameObject* object = zombie.gameObject();
 		if ( culling.showsPosed( object->getComponent< HitboxComponent >()->hitboxes(), DrawCulling::Target::Zombie ) ) {

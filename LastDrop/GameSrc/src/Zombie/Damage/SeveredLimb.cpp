@@ -15,7 +15,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 飛び方（見た目を確かめる前の初期値。SummaryPlan/個別仕様/ゾンビ/ZombieDismember_Plan.txt の 4 章）──
+	// ── 飛び方（見た目を確かめる前の初期値） ──
 	// 弾の向きへの速さと、上への速さ（m/秒）。上へ投げ上げて、弧を描いて落とす。
 	const float kFlySpeed = 2.5f / GameTime::kTicksPerSecond;
 	const float kUpSpeed = 2.f / GameTime::kTicksPerSecond;

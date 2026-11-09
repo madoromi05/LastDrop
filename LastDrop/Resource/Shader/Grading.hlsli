@@ -6,8 +6,8 @@
 #include "Common.hlsli"
 #include "PresentConstants.hlsli"
 
-// ── カラーグレーディング（NightFinish_Plan.txt 6 章）──
-// 「色 → 色」の関数 1 つにまとめておく。LutBake.hlsl がこの関数を色の表に焼く（MoonStarsLut_Plan.txt 6-3）。
+// ── カラーグレーディング ──
+// 「色 → 色」の関数 1 つにまとめておく。LutBake.hlsl がこの関数を色の表に焼く。
 // リニアの色の輝度の重み（Rec.709。PostProcess.cpp の kLuminanceWeights と同じ）。
 static const float3 kLuminanceWeights = float3(0.2126, 0.7152, 0.0722);
 // コントラストの中心。0〜1 の真ん中 0.5 ではなく、リニアの中間の灰色（暗い夜の絵がまとめてつぶれないように）。
@@ -35,10 +35,10 @@ float3 gradeColor(float3 color)
     return saturate(color * tint);
 }
 
-// ── 色の表（LUT。MoonStarsLut_Plan.txt 6 章）──
+// ── 色の表（LUT） ──
 // 1024×32 の帯：32×32 の表を横に 32 枚並べる。横の位置が赤、縦（上から）が緑、何枚目かが青。
 // 表の中身も引く色も画面の色（sRGB の数。0〜1）。夜の暗い色に段を多く割り当てるためと、外の道具で画面の写真に掛けた色の調整を
-// そのまま表に掛けられるようにするため（Q3）。
+// そのまま表に掛けられるようにするため。
 // PostProcess.cpp が lut.tga を読んだときだけ t4 に付ける（gLutStrength が 0 の間は読まない）。
 Texture2D gLut : register(t4);
 
@@ -67,7 +67,7 @@ float3 applyLut(float3 color)
 }
 
 // 写すときの色の調整。gradeColor を掛け、表を読んでいる間は、表で引いた色（グレーディングを焼いた上に外で直した色）へ強さの分だけ寄せる。
-// 強さ 0 なら gradeColor の結果のまま（MoonStarsLut_Plan.txt 6-4）。
+// 強さ 0 なら gradeColor の結果のまま。
 float3 gradeColorWithLut(float3 color)
 {
     float3 graded = gradeColor(color);

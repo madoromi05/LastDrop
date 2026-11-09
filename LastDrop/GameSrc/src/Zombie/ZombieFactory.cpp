@@ -25,7 +25,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kZombieName = "Zombie"; // 確認用の名前（F6 のエディタの物の一覧）
-	// ── 体力の個体差（SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 3 章。幅から選ぶのは ZombieUncertaintyParams）──
+	// ── 体力の個体差（幅から選ぶのは ZombieUncertaintyParams） ──
 	// T ポーズの確認用（歩くアニメが無い）の体の丈夫さ。表のままにして、部位ごとの減り方を確かめられるようにする。
 	const float kFixedToughness = 1.f;
 }
@@ -46,7 +46,7 @@ const ZombieAnimationNames& names, int sightPhase, int randomSeed ) const {
 	float swayPhase = random.getFloat();
 	float toughness = names.move ? params.pickToughness( &random ) : kFixedToughness;
 	int wanderSeed = random.getInt();
-	// 走る体か（湧いたときに 1 回だけ決め、一生変わらない。走るアニメが無ければ走らない。R4_Plan.txt Q1）。
+	// 走る体か（湧いたときに 1 回だけ決め、一生変わらない。走るアニメが無ければ走らない）。
 	// 乱数はいつも引く（走るアニメの有無で、後に引く頭のクリティカルの並びが変わらないように）。
 	bool runner = zombieRunParams().pickRunner( &random ) && names.run != nullptr;
 

@@ -11,7 +11,7 @@ using namespace GameLib;
 
 namespace{
 	// 1 回の update で構築してよい長さ（ミリ秒）。読み終えたファイルを 1 回で全部構築すると、Debug では 1 フレームが数秒になり、
-	// ロード画面が止まって見えた（FuelEscapeLoading_Plan.txt 6 章）。超えたら残りは次の update へ回す（1 つは必ず構築する）。
+	// ロード画面が止まって見えた。超えたら残りは次の update へ回す（1 つは必ず構築する）。
 	const long long kBuildBudgetMs = 50;
 	using BuildClock = std::chrono::steady_clock;
 
@@ -35,7 +35,7 @@ namespace{
 	// 読み終えた文書からデータを構築し、貼るテクスチャの展開を進める。構築済み・読み込み中なら構築はしない。
 	// 構築もテクスチャの展開も全部終わっていれば true（失敗も終わりに含める。ずっと待ち続けないように）。
 	// テクスチャまで待つのは、展開（大きい絵で 1 枚 約 40ms）をロードの中で済ませ、
-	// ゲームが始まった最初の描画にまとめて来させないため（2026-10-24。計測で 243ms のひっかかりが出ていた）。
+	// ゲームが始まった最初の描画にまとめて来させないため（計測で 243ms のひっかかりが出ていた）。
 	template< class TEntry, class TLoad >
 	bool buildLoaded( std::map< std::string, std::unique_ptr< TEntry > >* entries, TLoad load, TextureCache* textures,
 	const BuildClock::time_point& deadline, bool* builtOne ) {

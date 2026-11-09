@@ -22,7 +22,7 @@ namespace{
 	const int kNone = -1;
 
 	// マス 1 つの一辺（画素）。物の絵（1 マスの物は正方形）が潰れない正方形。
-	// 座標の高さ 480 に、見出し・6 行・下の欄まで入る大きさ（強化で 7 行以上にするときは並べ方を変える。ItemIcon_Plan.txt 5 章）。
+	// 座標の高さ 480 に、見出し・6 行・下の欄まで入る大きさ（強化で 7 行以上にするときは並べ方を変える）。
 	const float kCellSize = 64.f;
 	const float kHeadingGap = 34.f;    // 見出しの真ん中から、マス目の上端まで
 	const float kExitsGap = 12.f;      // 開いている脱出点の行の真ん中から、マス目の上端まで（見出しとマス目の間）
@@ -54,7 +54,7 @@ namespace{
 	const char* kPickupAmountFormat = "拾う：%s ×%d"; // 重ねられる物（弾）は数も
 	const int kTextSize = 64;
 
-	// 後ろの町を透かして見せる濃さ（InventoryPickup_Plan.txt Q6。ユーザー指定の 0.5）。暗くする板とマスの背景に使い、物の絵と文字は濃いまま。
+	// 後ろの町を透かして見せる濃さ。暗くする板とマスの背景に使い、物の絵と文字は濃いまま。
 	// 一時停止（0.6）より薄い。
 	const float kPanelAlpha = 0.5f;
 	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );

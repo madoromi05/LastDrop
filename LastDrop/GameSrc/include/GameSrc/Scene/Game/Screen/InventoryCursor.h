@@ -6,7 +6,7 @@
 
 class Inventory;
 
-// カバンの画面の「今どこを選んで、何をしている途中か」（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 7 章。2026-11-09 InventoryScreen から分けた）。
+// カバンの画面の「今どこを選んで、何をしている途中か」（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 7 章）。
 //   Browse  … マスを選んでいる
 //   Menu    … 選んだ物のメニュー（装備 / 使う / 捨てる / 動かす / やめる のうち、その物に使える物）を出している
 //   Moving  … 物を持ち上げ、置く所を選んでいる
@@ -21,7 +21,7 @@ public:
 			NONE,  // 何もしない
 			DROP,  // cell の物を取り出して足元に置く
 			EQUIP, // cell の銃を手に持つ
-			USE,   // cell の体力を戻す物（包帯）を 1 つ使う（R3_Plan.txt Q11）
+			USE,   // cell の体力を戻す物（包帯）を 1 つ使う
 			PLACE, // 拾った物を cell を指した所へ入れる（入る数は本編が Inventory::countPlaceableInto で決める）
 			QUICK_PLACE, // 拾った物をおまかせで入れる
 		};
@@ -37,7 +37,7 @@ public:
 	// メニューの項目（全部）。物ごとに、使える物だけを上からこの順に並べる（openMenu）。文字は画面が持つ。
 	enum MenuItem{
 		MENU_EQUIP, // 銃を手に持つ（手に持っていない銃だけ）
-		MENU_USE,   // 包帯を使う（体力が減っているときだけ。R3_Plan.txt Q11）
+		MENU_USE,   // 包帯を使う（体力が減っているときだけ）
 		MENU_DROP,
 		MENU_MOVE,
 		MENU_CANCEL,

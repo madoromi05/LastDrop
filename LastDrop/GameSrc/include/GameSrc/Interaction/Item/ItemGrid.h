@@ -8,7 +8,7 @@
 struct ItemStack{
 	ItemId item;
 	int amount;
-	// 銃に込めた弾の数（銃だけ。ほかの物は 0）。拠点の倉庫・カバンで覚え、出撃の始めに銃の弾倉へ入れる（R2_Plan.txt Q13）。
+	// 銃に込めた弾の数（銃だけ。ほかの物は 0）。拠点の倉庫・カバンで覚え、出撃の始めに銃の弾倉へ入れる。
 	// 町の中では銃の物（GunComponent）が本当の数を持ち、ここは脱出したときに書き戻すまで古いまま。マスを動かすと一緒に動く。
 	int loadedRounds = 0;
 };
@@ -48,7 +48,7 @@ public:
 	bool placeAt( int owner, const ItemStack& stack );
 	// stack をまるごと、上の行・左の列から最初に空いている所へ置く（始めの倉庫・カバンを作るとき）。置けなければ何もせず false。
 	bool placeAnywhere( const ItemStack& stack );
-	// 拾った物 stack を、cell を指した所（placementCell で寄せる）へ入れたら何個入るか（InventoryPickup_Plan.txt Q3）。
+	// 拾った物 stack を、cell を指した所（placementCell で寄せる）へ入れたら何個入るか。
 	// 入るのは、空いている所（1 マスに重ねられる数まで）か、同じ物で重ねられるマス（空きの分まで）だけ。物があるマスは 0（入れ替えはしない）。
 	int countPlaceableInto( int cell, const ItemStack& stack ) const;
 	// stack を cell を指した所へ count 個入れる。count は 1〜countPlaceableInto であること（ASSERT で止める）。

@@ -7,7 +7,7 @@
 class SkinnedMeshData;
 
 // スキンメッシュの設計図（SkinnedMeshData）のレスト姿勢の頂点から、当たり判定の形を決めるための問い合わせ
-// （SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 5 章。2026-11-09 SkinnedMeshData から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 5 章）。
 // 部位ごとの当たり判定の箱（HitboxLayout）と、移動の当たり判定の大きさ（BodyFootprint）を、モデルの形に沿わせて作るのに使う。
 // 設計図の公開の口（頂点のレスト位置・一番強く付いている骨・bindInverse）だけを読む。読み込みの後に 1 回ずつ呼ぶ物（毎フレームは呼ばない）。
 class SkinnedMeshShape{

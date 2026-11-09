@@ -137,7 +137,7 @@ public:
 	void setNormalMapStrength( float );
 	///true の間は、ディフューズ・スペキュラ・発光・アンビエント・ライトの色と頂点色を、画面の色（sRGB）として
 	///リニアへ直してから計算する（自作シェーダの b0 にも直した値が入る）。1 を超える色は「1 以下の色×倍率」とみなし、倍率は直さない。
-	///リニアの描画先へ 3D を描く間だけ true にし、画面へ直接描く HUD・文字の前に false へ戻す（LinearToneMap_Plan.txt 5 章）。既定は false
+	///リニアの描画先へ 3D を描く間だけ true にし、画面へ直接描く HUD・文字の前に false へ戻す。既定は false
 	void enableLinearColor( bool );
 
 	//描画先・自作シェーダ

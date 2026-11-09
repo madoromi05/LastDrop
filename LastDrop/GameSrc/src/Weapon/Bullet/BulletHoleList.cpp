@@ -15,16 +15,16 @@ namespace{
 	const char* kTextureFile = "Resource/Texture/Effect/bullet_hole.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/bullet_hole_normal.dds";
 
-	// 同時に残す数（2026-10-14 ユーザー指定）。超えたら一番古い物から消す。
+	// 同時に残す数。超えたら一番古い物から消す。
 	const int kCapacity = 16;
-	// 残す時間と、薄くし始めるまでの時間（ティック。2026-10-15 ユーザー指定）。5 秒を過ぎたら少しずつ薄くし、10 秒で消す。
+	// 残す時間と、薄くし始めるまでの時間（ティック）。5 秒を過ぎたら少しずつ薄くし、10 秒で消す。
 	const int kLifeTicks = GameTime::secondsToTicks( 10.f );
 	const int kFadeStartTicks = GameTime::secondsToTicks( 5.f );
 	const int kFadeTicks = kLifeTicks - kFadeStartTicks; // 薄くしていく長さ
 
 	// 絵の幅の半分（m）。穴そのもの（7.62mm）では小さくて見えないので、周りの欠けを含めた大きさにする。見た目を確かめる前の初期値。
 	const float kHalfSize = 0.06f;
-	// デカールの箱の厚さの半分（m。面の前後にこれだけ届く。SsrDecalMaterial_Plan.txt 8-3）。
+	// デカールの箱の厚さの半分（m。面の前後にこれだけ届く）。
 	// 薄くして、角の奥の別の面まで届かないようにする。面から浮かせる量（板のときの 1cm）は要らない（面そのものに書くため）。
 	const float kHalfDepth = 0.05f;
 	// 1 つごとに絵を回す角度（度。黄金角）。何枚並んでも向きがそろいにくく、同じ絵の繰り返しが目立たない。

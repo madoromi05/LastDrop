@@ -11,9 +11,9 @@ class GameWorld;
 class FirstPersonControl;
 class HudController;
 
-// このティックに世界で起きた事を、自キャラの視点・音・画面へ返す係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 7-1。
-// 2026-11-09 GameScene から分けた）。世界（Model）は音・カメラ・画面を知らないので、シーンの側でこれが読んで返す：
-//   撃った手応え … 当たった音（CombatSounds）・部位が飛んだ/頭が弾けたら画面を少し揺らす（HitFeel_Plan.txt Q3）
+// このティックに世界で起きた事を、自キャラの視点・音・画面へ返す係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 7-1）。
+// 世界（Model）は音・カメラ・画面を知らないので、シーンの側でこれが読んで返す：
+//   撃った手応え … 当たった音（CombatSounds）・部位が飛んだ/頭が弾けたら画面を少し揺らす
 //   攻撃された   … つかんだゾンビの顔を見る・揺れ・怯み・攻撃の音・画面の赤み/痛み/死んだ後の暗転（PlayerDamageView）
 //   自キャラの今 … 撃った反動と照準のぶれをカメラと体へ・右下の弾数を出すか・足音と装備の音（PlayerBodySounds）
 // どれも 1 ティックに 1 回、GameWorld::update の後に GameScene が呼ぶ（呼ぶ順はシーンが決める）。

@@ -29,7 +29,7 @@ namespace{
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
 
-	// 壁・地面に刺さった所で粒を薄くし始める奥行きの差（m。SsaoTranslucent_Plan.txt 7-2）。見た目を確かめる前の初期値。
+	// 壁・地面に刺さった所で粒を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値。
 	const float kSoftDistance = 0.3f;
 }
 

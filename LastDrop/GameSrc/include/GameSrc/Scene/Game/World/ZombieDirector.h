@@ -26,7 +26,7 @@ class GameObject;
 class GameObjectWorld;
 struct DayConditionEffect;
 
-// ゾンビの数と、ゾンビ全員の周りを受け持つ係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-2。2026-11-09 GameWorld から分けた）。
+// ゾンビの数と、ゾンビ全員の周りを受け持つ係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-2）。
 //   数     … 設計図（ZombieModel）・組み立て（ZombieFactory）・見えない所へ湧かせる（ZombieSpawner）・同時に居られる数（今日の条件）
 //   周り   … Think の段で全員が読む物（追う先・群れ・攻撃に行っている体・アニメの間引きの視点・道探しの回数）
 //   音     … 音をゾンビ全員へ知らせる ZombieHearing（共有の棚に置き、音を立てる部品が引く）
@@ -56,9 +56,9 @@ public:
 	// setup の前なら何もしない（setup で day から読む）。
 	void onDayConditionChanged();
 
-	// ティックの始めに、このティックに道を探してよい回数を戻す（OptimizationC_Plan.txt 6 章）。
+	// ティックの始めに、このティックに道を探してよい回数を戻す。
 	void beginTick();
-	// 今のフレームで絵を描いたカメラを覚える（次のティックのアニメの間引きに使う。OptimizationB_Plan.txt Q9）。
+	// 今のフレームで絵を描いたカメラを覚える（次のティックのアニメの間引きに使う）。
 	// visibility: 隠れの表（F6 の PVS を切っている・まだ無いなら nullptr）。
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye, const TownVisibility* visibility );
 	// Think の段の前に、全員が読む周りを作る（追う先＝このティックに動いた後の自キャラ・攻撃に行っている体・立っている仲間の位置）。
@@ -101,7 +101,7 @@ private:
 	std::vector< ZombieSpawner::Order > mSpawnOrders;   // このティックに出す所（毎回確保し直さないために持つ）
 };
 
-// ゾンビを全部止めるか（F6 → Debug の Freeze zombies。確認用。2026-11-09 ユーザー指定）。
+// ゾンビを全部止めるか（F6 → Debug の Freeze zombies。確認用）。
 // true の間は GameWorld::update が Think の段・ゾンビの攻撃・湧かせる係を飛ばす（考える・動く・アニメ・攻撃・湧く、が止まる）。
 // 撃てば体力は減るが、ひるむ・倒れる動きは戻してから出る。起動中ずっと 1 つ（初期値 false。Release では触る所が無いので false のまま）。
 bool& zombiesFrozen();

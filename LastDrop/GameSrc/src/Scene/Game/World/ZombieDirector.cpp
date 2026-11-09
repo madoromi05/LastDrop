@@ -27,7 +27,7 @@ using namespace GameLib::Math;
 namespace{
 	const char* kZombieFile = "Resource/Model/Character/zombie.txt";
 	const char* kZombieAnimation = "walk";
-	const char* kZombieRunAnimation = "run"; // 走る体が追う・寄るときのアニメ（R4_Plan.txt）
+	const char* kZombieRunAnimation = "run"; // 走る体が追う・寄るときのアニメ
 	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
 	// 倒れるときのアニメ
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
@@ -36,8 +36,8 @@ namespace{
 	const char* kZombieDownedAnimation = "death1";
 	const char* kZombieStaggerAnimation = "gethit";			// 撃たれてよろけるときのアニメ
 	const char* kZombieIdleAnimation = "idle1";				// 気付く前・追いついた・見失って探し終えたときに立つアニメ
-	// 立っている体の攻撃の種類（ZombieAttack_Plan.txt の 11 章）。ここを替えれば、流す攻撃のアニメも一緒に替わる。
-	// 2026-11-09 ユーザー指定で腕振りに戻した（つかみは消さずに残してある。Grab にすれば 9・10 章のつかみ → 噛むに戻る）。
+	// 立っている体の攻撃の種類。ここを替えれば、流す攻撃のアニメも一緒に替わる。
+	// つかみも消さずに残してある（Grab にすれば、つかむ → 噛むになる）。
 	const ZombieAttackStyle kZombieAttackStyle = ZombieAttackStyle::Swing;
 	const char* kZombieSwingAnimation = "atack1"; // 右手を 1 回振り下ろす
 	const char* kZombieGrabAnimation = "atack3";  // 両手でつかんで噛む
@@ -69,7 +69,7 @@ ZombieDirector::~ZombieDirector() {
 }
 
 void ZombieDirector::provideShared() {
-	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の B）。
+	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く）。
 	mObjects->provide( &mPathBudget );
 	mObjects->provide( &mContext );
 	mObjects->provide( &mHearing );
@@ -79,7 +79,7 @@ void ZombieDirector::setup( const TownMap& map ) {
 	if ( !mZombieData->isReady() ) {
 		return;
 	}
-	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる。SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt）。
+	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる）。
 	std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
 	rootMotionAnimations.push_back( kZombieStaggerAnimation );
 	rootMotionAnimations.push_back( kZombieAttackAnimation );

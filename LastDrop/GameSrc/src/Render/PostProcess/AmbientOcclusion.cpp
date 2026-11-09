@@ -15,7 +15,7 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Ssao.hlsl";
 	const char* kBlurShaderFile = "Resource/Shader/SsaoBlur.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率。SsaoTranslucent_Plan.txt Q2）。Ssao.hlsl の kHalfResolutionStep と揃える。
+	// 描画先の大きさ（画面に対する倍率）。Ssao.hlsl の kHalfResolutionStep と揃える。
 	const float kResolutionScale = 0.5f;
 	// 画面の上の半径の上限（画面の高さに対する割合。5-3）。手元の銃・腕で点が画面中に散らばらないように。調整しない
 	const float kMaxScreenRadius = 0.1f;
@@ -50,7 +50,7 @@ namespace{
 		float power;
 		float sampleCount;
 		float maxScreenRadius;
-		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる。Taa_Plan.txt 8 章）
+		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる）
 		float unused;
 	};
 	static_assert( sizeof( SsaoConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kParamFloats ), "SsaoConstants : keep the HLSL layout." );

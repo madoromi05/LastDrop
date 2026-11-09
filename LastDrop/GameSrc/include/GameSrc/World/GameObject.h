@@ -24,7 +24,7 @@ class GameObjectWorld;
 // ・部品の並びを動かす関数（eraseAt・markSpawned など）は private で、持ち主（friend の GameObjectWorld）だけが呼ぶ
 // ・持ち主は GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ）。
 //   消えたかを知りたいときは GameObjectHandle で持つ
-// ・名前は確認用（F6 のエディタの物の一覧・デバッグ出力）。ゲームの判断にはタグを使う（★6）
+// ・名前は確認用（F6 のエディタの物の一覧・デバッグ出力）。ゲームの判断にはタグを使う
 class GameObject{
 public:
 	// world: 持ち主。id: 持ち主が振る番号（GameObjectHandle が引く）。作るのは GameObjectWorld::create だけ。

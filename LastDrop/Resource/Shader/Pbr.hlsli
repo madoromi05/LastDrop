@@ -56,7 +56,7 @@ float3 f0Of(Surface s)
 }
 
 // N・V（面から目への向き v と法線の内積）。補間した法線・法線マップでは、輪郭の近くで法線が目と反対を向く（内積が負の）画素ができる。
-// 負を下限で止めると「真横から見た」扱いになり、フレネルで鏡面が何十倍にもなって逆光の輪郭が光る（2026-10-31 ゾンビの体）。
+// 負を下限で止めると「真横から見た」扱いになり、フレネルで鏡面が何十倍にもなって逆光の輪郭が光る。
 // 負は向きを裏返した値で計算する（Lagarde「Moving Frostbite to PBR」と同じ abs）。
 float viewCosine(float3 n, float3 v)
 {
@@ -111,10 +111,10 @@ float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance, float alphaWi
 
 // 空と地面に囲まれたときの色（拡散＋鏡面。LightList.hlsli の environmentLight）。
 //   拡散：法線の向きの半球ライト（上を向く面ほど空の色）
-//   鏡面：反射の向きに見える空・地面の色を、粗さでならす（キューブマップは作らない。Graphics_Spec.txt 8 章）。
+//   鏡面：反射の向きに見える空・地面の色を、粗さでならす（キューブマップは作らない）。
 //         映り込みの強さは Karis の近似（EnvBRDFApprox。「Physically Based Shading on Mobile」）で、反射の積分を粗さと N・V の式で置き換える。
 // 金属は拡散しないので、これが無いと環境光だけの所で真っ黒になる。
-// 映り込み（SSR。SsrComposite.hlsl）は、鏡面の「空と地面の色」を画面に映っている物の色へ入れ替える（SsrDecalMaterial_Plan.txt 7-3）。
+// 映り込み（SSR。SsrComposite.hlsl）は、鏡面の「空と地面の色」を画面に映っている物の色へ入れ替える。
 // 映り込みの強さ（environmentSpecularWeight）はここと SSR で同じ式を使う。
 
 // 映り込みの強さ（Karis の EnvBRDFApprox）。v：面から目への向き（長さ 1）。
@@ -140,7 +140,7 @@ float3 ambientLighting(Surface s, float3 v)
     return (diffuse + specular) * s.occlusion;
 }
 
-// ライト 1 つ（LightList.hlsli）が面に当たったときに、目の向き v へ返る色（PbrNightLighting_Plan.txt 6 章）。
+// ライト 1 つ（LightList.hlsli）が面に当たったときに、目の向き v へ返る色。
 //   平行光：向きだけ。減衰しない
 //   点光源：距離の 2 乗に反比例 × 届く距離でなめらかに 0（窓 = saturate( 1 − (d / range)⁴ )²。UE4・Frostbite と同じ形）
 //   スポット：点光源の減衰 × 中心からの角度でなめらかに暗く（saturate( cos × 倍率 + ずらし )²。Frostbite と同じ形）
@@ -175,7 +175,7 @@ float3 evaluateLight(Surface s, float3 v, LightData light)
             attenuation *= cone * cone;
         }
     }
-    // 影（Shadow_Plan.txt 4 章）。影のマップを持つライトだけ、光が届いている所で影のマップを読む。
+    // 影。影のマップを持つライトだけ、光が届いている所で影のマップを読む。
     // 影のマップが 2 枚以上のライト（月の CSM）は、カメラからの奥行きで枚を選ぶ（6 章）。
     int shadowMap = (int)light.spotScaleOffset.z;
     int shadowMapCount = (int)light.spotScaleOffset.w;

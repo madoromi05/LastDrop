@@ -18,7 +18,7 @@ public:
 		}
 		mHealth.takeDamage( damage );
 	}
-	// 包帯などで amount だけ戻す（最大で止める・死んだ後は戻らない。R3_Plan.txt Q11）。
+	// 包帯などで amount だけ戻す（最大で止める・死んだ後は戻らない）。
 	void heal( float amount ){ mHealth.heal( amount ); }
 	bool canBeAttacked() const { return !isDead(); } // ゾンビが攻撃してよいか（生きている）
 	bool isDead() const { return mHealth.isDead(); }

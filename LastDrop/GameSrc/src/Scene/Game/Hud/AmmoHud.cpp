@@ -11,7 +11,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 並べ方（座標の高さ 480 のときの画素。AmmoHud_Plan.txt Q5）。数の文字の幅は外から測れないので、
+	// 並べ方（座標の高さ 480 のときの画素）。数の文字の幅は外から測れないので、
 	// 「弾倉の数」「/」「予備の数」をそれぞれ決まった列の真ん中に置く（弾倉は 2 桁・予備は 3 桁が収まる間隔）。
 	const float kMarginRight = 16.f;   // 板の右端から画面の右端まで
 	const float kMarginBottom = 16.f;  // 板の下端から画面の下端まで
@@ -36,7 +36,7 @@ namespace{
 	const Color kBoardColor = { 0.f, 0.f, 0.f, 0.45f };
 	const Color kIconColor = { 1.f, 1.f, 1.f, 0.9f };
 	const Color kTextColor = { 0.95f, 0.95f, 0.95f, 0.9f };
-	const Color kFullColor = { 0.4f, 0.95f, 0.45f, 0.9f };  // 弾倉が満タン（ユーザー指定 2026-11-08）
+	const Color kFullColor = { 0.4f, 0.95f, 0.45f, 0.9f };  // 弾倉が満タン
 	const Color kEmptyColor = { 0.95f, 0.25f, 0.2f, 0.9f }; // 弾倉が空（RaidHud の残り時間の警告と同じ赤）
 
 	const char* kSlashText = "/";

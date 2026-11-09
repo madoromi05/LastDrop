@@ -2,7 +2,7 @@
 // 箱（1 辺 1 の立方体）をデカール 1 つごとの行列で描き、画素に見えている面の位置を深度から戻して、箱の中にある所だけに貼る
 // （Persson「Volume Decals」）。面そのものに書くので、壁の角・窓枠の端からはみ出さず、面から浮かせる必要も無い。
 // 箱は裏だけ描き、奥行きの判定はしない（目が箱の中にあっても描けるように。当たっているかはここで決める）。
-// 描くのは動かない物を G-Buffer へ描いた後・動く物の前（GBuffer::beginDecals〜endDecals）。後から描くキャラがデカールを上書きして消す（Q7）。
+// 描くのは動かない物を G-Buffer へ描いた後・動く物の前（GBuffer::beginDecals〜endDecals）。後から描くキャラがデカールを上書きして消す。
 #include "Common.hlsli"
 #include "DepthPosition.hlsli"
 

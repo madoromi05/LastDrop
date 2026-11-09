@@ -9,7 +9,7 @@
 class TransformComponent;
 class FirstPersonBodyComponent;
 
-// 自キャラの移動の当たり判定の形を答える部品（SummaryPlan/個別仕様/設計と分割/TickOrderSplit_Plan.txt。2026-11-09 PlayerComponent から分けた）。
+// 自キャラの移動の当たり判定の形を答える部品（SummaryPlan/個別仕様/設計と分割/TickOrderSplit_Plan.txt）。
 // 形は体を真上から囲む長方形（BodyFootprint）で、体の向きに合わせて回る。前の辺は今の目の位置の少し先まで伸ばし
 // （目が壁を越えて建物の中が見えないように）、銃を持っている間は、手に持った銃を囲む箱も含める（銃口が壁に入らないように）。
 // 持ち主：自キャラの物（PlayerFactory が付ける）。読むのは CharacterColliderComponent（start で setShape して形を覚えさせる。

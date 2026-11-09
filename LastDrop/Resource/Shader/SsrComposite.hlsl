@@ -3,7 +3,7 @@
 // 画面に映っている物が見つかった所（確からしさ）だけ、その「空と地面の色」を SSR の色へ入れ替える：
 //   足す量 ＝（SSR の色 × 確からしさ − 空と地面の色 × 確からしさ）× 映り込みの強さ × AO
 // BLEND_ADDITIVE（アルファ 1 で足す）でシーンの色に足す。シーンの色は RGBA16F なので、負の数（空の分を引く）も足せる。
-// 霧の前に描く（映り込みにも霧が掛かる。Graphics_Spec.txt 2 章）。
+// 霧の前に描く（映り込みにも霧が掛かる）。
 #include "GBuffer.hlsli"
 #include "Pbr.hlsli"
 #include "DeferredConstants.hlsli"

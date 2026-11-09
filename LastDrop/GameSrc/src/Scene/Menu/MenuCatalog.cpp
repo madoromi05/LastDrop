@@ -21,7 +21,7 @@ MenuDefinition MenuCatalog::title() {
 	MenuDefinition menu;
 	menu.heading = kGameTitle;
 	menu.headingColor = kTitleColor;
-	menu.buttons.push_back( { "Start", changeTo( SceneManager::SCENE_GAME ) } ); // すぐ町へ（1 回勝負。SimpleRun_Plan.txt）
+	menu.buttons.push_back( { "Start", changeTo( SceneManager::SCENE_GAME ) } ); // すぐ町へ（1 回勝負）
 	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
 	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
 	return menu;
@@ -33,7 +33,7 @@ MenuDefinition MenuCatalog::pause( std::function< void() > onResume ) {
 	menu.headingColor = kPauseColor;
 	menu.buttons.push_back( { "Resume", onResume } );
 	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
-	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す。SimpleRun_Plan.txt C1）。残る物は無いので、失う物も無い。
+	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い。
 	menu.buttons.push_back( { "Retry", changeTo( SceneManager::SCENE_GAME ) } );
 	menu.buttons.push_back( { "Title", changeTo( SceneManager::SCENE_TITLE ) } );
 	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );

@@ -19,7 +19,7 @@ public:
 
 	// part に baseAmount（倍率を掛ける前の量）のダメージを受ける。
 	// criticalRoll: 0 以上 1 未満の乱数。部位のクリティカルの確率（表。頭だけ 10%）より小さければ、その部位の体力を一気に 0 にする
-	// （頭が弾ける。SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 4 章）。乱数を引くのは呼ぶ側（ここは乱数を持たない）。
+	// （頭が弾ける）。乱数を引くのは呼ぶ側（ここは乱数を持たない）。
 	void takeDamage( BodyPart part, float baseAmount, float criticalRoll );
 
 	// 倒れる条件を満たしたか（全体が 0、または 0 で倒れる部位が 0）。
@@ -31,7 +31,7 @@ public:
 	// 部位の体力が 0 になったか（0 で倒れる部位も、0 なら true）。
 	bool isBroken( BodyPart part ) const;
 	// 脚の 4 部位（左右の太もも・すね）のうち、一番傷んだ部位の残りの割合（0〜1。満タンで 1）。
-	// 走る体が歩きに落ちるかを決めるのに使う（R4_Plan.txt Q7）。
+	// 走る体が歩きに落ちるかを決めるのに使う。
 	float weakestLegRatio() const;
 	float toughness() const; // 最大の体力に掛けている値（確認用の表示に使う）
 

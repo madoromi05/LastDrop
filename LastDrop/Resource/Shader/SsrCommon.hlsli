@@ -10,7 +10,7 @@
 
 static const float kSsrSkyDepth = 10000.0;  // 空の画素の奥行き（どの物とも近くないと分かる大きさ。Ssao.hlsl の kSkyDistance と同じ）
 static const uint kSsrHalfStep = 2;         // 半分の大きさの 1 画素 = 元の画面の 2 画素
-// ぼけた映り込み（HiZSsr_Plan.txt 7 章）：この粗さまでは今までのくっきりした映り込み（段階 7 の上限）。ここから kSsrRoughRange の幅で、
+// ぼけた映り込み：この粗さまでは今までのくっきりした映り込み（段階 7 の上限）。ここから kSsrRoughRange の幅で、
 // 確からしさを下げ（Ssr.hlsl）、ぼかしの読む間隔を広げる（SsrBlur.hlsl）。0.4 + 0.3 = 0.7 が SsrParams::maxRoughness の初期値。
 static const float kSsrSharpRoughness = 0.4;
 static const float kSsrRoughRange = 0.3;

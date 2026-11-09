@@ -16,7 +16,7 @@ void PathBudget::beginTick( int searchesPerTick ) {
 	++mTick;
 	mQueue.erase( std::remove_if( mQueue.begin(), mQueue.end(),
 		[ previousTick ]( const Request& request ) { return request.lastTick < previousTick; } ), mQueue.end() );
-	PROFILE_COUNT( "Path.waiting", static_cast< double >( mQueue.size() ) ); // OptimizationC_Plan.txt 5 章
+	PROFILE_COUNT( "Path.waiting", static_cast< double >( mQueue.size() ) );
 }
 
 bool PathBudget::tryAcquire( const void* requester ) {
