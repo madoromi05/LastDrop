@@ -40,9 +40,9 @@ struct ItemSpec{
 	ItemKind kind;    // 分類
 	// 地面に落ちた形のファイル（ITEM_KIND_AMMO・MEDICAL・VALUABLE が使う。それ以外は nullptr）。
 	// ガソリンは携行缶の形（粗い形の段付き）を PropFactory が持ち、銃は銃ごとの表（WeaponSpec::groundFile）にある。
-	// 包帯・腕時計・ノートパソコンの形は tools/loot_prop_gen.py で作る（R3_Plan.txt Q2）。
+	// 包帯・腕時計・ノートパソコンの形は tools/modelgen/loot_prop_gen.py で作る（R3_Plan.txt Q2）。
 	const char* groundFile;
-	// カバンの画面に出す絵のファイル（tools/item_icon_gen.py で物の 3D モデルを撮って作る。設定は tools/configs/item_icons.json）。
+	// カバンの画面に出す絵のファイル（tools/modelgen/item_icon_gen.py で物の 3D モデルを撮って作る。設定は tools/configs/item_icons.json）。
 	// 1 マスの物は正方形、2 マスの物は横 2 : 縦 1 の絵。SummaryPlan/個別仕様/UI/ItemIcon_Plan.txt。
 	const char* icon;
 	int cellSize;     // 使うマスの数（1 か 2。2 は横に並んだ 2 マス）

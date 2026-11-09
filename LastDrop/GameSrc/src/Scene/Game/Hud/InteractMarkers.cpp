@@ -15,7 +15,7 @@ namespace{
 	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ（Q1）。
 	const float kMarkDistance = 4.f;
 
-	// 絵（tools/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）。
+	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）。
 	const char* kMarkTexture = "Resource/UI/ui_interact_mark.tga";
 
 	// 画面の上の大きさ（画素）。遠くても見えるよう、距離では縮めない（ゾンビの頭上の体力のバーと同じ）。

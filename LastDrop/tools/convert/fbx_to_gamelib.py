@@ -9,7 +9,7 @@
 # モデルごとの設定は tools/configs/*.json に書く（スクリプト本体はモデルごとに書き換えない）。
 #
 # 使い方A（コマンド。FBX の読み込みから書き出しまで自動）:
-#   blender -b --factory-startup --python tools/fbx_to_gamelib.py -- tools/configs/building.json
+#   blender -b --factory-startup --python tools/convert/fbx_to_gamelib.py -- tools/configs/building.json
 # 使い方B（Blender の画面で実行）:
 #   1. Blender で対象 FBX を開く（または File > Import > FBX）。
 #   2. Scripting タブでこのファイルを開き、下の CONFIG_FILE に設定ファイルのパスを書く。
@@ -54,7 +54,7 @@ CONFIG = {
     # texture_export_size > 0 なら、texture_sources の mesh_orm_roughness（必須）・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す。
     # ORM を付けた材質は、material_params の roughness / metallic を 1 にする（ゲームは「数値 × 画像」で読む）。
     "mesh_orm": "",
-    # False なら mesh_orm を書き出さず、属性だけ書く（ORM を tools/orm_gen.py で別に作る物。MaterialTexture_Plan.txt 4 章）。
+    # False なら mesh_orm を書き出さず、属性だけ書く（ORM を tools/convert/orm_gen.py で別に作る物。MaterialTexture_Plan.txt 4 章）。
     "mesh_orm_export": True,
     # 材質値（任意）。書いたものだけ出力し、無ければゲーム側 MeshMaterial の既定値になる。
     # 例: {"specular": (0.01, 0.01, 0.01), "sharpness": 8.0, "normalstrength": 0.3, "diffuse": (1, 1, 1)}
@@ -81,7 +81,7 @@ CONFIG = {
     # パーツごとに別のテクスチャで描く（マテリアルごとに別のテクスチャ組を持つモデル用。Mixamo の体/髪など）。
     # 空なら従来どおり mesh_texture の1組で全体を描く。
     # 値に書けるもの: texture / normalmap / ormmap（ゲームの作業フォルダ基準のパス）と material_params と同じ材質値。
-    # ormmap は書き出さない（tools/orm_gen.py で作る。MaterialTexture_Plan.txt 4 章）。
+    # ormmap は書き出さない（tools/convert/orm_gen.py で作る。MaterialTexture_Plan.txt 4 章）。
     # 例: {"Ch15_body": {"texture": "Resource/a.tga", "normalmap": "Resource/a_n.tga", "sharpness": 16.0}}
     "parts": {},
     # >0 なら、parts のテクスチャを FBX 内の画像（Base Color / Normal Map に繋がった画像）から
@@ -548,7 +548,7 @@ PART_PATH_KEYS = ("texture", "normalmap", "ormmap")  # parts の値のうち、�
 
 def game_texture_path(path):
     # 設定に書く画像のパスは、このツールが書き出す TGA（圧縮する前の元の画像）。
-    # ゲームが読むのは、それを tools/texture_to_dds.ps1 が横に作る同じ名前の .dds（LinearToneMap_Plan.txt 8-5）。
+    # ゲームが読むのは、それを tools/convert/texture_to_dds.ps1 が横に作る同じ名前の .dds（LinearToneMap_Plan.txt 8-5）。
     root, ext = os.path.splitext(path)
     return root + ".dds" if ext.lower() == ".tga" else path
 

@@ -12,7 +12,7 @@
 #   作り（ぼけた丸を重ねる）は dust_gen.py と同じ。乱数の種を固定しているので、何度作っても同じ絵になる。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/smoke_flipbook_gen.py [出力.tga]
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/smoke_flipbook_gen.py [出力.tga]
 #   出力を省くと Resource/Texture/Effect/impact_smoke_sheet.tga に書く。
 # =====================================================================
 

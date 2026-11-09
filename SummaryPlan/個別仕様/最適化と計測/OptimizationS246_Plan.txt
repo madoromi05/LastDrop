@@ -49,7 +49,7 @@
   ゾンビ・建物・銃は今のまま（Optimization_Plan.txt 7-2 の目安どおり）
 
  案
-  変換ツール（tools/fbx_to_gamelib.py）の設定 json に「三角形の上限」を足し、
+  変換ツール（tools/convert/fbx_to_gamelib.py）の設定 json に「三角形の上限」を足し、
   Blender の Decimate（Collapse）で減らしてから書き出す。プログラム側は変えない。
     "max_triangles": 30000      ← この数を超えたら、超えた分の割合で減らす。無ければ減らさない
   ・形のかどは法線マップが補うので、見た目の差は小さい見込み

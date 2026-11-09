@@ -7,7 +7,7 @@
 #include <vector>
 
 // ブロック圧縮（BC1 / BC5 / BC7）の DDS を、GPU へそのまま送れる形に読み分ける（ファイルを読むだけ。D3D は触らない）。
-// tools/texture_to_dds.ps1（texconv -dx10）が書く「DX10 の追加の頭」付きの DDS だけを読む。
+// tools/convert/texture_to_dds.ps1（texconv -dx10）が書く「DX10 の追加の頭」付きの DDS だけを読む。
 // 仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 8-4。
 // 古い形の DDS（追加の頭が無い・圧縮していない。Texture::write が書く物）は読まない（TextureImpl の readDDS が今までどおり読む）。
 //
@@ -78,7 +78,7 @@ inline bool isSrgb( DXGI_FORMAT format ){
 // data を読んで image に入れる。読めなかったら false と、その理由を error に入れる（止めるかは呼んだ側が決める）。
 inline bool read( const char* data, int size, Image* image, std::string* error ){
 	if ( !hasDx10Header( data, size ) ){
-		*error = "not a DDS with the DX10 header (convert with tools/texture_to_dds.ps1)";
+		*error = "not a DDS with the DX10 header (convert with tools/convert/texture_to_dds.ps1)";
 		return false;
 	}
 	image->format = static_cast< DXGI_FORMAT >( readUnsigned( data + kDxgiFormatOffset ) );

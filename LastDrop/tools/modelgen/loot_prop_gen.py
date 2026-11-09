@@ -11,12 +11,12 @@
 #
 #   書き出す物：
 #     tools/generated/loot_props/<名前>.fbx   … fbx_to_gamelib.py（tools/configs/<名前>.json）と item_icon_gen.py が読む
-#     Resource/Texture/Prop/loot_props_albedo.tga・Resource/Texture/Prop/loot_props_orm.tga … 色と材質（その後 tools/texture_to_dds.ps1 loot_props で DDS へ）
+#     Resource/Texture/Prop/loot_props_albedo.tga・Resource/Texture/Prop/loot_props_orm.tga … 色と材質（その後 tools/convert/texture_to_dds.ps1 loot_props で DDS へ）
 #   向き：Blender の -Y が物の正面（ゲームの +Z。fbx_to_gamelib の座標変換 (x, y, z) → (x, z, -y)）。長い辺は X に沿わせる。
 #   乱数の種を固定しているので、何度作っても同じ形と絵になる。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" -b --factory-startup --python tools/loot_prop_gen.py
+#   "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" -b --factory-startup --python tools/modelgen/loot_prop_gen.py
 # =====================================================================
 
 import math

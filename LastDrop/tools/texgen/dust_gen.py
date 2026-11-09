@@ -10,7 +10,7 @@
 #   乱数の種を固定しているので、何度作っても同じ絵になる。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/dust_gen.py [出力.tga]
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/dust_gen.py [出力.tga]
 #   出力を省くと Resource/Texture/Effect/impact_dust.tga に書く。
 # =====================================================================
 

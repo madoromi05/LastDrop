@@ -18,7 +18,7 @@
 #   （x 横・y 上・z 前。WeaponCatalog の WeaponGrip と同じ）で書く。拳銃は右手に、設定の grip（WeaponCatalog の拳銃の値と同じにする）で持たせた所。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   blender -b --factory-startup --python tools/pistol_reload_gen.py -- tools/configs/pistol_reload.json
+#   blender -b --factory-startup --python tools/modelgen/pistol_reload_gen.py -- tools/configs/pistol_reload.json
 # =====================================================================
 
 import bpy
@@ -29,7 +29,7 @@ import sys
 
 from mathutils import Matrix, Quaternion, Vector
 
-# Blender の世界 → ゲームの座標（tools/fbx_to_gamelib.py の AXIS_CONVERT と同じ）。
+# Blender の世界 → ゲームの座標（tools/convert/fbx_to_gamelib.py の AXIS_CONVERT と同じ）。
 AXIS_CONVERT = Matrix( ( ( 1.0, 0.0, 0.0, 0.0 ), ( 0.0, 0.0, 1.0, 0.0 ), ( 0.0, -1.0, 0.0, 0.0 ), ( 0.0, 0.0, 0.0, 1.0 ) ) )
 BONE_PREFIX = "mixamorig:"
 SIDES = { "right": "Right", "left": "Left" }
@@ -44,7 +44,7 @@ BASE_READY = "ready"  # 覗いていない間の構え（ライフルと同じ�
 
 def config_path():
     if "--" not in sys.argv:
-        raise SystemExit( "usage: blender -b --factory-startup --python tools/pistol_reload_gen.py -- <config.json>" )
+        raise SystemExit( "usage: blender -b --factory-startup --python tools/modelgen/pistol_reload_gen.py -- <config.json>" )
     return sys.argv[ sys.argv.index( "--" ) + 1 ]
 
 
@@ -147,7 +147,7 @@ def bones_root_first( armature ):
 
 def load_body_with_source( config ):
     # 自キャラ（body_fbx の骨格）を読み、構えのアニメ（source_fbx）の SOURCE_FRAME のポーズを、骨ごとの「世界から見た向き」で写す。
-    # tools/fbx_to_gamelib.py の当て方（骨の初めの形からの回転を写す）だと、Shooting.fbx と Ch15 は骨（とくに指）の初めの向きが違うので、
+    # tools/convert/fbx_to_gamelib.py の当て方（骨の初めの形からの回転を写す）だと、Shooting.fbx と Ch15 は骨（とくに指）の初めの向きが違うので、
     # 左手の指が伸びて開き、手の向きもずれる（2026-11-04 の画面写真）。向きそのものを写せば、元のアニメと同じ手の形になる。
     # 骨の根の位置は自キャラの骨の長さのまま（親の向きに付いてくる）。根（Hips）だけは元のアニメの位置に置く。
     # 写したポーズはアクションを持たない（呼んだ側がキーにする）。このツールが書き出す構え・リロードは、どれもこのポーズから作る。

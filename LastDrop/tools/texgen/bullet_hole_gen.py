@@ -11,8 +11,8 @@
 #   穴・欠け・ヒビの深さで高さを作り、隣のピクセルとの差から法線を出す。並びは r 横（右が正）・g 縦（絵の上が正）・b 面の外向き。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/bullet_hole_gen.py [出力.tga] [法線の出力.tga]
-#   出力を省くと Resource/Texture/Effect/bullet_hole.tga と Resource/Texture/Effect/bullet_hole_normal.tga に書く。その後 tools/texture_to_dds.ps1 bullet_hole で DDS にする。
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/bullet_hole_gen.py [出力.tga] [法線の出力.tga]
+#   出力を省くと Resource/Texture/Effect/bullet_hole.tga と Resource/Texture/Effect/bullet_hole_normal.tga に書く。その後 tools/convert/texture_to_dds.ps1 bullet_hole で DDS にする。
 # =====================================================================
 
 import math

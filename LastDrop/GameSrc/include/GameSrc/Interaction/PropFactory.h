@@ -74,7 +74,7 @@ private:
 	StaticMeshLods mFireHydrantShapes; // 消火栓（細かさの段ごと）
 	StaticMeshLods mStreetLampShapes;    // 街灯（ガラスが光る形。細かさの段ごと）
 	StaticMeshLods mStreetLampOffShapes; // 街灯（ガラスが消えた形。同上）
-	StaticMeshLods mDumpsterShapes; // ゴミ箱（1 段だけ。tools/loot_prop_gen.py で作る）
+	StaticMeshLods mDumpsterShapes; // ゴミ箱（1 段だけ。tools/modelgen/loot_prop_gen.py で作る）
 	StaticMeshLods mCrateShapes;    // 木箱（同上）
 	// 落ちた形（物の種類ごと。形のファイルは ItemCatalog の groundFile。1 段だけ）。map なのは、groundFile の無い種類の分を持たないため。
 	std::map< ItemId, StaticMeshLods > mGroundShapes;

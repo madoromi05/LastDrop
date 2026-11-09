@@ -65,7 +65,7 @@ DeferredLighting::DeferredLighting() {
 	mFogShader = Graphics::Shader::create( kFogShaderFile );
 	mReflectionShader = Graphics::Shader::create( kReflectionShaderFile );
 	mConstants = Graphics::ConstantBuffer::create( sizeof( DeferredConstants ) );
-	mMoonTexture = Graphics::Texture::create( kMoonTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ); // 画像の色（tools/moon_gen.py）
+	mMoonTexture = Graphics::Texture::create( kMoonTextureFile, Graphics::TEXTURE_COLOR_SPACE_SRGB ); // 画像の色（tools/texgen/moon_gen.py）
 }
 
 void DeferredLighting::drawLighting( const GBuffer& gbuffer, const Graphics::RenderTarget& occlusion, Graphics::DepthTarget depth,

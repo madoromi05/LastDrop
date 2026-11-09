@@ -25,7 +25,7 @@
      地面と弾の当たり判定は実装済み（TownGround が IRayBlocker。部品の三角形で判定）
  ・作り方は案1（小さな四角い板を貼る）（2026-10-14）
  ・同時に残すのは 16 個まで。超えたら古い物から消し、時間がたっても消す（2026-10-14）
- ・弾痕の絵はツールで作る（tools/bullet_hole_gen.py → Resource/bullet_hole.tga）（2026-10-14）
+ ・弾痕の絵はツールで作る（tools/texgen/bullet_hole_gen.py → Resource/bullet_hole.tga）（2026-10-14）
  ・当たった所は BulletList::update が一覧で返し、GameWorld が blocker のときだけ
    BulletHoleList へ足す（弾・弾の名簿は弾痕を知らない）（2026-10-14）
  ・射撃は実装済み（実体弾・フルオート。GameDev/GameChats/Shooting.md）

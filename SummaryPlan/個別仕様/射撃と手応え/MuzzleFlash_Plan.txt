@@ -159,7 +159,7 @@
 --------------------------------------------------------------------------------
  4-6. 絵
 --------------------------------------------------------------------------------
- ・ツールで作る（tools/muzzle_flash_gen.py → Resource/muzzle_flash.tga）。dust_gen.py と同じ考え方
+ ・ツールで作る（tools/texgen/muzzle_flash_gen.py → Resource/muzzle_flash.tga）。dust_gen.py と同じ考え方
  ・4 種類を1枚の画像に並べる（星形 2 種類・横の炎 2 種類）
  ・中心は白、外へ行くほど黄色 → オレンジ → 黒（加算なので黒は透明と同じ）
  ・LitQuadBatch は今「絵を1枚まるごと貼る」作りなので、絵の一部（4 分の 1）を貼れるよう、
@@ -324,7 +324,7 @@
  ・PlayerCharacter に muzzle を足す
  ・GameWorld に mMuzzleFlash と drawMuzzleFlash を足す
  ・GameScene::setupLights でライト 2 番を設定する
- ・tools/muzzle_flash_gen.py と Resource/muzzle_flash.tga、Resource/muzzle_glow.tga
+ ・tools/texgen/muzzle_flash_gen.py と Resource/muzzle_flash.tga、Resource/muzzle_glow.tga
  ・銃の当たり判定（6 章）
      FirstPersonBody：銃の頂点の範囲を受け取り、apply の最後に銃の箱を求めて覚える
      BodyFootprint：「この範囲も囲む」形の place を足す

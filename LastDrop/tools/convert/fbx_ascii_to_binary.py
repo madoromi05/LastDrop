@@ -10,7 +10,7 @@
 #   ASCII FBX はテクスチャへの参照を持たないことが多いので、画像はコマンド引数で渡してマテリアルに繋ぐ。
 #
 # 使い方:
-#   blender -b --factory-startup --python tools/fbx_ascii_to_binary.py -- <入力.fbx> <出力.fbx>
+#   blender -b --factory-startup --python tools/convert/fbx_ascii_to_binary.py -- <入力.fbx> <出力.fbx>
 #       [--texture <色.png>] [--normalmap <法線.png>]
 #   出力 FBX を tools/configs/*.json の fbx_path に書き、fbx_to_gamelib.py で変換する。
 # =====================================================================

@@ -13,8 +13,8 @@
 # 物ごとの設定は tools/configs/item_icons.json に書く（スクリプト本体は物ごとに書き換えない）。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   blender -b --factory-startup --python tools/item_icon_gen.py -- tools/configs/item_icons.json
-#   blender -b --factory-startup --python tools/item_icon_gen.py -- tools/configs/item_icons.json icon_fuel   … 名前を指定した物だけ
+#   blender -b --factory-startup --python tools/modelgen/item_icon_gen.py -- tools/configs/item_icons.json
+#   blender -b --factory-startup --python tools/modelgen/item_icon_gen.py -- tools/configs/item_icons.json icon_fuel   … 名前を指定した物だけ
 # =====================================================================
 
 import bpy
@@ -235,7 +235,7 @@ def render_icon( config, icon ):
 def main():
     args = args_after_dashes()
     if not args:
-        raise SystemExit( "usage: blender -b --factory-startup --python tools/item_icon_gen.py -- <config.json> [name ...]" )
+        raise SystemExit( "usage: blender -b --factory-startup --python tools/modelgen/item_icon_gen.py -- <config.json> [name ...]" )
     config = load_config( args[ 0 ] )
     names = set( args[ 1: ] )
     for icon in config[ "icons" ]:

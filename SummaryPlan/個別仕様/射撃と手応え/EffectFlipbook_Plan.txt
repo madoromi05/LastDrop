@@ -75,10 +75,10 @@
  板の束          Render/LitQuadBatch（add で板をためて draw で描く）  並べ替えと、絵の一部（コマ）を貼る
                  板は絵を 1 枚まるごと貼る（UV は 0〜1 で固定）       口をここに足す
  砂ぼこり        Effect/ImpactDust（粒 8 個・0.5 秒）、ImpactDustList  コマ送り（★2 a）と回す（★3）
-                 絵は tools/dust_gen.py → Resource/impact_dust.tga（64×64）
+                 絵は tools/texgen/dust_gen.py → Resource/impact_dust.tga（64×64）
  血しぶき        Effect/BloodSpray・BloodSprayList（MODE_LIT）         並べ替えだけ
  マズルフラッシュ Effect/MuzzleFlash（芯とにじみ。MODE_GLOW）           芯の形を選ぶ（★2 b）
-                 絵は tools/muzzle_flash_gen.py（64×64）
+                 絵は tools/texgen/muzzle_flash_gen.py（64×64）
  描く順          GameScene.cpp 237〜240：弾痕 → 砂ぼこり → 血しぶき → マズルフラッシュ   ★1 案A ならこのまま
 
 ================================================================================
@@ -96,10 +96,10 @@
   ・1 枚の絵を 4×4 のます目に分け、左上から右へ、行ごとに下へ 0〜15 コマ目を並べる
   ・1 コマ 64×64、絵全体は 256×256（今の 64×64 の絵と、1 コマの細かさを揃える）
   ・コマの間に透明のすき間を 2 画素入れる。遠くで縮めた絵（ミップマップ）で、隣のコマの色がにじまないように
-  ・砂ぼこり（tools/smoke_flipbook_gen.py → Resource/impact_smoke_sheet.tga）：
+  ・砂ぼこり（tools/texgen/smoke_flipbook_gen.py → Resource/impact_smoke_sheet.tga）：
       はじめは小さく濃いかたまり → 丸が増えて外へ広がる → ふちから薄れて消える。
       今の dust_gen.py の「ぼけた丸を重ねる」作りを使い、コマごとに丸を外へずらして大きくする
-  ・マズルフラッシュの芯（tools/muzzle_flash_gen.py を広げる → Resource/muzzle_flash_sheet.tga）：
+  ・マズルフラッシュの芯（tools/texgen/muzzle_flash_gen.py を広げる → Resource/muzzle_flash_sheet.tga）：
       2×2 のます目に、とげの数・長さの違う 4 つの形
 
  4-2. 描き方
@@ -114,13 +114,13 @@
  5. 作るクラスと変えるクラス
 ================================================================================
  新：GameSrc/Render/Flipbook.h / .cpp
-     tools/smoke_flipbook_gen.py、Resource/impact_smoke_sheet.tga、Resource/muzzle_flash_sheet.tga
+     tools/texgen/smoke_flipbook_gen.py、Resource/impact_smoke_sheet.tga、Resource/muzzle_flash_sheet.tga
  直：Render/LitQuadBatch    ── 並べ替え（目の位置を受け取る draw）と、UV の範囲を受け取る add
      Effect/ImpactDust      ── 粒ごとの向き（★3）
      Effect/ImpactDustList  ── コマの絵・コマ・回す・目の位置
      Effect/BloodSprayList  ── 目の位置を渡すだけ
      Effect/MuzzleFlash     ── 形を選ぶ
-     tools/muzzle_flash_gen.py
+     tools/texgen/muzzle_flash_gen.py
      GameWorld / GameScene  ── 砂ぼこり・血しぶきの draw へ目の位置を渡す
      vcxproj と filters     ── Flipbook を足す
    GameLib は触らない（頂点に UV があるので、絵の一部を貼るのは今の描き方のままできる）。

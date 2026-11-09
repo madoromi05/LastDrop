@@ -14,7 +14,7 @@
   2. 今のコードで関係するところ
   3. 処理の流れ
   4. 変える所・足す所
-  5. 絵（tools/blood_stain_gen.py）
+  5. 絵（tools/texgen/blood_stain_gen.py）
   6. F6
   7. 確かめる絵と計測
   8. 懸念点
@@ -91,7 +91,7 @@
 ================================================================================
   足す
     GameSrc/Effect/BloodStainList.h/.cpp  血の跡の持ち主（BulletHoleList と同じ形。add に大きさと種類を足す。種類は順に回す）
-    tools/blood_stain_gen.py              4 種類を 2×2 に並べた絵と法線（5 章）
+    tools/texgen/blood_stain_gen.py              4 種類を 2×2 に並べた絵と法線（5 章）
     Resource/blood_stain(.tga/.dds)・blood_stain_normal(.tga/.dds)
 
   直す
@@ -104,14 +104,14 @@
     LastDrop.vcxproj(.filters)  BloodStainList を足す（VS を閉じてから）
 
 ================================================================================
- 5. 絵（tools/blood_stain_gen.py）
+ 5. 絵（tools/texgen/blood_stain_gen.py）
 ================================================================================
   ・256×256 に 128×128 の絵を 2×2。色は暗い赤（血しぶきの kBlood* と同じ 0.35・0.02・0.02 を sRGB にした値）。
     中心が濃く、外へ筋（弾の向きの飛び散り）と点。4 つは筋の本数・長さ・点の数を変える
   ・飛び散りの筋は絵の「右」へ伸ばす。貼るときに絵の右を弾の進む向き（面に写した向き）に合わせる
     （跡の形で、どちらから撃ったか分かる）。滴の跡は筋なしの丸だけ（4 つ目の絵を使い、向きはばらす）
   ・法線：血の厚みで高さを作り、縁が少し盛り上がる（bullet_hole_gen.py と同じく隣の画素の差から作る）
-  ・作った後 tools/texture_to_dds.ps1 blood_stain で DDS（色は BC7_SRGB・法線は BC5）
+  ・作った後 tools/convert/texture_to_dds.ps1 blood_stain で DDS（色は BC7_SRGB・法線は BC5）
 
 ================================================================================
  6. F6
@@ -155,5 +155,5 @@
   ・絵：256×256 に 128×128 を 2×2。色はリニアで薄い縁 (0.35, 0.02, 0.02)（血しぶきと同じ）→ 厚い所 (0.12, 0.005, 0.005)。
     1 つの絵の端 8% は空けた（縮小の段で隣の絵がにじまないように）
   ・変えたファイル：DecalBatch.h/.cpp（UvRect）・Decal.hlsl（gDecalUvRect）・Effect/BloodStainList.h/.cpp（新規）・
-    EffectManager.h/.cpp・CombatResolver.h/.cpp・GameWorld.cpp・tools/blood_stain_gen.py（新規）・tools/texture_to_dds.ps1・
+    EffectManager.h/.cpp・CombatResolver.h/.cpp・GameWorld.cpp・tools/texgen/blood_stain_gen.py（新規）・tools/convert/texture_to_dds.ps1・
     Resource/blood_stain(.tga/.dds)・blood_stain_normal(.tga/.dds)・vcxproj(.filters)

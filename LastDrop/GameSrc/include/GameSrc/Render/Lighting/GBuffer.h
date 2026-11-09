@@ -54,7 +54,7 @@ private:
 	GameLib::Graphics::Shader mStaticMeshShader;               // Resource/Shader/StaticMeshGBuffer.hlsl
 	GameLib::Graphics::ConstantBuffer mSurfaceConstants;       // 次に描く物の材質値（RenderPass::setSurface が書き換える）
 	GameLib::Graphics::Texture mDefaultOrm;                    // 材質の画像が無い材質に付ける白 1 画素（RenderPass::setSurface）
-	GameLib::Graphics::Texture mPuddleMask;                    // 雨上がりの水たまりの模様（Resource/puddle_mask。tools/puddle_gen.py）
+	GameLib::Graphics::Texture mPuddleMask;                    // 雨上がりの水たまりの模様（Resource/puddle_mask。tools/texgen/puddle_gen.py）
 	GameLib::Graphics::ConstantBuffer mPassConstants;          // 水たまりの値（PuddleParams）と動きの種類（begin・setMotion のたびに書く）
 	MotionKind mMotion;                                        // 今描いている物の動きの種類
 };

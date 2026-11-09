@@ -11,7 +11,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// tools/bullet_hole_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 で DDS にする）。
+	// tools/texgen/bullet_hole_gen.py で作る（TGA を作った後、tools/convert/texture_to_dds.ps1 で DDS にする）。
 	const char* kTextureFile = "Resource/Texture/Effect/bullet_hole.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/bullet_hole_normal.dds";
 

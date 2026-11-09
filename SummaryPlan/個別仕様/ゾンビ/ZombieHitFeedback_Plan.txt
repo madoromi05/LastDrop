@@ -38,7 +38,7 @@
  ・死体に当たったときも体の音と血を出す（体には変わりないため。体力は減らない）
  ・血しぶき：当たった所から、弾の進む向き（抜ける側）へ多く、撃った側へ少し飛ばす
    頭は量と大きさを 1.5 倍にする
- ・血の絵はツール（tools/blood_gen.py）で作る（弾痕・砂ぼこりと同じく素材を探さない）
+ ・血の絵はツール（tools/texgen/blood_gen.py）で作る（弾痕・砂ぼこりと同じく素材を探さない）
 
 --------------------------------------------------------------------------------
  未決事項（作りながら画面・音で確かめて決める）
@@ -65,7 +65,7 @@
   面に貼る板            BulletHoleList（面の法線・古くなると薄く） 血の跡の作りの手本
   板の描き方            LitQuadBatch（MODE_LIT。壁と同じライト・    血しぶき・血の跡を描く
                         半透明）
-  絵を作るツール        tools/bullet_hole_gen.py・dust_gen.py      tools/blood_gen.py を作る
+  絵を作るツール        tools/texgen/bullet_hole_gen.py・dust_gen.py      tools/texgen/blood_gen.py を作る
                         （共通部品 tga_image.py。Blender の Python）
   弾・視線の判定        HitWorld::raycast（ignore はキャラ1人）    血の跡を貼る壁を探す
 
@@ -140,7 +140,7 @@
     Effect/BloodSprayList        血しぶきの持ち主（出す・進める・まとめて描く）
     Scene/Game/ZombieHitSounds   その回のティックのゾンビへの命中を読み、ヒット音を鳴らす
                                  （GameWorld は音を知らないので、シーン側に置く。PlayerFoley と同じ立場）
-    tools/blood_gen.py           血の滴の絵を作る（tga_image.py を使う）
+    tools/texgen/blood_gen.py           血の滴の絵を作る（tga_image.py を使う）
 
   直す
     HitWorld::Hit か BulletList  当たった弾の向きを返す（今の Hit には弾の向きが無い）
@@ -170,7 +170,7 @@
       (a) 別の素材を用意してもらう（銃弾が肉に当たる音。無料の効果音集など）
       (b) SoundGen で合成する（短い低音の「ドスッ」＋湿った雑音）
       のどちらかにする
-  絵：tools/blood_gen.py で作る（Resource/blood_drop.tga）
+  絵：tools/texgen/blood_gen.py で作る（Resource/blood_drop.tga）
 
 ================================================================================
  8. 懸念点

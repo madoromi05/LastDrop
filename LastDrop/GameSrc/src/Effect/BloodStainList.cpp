@@ -11,7 +11,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// tools/blood_stain_gen.py で作る（TGA を作った後、tools/texture_to_dds.ps1 blood_stain で DDS にする）。
+	// tools/texgen/blood_stain_gen.py で作る（TGA を作った後、tools/convert/texture_to_dds.ps1 blood_stain で DDS にする）。
 	const char* kTextureFile = "Resource/Texture/Effect/blood_stain.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/blood_stain_normal.dds";
 
@@ -25,7 +25,7 @@ namespace{
 	// デカールの箱の厚さの半分（m）。弾痕と同じ（角の奥の別の面まで届かない薄さ）。
 	const float kHalfDepth = 0.05f;
 
-	// 絵の並び（tools/blood_stain_gen.py の main と合わせる）。2×2 で、左上・右上・左下が飛び散った血、右下が滴の跡。
+	// 絵の並び（tools/texgen/blood_stain_gen.py の main と合わせる）。2×2 で、左上・右上・左下が飛び散った血、右下が滴の跡。
 	const int kCellsPerRow = 2;
 	const float kCellUvSize = 1.f / kCellsPerRow;
 	const int kSplatterCellNumber = 3;

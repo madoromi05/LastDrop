@@ -48,10 +48,10 @@
       B：3 種類（死体を入れない。死体は今のまま弾を落とす）
 
  Q2. 場所の見た目（今の手元に、ゴミ箱・木箱の 3D モデルは無い。ダウンロードのフォルダも調べた）
-     ★A：ゴミ箱と木箱は Blender の python で箱の形を作る（tools/loot_prop_gen.py。弾痕・月の絵を作ったのと同じ進め方）
+     ★A：ゴミ箱と木箱は Blender の python で箱の形を作る（tools/modelgen/loot_prop_gen.py。弾痕・月の絵を作ったのと同じ進め方）
           ・どちらも箱を組み合わせた形で済む（ゴミ箱：本体＋ふた＋車輪の 4 つの箱、木箱：板を並べた箱＋金具）
-          ・色の画像も同じスクリプトで作る（ゴミ箱は濃い緑の塗装、木箱は木目。ORM は tools/orm_gen.py）
-          ・書き出した FBX は今の tools/fbx_to_gamelib.py で変換（大きさは人 1.79m に合わせる。ゴミ箱 1.2m 高・木箱 0.6m 高）
+          ・色の画像も同じスクリプトで作る（ゴミ箱は濃い緑の塗装、木箱は木目。ORM は tools/convert/orm_gen.py）
+          ・書き出した FBX は今の tools/convert/fbx_to_gamelib.py で変換（大きさは人 1.79m に合わせる。ゴミ箱 1.2m 高・木箱 0.6m 高）
           ・車は今の UAZ をそのまま使う（車全体を見たらトランクを開けられる。トランクの扉は動かさない）
       B：無料のアセット（Sketchfab・Quaternius など）をユーザーが選んで入れる（見た目は良いが、探す・変換の手間がかかる）
 
@@ -189,7 +189,7 @@
   ・InteractMarkers（ひし形）→ そのまま（canInteract が false なら灰色）
   ・RaidSession（脱出点を選ぶ種 seed）→ 中身を決める種も同じ所から渡す
   ・RunRules::itemPoints・Score → そのまま（新しい物の scoreValue が足されるだけ）
-  ・tools/item_icon_gen.py（3D モデルを撮ってマスの絵を作る）→ 新しい物 3 つの絵もこれで作る
+  ・tools/modelgen/item_icon_gen.py（3D モデルを撮ってマスの絵を作る）→ 新しい物 3 つの絵もこれで作る
 
 ================================================================================
  3. R3 でやること・やらないこと
@@ -306,13 +306,13 @@
 ================================================================================
   R3-a 物を足す（包帯・腕時計・ノートパソコン）
    ・ItemCatalog に 3 行・ItemKind に MEDICAL・VALUABLE・ItemSpec に healAmount
-   ・tools/loot_prop_gen.py（Blender の python）で、包帯・腕時計・ノートパソコンの形と色を作る → fbx_to_gamelib.py で変換
+   ・tools/modelgen/loot_prop_gen.py（Blender の python）で、包帯・腕時計・ノートパソコンの形と色を作る → fbx_to_gamelib.py で変換
    ・item_icon_gen.py で絵を作る（tools/configs/item_icons.json に 3 つ足す）
    ・地面に落ちた形（spawnDroppedItem で、MEDICAL・VALUABLE も groundFile の形を置く。今の弾と同じ形の扱い）
    ・PlayerHealth::heal・InventoryScreen の「使う」・回復の音
    ・この段階は F6 の「倉庫に 1 マスずつ足す」で試す（町にはまだ出ない）
   R3-b 漁れる場所（車・ゴミ箱・木箱）
-   ・tools/loot_prop_gen.py にゴミ箱と木箱を足す → 変換
+   ・tools/modelgen/loot_prop_gen.py にゴミ箱と木箱を足す → 変換
    ・LootTable・LootContainerComponent・LootSearch・LootParams
    ・IInteractable の 2 つの入口・Interactor から LootSearch へ
    ・GridPairPicker を StashScreen から分ける → LootScreen
@@ -333,7 +333,7 @@
    GameSrc/include/GameSrc/Interaction/LootParams.h・src/Interaction/LootParams.cpp
    GameSrc/include/GameSrc/Scene/Game/GridPairPicker.h・src/Scene/Game/GridPairPicker.cpp
    GameSrc/include/GameSrc/Scene/Game/LootScreen.h・src/Scene/Game/LootScreen.cpp
-   tools/loot_prop_gen.py・tools/configs/（ゴミ箱・木箱・包帯・腕時計・ノートパソコンの変換の設定）
+   tools/modelgen/loot_prop_gen.py・tools/configs/（ゴミ箱・木箱・包帯・腕時計・ノートパソコンの変換の設定）
    Resource/（形の .txt・色の画像 .dds・絵 icon_*.tga）・Resource/Sound/（開ける音 3 つ・開いた音・回復の音）
   直す
    Interaction/ItemCatalog.h/.cpp（3 行・分類・healAmount）
@@ -414,7 +414,7 @@
   ・PlayerHealth::heal・isInjured（死んだ後は戻らない・最大で止める）・PlayerHealthComponent::heal
   ・InventoryScreen：メニューに「使う」（体力を戻す物で、減っているときだけ・一番上）。Request::USE → GameScene::useFromBag
   ・PropFactory：落ちた形は groundFile を持つ物を全部読む（弾・包帯・売れる物）。包帯・売れる物はタグ ItemDrop
-  ・tools/loot_prop_gen.py（新規。Blender の python）：ゴミ箱・木箱・包帯・腕時計・ノートパソコンの形（箱と円柱）と、
+  ・tools/modelgen/loot_prop_gen.py（新規。Blender の python）：ゴミ箱・木箱・包帯・腕時計・ノートパソコンの形（箱と円柱）と、
     5 つで分け合う色・材質の画像（4 × 4 のます。Resource/loot_props_albedo・orm）。FBX は tools/generated/loot_props/
   ・tools/configs/dumpster・crate・bandage・watch・laptop.json（fbx_to_gamelib）・item_icons.json に 3 つ（icon_bandage・watch・laptop）・
     texture_to_dds.ps1 に loot_props の 2 枚

@@ -51,7 +51,7 @@
       C：濡らさない。SSR が映るのは車の塗装（とガソリン缶）だけ
 
  Q3. 水たまりの形をどう決めるか
-     ★A：ワールドの位置（x・z）で読む白黒の模様の画像を 1 枚作り（tools の python で生成。tools/blood_gen.py などと同じ作り方）、
+     ★A：ワールドの位置（x・z）で読む白黒の模様の画像を 1 枚作り（tools の python で生成。tools/texgen/blood_gen.py などと同じ作り方）、
           道路の材質だけが読む（材質の txt に puddle="1"。G-Buffer の b3 の空いている w に入れる）
           ・道路はタイル（道路キット）の並びなので、タイルの画像に焼くと同じ形の水たまりがタイルごとに繰り返す。
             ワールドの位置で読めば、模様の 1 枚（例：16m 四方）ごとにしか繰り返さない
@@ -139,15 +139,15 @@
   ・材質：メッシュの txt の <StaticMesh texture= normalmap= roughness= metallic= ...>（MeshLoaderUtil.cpp・MeshMaterial）。
     MeshMaterial::apply が t0 に色、t1 に法線マップ、b3 に粗さ・金属・発光を渡す
     今の値：道路 0.9・建物 0.8・車 0.4・ガソリン缶 0.5・銃 0.5（どれも金属 0）
-  ・画像の道具：tools/atlas_materials.py（材質ごとの画像を 1 枚にまとめる。albedo と normal だけ。AO は albedo に焼き込む）、
-    tools/fbx_to_gamelib.py（texture_sources で元の画像を書き出す）、tools/texture_to_dds.ps1（色は BC7_UNORM_SRGB、法線は BC5_UNORM）
+  ・画像の道具：tools/convert/atlas_materials.py（材質ごとの画像を 1 枚にまとめる。albedo と normal だけ。AO は albedo に焼き込む）、
+    tools/convert/fbx_to_gamelib.py（texture_sources で元の画像を書き出す）、tools/convert/texture_to_dds.ps1（色は BC7_UNORM_SRGB、法線は BC5_UNORM）
   ・元の画像（C:/Users/mador/Downloads/ゾンビゲーム/。2026-10-30 に確認）
       車（Post_Apocalyptic_UAZ_textures/textures）：BaseColor・Normal・Roughness・Metallic・Height（1 区画だけ AO）
       道路キット（道路/textures）：modularkit（色）・Normal・Roughness・Metallic・Height
       ガソリン缶（Oil+Tank/Textures）：BaseColor・Normal・Roughness・Metallic・Displacement
       建物（Red Brick Building/Baked）：Albedo・Normal だけ　銃（AKM）：色・法線だけ
   ・弾痕：BulletHoleList（同時に 16 個・10 秒で消える・終わりに薄くなる・板の半分の大きさ 6cm・面から 1cm 浮かせる）。
-    絵は tools/bullet_hole_gen.py の bullet_hole.tga（色とアルファ）。拾える物が消えるときは removeAttachedTo で一緒に消す
+    絵は tools/texgen/bullet_hole_gen.py の bullet_hole.tga（色とアルファ）。拾える物が消えるときは removeAttachedTo で一緒に消す
   ・段階 6 で足した物：Manager::setRenderTargets の readOnlyDepth・SsaoUpsample.hlsli（奥行きを見た拡大）・DepthPosition.hlsli・Noise.hlsli
   ・GameLib：CULL_FRONT（裏だけ描く）がある。テクスチャは TEXTURE_COLOR_SPACE_LINEAR（数のまま読む）で読める
 
@@ -200,7 +200,7 @@
  6. 雨上がりの水たまり（7-a。Q2・Q3 の A）
 ================================================================================
  6-1. 模様
-  ・tools/puddle_gen.py（新しく作る）：白黒の 1 枚（1024²。白が水たまり）。いくつかの大きさのノイズを重ねて、しきい値でなめらかに切る。
+  ・tools/texgen/puddle_gen.py（新しく作る）：白黒の 1 枚（1024²。白が水たまり）。いくつかの大きさのノイズを重ねて、しきい値でなめらかに切る。
     つながり過ぎない・道の端（縁石の近く）に寄る、は狙わない（模様 1 枚は道路の形を知らない）
   ・Resource/puddle_mask.dds（BC4 か BC7。数のまま）
 
@@ -371,12 +371,12 @@
  13. 実装で仕様から変えた所（7-a）
 ================================================================================
   ・作ったもの（道具）
-      tools/atlas_materials.py：cells に roughness・metallic を書けるようにし、orm_path に ORM を書き出す。orm_path があるときは AO を ORM の r へ
+      tools/convert/atlas_materials.py：cells に roughness・metallic を書けるようにし、orm_path に ORM を書き出す。orm_path があるときは AO を ORM の r へ
         入れ、albedo に焼かない。--textures-only で画像だけ作り直せる（区画の並びは設定で決まるので、前の FBX・メッシュの txt はそのまま合う）
-      tools/fbx_to_gamelib.py：mesh_orm（texture_sources の mesh_orm_roughness・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す）と、
+      tools/convert/fbx_to_gamelib.py：mesh_orm（texture_sources の mesh_orm_roughness・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す）と、
         <StaticMesh ormmap="..."> の属性
-      tools/puddle_gen.py：水たまりの模様（1024²・端がつながる値ノイズを重ねる・乱数の種は固定）
-      tools/texture_to_dds.ps1：Kind = Data（BC7_UNORM。数のまま）
+      tools/texgen/puddle_gen.py：水たまりの模様（1024²・端がつながる値ノイズを重ねる・乱数の種は固定）
+      tools/convert/texture_to_dds.ps1：Kind = Data（BC7_UNORM。数のまま）
       作り直した物：uaz_albedo（AO を抜いた）・uaz_orm・fuelcan_orm・road_normal・road_orm・puddle_mask と、メッシュの txt（道路 9 種類・uaz・fuelcan）。
         txt はどれも <StaticMesh> の行だけが変わった（git diff で確認。形は同じ）
   ・作ったもの（ゲーム）

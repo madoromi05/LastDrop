@@ -8,8 +8,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 芯は 2×2 のます目に 4 つの形（tools/muzzle_flash_gen.py）。撃つたびに 1 つを選ぶ（コマ送りではない）。
-	// 2 枚とも、作った TGA を tools/texture_to_dds.ps1 で DDS にした物を読む。
+	// 芯は 2×2 のます目に 4 つの形（tools/texgen/muzzle_flash_gen.py）。撃つたびに 1 つを選ぶ（コマ送りではない）。
+	// 2 枚とも、作った TGA を tools/convert/texture_to_dds.ps1 で DDS にした物を読む。
 	const char* kCoreTextureFile = "Resource/Texture/Effect/muzzle_flash_sheet.dds";
 	const int kCoreShapeColumns = 2;
 	const int kCoreShapeRows = 2;

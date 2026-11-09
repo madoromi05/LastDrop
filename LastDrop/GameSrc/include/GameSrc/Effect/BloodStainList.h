@@ -13,7 +13,7 @@ class IRayBlocker;
 // 弾痕（BulletHoleList）と同じく G-Buffer へデカールとして、当たった面そのものに色と凹凸の法線を書く。数・残る時間・絵が違うので別の名簿にする。
 // どこに付けるか（後ろ 2m・真下 1.5m・後ろのゾンビには付けない）は頼む側（CombatResolver）、大きさは EffectManager が決める。
 // ここは「足す・古くする・描く」だけ。見た目だけで、遊び（ゾンビが血をたどる など）には使わない（GraphicsExtra_Spec.txt Q7）。
-// 絵は 4 種類を 2×2 に並べた 1 枚（tools/blood_stain_gen.py）。飛び散った血は 3 種類を順に回し、滴の跡は 1 種類を向きをばらして貼る。
+// 絵は 4 種類を 2×2 に並べた 1 枚（tools/texgen/blood_stain_gen.py）。飛び散った血は 3 種類を順に回し、滴の跡は 1 種類を向きをばらして貼る。
 class BloodStainList{
 public:
 	BloodStainList();

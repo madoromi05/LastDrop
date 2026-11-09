@@ -52,7 +52,7 @@
       B：Shooting.fbx の 9〜35 フレームを撃つたびに流す（速く撃つと途中で切れる）
 
  Q3. リロード
-     ★A：Blender のスクリプトで作る（tools/pistol_reload_gen.py。新規）
+     ★A：Blender のスクリプトで作る（tools/modelgen/pistol_reload_gen.py。新規）
           ・Shooting.fbx の構えから始めて、構えで終わる（前後のつなぎ目で腕が跳ばない）
           ・左手の通り道を数か所の点で決め、左腕を IK で動かして毎フレームの回転に焼き込み、FBX に書き出す
             右手は銃を少し右へ傾けて胸へ寄せるだけ（Mixamo のライフルのリロードと同じく、見やすい所で替える）
@@ -98,7 +98,7 @@
    ・WeaponSpec に「腕のポーズ」（拳銃 "pistol_hold"・ライフルは無し＝今のアニメの腕のまま）と、持ち方を合わせるアニメの名前を足す
    ・HoldComponent：腕のポーズがある銃を持っている間は、いつも差し替える（リロード中はリロードのアニメへ）
   A2 拳銃のリロード
-   ・tools/pistol_reload_gen.py と tools/configs/pistol_reload.json（左手の点・時刻・右手の傾き）
+   ・tools/modelgen/pistol_reload_gen.py と tools/configs/pistol_reload.json（左手の点・時刻・右手の傾き）
      書き出し：Downloads ではなくプロジェクトの外の作業フォルダ（ユーザーの FBX 置き場と同じ所）に pistol_reload.fbx・pistol_reload_empty.fbx
    ・player.json に "pistol_reload"・"pistol_reload_empty" で足す
    ・WeaponSpec にリロードのアニメの名前（空のとき・空でないとき）と合図の時刻・使う長さ。WeaponReload の定数を表へ移す
@@ -140,7 +140,7 @@
   ・HoldComponent：腕のポーズを持つ銃を持っている間は、いつも腕を差し替える（重みは出す・しまうの mHoldWeight）。
     アニメのポーズを求める物（AnimationPoseSampler）は名前ごとに 1 つ作って使い回す（armSampler）
   A2 拳銃のリロード
-  ・tools/pistol_reload_gen.py（新規）と tools/configs/pistol_reload.json
+  ・tools/modelgen/pistol_reload_gen.py（新規）と tools/configs/pistol_reload.json
       右手は構え⇔リロードの構え（握りを中心に 25 度寝かせ・15 度上へ・胸へ 10cm）を重みでつなぐ。
       左手首は点（「拳銃から見た位置」か「腰から見た位置」）をなめらかにつなぎ、肩・肘は 2 本の骨の IK（肘の曲がる向きは構えのまま）。
       書き出し：C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/Pistol/pistol_reload.fbx（1.2 秒）・pistol_reload_empty.fbx（1.5 秒）
@@ -176,14 +176,14 @@
  10. 左手が不自然（2026-11-04 2 回目の画面確認）
 ================================================================================
   ・ユーザーの画面写真：覗くと、左手が拳銃の左に開いて浮き、拳銃は手の中に入らずに傾いている
-  ・原因 1（握り）：tools/fbx_to_gamelib.py は、別のキャラのアニメを「骨の初めの形からの回転」として自キャラ（Ch15）に写す。
+  ・原因 1（握り）：tools/convert/fbx_to_gamelib.py は、別のキャラのアニメを「骨の初めの形からの回転」として自キャラ（Ch15）に写す。
     握りの値を Shooting.fbx の骨格のままで求めていたので、Ch15 とは骨の初めの向きが違う分だけ、ゲームでは拳銃が手の外へずれた。
     → Ch15 に同じ当て方で構えを当て、右手の中指〜小指の関節と手のひらの真ん中（握りこぶしの中心）へ拳銃の握りの中心を置き、
       銃口が真っすぐ前・水平になる値を求め直した：kPistolGripInHand ( -0.847, 1.363, -10.633 )・向き Y -0.862 / X -168.32 / Z -82.405
     （ライフルの握りは今まで通り kRifleGripInHand）
   ・原因 2（リロード。画面ではまだ出ていなかった）：Blender の FBX の書き出しは、書き出す瞬間のポーズを骨格の初めの形として書く。
     構えのまま書き出していたので、変換ツールが Ch15 へ写すとリロード中の腕が T ポーズになるところだった。
-    → tools/pistol_reload_gen.py：Ch15（body_fbx）の上で作る・古いアニメのスロットを消す（animation_data_clear）・
+    → tools/modelgen/pistol_reload_gen.py：Ch15（body_fbx）の上で作る・古いアニメのスロットを消す（animation_data_clear）・
       書き出す範囲の外（フレーム 0）に初めの形のキーを打ってそこで書き出す。読み直して、1 フレーム目の手が構えと 3mm 以内で合うことを確かめた
   ・pistol_reload.json：body_fbx を足し、握りは grip（in_hand・rotation・on_weapon。WeaponCatalog と同じ値）で渡す形にした
   ・リロード 2 本を作り直し、player.txt を変換し直した
@@ -196,7 +196,7 @@
   ・ユーザーの画面写真：左手の指が伸びて右へ開き、拳銃を包んでいない（10 章の確認写真にも同じ形が出ていたのを見落としていた）
   ・原因：変換ツールの当て方（骨の初めの形からの回転を写す）だと、Shooting.fbx と Ch15 で骨（とくに指）の初めの向きが違う分だけ、
     回転の軸がずれる。親から子へずれが積み重なるので、指の先ほど大きく崩れる
-  ・直し方：tools/pistol_reload_gen.py が構えを作るときに、骨ごとの「世界から見た向き」を Shooting.fbx から Ch15 へ写す（ずれが積み重ならない）。
+  ・直し方：tools/modelgen/pistol_reload_gen.py が構えを作るときに、骨ごとの「世界から見た向き」を Shooting.fbx から Ch15 へ写す（ずれが積み重ならない）。
     骨の根の位置は Ch15 の骨の長さのまま。この構えを止まったアニメ pistol_hold.fbx としても書き出し、player.json の pistol_hold をそれに替えた
     （リロード 2 本も同じ構えから作る。どれも 1 フレーム目の両手が同じ位置・向きになることを確かめた）
   ・握り：この構えで握りこぶしの中心に拳銃の握りを置き直した：kPistolGripInHand ( -0.706, 1.342, -10.76 )・向き Y -2.956 / X -157.73 / Z -84.344
@@ -255,7 +255,7 @@
       B：ライフルも構える前は下げる（ライフルの下げた構えも作る）
 
  13-4 変える所（★の案で）
-  ・tools/pistol_reload_gen.py：「下げた構え」（pistol_low）を書き出す。リロードは下げた構えから作る。設定に角度・寄せる長さ
+  ・tools/modelgen/pistol_reload_gen.py：「下げた構え」（pistol_low）を書き出す。リロードは下げた構えから作る。設定に角度・寄せる長さ
   ・tools/configs/pistol_reload.json：grip.on_weapon の y を 2.5cm 上げる（-0.0488 → -0.0238）・pistol_low の設定
   ・WeaponCatalog：拳銃の握り（on_weapon）・WeaponSpec に「下げた構えのアニメ」（拳銃 "pistol_low"・ライフル nullptr）
   ・HoldComponent：拳銃の腕を、下げた構えと構えの間で覗き具合（と腰だめの重み）に合わせて混ぜる（骨ごとに位置は直線・向きは球面）
@@ -264,7 +264,7 @@
        https://ingamenews.com/2026/06/escape-from-tarkov-devs-confirm-cqb.html
 
  13-5 実装（2026-11-04）
-  ・tools/pistol_reload_gen.py：クリップに base（"hold"／"low"）。下げた構え＝両肩の真ん中を中心に構えの両腕を前へ 45 度倒し、手を体へ 8cm 寄せた所
+  ・tools/modelgen/pistol_reload_gen.py：クリップに base（"hold"／"low"）。下げた構え＝両肩の真ん中を中心に構えの両腕を前へ 45 度倒し、手を体へ 8cm 寄せた所
     （設定 low_ready の angle_degree・pull_back）。pistol_low.fbx（止まったアニメ）を足し、リロード 2 本は下げた構えから作り直した
     （3 本とも 1 フレーム目の両手が下げた構えと同じことを確かめた）
   ・握り：grip.on_weapon の y を 2.5cm 上げた（-0.0488 → -0.0238。WeaponCatalog も同じ）
@@ -304,7 +304,7 @@
       B：今のまま（下げた構えから始まるので、始めと終わりに腕が跳ぶ）
 
  14-4 変える所（★の案で）
-  ・tools/pistol_reload_gen.py：base に "ready" を足す。player の骨格に rifle_idle の 1 フレーム目を入れて右手の位置を読み、
+  ・tools/modelgen/pistol_reload_gen.py：base に "ready" を足す。player の骨格に rifle_idle の 1 フレーム目を入れて右手の位置を読み、
     そこへ拳銃の握りを置いて（向きは構えと同じ）両腕を IK で解く。pistol_low の代わりに pistol_ready.fbx を書き出し、リロード 2 本も ready から作る
   ・tools/configs/pistol_reload.json：low_ready の設定を消し、ready の設定（読むアニメの名前・右手の位置の細かいずらし 0）を足す
   ・tools/configs/player.json：pistol_low を pistol_ready に替えて変換し直す
@@ -319,7 +319,7 @@
   ・覗いていない間も手と拳銃が画面に入るので、13 章で消えていた「手のかたまりが大きく見える」が、覗いていない間にも見える
 
  14-6 実装（2026-11-04）
-  ・tools/pistol_reload_gen.py：base "low" をやめ "ready" を足した。自キャラの骨格に rifle aiming idle.fbx のアクションを付け
+  ・tools/modelgen/pistol_reload_gen.py：base "low" をやめ "ready" を足した。自キャラの骨格に rifle aiming idle.fbx のアクションを付け
     （fbx_to_gamelib.py と同じ当て方）、1 フレーム目の右手首を胸（Spine2）から見た位置で読み、構えの胸に写した所へ右手首を IK で置く。
     向きは構えのまま、左手は拳銃から見た位置のまま。pistol_ready.fbx を書き出し、リロード 2 本も ready から作り直した（player.txt を変換し直した）
   ・Blender で確かめた（胸から見た右手首。cm）：rifle_idle (-1.3, 17.5, 24.5)・pistol_ready (-0.6, 17.3, 24.4)・リロードの 1 フレーム目も同じ。
@@ -333,7 +333,7 @@
 
  14-7 作り直し（2026-11-04 夜。ユーザー「idle や歩きのときアサルトライフルと姿勢・腕の位置が全然違う。同じ感じに」）
   ・Blender でゲームと同じ当て方（体はライフルのアニメ・腕は胸から写す・目の位置と縦 60 度）を再現して描いて比べた
-    （tools/pose_compare_render.py。比べた絵は SummaryPlan/個別仕様/射撃と手応え/images/PistolReady_*.png）
+    （tools/render_check/pose_compare_render.py。比べた絵は SummaryPlan/個別仕様/射撃と手応え/images/PistolReady_*.png）
   ・原因：14-6 の pistol_ready は Shooting.fbx の体の上で作り、右手首の「位置」だけをライフルに合わせていた。
     ゲームの体はライフルのアニメで、胸の傾きが Shooting.fbx と大きく違うので、胸から腕を写すと拳銃がほぼ真上を向き、両手が胸に縮こまっていた
   ・直し方（ツール）：pistol_ready をライフルの構え（rifle_idle）の体の上で作る。拳銃の握りの中心をライフルの握りの中心に、向き（銃口・上）を

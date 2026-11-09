@@ -19,7 +19,7 @@ namespace{
 	// 街灯は tools/configs/streetlamp.json・streetlamp_off.json で変換（同上。画像は使わず色だけ。ガラスは別の部品で発光だけ違う）。
 	const char* kStreetLampFile = "Resource/Model/Prop/streetlamp.txt";
 	const char* kStreetLampOffFile = "Resource/Model/Prop/streetlamp_off.txt";
-	// ゴミ箱・木箱は tools/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上。R3_Plan.txt Q2）。
+	// ゴミ箱・木箱は tools/modelgen/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上。R3_Plan.txt Q2）。
 	const char* kDumpsterFile = "Resource/Model/Prop/dumpster.txt";
 	const char* kCrateFile = "Resource/Model/Prop/crate.txt";
 	// 落ちた物の形のファイルは物の表（ItemCatalog の groundFile）、落ちている銃の形のファイルは銃ごとの表（WeaponCatalog の groundFile）にある。

@@ -23,7 +23,7 @@ cbuffer GBufferMaterial : register(b3)
 // 書く側だけが読む物（SsrDecalMaterial_Plan.txt 5・6 章）。番号は読む側（t2〜t5・SSAO の t10）と重ならない所。
 // 材質の画像（r AO・g 粗さ・b 金属）。無い材質には白 1 画素が付く（RenderPass::setSurface）ので、数値 × 画像 = 数値のまま。
 Texture2D gOrmMap     : register(t11);
-// 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/puddle_gen.py）。ワールドの x・z で読む。
+// 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/texgen/puddle_gen.py）。ワールドの x・z で読む。
 Texture2D gPuddleMask : register(t12);
 // b4：G-Buffer へ描く間ずっと同じ値（GBuffer.cpp の PassConstants）。水たまりの値（PuddleParams から）と、今描いている物の動きの種類。
 cbuffer GBufferPassConstants : register(b4)

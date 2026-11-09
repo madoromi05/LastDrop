@@ -240,7 +240,7 @@
  8-5. 画像の名前の書き換え
 --------------------------------------------------------------------------------
   ・メッシュのファイル（*.txt）に書かれた画像の名前を .tga → .dds にする
-  ・tools/fbx_to_gamelib.py の出力も .dds にする（作り直したときに .tga へ戻らないように）
+  ・tools/convert/fbx_to_gamelib.py の出力も .dds にする（作り直したときに .tga へ戻らないように）
   ・エフェクトの画像の名前（kTextureFile など）も .dds にする
   ・「.dds があればそちらを読む」という隠れた決まりは作らない（どの画像を読んでいるかが
     ファイルを見れば分かるように）
@@ -265,7 +265,7 @@
   ・tools/texture_to_dds.bat                         texconv を呼ぶ
   ・GameLib/src/Graphics/TextureImpl.h（または新しい DdsReader）  DDS の読み込み
   ・GameLib/src/Graphics/PixelLightingNormalMapPsHlsl.h、Resource/Shader/Lighting.hlsli  BC5 の z
-  ・Resource/*.txt（メッシュ）、tools/fbx_to_gamelib.py、エフェクトの画像の名前  .dds へ
+  ・Resource/*.txt（メッシュ）、tools/convert/fbx_to_gamelib.py、エフェクトの画像の名前  .dds へ
 
 ================================================================================
  10. 確かめ方
@@ -338,8 +338,8 @@
 ================================================================================
  14. 1-b の実装メモ（2026-10-27。仕様から変えた所と、測った数字）
 ================================================================================
-  ・変換のツールは .bat ではなく tools/texture_to_dds.ps1（画像ごとに 色 / 法線・縮める大きさ を表で書けるため）
-      pwsh -File tools/texture_to_dds.ps1 [名前の一部]
+  ・変換のツールは .bat ではなく tools/convert/texture_to_dds.ps1（画像ごとに 色 / 法線・縮める大きさ を表で書けるため）
+      pwsh -File tools/convert/texture_to_dds.ps1 [名前の一部]
     texconv.exe の置き場所は %USERPROFILE%\Tools\DirectXTex\texconv.exe（環境変数 TEXCONV で変えられる）
     2026-10-27 に GitHub の Microsoft/DirectXTex の最新版（2026.5.8.1）を置いた。署名は Microsoft で有効
     -dx10 を必ず付ける（GameLib は DX10 の頭の DDS だけを圧縮の DDS として読む）
@@ -351,9 +351,9 @@
     DDS が _SRGB かどうかと、読むときの指定（TextureColorSpace）が食い違えば ASSERT
     圧縮した絵は write（デバッグの書き出し）で読み戻さない（createStagingReadback が nullptr を返す）
   ・画像を GPU へ送るたびに、出力ウィンドウへ「Texture: upload <名前> <大きさ> BC|BGRA8 <KiB> (total <MiB>)」を出す
-  ・メッシュのファイル（Resource/*.txt 19 個）の画像の名前を .dds にした。tools/fbx_to_gamelib.py は
+  ・メッシュのファイル（Resource/*.txt 19 個）の画像の名前を .dds にした。tools/convert/fbx_to_gamelib.py は
     設定の .tga（書き出す元の画像）をそのまま書き出し、メッシュのファイルには .dds の名前を書く（game_texture_path）
-  ・エフェクト 5 枚も DDS にした。tools/*_gen.py で作り直したら、texture_to_dds.ps1 も走らせ直す
+  ・エフェクト 5 枚も DDS にした。tools/*/*_gen.py で作り直したら、texture_to_dds.ps1 も走らせ直す
   ・大きさ：ゾンビの 2 枚だけ 4096² → 2048²。建物・道路の 4096² はまだそのまま（画面で見比べて決める）
 
   数字（計算値。DDS は BC 圧縮なので、ファイルの大きさ＝GPU のメモリ）

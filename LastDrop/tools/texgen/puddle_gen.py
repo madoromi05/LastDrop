@@ -10,8 +10,8 @@
 #   乱数の種を固定しているので、何度作っても同じ絵になる。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/puddle_gen.py [出力.tga]
-#   出力を省くと Resource/Texture/Map/puddle_mask.tga に書く。その後 tools/texture_to_dds.ps1 puddle で DDS にする。
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/puddle_gen.py [出力.tga]
+#   出力を省くと Resource/Texture/Map/puddle_mask.tga に書く。その後 tools/convert/texture_to_dds.ps1 puddle で DDS にする。
 # =====================================================================
 
 import sys

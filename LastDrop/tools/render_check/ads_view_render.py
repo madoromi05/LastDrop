@@ -5,7 +5,7 @@
 #   ゲームの覗く補正（FirstPersonBody::alignSightToEye）と同じく、カメラを拳銃のサイトの目の点に置き、拳銃の前（+Z）・上（+Y）へ向ける（縦 45 度）。
 #   大きさと握りの点のずらしを引数で変えて、描き比べられる。下の値は今の WeaponCatalog の拳銃と同じ（変えたら合わせる）。
 # 使い方（作業フォルダはプロジェクトの LastDrop。絵は pose_compare_out/ に出る）:
-#   blender -b --factory-startup --python tools/ads_view_render.py -- <大きさ（今は 1.8）> <握りの x のずらし m> [y のずらし m] [名前]
+#   blender -b --factory-startup --python tools/render_check/ads_view_render.py -- <大きさ（今は 1.8）> <握りの x のずらし m> [y のずらし m] [名前]
 # =====================================================================
 import bpy, math, os, sys
 from mathutils import Matrix, Vector

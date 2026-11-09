@@ -38,7 +38,7 @@
       B：空にだけ描く（水たまりには映らない）
 
  Q2. 月の模様の画像
-     ★A：tools/moon_gen.py で作る（512×512。丸の中に、暗い大きな斑（海）と小さなクレーターの濃淡。周りは透明）。
+     ★A：tools/texgen/moon_gen.py で作る（512×512。丸の中に、暗い大きな斑（海）と小さなクレーターの濃淡。周りは透明）。
           puddle_gen.py と同じく乱数の種を固定し、何度作っても同じ絵にする。BC7_SRGB
           ・全体の計画（GraphicsExtra_Spec.txt Q11）のとおり
       B：NASA の月の画像（CGI Moon Kit。パブリックドメイン）を縮めて使う（本物の月の模様になるが、画像の出どころを記録に残す）
@@ -183,7 +183,7 @@
  9. 進め方
 ================================================================================
   9-a 月・星
-       tools/moon_gen.py → moon.tga → texture_to_dds.ps1（BC7_SRGB）
+       tools/texgen/moon_gen.py → moon.tga → texture_to_dds.ps1（BC7_SRGB）
        LightingParams・LightList（定数 gMoon・gSkyDetail を足す）・LightList.hlsli（skyColor・environmentLight）・
        DeferredLighting（moon.dds を t14 に付ける）・F6 の Sky detail
        確かめること：月が影の向きの空にある・ブルームで少しにじむ・水たまりに月が映る・星が TAA でちらつかない・

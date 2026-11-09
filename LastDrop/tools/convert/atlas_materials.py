@@ -14,11 +14,11 @@
 # モデルごとの設定は tools/configs/*_atlas.json に書く（スクリプト本体はモデルごとに書き換えない）。
 #
 # 使い方:
-#   blender -b --factory-startup --python tools/atlas_materials.py -- tools/configs/uaz_atlas.json
+#   blender -b --factory-startup --python tools/convert/atlas_materials.py -- tools/configs/uaz_atlas.json
 #   その後、出力した FBX を fbx_to_gamelib.py で変換する（mesh_texture / mesh_normalmap に書き出した TGA を指定し、
 #   texture_export_size は 0 のままにする）。
 #   画像だけ作り直すとき（区画の並びは同じなので、FBX とメッシュの txt は今のまま使える）:
-#   blender -b --factory-startup --python tools/atlas_materials.py -- tools/configs/uaz_atlas.json --textures-only
+#   blender -b --factory-startup --python tools/convert/atlas_materials.py -- tools/configs/uaz_atlas.json --textures-only
 #
 # 前提: 各マテリアルの UV が 0〜1 に収まっていること（繰り返し貼るテクスチャは区画からはみ出すので使えない）。
 # =====================================================================

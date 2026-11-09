@@ -7,14 +7,14 @@
 #     数の画像   … BC7_UNORM（色ではない数をそのまま。材質の画像 ORM・水たまりの模様。SsrDecalMaterial_Plan.txt 5・6 章）
 #   -dx10 で DDS の追加の頭（DX10）を必ず付ける（GameLib の読み込みは DX10 の頭の形式だけを見る）。
 #   DDS は TGA の横に同じ名前で書く。TGA は作る途中の物なので Resource には残さない（2026-11-08 に全部消した。
-#   .gitignore で Resource/Texture の TGA は入らない）。作り直すときは Blender の書き出し・tools/*_gen.py で TGA を出し直してから走らせる。
+#   .gitignore で Resource/Texture の TGA は入らない）。作り直すときは Blender の書き出し・tools/*/*_gen.py で TGA を出し直してから走らせる。
 #
-# いつ走らせるか：画像を足した・描き直した（Blender の書き出し、tools/*_gen.py）とき。起動時には走らない。
+# いつ走らせるか：画像を足した・描き直した（Blender の書き出し、tools/*/*_gen.py）とき。起動時には走らない。
 #   BC7 は重いので、GPU があれば texconv が GPU で圧縮する（無ければ CPU で、4096² 1 枚に数十秒〜）。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   pwsh -File tools/texture_to_dds.ps1            … 下の一覧を全部
-#   pwsh -File tools/texture_to_dds.ps1 zombie     … 名前にこの文字を含む物だけ
+#   pwsh -File tools/convert/texture_to_dds.ps1            … 下の一覧を全部
+#   pwsh -File tools/convert/texture_to_dds.ps1 zombie     … 名前にこの文字を含む物だけ
 #
 # texconv（Microsoft の DirectXTex に付いているコマンド）はリポジトリに入れない。下の場所に置くか、
 # 環境変数 TEXCONV で場所を渡す。https://github.com/microsoft/DirectXTex/releases から texconv.exe を取る。
@@ -33,7 +33,7 @@ $TextureDir = "Resource/Texture" # この下の用途ごとのフォルダ（Cha
 $Textures = @(
 	@{ Name = "building_albedo";      Kind = "Color";  MaxSize = 0 }
 	@{ Name = "building_normal";      Kind = "Normal"; MaxSize = 0 }
-	@{ Name = "building_orm";         Kind = "Data";   MaxSize = 0 }  # 段階11 の ORM は tools/orm_gen.py で作る（MaterialTexture_Plan.txt）
+	@{ Name = "building_orm";         Kind = "Data";   MaxSize = 0 }  # 段階11 の ORM は tools/convert/orm_gen.py で作る（MaterialTexture_Plan.txt）
 	@{ Name = "bullet_albedo";        Kind = "Color";  MaxSize = 0 }
 	@{ Name = "bullet_normal";        Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "bullet_orm";           Kind = "Data";   MaxSize = 0 }
@@ -46,7 +46,7 @@ $Textures = @(
 	@{ Name = "fire_hydrant_albedo";  Kind = "Color";  MaxSize = 0 }
 	@{ Name = "fire_hydrant_normal";  Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "fire_hydrant_orm";     Kind = "Data";   MaxSize = 0 }
-	@{ Name = "loot_props_albedo";    Kind = "Color";  MaxSize = 0 }  # ゴミ箱・木箱・包帯・腕時計・ノートパソコン（tools/loot_prop_gen.py。R3_Plan.txt Q2）
+	@{ Name = "loot_props_albedo";    Kind = "Color";  MaxSize = 0 }  # ゴミ箱・木箱・包帯・腕時計・ノートパソコン（tools/modelgen/loot_prop_gen.py。R3_Plan.txt Q2）
 	@{ Name = "loot_props_orm";       Kind = "Data";   MaxSize = 0 }
 	@{ Name = "player_body_albedo";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body_normal";   Kind = "Normal"; MaxSize = 0 }
@@ -69,7 +69,7 @@ $Textures = @(
 	@{ Name = "zombie_albedo";        Kind = "Color";  MaxSize = 2048 }
 	@{ Name = "zombie_normal";        Kind = "Normal"; MaxSize = 2048 }
 	@{ Name = "zombie_orm";           Kind = "Data";   MaxSize = 2048 }
-	# エフェクト（tools/*_gen.py で作り直したら、ここも走らせ直す）
+	# エフェクト（tools/*/*_gen.py で作り直したら、ここも走らせ直す）
 	@{ Name = "blood_drop";           Kind = "Color";  MaxSize = 0 }
 	@{ Name = "blood_stain";          Kind = "Color";  MaxSize = 0 }  # 血の跡のデカール（BloodStain_Plan.txt 5 章）
 	@{ Name = "blood_stain_normal";   Kind = "Normal"; MaxSize = 0 }
@@ -78,8 +78,8 @@ $Textures = @(
 	@{ Name = "impact_smoke_sheet";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "muzzle_flash_sheet";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "muzzle_glow";          Kind = "Color";  MaxSize = 0 }
-	@{ Name = "puddle_mask";          Kind = "Data";   MaxSize = 0 }  # tools/puddle_gen.py
-	@{ Name = "moon";                 Kind = "Color";  MaxSize = 0 }  # tools/moon_gen.py（夜空の月。MoonStarsLut_Plan.txt 4 章）
+	@{ Name = "puddle_mask";          Kind = "Data";   MaxSize = 0 }  # tools/texgen/puddle_gen.py
+	@{ Name = "moon";                 Kind = "Color";  MaxSize = 0 }  # tools/texgen/moon_gen.py（夜空の月。MoonStarsLut_Plan.txt 4 章）
 )
 
 if ( -not ( Test-Path $TexconvPath ) ) {

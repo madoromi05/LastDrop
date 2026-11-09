@@ -6,7 +6,7 @@
 #   ゲームは絵に色を掛けて使う（使えない物は灰色）。見ている物は大きく描き、真ん中に「E」の文字を重ねる（InteractMarkers）。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/interact_mark_gen.py [出力.tga]
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/interact_mark_gen.py [出力.tga]
 #   出力を省くと Resource/UI/ui_interact_mark.tga に書く。UI の絵なので DDS にはせず、ゲームは LINEAR で読む。
 # =====================================================================
 

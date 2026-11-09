@@ -13,7 +13,7 @@
   1. タルコフでは
   2. 今のコードで分かったこと（計画を書く前に調べた）
   3. 元の画像を見て分かったこと
-  4. 作り方（tools/orm_gen.py）
+  4. 作り方（tools/convert/orm_gen.py）
   5. 物ごとの作り方と値
   6. 変える所・足す所
   7. 確かめる絵と計測
@@ -31,7 +31,7 @@
       B：建物・銃・キャラだけ（GraphicsExtra_Spec.txt の範囲のまま）
 
  Q2. ORM を作る道具
-     ★A：新しく tools/orm_gen.py を作る（Blender をバックグラウンドで動かす。設定は tools/configs/orm/<名前>.json）。
+     ★A：新しく tools/convert/orm_gen.py を作る（Blender をバックグラウンドで動かす。設定は tools/configs/orm/<名前>.json）。
           元の画像から作る・FBX に埋め込まれた画像から作る・色の画像から表で作る、の 3 つを 1 つの道具で扱う。
           メッシュの txt は <StaticMesh> / <Part> の行に ormmap="..." を足し、roughness・metallic を 1 にするだけ（形は変えない）。
           fbx_to_gamelib.py の設定（mesh_orm・parts の ormmap）にも同じ物を書き、作り直しても消えないようにする
@@ -93,9 +93,9 @@
     材質のノードは使わず、画像の名前で探す
 
 ================================================================================
- 4. 作り方（tools/orm_gen.py。Q2 の A）
+ 4. 作り方（tools/convert/orm_gen.py。Q2 の A）
 ================================================================================
-  ・動かし方："C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --factory-startup --python tools/orm_gen.py -- <設定>.json
+  ・動かし方："C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --factory-startup --python tools/convert/orm_gen.py -- <設定>.json
   ・設定（tools/configs/orm/<名前>.json）
       "output": "Resource/xxx_orm.tga"   "size": 書き出す大きさ
       元の画像から：  "roughness": 画像（"invert": true で 1 − 値。光沢の画像）・"metallic"・"ao"（無ければ 金属 0・AO 1）
@@ -103,7 +103,7 @@
       色から：        "albedo": 色の画像・"rules": [ { 色相の範囲・彩度・明るさの条件, "roughness", "metallic" }, … ]・"default"・"detail": 0.08
   ・色から作るとき：色の画像をリニアにせず sRGB の数のまま HSV にして表を引く（目で見た色と表の値を合わせやすい）。
     条件は上から順に見て、最初に合った物を使う。境目は 1 画素ずつ切り替わる（縮小の段でなめらかになる）
-  ・書き出した TGA は tools/texture_to_dds.ps1 に Kind = Data で足して DDS にする
+  ・書き出した TGA は tools/convert/texture_to_dds.ps1 に Kind = Data で足して DDS にする
 
 ================================================================================
  5. 物ごとの作り方と値
@@ -126,17 +126,17 @@
  6. 変える所・足す所
 ================================================================================
   足す
-    tools/orm_gen.py                         4 章
+    tools/convert/orm_gen.py                         4 章
     tools/configs/orm/building.json・rifle.json・zombie.json・player_body.json・player_body1.json・bullet.json
     Resource/*_orm.tga・*_orm.dds（5 章の 6 枚）
   直す
     Resource/building.txt・building_noground.txt・rifle.txt・rifle_mag.txt・character.txt・player.txt・ammo_drop.txt・bullet_tip.txt
                                              ormmap を足し、roughness・metallic を 1 に
     tools/configs/*.json（fbx_to_gamelib の設定）  mesh_orm・parts の ormmap を書く（作り直しても消えないように）
-    tools/fbx_to_gamelib.py                  parts の ormmap を <Part> に書けるようにする（今は texture・normalmap だけ）。
+    tools/convert/fbx_to_gamelib.py                  parts の ormmap を <Part> に書けるようにする（今は texture・normalmap だけ）。
                                              mesh_orm は「書き出す」も兼ねているので、ORM を orm_gen.py で作る物は
                                              「書き出さず、属性だけ書く」設定を足す（mesh_orm_export: false）
-    tools/texture_to_dds.ps1                 6 枚を Kind = Data で足す
+    tools/convert/texture_to_dds.ps1                 6 枚を Kind = Data で足す
   変えない：シェーダ・C++（2 章）
 
 ================================================================================
@@ -185,4 +185,4 @@
     設定 9 つ（building・building_noground・rifle・rifle_mag・ammo_drop・bullet_tip・zombie・player）に mesh_orm / ormmap と
     roughness・metallic 1 を書いた（作り直しても今の txt と同じ材質になる。作り直しての突き合わせはしていない）
   ・ゲームを動かしての確かめはまだ（ORM はゲーム画面に入って初めて読む）。txt の ormmap の画像が全部あることだけ確かめた
-  ・作ったもの：tools/orm_gen.py・tools/configs/orm/*.json（6 つ）・Resource/building・rifle・zombie・player_body・player_body1・bullet の _orm(.tga/.dds)
+  ・作ったもの：tools/convert/orm_gen.py・tools/configs/orm/*.json（6 つ）・Resource/building・rifle・zombie・player_body・player_body1・bullet の _orm(.tga/.dds)

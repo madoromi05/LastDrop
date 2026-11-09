@@ -12,7 +12,7 @@ namespace{
 	const float kRifleRotationY = -156.062f;
 	const float kRifleRotationX = 2.115f;
 	const float kRifleRotationZ = 89.224f;
-	// 拳銃：構え（pistol_hold。tools/pistol_reload_gen.py が Shooting.fbx の 1 フレーム目を骨ごとの向きで Ch15 に写した物）で、
+	// 拳銃：構え（pistol_hold。tools/modelgen/pistol_reload_gen.py が Shooting.fbx の 1 フレーム目を骨ごとの向きで Ch15 に写した物）で、
 	// 右手の中指〜小指の関節と手のひらの真ん中（握りこぶしの中心）へ拳銃の握りの中心を置き、銃口が真っすぐ前・水平、上が上になる値を
 	// Blender で求めた（PistolAnimation_Plan.txt 11 章）。tools/configs/pistol_reload.json の grip と同じ値にしておく。
 	const Vector3 kPistolGripInHand( -0.706f, 1.342f, -10.76f );
@@ -25,7 +25,7 @@ namespace{
 	// 合図は Blender で左手の動きを見て決めた（弾倉をつかんで下へ抜く・下から上がりきる・右手へ一番近づく＝右の槓桿）。
 	// 空でも残っていても同じ（いつも槓桿を引く）。
 	const WeaponReloadSpec kRifleReload = { "rifle_reload", 2.5f, 2.f, 0.45f, 1.6f, 2.1f };
-	// 拳銃：tools/pistol_reload_gen.py で作った（tools/configs/pistol_reload.json）。アニメの長さのまま流す。
+	// 拳銃：tools/modelgen/pistol_reload_gen.py で作った（tools/configs/pistol_reload.json）。アニメの長さのまま流す。
 	// 残っているとき 1.2 秒（スライドは引かない）、空のとき 1.5 秒（左手でスライドを後ろへ引く）。どちらも覗いていない間の構え（pistol_ready）から始めて、そこで終わる。
 	const WeaponReloadSpec kPistolReload = { "pistol_reload", 1.2f, 1.2f, 0.35f, 1.02f, kNoBoltCue };
 	const WeaponReloadSpec kPistolEmptyReload = { "pistol_reload_empty", 1.5f, 1.5f, 0.35f, 1.02f, 1.30f };

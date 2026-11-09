@@ -9,8 +9,8 @@
 #   乱数の種を固定しているので、何度作っても同じ絵になる。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/moon_gen.py [出力.tga]
-#   出力を省くと Resource/Texture/Map/moon.tga に書く。その後 tools/texture_to_dds.ps1 moon で DDS（BC7_SRGB）にする。
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/moon_gen.py [出力.tga]
+#   出力を省くと Resource/Texture/Map/moon.tga に書く。その後 tools/convert/texture_to_dds.ps1 moon で DDS（BC7_SRGB）にする。
 # =====================================================================
 
 import sys

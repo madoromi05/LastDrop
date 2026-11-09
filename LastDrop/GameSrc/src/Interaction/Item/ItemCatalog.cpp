@@ -21,7 +21,7 @@ namespace{
 		// ITEM_AMMO_9MM: 1 マスに弾倉 2 本ぶん（24 発）。
 		// 落ちた形は 9mm の弾薬を大きくして寝かせた物（tools/configs/ammo9_drop.json）。
 		{ "9mm 弾", "ammo_9mm", ITEM_KIND_AMMO, "Resource/Model/Weapon/ammo9_drop.txt", "Resource/UI/icon_ammo_9mm.tga", 1, 24, kNoLimit, 0.55f, 0.50f, 0.35f },
-		// ── 段階R3 の物（R3_Plan.txt 7-1）。形と絵は tools/loot_prop_gen.py・item_icon_gen.py ──
+		// ── 段階R3 の物（R3_Plan.txt 7-1）。形と絵は tools/modelgen/loot_prop_gen.py・item_icon_gen.py ──
 		// ITEM_BANDAGE: 1 マスに 3 つ。カバンの画面で使えば体力が戻る（R3_Plan.txt Q11）。
 		{ "包帯", "bandage", ITEM_KIND_MEDICAL, "Resource/Model/Prop/bandage.txt", "Resource/UI/icon_bandage.tga", 1, 3, kNoLimit, 0.90f, 0.88f, 0.80f },
 		// ITEM_WATCH: 1 マス。点が無くなったので、今は拾っても使い道が無い（SimpleRun_Plan.txt C8）。

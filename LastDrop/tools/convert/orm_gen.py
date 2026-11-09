@@ -12,8 +12,8 @@
 #                            色は sRGB の数のまま HSV にする（目で見た色と表の値を合わせやすい）。明るさの細かい揺れを粗さに少し混ぜる
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --factory-startup --python tools/orm_gen.py -- tools/configs/orm/<名前>.json
-#   その後 tools/texture_to_dds.ps1 <名前>_orm で DDS（Kind = Data。BC7_UNORM）にする。
+#   "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --factory-startup --python tools/convert/orm_gen.py -- tools/configs/orm/<名前>.json
+#   その後 tools/convert/texture_to_dds.ps1 <名前>_orm で DDS（Kind = Data。BC7_UNORM）にする。
 #
 # 設定（json。パスは作業フォルダ基準か絶対パス）:
 #   "output": 書き出す TGA。 "size": 一辺の画素数。

@@ -16,7 +16,7 @@
 #   前の 1 枚だけの芯（muzzle_flash.tga）は、ゲームではもう使っていない。
 #
 # 使い方（作業フォルダはプロジェクトの LastDrop）:
-#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/muzzle_flash_gen.py [芯.tga] [にじみ.tga]
+#   "C:\Program Files\Blender Foundation\Blender 4.5\4.5\python\bin\python.exe" tools/texgen/muzzle_flash_gen.py [芯.tga] [にじみ.tga]
 #   出力を省くと Resource/Texture/Effect/muzzle_flash_sheet.tga と Resource/Texture/Effect/muzzle_glow.tga に書く。
 # =====================================================================
 

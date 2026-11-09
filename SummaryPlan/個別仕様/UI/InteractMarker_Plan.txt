@@ -100,6 +100,6 @@
     draw で画面の位置へ直して UiRenderer へ積む。小さい 14 画素・見ている物 34 画素＋「E」・使えない物は灰色。絵が読めなければ四角
   ・ScreenProjection（新。UI）：世界 → 画面の直し方。ZombieHealthBars にあった toScreen をここへ移して共有
   ・GameHud：照準の下の案内を削除（車の燃料の行は残す）。UiScreen::promptPosition も削除
-  ・tools/interact_mark_gen.py（新）：Resource/ui_interact_mark.tga（64×64。白いひし形＋暗い縁）
+  ・tools/texgen/interact_mark_gen.py（新）：Resource/ui_interact_mark.tga（64×64。白いひし形＋暗い縁）
   ・画面で確かめること：① 4m 以内の物の上に小さなひし形 ② 見ている物は大きく「E」③ カバンが一杯・ガソリン無しで車・満タンの車は灰色
     ④ 壁・建物の向こうの物は出ない ⑤ 死体を見ると、その死体が落とした弾のマークが大きくなる ⑥ 文字の案内が出ない

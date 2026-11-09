@@ -101,7 +101,7 @@
  6. 作り直しの流れ
 ================================================================================
    1. tools/zombie_albedo_fix.py → Resource/zombie_albedo.tga
-   2. pwsh -File tools/texture_to_dds.ps1 zombie_albedo → Resource/zombie_albedo.dds（BC7_SRGB・2048²。今と同じ）
+   2. pwsh -File tools/convert/texture_to_dds.ps1 zombie_albedo → Resource/zombie_albedo.dds（BC7_SRGB・2048²。今と同じ）
    3. ゲームを起動して見る（DDS は起動時に読む）
   ・確かめ用に、筋らしさの白黒画像（scratch に置く。Resource には入れない）と、直す前後を並べた縮小画像も書き出す
 

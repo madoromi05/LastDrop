@@ -555,7 +555,7 @@ public:
 		unlock( 0 );
 	}
 
-	// tools/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）。
+	// tools/convert/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）。
 	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる（LinearToneMap_Plan.txt 8-4）。
 	void readCompressedDds( const char* data, int size ){
 		std::string error;

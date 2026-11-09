@@ -7,7 +7,7 @@
 #   目（頭＋上 0.08・前 0.20・縦 60 度）・横・前の 3 枚を書く。頭は潰す。
 #   WeaponCatalog の握り（RIFLE・PISTOL）を変えたら、ここも合わせる。
 # 使い方（作業フォルダはプロジェクトの LastDrop。絵は pose_compare_out/ に出る）:
-#   blender -b --factory-startup --python tools/pose_compare_render.py -- [腕のFBX] [名前の印（"cur"ならライフルも描く・末尾 hf で右手に付いていく）] [腕のフレーム]
+#   blender -b --factory-startup --python tools/render_check/pose_compare_render.py -- [腕のFBX] [名前の印（"cur"ならライフルも描く・末尾 hf で右手に付いていく）] [腕のフレーム]
 # =====================================================================
 import bpy, math, os, sys
 from mathutils import Matrix, Vector

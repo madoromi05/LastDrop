@@ -4,7 +4,7 @@
 #ifndef INCLUDED_SKY_DETAIL_HLSLI
 #define INCLUDED_SKY_DETAIL_HLSLI
 
-// 月の模様（Resource/Texture/Map/moon.dds。tools/moon_gen.py。rgb 面の明るさ・a 月の形）。DeferredLighting が空を描くパス（drawLighting）でだけ t14 に付ける。
+// 月の模様（Resource/Texture/Map/moon.dds。tools/texgen/moon_gen.py。rgb 面の明るさ・a 月の形）。DeferredLighting が空を描くパス（drawLighting）でだけ t14 に付ける。
 Texture2D gMoonTexture : register(t14);
 
 // ── 月 ──

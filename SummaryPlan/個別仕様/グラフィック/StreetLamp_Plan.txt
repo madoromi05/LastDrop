@@ -62,7 +62,7 @@
           画像は 街頭/Texture/Texture/StreetLight.002/{A,B}/
   ・大きさ：高さ 3.86m・台座 0.45×0.52m（実寸のまま。人 1.79m の約 2 倍）。三角形 2032
   ・材質は 2 つ。A＝柱と枠（2008 三角形）、B＝ガラス（24 三角形・高さ 3.09〜3.48m）
-  ・変換（tools/fbx_to_gamelib.py の static モード）
+  ・変換（tools/convert/fbx_to_gamelib.py の static モード）
       - 柱と枠：A の画像（色・法線・粗さ・金属）を mesh_texture / normalmap / orm で 1 組に
       - ガラス：B の面だけ別の部品（単色・画像なし）に分け、発光を付ける
         → fbx_to_gamelib.py に「この材質の面を単色の部品に分ける」設定（plain_materials）を足す
@@ -127,7 +127,7 @@
   ・TownMap::junctions()（交差点の真ん中の一覧）は街灯にしか使っていなかったので消した
   ・F3 の LightDebugDrawer で描けるライトの数を 32 → 48 にした（街灯 38＋懐中電灯＋マズルフラッシュ）
   ・GameWorld::buildTown → TownEnvironment::build → WorldBuilder::build に lampsLit（停電でなければ true）を渡す
-  ・変えたファイル：tools/fbx_to_gamelib.py・tools/configs/streetlamp(_off).json・Resource/Model/Prop/streetlamp*.txt（6 個）・
+  ・変えたファイル：tools/convert/fbx_to_gamelib.py・tools/configs/streetlamp(_off).json・Resource/Model/Prop/streetlamp*.txt（6 個）・
     TownMap・PropFactory・GameObjectTag・EditorWindow・WorldBuilder・TownEnvironment・GameWorld・LightingParams・SceneLights・LightDebugDrawer
   ・画面で確かめること：柱の位置（歩道の上・縁石や箱に埋まらない）・ガラスの光り方・照らす範囲と明るさ（F6 の streetLight*）・
     遠い街灯の光が切り替わるのが目立たないか（Q3）・停電の日にガラスが消えるか（F6 で日の条件を固定）

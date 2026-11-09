@@ -2,7 +2,7 @@
 #define INCLUDED_PUDDLE_PARAMS_H
 
 // 雨上がりの水たまり（道路の材質だけ。puddle="1"）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/SsrDecalMaterial_Plan.txt の 6 章。
-// 模様は Resource/puddle_mask（tools/puddle_gen.py）。模様の値は「それより暗い画素の割合」に並べ直してあるので、
+// 模様は Resource/puddle_mask（tools/texgen/puddle_gen.py）。模様の値は「それより暗い画素の割合」に並べ直してあるので、
 // coverage がそのまま水たまりの面積の割合になる。
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれも見た目を確かめる前の初期値。F6 → Render の G-Buffer を Roughness にすると、水たまりが黒い形で見える。
