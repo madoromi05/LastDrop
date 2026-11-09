@@ -301,6 +301,11 @@
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiLabel.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiButton.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiMenuItem.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiBackdrop.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiShade.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiBar.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiKeyHintRow.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiSlider.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
@@ -929,6 +934,12 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiLabel.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiButton.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiMenuItem.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBackdrop.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiShade.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBar.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiKeyHintRow.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\MenuPalette.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiAdjustable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiSlider.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />

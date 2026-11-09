@@ -11,16 +11,24 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。日本語の字があり、Windows 10 以降に必ずあるゴシック体。
-	// 小さくても読みやすく、英数字もきれい（英数字も同じフォントで描く。混ぜると高さと線の太さが揃わない）。
-	const char* kFontName = "Yu Gothic UI";
-	// 大きさごとの文字の高さ（ゲームの座標の画素。目安）。UiTextSize の並びと同じ順。
-	// 実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。
-	const int kCharHeights[ UI_TEXT_SIZE_NUMBER ] = {
-		20, // UI_TEXT_NORMAL
-		48, // UI_TEXT_LARGE
+	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。どちらも日本語の字があり、Windows 10 以降に必ずある。
+	// 1 つの大きさの中では英数字も同じフォントで描く（混ぜると高さと線の太さが揃わない）。
+	const char* kGothic = "Yu Gothic UI"; // 小さくても読みやすい。HUD・設定画面
+	const char* kMincho = "Yu Mincho";    // 静かで重い見た目（RE:2 風のメニュー。TitleScreen_Plan.txt）
+	// 大きさごとの書体。UiTextSize の並びと同じ順。
+	// charHeight はゲームの座標の画素（目安）。実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。
+	struct TextStyle{
+		const char* fontName;
+		int charHeight;
+		bool bold;
 	};
-	const bool kBold = true;
+	const TextStyle kTextStyles[ UI_TEXT_SIZE_NUMBER ] = {
+		{ kGothic, 20, true },  // UI_TEXT_NORMAL
+		{ kGothic, 48, true },  // UI_TEXT_LARGE
+		{ kMincho, 48, false }, // UI_TEXT_TITLE   （游明朝はモックの字より幅が広いので、84px / 720 の 2/3 より少し小さく。背景の街灯にかからない幅）
+		{ kMincho, 18, false }, // UI_TEXT_MENU    （26px / 720）
+		{ kMincho, 12, false }, // UI_TEXT_CAPTION （18px / 720）
+	};
 	const bool kItalic = false;
 	const bool kProportional = true; // 文字ごとの幅（読みやすい）。中央揃えは textWidth で実際の幅を測るので困らない
 	const bool kAntialias = true;
@@ -67,10 +75,11 @@ void UiRenderer::fitFontsToScreen() {
 	}
 	mGlyphScale = scale;
 	for ( int i = 0; i < UI_TEXT_SIZE_NUMBER; ++i ) {
-		int charHeight = static_cast< int >( static_cast< float >( kCharHeights[ i ] ) * scale + kHalf );
+		const TextStyle& style = kTextStyles[ i ];
+		int charHeight = static_cast< int >( static_cast< float >( style.charHeight ) * scale + kHalf );
 		// 古いフォントは、もう積んだ文字（あれば）が持っているので、この draw が終わるまで消えない。
 		// 字の絵は初めて使うときに描き足される（文字の画像は後から書き足せる作り。GameLib の Texture::createWritable）。
-		mFonts[ i ] = Scene::Font::create( kFontName, charHeight, kBold, kItalic, kProportional, kAntialias );
+		mFonts[ i ] = Scene::Font::create( style.fontName, charHeight, style.bold, kItalic, kProportional, kAntialias );
 		mStrings[ i ].setFont( mFonts[ i ] );
 		mStrings[ i ].setGlyphScale( scale );
 	}
@@ -117,6 +126,27 @@ void UiRenderer::addDisc( const Vector2& center, float radius, unsigned color ) 
 	}
 }
 
+void UiRenderer::addGradientRect( const UiRect& rect, unsigned leftColor, unsigned rightColor ) {
+	const Vector2 topLeft( rect.left, rect.top );
+	const Vector2 topRight( rect.right(), rect.top );
+	const Vector2 bottomLeft( rect.left, rect.bottom() );
+	const Vector2 bottomRight( rect.right(), rect.bottom() );
+	mPrimitives.setTexture( Graphics::Texture() ); // 絵なし（長方形と同じ扱い）
+	// 頂点ごとに色を置くと、間は GPU が混ぜてくれる（左の 2 隅が leftColor、右の 2 隅が rightColor）。
+	mPrimitives.addScreenTriangle( topLeft, topRight, bottomRight, leftColor, rightColor, rightColor );
+	mPrimitives.addScreenTriangle( topLeft, bottomRight, bottomLeft, leftColor, rightColor, leftColor );
+}
+
+void UiRenderer::addDiamond( const Vector2& center, float radius, unsigned color ) {
+	const Vector2 top( center.x, center.y - radius );
+	const Vector2 right( center.x + radius, center.y );
+	const Vector2 bottom( center.x, center.y + radius );
+	const Vector2 left( center.x - radius, center.y );
+	mPrimitives.setTexture( Graphics::Texture() ); // 絵なし（長方形と同じ扱い）
+	mPrimitives.addScreenTriangle( top, right, bottom, color, color, color );
+	mPrimitives.addScreenTriangle( top, bottom, left, color, color, color );
+}
+
 void UiRenderer::addImage( const UiRect& rect, const Graphics::Texture& texture, unsigned color ) {
 	ASSERT( texture && "UiRenderer::addImage : texture is null." );
 	mPrimitives.setTexture( texture );
@@ -125,19 +155,41 @@ void UiRenderer::addImage( const UiRect& rect, const Graphics::Texture& texture,
 		Vector2( kImageUvTopLeft, kImageUvTopLeft ), Vector2( kImageUvBottomRight, kImageUvBottomRight ), color );
 }
 
-void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize size, UiAlign align, unsigned color ) {
+void UiRenderer::addText( const char* text, const Vector2& position, UiTextSize size, UiAlign align, unsigned color, float letterSpacing ) {
 	ASSERT( text && size >= 0 && size < UI_TEXT_SIZE_NUMBER && "UiRenderer : bad text." );
 	// 文字を積む前に合わせる（draw で合わせると、積んだ後に倍率だけが変わって文字の大きさがずれる）。
 	// ウィンドウの大きさは描画の始めに変わるので、その回の最初の addText で合う。
 	fitFontsToScreen();
 	Vector2 topLeft = position;
 	if ( align == UI_ALIGN_CENTER ) {
-		topLeft.x -= textWidth( text, size ) * kHalf;
+		topLeft.x -= textWidth( text, size, letterSpacing ) * kHalf;
 	}
 	if ( align == UI_ALIGN_CENTER || align == UI_ALIGN_MIDDLE_LEFT ) {
-		topLeft.y -= static_cast< float >( mFonts[ size ].charHeight() ) / mGlyphScale * kHalf;
+		topLeft.y -= lineHeight( size ) * kHalf;
 	}
-	mStrings[ size ].add( topLeft, text, color );
+	if ( letterSpacing <= 0.f ) {
+		mStrings[ size ].add( topLeft, text, color );
+		return;
+	}
+	// 1 字ずつ切り出して積み、字の幅＋字の間だけ右へ進める（UTF-8 の 1 字は 1〜4 バイト）。
+	const int kMaxCharBytes = 4;
+	char oneChar[ kMaxCharBytes + 1 ];
+	int byteCount = 0;
+	for ( const char* c = text; *c != '\0'; c += byteCount ) {
+		int code = Utf8::decode( c, &byteCount );
+		ASSERT( byteCount > 0 && byteCount <= kMaxCharBytes && "UiRenderer::addText : bad UTF-8." );
+		for ( int i = 0; i < byteCount; ++i ) {
+			oneChar[ i ] = c[ i ];
+		}
+		oneChar[ byteCount ] = '\0';
+		mStrings[ size ].add( topLeft, oneChar, color );
+		topLeft.x += charWidth( code, size ) + letterSpacing;
+	}
+}
+
+float UiRenderer::lineHeight( UiTextSize size ) {
+	fitFontsToScreen();
+	return static_cast< float >( mFonts[ size ].charHeight() ) / mGlyphScale; // 絵の画素から座標の画素へ
 }
 
 void UiRenderer::prepareRectState() {
@@ -161,20 +213,31 @@ void UiRenderer::draw() {
 	Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 }
 
-float UiRenderer::textWidth( const char* text, UiTextSize size ) {
-	// 文字の絵がフォントのテクスチャのどこにあるか（UV）から、1文字ずつ幅を足す。
+float UiRenderer::textWidth( const char* text, UiTextSize size, float letterSpacing ) {
+	ASSERT( text && size >= 0 && size < UI_TEXT_SIZE_NUMBER && "UiRenderer::textWidth : bad text." );
+	fitFontsToScreen();
 	// 文字列は UTF-8 なので、StringRenderer と同じ読み方（Utf8::decode）で 1 字ずつ取り出す（1 バイトずつ数えると日本語の幅が合わない）。
 	float width = 0.f;
+	int charCount = 0;
 	int byteCount = 0;
 	for ( const char* c = text; *c != '\0'; c += byteCount ) {
 		int code = Utf8::decode( c, &byteCount );
-		Graphics::Texture texture;
-		Vector2 uvTopLeft;
-		Vector2 uvBottomRight;
-		if ( !mFonts[ size ].getChar( &texture, &uvTopLeft, &uvBottomRight, code ) ) {
-			continue;
-		}
-		width += ( uvBottomRight.x - uvTopLeft.x ) * static_cast< float >( texture.width() );
+		width += charWidth( code, size );
+		++charCount;
 	}
-	return width / mGlyphScale; // 絵の画素から座標の画素へ
+	if ( charCount > 1 ) {
+		width += letterSpacing * static_cast< float >( charCount - 1 ); // 字の間は字の数より 1 つ少ない
+	}
+	return width;
+}
+
+float UiRenderer::charWidth( int code, UiTextSize size ) {
+	// 文字の絵がフォントのテクスチャのどこにあるか（UV）から幅を求める。
+	Graphics::Texture texture;
+	Vector2 uvTopLeft;
+	Vector2 uvBottomRight;
+	if ( !mFonts[ size ].getChar( &texture, &uvTopLeft, &uvBottomRight, code ) ) {
+		return 0.f;
+	}
+	return ( uvBottomRight.x - uvTopLeft.x ) * static_cast< float >( texture.width() ) / mGlyphScale; // 絵の画素から座標の画素へ
 }

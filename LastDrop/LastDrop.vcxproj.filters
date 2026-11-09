@@ -888,6 +888,21 @@
     <ClCompile Include="GameSrc\src\UI\Widget\UiButton.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiMenuItem.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiBackdrop.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiShade.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiBar.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiKeyHintRow.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\UI\Widget\UiSlider.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
@@ -1930,6 +1945,24 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiButton.h">
       <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiMenuItem.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBackdrop.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiShade.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBar.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiKeyHintRow.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\MenuPalette.h">
+      <Filter>GameSrc\UI</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiAdjustable.h">
       <Filter>GameSrc\UI\Widget</Filter>

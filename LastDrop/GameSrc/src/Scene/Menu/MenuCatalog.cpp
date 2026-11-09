@@ -7,7 +7,12 @@ using namespace GameLib;
 
 namespace{
 	const char* kGameTitle = "ZOMBIE ESCAPE"; // 仮の名前
-	const unsigned kTitleColor = VertexColor::pack( 0.95f, 0.75f, 0.2f );
+	const unsigned kTitleColor = VertexColor::pack( 0.95f, 0.75f, 0.2f ); // MENU_LOOK_SIDE では使わない（色は MenuPalette）
+	// タイトル画面（RE:2 風。TitleScreen_Plan.txt）。
+	const char* kTitleTagline = "ガソリンを見つけて、この町を出ろ。";
+	const char* kTitleBackdrop = "Resource/UI/title_backdrop.tga"; // ゲームの画面写真から tools/convert/screenshot_to_ui_tga.py で作った
+	// 絵の街灯は真ん中より右にあるので、はみ出た横は右を多めに切る（4:3 の画面でも題名と街灯が重ならない）。
+	const float kTitleBackdropAlignX = 0.25f;
 	const char* kPauseHeading = "Pause";
 	const unsigned kPauseColor = VertexColor::WHITE;
 
@@ -21,9 +26,14 @@ MenuDefinition MenuCatalog::title() {
 	MenuDefinition menu;
 	menu.heading = kGameTitle;
 	menu.headingColor = kTitleColor;
-	menu.buttons.push_back( { "Start", changeTo( SceneManager::SCENE_GAME ) } ); // すぐ町へ（1 回勝負）
-	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
-	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
+	// 文字は大文字（RE:2 風の行は字の間を広げた大文字で並べる。一時停止のボタンは変えない）。
+	menu.buttons.push_back( { "START", changeTo( SceneManager::SCENE_GAME ) } ); // すぐ町へ（1 回勝負）
+	menu.buttons.push_back( { "OPTIONS", nullptr, MENU_PAGE_OPTIONS } );
+	menu.buttons.push_back( { "QUIT", []() { Framework::instance().requestEnd(); } } );
+	menu.look = MENU_LOOK_SIDE;
+	menu.tagline = kTitleTagline;
+	menu.backdrop = kTitleBackdrop;
+	menu.backdropAlignX = kTitleBackdropAlignX;
 	return menu;
 }
 

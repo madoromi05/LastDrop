@@ -1,0 +1,90 @@
+タイトル画面を RE:2 風にする（TitleScreen_Plan）
+2026-11-09 案。★ は決めてほしい所（おすすめを先に書いた）。承認までコードは変えない。
+
+■ 目的
+claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD の「タイトル」）の見た目をゲームのタイトル画面に入れる。
+今回はタイトルの 1 ページ目だけ。一時停止・設定・操作の一覧は、今の見た目のまま（次の段で同じ部品を使って揃える）。
+
+■ 手本のゲームでは
+・タルコフ：Web で調べたが、メインメニューのボタンの並び・背景を書いた出典は見つからなかった（分からなかった）。
+  分かったのは「メインメニューが遊びの中心（拠点）になっている」ことだけ
+  （https://www.ggrecon.com/guides/escape-from-tarkov-beginners-guide/）。
+  → このゲームは 1 回勝負で、タイトルから押すのは Start / Options / Quit の 3 つだけなので、タルコフのような拠点の形には合わせない。
+・見た目はユーザーが選んだ RE:2 風（静かで重い）に合わせる（ゲーム案_確定条件.md「メニュー画面の見た目」）。
+
+■ 画面の中身（モックから）
+  ┌────────────────────────────────────────┐
+  │                                                    │
+  │   ZOMBIE ESCAPE              （夜の町の絵）          │
+  │   ─  （赤い短い線）                                  │
+  │   ガソリンを見つけて、この町を出ろ。                   │
+  │                                                    │
+  │ ◆ START   ← 選んでいる行：上下の細線＋右へ薄れる帯     │
+  │   OPTIONS                                          │
+  │   QUIT                                             │
+  │                                                    │
+  │   [Enter] 決定  [Esc] 戻る                         │
+  └────────────────────────────────────────┘
+・背景：夜の町の絵を画面いっぱい（縦を合わせ、はみ出た横は切る）。左側だけ黒く暗くして文字を読みやすくする。
+・題名：明朝体・大きく・字の間を広く（モックの 84px/720 → ゲームの座標 480 で 56）。色 #e8e4dc。
+・赤い短い線：幅 48・太さ 1.5。色 #a3221f（赤は印と線だけに使う）。
+・ひと言：「ガソリンを見つけて、この町を出ろ。」明朝体・小さく。色 #a8a39a。
+・ボタン：左寄せ・板なし。選んでいない行は文字 #8b867e、選んでいる行は文字 #f3efe7＋上下の細線＋左から右へ薄れる帯＋赤いひし形。
+  操作は今と同じ（マウス・上下キー・Enter / Space・パッド）。押した後の動き（Start で町へ・Options で設定・Quit で終了）も今のまま。
+・色・大きさの数字は .cpp の無名の名前空間に名前を付けて置く（マジックナンバーにしない）。
+
+■ 作る物・変える物（部品は 1 つ 1 責任）
+1. UiRenderer（変える）
+   ・文字の大きさに 3 つ足す：UI_TEXT_TITLE（題名）・UI_TEXT_MENU（ボタン）・UI_TEXT_CAPTION（ひと言・案内）。
+     今は全部 "Yu Gothic UI" の太字なので、フォント名と太字かどうかを大きさの表へ移す（足した 3 つは "Yu Mincho"・細字）。
+   ・addText に「字の間」を足す（省略時 0 で今と同じ）。0 より大きいときは 1 字ずつ置く（UTF-8 は Utf8::decode で 1 字に分ける）。
+   ・addGradientRect（左の色→右の色の長方形。選んでいる行の帯と、背景の左の影）と addDiamond（ひし形）を足す。
+     どちらも PrimitiveRenderer::addScreenTriangle の頂点の色で描く（addLine と同じやり方）。
+2. UiMenuItem（新しい部品。GameSrc/UI/Widget）
+   ・メニューの 1 行（左寄せの文字＋選ばれているときの線・帯・ひし形）を描き、選ぶ・決定するだけ。UiButton と同じ IUiSelectable。
+   ・UiButton（板のボタン）は設定画面などで使うので残す。
+3. UiBackdrop（新しい部品。GameSrc/UI/Widget）
+   ・画面いっぱいの背景の絵を、縦を合わせて貼るだけ（横は切る）。絵は作るときに読む（LINEAR。UiRenderer::addImage の決まり）。
+4. UiShade（新しい部品。GameSrc/UI/Widget）
+   ・画面の左から右へ薄れる黒（addGradientRect）。一時停止でも使う予定なので背景の絵とは分ける。
+5. MenuDefinition / MenuLayout（変える）
+   ・MenuDefinition に「並べ方」MenuLook（MENU_LOOK_CENTER＝今の中央の板ボタン / MENU_LOOK_SIDE＝RE:2 風の左寄せ）と、
+     ひと言 tagline（無ければ nullptr）と背景の絵のファイル名 backdrop（無ければ nullptr）を足す。
+   ・MenuLayout::build は MenuLook で 2 つの並べ方（中の関数）に分ける。並べる位置は UiScreen に足す（sideMenuItemRect など）。
+6. MenuCatalog::title（変える）：MENU_LOOK_SIDE・ひと言・背景・ボタンの文字を大文字（START / OPTIONS / QUIT）に。
+   一時停止（MenuCatalog::pause）は変えない。
+7. 背景の絵：Resource/UI/Title/ に置く（★2）。
+
+■ 影響範囲
+・タイトルの 1 ページ目だけ見た目が変わる。一時停止・設定・操作の一覧は MENU_LOOK_CENTER のままで変わらない。
+・UiRenderer の文字の表が増えるので、文字の絵を作る数が 2→5 に増える（作るのは画面の大きさが変わったときだけ）。
+・修正の入口：見た目の数字は UiMenuItem.cpp・UiScreen.cpp・UiRenderer.cpp の定数、文言は MenuCatalog.cpp。
+
+■ 決めてほしいこと
+★1 背景の絵をどう用意するか
+   おすすめ：ゲームの中で撮る。F6 の Free camera で夜の町（街灯と車が入る所）を撮り、PrintScreen の画像をもらって私が DDS にする。
+   ほか：今回は絵なし（黒地に左の影だけ）で先に作り、絵は後で差し込む。
+★2 題名の英字のフォント
+   おすすめ：游明朝（Windows に入っている。今のフォントの作り方のまま使える）。
+   ほか：モックと同じ Cormorant Garamond（OFL・無料）をゲームに同梱する。OS に無いフォントを読む仕組み（AddFontResourceEx）を足す手間が増える。
+★3 下の操作の案内（[Enter] 決定  [Esc] 戻る）
+   おすすめ：出す（パッドのときの表示は次の段）。
+   ほか：出さない（タイトルの 1 ページ目では Esc は何もしないので、案内は Enter だけにする手もある）。
+★4 始めの暗転からのフェードイン（約 1 秒）
+   おすすめ：今回は作らない（MenuScene に時間で進む物が要るので、別の段で）。
+
+■ 参考
+・游明朝（Windows に入っているフォント）：https://learn.microsoft.com/en-us/typography/font-list/yu-mincho
+・部品で組み立てる考え方（Component）：https://gameprogrammingpatterns.com/component.html
+
+■ 決定と実装（2026-11-09）
+・★1 ゲームの中で撮る：ユーザーが撮った画面写真（2000×1126）を tools/convert/screenshot_to_ui_tga.py（Blender の中で走らせる）で
+  2048×1024 の TGA にした → Resource/UI/title_backdrop.tga（ほかの UI の絵と同じく Resource/UI に直に置いた。Title/ のフォルダは作らない）。
+・★2〜4：おすすめのまま（游明朝・案内を出す・フェードインは作らない）。ユーザーは画面写真を渡して先へ進めた。
+・案から変えた所（画面で見て直した）
+  - 題名は 56 → 48、字の間 9 → 6。游明朝はモックの字より幅が広く、56 のままだと背景の街灯に題名がかかった。
+  - 背景の絵は、横がはみ出たときに真ん中ではなく左寄り（alignX 0.25）に合わせる。始めの窓（640×480 の 4:3）だと絵の横がたくさん
+    はみ出し、真ん中に合わせると街灯が題名に重なった。MenuDefinition::backdropAlignX で絵ごとに決める。
+  - 部品を 2 つ足した：UiBar（題名の下の赤い線）・UiKeyHintRow（下の案内の列）。色は GameSrc/UI/MenuPalette.h の 1 か所。
+・Debug・Release・Profile（x64）のビルドが通った。640×480 と 2560×1369 の窓でタイトルを写して見た（Release・Debug。Debug は ASSERT で止まらない）。
+・まだ：一時停止・設定・操作の一覧は今の見た目のまま（次の段）。パッドのときの案内の表示も次の段。

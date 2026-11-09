@@ -351,6 +351,9 @@ namespace{
 		ImGui::Checkbox( "Zombie info", &switches.showZombieInfo );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(health, paths, spawner, PVS, lights, loot)" );
+		ImGui::Checkbox( "Perf numbers", &GameLib::Profiling::overlayVisible() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(top right, while F6 is closed)" );
 	}
 
 	void drawScene() {

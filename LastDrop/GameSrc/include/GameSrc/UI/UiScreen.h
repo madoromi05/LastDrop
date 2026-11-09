@@ -38,6 +38,17 @@ public:
 	static GameLib::Math::Vector2 listLinePosition( int index, int column );
 	// 操作の一覧（lineCount 行）の下に置くボタンの範囲（UI_ANCHOR_CENTER）。
 	static UiRect listButtonRect( int lineCount );
+	// ── RE:2 風の左寄せのメニュー（MENU_LOOK_SIDE。どれも UI_ANCHOR_LEFT）──
+	// 題名の左上（UI_ALIGN_LEFT で使う）。
+	static GameLib::Math::Vector2 sideTitlePosition();
+	// 題名の下の赤い短い線の範囲。
+	static UiRect sideRuleRect();
+	// 赤い線の下のひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う）。
+	static GameLib::Math::Vector2 sideTaglinePosition();
+	// 縦に並べる行の index 番目（0 が一番上）の範囲。
+	static UiRect sideMenuItemRect( int index );
+	// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）。
+	static GameLib::Math::Vector2 keyHintPosition();
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。
 	static GameLib::Math::Vector2 screenCenter();
 	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（UI_ANCHOR_LEFT。左揃えで使う）。

@@ -14,6 +14,12 @@ enum MenuPageId{
 	MENU_PAGE_CONTROLS, // 操作の一覧。ControlsPage
 };
 
+// メニューの最初のページの並べ方（見た目）。
+enum MenuLook{
+	MENU_LOOK_CENTER, // 見出しを上に、板のボタンを画面の中央に縦に（一時停止。今までの形）
+	MENU_LOOK_SIDE,   // RE:2 風。題名・ひと言・板なしの行を左に寄せ、背景の絵の左を暗くする（タイトル。TitleScreen_Plan.txt）
+};
+
 // メニュー1枚の中身（見出しと、縦に並べるボタン）。何を並べるかだけを書いたデータで、作るのは MenuCatalog。
 struct MenuDefinition{
 	// ボタン1つ。
@@ -23,14 +29,19 @@ struct MenuDefinition{
 		MenuPageId opens = MENU_PAGE_NONE;  // 決定されたら開くページ（設定画面など）。開くボタンでは onActivate は空でよい（使わない）
 	};
 	const char* heading;            // 画面の見出し（英語）
-	unsigned headingColor;          // 見出しの色（VertexColor::pack の並び）
+	unsigned headingColor;          // 見出しの色（VertexColor::pack の並び）。MENU_LOOK_SIDE では使わない（色は MenuPalette）
 	std::vector< Button > buttons;  // 上から並べる順。最初のボタンが、始めに選ばれている
+	MenuLook look = MENU_LOOK_CENTER;
+	// ここから下は MENU_LOOK_SIDE だけで使う。無ければ nullptr。
+	const char* tagline = nullptr;  // 題名の下のひと言（日本語でよい）
+	const char* backdrop = nullptr; // 背景の絵のファイル（幅と高さが 2 の累乗の TGA。UiBackdrop）
+	float backdropAlignX = 0.5f;    // 背景の絵の横がはみ出たとき、どこを合わせるか（UiBackdrop の alignX。絵ごとに主役の位置が違う）
 };
 
-// メニューの並べ方（見出しを上に、ボタンを画面の中央から下へ縦に）。メニュー画面（MenuScene）と本編の一時停止（PauseMenu）で共有し、
+// メニューの並べ方（MenuLook ごと）。メニュー画面（MenuScene）と本編の一時停止（PauseMenu）で共有し、
 // 並べ方を 1 か所にする。
 namespace MenuLayout{
-	// definition の見出しとボタンを canvas に足す。canvas: nullptr 不可。
+	// definition の見出しとボタンを、definition.look の並べ方で canvas に足す。canvas: nullptr 不可。
 	// openPage: ページを開くボタン（opens が MENU_PAGE_NONE 以外）が押されたときに呼ぶ。そのボタンがあるなら空は不可。
 	void build( UiCanvas* canvas, const MenuDefinition& definition, std::function< void( MenuPageId ) > openPage );
 }

@@ -12,7 +12,8 @@ class UiLabel : public IUiElement{
 public:
 	// anchor / offset: 文字を置く位置。x は anchor からのずれ、y は画面の上端から（画素）。
 	// align: offset が文字のどこを指すか（UiAlign）。color: VertexColor::pack の並び。
-	UiLabel( const char* text, UiAnchor anchor, const GameLib::Math::Vector2& offset, UiTextSize size, UiAlign align, unsigned color );
+	// letterSpacing: 字と字の間に足す幅（画素。UiRenderer::addText）。0 で詰めたまま。
+	UiLabel( const char* text, UiAnchor anchor, const GameLib::Math::Vector2& offset, UiTextSize size, UiAlign align, unsigned color, float letterSpacing = 0.f );
 
 	void setText( const char* text );
 	// 置き場所を変える（作ったときの anchor から見たずれ。動く照準など）。
@@ -26,6 +27,7 @@ private:
 	UiTextSize mSize;
 	UiAlign mAlign;
 	unsigned mColor;
+	float mLetterSpacing;
 };
 
 #endif

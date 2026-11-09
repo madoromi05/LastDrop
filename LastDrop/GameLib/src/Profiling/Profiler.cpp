@@ -281,10 +281,15 @@ void toggleRecording(){
 
 void drawOverlay(){
 	// エディタを開いている間は、同じ数字が Perf の欄に出るので出さない。
-	if ( DebugUi::isOpen() ){
+	if ( DebugUi::isOpen() || !overlayVisible() ){
 		return;
 	}
 	PerfOverlay::draw( sourcesOf( state() ) );
+}
+
+bool& overlayVisible(){
+	static bool visible = true;
+	return visible;
 }
 
 void drawPerfPanel(){

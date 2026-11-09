@@ -101,7 +101,8 @@ void gpuMark( const char* name );
 
 // ── 記録・表示 ──
 void toggleRecording(); // CSV の記録を始める／止めて書き出す（F7）
-void drawOverlay();     // 画面の右上に数字を出す（ImGui。エディタを開いている間は出さない）。Framework::postUpdate で呼ぶ
+void drawOverlay();     // 画面の右上に数字を出す（ImGui。エディタを開いている間と、overlayVisible が false の間は出さない）。Framework::postUpdate で呼ぶ
+bool& overlayVisible(); // 右上の数字を出すか。F6 の Debug タブが書く。起動時はオンで、保存はしない
 void drawPerfPanel();   // エディタの Perf の欄の中身（グラフ・区間・GPU・印・ロード）。EditorWindow が ImGui の窓の中で呼ぶ
 
 #else // ZF_EDITOR
@@ -126,6 +127,7 @@ inline void addCount( const char*, double ){}
 inline void gpuMark( const char* ){}
 inline void toggleRecording(){}
 inline void drawOverlay(){}
+inline bool& overlayVisible(){ static bool visible = false; return visible; }
 inline void drawPerfPanel(){}
 
 #endif // ZF_EDITOR

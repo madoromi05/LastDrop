@@ -1,0 +1,38 @@
+#ifndef INCLUDED_UI_MENU_ITEM_H
+#define INCLUDED_UI_MENU_ITEM_H
+
+#include "GameSrc/UI/IUiElement.h"
+#include "GameSrc/UI/Widget/IUiSelectable.h"
+#include "GameSrc/UI/UiAnchor.h"
+#include "GameSrc/UI/UiRect.h"
+#include <functional>
+#include <string>
+
+// RE:2 風のメニューの 1 行（左寄せの文字。板は描かない）。選ばれている間は、上下の細い線・左から右へ薄れる帯・赤いひし形を出す。
+// UiButton（板のボタン）と同じく、押したときの処理は作る側が onActivate で渡し、どれを選ぶか・いつ決定するかは UiCanvas が決める。
+// 色は MenuPalette。TitleScreen_Plan.txt。
+class UiMenuItem : public IUiElement, public IUiSelectable{
+public:
+	// anchor / rect: 行の範囲（画素。マウスで選べる範囲もこれ）。rect.left は anchor からのずれ、rect.top は画面の上端から。
+	// label: 書く文字（英語）。onActivate: 押したときの処理（空は不可）。
+	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate );
+
+	virtual void draw( UiRenderer& renderer ) const;
+	virtual bool contains( const GameLib::Math::Vector2& point ) const;
+	virtual void setSelected( bool selected );
+	virtual void activate();
+
+private:
+	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う。
+	UiRect screenRect() const;
+	// 選ばれているときの線・帯・ひし形を積む。
+	void drawSelectedMarks( UiRenderer& renderer, const UiRect& rect ) const;
+
+	UiAnchor mAnchor;
+	UiRect mRect; // left は mAnchor からのずれ（理由は UiAnchor.h）
+	std::string mLabel;
+	std::function< void() > mOnActivate;
+	bool mSelected;
+};
+
+#endif
