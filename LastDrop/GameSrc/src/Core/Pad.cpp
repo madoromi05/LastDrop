@@ -177,11 +177,6 @@ AxisStatus InputLookStick(int playerId) { return Pad::instance()->getAxisWorkSta
 bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(WorkId::Menu, playerId); }
 bool InputAim        (int playerId) { return Pad::instance()->isOn(WorkId::Aim, playerId); }
 bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(WorkId::Holster, playerId); }
-bool InputDebugCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugCollision, playerId); }
-bool InputDebugPickupCollision(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugPickupCollision, playerId); }
-bool InputDebugZombieHealth(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugZombieHealth, playerId); }
-bool InputDebugSpawnZombie(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugSpawnZombie, playerId); }
-bool InputDebugFreeCamera(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugFreeCamera, playerId); }
 bool InputDebugCameraUp(int playerId)   { return Pad::instance()->isOn(WorkId::DebugCameraUp, playerId); }
 bool InputDebugCameraDown(int playerId) { return Pad::instance()->isOn(WorkId::DebugCameraDown, playerId); }
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }
@@ -194,5 +189,3 @@ bool InputReload(int playerId)   { return Pad::instance()->isTriggered(WorkId::R
 bool InputFlashlight(int playerId) { return Pad::instance()->isTriggered(WorkId::Flashlight, playerId); }
 bool InputInventory(int playerId) { return Pad::instance()->isTriggered(WorkId::Inventory, playerId); }
 bool InputQuickPlace(int playerId) { return Pad::instance()->isTriggered(WorkId::QuickPlace, playerId); }
-bool InputDebugInvincible(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugInvincible, playerId); }
-bool InputDebugRecordPerf(int playerId) { return Pad::instance()->isTriggered(WorkId::DebugRecordPerf, playerId); }

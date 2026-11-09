@@ -4,7 +4,7 @@
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 
 // 自キャラとは別の、町やゾンビを見て回る確認用のカメラ（2026-10-20 ユーザー指定。Debug・Profile ビルドだけで使う）。
-// F4（InputDebugFreeCamera）で使う・やめるを切り替える。使っている間は:
+// F6 の Debug タブの Free camera で使う・やめるを切り替える（DebugSwitches::toggleFreeCamera。2026-11-09 に F4 のキーから移した）。使っている間は:
 //   マウスで向きを変える（カーソルロック中だけ）。真下近くまで見下ろせる。
 //   WASD で見ている方へ前後・左右、Space で上がり Ctrl で下がる。Shift を押している間はさらに速い。
 //   壁・地面はすり抜ける（当たり判定を持たない）。
@@ -19,7 +19,7 @@ class FreeCamera{
 public:
 	FreeCamera();
 
-	// F4 が押されたら、使う・やめるを切り替える。1回の描画につき1回、Pad::update の後に呼ぶ。
+	// F6 から切り替えを頼まれていたら（DebugSwitches::toggleFreeCamera）、使う・やめるを切り替えて頼みを下ろす。1回の描画につき1回呼ぶ。
 	// 使い始めるときは start（自キャラの視点）の位置と向きから飛び始める（切り替えた瞬間に画が跳ばないように）。
 	void handleToggle( const FirstPersonCamera& start );
 	bool isActive() const;

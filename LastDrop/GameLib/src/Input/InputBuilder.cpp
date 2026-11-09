@@ -214,13 +214,8 @@ namespace
         { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
         // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）。
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },
-        // 開発中の確認用。遊ぶ操作と重ならないファンクションキーに置く。
-        { CollectorId::InGame, WorkId::DebugCollision, DeviceKind::Keyboard, Keyboard::KEY_F1 },
-        { CollectorId::InGame, WorkId::DebugPickupCollision, DeviceKind::Keyboard, Keyboard::KEY_F2 },
-        { CollectorId::InGame, WorkId::DebugZombieHealth, DeviceKind::Keyboard, Keyboard::KEY_F3 },
-        { CollectorId::InGame, WorkId::DebugSpawnZombie, DeviceKind::Keyboard, Keyboard::KEY_F9 },
+        // 開発中の確認用の切り替え（旧 F1〜F5・F7・F9）は、2026-11-09 にキーをやめて F6 のエディタのボタンへ移した（ユーザー指定）。
         // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）。
-        { CollectorId::InGame, WorkId::DebugFreeCamera, DeviceKind::Keyboard, Keyboard::KEY_F4 },
         { CollectorId::InGame, WorkId::DebugCameraUp,   DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::DebugCameraDown, DeviceKind::Keyboard, Keyboard::KEY_CONTROL },
         // 画面の部品（タイトル・クリア画面のボタン）の操作。矢印キーと WASD の両方で選べるようにする
@@ -243,10 +238,6 @@ namespace
         { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
         // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない。InventoryPickup_Plan.txt Q4）。
         { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },
-		// デバッグ用。F5 で自キャラの無敵を切り替える（押した瞬間。Debug ビルドだけで効く）。
-        { CollectorId::InGame, WorkId::DebugInvincible, DeviceKind::Keyboard, Keyboard::KEY_F5 },
-        // 計測の CSV の記録を始める／止める（2026-10-23 決定。F6 は ImGui のエディタに空けておく）。
-        { CollectorId::InGame, WorkId::DebugRecordPerf, DeviceKind::Keyboard, Keyboard::KEY_F7 },
 
         // ── パッド（ボタンは Xbox の並び。DualSense なども対応表で同じ並びに置き換えて読む） ──
         // タルコフは PC 版にパッド対応が無いので、よくある FPS の配置（LT 構える・RT 撃つ）に合わせる。

@@ -62,7 +62,8 @@ public:
 	// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後。
 	void buildVisibility();
 	// 自キャラ（と手に持つ銃）を置き、ゾンビを湧かせる係（ZombieSpawner）を作る。歩ける床の後（ゾンビが共有の棚から床を借りる）。
-	void placeActors();
+	// escapeCarSpot: buildTown と同じ番号（自キャラはその車のそばから始める。TownEscapeCarSpot::playerStart）。
+	void placeActors( int escapeCarSpot );
 	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる（FuelEscapeLoading_Plan.txt Q5）。
 	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
 	// 1ティック進める
@@ -127,8 +128,8 @@ public:
 
 private:
 	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の ★6）。
-	// 自キャラ（と手に持つ銃）を町の出発点へ置く（place から。組み立ては mPlayerFactory）。
-	void placePlayer();
+	// 自キャラ（と手に持つ銃）を、その日の脱出の車のそばへ置く（place から。組み立ては mPlayerFactory）。
+	void placePlayer( int escapeCarSpot );
 
 	// 今日の条件と、その効き目（DayCondition.cpp の表の 1 行の写し。F6 で書き替わるので写して持つ）。
 	// ゾンビの係が mDay を指して読むので、mZombies より先に宣言する。

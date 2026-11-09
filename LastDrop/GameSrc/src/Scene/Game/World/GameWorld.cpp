@@ -75,10 +75,10 @@ void GameWorld::buildVisibility() {
 	mTown.buildVisibility( mHitWorld );
 }
 
-void GameWorld::placeActors() {
+void GameWorld::placeActors( int escapeCarSpot ) {
 	LOAD_SCOPE( "town", "GameWorld::placeActors" );
 	if ( mPlayerFactory.isReady() ) {
-		placePlayer();
+		placePlayer( escapeCarSpot );
 	}
 	mZombies.setup( mTown.map() );
 }
@@ -87,8 +87,8 @@ void GameWorld::alertZombiesToNoise( const Vector3& position ) {
 	mZombies.hearing().hearNoise( position );
 }
 
-void GameWorld::placePlayer() {
-	const TownPlacement& start = mTown.map().playerStart();
+void GameWorld::placePlayer( int escapeCarSpot ) {
+	const TownPlacement& start = mTown.map().escapeCarSpots()[ escapeCarSpot ].playerStart;
 	mPlayer = mPlayerFactory.spawn( &mObjects, toPosition( start ), start.yawDegree );
 	mPlayerControl = mPlayer->getComponent< PlayerComponent >();
 }
@@ -156,11 +156,16 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.zombies" );
-		// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
-		mZombies.prepareThink( mPlayer );
-		mObjects.update( UpdatePhase::Think );
-		mCombat.resolveZombieAttacks( mPlayer );
-		mZombies.finishThink( mPlayer );
+		if ( zombiesFrozen() ) {
+			// F6 でゾンビを止めている間は、考える・動く・アニメ・攻撃を全部飛ばす（Think の段はゾンビだけ）。
+			mZombies.releaseTarget( mPlayer );
+		} else {
+			// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
+			mZombies.prepareThink( mPlayer );
+			mObjects.update( UpdatePhase::Think );
+			mCombat.resolveZombieAttacks( mPlayer );
+			mZombies.finishThink( mPlayer );
+		}
 	}
 	{
 		PROFILE_SCOPE( "World.late" );
@@ -171,8 +176,10 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.spawn" );
-		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。
-		mZombies.spawnFromSpawner( mPlayer, cameraYaw );
+		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。ゾンビを止めている間は湧かせない。
+		if ( !zombiesFrozen() ) {
+			mZombies.spawnFromSpawner( mPlayer, cameraYaw );
+		}
 	}
 }
 

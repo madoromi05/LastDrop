@@ -9,6 +9,7 @@
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/DebugMode/EditorWindow.h"
+#include "GameSrc/DebugMode/DebugSwitches.h"
 #include "GameSrc/Core/Pad.h"
 
 #include "GameLib/GameLib.h"
@@ -20,7 +21,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── F9 でゾンビを出す（確認用。 ユーザー指定：8m 前に 1 体）──
+	// ── F6 の Spawn zombie でゾンビを出す（確認用。旧 F9。 ユーザー指定：8m 前に 1 体）──
 	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
 	const int kDebugSpawnNumber = 1;
 	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
@@ -34,6 +35,7 @@ GameEditorBridge::GameEditorBridge() {
 
 GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
+	EditorWindow::setFreeCameraActive( false ); // 観察用カメラもシーンと一緒に無くなる
 	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
 	EditorWindow::setInventory( nullptr ); // カバンも同じ
 	EditorWindow::setRaid( nullptr );
@@ -46,17 +48,20 @@ void GameEditorBridge::markReady() {
 	mFireProbe.markReady();
 }
 
-void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record ) {
-	// F5 で自キャラの無敵を切り替える（押した瞬間。Debug と Profile ビルドだけで効く）。
+void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera ) {
+	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（旧 F5。Debug と Profile ビルドだけで効く）。
 	GameObject* player = world->player();
-	if ( InputDebugInvincible() && player ) {
+	bool& invincibleRequested = debugSwitches().toggleInvincible;
+	if ( invincibleRequested && player ) {
+		invincibleRequested = false; // 読んだので下ろす（自キャラが居ない間＝ロード中は、置かれるまで残す）
 		if ( PlayerHealthComponent* health = player->getComponent< PlayerHealthComponent >() ) { // 外せる部品（無ければ元から死なない）
 			health->toggleInvincible();
 		}
 	}
-	// F6 のエディタの一番上に出す。
+	// F6 の Debug タブに今の状態を出す。
 	const PlayerHealthComponent* playerHealth = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
+	EditorWindow::setFreeCameraActive( freeCamera );
 	EditorWindow::setObjects( &world->objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
 	EditorWindow::setInventory( inventory );       // F6 の Inventory の欄（物を足す・行を増やす）
 	EditorWindow::setRaid( session );              // F6 の Raid の欄（経った時間・すぐ脱出）
@@ -65,10 +70,12 @@ void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSess
 	EditorWindow::setInteraction( &world->interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
 }
 
-void GameEditorBridge::spawnZombiesOnKey( GameWorld* world, const FirstPersonCamera& camera ) {
-	if ( !InputDebugSpawnZombie() ) {
+void GameEditorBridge::spawnRequestedZombies( GameWorld* world, const FirstPersonCamera& camera ) {
+	bool& requested = debugSwitches().spawnZombies;
+	if ( !requested ) {
 		return;
 	}
+	requested = false; // 読んだので下ろす（自キャラが居なくても、押したことは捨てる）
 	const GameObject* player = world->player();
 	if ( !player ) {
 		return;

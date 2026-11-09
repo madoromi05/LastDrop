@@ -77,12 +77,7 @@ void SceneManager::update() {
 		PROFILE_SCOPE( "Pad" );
 		Pad::instance()->update();
 	}
-#ifdef ZF_EDITOR
-	// F7 で計測の CSV の記録を始める／止める。ロード中も記録したいので、シーンではなくここで読む。
-	if ( InputDebugRecordPerf() ) {
-		GameLib::Profiling::toggleRecording();
-	}
-#endif
+	// 計測の CSV の記録を始める／止めるのは F6 の Perf タブのボタン（2026-11-09 に F7 のキーから移した）。
 	{
 		PROFILE_SCOPE( "Scene.beginFrame" );
 		mCurrent->beginFrame();

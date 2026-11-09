@@ -46,7 +46,7 @@ public:
 	// 1 ティック進め、このティックに姿勢を求めるか。初めての呼び出しは必ず true（湧いた体が T ポーズで見えないように）。
 	// mustPose：間引いてはいけない間（攻撃・根の動き・ひるみ・這う）なら true。
 	bool shouldPose( Level level, bool mustPose );
-	// 最後の shouldPose の段（F3 の表示に使う）。
+	// 最後の shouldPose の段（F6 の Zombie info の表示に使う）。
 	Level level() const;
 
 private:

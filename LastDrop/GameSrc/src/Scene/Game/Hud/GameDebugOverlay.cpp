@@ -5,9 +5,9 @@
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
-#include "GameSrc/Core/Pad.h"
 #include "GameSrc/UI/UiScreen.h"
 #ifdef ZF_EDITOR
+#include "GameSrc/DebugMode/DebugSwitches.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/ScreenProjection.h"
 #include "GameSrc/Render/VertexColor.h"
@@ -87,30 +87,12 @@ namespace{
 	}
 }
 
-GameDebugOverlay::GameDebugOverlay()
-#ifdef ZF_EDITOR
-	: mShowCollision( false ),
-	mShowPickups( false ),
-	mShowZombieHealth( false )
-#endif
-	{
+GameDebugOverlay::GameDebugOverlay() {
 }
 
 #ifdef ZF_EDITOR
-void GameDebugOverlay::handleInput() {
-	if ( InputDebugCollision() ) {
-		mShowCollision = !mShowCollision;
-	}
-	if ( InputDebugPickupCollision() ) {
-		mShowPickups = !mShowPickups;
-	}
-	if ( InputDebugZombieHealth() ) {
-		mShowZombieHealth = !mShowZombieHealth;
-	}
-}
-
 void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
-	if ( !mShowZombieHealth ) {
+	if ( !debugSwitches().showZombieInfo ) {
 		return;
 	}
 	mZombieHealthBars.add( world, camera, renderer );
@@ -165,25 +147,24 @@ void GameDebugOverlay::castRay( const GameWorld& world, const FirstPersonCamera&
 }
 
 void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonCamera& camera ) {
-	if ( mShowCollision ) {
+	if ( debugSwitches().showCollision ) {
 		castRay( world, camera );
 		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）。
 		mCollisionDrawer.draw( world.collisionWorld(), world.hitWorld(), camera.projectionViewMatrix(), world.playerBody(), world.playerTarget() );
 	}
-	if ( mShowPickups ) {
+	if ( debugSwitches().showPickups ) {
 		// 落ちている物の箱を、手前の物に隠れない線で描く（壁の向こうの缶の場所が分かる）。拾われた物は世界が渡さない。
 		mPickupBoxes.clear();
 		world.interaction().appendPickupColliders( &mPickupBoxes );
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
-	if ( mShowZombieHealth ) {
+	if ( debugSwitches().showZombieInfo ) {
 		mZombiePathDrawer.draw( world.objects(), world.town().navMesh(), camera.projectionViewMatrix() );
 	}
-	// 表示の切り替えのキー（F1〜F4・F9）の一覧は出さない（2026-10-21 ユーザー指定）。キーはそのまま効く。
 }
 
 void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCamera& camera ) {
-	if ( mShowZombieHealth ) {
+	if ( debugSwitches().showZombieInfo ) {
 		mLightDrawer.draw( lights, camera.projectionViewMatrix() );
 	}
 }
@@ -194,7 +175,7 @@ void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* rend
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
 	const GameObject* player = world.player();
 	const PlayerHealthComponent* healthComponent = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
-	if ( !mShowZombieHealth || !healthComponent ) {
+	if ( !debugSwitches().showZombieInfo || !healthComponent ) {
 		return; // 自キャラが居ない・体力の部品を外した（死なない）
 	}
 	const PlayerHealth& health = healthComponent->health();
@@ -205,7 +186,7 @@ void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* rend
 
 void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
-	if ( !mShowZombieHealth ) {
+	if ( !debugSwitches().showZombieInfo ) {
 		return;
 	}
 	Matrix44 projectionView = camera.projectionViewMatrix();

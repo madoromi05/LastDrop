@@ -35,9 +35,11 @@ struct TownTile{
 };
 
 // 脱出の車を置く候補 1 つ（FuelEscapeLoading_Plan.txt Q13）。名前は画面に出す（「脱出の車：北」）。向きは車の向き。
+// 自キャラはその日の車のそばから始める（2026-11-09 ユーザー指定。車の鼻先の前に立ち、車の方を向く）。
 struct TownEscapeCarSpot{
 	const char* name;
 	TownPlacement placement;
+	TownPlacement playerStart; // この車の日の、自キャラの始めの位置と向き
 };
 
 // 町のどこに何を置くかを決める1か所（道路・歩道・建物・自キャラ・ゾンビ・車・ガソリンの候補・床の材質）。
@@ -57,7 +59,6 @@ public:
 	const std::vector< TownTile >& groundTiles() const;				// 道路・歩道・床・土（どれも移動は止めない。弾は TownGround が止める）
 	const std::vector< TownPlacement >& buildings() const;			// ブロックの中の建物（向きは、正面がどちらを向くか）
 	const std::vector< TownPlacement >& perimeterBuildings() const;	// 町を囲む建物（足元の板の無い形を置く。向きは同上）
-	const TownPlacement& playerStart() const;						// 自キャラの始めの位置と向き
 	// ゾンビが湧くかもしれない場所（交差点と、隣り合う交差点の真ん中。道の中心。向きは使わない）。
 	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ。
 	const std::vector< TownPlacement >& zombieSpawnPoints() const;
@@ -66,7 +67,7 @@ public:
 	// 地面に落ちているガソリンとライフルは 2026-11-05 に消した（ガソリンはゴミ箱・木箱の中・ライフルは木箱から出る。Q5）。
 	const std::vector< TownPlacement >& dumpsters() const;			// ゴミ箱（車道の端。向きは、正面〈+Z〉が道の真ん中を向く）
 	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
-	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）。毎日どれに置くかは RaidSession が選ぶ。
+	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）と、その日の自キャラの始めの位置。毎日どれに置くかは RaidSession が選ぶ。
 	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;
 	// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）。
 	const std::vector< TownPlacement >& fireHydrants() const;
@@ -79,7 +80,6 @@ private:
 	std::vector< TownTile > mGroundTiles;
 	std::vector< TownPlacement > mBuildings;
 	std::vector< TownPlacement > mPerimeterBuildings;
-	TownPlacement mPlayerStart;
 	std::vector< TownPlacement > mZombieSpawnPoints;
 	TownPlacement mTPoseZombie;
 	std::vector< TownPlacement > mDumpsters;

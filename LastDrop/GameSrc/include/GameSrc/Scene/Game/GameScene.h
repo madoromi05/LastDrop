@@ -54,8 +54,8 @@ class EscapeCarComponent;
 //   漁れる場所を開けている途中・中を見る画面 … LootSearch・LootScreen
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
-//   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
-//   F6 のエディタ・確認用のキー（F5・F9）・FireProbe（Debug・Profile だけ）… GameEditorBridge
+//   確認用の観察カメラ（Debug・Profile だけ。F6 の Debug タブ）… FreeCamera
+//   F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe（Debug・Profile だけ）… GameEditorBridge
 // 環境音（脱出のサイレン）は鳴らさない。鳴らす係の AmbienceSystem は 2026-11-09 に消した（どこからも使っていなかったため）。
 class GameScene : public IScene{
 public:
@@ -100,12 +100,14 @@ private:
 	SceneRenderer mSceneRenderer;
 	Inventory mInventory;
 	Interactor mInteractor;
+	// 1 回の出撃（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）。
+	// 選んだ車のそばの始めの向きを mControl が読むので、mControl より先に宣言する。
+	RaidSession mSession;
 	FirstPersonControl mControl;
 	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）。
 	PlayerFeedback mFeedback;
 	// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する。
 	HudController mHud;
-	RaidSession mSession; // 1 回の出撃（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）。
 	LoadingPhase mLoad;
 	PauseMenu mPauseMenu;
@@ -118,7 +120,7 @@ private:
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
-	GameEditorBridge mEditor; // F6 のエディタ・F5・F9・FireProbe
+	GameEditorBridge mEditor; // F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe
 #endif
 	bool mRaidFinished; // 出撃を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 };

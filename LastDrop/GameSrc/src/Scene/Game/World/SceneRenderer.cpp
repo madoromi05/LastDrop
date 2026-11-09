@@ -108,7 +108,7 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 		}
 		Profiling::gpuMark( "Fog" );
 		// TAA は霧の後・半透明の板の前（板は動きが取れず、マズルフラッシュに光の尾が出るため。Taa_Plan.txt Q3）。
-		// 見ているカメラが替わった（観察用カメラ F4 の切り替え）フレームは、前の履歴が別の場所の絵なので捨てる（Q7）。
+		// 見ているカメラが替わった（観察用カメラの切り替え。F6 の Debug タブ）フレームは、前の履歴が別の場所の絵なので捨てる（Q7）。
 		if ( &camera != mTaaCamera ) {
 			mTaa.invalidate();
 		}

@@ -176,6 +176,13 @@ void ZombieDirector::finishThink( GameObject* player ) {
 	grab->setHeld( held );
 }
 
+void ZombieDirector::releaseTarget( GameObject* player ) {
+	PlayerGrabComponent* grab = player ? player->getComponent< PlayerGrabComponent >() : nullptr; // 外せる部品
+	if ( grab ) {
+		grab->setHeld( false );
+	}
+}
+
 void ZombieDirector::spawnFromSpawner( const GameObject* player, float cameraYaw ) {
 	if ( !mSpawner || !player ) {
 		return; // ゾンビの形が無い・見えない所を決める自キャラが居ない
@@ -204,4 +211,9 @@ ZombieHearing& ZombieDirector::hearing() {
 
 const ZombieSpawner* ZombieDirector::spawner() const {
 	return mSpawner.get();
+}
+
+bool& zombiesFrozen() {
+	static bool sFrozen = false; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sFrozen;
 }

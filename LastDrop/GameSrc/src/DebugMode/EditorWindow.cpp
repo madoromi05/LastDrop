@@ -3,6 +3,8 @@
 #ifdef ZF_EDITOR
 
 #include "GameSrc/DebugMode/TuningPanel.h"
+#include "GameSrc/DebugMode/DebugSwitches.h"
+#include "GameSrc/Scene/Game/World/ZombieDirector.h"
 #include "GameSrc/Scene/SceneManager.h"
 #include "GameSrc/Core/FixedStepClock.h"
 #include "GameSrc/Render/Lighting/DeferredLighting.h"
@@ -48,11 +50,12 @@ namespace{
 	// G-Buffer の表示の Hi-Z で見る段のスライダー。上限は 4K の半分（1920）でも 1 画素まで届く段の数（それより上は一番粗い段に丸まる）。
 	const int kMaxHiZViewLevel = 11;
 	const float kHiZLevelSliderWidth = 80.f; // チェックボックスと同じ行に並べる幅（画素）
-	// 無敵の行。ON は見落とさないよう赤くし、OFF は他の説明の行と同じ灰色にする。
-	const ImVec4 kInvincibleOnColor( 1.f, 0.3f, 0.3f, 1.f );
+	// 無敵・ゾンビを止めている、の知らせ。見落とさないよう赤くする。
+	const ImVec4 kWarningOnColor( 1.f, 0.3f, 0.3f, 1.f );
 	const int kShownGamePad = 0; // Pad の欄に出すパッド（自キャラを動かすのは 0 番だけ）
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
+	bool gFreeCameraActive = false; // GameScene から受け取った、観察用カメラを使っているか
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
 	RaidSession* gRaid = nullptr;    // GameScene から受け取った、1 回の出撃（無ければ nullptr）
@@ -223,7 +226,7 @@ namespace{
 		if ( ImGui::SmallButton( "Mark all searched" ) ) {
 			gInteraction->markAllLootSearched();
 		}
-		ImGui::TextDisabled( "(F3 shows contents above each spot)" );
+		ImGui::TextDisabled( "(Debug > Zombie info shows contents above each spot)" );
 	}
 
 	const char* tagName( GameObjectTag tag ) {
@@ -289,12 +292,65 @@ namespace{
 		ImGui::Text( "Right %+.2f %+.2f", pad.stickX( GameLib::Input::GamePad::STICK_RIGHT ), pad.stickY( GameLib::Input::GamePad::STICK_RIGHT ) );
 	}
 
-	void drawInvincible() {
+	// タブの外（窓の一番上）に、遊びの感触を変えている切り替えだけ赤く出す（どのタブを見ていても見落とさないように）。
+	void drawActiveCheats() {
 		if ( gPlayerInvincible ) {
-			ImGui::TextColored( kInvincibleOnColor, "Invincible (F5): ON" );
-		} else {
-			ImGui::TextDisabled( "Invincible (F5): OFF" );
+			ImGui::TextColored( kWarningOnColor, "Invincible: ON" );
 		}
+		if ( zombiesFrozen() ) {
+			if ( gPlayerInvincible ) {
+				ImGui::SameLine();
+			}
+			ImGui::TextColored( kWarningOnColor, "Zombies frozen" );
+		}
+	}
+
+	// 確認用の切り替え（2026-11-09 に F1〜F5・F9 のキーから移した）。本編へは DebugSwitches・zombiesFrozen を通して頼む。
+	// 頼み事（無敵・観察用カメラ・ゾンビを出す）は出撃の世界があるときだけ押せる（ロード中・タイトルで押した頼みが、後の出撃で急に効かないように）。
+	void drawDebug() {
+		DebugSwitches& switches = debugSwitches();
+		bool inRaid = ( gWorld != nullptr );
+		if ( !inRaid ) {
+			ImGui::TextDisabled( "No raid: player / zombie buttons are off." );
+		}
+		ImGui::SeparatorText( "Player" );
+		ImGui::BeginDisabled( !inRaid );
+		// チェックは今の状態を映すだけ。押したら切り替えを頼み、持ち主（自キャラの体力・観察用カメラ）が次の描画で切り替える。
+		bool invincible = gPlayerInvincible;
+		if ( ImGui::Checkbox( "Invincible", &invincible ) ) {
+			switches.toggleInvincible = true;
+		}
+		bool freeCamera = gFreeCameraActive;
+		if ( ImGui::Checkbox( "Free camera", &freeCamera ) ) {
+			switches.toggleFreeCamera = true;
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(WASD, Space up, Ctrl down, Shift fast)" );
+		ImGui::EndDisabled();
+
+		ImGui::SeparatorText( "Zombies" );
+		// 止めている間は、考える・動く・アニメ・攻撃・湧くを全部止める（撃てば体力は減り、倒れるのは戻してから）。
+		ImGui::Checkbox( "Freeze zombies", &zombiesFrozen() );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(AI, animation, attacks, spawning)" );
+		ImGui::BeginDisabled( !inRaid );
+		if ( ImGui::Button( "Spawn zombie" ) ) {
+			switches.spawnZombies = true;
+		}
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(8 m ahead, facing you)" );
+
+		ImGui::SeparatorText( "Show" );
+		ImGui::Checkbox( "Collision", &switches.showCollision );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(+ ray from screen center)" );
+		ImGui::Checkbox( "Pickups", &switches.showPickups );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(boxes through walls)" );
+		ImGui::Checkbox( "Zombie info", &switches.showZombieInfo );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(health, paths, spawner, PVS, lights, loot)" );
 	}
 
 	void drawScene() {
@@ -441,11 +497,20 @@ namespace{
 		}
 	}
 
-	// 手順 5（調整値の構造体）で中身を入れる見出し。開けないよう灰色にして、予定だけ見せる。
-	void drawPlannedHeader( const char* label ) {
-		ImGui::BeginDisabled();
-		ImGui::CollapsingHeader( label, ImGuiTreeNodeFlags_Leaf );
-		ImGui::EndDisabled();
+	// World タブ（世界の中身を触る 4 つの欄。どれも長くなるので、タブの中では見出しで開け閉めする）。
+	void drawWorld() {
+		if ( ImGui::CollapsingHeader( "Objects" ) ) {
+			drawObjects();
+		}
+		if ( ImGui::CollapsingHeader( "Inventory", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+			drawInventory();
+		}
+		if ( ImGui::CollapsingHeader( "Raid", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+			drawRaid();
+		}
+		if ( ImGui::CollapsingHeader( "Loot" ) ) {
+			drawLoot();
+		}
 	}
 }
 
@@ -463,44 +528,52 @@ void draw() {
 	if ( ImGui::Begin( "Editor (F6)", nullptr, kFlags ) ) {
 		// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）。
 		ImGui::TextDisabled( "Hold Alt to use the mouse here." );
-		// 見出しを閉じていても見えるよう、見出しの外に置く。
-		drawInvincible();
-		if ( ImGui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-			drawScene();
+		// どのタブを見ていても見えるよう、タブの外に置く。
+		drawActiveCheats();
+		// タブで欄を切り替える（2026-11-09 ユーザー指定）。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → パッド）。
+		// 窓は毎回同じ名前で作るので、ImGui が選んでいるタブを覚えている（imgui.ini は書かないので、起動し直すと Debug に戻る）。
+		if ( ImGui::BeginTabBar( "EditorTabs", ImGuiTabBarFlags_FittingPolicyScroll ) ) {
+			if ( ImGui::BeginTabItem( "Debug" ) ) {
+				drawDebug();
+				ImGui::EndTabItem();
+			}
+			if ( ImGui::BeginTabItem( "Scene" ) ) {
+				drawScene();
+				ImGui::EndTabItem();
+			}
+			if ( ImGui::BeginTabItem( "Render" ) ) {
+				drawRender();
+				ImGui::EndTabItem();
+			}
+			if ( ImGui::BeginTabItem( "Perf" ) ) {
+				GameLib::Profiling::drawPerfPanel();
+				ImGui::EndTabItem();
+			}
+			// 調整値（自キャラ・銃・視点・ゾンビの群れ）。
+			if ( ImGui::BeginTabItem( "Tuning" ) ) {
+				TuningPanel::draw();
+				ImGui::EndTabItem();
+			}
+			if ( ImGui::BeginTabItem( "World" ) ) {
+				drawWorld();
+				ImGui::EndTabItem();
+			}
+			if ( ImGui::BeginTabItem( "Pad" ) ) {
+				drawGamePad();
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
 		}
-		// Render は短いので Perf より上に置く（Perf の下だとスクロールしないと VSync に届かない。2026-10-24 画面で確認）。
-		if ( ImGui::CollapsingHeader( "Render", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-			drawRender();
-		}
-		if ( ImGui::CollapsingHeader( "Perf", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-			GameLib::Profiling::drawPerfPanel();
-		}
-		// 調整値（自キャラ・銃・視点・ゾンビの群れ）。ゾンビの値も入ったので、見出しは「Tuning」にまとめた。
-		if ( ImGui::CollapsingHeader( "Tuning" ) ) {
-			TuningPanel::draw();
-		}
-		if ( ImGui::CollapsingHeader( "Objects" ) ) {
-			drawObjects();
-		}
-		if ( ImGui::CollapsingHeader( "Inventory" ) ) {
-			drawInventory();
-		}
-		if ( ImGui::CollapsingHeader( "Raid" ) ) {
-			drawRaid();
-		}
-		if ( ImGui::CollapsingHeader( "Loot" ) ) {
-			drawLoot();
-		}
-		if ( ImGui::CollapsingHeader( "Pad" ) ) {
-			drawGamePad();
-		}
-		drawPlannedHeader( "Zombies / Audio (next)" );
 	}
 	ImGui::End();
 }
 
 void setPlayerInvincible( bool invincible ) {
 	gPlayerInvincible = invincible;
+}
+
+void setFreeCameraActive( bool active ) {
+	gFreeCameraActive = active;
 }
 
 void setObjects( const GameObjectWorld* objects ) {
@@ -537,6 +610,9 @@ void draw() {
 }
 
 void setPlayerInvincible( bool ) {
+}
+
+void setFreeCameraActive( bool ) {
 }
 
 void setObjects( const GameObjectWorld* ) {

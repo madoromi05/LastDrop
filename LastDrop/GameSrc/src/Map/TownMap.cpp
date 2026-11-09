@@ -107,13 +107,12 @@ namespace{
 		float yawDegree; // キャラ・車の向き。0 で +Z（南）、90 で +X（東）を向く
 	};
 
-	// ── 自キャラとゾンビ。町の中央の北側の通り（東西の道 1 番）の真ん中から、東を向いて始める ──
-	// 脱出用の車と同じ通りから始める（ユーザー指定: 車と始めの位置は近くに）。
-	const StreetSpot kPlayerStart = { 1.5f, 1.f, 0.f, 0.f, 90.f };
+	// ── ゾンビ ──
+	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots。2026-11-09 ユーザー指定）。
 	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）。
 	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）。
 	const float kSpawnBetweenJunctions = 0.5f;
-	// T ポーズの1体は、始めの位置から 5m 前・少し右（始めの視界に収まる所）に、こちら向きに置く。
+	// T ポーズの1体は、町の中央の北側の通り（2026-11-09 までの始めの位置）から 5m 前・少し右に、西向きに置く。
 	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
 	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）。
@@ -183,9 +182,11 @@ namespace{
 	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
 	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
 	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）。
+	// 自キャラはその日の車の鼻先の前に、車の方を向いて立って始める（2026-11-09 ユーザー指定。どれが脱出の車かすぐ分かるように）。
 	struct EscapeCarSpot{
 		const char* name;
 		StreetSpot spot;
+		StreetSpot playerStart;
 	};
 	const float kSideMiddle = 1.5f; // 外周の道の、交差点 1 番と 2 番の真ん中
 	const float kNorthRoad = 0.f;
@@ -193,9 +194,15 @@ namespace{
 	const float kAlongRoad = 0.f;   // 道に沿った向きには動かさない
 	const float kCarFacingEast = 90.f; // 車の向き（StreetSpot の決まり。90 で +X）
 	const float kCarFacingWest = -90.f;
+	// 車の中心から自キャラまで（車の向きの前へ。UAZ の長さ 約 4m の半分 ＋ 鼻先から約 4m 空けて、車の全体が視界に入るように）。
+	const float kStartAheadOfCar = 6.f;
 	const EscapeCarSpot kEscapeCarSpots[] = {
-		{ "北", { kSideMiddle, kNorthRoad, kAlongRoad,  kLaneOffset, kCarFacingEast } }, // 南側（町の内側）の車線
-		{ "南", { kSideMiddle, kSouthRoad, kAlongRoad, -kLaneOffset, kCarFacingWest } }, // 北側（町の内側）の車線
+		// 南側（町の内側）の車線。東を向く車の東に、西（車）を向いて立つ
+		{ "北", { kSideMiddle, kNorthRoad, kAlongRoad,  kLaneOffset, kCarFacingEast },
+		        { kSideMiddle, kNorthRoad, kStartAheadOfCar,  kLaneOffset, kCarFacingWest } },
+		// 北側（町の内側）の車線。西を向く車の西に、東（車）を向いて立つ
+		{ "南", { kSideMiddle, kSouthRoad, kAlongRoad, -kLaneOffset, kCarFacingWest },
+		        { kSideMiddle, kSouthRoad, -kStartAheadOfCar, -kLaneOffset, kCarFacingEast } },
 	};
 
 	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。
@@ -474,7 +481,6 @@ namespace{
 }
 
 TownMap::TownMap() :
-	mPlayerStart( toPlacement( kPlayerStart ) ),
 	mTPoseZombie( toPlacement( kTPoseZombie ) ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
@@ -491,7 +497,7 @@ TownMap::TownMap() :
 		mCrates.push_back( toPlacement( spot ) );
 	}
 	for ( const EscapeCarSpot& car : kEscapeCarSpots ) {
-		mEscapeCarSpots.push_back( { car.name, toPlacement( car.spot ) } );
+		mEscapeCarSpots.push_back( { car.name, toPlacement( car.spot ), toPlacement( car.playerStart ) } );
 	}
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
@@ -510,10 +516,6 @@ const std::vector< TownPlacement >& TownMap::buildings() const {
 
 const std::vector< TownPlacement >& TownMap::perimeterBuildings() const {
 	return mPerimeterBuildings;
-}
-
-const TownPlacement& TownMap::playerStart() const {
-	return mPlayerStart;
 }
 
 const std::vector< TownPlacement >& TownMap::zombieSpawnPoints() const {

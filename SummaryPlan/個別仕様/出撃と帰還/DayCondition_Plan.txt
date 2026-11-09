@@ -127,3 +127,14 @@ D-c 雨（足音の距離・雨の粒・雨の音・濡れた地面）。新し�
 ・見せ方：拠点の左上に「今日：霧の日」と一言・出撃の始めの知らせに条件の行。F6 の Raid 欄に Condition と Next。
 ・vcxproj は VS を開いたまま書き換えた → VS で再読み込み（保存しない）。
 ・Debug・Release・Profile ビルド済み。画面確認・群れの日の計測は待ち・未コミット。次は D-b（霧のゾンビの目）・D-c（雨の絵と音）。
+
+■ F6 で今の出撃のまま切り替える（2026-11-09。ユーザー依頼「停電や霧、いつもの日などは F6 で切り替えられるように」）
+・決定（ユーザーが★を選んだ）：全部すぐ効かせる・一覧（Combo）から選ぶ。
+・F6 の Raid 欄：「Today: fog」と Condition の一覧（random / normal / blackout / fog / rain / horde）。
+  条件を選ぶと今の出撃にすぐ効き、次の出撃（Retry・もう一度）にも引き継ぐ（RaidRecord の固定）。random は次の出撃から毎回ランダムに戻すだけ。
+  前の「Next」「Random」ボタンは一覧に置き換えた。
+・GameWorld が条件と効き目の写しを持つ（前は表の 1 行への参照）。GameWorld::changeDayCondition が写しを書き替え、
+  ゾンビの湧かせる係の目標の数（ZombieSpawner::setTargetCount）と街灯のガラス（PropFactory::relightStreetLamps → StaticModelComponent::setShapes）を合わせる。
+  街灯の光・霧・足音・同時に居られる数は毎回写しを読むので、そのまま替わる。GameScene の mCondition は消した。
+・替えない物：多い分のゾンビは消さない（群れ → ふつうでも居るゾンビはそのまま）・出撃の始めの知らせは出し直さない。
+・Debug・Profile・Release ビルド済み。画面確認待ち・未コミット。

@@ -63,7 +63,7 @@ public:
 	// アニメを進め、倒れた後の時間を進め、部位の当たり判定をそのポーズへ置き直す。頂点の変形は描くときに行う。
 	void update() override;
 
-	// 最後のティックのアニメの段（F3 の頭の上の表示に使う）。
+	// 最後のティックのアニメの段（F6 の Zombie info の頭の上の表示に使う）。
 	AnimationThrottle::Level animationLevel() const;
 
 private:

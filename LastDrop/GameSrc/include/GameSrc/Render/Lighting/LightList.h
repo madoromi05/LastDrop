@@ -101,7 +101,7 @@ public:
 	// b2 と影のマップを外す（後から描く物・ほかのシーンに残さない）。
 	void unbind();
 
-	// 足したライト（足した順）と、最後の bind で照らす物に選ばれたか（F3 の表示用。LightDebugDrawer）。
+	// 足したライト（足した順）と、最後の bind で照らす物に選ばれたか（F6 の Zombie info の表示用。LightDebugDrawer）。
 	const std::vector< LightSource >& lights() const;
 	bool isSelected( int index ) const;
 

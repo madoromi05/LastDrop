@@ -114,14 +114,14 @@ namespace{
 	void drawRecording( const PerfSources& sources ){
 		if ( sources.recorder->isRecording() ){
 			ImGui::PushStyleColor( ImGuiCol_Text, kSlowColor );
-			bool clicked = ImGui::Button( "Stop CSV (F7)" );
+			bool clicked = ImGui::Button( "Stop CSV" );
 			ImGui::PopStyleColor();
 			ImGui::SameLine();
 			ImGui::Text( "REC %d frames", sources.recorder->frameCount() );
 			if ( clicked ){
 				toggleRecording();
 			}
-		}else if ( ImGui::Button( "Record CSV (F7)" ) ){
+		}else if ( ImGui::Button( "Record CSV" ) ){
 			toggleRecording();
 		}
 		ImGui::SameLine();

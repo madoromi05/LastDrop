@@ -66,6 +66,9 @@ public:
 	void prepareThink( const GameObject* player );
 	// Think の段の後に、自キャラがつかまれているかを伝える（つかんでいる体が倒れた・振りほどかれた・噛み終えたら、次の update から動ける）。
 	void finishThink( GameObject* player );
+	// ゾンビを止めている間（zombiesFrozen）、finishThink の代わりに呼ぶ。つかまれている自キャラを放す
+	// （つかんだ体が固まったまま自キャラも動けない、とならないように。戻すと finishThink がまたつかまれた形にする）。
+	void releaseTarget( GameObject* player );
 	// 立っているゾンビの数・カメラの向きを ZombieSpawner に渡し、出すと言われた所へ spawn する（ティックの最後。並びをたどり終えてから）。
 	// cameraYaw: カメラの水平の向き（度）。自キャラが居なければ何もしない（見えない所を決められない）。
 	void spawnFromSpawner( const GameObject* player, float cameraYaw );
@@ -97,5 +100,10 @@ private:
 	std::unique_ptr< ZombieSpawner > mSpawner;          // mZombieModel の体の大きさを借りる
 	std::vector< ZombieSpawner::Order > mSpawnOrders;   // このティックに出す所（毎回確保し直さないために持つ）
 };
+
+// ゾンビを全部止めるか（F6 → Debug の Freeze zombies。確認用。2026-11-09 ユーザー指定）。
+// true の間は GameWorld::update が Think の段・ゾンビの攻撃・湧かせる係を飛ばす（考える・動く・アニメ・攻撃・湧く、が止まる）。
+// 撃てば体力は減るが、ひるむ・倒れる動きは戻してから出る。起動中ずっと 1 つ（初期値 false。Release では触る所が無いので false のまま）。
+bool& zombiesFrozen();
 
 #endif

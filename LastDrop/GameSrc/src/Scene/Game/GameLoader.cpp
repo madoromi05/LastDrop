@@ -47,7 +47,7 @@ bool GameLoader::advance( bool meshesReady ) {
 		mStage = Stage::Actors;
 		break;
 	case Stage::Actors:
-		mWorld->placeActors();
+		mWorld->placeActors( mEscapeCarSpot );
 		mStage = Stage::Done;
 		break;
 	case Stage::Done:

@@ -53,11 +53,12 @@ GameScene::GameScene( GameResources* resources ) :
 	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
 	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾。SimpleRun_Plan.txt Q6・C4）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
-	mControl( mWorld.town().map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
-	mFeedback( &resources->audio(), &mWorld.town() ), // 出来事を自キャラの視点・音・画面へ返す
-	mHud( &mWorld, &mInventory, &resources->uiRenderer() ), // 遊び中の画面表示（棒・弾数・マーク）
 	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),
+	// キャラの向いている方（その日の車の方）を見始める
+	mControl( mWorld.town().map().escapeCarSpots()[ mSession.escapeCarSpot() ].playerStart.yawDegree, &resources->settings() ),
+	mFeedback( &resources->audio(), &mWorld.town() ), // 出来事を自キャラの視点・音・画面へ返す
+	mHud( &mWorld, &mInventory, &resources->uiRenderer() ), // 遊び中の画面表示（棒・弾数・マーク）
 	// 出撃のロード段階（mSession が選んだ脱出の車の置き場所を使うので、その後に並べる）
 	mLoad( &mWorld, &resources->meshes(), mSession.escapeCarSpot(), &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
@@ -158,10 +159,10 @@ void GameScene::handleFrameInput() {
 		return;
 	}
 #ifdef ZF_EDITOR
-	// F5（無敵）を読み、F6 のエディタへ今の物を渡す。
-	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord() );
-	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
+	// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
 	mFreeCamera.handleToggle( mControl.camera() );
+	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す。
+	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord(), isFreeCameraActive() );
 #endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう。
 	if ( isFreeCameraActive() ) {
@@ -174,8 +175,7 @@ void GameScene::handleFrameInput() {
 	updateInteraction();
 #ifdef ZF_EDITOR
 	mFreeCamera.look(); // 使っていなければ何もしない。カーソルロックの切り替え（readInputIdle）の後に読む
-	mDebug.handleInput();
-	mEditor.spawnZombiesOnKey( &mWorld, mControl.camera() ); // F9
+	mEditor.spawnRequestedZombies( &mWorld, mControl.camera() ); // F6 の Spawn zombie
 #endif
 }
 

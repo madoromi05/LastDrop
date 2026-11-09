@@ -308,6 +308,7 @@
     <ClCompile Include="GameSrc\src\DebugMode\CollisionDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\DebugSwitches.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\EditorWindow.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\TuningVisitors.cpp" />
@@ -936,6 +937,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\CollisionDebugDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\DebugSwitches.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />

@@ -1,4 +1,5 @@
 #include "GameSrc/DebugMode/FreeCamera.h"
+#include "GameSrc/DebugMode/DebugSwitches.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Core/GameTime.h"
 
@@ -33,9 +34,11 @@ FreeCamera::FreeCamera() :
 }
 
 void FreeCamera::handleToggle( const FirstPersonCamera& start ) {
-	if ( !InputDebugFreeCamera() ) {
+	bool& requested = debugSwitches().toggleFreeCamera;
+	if ( !requested ) {
 		return;
 	}
+	requested = false; // 読んだので下ろす
 	mActive = !mActive;
 	if ( mActive ) {
 		// 前に使ったときの位置からではなく、毎回自キャラの目から始める（どこにいたか見失わないように）。

@@ -20,7 +20,7 @@ class Building;
 // （見えない建物の影が、見える所に落ちるため）。
 class TownVisibility{
 public:
-	// 目がどのますにも当たらない（町の外・建物の足元・建物より高い所。F4 の観察用カメラなど）とき viewCell が返す値。
+	// 目がどのますにも当たらない（町の外・建物の足元・建物より高い所。F6 の観察用カメラなど）とき viewCell が返す値。
 	static const int kNoCell = -1;
 
 	TownVisibility();
