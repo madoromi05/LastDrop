@@ -31,6 +31,16 @@ const LONG kFullScreenStyle = WS_POPUP;
 //WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット。
 const LPARAM kKeyWasDownBit = 1 << 30;
 
+//メインモニターの全体（rcMonitor）と、タスクバーを除いた作業領域（rcWork）を返す。
+//メインモニターの左上は、仮想スクリーン座標で必ず (0,0) になる。
+MONITORINFO primaryMonitorInfo() {
+	const POINT origin = {0, 0};
+	MONITORINFO monitor = {};
+	monitor.cbSize = sizeof( monitor );
+	GetMonitorInfo( MonitorFromPoint( origin, MONITOR_DEFAULTTOPRIMARY ), &monitor );
+	return monitor;
+}
+
 class Impl{
 public:
 	Impl() :
@@ -97,6 +107,10 @@ public:
 		RECT rect = { 0, 0, mWidth, mHeight };
 		AdjustWindowRect( &rect, kWindowedStyle, FALSE );
 		OffsetRect( &rect, -rect.left, -rect.top );
+		const RECT& work = primaryMonitorInfo().rcWork;
+		OffsetRect( &rect,
+			( ( work.right - work.left ) - rect.right ) / 2,
+			( ( work.bottom - work.top ) - rect.bottom ) / 2 );
 		mWindowPlacement.length = sizeof( mWindowPlacement );
 		mWindowPlacement.showCmd = SW_SHOWNORMAL;
 		mWindowPlacement.rcNormalPosition = rect;
@@ -374,13 +388,9 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 }
 
 
-
-//
 //  関数: MyRegisterClass()
 //
 //  目的: ウィンドウ クラスを登録します。
-//
-//  コメント:
 //
 //    この関数およびその使用方法は、'RegisterClassEx' 関数が追加された
 //    Windows 95 より前の Win32 システムと互換性を保つ場合にのみ必要です。
@@ -426,16 +436,20 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 	hInst = hInstance; // グローバル変数にインスタンスを格納します。
 //----
 	DWORD style = gImpl->mFullScreen ? kFullScreenStyle : kWindowedStyle;
-	RECT rect;
-	rect.left = 0;
-	rect.top = 0;
-	rect.right = gImpl->mWidth;
-	rect.bottom = gImpl->mHeight;
-	AdjustWindowRect(&rect, style, FALSE);
-	rect.right -= rect.left;
-	rect.bottom -= rect.top; //高さ計算
-	rect.left = 0;
-	rect.top = 0;
+	RECT rect = {0, 0,gImpl->mWidth,gImpl->mHeight};
+
+	int x = CW_USEDEFAULT;
+	int y = CW_USEDEFAULT;
+	if (gImpl->mFullScreen) {
+		//ウィンドウを作る前は「今いるモニター」が無いので、メインモニターの全体に広げる
+		rect = primaryMonitorInfo().rcMonitor;
+		x = rect.left;
+		y = rect.top;
+	}
+	// ダメならwindow表示
+	else {
+		AdjustWindowRect( &rect, style, FALSE );
+	}
 //----
 
 	hWnd = CreateWindow(szWindowClass, szTitle, 

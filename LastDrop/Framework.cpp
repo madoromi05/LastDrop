@@ -286,7 +286,7 @@ void WindowCreator::configure( Configuration* config ){
 	config->setWidth( f.width() );
 	config->setHeight( f.height() );
 	config->setTitle( "DirectX11 Turn Command Battle" );
-	config->enableFullScreen( false );
+	config->enableFullScreen( true );  //メインモニターをフルスクリーンで起動
 	config->forbidFullScreen( false ); //alt+enterでボーダーレスのフルスクリーンへ切り替えられる
 }
 
