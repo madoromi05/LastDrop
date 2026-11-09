@@ -61,7 +61,7 @@ public:
 	// 照準のぶれ（銃と弾の向きだけ。AimSway）を進めてカメラへ渡す。
 	// 1ティックに1回、キャラを動かした後（flinch・shakeOnGrab の後）に呼ぶ。
 	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0。
-	// body: 自キャラの今の状態（PlayerCharacter::aimSwayBody。自キャラがいなければ既定のまま＝ぶれない）。
+	// body: 自キャラの今の状態（PlayerAimSwaySource::read。自キャラがいなければ既定のまま＝ぶれない）。
 	void updateViewEffects( float shotRecoil, const AimSwayBody& body );
 	// 噛まれた（這うゾンビの腕が当たった）瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く。
 	void flinch();

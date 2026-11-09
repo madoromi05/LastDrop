@@ -64,46 +64,68 @@ void ZombieBrainComponent::update() {
 	// 外せる部品（攻撃・体力・這う・死体）は、使う所ごとに引く（外されていれば、その振る舞いを飛ばす）。
 	ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >();
 	ZombieHealthComponent* health = getComponent< ZombieHealthComponent >();
-	// 追う先は全員で共通。攻撃に行っている体が自分のほかに居れば、攻撃を始めない。
 	ChaseTarget target;
-	const ChaseTarget* chaseTarget = nullptr;
-	if ( mContext->target ) {
-		target = *mContext->target;
-		target.attackTaken = ( mContext->attacker != nullptr && mContext->attacker != gameObject() );
-		chaseTarget = &target;
-	}
-	const HitWorld& hitWorld = *mContext->hitWorld;
+	const ChaseTarget* chaseTarget = targetForThisBody( &target );
+	// 状態はここで 1 回だけ読む（段の途中で部品が状態を進めても、このティックは読んだ時の状態で最後まで進める。分ける前と同じ）。
 	ZombieStateComponent::State state = mState->state();
-	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。攻撃の間は追う先を考え直さない（相手の方を向いて寄るだけ）。
+	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く。
+	bool standing = move( chaseTarget, state, attack, health );
+	settleOnGround( state );
+	pose( chaseTarget, standing, attack, health );
+	afterPose( chaseTarget, state, health );
+	placeHitboxes();
+	claimAttack( attack );
+}
+
+const ChaseTarget* ZombieBrainComponent::targetForThisBody( ChaseTarget* out ) const {
+	// 追う先は全員で共通。攻撃に行っている体が自分のほかに居れば、攻撃を始めない。
+	if ( !mContext->target ) {
+		return nullptr;
+	}
+	*out = *mContext->target;
+	out->attackTaken = ( mContext->attacker != nullptr && mContext->attacker != gameObject() );
+	return out;
+}
+
+bool ZombieBrainComponent::move( const ChaseTarget* target, ZombieStateComponent::State state, ZombieAttackComponent* attack, ZombieHealthComponent* health ) {
+	const HitWorld& hitWorld = *mContext->hitWorld;
+	// 攻撃の間は追う先を考え直さない（相手の方を向いて寄るだけ）。
 	// 攻撃に行っている体は仲間を避けない（攻撃に行く動きを崩さない。ほかの体が、この体から離れる）。
 	mLocomotion->beginTick();
 	bool staggering = health && health->isStaggering();
 	bool standing = ( state == ZombieStateComponent::State::Alive && !staggering && mState->canChase() );
 	if ( standing ) {
 		if ( attack && attack->isActive() ) {
-			attack->approach( chaseTarget );
+			attack->approach( target );
 		} else {
-			chase( chaseTarget, hitWorld, mContext->crowd, attack );
+			chase( target, hitWorld, mContext->crowd, attack );
 		}
 	} else if ( state == ZombieStateComponent::State::Downed ) {
 		if ( ZombieCrawlComponent* crawl = getComponent< ZombieCrawlComponent >() ) {
-			crawl->update( chaseTarget, hitWorld );
+			crawl->update( target, hitWorld );
 		}
 	}
 	if ( attack && mState->isAlive() ) {
-		attack->update( chaseTarget );
+		attack->update( target );
 	}
-	// 足元を地面（歩道の段差）の高さへ合わせる。歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
+	return standing;
+}
+
+void ZombieBrainComponent::settleOnGround( ZombieStateComponent::State state ) {
+	// 歩いていない間（立っている・よろけている）も、歩道の上で沈まないよう毎ティック行う。
 	// 倒れた後は動かないので、倒れた場所の高さのまま（沈む演出は見た目の位置だけを下げる）。
 	// 根の動きの区間の間は、置き場所を動かした後に合わせる（ZombieRootMotionSpan::apply）。
 	if ( state == ZombieStateComponent::State::Alive && !mRootSpan->isActive() ) {
 		mPosition->y = mMover->followGround( *mPosition );
 		mMesh->setPosition( *mPosition );
 	}
-	bool attacking = attack && attack->isActive();
-	mChase->updateSway( chaseTarget, standing && !attacking ); // 姿勢を求める前に、このティックの揺れを決める
+}
+
+void ZombieBrainComponent::pose( const ChaseTarget* target, bool standing, ZombieAttackComponent* attack, ZombieHealthComponent* health ) {
+	bool attacking = attack && attack->isActive(); // 攻撃を進めた（move）後に読む
+	mChase->updateSway( target, standing && !attacking ); // 姿勢を求める前に、このティックの揺れを決める
 	rebuildPoseModifiers( health );
-	// 遠い・映らない体は、姿勢を求めるティックを間引く（時刻だけ進める。OptimizationB_Plan.txt 9 章）。部位の箱は下で毎ティック置き直すので、
+	// 遠い・映らない体は、姿勢を求めるティックを間引く（時刻だけ進める。OptimizationB_Plan.txt 9 章）。部位の箱は placeHitboxes で毎ティック置き直すので、
 	// 体ごと動く所（置き場所・向き）は毎ティック正しく、腕や脚の形だけが前に求めた姿勢のまま付いて行く。
 	AnimationThrottle::Level level = AnimationThrottle::judge( mContext->view, *mHitboxes, *mPosition );
 	if ( mAnimationThrottle.shouldPose( level, mustPoseEveryTick( attack, health ) ) ) {
@@ -111,7 +133,10 @@ void ZombieBrainComponent::update() {
 	} else {
 		mMesh->advance();
 	}
-	mRootSpan->apply( chaseTarget ? chaseTarget->body : nullptr, mPosition );
+}
+
+void ZombieBrainComponent::afterPose( const ChaseTarget* target, ZombieStateComponent::State state, ZombieHealthComponent* health ) {
+	mRootSpan->apply( target ? target->body : nullptr, mPosition );
 	if ( state == ZombieStateComponent::State::Alive ) {
 		if ( health ) {
 			health->updateStagger();
@@ -124,10 +149,16 @@ void ZombieBrainComponent::update() {
 	if ( health ) {
 		health->flinch().update();
 	}
+}
+
+void ZombieBrainComponent::placeHitboxes() {
 	// 体を引きずり始めた後は（死んだ後も）、起こした頭・動かした腕に当たるよう、見えている姿勢に箱を付ける
 	// （頭を 0.2m ほど持ち上げるので、アニメどおりの姿勢のままだと頭を狙っても当たらない）。
 	mHitboxes->update( *mMesh, mDismember->crawler().isStarted() ? HitboxSet::POSE_SHOWN : HitboxSet::POSE_ANIMATED );
-	// 攻撃を始めた体を、後の体に知らせる（同じティックに 2 体が攻撃を始めないように）。
+}
+
+void ZombieBrainComponent::claimAttack( const ZombieAttackComponent* attack ) {
+	// 同じティックに 2 体が攻撃を始めないように。
 	if ( !mContext->attacker && attack && attack->isAttacking() ) {
 		mContext->attacker = gameObject();
 	}

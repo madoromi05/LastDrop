@@ -11,7 +11,7 @@
 // （FirstPersonControl）。反動（AimRecoil）・怯み（AimPunch）はカメラごと動かすので、別の量にしてある。
 // 乱数は使わない（決まった形の波）。大きさ・速さを変えるときは AimSwayParams の値を直す（F6 で動かせる）。
 //
-// 自キャラの今の状態。PlayerCharacter::aimSwayBody で作る。
+// 自キャラの今の状態。PlayerAimSwaySource::read で作る。
 struct AimSwayBody{
 	bool weaponDrawn = false;  // 銃を手に持っているか（しまっている間はぶれない）
 	float aimWeight = 0.f;     // 覗き具合（0〜1）

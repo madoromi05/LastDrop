@@ -3,12 +3,12 @@
 
 // 漁れる場所（ゴミ箱・木箱）と包帯の調整値（開けるのにかかる秒・空になる確率・包帯の効き目）。
 // 起動中に F6 のエディタ（Tuning の「Loot」）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
-// 場所ごとに出やすい物（重み・数）は LootTable.cpp の表（データ）。どれも遊んで確かめる前の初期値（R3_Plan.txt 10 章の「遊んで」で決める）。
+// 場所ごとに出やすい物（重み・数）は LootTable.cpp の表（データ）。どれも遊んで確かめる前の初期値
 struct LootParams{
 	// ── 開けるのにかかる秒──
 	float dumpsterSeconds = 1.5f; // ゴミ箱
 	float crateSeconds = 2.5f;    // 木箱
-	// ── 空になる確率（0〜1。開けてみないと分からない）──
+	// ── 空になる確率（0〜1。開けてみないと分からない）
 	float dumpsterEmptyChance = 0.1f; // ゴミ箱
 	float crateEmptyChance = 0.1f;    // 木箱
 	// ── 包帯（Q12。体力は 100。35 で Danger → Caution、2 つで Fine に戻る）──
@@ -24,7 +24,7 @@ struct LootParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（LootParams.cpp が持つ）。
+// 起動中ずっと 1 つだけの調整値
 LootParams& lootParams();
 
 #endif

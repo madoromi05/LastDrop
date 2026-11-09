@@ -199,6 +199,8 @@
     <ClCompile Include="GameSrc\src\Weapon\GunComponent.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerLocomotionComponent.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerFootprintComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerAimSwaySource.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerFactory.cpp" />
     <ClCompile Include="GameSrc\src\Player\Body\HoldComponent.cpp" />
     <ClCompile Include="GameSrc\src\Player\Body\FirstPersonBodyComponent.cpp" />
@@ -706,6 +708,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerLocomotionComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealthComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFootprintComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerAimSwaySource.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFactory.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Body\HoldComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Body\FirstPersonBodyComponent.h" />

@@ -6,6 +6,7 @@
 #include "GameSrc/Component/CharacterColliderComponent.h"
 #include "GameSrc/Component/LightComponent.h"
 #include "GameSrc/Player/PlayerComponent.h"
+#include "GameSrc/Player/PlayerFootprintComponent.h"
 #include "GameSrc/Player/PlayerNoiseComponent.h"
 #include "GameSrc/Player/PlayerGrabComponent.h"
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
@@ -69,6 +70,7 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 	obj->addComponent< PlayerHealthComponent >();
 	obj->addComponent< HitboxComponent >( mPlayerData, kBoneNamePrefix );
 	obj->addComponent< CharacterColliderComponent >();
+	obj->addComponent< PlayerFootprintComponent >(); // 移動の当たり判定の形（CharacterCollider へ渡す）
 	obj->addComponent< PlayerGrabComponent >();
 	obj->addComponent< PlayerComponent >();
 	obj->addComponent< PlayerNoiseComponent >(); // PlayerComponent の後（上の説明）

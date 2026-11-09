@@ -250,6 +250,12 @@
     <ClCompile Include="GameSrc\src\Player\PlayerComponent.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\PlayerFootprintComponent.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\PlayerAimSwaySource.cpp">
+      <Filter>GameSrc\Player</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Player\PlayerFactory.cpp">
       <Filter>GameSrc\Player</Filter>
     </ClCompile>
@@ -539,6 +545,12 @@
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerComponent.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFootprintComponent.h">
+      <Filter>GameSrc\Player</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerAimSwaySource.h">
       <Filter>GameSrc\Player</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFactory.h">

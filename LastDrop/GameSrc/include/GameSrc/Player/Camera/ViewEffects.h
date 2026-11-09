@@ -23,7 +23,7 @@ public:
 	void addLook( float yawDegree, float pitchDegree );
 	// 1ティック進めて、camera へ渡す（キャラを動かした後。flinch・shakeOnGrab の後）。
 	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0。
-	// body: 自キャラの今の状態（PlayerComponent::aimSwayBody。自キャラがいなければ既定のまま＝ぶれない）。camera: nullptr 不可。
+	// body: 自キャラの今の状態（PlayerAimSwaySource::read。自キャラがいなければ既定のまま＝ぶれない）。camera: nullptr 不可。
 	void update( float shotRecoil, const AimSwayBody& body, FirstPersonCamera* camera );
 	// 噛まれた（這うゾンビの腕が当たった）瞬間。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。
 	void flinch();

@@ -5,6 +5,7 @@
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifierChain.h"
 #include "GameSrc/Zombie/Animation/AnimationThrottle.h"
+#include "GameSrc/Zombie/Component/ZombieStateComponent.h" // update の段へ状態（ZombieStateComponent::State）を渡すため
 
 class HitWorld;
 class ZombieCrowd;
@@ -14,7 +15,6 @@ class HitboxSet;
 class CharacterMover;
 class ZombieLocomotion;
 class ZombieRootMotionSpan;
-class ZombieStateComponent;
 class ZombieChaseComponent;
 class ZombieAttackComponent;
 class ZombieHealthComponent;
@@ -67,6 +67,23 @@ public:
 	AnimationThrottle::Level animationLevel() const;
 
 private:
+	// ── update の段（この順に呼ぶ。SummaryPlan/個別仕様/設計と分割/TickOrderSplit_Plan.txt 4-2）──
+	// state は update の最初に 1 回だけ読み、各段へ渡す（段の途中で読み直さない）。attack / health は外せる部品（外されていれば nullptr）。
+	// 1. この体の追う先（攻撃の番を、自分のほかの体が取っているかを入れる）。out へ書き、追う先が無ければ nullptr を返す。
+	const ChaseTarget* targetForThisBody( ChaseTarget* out ) const;
+	// 2. 動く（立っていれば追う・攻撃へ寄る、倒れていれば這う）と攻撃を進める。立って追える様子だったかを返す。
+	bool move( const ChaseTarget* target, ZombieStateComponent::State state, ZombieAttackComponent* attack, ZombieHealthComponent* health );
+	// 3. 足元を地面（歩道の段差）の高さへ合わせる。
+	void settleOnGround( ZombieStateComponent::State state );
+	// 4. 揺れを決め、姿勢の書き換えを組み直し、姿勢を求める（遠い・映らない体は時刻だけ進める）。
+	void pose( const ChaseTarget* target, bool standing, ZombieAttackComponent* attack, ZombieHealthComponent* health );
+	// 5. 姿勢を求めた後：根の動きを置き場所へ移し、よろけ・死体の時間・のけぞりを進める。
+	void afterPose( const ChaseTarget* target, ZombieStateComponent::State state, ZombieHealthComponent* health );
+	// 6. 部位の当たり判定を今の姿勢へ置き直す。
+	void placeHitboxes();
+	// 7. 攻撃を始めたら、攻撃の番を取ったことを後の体へ知らせる。
+	void claimAttack( const ZombieAttackComponent* attack );
+
 	// 物音を聞ける様子か。倒れている途中・死んだ・よろけている・攻撃している体と、追ってこない確認用の体は聞かない。
 	bool canHear() const;
 	// 立っている体が、追う先を考えて向きを変え、追いついたら攻撃を始め、そうでなければ歩く・横へよける。

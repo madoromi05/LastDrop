@@ -3,7 +3,7 @@
 #include "GameSrc/Scene/Game/World/TownEnvironment.h"
 #include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Player/Camera/FirstPersonControl.h"
-#include "GameSrc/Player/PlayerComponent.h"
+#include "GameSrc/Player/PlayerAimSwaySource.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
@@ -80,7 +80,7 @@ void PlayerFeedback::syncView( const GameWorld& world, FirstPersonControl* contr
 	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない。AmmoHud_Plan.txt Q1）。
 	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
 	hud->updateAmmoVisibility( hold && gun && ( hold->isAiming() || gun->isReloading() ) );
-	control->updateViewEffects( shotRecoil, player ? player->getComponent< PlayerComponent >()->aimSwayBody() : AimSwayBody() );
+	control->updateViewEffects( shotRecoil, player ? PlayerAimSwaySource::read( *player ) : AimSwayBody() );
 	if ( player ) {
 		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
 		player->getComponent< FirstPersonBodyComponent >()->setWeaponSway( control->camera().weaponSwayYaw(), control->camera().weaponSwayPitch() );
