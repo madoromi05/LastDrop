@@ -11,8 +11,7 @@
 // カバンの画面（InventoryScreen）は grid() で中を見て、動かす・捨てる・広さを変えるはここの関数を通す。
 class Inventory{
 public:
-	// bag: 拠点のカバンの中身（RunState。写して持つ。町の中で変わっても、拠点のカバンは脱出するまで変えない＝やめたらその日をやり直せる。
-	// R2_Plan.txt Q3）。広さも bag のまま（強化で広げるのは拠点の側）。
+	// bag: 始めのカバンの中身（RaidStart::startBag。写して持つ。SimpleRun_Plan.txt Q6）。広さも bag のまま。
 	explicit Inventory( const ItemGrid& bag );
 
 	// id をもう1つ持てるか（重ねられるマスか、置ける空きがあり、カバンに何個までの決まり ItemSpec::carryLimit を越えない）。

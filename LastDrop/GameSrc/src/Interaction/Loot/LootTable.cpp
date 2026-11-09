@@ -18,7 +18,6 @@ namespace{
 		const char* name;      // 中を見る画面の見出し
 		int minItems;          // 空でなかったときの物の数（この幅から選ぶ）
 		int maxItems;
-		bool isCorpse;         // 空になる確率に、死体の方（LootParams::corpseEmptyChance）を使うか
 		SoundId sound;         // 開けている間の音
 		int count;
 		LootEntry entries[ kMaxEntries ];
@@ -32,14 +31,20 @@ namespace{
 	const LootSpec kSpecs[ static_cast< int >( LootTableId::Count ) ] = {
 		// ガソリンは表から出さない（町のガソリンはちょうど RaidParams::fuelCanCount 個。WorldBuilder が選んだ箱へ必ず入れる。
 		// FuelEscapeLoading_Plan.txt Q16）。車のトランクの表は改訂 2 で消した（車には物を入れない）。
-		{ "ゴミ箱", 1, 3, false, SOUND_LOOT_SEARCH_METAL, 4, {
+		{ "ゴミ箱", 1, 3, SOUND_LOOT_SEARCH_METAL, 4, {
 			{ ITEM_AMMO_9MM, 30 }, { ITEM_BANDAGE, 25 }, { ITEM_WATCH, 30 }, { ITEM_AMMO_762, 15 } } },
-		// ライフルは込めた弾 0 で出る（弾は別に拾う）。
-		{ "木箱", 1, 3, false, SOUND_LOOT_SEARCH_WOOD, 5, {
-			{ ITEM_AMMO_762, 35 }, { ITEM_AMMO_9MM, 25 }, { ITEM_BANDAGE, 20 }, { ITEM_RIFLE, 10 }, { ITEM_LAPTOP, 10 } } },
-		{ "死体", 1, 1, true, SOUND_LOOT_SEARCH_CLOTH, 4, {
-			{ ITEM_AMMO_9MM, 35 }, { ITEM_AMMO_762, 35 }, { ITEM_BANDAGE, 15 }, { ITEM_WATCH, 15 } } },
+		// ライフルは表から出さない（町にちょうど RaidParams::rifleCount 丁。WorldBuilder が選んだ木箱へ、弾倉いっぱいで必ず入れる。
+		// 2026-11-09 ユーザー指定）。
+		{ "木箱", 1, 3, SOUND_LOOT_SEARCH_WOOD, 4, {
+			{ ITEM_AMMO_762, 35 }, { ITEM_AMMO_9MM, 25 }, { ITEM_BANDAGE, 20 }, { ITEM_LAPTOP, 10 } } },
+		// ゾンビの死体の表は 2026-11-09 に消した（死体は漁れない。ユーザー指定）。
 	};
+
+	// 空になる確率（LootParams。開けてみないと分からない）。
+	float emptyChanceOf( LootTableId id ) {
+		const LootParams& params = lootParams();
+		return ( id == LootTableId::Crate ) ? params.crateEmptyChance : params.dumpsterEmptyChance;
+	}
 
 	const LootSpec& specOf( LootTableId id ) {
 		int index = static_cast< int >( id );
@@ -84,7 +89,6 @@ float searchSeconds( LootTableId id ) {
 	switch ( id ) {
 	case LootTableId::Dumpster: return params.dumpsterSeconds;
 	case LootTableId::Crate:    return params.crateSeconds;
-	case LootTableId::Corpse:   return params.corpseSeconds;
 	default:                    break;
 	}
 	ASSERT( false && "LootTable::searchSeconds : bad LootTableId." );
@@ -95,18 +99,18 @@ SoundId searchSound( LootTableId id ) {
 	return specOf( id ).sound;
 }
 
-void roll( LootTableId id, Random* random, ItemId guaranteed, ItemGrid* out ) {
+void roll( LootTableId id, Random* random, const std::vector< ItemStack >& guaranteed, ItemGrid* out ) {
 	ASSERT( random && out && "LootTable::roll : an argument is null." );
 	out->clearAll();
 	const LootSpec& spec = specOf( id );
-	const LootParams& params = lootParams();
 	// 必ず入れる物は先に入れる（後のふつうの中身でマスが埋まって入らない、が起きないように）。
-	if ( guaranteed != ITEM_NONE ) {
-		ItemStack stack = { guaranteed, kSingleItem };
-		out->placeAnywhere( stack );
+	// ガソリン（2 マス）とライフル（1 マス）が同じ箱に当たっても、2 × 3 に入る。
+	bool allPlaced = true;
+	for ( const ItemStack& stack : guaranteed ) {
+		allPlaced = out->placeAnywhere( stack ) && allPlaced;
 	}
-	float emptyChance = spec.isCorpse ? params.corpseEmptyChance : params.containerEmptyChance;
-	if ( guaranteed == ITEM_NONE && random->getFloat() < emptyChance ) {
+	ASSERT( allPlaced && "LootTable::roll : the guaranteed items do not fit in the box." );
+	if ( guaranteed.empty() && random->getFloat() < emptyChanceOf( id ) ) {
 		return;
 	}
 	int itemCount = random->getInt( spec.minItems, spec.maxItems + 1 );

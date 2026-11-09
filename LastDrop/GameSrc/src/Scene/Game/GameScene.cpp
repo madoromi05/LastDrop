@@ -15,7 +15,7 @@
 #include "GameSrc/Render/Shadow/ShadowParams.h"
 #include "GameSrc/Render/PostProcess/SsrParams.h"
 #include "GameSrc/Render/PostProcess/PostProcessParams.h"
-#include "GameSrc/Raid/RunRules.h"
+#include "GameSrc/Raid/RaidStart.h"
 #include "GameSrc/Raid/RaidParams.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Interaction/IInteractable.h"
@@ -40,7 +40,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
-	// カバンの画面の見出しの下に出す、今日の脱出の車の場所（FuelEscapeLoading_Plan.txt Q14）。
+	// カバンの画面の見出しの下に出す、今回の脱出の車の場所（FuelEscapeLoading_Plan.txt Q14）。
 	const char* kExitsPrefix = "脱出の車：";
 	const char* kExitsSeparator = " / ";
 	const float kNoSearch = -1.f;        // HUD に「探している」の棒を出さない（RaidHud::draw。漁り/給油の本体は LootController）
@@ -48,15 +48,16 @@ namespace{
 
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
-	// 今日の条件（5 日間の始めに決めて save.xml にある。DayCondition_Plan.txt）。世界を作る時の 1 回だけ読む（F6 で変えたら次の出撃から）。
-	mWorld( &resources->meshes(), &resources->town(), dayConditionEffect( resources->run().condition( resources->run().day() ) ) ),
+	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ。SimpleRun_Plan.txt Q5・C9）。世界を作る時の 1 回だけ読む。
+	mCondition( resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
+	mWorld( &resources->meshes(), &resources->town(), dayConditionEffect( mCondition ) ),
 	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
-	mInventory( resources->run().bag() ), // 拠点のカバンの写し（町の中で変わっても、拠点のカバンは脱出するまで変えない。R2_Plan.txt Q3）
+	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾。SimpleRun_Plan.txt Q6・C4）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
 	mControl( mWorld.town().map().playerStart().yawDegree, &resources->settings() ), // キャラの向いている方を見始める
 	mFeedback( &resources->audio(), &mWorld.town() ), // 出来事を自キャラの視点・音・画面へ返す
 	mHud( &mWorld, &mInventory, &resources->uiRenderer() ), // 遊び中の画面表示（棒・弾数・マーク）
-	// 脱出の車の置き場所は毎日変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
+	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),
 	// 出撃のロード段階（mSession が選んだ脱出の車の置き場所を使うので、その後に並べる）
 	mLoad( &mWorld, &resources->meshes(), mSession.escapeCarSpot(), &resources->uiRenderer() ),
@@ -103,7 +104,7 @@ ItemId GameScene::equippedWeapon() const {
 
 void GameScene::beginFrame() {
 	// 読み込み・構築・テクスチャのロードを進める（構築後もテクスチャのために毎回呼ぶ）。
-	// 2回目以降のこのシーン（次の日の出撃）では、もう構築済みなのですぐに並べられる。
+	// 2回目以降のこのシーン（もう一度・Retry の出撃）では、もう構築済みなのですぐに並べられる。
 	bool allReady = false;
 	{
 		PROFILE_SCOPE( "Game.meshes" );
@@ -114,7 +115,7 @@ void GameScene::beginFrame() {
 		if ( !mLoad.advance( allReady ) ) {
 			return;
 		}
-		restoreMagazineRounds( mInventory, mWorld ); // 銃の物を作った後に、拠点で覚えた弾倉の数を入れる
+		restoreMagazineRounds( mInventory, mWorld ); // 銃の物を作った後に、始めのカバンの弾倉の数を入れる
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 #ifdef ZF_EDITOR
 		mEditor.markReady();
@@ -159,7 +160,7 @@ void GameScene::handleFrameInput() {
 	}
 #ifdef ZF_EDITOR
 	// F5（無敵）を読み、F6 のエディタへ今の物を渡す。
-	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->run() );
+	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord() );
 	// 観察用カメラの切り替えを先に読む（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）。
 	mFreeCamera.handleToggle( mControl.camera() );
 #endif
@@ -181,7 +182,7 @@ void GameScene::handleFrameInput() {
 
 void GameScene::update() {
 	if ( !mLoad.isReady() || mModals.isOpen() || mRaidFinished ) {
-		return; // 1 日を終えた後と、止めている間（一時停止・カバン・中を見る画面）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
+		return; // 出撃を終えた後と、止めている間（一時停止・カバン・中を見る画面）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
 	// 開けている途中の取りやめは、このティックの操作で決める（押した瞬間の操作は、世界を進めた後に消えるので先に読む）。
 	bool commandInterruptsSearch = LootController::interrupts( mControl.command() );
@@ -199,7 +200,7 @@ void GameScene::update() {
 	}
 	{
 		PROFILE_SCOPE( "Game.loot" );
-		mLoot.update( commandInterruptsSearch, mRaidFinished ); // 攻撃された・死んだ・1 日が終わったも読むので、その後に
+		mLoot.update( commandInterruptsSearch, mRaidFinished ); // 攻撃された・死んだ・出撃が終わったも読むので、その後に
 	}
 	if ( mModals.isLoot() ) {
 		return; // 開け終わって中を見る画面を開いた（世界を止めたので、同じ描画の残りのティックも進めない）
@@ -222,7 +223,7 @@ bool GameScene::isLoading() const {
 void GameScene::draw() {
 	if ( !mLoad.isReady() ) {
 		// ロード中は世界を描かず、ロード画面だけ（FuelEscapeLoading_Plan.txt 6 章）。
-		mLoad.drawLoadingScreen( mResources->run().day() );
+		mLoad.drawLoadingScreen( mWorld.dayCondition().title );
 		return;
 	}
 	mControl.setEyeDrop( mFeedback.damageView().eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
@@ -272,8 +273,8 @@ void GameScene::draw() {
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 		mDebug.addLootContents( mWorld, camera, &mResources->uiRenderer() );
 #endif
-		// 遊んでいる間の HUD（マーク・弾数・1 日の棒）。積むだけで、下の UiRenderer::draw がまとめて描く。
-		mHud.draw( camera, mSession, mResources->run().day(), mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );
+		// 遊んでいる間の HUD（マーク・弾数・知らせと棒）。積むだけで、下の UiRenderer::draw がまとめて描く。
+		mHud.draw( camera, mSession, mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );
 	}
 
 	GameDebugOverlay::TextState text;
@@ -353,8 +354,7 @@ void GameScene::updateRaid() {
 		mSession.tick( player->getComponent< TransformComponent >()->position(), mWorld.isPlayerDead(), mWorld.combat().zombiesKilledThisTick() );
 	}
 	switch ( mSession.ending() ) {
-	case RaidEnding::Survived:
-	case RaidEnding::Missing:
+	case RaidEnding::Escaped:
 		finishRaid();
 		break;
 	case RaidEnding::Killed:
@@ -369,15 +369,8 @@ void GameScene::updateRaid() {
 
 void GameScene::finishRaid() {
 	mRaidFinished = true;
-	RunState& run = mResources->run();
-	DayResult result = mSession.result();
-	if ( result.ending == RaidEnding::Survived ) {
-		storeMagazineRounds( mInventory, mWorld );
-		RunRules::finishDay( &run, result, mInventory.grid() );
-		SceneManager::instance().requestChange( SceneManager::SCENE_DAY_RESULT );
-	} else {
-		RunRules::failDay( &run, result );
-		SceneManager::instance().requestChange( SceneManager::SCENE_RUN_END );
-	}
+	// 持ち帰る物は無い（SimpleRun_Plan.txt Q7・Q10）ので、カバンは捨てて結果だけを渡す。
+	mResources->raidRecord().setLastResult( mSession.result() );
+	SceneManager::instance().requestChange( SceneManager::SCENE_RAID_END );
 }
 

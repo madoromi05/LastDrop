@@ -5,6 +5,7 @@
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Zombie/Attack/ZombieAttack.h"
 #include "GameSrc/Zombie/Attack/ZombieAttackReach.h"
+#include "GameSrc/Zombie/Attack/ZombieAttackStyle.h"
 
 class SkinnedMeshInstance;
 class ZombieStateComponent;
@@ -14,15 +15,17 @@ class ZombieRootMotionSpan;
 class ZombieAnimationSet;
 struct ChaseTarget;
 
-// ゾンビの攻撃（段階は ZombieAttack、間合いは ZombieAttackReach。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3・9 章）。
-// 立っている体は「つかむ → 噛む → 離す」（噛むときは首と背骨を突き出す。ZombieFlinch::lunge）、
-// 体を引きずっている体は足元へ腕を伸ばして 1 回当てる。どちらもこの部品が攻撃を始めるか決めて始め、手を伸ばす間は相手の方へ寄り、段階を進める。
+// ゾンビの攻撃（段階は ZombieAttack、間合いは ZombieAttackReach。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3・8〜11 章）。
+// 立っている体は攻撃の種類（ZombieAttackStyle。組み立てるときに決める）で、腕を振り下ろして 1 回当てる（atack1）か、
+// 「つかむ → 噛む → 離す」（atack3。噛むときは首と背骨を突き出す。ZombieFlinch::lunge）。
+// 体を引きずっている体は、どちらでも足元へ腕を伸ばして 1 回当てる。この部品が攻撃を始めるか決めて始め、手・腕を伸ばす間は相手の方へ寄り、段階を進める。
 // いつ「始めるか」を聞くか（考えた後・歩く前）は呼ぶ側（ZombieBrainComponent・ZombieCrawlComponent）が決める。
 // 相手に何が起きるかは知らない（「つかんだか・つかんでいるか・このティックにダメージを与えたか」を答えるだけで、
 // 相手へ伝えるのは CombatResolver）。振りほどき（撃たれた量を数える）は ZombieHealthComponent が attack() へ渡す。
 class ZombieAttackComponent : public Component{
 public:
-	ZombieAttackComponent();
+	// style: 立っている体の攻撃の種類。攻撃のアニメ（ZombieAnimationNames::attack）は、この種類に合う物を渡すこと（ZombieDirector が揃える）。
+	explicit ZombieAttackComponent( ZombieAttackStyle style );
 
 	ZombieAttack& attack(){ return mAttack; }
 	const ZombieAttack& attack() const { return mAttack; }
@@ -30,7 +33,7 @@ public:
 	// 見えている相手が間合いに居て始められるなら、攻撃を始めて true（通り道は捨てる）。始めなければ何もせず false。
 	// target: 追う先（nullptr なら始めない）。
 	bool tryStart( const ChaseTarget* target );
-	// 立って攻撃している間、相手の方を向き、手を伸ばしている段階なら寄る（踏み込みは根の動きで別に足される）。
+	// 立って攻撃している間、相手の方を向き、手を伸ばしている・腕を振っている段階なら寄る（踏み込みは根の動きで別に足される）。
 	// つかんでいる段階は、決まった距離・正面へ寄せる（手が離れる・めり込むのを防ぐ。ZombieAttackParams）。
 	void approach( const ChaseTarget* target );
 	// 攻撃の段階を進める（生きている間、毎ティック）。立っている体は、つかんでいる間はアニメをゆっくり流し、
@@ -58,6 +61,7 @@ private:
 	void alignToHeldTarget( const GameLib::Math::Vector3& target );
 
 	ZombieAttack mAttack;
+	const ZombieAttackStyle mStyle; // 立っている体の攻撃の種類（一生変わらない）
 	// ── 同じ物の部品（start で借りる）──
 	GameLib::Math::Vector3* mPosition; // 足元の位置（TransformComponent）
 	float* mAngleY;                    // 向き（度。TransformComponent）

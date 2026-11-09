@@ -2,7 +2,7 @@
 
 #include "GameLib/GameLib.h"
 
-LootContainerComponent::LootContainerComponent( LootTableId table, GameLib::Math::Random* random, ItemId guaranteed ) :
+LootContainerComponent::LootContainerComponent( LootTableId table, GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed ) :
 	mTable( table ),
 	mGuaranteed( guaranteed ),
 	mContents( LootTable::kColumns, LootTable::kRows ),

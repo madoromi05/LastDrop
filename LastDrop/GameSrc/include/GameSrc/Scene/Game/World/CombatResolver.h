@@ -7,21 +7,19 @@
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include "GameSrc/Audio/GroundMaterial.h"
 #include "GameLib/Math/Vector3.h"
-#include "GameLib/Math/Random.h"
 #include <vector>
 
 class GameObject;
 class GameObjectWorld;
 class HitWorld;
-class ZombieStateComponent;
 
 // 当たった後に何が起きるかを決める係
 // ・弾：物に当たったら弾痕と砂ぼこり、ゾンビに当たったらダメージを渡して血しぶき・後ろの壁と足元の血の跡・千切れた部位・
-//   倒したら死体を漁れる場所にする（2026-11-05 から弾は落とさない。R3_Plan.txt Q10）
+//   倒した数を数える（死体は漁れない・物も落とさない。2026-11-09 ユーザー指定）
 // ・ゾンビの攻撃（★3）：つかんだら出来事を残し、噛んだ（這う体は腕が当たった）ら体力を減らす
 // 起きたことは出来事の並び（ZombieHit・SurfaceHit・ZombieAttackEvent）に残し、音・画面の赤み・揺れの係（シーン）が読む。
 // 相手の体力へは IDamageable（ZombieHealthComponent::applyDamage）・PlayerHealthComponent::applyZombieHit の入口だけを通す
-// （部位の倍率・倒れるかは受ける側が決める）。武器・ダメージ・部位欠損・落とす物の決まりを変えるときは、ここだけを直す。
+// （部位の倍率・倒れるかは受ける側が決める）。武器・ダメージ・部位欠損の決まりを変えるときは、ここだけを直す。
 class CombatResolver{
 public:
 	// ゾンビに弾が当たった出来事（ヒット音を鳴らすなど、世界の外の係が読む）。死体に当たったときも入る。
@@ -83,13 +81,10 @@ private:
 	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける
 	// 後ろは、先に別のゾンビに当たったら付けない（後ろのゾンビにも、その奥の壁にも）。
 	void stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size );
-	// zombie が今倒れた（止めを刺した）ので、死体を漁れる場所にする
-	void makeLootable( const ZombieStateComponent& zombie );
 
 	GameObjectWorld* mObjects;  // 借りているだけ
 	EffectManager* mEffects;    // 借りているだけ
 	const HitWorld* mHitWorld;  // 借りているだけ
-	GameLib::Math::Random mRandom; // 死体の中身を決める（遊ぶたびに変わるよう、起動からの時間を種にする）
 	std::vector< ZombieHit > mZombieHits;           // このティックの出来事（毎回確保し直さないために持つ）
 	std::vector< SurfaceHit > mSurfaceHits;         // 同上
 	std::vector< ZombieAttackEvent > mZombieAttacks; // 同上

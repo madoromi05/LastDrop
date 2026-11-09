@@ -1,8 +1,8 @@
 #ifndef INCLUDED_RAID_PARAMS_H
 #define INCLUDED_RAID_PARAMS_H
 
-// 出撃と帰還（1 日の時間・脱出の車・ガソリン・スコアの重み）の調整値。仕様は SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt（Q4・Q9）と
-// FuelEscapeLoading_Plan.txt（脱出の車とガソリン。2026-11-05 に脱出点の円から変えた）。
+// 出撃（脱出の車・ガソリン・始めの知らせ）の調整値。仕様は SummaryPlan/個別仕様/出撃と帰還/FuelEscapeLoading_Plan.txt
+// （脱出の車とガソリン。2026-11-05 に脱出点の円から変えた）。2026-11-09 に時間制限とスコアの重みは消した（SimpleRun_Plan.txt Q4・C8）。
 // 小数の値は起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれも遊んで確かめる前の初期値。
 struct RaidParams{
@@ -10,31 +10,22 @@ struct RaidParams{
 	// 出撃の始めにしか効かないので F6 には出さない（Tuning は小数だけ）。
 	int requiredFuel = 1;  // 脱出に要るガソリンの数（脱出の車 1 台に入れる数。1 以上）
 	int fuelCanCount = 2;  // 町に置くガソリンの数（漁れる場所の箱に 1 個ずつ入れる。箱の数より多くはできない＝ASSERT）
+	// 町に置くライフルの数（木箱に 1 丁ずつ・弾倉いっぱいで必ず入れる。木箱の数より多くはできない＝ASSERT。2026-11-09 ユーザー指定）。
+	int rifleCount = 1;
 
-	// ── 1 日（1 回の出撃）──
-	float raidSeconds = 600.f;       // 1 日の長さ（秒。RaidLoop Q4 の 10 分）。0 になったら行方不明
-	float warningSeconds = 60.f;     // 残りがこれ以下になったら、残り時間を赤くする（Q9）
-	float exitNoticeSeconds = 5.f;   // 始めに脱出の車の場所（「脱出の車：北」）を出す長さ（秒。FuelEscapeLoading_Plan.txt Q14）
+	// ── 1 回の出撃 ──
+	float exitNoticeSeconds = 5.f;   // 始めに今回の条件と脱出の車の場所（「脱出の車：北」）を出す長さ（秒。FuelEscapeLoading_Plan.txt Q14）
 	// ── 脱出の車（FuelEscapeLoading_Plan.txt Q4）──
 	float refuelSeconds = 2.f;       // ガソリン 1 個を入れる長さ（秒。動く・撃つ・構える・攻撃で取りやめ。漁るのと同じ）
 	float extractSeconds = 5.f;      // 給油し終えた車のそばにこれだけ居続けたら脱出（RaidLoop Q5）
 	float extractRadius = 4.f;       // 車のそばの円の半径（m。車の中心から水平だけで測る。車体 約 4m の長さの外まで届く）
-	// ── スコアの重み（Q4。物の点は ItemSpec::scoreValue）──
-	float scorePerDay = 1000.f;      // 生き残った日数 1 日あたり
-	float scorePerKill = 20.f;       // 倒したゾンビ 1 体あたり
-	float clearBonus = 3000.f;       // 5 日目に脱出したときだけ
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）。
 	template< class V > void visit( V& v ) {
-		v( "raidSeconds", raidSeconds, 10.f, 1800.f, "s" );
-		v( "warningSeconds", warningSeconds, 0.f, 300.f, "s" );
 		v( "exitNoticeSeconds", exitNoticeSeconds, 0.f, 20.f, "s" );
 		v( "refuelSeconds", refuelSeconds, 0.1f, 10.f, "s" );
 		v( "extractSeconds", extractSeconds, 0.5f, 30.f, "s" );
 		v( "extractRadius", extractRadius, 0.5f, 10.f, "m" );
-		v( "scorePerDay", scorePerDay, 0.f, 10000.f, "" );
-		v( "scorePerKill", scorePerKill, 0.f, 1000.f, "" );
-		v( "clearBonus", clearBonus, 0.f, 20000.f, "" );
 	}
 };
 

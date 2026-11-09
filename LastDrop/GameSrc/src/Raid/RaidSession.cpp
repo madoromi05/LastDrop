@@ -7,12 +7,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	const int kOneCar = 1; // 脱出の車は毎日 1 台（FuelEscapeLoading_Plan.txt Q1）
+	const int kOneCar = 1; // 脱出の車は出撃ごとに 1 台（FuelEscapeLoading_Plan.txt Q1）
 }
 
 RaidSession::RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) :
 	mEscapeCarSpot( pickCarSpot( carSpots, seed ) ),
-	mClock( raidParams().raidSeconds ),
+	mClock(),
 	mExtraction( zoneAt( carSpots, mEscapeCarSpot ), raidParams().extractRadius, raidParams().extractSeconds ),
 	mKills( 0 ),
 	mEnding( RaidEnding::None ) {
@@ -48,9 +48,7 @@ void RaidSession::tick( const Vector3& feet, bool playerDead, int kills ) {
 	mClock.tick();
 	mExtraction.tick( feet );
 	if ( mExtraction.hasExtracted() ) {
-		mEnding = RaidEnding::Survived;
-	} else if ( mClock.isExpired() ) {
-		mEnding = RaidEnding::Missing;
+		mEnding = RaidEnding::Escaped;
 	}
 }
 
@@ -70,16 +68,12 @@ int RaidSession::kills() const {
 	return mKills;
 }
 
-DayResult RaidSession::result() const {
-	DayResult result;
+RaidResult RaidSession::result() const {
+	RaidResult result;
 	result.ending = mEnding;
 	result.seconds = mClock.elapsedSeconds();
 	result.kills = mKills;
 	return result;
-}
-
-void RaidSession::setRemainingSeconds( float seconds ) {
-	mClock.setRemainingSeconds( seconds );
 }
 
 void RaidSession::forceExtract() {

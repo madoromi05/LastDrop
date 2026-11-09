@@ -10,11 +10,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	const int kTextSize = 32;
-	const char* kDayFormat = "DAY %d"; // 町の始めの知らせ（RaidHud）と同じ書き方
 	const float kHalf = 0.5f;
 	// 画面の真ん中からの高さ（上が負）。
-	const float kDayAboveCenter = 40.f;
+	const float kHeadingAboveCenter = 40.f;
 	const float kLabelBelowCenter = 10.f;
 	const float kBarBelowCenter = 40.f;
 	const float kBarWidth = 240.f;
@@ -34,19 +32,17 @@ LoadingScreen::LoadingScreen( UiRenderer* renderer ) :
 	ASSERT( mRenderer && "LoadingScreen : renderer is null." );
 }
 
-void LoadingScreen::draw( int day, const char* label, float progress ) {
+void LoadingScreen::draw( const char* heading, const char* label, float progress ) {
 	float width = static_cast< float >( GameLib::Framework::instance().width() );
 	float height = static_cast< float >( GameLib::Framework::instance().height() );
 	float centerX = width * kHalf;
 	float centerY = height * kHalf;
 
-	// 前の画面（倉庫）が残らないよう、画面全体を黒で塗る（世界はまだ描いていない）。
+	// 前の画面（タイトル・結果）が残らないよう、画面全体を黒で塗る（世界はまだ描いていない）。
 	UiRect back = { 0.f, 0.f, width, height };
 	mRenderer->addRect( back, kBackColor );
 
-	char text[ kTextSize ];
-	std::snprintf( text, sizeof( text ), kDayFormat, day );
-	mRenderer->addText( text, Vector2( centerX, centerY - kDayAboveCenter ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kTextColor );
+	mRenderer->addText( heading, Vector2( centerX, centerY - kHeadingAboveCenter ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kTextColor );
 	mRenderer->addText( label, Vector2( centerX, centerY + kLabelBelowCenter ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 
 	float ratio = ( progress < 0.f ) ? 0.f : ( ( progress > 1.f ) ? 1.f : progress );

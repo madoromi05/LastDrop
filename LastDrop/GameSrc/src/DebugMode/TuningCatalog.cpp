@@ -9,6 +9,7 @@
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/Move/ZombieCrowdParams.h"
 #include "GameSrc/Zombie/Attack/ZombieAttackParams.h"
+#include "GameSrc/Zombie/Damage/ZombieStaggerParams.h"
 #include "GameSrc/Render/Culling/LodSelector.h"
 #include "GameSrc/Zombie/ZombieUncertaintyParams.h"
 #include "GameSrc/Zombie/Move/ZombieRunParams.h"
@@ -96,6 +97,9 @@ namespace{
 		// つかんでいる間の距離・向きを合わせる値（ZombieAttack_Plan.txt 10 章）。
 		groups.push_back( std::make_unique< TuningGroup< ZombieAttackParams > >(
 			"ZombieAttack", "ZombieAttackParams", "GameSrc/Zombie/ZombieAttackParams.h", &zombieAttackParams ) );
+		// 撃たれたときに押し下げる距離・のけぞりの倍率（ZombieStagger_Plan.txt 9 章）。
+		groups.push_back( std::make_unique< TuningGroup< ZombieStaggerParams > >(
+			"ZombieStagger", "ZombieStaggerParams", "GameSrc/Zombie/Damage/ZombieStaggerParams.h", &zombieStaggerParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
 		// 走るゾンビの割合・速さ・脚の線（R4_Plan.txt。遊んで決める値）。

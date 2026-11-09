@@ -30,8 +30,9 @@ namespace{
 	const float kFixedToughness = 1.f;
 }
 
-ZombieFactory::ZombieFactory( const ZombieModel* model ) :
-	mModel( model ) {
+ZombieFactory::ZombieFactory( const ZombieModel* model, ZombieAttackStyle attackStyle ) :
+	mModel( model ),
+	mAttackStyle( attackStyle ) {
 	ASSERT( model && "ZombieFactory : model is null." );
 }
 
@@ -61,7 +62,7 @@ const ZombieAnimationNames& names, int sightPhase, int randomSeed ) const {
 	obj->addComponent< ZombieRootMotionComponent >( names );
 	obj->addComponent< ZombieStateComponent >();
 	obj->addComponent< ZombieChaseComponent >( sightPhase, wanderSeed, swayPeriod, swayPhase, runner );
-	obj->addComponent< ZombieAttackComponent >();
+	obj->addComponent< ZombieAttackComponent >( mAttackStyle );
 	obj->addComponent< ZombieHealthComponent >( toughness, random );
 	obj->addComponent< ZombieCorpseComponent >();
 	obj->addComponent< ZombieCrawlComponent >();

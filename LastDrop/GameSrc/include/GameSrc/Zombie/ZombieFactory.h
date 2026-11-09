@@ -3,6 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 #include "GameSrc/Zombie/Animation/ZombieAnimationSet.h"
+#include "GameSrc/Zombie/Attack/ZombieAttackStyle.h"
 
 class ZombieModel;
 class ZombieBrainComponent;
@@ -16,7 +17,8 @@ class GameObjectWorld;
 class ZombieFactory{
 public:
 	// model: 形・アニメと当たり判定の設計図。所有権は受け取らない。nullptr 不可。作ったゾンビより長く生きていること（GameWorld が持つ）。
-	explicit ZombieFactory( const ZombieModel* model );
+	// attackStyle: 立っている体の攻撃の種類（全員同じ）。spawn に渡す攻撃のアニメ（names.attack）は、この種類に合う物にすること。
+	ZombieFactory( const ZombieModel* model, ZombieAttackStyle attackStyle );
 
 	// ゾンビを組み立てて world へ spawn し、つなぐ部品（ZombieBrainComponent）を返す。
 	// position / angleY: 足元の位置と向き（度。0 は +Z）。names: 使うアニメ（move が nullptr なら T ポーズの確認用。丈夫さは表のまま）。
@@ -26,6 +28,7 @@ public:
 
 private:
 	const ZombieModel* mModel;
+	ZombieAttackStyle mAttackStyle;
 };
 
 #endif

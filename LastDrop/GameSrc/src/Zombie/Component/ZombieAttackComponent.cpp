@@ -30,7 +30,8 @@ ZombieAttackParams& zombieAttackParams() {
 	return gParams;
 }
 
-ZombieAttackComponent::ZombieAttackComponent() :
+ZombieAttackComponent::ZombieAttackComponent( ZombieAttackStyle style ) :
+	mStyle( style ),
 	mPosition( nullptr ),
 	mAngleY( nullptr ),
 	mMesh( nullptr ),
@@ -65,7 +66,11 @@ bool ZombieAttackComponent::tryStart( const ChaseTarget* target ) {
 		mAttack.startSwing();
 		return true;
 	}
-	mAttack.start();
+	if ( mStyle == ZombieAttackStyle::Swing ) {
+		mAttack.startSwing();
+	} else {
+		mAttack.start();
+	}
 	mAnimations->playAttack( mPosition ); // 終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）
 	return true;
 }
@@ -82,7 +87,9 @@ void ZombieAttackComponent::approach( const ChaseTarget* target ) {
 	}
 	mLocomotion->turnToward( mState->bodyCenter(), target->position, mState->posture(), mAngleY );
 	// 寄る距離は、踏み込む前の足元（根の動きのアンカー＝bodyCenter）から測る。寄るのもアンカーごと（踏み込みは別に足す）。
-	if ( mAttack.phase() == ZombieAttack::Phase::Reach ) {
+	// 腕振りも、当たる時刻までは寄る（手を伸ばす間のつかみと同じ。届く所まで来たら approachStep が 0 を返す）。
+	ZombieAttack::Phase phase = mAttack.phase();
+	if ( phase == ZombieAttack::Phase::Reach || phase == ZombieAttack::Phase::Swing ) {
 		float distance = ZombieAttackReach::approachStep( mState->bodyCenter(), target->position );
 		if ( distance > 0.f ) {
 			mRootSpan->moveFooting( mLocomotion->walkStep( distance, *mAngleY ), mPosition ); // 相手の体・銃の箱に当たったら、そこで止まる
@@ -104,7 +111,8 @@ void ZombieAttackComponent::update( const ChaseTarget* target ) {
 		int alignTicks = GameTime::secondsToTicks( gParams.grabAlignSeconds );
 		mAlignTicks = ( alignTicks > kAlignedTicks ) ? alignTicks : kAlignedTicks;
 	}
-	if ( mAttack.hitThisTick() ) {
+	// 首を突き出すのは噛んだときだけ（腕振りは腕のアニメのまま当てる）。
+	if ( mAttack.hitThisTick() && mStyle == ZombieAttackStyle::Grab ) {
 		// のけぞりの部品は外せるので、使うたびに引く（外されていれば首を突き出さずに噛む）。
 		if ( ZombieHealthComponent* health = getComponent< ZombieHealthComponent >() ) {
 			health->flinch().lunge( kBiteLungeDirection );

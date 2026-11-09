@@ -244,7 +244,6 @@
     <ClCompile Include="GameSrc\src\DebugMode\TownVisibilityCheck.cpp" />
     <ClCompile Include="GameSrc\src\Map\NavMeshBuilder.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\World\SceneLights.cpp" />
-    <ClCompile Include="GameSrc\src\Raid\RunStateFile.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\PlayerFeedback.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameEditorBridge.cpp" />
     <ClCompile Include="GameSrc\src\Player\Camera\CommandReader.cpp" />
@@ -268,8 +267,8 @@
     <ClCompile Include="GameSrc\src\Raid\RaidClock.cpp" />
     <ClCompile Include="GameSrc\src\Raid\ExtractionTracker.cpp" />
     <ClCompile Include="GameSrc\src\Raid\RaidSession.cpp" />
-    <ClCompile Include="GameSrc\src\Raid\RunState.cpp" />
-    <ClCompile Include="GameSrc\src\Raid\RunRules.cpp" />
+    <ClCompile Include="GameSrc\src\Raid\RaidRecord.cpp" />
+    <ClCompile Include="GameSrc\src\Raid\RaidStart.cpp" />
     <ClCompile Include="GameSrc\src\Raid\DayCondition.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\ItemTransfer.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\ItemGridView.cpp" />
@@ -289,10 +288,8 @@
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\RaidHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Base\BaseScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Base\DayResultScene.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Base\RunEndScene.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
@@ -558,6 +555,7 @@
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieCorpse.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Crawl\ZombieCrawlBody.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieStagger.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieKnockback.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieRootMotionSpan.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerHealth.cpp" />
     <ClCompile Include="GameSrc\src\Player\Camera\CameraShake.cpp" />
@@ -879,7 +877,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownVisibilityCheck.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\NavMeshBuilder.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\SceneLights.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunStateFile.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\PlayerFeedback.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameEditorBridge.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\CommandReader.h" />
@@ -903,10 +900,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidClock.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\ExtractionTracker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidSession.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\DayResult.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\Score.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunState.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidResult.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidRecord.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidStart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemTransfer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemGridView.h" />
@@ -926,10 +922,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\RaidHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\BaseScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\DayResultScene.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\RunEndScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
@@ -1077,6 +1071,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieUncertaintyParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieRunParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackStyle.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\AnimationThrottle.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\AnimationThrottleParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieStride.h" />
@@ -1091,6 +1086,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieCorpse.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Crawl\ZombieCrawlBody.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieStagger.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieStaggerParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieKnockback.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieRootMotionSpan.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerHealth.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\CameraShake.h" />

@@ -3,7 +3,7 @@
 
 // 日ごとの条件（SummaryPlan/個別仕様/出撃と帰還/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる。
 // 調整値（LightingParams など）は書き換えず、使う所でこの倍率を掛ける（F6 の値が正のまま）。
-// どの日にどれが出るかは RunRules、何日目がどれかを持つのは RunState。
+// どれが出るかは RaidStart（出撃のたびにランダム。SimpleRun_Plan.txt Q5）、F6 で固定したのは RaidRecord。
 enum class DayCondition{
 	Normal,
 	Blackout, // 停電：街灯が消える
@@ -14,7 +14,7 @@ enum class DayCondition{
 };
 
 struct DayConditionEffect{
-	const char* saveName;       // save.xml に書く名前（F6 にも出す）
+	const char* saveName;       // 英字の名前（F6 に出す。2026-11-09 まで save.xml にも書いていた）
 	const char* title;          // 「霧の日」など（拠点の画面・出撃の始めの知らせ）
 	const char* summary;        // 一言の説明（拠点の画面）
 	float streetLightScale;     // 街灯の明るさに掛ける（停電 0）
@@ -25,7 +25,7 @@ struct DayConditionEffect{
 
 // condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）。
 const DayConditionEffect& dayConditionEffect( DayCondition condition );
-// save.xml の名前から引く。知らない名前・nullptr はふつう（古い save.xml・手で直したファイルでも止まらない）。
+// 英字の名前から引く。知らない名前・nullptr はふつう（2026-11-09 に save.xml をやめてからは呼ぶ所が無い。日の条件を保存し直すとき用に残す）。
 DayCondition dayConditionFromSaveName( const char* name );
 
 #endif

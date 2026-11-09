@@ -34,9 +34,9 @@ public:
 	// どれも world へ spawn して、その物を返す。position / yawDegree: 足元の位置と向き（度。0 は +Z）。world: nullptr 不可。
 	// 漁れるゴミ箱・木箱（table は LootTableId::Dumpster か Crate）。動かない箱として名簿へ載る（ゾンビの道の図にも、回り込む角として入る）。
 	// random: 中身を決める乱数（nullptr 不可。覚えない）。
-	// withFuel: ガソリンを必ず 1 個入れる（町のガソリン。FuelEscapeLoading_Plan.txt Q15・改訂 2）。
+	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し。FuelEscapeLoading_Plan.txt Q15・改訂 2）。
 	GameObject* spawnLootContainer( GameObjectWorld* world, LootTableId table, const GameLib::Math::Vector3& position, float yawDegree,
-		GameLib::Math::Random* random, bool withFuel ) const;
+		GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed ) const;
 	// 今日の脱出の車（置物の車と同じ形・同じ動かない箱。ガソリンを入れられ、漁れない）。requiredFuel: 走るのに要るガソリンの数。
 	GameObject* spawnEscapeCar( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, int requiredFuel ) const;
 	// 消火栓（見た目の置物。動かない箱として名簿へ載る。使えない・漁れない）。

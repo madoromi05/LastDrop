@@ -8,6 +8,10 @@
 #include "GameSrc/Zombie/Component/ZombieDismemberComponent.h"
 #include "GameSrc/Zombie/Component/ZombieRootMotionComponent.h"
 #include "GameSrc/Zombie/Move/ZombieRunParams.h"
+#include "GameSrc/Zombie/Move/ZombieLocomotion.h"
+#include "GameSrc/Zombie/Animation/ZombieRootMotionSpan.h"
+#include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
@@ -28,7 +32,8 @@ ZombieHealthComponent::ZombieHealthComponent( float toughness, GameLib::Math::Ra
 	mDismemberment( nullptr ),
 	mState( nullptr ),
 	mLocomotion( nullptr ),
-	mAnimations( nullptr ) {
+	mAnimations( nullptr ),
+	mRootSpan( nullptr ) {
 }
 
 ZombieHealthComponent::~ZombieHealthComponent() {
@@ -47,7 +52,9 @@ void ZombieHealthComponent::start() {
 	mDismemberment = &requireComponent< ZombieDismemberComponent >()->dismemberment();
 	mState = requireComponent< ZombieStateComponent >();
 	mLocomotion = &requireComponent< ZombieChaseComponent >()->locomotion();
-	mAnimations = &requireComponent< ZombieRootMotionComponent >()->animations();
+	ZombieRootMotionComponent* rootMotion = requireComponent< ZombieRootMotionComponent >();
+	mAnimations = &rootMotion->animations();
+	mRootSpan = &rootMotion->span();
 }
 
 void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
@@ -86,8 +93,8 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	}
 	bool shakenOff = attack && attack->attack().takeShakeDamage( dealt ); // 倒れる 1 発では数えない
 	switch ( ZombieDamageReaction::chooseHit( facts, shakenOff ) ) {
-		case ZombieDamageReaction::Hit::Stagger: startStagger(); break;
-		case ZombieDamageReaction::Hit::ShakeOff: shakeOff(); break;
+		case ZombieDamageReaction::Hit::Stagger: startStagger( damage.direction ); break;
+		case ZombieDamageReaction::Hit::ShakeOff: shakeOff( damage.direction ); break;
 		case ZombieDamageReaction::Hit::None: break;
 	}
 }
@@ -124,6 +131,7 @@ void ZombieHealthComponent::stopActing() {
 		attack->cancel(); // 攻撃していたらやめる（つかんでいたら離す）
 	}
 	mStagger.cancel();
+	mKnockback.cancel();
 	// 移動の名簿から外す（死体の上を歩ける）。命中の名簿には消えるまで残す（死体も弾を止める）。
 	// Downed も外す（立ち姿の長方形が倒れた体と合わないため）。倒れ始めるのは撃たれたとき（名簿をたどっている最中ではない）。
 	mCollider->stopBlocking();
@@ -133,15 +141,16 @@ bool ZombieHealthComponent::canStagger( BodyPart part ) const {
 	return mAnimations->hasStagger() && mStagger.canStart( part );
 }
 
-void ZombieHealthComponent::startStagger() {
+void ZombieHealthComponent::startStagger( const GameLib::Math::Vector3& push ) {
 	mAnimations->playStagger( mPosition );
 	mStagger.start();
+	mKnockback.start( push );
 }
 
-void ZombieHealthComponent::shakeOff() {
+void ZombieHealthComponent::shakeOff( const GameLib::Math::Vector3& push ) {
 	// 離すときは、よろけて手を放す（よろけのアニメが無ければ、立つアニメへ戻すだけ）。よろけの間あけは待たない。
 	if ( mAnimations->hasStagger() ) {
-		startStagger();
+		startStagger( push );
 	} else {
 		mAnimations->returnToLocomotion( mPosition );
 	}
@@ -152,9 +161,25 @@ void ZombieHealthComponent::updateStagger() {
 		mStagger.tick();
 		return;
 	}
+	updateKnockback();
 	if ( mMesh->isAnimationFinished() ) {
 		// よろける前に歩いていたか立っていたかに戻す（次の update で追う先を考え直し、要れば切り替える）。
-		mAnimations->returnToLocomotion( mPosition ); // 腰は下がった後に元の所へ戻っている
+		// gethit の腰は下がった後に元の所へ戻っている（押し下げた分は戻らない）。
+		mAnimations->returnToLocomotion( mPosition );
 		mStagger.finish();
+		mKnockback.cancel(); // 秒を長くして gethit より後まで残っても、歩き出してからは押さない
 	}
+}
+
+void ZombieHealthComponent::updateKnockback() {
+	GameLib::Math::Vector3 push = mKnockback.step();
+	float distance = push.length();
+	if ( distance <= 0.f ) {
+		return;
+	}
+	// 移動の箱は根の動きのアンカーにあるので、そこから当たりながら押し、アンカーごと動かす（次の apply から、押した所を元に根の動きを足す）。
+	// 絵の根も同じだけ動かす（このティックの apply は済んでいるので、ここで置き直す）。
+	GameLib::Math::Vector3 moved = mLocomotion->walkStep( distance, AngleMath::headingOf( push ) );
+	mRootSpan->moveFooting( moved, mPosition );
+	mMesh->setPosition( mRootSpan->meshRoot( *mPosition ) );
 }

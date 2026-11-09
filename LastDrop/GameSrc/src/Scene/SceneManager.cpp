@@ -2,9 +2,7 @@
 #include "GameSrc/Scene/IScene.h"
 #include "GameSrc/Scene/GameResources.h"
 #include "GameSrc/Scene/Game/GameScene.h"
-#include "GameSrc/Scene/Base/BaseScene.h"
-#include "GameSrc/Scene/Base/DayResultScene.h"
-#include "GameSrc/Scene/Base/RunEndScene.h"
+#include "GameSrc/Scene/Result/RaidEndScene.h"
 #include "GameSrc/Scene/Menu/MenuScene.h"
 #include "GameSrc/Scene/Menu/MenuCatalog.h"
 #include "GameSrc/Core/Pad.h"
@@ -36,14 +34,10 @@ std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 	switch ( id ) {
 	case SCENE_TITLE:
 		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::title() );
-	case SCENE_BASE:
-		return std::make_unique< BaseScene >( mResources.get() );
 	case SCENE_GAME:
 		return std::make_unique< GameScene >( mResources.get() );
-	case SCENE_DAY_RESULT:
-		return std::make_unique< DayResultScene >( mResources.get() );
-	case SCENE_RUN_END:
-		return std::make_unique< RunEndScene >( mResources.get() );
+	case SCENE_RAID_END:
+		return std::make_unique< RaidEndScene >( mResources.get() );
 	default:
 		ASSERT( false && "SceneManager::createScene : unknown SceneId." );
 		return nullptr;
@@ -52,12 +46,10 @@ std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 
 const char* SceneManager::loadName( SceneId id ) {
 	switch ( id ) {
-	case SCENE_TITLE:     return "Title";
-	case SCENE_BASE:       return "Base";
-	case SCENE_GAME:       return "Game";
-	case SCENE_DAY_RESULT: return "DayResult";
-	case SCENE_RUN_END:    return "RunEnd";
-	default:              return "Unknown";
+	case SCENE_TITLE:    return "Title";
+	case SCENE_GAME:     return "Game";
+	case SCENE_RAID_END: return "RaidEnd";
+	default:             return "Unknown";
 	}
 }
 

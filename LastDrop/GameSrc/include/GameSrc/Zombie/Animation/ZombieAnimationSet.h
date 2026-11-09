@@ -26,7 +26,7 @@ struct ZombieAnimationNames{
 	// 倒れたまま動かない（仰向けに倒れるアニメでは引きずれないため）。
 	const char* downed;
 	const char* stagger; // よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
-	// つかんで噛む攻撃のアニメ（atack3）。nullptr なら攻撃しない（追いついても立って待つだけ）
+	// 立っている体の攻撃のアニメ（腕振りは atack1・つかみは atack3。ZombieAttackStyle）。nullptr なら攻撃しない（追いついても立って待つだけ）
 	const char* attack;
 };
 

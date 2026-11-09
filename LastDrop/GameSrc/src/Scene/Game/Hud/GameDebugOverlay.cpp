@@ -13,7 +13,6 @@
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
-#include "GameSrc/Zombie/Component/ZombieStateComponent.h"
 #include <string>
 #include <vector>
 #endif
@@ -49,7 +48,6 @@ namespace{
 	const unsigned kPlayerHealthColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
 	// 漁れる場所の中身（F3。R3_Plan.txt Q13）。文字を出す高さ（足元から m）。
 	const float kLootLabelHeight = 1.6f;   // 車・ゴミ箱・木箱（車の屋根より少し上）
-	const float kCorpseLabelHeight = 0.8f; // 死体
 	const char* kLootEmptyText = "（空）";
 	const char* kLootSeparator = "・";
 	const char* kLootSearchedMark = "[済] "; // 開けた所
@@ -217,7 +215,7 @@ void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPerso
 			return;
 		}
 		Vector3 position = transform->position();
-		position.y += loot.getComponent< ZombieStateComponent >() ? kCorpseLabelHeight : kLootLabelHeight;
+		position.y += kLootLabelHeight;
 		Vector2 screen;
 		if ( !ScreenProjection::worldToScreen( projectionView, position, &screen ) ) {
 			return; // カメラの後ろ

@@ -52,8 +52,7 @@ private:
 
 	const TownMap* mMap;                          // 借りているだけ
 	const PropFactory* mProps;                    // 借りているだけ
-	StaticMeshLods mBuildingShapes;          // どれも MeshCache から借りる（建物は 1 段だけ）
-	StaticMeshLods mPerimeterBuildingShapes; // 町を囲む、足元の板の無い建物
+	StaticMeshLods mBuildingShapes; // MeshCache から借りる（建物は 1 段だけ・足元の板の無い形。ブロックの中も町を囲むのも同じ）
 };
 
 #endif

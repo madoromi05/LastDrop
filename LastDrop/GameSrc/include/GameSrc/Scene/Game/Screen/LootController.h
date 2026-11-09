@@ -18,7 +18,7 @@ class EscapeCarComponent;
 class LootContainerComponent;
 struct PlayerCommand;
 
-// 漁れる場所（車・ゴミ箱・木箱・死体）と脱出の車の給油を受け持つ。
+// 漁れる場所（ゴミ箱・木箱）と脱出の車の給油を受け持つ。
 // E で選んだら開け始め（探る音・動く/撃つ/攻撃されたら取りやめ）、開け終わったら中を見る画面（世界は止まる）。
 // 給油口は待たずに開き、要る数を入れて閉じたら給油→エンジン始動（脱出の円を開く）。R3_Plan.txt・FuelEscapeLoading_Plan.txt。
 // 開閉の共通遷移は ModalController、弾倉同期は MagazineSync、見た目は LootScreen。HUD の棒と見出しは GameScene が本クラスへ問い合わせて描く。
@@ -70,7 +70,7 @@ private:
 	RaidSession* mSession;     // 借りているだけ（給油で脱出の円を開く）
 	LootScreen mScreen;
 	LootSearch mSearch;
-	GameObjectHandle mTarget; // 中を見ている場所の物（車・ゴミ箱・木箱・死体）
+	GameObjectHandle mTarget; // 中を見ている場所の物（ゴミ箱・木箱）
 	AudioEngine::LoopHandle mSearchSound; // 開けている間の音（開けていなければ kInvalidLoop）
 	AudioEngine::LoopHandle mEngineSound; // 脱出の車のエンジンの音（掛かっていなければ kInvalidLoop）
 };

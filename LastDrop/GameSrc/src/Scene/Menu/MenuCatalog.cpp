@@ -21,7 +21,7 @@ MenuDefinition MenuCatalog::title() {
 	MenuDefinition menu;
 	menu.heading = kGameTitle;
 	menu.headingColor = kTitleColor;
-	menu.buttons.push_back( { "Start", changeTo( SceneManager::SCENE_BASE ) } ); // 5 日間の続きの拠点へ（R2_Plan.txt Q16）
+	menu.buttons.push_back( { "Start", changeTo( SceneManager::SCENE_GAME ) } ); // すぐ町へ（1 回勝負。SimpleRun_Plan.txt）
 	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
 	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
 	return menu;
@@ -33,9 +33,8 @@ MenuDefinition MenuCatalog::pause( std::function< void() > onResume ) {
 	menu.headingColor = kPauseColor;
 	menu.buttons.push_back( { "Resume", onResume } );
 	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
-	// 途中でやめたら、その日をやり直すだけ（ユーザーの決定 2026-11-05。R2_Plan.txt Q3）。拠点のカバンは Deploy を押した時のままなので、
-	// 本編を作り直せばその時の持ち物から。Title・Quit も同じ（町の中では保存しないので、次の Start はその日の拠点から）。
-	menu.buttons.push_back( { "Retry day", changeTo( SceneManager::SCENE_GAME ) } );
+	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す。SimpleRun_Plan.txt C1）。残る物は無いので、失う物も無い。
+	menu.buttons.push_back( { "Retry", changeTo( SceneManager::SCENE_GAME ) } );
 	menu.buttons.push_back( { "Title", changeTo( SceneManager::SCENE_TITLE ) } );
 	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
 	return menu;

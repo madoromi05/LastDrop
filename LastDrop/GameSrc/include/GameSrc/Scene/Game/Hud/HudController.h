@@ -15,7 +15,7 @@ class IInteractable;
 struct DayConditionEffect;
 namespace GameLib{ namespace Math{ class Vector3; } }
 
-// 遊んでいる間の画面の読み取り表示（HUD）をまとめる。1 日の時間・脱出点の棒（RaidHud）、右下の弾数（AmmoHud）、
+// 遊んでいる間の画面の読み取り表示（HUD）をまとめる。始めの知らせ・脱出と漁る棒（RaidHud）、右下の弾数（AmmoHud）、
 // 使える物の上のマーク（InteractMarkers）。止めている間（一時停止・カバン・漁り）は出さない＝GameScene がこのクラスの draw を呼ばない。
 // 攻撃された赤み・暗転（PlayerDamageView）や観察用の表示（GameDebugOverlay）は別系統。
 class HudController{
@@ -28,9 +28,9 @@ public:
 	void updateMarkers( const GameLib::Math::Vector3& eye, const IInteractable* target );
 	// マークを消す（自キャラがいない・死んだとき）。
 	void clearMarkers();
-	// 遊んでいる間の HUD を積む（マーク → 弾数 → 1 日の棒の順。1 回の描画で UiRenderer::draw がまとめて描く）。
+	// 遊んでいる間の HUD を積む（マーク → 弾数 → 始めの知らせと棒の順。1 回の描画で UiRenderer::draw がまとめて描く）。
 	// searchProgress: 漁り/給油の棒（出さないなら負。RaidHud 既定）。waitingKind: その文字（漁る/給油）。
-	void draw( const FirstPersonCamera& camera, const RaidSession& session, int day, const DayConditionEffect& dayCondition,
+	void draw( const FirstPersonCamera& camera, const RaidSession& session, const DayConditionEffect& dayCondition,
 		float searchProgress, RaidHud::ProgressKind waitingKind );
 
 private:

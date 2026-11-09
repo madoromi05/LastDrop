@@ -1,13 +1,11 @@
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
 #include "GameSrc/Scene/Game/World/EffectManager.h"
 #include "GameSrc/Component/StaticModelComponent.h"
-#include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Component/BoxColliderComponent.h"
 #include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/Interaction/PickupComponent.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
-#include "GameSrc/Zombie/Component/ZombieStateComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -17,8 +15,6 @@ using namespace GameLib::Math;
 namespace{
 	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）。
 	const float kMarkAboveTop = 0.15f;
-	// 死体のマークの高さ（足元から m。倒れた体の胸の少し上。死体は見た目の箱を持たないので決め打ち）。
-	const float kCorpseMarkHeight = 0.5f;
 
 	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱。R3_Plan.txt Q1）と、脱出の車。無ければ nullptr。
 	IInteractable* interactableOf( GameObject* object ) {
@@ -83,25 +79,7 @@ void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::ve
 		}
 		out->push_back( NearbyInteractable{ interactable, mark } );
 	} );
-	// 死体（漁れる場所の部品を付けた、倒れたゾンビ）。見た目の部品は骨の付いた形なので、足元から決めた高さに出す。
-	mObjects->forEach< LootContainerComponent >( [ this, &eye, radius, out ]( LootContainerComponent& loot ) {
-		const ZombieStateComponent* zombie = loot.getComponent< ZombieStateComponent >();
-		if ( !zombie ) {
-			return; // 置物（上で入れた）
-		}
-		Vector3 mark = zombie->position();
-		mark.y += kCorpseMarkHeight;
-		Vector3 toMark;
-		toMark.setSub( mark, eye );
-		if ( toMark.length() > radius ) {
-			return;
-		}
-		HitWorld::Hit hit;
-		if ( mHitWorld->raycastBlockers( eye, toMark, &hit ) ) {
-			return;
-		}
-		out->push_back( NearbyInteractable{ &loot, mark } );
-	} );
+	// ゾンビの死体は 2026-11-09 から漁れない（ユーザー指定）ので、マークも出さない。
 }
 
 void InteractionSystem::rerollLoot( int seed ) {
@@ -139,14 +117,8 @@ EscapeCarComponent* InteractionSystem::findEscapeCar( const IInteractable* inter
 
 IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit ) const {
 	if ( hit.target ) {
-		// 死体（止めを刺した後）なら、その死体の漁れる場所（R3_Plan.txt Q10）。
-		// 生きているゾンビ・脚を失って這っているゾンビ（まだ止めを刺していない）は使えない（部品がまだ付いていない）。
-		const HitboxComponent* hitbox = mObjects->find< HitboxComponent >( hit.target );
-		const ZombieStateComponent* zombie = hitbox ? hitbox->getComponent< ZombieStateComponent >() : nullptr;
-		if ( !zombie || zombie->isAlive() ) {
-			return nullptr;
-		}
-		return zombie->getComponent< LootContainerComponent >();
+		// キャラ（ゾンビ・その死体）は使えない（2026-11-09 から死体は漁れない。ユーザー指定）。視線はキャラで止まる。
+		return nullptr;
 	}
 	// 落ちている物・漁れる置物（弾を止める見た目の部品から、その物の使える部品をたどる）。
 	if ( StaticModelComponent* model = mObjects->find< StaticModelComponent >( hit.blocker ) ) {

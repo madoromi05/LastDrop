@@ -15,7 +15,7 @@ namespace{
 	const int kColumnNumber = 4; // 南北に走る道の本数（両端は町の外周）
 	const int kRowNumber = 4;    // 東西に走る道の本数（同上）
 	// ブロック（歩道の帯に囲まれた内側）の1辺が部品何枚ぶんか。交差点と交差点の間に並べる直線の枚数でもある。
-	// 建物の足元の板（11.16m 四方）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒。
+	// 建物の元の足元の板（11.16m 四方。今は消した形を置く）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒。
 	const int kBlockTileNumber = 4;
 	const float kBlockSize = kBlockTileNumber * kTileLength;
 	const float kRoadPitch = kStreetWidth + kBlockSize; // 隣の道までの間隔
@@ -23,8 +23,6 @@ namespace{
 	// ── 高さ・大きさ ──
 	const float kRoadHeight = 0.f;
 	const float kActualSize = 1.f; // 部品を実寸のまま置く拡大率
-	// 建物の足元の板を、床の部品より少し浮かせる（同じ高さに重ねると面がちらつく）。
-	const float kBuildingLift = 0.03f;
 	// 町の外の土。1m 四方の板を広げて、道路の下に少し沈めて敷く（同じ高さだと道路とちらつく）。
 	const float kEarthSize = 400.f;
 	const float kEarthDrop = 0.05f;
@@ -289,12 +287,13 @@ namespace{
 			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
 				float centerX = roadX( column + 0.5f );
 				float centerZ = roadZ( row + 0.5f );
-				// 床は部品1枚をブロックの大きさへ広げる（ほとんどが建物の足元の板に隠れるので、枚数を並べるより描く数を減らす）。
+				// 床は部品1枚をブロックの大きさへ広げる（枚数を並べるより描く数を減らす）。建物は足元の板の無い形なので、
+				// 建物の間・引っ込んだ入口の奥にはこの床が見える。
 				addTile( tiles, TOWN_PIECE_PAVEMENT, centerX, kSidewalkHeight, centerZ, kAsBuilt, static_cast< float >( kBlockTileNumber ) );
 				for ( const BlockLot& lot : kBlockLots ) {
 					buildings->push_back( {
 						centerX + lot.sideX * kLotOffset,
-						kSidewalkHeight + kBuildingLift,
+						kSidewalkHeight, // 壁の下の端を床（歩道の高さ）に合わせる。板が無いので浮かせなくてよい
 						centerZ + lot.sideZ * kLotOffset,
 						lot.yawDegree } );
 				}

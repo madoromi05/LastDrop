@@ -37,7 +37,7 @@ GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
 	EditorWindow::setInventory( nullptr ); // カバンも同じ
 	EditorWindow::setRaid( nullptr );
-	EditorWindow::setRun( nullptr );
+	EditorWindow::setRaidRecord( nullptr );
 	EditorWindow::setInteraction( nullptr );
 }
 
@@ -45,7 +45,7 @@ void GameEditorBridge::markReady() {
 	mFireProbe.markReady();
 }
 
-void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RunState* run ) {
+void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record ) {
 	// F5 で自キャラの無敵を切り替える（押した瞬間。Debug と Profile ビルドだけで効く）。
 	GameObject* player = world->player();
 	if ( InputDebugInvincible() && player ) {
@@ -58,8 +58,8 @@ void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSess
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setObjects( &world->objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
 	EditorWindow::setInventory( inventory );       // F6 の Inventory の欄（物を足す・行を増やす）
-	EditorWindow::setRaid( session );              // F6 の Raid の欄（残り時間・すぐ脱出）
-	EditorWindow::setRun( run );                   // 同じ欄の、日・保存を消す
+	EditorWindow::setRaid( session );              // F6 の Raid の欄（経った時間・すぐ脱出）
+	EditorWindow::setRaidRecord( record );         // 同じ欄の、次の出撃の条件
 	EditorWindow::setInteraction( &world->interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
 }
 

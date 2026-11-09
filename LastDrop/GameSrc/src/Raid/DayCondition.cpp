@@ -8,13 +8,13 @@ namespace{
 	const float kLightsOut = 0.f;      // 停電：街灯を消す
 	const float kThickFog = 0.3f;      // 霧：霧が半分になる距離 40m → 12m
 	const float kMuffledSteps = 0.5f;  // 雨：足音の届く距離 歩き 5 → 2.5m・走り 18 → 9m
-	const int kNormalZombies = 30;     // ふつうの日（2026-11-06 までの ZombieSpawner・GameWorld の値と同じ）
+	const int kNormalZombies = 30;     // ふつうの日
 	const int kHordeZombies = 45;      // 群れの日（ふつうの 1.5 倍）
 
 	// DayCondition の順に並べる（static_assert で数を確かめる）。
 	const DayConditionEffect kEffects[] = {
 		// 名前        見出し         一言                       街灯        霧          足音           ゾンビ
-		{ "normal",   "ふつうの夜", "いつもの町",               kKeep,      kKeep,      kKeep,         kNormalZombies },
+		{ "normal",   "夜", "いつもの町",               kKeep,      kKeep,      kKeep,         kNormalZombies },
 		{ "blackout", "停電の日",   "街灯が全部消えている",     kLightsOut, kKeep,      kKeep,         kNormalZombies },
 		{ "fog",      "霧の日",     "遠くが見えない",           kKeep,      kThickFog,  kKeep,         kNormalZombies },
 		{ "rain",     "雨の日",     "足音が聞こえにくい",       kKeep,      kKeep,      kMuffledSteps, kNormalZombies },

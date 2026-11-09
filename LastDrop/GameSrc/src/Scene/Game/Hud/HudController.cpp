@@ -39,11 +39,11 @@ void HudController::addAmmo() {
 	mAmmoHud.add( ammo, mAmmoHudVisibility.opacity() );
 }
 
-void HudController::draw( const FirstPersonCamera& camera, const RaidSession& session, int day, const DayConditionEffect& dayCondition,
+void HudController::draw( const FirstPersonCamera& camera, const RaidSession& session, const DayConditionEffect& dayCondition,
 	float searchProgress, RaidHud::ProgressKind waitingKind ) {
 	// 積むだけ（1 回の描画で UiRenderer::draw がまとめて描く）。
 	mInteractMarkers.add( camera, mUi );
 	addAmmo(); // 右下の弾数
 	// 真ん中の照準「+」は出さない（ユーザー指定 2026-10-26）。
-	mHud.draw( session, day, dayCondition, searchProgress, waitingKind );
+	mHud.draw( session, dayCondition, searchProgress, waitingKind );
 }

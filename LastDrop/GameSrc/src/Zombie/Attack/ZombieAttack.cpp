@@ -2,8 +2,9 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// ── 立っている体：攻撃のアニメ（atack3）の時刻（フレーム。変換で 0 起点になっている。Blender の 2 フレーム目が 0）──
-	const float kStartTime = 0.f; // 攻撃のアニメは頭から再生する
+	// 攻撃のアニメ（atack1・atack3）は頭から再生する（変換で 0 起点になっている。Blender の 2 フレーム目が 0）。
+	const float kStartTime = 0.f;
+	// ── つかみ：攻撃のアニメ（atack3）の時刻（フレーム）──
 	// 両手を伸ばし切る時刻。ここでつかめるかを決める（Blender で手が一番前へ出た 47 フレーム目）。
 	const float kGrabTime = 45.f;
 	// 噛む時刻。つかんで止まっている区間（Blender の 56〜92）の終わり近く。この後は元の姿勢へ戻っていく。
@@ -13,8 +14,10 @@ namespace{
 	const float kHoldPlaybackRate = ( kBiteTime - kGrabTime ) / ( kHoldSeconds * GameTime::kTicksPerSecond );
 	const float kNormalPlaybackRate = 1.f;
 
-	// ── 体を引きずる体：アニメの代わりの時計の時刻（フレーム）。2026-11-01〜11-05 の引っかき（atack1）と同じ時間割のまま ──
-	// 腕が当たる時刻（始めてから約 0.47 秒。この間に離れれば避けられる）と、腕を戻し終える時刻（約 1 秒）。
+	// ── 腕振り：atack1 の時刻（フレーム。Blender で右手の位置を測った。8 章）──
+	// 立っている体は atack1 の見えている時刻、体を引きずる体はアニメの代わりの時計の時刻で、同じ時間割を使う。
+	// 腕が当たる時刻（Blender の 30 フレーム目に足元から前へ 0.86m まで振り下ろす。始めてから約 0.47 秒。この間に離れれば避けられる）と、
+	// 腕を戻し終える時刻（約 1 秒。体を引きずる体の時計だけが使う。立っている体はアニメの終わりで戻し終える）。
 	const float kSwingHitTime = 28.f;
 	const float kSwingPeriod = 60.f;
 	// 時計の 1 ティックに進む時刻（フレーム）。アニメと同じく 1 ティックに 1 フレーム。

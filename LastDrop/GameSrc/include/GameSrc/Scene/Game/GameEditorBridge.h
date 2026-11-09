@@ -6,7 +6,7 @@
 class GameWorld;
 class Inventory;
 class RaidSession;
-class RunState;
+class RaidRecord;
 class FirstPersonCamera;
 class FirstPersonControl;
 class ModalController;
@@ -26,8 +26,8 @@ public:
 	// 出撃のロードが終わった（FireProbe が、そこから記録を始める）。
 	void markReady();
 	// 描画ごとに、F5（自キャラの無敵の切り替え）を読み、F6 のエディタへ今の物を渡す（エディタの欄が読む・書く）。
-	// 世界・カバン・1 日・5 日間はどれも借りるだけ（このシーンの間だけ指す）。
-	void publish( GameWorld* world, Inventory* inventory, RaidSession* session, RunState* run );
+	// 世界・カバン・出撃・出撃の間で受け渡す物はどれも借りるだけ（このシーンの間だけ指す）。
+	void publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record );
 	// F9 で、自キャラの前にゾンビを出す（世界を変えるので、読むだけの GameDebugOverlay ではなくここ）。ティックの間に呼ぶ。
 	// camera: 自キャラの視点（向いている方へ出す）。
 	void spawnZombiesOnKey( GameWorld* world, const FirstPersonCamera& camera );

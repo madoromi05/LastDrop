@@ -36,11 +36,6 @@ namespace{
 	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）。
 	const GroundMaterial kMetalMaterial = GROUND_METAL;
 	const GroundMaterial kWoodMaterial = GROUND_WOOD;
-
-	// 箱に必ず入れる物（町のガソリン。入れないなら ITEM_NONE）。
-	ItemId guaranteedItem( bool withFuel ) {
-		return withFuel ? ITEM_FUEL : ITEM_NONE;
-	}
 }
 
 PropFactory::PropFactory( MeshCache* meshes ) :
@@ -73,7 +68,7 @@ const Vector3& position, float yawDegree, DrawCulling::Target cullTarget, BoxCol
 }
 
 GameObject* PropFactory::spawnLootContainer( GameObjectWorld* world, LootTableId table, const Vector3& position, float yawDegree,
-Random* random, bool withFuel ) const {
+Random* random, const std::vector< ItemStack >& guaranteed ) const {
 	ASSERT( ( table == LootTableId::Dumpster || table == LootTableId::Crate ) && "PropFactory::spawnLootContainer : not a box." );
 	bool isCrate = ( table == LootTableId::Crate );
 	const StaticMeshLods& shapes = isCrate ? mCrateShapes : mDumpsterShapes;
@@ -82,7 +77,7 @@ Random* random, bool withFuel ) const {
 	}
 	GameObject* obj = createProp( world, GameObjectTag::LootContainer, isCrate ? kCrateName : kDumpsterName, shapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed, isCrate ? kWoodMaterial : kMetalMaterial );
-	obj->addComponent< LootContainerComponent >( table, random, guaranteedItem( withFuel ) );
+	obj->addComponent< LootContainerComponent >( table, random, guaranteed );
 	world->spawn( obj );
 	return obj;
 }

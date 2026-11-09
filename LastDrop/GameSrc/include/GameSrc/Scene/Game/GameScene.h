@@ -10,6 +10,7 @@
 #include "GameSrc/Scene/Game/PlayerFeedback.h"
 #include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Raid/RaidSession.h"
+#include "GameSrc/Raid/DayCondition.h"
 #include "GameSrc/Scene/Game/Screen/ModalController.h"
 #include "GameSrc/Scene/Game/Screen/PauseMenu.h"
 #include "GameSrc/Scene/Game/Screen/BagController.h"
@@ -28,15 +29,15 @@ enum class PlayerCondition;
 class GameResources;
 class EscapeCarComponent;
 
-// ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
+// ゲーム本編（1 回勝負の出撃。SummaryPlan/個別仕様/出撃と帰還/SimpleRun_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町でガソリンを探して脱出の車で出る。
 // WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う。左クリックを押している間、銃を撃つ。R で弾を込める。
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
-// 持ち物は拠点のカバン（RunState）の写しで始まる。開いている脱出点の円に決まった秒だけ立つと脱出し、1 日の結果の画面へ進む。
-// ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、5 日間の終わり（ゲームオーバー）の画面へ。時間切れ（行方不明）も同じ。
+// 始めのカバンと今回の条件は RaidStart が決める（毎回同じカバン・毎回ランダムな条件）。給油した車のそばに決まった秒だけ立つと脱出し、結果の画面（クリア）へ。
+// ゾンビに攻撃されて体力が 0 になると、視点が下がって暗くなり、結果の画面（死んだ）へ。
 // ESC か、窓が裏に回ったら一時停止する（世界と音を止め、PauseMenu を重ねる。もう一度 ESC か Resume で戻る）。死んだ後は止めない
-// （途中でやめると、その日をやり直せるので、死んでからやめて逃げられないように。R2_Plan.txt Q3）。
+// （崩れて暗くなるのを見せ切ってから結果の画面へ進むため）。
 // Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
-// 漁れる場所（車・ゴミ箱・木箱・死体）を見て E を押すと開け始め（LootSearch。動く・撃つ・構える・攻撃される・E で取りやめ）、
+// 漁れる場所（ゴミ箱・木箱）を見て E を押すと開け始め（LootSearch。動く・撃つ・構える・攻撃される・E で取りやめ）、
 // 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
@@ -46,7 +47,8 @@ class EscapeCarComponent;
 //   見ている物を使う                    … Interactor（持ち物は Inventory）
 //   出来事を自キャラへ返す（当たった音・揺れ・攻撃された反応・足音・反動とぶれ）… PlayerFeedback
 //     （攻撃された・死んだ後の見せ方の量は PlayerDamageView。画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
-//   1 日の時間・脱出点・終わり方        … RaidSession（終わった後に何を残すかは RunRules）
+//   出撃の始めの形（カバン・条件）      … RaidStart（F6 で固定した条件は RaidRecord）
+//   経った時間・脱出の車・終わり方      … RaidSession（結果は RaidRecord に置いて、結果の画面が読む）
 //   HUD                                 … RaidHud
 //   一時停止のメニュー                  … PauseMenu
 //   カバンの画面                        … InventoryScreen
@@ -79,11 +81,10 @@ private:
 	ItemId equippedWeapon() const;
 	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
-	// 1 日を 1 ティック進め（RaidSession）、終わったら RunRules に頼んで次のシーンへ移る（1ティックに1回、PlayerFeedback::reactToCombat の後）。
-	// 脱出：銃の弾倉の数をカバンへ書き戻してから finishDay → 1 日の結果。時間切れ：failDay → 5 日間の終わり。
-	// 死んだ：暗くなり終わるのを待ってから failDay → 5 日間の終わり。
+	// 出撃を 1 ティック進め（RaidSession）、終わったら結果の画面へ移る（1ティックに1回、PlayerFeedback::reactToCombat の後）。
+	// 脱出：すぐ。死んだ：暗くなり終わるのを待ってから。
 	void updateRaid();
-	// 終わった日を RunRules へ渡して、次のシーンへの切り替えを予約する（1 回だけ）。
+	// 終わった出撃の結果を RaidRecord に置いて、結果の画面への切り替えを予約する（1 回だけ）。
 	void finishRaid();
 	// ロードの後の、描画ごとの操作の読み取り（一時停止・カバン・中を見る画面・視点と移動）。beginFrame から。
 	void handleFrameInput();
@@ -94,6 +95,8 @@ private:
 	bool isFreeCameraActive() const; // 観察用カメラを使っているか（Release では常に false）
 
 	GameResources* mResources;   // 借りているだけ
+	// 今回の条件（停電・霧など）。世界を作るときに読むので、mWorld より先に宣言する（＝先に決まる）。
+	DayCondition mCondition;
 	// 世界。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）。
 	GameWorld mWorld;
 	// 世界を画面へ写す（ディファードのパイプライン。View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）。
@@ -103,9 +106,9 @@ private:
 	FirstPersonControl mControl;
 	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）。
 	PlayerFeedback mFeedback;
-	// 遊んでいる間の画面表示（1 日の棒・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する。
+	// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する。
 	HudController mHud;
-	RaidSession mSession; // 町の 1 日（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
+	RaidSession mSession; // 1 回の出撃（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）。
 	LoadingPhase mLoad;
 	PauseMenu mPauseMenu;
@@ -120,7 +123,7 @@ private:
 	FreeCamera mFreeCamera;
 	GameEditorBridge mEditor; // F6 のエディタ・F5・F9・FireProbe
 #endif
-	bool mRaidFinished; // 1 日を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
+	bool mRaidFinished; // 出撃を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 };
 
 #endif

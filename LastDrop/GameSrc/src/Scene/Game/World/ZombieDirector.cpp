@@ -36,7 +36,13 @@ namespace{
 	const char* kZombieDownedAnimation = "death1";
 	const char* kZombieStaggerAnimation = "gethit";			// 撃たれてよろけるときのアニメ
 	const char* kZombieIdleAnimation = "idle1";				// 気付く前・追いついた・見失って探し終えたときに立つアニメ
-	const char* kZombieAttackAnimation = "atack3";			// 追いついたら、つかんで噛む攻撃のアニメ
+	// 立っている体の攻撃の種類（ZombieAttack_Plan.txt の 11 章）。ここを替えれば、流す攻撃のアニメも一緒に替わる。
+	// 2026-11-09 ユーザー指定で腕振りに戻した（つかみは消さずに残してある。Grab にすれば 9・10 章のつかみ → 噛むに戻る）。
+	const ZombieAttackStyle kZombieAttackStyle = ZombieAttackStyle::Swing;
+	const char* kZombieSwingAnimation = "atack1"; // 右手を 1 回振り下ろす
+	const char* kZombieGrabAnimation = "atack3";  // 両手でつかんで噛む
+	const char* kZombieAttackAnimation =
+		( kZombieAttackStyle == ZombieAttackStyle::Swing ) ? kZombieSwingAnimation : kZombieGrabAnimation;
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
@@ -78,7 +84,7 @@ void ZombieDirector::setup( const TownMap& map ) {
 	rootMotionAnimations.push_back( kZombieStaggerAnimation );
 	rootMotionAnimations.push_back( kZombieAttackAnimation );
 	mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, kZombieRunAnimation, rootMotionAnimations );
-	mFactory = std::make_unique< ZombieFactory >( mZombieModel.get() );
+	mFactory = std::make_unique< ZombieFactory >( mZombieModel.get(), kZombieAttackStyle );
 	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
 	mRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
 	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）。

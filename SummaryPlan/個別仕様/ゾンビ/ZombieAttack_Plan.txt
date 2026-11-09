@@ -239,3 +239,27 @@
 
  置き場所：ZombieAttackComponent::alignToHeldTarget（approach から Hold の間だけ呼ぶ）・mAlignTicks（つかんだ update で決める）。
  ビルドは Debug 通過。画面での確認はまだ（顔が近すぎる・遠すぎるなら F6 の grabDistance で詰める）。
+
+================================================================================
+ 11. 2026-11-09 つかみをやめて、腕振り（atack1）へ戻した（切り替えられる形に）
+================================================================================
+ ユーザー依頼「やっぱりゾンビの攻撃はつかみではなく腕振りの攻撃にしたい」。
+ ユーザーの決定：つかみの処理は消さずに残し、切り替えられる形にする（11-01 → 11-05 → 11-09 と 3 回替えたため）。
+
+ 切り替え：ZombieDirector.cpp の kZombieAttackStyle（ZombieAttackStyle::Swing / Grab）の 1 か所。
+   流す攻撃のアニメ（Swing は atack1・Grab は atack3）も、この値から一緒に決まる。
+   ZombieFactory が全員の ZombieAttackComponent へ同じ種類を渡す（組み立てるときに決め、一生変わらない）。
+
+ 腕振り（今の既定。8 章の値のまま）
+   段階         Ready → Swing → Recover（体を引きずる体と同じ時間割。立っている体は atack1 の見えている時刻で進む）
+   当たる時刻   atack1 の 28 フレーム（始めてから約 0.47 秒）。その時刻に 1.6m 以内・向きの差 45° 以内なら当たる
+   ダメージ     20（満タンから 5 回で死ぬ）
+   寄る         Swing の間も、つかみの Reach と同じく 0.9m まで寄る（ZombieAttackReach::approachStep）
+   首の突き出し 腕振りではしない（ZombieFlinch::lunge は Grab で噛んだときだけ）
+   つかまない   Hold に入らないので、自キャラは動ける・視点も向かない・振りほどきも数えない（どれも Grab の時だけ起きる）
+   音・見せ方   CombatResolver の Kind::Hit のまま（hit_flesh を音程 0.8・狙いが跳ねる・赤み。画面の血の跡は取り下げ＝PlayerBloodScreen_Plan.txt 6 章）
+   そのまま     始める間合い 1.6m・向き 30°・待ち 2 秒・一度に攻撃するのは 1 体
+
+ つかみ（Grab）は 9・10 章のまま残っている（PlayerGrabComponent・振りほどき・位置合わせ・F6 の ZombieAttack 欄）。
+
+ ビルドは Debug・Release・Profile とも通過。画面での確認はまだ。

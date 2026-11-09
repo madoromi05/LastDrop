@@ -31,7 +31,6 @@ namespace{
 
 	const char* kBagLabel = "カバン";
 	const char* kEmptyName = "空";
-	const char* kNameFormat = "%s（%d 点）"; // 選んでいる物の名前と点（1 つあたりの点 × 数）
 	const char* kBrowseHint = "[Enter] 持つ   [F] 移す   [Esc] 閉じる";
 	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
 	const char* kEquippedMark = "E";
@@ -127,8 +126,7 @@ void LootScreen::drawFooter( const ItemGrid& bag, const ItemGrid& loot ) {
 	char text[ kTextSize ];
 	const ItemStack* stack = mPicker.focusedStack( bag, loot );
 	if ( stack ) {
-		const ItemSpec& spec = itemSpec( stack->item );
-		std::snprintf( text, sizeof( text ), kNameFormat, spec.name, spec.scoreValue * stack->amount );
+		std::snprintf( text, sizeof( text ), "%s", itemSpec( stack->item ).name ); // 点は 2026-11-09 に消した（SimpleRun_Plan.txt C8）
 	} else {
 		std::snprintf( text, sizeof( text ), "%s", kEmptyName );
 	}

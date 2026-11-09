@@ -15,12 +15,10 @@ class SceneManager{
 public:
 	// シーンの種類の一覧。ここを見れば全シーンが分かる。増やすときはここに1行足し、
 	enum SceneId{
-		SCENE_TITLE,      // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
-		SCENE_BASE,       // 拠点（倉庫とカバン・Deploy。BaseScene）。タイトルの Start と 1 日の結果の Continue の行き先。R2_Plan.txt Q6。
-		SCENE_GAME,       // ゲーム本編（町の 1 日）。拠点の Deploy と一時停止の Retry day の行き先。
-		SCENE_DAY_RESULT, // 1 日の結果（脱出した後。DayResultScene）。R2_Plan.txt Q12。
-		SCENE_RUN_END,    // 5 日間の終わり（クリア・ゲームオーバーとスコア。RunEndScene）。R2_Plan.txt Q5。
-		// 2026-11-05 に SCENE_CLEAR・SCENE_GAME_OVER（見出しとボタンだけの画面）を、SCENE_RUN_END にまとめた。
+		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）。
+		SCENE_GAME,     // ゲーム本編（1 回の出撃）。タイトルの Start・一時停止の Retry・死んだ画面の「もう一度」の行き先。
+		SCENE_RAID_END, // 出撃の結果（クリア・死んだ。RaidEndScene）。SimpleRun_Plan.txt Q8・Q9。
+		// 2026-11-09 に 5 日間をやめ、SCENE_BASE（拠点）・SCENE_DAY_RESULT（1 日の結果）・SCENE_RUN_END（5 日間の終わり）を消した。
 	};
 
 	static SceneManager& instance();

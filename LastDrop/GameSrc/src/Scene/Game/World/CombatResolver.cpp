@@ -1,6 +1,5 @@
 #include "GameSrc/Scene/Game/World/CombatResolver.h"
 #include "GameSrc/Hit/HitWorld.h"
-#include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Hit/DamageInfo.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
@@ -66,7 +65,6 @@ CombatResolver::CombatResolver( GameObjectWorld* objects, EffectManager* effects
 	mObjects( objects ),
 	mEffects( effects ),
 	mHitWorld( hitWorld ),
-	mRandom( Random::create( static_cast< int >( Framework::instance().time() ) ) ),
 	mZombiesKilled( 0 ) {
 	ASSERT( objects && effects && hitWorld && "CombatResolver : an argument is null." );
 }
@@ -125,8 +123,7 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 
 	bool killed = wasAlive && !state->isAlive();
 	if ( killed ) {
-		makeLootable( *state ); // 脚を失って倒れたまま生きている（Downed）間は漁れない。止めを刺したときから
-		++mZombiesKilled; // 倒した数（スコア。死体を漁れるようになるのと同じ時＝止めを刺したとき）
+		++mZombiesKilled; // 倒した数（結果の画面。止めを刺したとき。脚を失って倒れたまま生きている Downed の間は数えない）
 	}
 
 	// 切り口の決まりは、このゾンビの設計図から読む（設計図の種類が増えても、当たった体の形で切れる）。
@@ -162,12 +159,6 @@ void CombatResolver::stainAroundZombie( const BulletList::Impact& impact, Effect
 	if ( mHitWorld->raycastBlockers( hit.point, drop, &floor ) && floor.normal.y >= kMinDripFacingUp ) {
 		mEffects->spawnBloodDrip( floor.point, floor.normal, floor.blocker, size );
 	}
-}
-
-void CombatResolver::makeLootable( const ZombieStateComponent& zombie ) {
-	// 倒れたゾンビは 1 回しか倒れない（止めを刺した後は wasAlive が false）ので、付けるのも 1 回だけ。
-	// 中身はゾンビの表から決める（空のこともある。R3_Plan.txt Q10・7-2）。死体が消えれば、この部品も一緒に消える。
-	zombie.gameObject()->addComponent< LootContainerComponent >( LootTableId::Corpse, &mRandom );
 }
 
 void CombatResolver::resolveZombieAttacks( GameObject* player ) {

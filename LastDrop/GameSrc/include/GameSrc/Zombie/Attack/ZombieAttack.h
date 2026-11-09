@@ -2,17 +2,20 @@
 #define INCLUDED_ZOMBIE_ATTACK_H
 
 // ゾンビ1体の攻撃の段階を決める。自分では動かず、アニメも持たない
-// （ZombieChase と同じ立場。攻撃のアニメ atack3 を流し、向きを変え、寄るのは ZombieAttackComponent）。
-// 立っている体は「つかむ → 噛む → 離す」（start）。段階はアニメの時刻（フレーム）で進める。
+// （ZombieChase と同じ立場。攻撃のアニメを流し、向きを変え、寄るのは ZombieAttackComponent）。
+// 立っている体は、攻撃の種類（ZombieAttackStyle）で 2 通り。段階はアニメの時刻（フレーム）で進める。
+//   腕振り（startSwing ＋ update。atack1）：Swing → Recover。体を引きずる体と同じ時間割
+//   つかみ（start ＋ update。atack3）　　 ：Reach → Hold → Recover（下の通り）
 // アニメを正とするので、アニメの見た目と「つかんだ・噛んだ」がずれない。
 //   Ready   ：攻撃していない（終わってから少しの間は、次の攻撃を始めない）
 //   Reach   ：両手を伸ばしている。伸ばし切ったとき、つかめる所に相手が居ればつかむ（Hold）、居なければ空振り（Recover）
 //   Hold    ：つかんでいる（アニメをゆっくり流す。この間が相手の逃げる時間）。決まった時刻まで来たら噛んで Recover。
 //             この間に決まった量のダメージを受けると振りほどかれ、すぐ Ready
 //   Recover ：噛んだ後・空振りの後、アニメの終わりまで流して元の姿勢へ戻る
-// 体を引きずる体は、足元へ腕を伸ばして 1 回当てるだけ（startSwing。つかまない。アニメの代わりに自分の時計で進める）。
-//   Swing   ：腕を伸ばしている。決まった時刻に、届く所に相手が居れば当たる（居なければ空振り）。その後 Recover
-// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章と 9 章（2026-11-05 に引っかきから噛みつきへ戻した）。
+// 腕振りは 1 回当てるだけ（startSwing。つかまない）。立っている体は atack1 の時刻で、
+// 体を引きずる体はアニメの代わりに自分の時計で進める（updateWithoutAnimation）。
+//   Swing   ：腕を振っている。決まった時刻に、届く所に相手が居れば当たる（居なければ空振り）。その後 Recover
+// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章・8 章・9 章・11 章。
 class ZombieAttack{
 public:
 	enum class Phase{
@@ -29,7 +32,8 @@ public:
 	bool canStart() const;
 	// 立っている体が、つかみに行く（Reach）。呼ぶ側は、攻撃のアニメを頭から PLAY_ONCE で流し始め、毎ティック update を呼ぶ。
 	void start();
-	// 体を引きずる体が、腕を伸ばす（Swing）。呼ぶ側はアニメを流さず、毎ティック updateWithoutAnimation を呼ぶ。
+	// 腕を振る（Swing）。立っている体は、呼ぶ側が腕振りのアニメ（atack1）を頭から PLAY_ONCE で流し始め、毎ティック update を呼ぶ。
+	// 体を引きずる体は、呼ぶ側はアニメを流さず、毎ティック updateWithoutAnimation を呼ぶ。
 	void startSwing();
 	// 1ティック進める（立っている体）。攻撃していなくても毎ティック呼ぶ（待ち時間を数える）。
 	// animationTime: 攻撃のアニメの今見えている時刻（フレーム。SkinnedMeshInstance::animationTime）。攻撃していない間は使わない。

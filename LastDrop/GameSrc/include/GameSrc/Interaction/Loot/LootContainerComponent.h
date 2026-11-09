@@ -6,17 +6,18 @@
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameSrc/Interaction/Loot/LootTable.h"
 #include "GameLib/Math/Random.h"
+#include <vector>
 
-// 漁れる場所の部品（ゴミ箱・木箱・ゾンビの死体。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章）。
+// 漁れる場所の部品（ゴミ箱・木箱。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章。ゾンビの死体には 2026-11-09 から付けない）。
 // 中身のマス目（2 × 3）と、どの表の場所か・もう開けたか、を持つ。どの物に付けても同じ部品（違うのは表の種類だけ）。
-// 見た目と箱は同じ物の別の部品（車・ゴミ箱・木箱は StaticModelComponent。死体はゾンビの体）。
+// 見た目と箱は同じ物の別の部品（ゴミ箱・木箱は StaticModelComponent）。
 // 開けるまで待つのは LootSearch、中を見る画面は LootScreen（どちらも GameScene が持つ）。ここは中身と「開けたか」だけ。
 // 中身はその日のうちだけ（置いていった物も残る）。保存はしない。
 class LootContainerComponent : public Component, public IInteractable{
 public:
 	// table: どの表から中身を決めるか。random: 中身を決める乱数（作るときに 1 回だけ使う。覚えない。nullptr 不可）。
-	// guaranteed: 必ず入れる物（町のガソリン。ITEM_NONE なら無し。中身を振り直しても入れ直す。FuelEscapeLoading_Plan.txt Q15）。
-	LootContainerComponent( LootTableId table, GameLib::Math::Random* random, ItemId guaranteed = ITEM_NONE );
+	// guaranteed: 必ず入れる物（町のガソリン・ライフル。空なら無し。中身を振り直しても入れ直す。FuelEscapeLoading_Plan.txt Q15）。
+	LootContainerComponent( LootTableId table, GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed );
 
 	LootTableId table() const;
 	// もう開けたか（開けた所は、次からは待たずにすぐ開く。R3_Plan.txt Q6）。
@@ -40,7 +41,7 @@ public:
 
 private:
 	LootTableId mTable;
-	ItemId mGuaranteed;
+	std::vector< ItemStack > mGuaranteed;
 	ItemGrid mContents;
 	bool mSearched;
 };

@@ -19,9 +19,10 @@ public:
 	explicit ZombieFlinch( const ZombieFlinchLayout* layout );
 
 	// part に当たった弾で押す。direction: 弾の進む向き（長さ1。骨格の根の空間＝置き場所と向きを掛ける前）。
+	// 押す角度は、まとまりごとの角度に ZombieStaggerParams::flinchScale を掛けた物（2026-11-09 に大きくした。ZombieStagger_Plan.txt 9 章）。
 	void push( BodyPart part, const GameLib::Math::Vector3& direction );
 	// 噛むときに、首と背骨を rootDirection（骨格の根の空間。長さ1）へ突き出す（噛むアニメが無いので、顔を相手へ近づける代わり）。
-	// 首は 2 回・背骨は 1 回押す（首は 1 回 20°なので 40°、背骨は 12°）。のけぞりと同じく、すぐ曲がって 0.25 秒で戻る。
+	// 首は 2 回・背骨は 1 回押す（首は 1 回 20°なので 40°、背骨は 12°。のけぞりの倍率は掛けない）。のけぞりと同じく、すぐ曲がって 0.25 秒で戻る。
 	void lunge( const GameLib::Math::Vector3& rootDirection );
 	// 押した分を1ティック戻す。
 	void update();
@@ -32,6 +33,9 @@ public:
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
 private:
+	// part のまとまりを direction へ degree だけ足して押す（足した角度は上限で切る）。
+	void kick( BodyPart part, const GameLib::Math::Vector3& direction, float degree );
+
 	const ZombieFlinchLayout* mLayout; // 借りているだけ
 	// まとまりごとの押す量（骨格の根の空間。向き＝押す向き、長さ＝角度（度））。並びは ZombieFlinchLayout::groups と同じ。
 	std::vector< GameLib::Math::Vector3 > mPushes;

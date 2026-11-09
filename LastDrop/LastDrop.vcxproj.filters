@@ -145,6 +145,9 @@
     <Filter Include="GameSrc\Scene\Base">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameSrc\Scene\Result">
+      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A3}</UniqueIdentifier>
+    </Filter>
     <Filter Include="GameSrc\Map">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000008}</UniqueIdentifier>
     </Filter>
@@ -798,10 +801,10 @@
     <ClCompile Include="GameSrc\src\Raid\RaidSession.cpp">
       <Filter>GameSrc\Raid</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Raid\RunState.cpp">
+    <ClCompile Include="GameSrc\src\Raid\RaidRecord.cpp">
       <Filter>GameSrc\Raid</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Raid\RunRules.cpp">
+    <ClCompile Include="GameSrc\src\Raid\RaidStart.cpp">
       <Filter>GameSrc\Raid</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Raid\DayCondition.cpp">
@@ -855,17 +858,11 @@
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp">
       <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Base\BaseScene.cpp">
-      <Filter>GameSrc\Scene\Base</Filter>
-    </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp">
       <Filter>GameSrc\Scene\Base</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Base\DayResultScene.cpp">
-      <Filter>GameSrc\Scene\Base</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Base\RunEndScene.cpp">
-      <Filter>GameSrc\Scene\Base</Filter>
+    <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp">
+      <Filter>GameSrc\Scene\Result</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
       <Filter>GameSrc\Interaction</Filter>
@@ -1231,6 +1228,9 @@
       <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieStagger.cpp">
+      <Filter>GameSrc\Zombie\Damage</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieKnockback.cpp">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Animation\ZombieRootMotionSpan.cpp">
@@ -1859,16 +1859,13 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidSession.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\DayResult.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidResult.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\Score.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidRecord.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunState.h">
-      <Filter>GameSrc\Raid</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Raid\RunRules.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidStart.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h">
@@ -1922,17 +1919,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h">
       <Filter>GameSrc\Scene\Game\Hud</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\BaseScene.h">
-      <Filter>GameSrc\Scene\Base</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h">
       <Filter>GameSrc\Scene\Base</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\DayResultScene.h">
-      <Filter>GameSrc\Scene\Base</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\RunEndScene.h">
-      <Filter>GameSrc\Scene\Base</Filter>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h">
+      <Filter>GameSrc\Scene\Result</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
       <Filter>GameSrc\Interaction</Filter>
@@ -2360,6 +2351,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackParams.h">
       <Filter>GameSrc\Zombie\Attack</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Attack\ZombieAttackStyle.h">
+      <Filter>GameSrc\Zombie\Attack</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\AnimationThrottle.h">
       <Filter>GameSrc\Zombie\Animation</Filter>
     </ClInclude>
@@ -2400,6 +2394,12 @@
       <Filter>GameSrc\Zombie\Crawl</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieStagger.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieStaggerParams.h">
+      <Filter>GameSrc\Zombie\Damage</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieKnockback.h">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Animation\ZombieRootMotionSpan.h">

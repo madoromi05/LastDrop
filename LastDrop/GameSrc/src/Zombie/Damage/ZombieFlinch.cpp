@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/Damage/ZombieFlinch.h"
 #include "GameSrc/Zombie/Damage/ZombieFlinchLayout.h"
+#include "GameSrc/Zombie/Damage/ZombieStaggerParams.h"
 #include "GameSrc/Core/GameTime.h"
 
 #include "GameLib/GameLib.h"
@@ -11,7 +12,8 @@ using namespace GameLib::Math;
 
 namespace{
 	// 1 まとまりを曲げる角度の上限（度）。フルオートで当て続けても曲がりすぎないように。
-	const float kMaxDegree = 40.f;
+	// 2026-11-09 にのけぞりを 1.5 倍にしたので、上限も 40° から同じだけ上げた（ZombieStagger_Plan.txt 9 章）。
+	const float kMaxDegree = 60.f;
 	// 押した分が戻るまでの時間（秒）と、そのとき残っている割合。毎ティック同じ割合を掛けて、滑らかに減らす（行き過ぎない）。
 	const float kReturnSeconds = 0.25f;
 	const float kRemainAfterReturn = 0.05f;
@@ -29,20 +31,27 @@ ZombieFlinch::ZombieFlinch( const ZombieFlinchLayout* layout ) :
 }
 
 void ZombieFlinch::push( BodyPart part, const Vector3& direction ) {
-	int group = mLayout->groupOf( part );
-	Vector3& pushed = mPushes[ group ];
-	pushed.madd( direction, mLayout->groups()[ group ].kickDegree );
-	float degree = pushed.length();
-	if ( degree > kMaxDegree ) {
-		pushed *= kMaxDegree / degree;
-	}
+	float degree = mLayout->groups()[ mLayout->groupOf( part ) ].kickDegree;
+	kick( part, direction, degree * zombieStaggerParams().flinchScale );
 }
 
 void ZombieFlinch::lunge( const Vector3& rootDirection ) {
+	// 噛む突き出しは、撃たれたのけぞりとは別の動きなので倍率を掛けない（首 40°・背骨 12° のまま）。
+	const float headDegree = mLayout->groups()[ mLayout->groupOf( BodyPart::Head ) ].kickDegree;
+	const float torsoDegree = mLayout->groups()[ mLayout->groupOf( BodyPart::Torso ) ].kickDegree;
 	for ( int i = 0; i < kLungeHeadPushes; ++i ) {
-		push( BodyPart::Head, rootDirection );
+		kick( BodyPart::Head, rootDirection, headDegree );
 	}
-	push( BodyPart::Torso, rootDirection );
+	kick( BodyPart::Torso, rootDirection, torsoDegree );
+}
+
+void ZombieFlinch::kick( BodyPart part, const Vector3& direction, float degree ) {
+	Vector3& pushed = mPushes[ mLayout->groupOf( part ) ];
+	pushed.madd( direction, degree );
+	float length = pushed.length();
+	if ( length > kMaxDegree ) {
+		pushed *= kMaxDegree / length;
+	}
 }
 
 void ZombieFlinch::update() {

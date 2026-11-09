@@ -22,9 +22,7 @@
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
 #include "GameSrc/Raid/RaidSession.h"
-#include "GameSrc/Raid/RunState.h"
-#include "GameSrc/Raid/RunStateFile.h"
-#include "GameSrc/Raid/RunRules.h"
+#include "GameSrc/Raid/RaidRecord.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
 #include "GameLib/Graphics/Manager.h"
@@ -56,11 +54,9 @@ namespace{
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
-	RaidSession* gRaid = nullptr;    // GameScene から受け取った、町の 1 日（無ければ nullptr）
-	RunState* gRun = nullptr;        // GameScene・BaseScene から受け取った、5 日間の様子（無ければ nullptr）
+	RaidSession* gRaid = nullptr;    // GameScene から受け取った、1 回の出撃（無ければ nullptr）
+	RaidRecord* gRaidRecord = nullptr; // GameScene から受け取った、出撃の間で受け渡す物（無ければ nullptr）
 	InteractionSystem* gInteraction = nullptr; // GameScene から受け取った、漁れる場所を探す係（無ければ nullptr）
-	// Raid の欄の「残り 10 秒」（時間切れの流れをすぐ試すため）。
-	const float kShortRemainingSeconds = 10.f;
 
 	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く。2026-11-05 に段階R3 の 3 つも足した）。
 	// ガソリンは 2 マスの持ち帰る物なので、ここでは触らない。
@@ -164,70 +160,35 @@ namespace{
 		}
 	}
 
-	// 町の 1 日と 5 日間の様子を動かす欄（R2_Plan.txt 10 章の ⑥〜⑧ を、遊んで待たずに試すため）。
+	// 出撃を動かす欄（すぐ脱出・次の出撃の条件。SimpleRun_Plan.txt C9。遊んで待たずに試すため）。
 	void drawRaid() {
 		if ( gRaid ) {
-			ImGui::Text( "Time left: %.0f s", gRaid->clock().remainingSeconds() );
-			ImGui::SameLine();
-			if ( ImGui::SmallButton( "10 s left" ) ) {
-				gRaid->setRemainingSeconds( kShortRemainingSeconds );
-			}
+			ImGui::Text( "Time: %.0f s   Kills: %d", gRaid->clock().elapsedSeconds(), gRaid->kills() );
 			ImGui::SameLine();
 			if ( ImGui::SmallButton( "Extract now" ) ) {
 				gRaid->forceExtract();
 			}
-			ImGui::Text( "Kills today: %d", gRaid->kills() );
 		}
-		if ( !gRun ) {
+		if ( !gRaidRecord ) {
 			if ( !gRaid ) {
 				ImGui::TextDisabled( "No raid." );
 			}
 			return;
 		}
-		ImGui::Text( "Day %d / %d", gRun->day(), RunState::kDayCount );
-		ImGui::SameLine();
-		if ( ImGui::SmallButton( "Day -" ) && gRun->day() > 1 ) {
-			gRun->setDay( gRun->day() - 1 );
-		}
-		ImGui::SameLine();
-		if ( ImGui::SmallButton( "Day +" ) && gRun->day() < RunState::kDayCount ) {
-			gRun->setDay( gRun->day() + 1 );
-		}
-		// 今日の条件を次へ（確かめるため。世界を作るときに読むので、次の出撃から効く。DayCondition_Plan.txt）。
-		DayCondition today = gRun->condition( gRun->day() );
-		ImGui::Text( "Condition: %s", dayConditionEffect( today ).saveName );
+		// 次の出撃（Retry・もう一度）の条件。固定していなければ毎回ランダム（世界を作るときに読むので、今の出撃には効かない）。
+		bool forced = gRaidRecord->hasForcedCondition();
+		ImGui::Text( "Next condition: %s", forced ? dayConditionEffect( gRaidRecord->forcedCondition() ).saveName : "random" );
 		ImGui::SameLine();
 		if ( ImGui::SmallButton( "Next" ) ) {
-			int next = ( static_cast< int >( today ) + 1 ) % static_cast< int >( DayCondition::Count );
-			gRun->setCondition( gRun->day(), static_cast< DayCondition >( next ) );
-		}
-		ImGui::Text( "Kills before today: %d   Best: %d", gRun->kills(), gRun->bestScore() );
-		ImGui::Text( "Stash items: %d points", RunRules::itemPoints( gRun->stash() ) );
-		// 倉庫へ 1 マスぶん（重ねられる物はいっぱいまで。銃は弾倉いっぱいで）足す。
-		for ( ItemId id : kDebugItems ) {
-			const ItemSpec& spec = itemSpec( id );
-			ImGui::PushID( id );
-			if ( ImGui::SmallButton( "Add to stash" ) ) {
-				ItemStack stack = { id, spec.stackSize };
-				WeaponId weapon = weaponForItem( id );
-				if ( weapon != WEAPON_NONE ) {
-					stack.loadedRounds = weaponSpec( weapon ).magazineCapacity;
-				}
-				gRun->stash().placeAnywhere( stack );
-			}
-			ImGui::SameLine();
-			ImGui::Text( "%s: %d", spec.saveName, gRun->stash().total( id ) );
-			ImGui::PopID();
-		}
-		if ( ImGui::SmallButton( "Save" ) ) {
-			RunStateFile::save( *gRun );
+			int next = forced ? ( static_cast< int >( gRaidRecord->forcedCondition() ) + 1 ) % static_cast< int >( DayCondition::Count ) : 0;
+			gRaidRecord->forceCondition( static_cast< DayCondition >( next ) );
 		}
 		ImGui::SameLine();
-		// 保存を消して 1 日目から（ハイスコアも消す）。町の中で押すと、今の日はそのまま続き、終わった時の結果が新しい回に入る。
-		if ( ImGui::SmallButton( "Erase save" ) ) {
-			RunStateFile::erase();
-			gRun->setBestScore( 0 );
-			RunRules::startNewRun( gRun );
+		if ( ImGui::SmallButton( "Random" ) ) {
+			gRaidRecord->clearForcedCondition();
+		}
+		if ( gRaid && ImGui::SmallButton( "Retry now" ) ) {
+			SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
 		}
 	}
 
@@ -535,8 +496,8 @@ void setRaid( RaidSession* session ) {
 	gRaid = session;
 }
 
-void setRun( RunState* run ) {
-	gRun = run;
+void setRaidRecord( RaidRecord* record ) {
+	gRaidRecord = record;
 }
 
 void setInteraction( InteractionSystem* interaction ) {
@@ -564,7 +525,7 @@ void setInventory( Inventory* ) {
 void setRaid( RaidSession* ) {
 }
 
-void setRun( RunState* ) {
+void setRaidRecord( RaidRecord* ) {
 }
 
 void setInteraction( InteractionSystem* ) {
