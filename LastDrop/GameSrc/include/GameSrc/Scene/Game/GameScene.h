@@ -57,7 +57,7 @@ class EscapeCarComponent;
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F4）… FreeCamera
 //   F6 のエディタ・確認用のキー（F5・F9）・FireProbe（Debug・Profile だけ）… GameEditorBridge
-// 環境音（AmbienceSystem）は今は鳴らしていない。クラスは残してあるので、メンバに戻せば再び鳴る。
+// 環境音（脱出のサイレン）は鳴らさない。鳴らす係の AmbienceSystem は 2026-11-09 に消した（どこからも使っていなかったため）。
 class GameScene : public IScene{
 public:
 	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること。

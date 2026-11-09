@@ -402,8 +402,8 @@ void Matrix34::setTransposed33( const Matrix34& a ){
 
 //クラーメル法での逆行列
 /*
-33のやり方に、23に書いた考え方を適用すると、あっさり解ける。
-Matrix33.cppとMatrix23.cppを見よう。
+3x3 部分は Matrix33.cpp と同じやり方で逆にし、移動の列は「逆にした 3x3 を元の移動に掛けて符号を返す」(-R^-1 t) で求める。
+（移動の列の考え方は Matrix23.cpp に書いてあったが、使われていないので 2026-11-09 に消した）
 */
 void Matrix34::setInverse( const Matrix34& a ){
 	//まず3x3部分の逆行列を作る

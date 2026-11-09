@@ -175,9 +175,6 @@
     <Filter Include="GameSrc\Scene\Menu">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000010}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameSrc\Scene\Test">
-      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000011}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameSrc\UI">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-000000000012}</UniqueIdentifier>
     </Filter>
@@ -381,12 +378,6 @@
     <ClCompile Include="GameLib\src\Math\Functions.cpp">
       <Filter>GameLib\Math</Filter>
     </ClCompile>
-    <ClCompile Include="GameLib\src\Math\Matrix22.cpp">
-      <Filter>GameLib\Math</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\Math\Matrix23.cpp">
-      <Filter>GameLib\Math</Filter>
-    </ClCompile>
     <ClCompile Include="GameLib\src\Math\Matrix33.cpp">
       <Filter>GameLib\Math</Filter>
     </ClCompile>
@@ -432,12 +423,6 @@
       <Filter>GameLib\Scene</Filter>
     </ClCompile>
     <ClCompile Include="GameLib\src\Scene\Batch.cpp">
-      <Filter>GameLib\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\Scene\CollisionDetector.cpp">
-      <Filter>GameLib\Scene</Filter>
-    </ClCompile>
-    <ClCompile Include="GameLib\src\Scene\CollisionMesh.cpp">
       <Filter>GameLib\Scene</Filter>
     </ClCompile>
     <ClCompile Include="GameLib\src\Scene\Container.cpp">
@@ -1005,9 +990,6 @@
     <ClCompile Include="GameSrc\src\Core\GameSettings.cpp">
       <Filter>GameSrc\Core</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp">
-      <Filter>GameSrc\Scene\Test</Filter>
-    </ClCompile>
     <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonCamera.cpp">
       <Filter>GameSrc\Player\Camera</Filter>
     </ClCompile>
@@ -1075,9 +1057,6 @@
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Audio\PlayerFoley.cpp">
-      <Filter>GameSrc\Audio</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Audio\AmbienceSystem.cpp">
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp">
@@ -1526,12 +1505,6 @@
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix33.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Math\Matrix22.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Math\Matrix23.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Math\Vector4.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1595,12 +1568,6 @@
     <ClInclude Include="GameLib\include\GameLib\Sound\Wave.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionDetector.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionMesh.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Scene\Container.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1631,9 +1598,6 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Array.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\AutoPtr.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1655,13 +1619,7 @@
     <ClInclude Include="GameLib\include\GameLib\Base\HashMultiMap.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\HashSet.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\IBinaryStream.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\List.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\MemoryManager.h">
@@ -1694,9 +1652,6 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Utf8.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\Array2dImpl.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\ArrayImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -1713,12 +1668,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashMultiMapImpl.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashSetImpl.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ListImpl.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\OStringStreamImpl.h">
@@ -2138,9 +2087,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h">
       <Filter>GameSrc\Core</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h">
-      <Filter>GameSrc\Scene\Test</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\FirstPersonCamera.h">
       <Filter>GameSrc\Player\Camera</Filter>
     </ClInclude>
@@ -2214,9 +2160,6 @@
       <Filter>GameSrc\Audio</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\PlayerFoley.h">
-      <Filter>GameSrc\Audio</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Audio\AmbienceSystem.h">
       <Filter>GameSrc\Audio</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\Gait.h">
@@ -2534,10 +2477,10 @@
     <ClInclude Include="GameLib\include\GameLib\Input\JoystickDevice.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h">
+    <ClInclude Include="GameLib\src\WindowCreator\Resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="GameLib\src\WindowCreator\Resource.h">
+    <ClInclude Include="GameLib\include\GameLib\Input\InputDeviceBase.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h">

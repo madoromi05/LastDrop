@@ -361,7 +361,6 @@
     <ClCompile Include="GameSrc\src\Core\FixedStepClock.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameTime.cpp" />
     <ClCompile Include="GameSrc\src\Core\GameSettings.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Test\SkinTestScene.cpp" />
     <ClCompile Include="GameSrc\src\Player\Camera\FirstPersonCamera.cpp" />
     <ClCompile Include="GameSrc\src\Player\Body\FirstPersonBody.cpp" />
     <ClCompile Include="GameSrc\src\Weapon\WeaponStance.cpp" />
@@ -385,7 +384,6 @@
     <ClCompile Include="GameSrc\src\Audio\GroundMaterial.cpp" />
     <ClCompile Include="GameSrc\src\Audio\FootstepEmitter.cpp" />
     <ClCompile Include="GameSrc\src\Audio\PlayerFoley.cpp" />
-    <ClCompile Include="GameSrc\src\Audio\AmbienceSystem.cpp" />
     <!-- miniaudio（同梱の単一ヘッダ。実装はこの1ファイルでだけコンパイルする） -->
     <ClCompile Include="GameLib\src\ThirdParty\miniaudio\miniaudio.cpp" />
     <!-- Recast Navigation v1.6.0（zlib。ゾンビの道探しのナビメッシュ。Recast で作り Detour で探す） -->
@@ -628,8 +626,6 @@
     <ClCompile Include="GameLib\src\Math\Functions.cpp">
       <ObjectFileName>$(IntDir)GameLib\Math\</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="GameLib\src\Math\Matrix22.cpp" />
-    <ClCompile Include="GameLib\src\Math\Matrix23.cpp" />
     <ClCompile Include="GameLib\src\Math\Matrix33.cpp" />
     <ClCompile Include="GameLib\src\Math\Matrix34.cpp" />
     <ClCompile Include="GameLib\src\Math\Matrix44.cpp" />
@@ -647,8 +643,6 @@
     <ClCompile Include="GameLib\src\Scene\Animation.cpp" />
     <ClCompile Include="GameLib\src\Scene\AnimationNode.cpp" />
     <ClCompile Include="GameLib\src\Scene\Batch.cpp" />
-    <ClCompile Include="GameLib\src\Scene\CollisionDetector.cpp" />
-    <ClCompile Include="GameLib\src\Scene\CollisionMesh.cpp" />
     <ClCompile Include="GameLib\src\Scene\Container.cpp" />
     <ClCompile Include="GameLib\src\Scene\Font.cpp" />
     <ClCompile Include="GameLib\src\Scene\Model.cpp" />
@@ -728,7 +722,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Component\BoxColliderComponent.h" />
     <ClInclude Include="Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Array.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\Array2d.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\AutoPtr.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Compressor.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Conversion.h" />
@@ -736,17 +729,13 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Hash.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\HashMap.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\HashMultiMap.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\HashSet.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\IBinaryStream.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\Array2dImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\ArrayImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\AutoPtrImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\ConstantTypeTemplate.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashMapImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashMultiMapImpl.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\HashSetImpl.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\Impl\ListImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\OStringStreamImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\PoolImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\QueueImpl.h" />
@@ -756,7 +745,6 @@
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\StackImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\TankImpl.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Impl\VectorImpl.h" />
-    <ClInclude Include="GameLib\include\GameLib\Base\List.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\MemoryManager.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\OStringStream.h" />
     <ClInclude Include="GameLib\include\GameLib\Base\Pool.h" />
@@ -787,8 +775,6 @@
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Attribute.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Document.h" />
     <ClInclude Include="GameLib\include\GameLib\PseudoXml\Element.h" />
-    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionDetector.h" />
-    <ClInclude Include="GameLib\include\GameLib\Scene\CollisionMesh.h" />
     <ClInclude Include="GameLib\include\GameLib\Scene\Container.h" />
     <ClInclude Include="GameLib\include\GameLib\Scene\Tree.h" />
     <ClInclude Include="GameLib\include\GameLib\Sound\Wave.h" />
@@ -995,7 +981,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Core\FixedStepClock.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameSettings.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Core\GameTime.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Test\SkinTestScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Camera\FirstPersonCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\Body\FirstPersonBody.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Weapon\WeaponStance.h" />
@@ -1021,7 +1006,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Audio\IGroundSurface.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\FootstepEmitter.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\PlayerFoley.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Audio\AmbienceSystem.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\Gait.h" />
     <ClInclude Include="GameLib\src\ThirdParty\miniaudio\miniaudio.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\BonePoseModifier.h" />
@@ -1146,8 +1130,6 @@
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix44.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix34.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Matrix33.h" />
-    <ClInclude Include="GameLib\include\GameLib\Math\Matrix22.h" />
-    <ClInclude Include="GameLib\include\GameLib\Math\Matrix23.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Vector4.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Vector3.h" />
     <ClInclude Include="GameLib\include\GameLib\Math\Vector2.h" />

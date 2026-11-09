@@ -49,7 +49,8 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
 }
 
 // 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）が呼ぶ。
-// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使うのはテスト用のシーン（SkinTestScene）だけ（PbrNightLighting_Plan.txt Q1）。
+// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使っていたのはテスト用のシーン（SkinTestScene）だけ（PbrNightLighting_Plan.txt Q1）。
+// SkinTestScene は 2026-11-09 に消した。SkinnedMesh.hlsl（shadePixel を呼ぶ）を今も描くのに使っているかは確かめていない。
 // albedo: 頂点色×ディフューズ色×画像（リニア）  nv: 法線（長さ 1・法線マップ済み）
 // specularColor: (2+鋭さ)/2π を掛けた後のスペキュラの色（b0 の gSpecularColor.xyz と同じ形）  sharpness: 鋭さ
 float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specularColor, float sharpness)
