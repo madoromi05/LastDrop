@@ -10,7 +10,7 @@
 // 1発のダメージは「倍率を掛ける前の量 × 当たった部位の倍率」で、部位と全体の両方から引く。どちらも 0 で止まる。
 // 部位ごとの最大の体力・倍率・0 で倒れるかの表は、この .cpp だけが知っている。
 // 体ごとの丈夫さ（toughness）を、全体と全部の部位の最大に同じだけ掛ける（部位どうしの比は表のまま。
-// SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 3 章）。丈夫さを選ぶのは Zombie（ここは乱数を持たない）。
+// SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 3 章）。丈夫さを選ぶのは Zombie（ここは乱数を持たない）。
 // 倒れた後どうするか（アニメ・名簿から外す）は知らない（Zombie が isDead を見て決める）。
 class ZombieHealth{
 public:
@@ -19,7 +19,7 @@ public:
 
 	// part に baseAmount（倍率を掛ける前の量）のダメージを受ける。
 	// criticalRoll: 0 以上 1 未満の乱数。部位のクリティカルの確率（表。頭だけ 10%）より小さければ、その部位の体力を一気に 0 にする
-	// （頭が弾ける。SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 4 章）。乱数を引くのは呼ぶ側（ここは乱数を持たない）。
+	// （頭が弾ける。SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 4 章）。乱数を引くのは呼ぶ側（ここは乱数を持たない）。
 	void takeDamage( BodyPart part, float baseAmount, float criticalRoll );
 
 	// 倒れる条件を満たしたか（全体が 0、または 0 で倒れる部位が 0）。

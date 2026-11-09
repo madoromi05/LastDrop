@@ -1,7 +1,7 @@
 #ifndef INCLUDED_CAMERA_SHAKE_H
 #define INCLUDED_CAMERA_SHAKE_H
 
-// 見える絵の揺れ（上下・左右・ロールの角度）を決める。仕様は SummaryPlan/個別仕様/CameraShake_Recoil_Plan.txt の 3 章。
+// 見える絵の揺れ（上下・左右・ロールの角度）を決める。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 3 章。
 // 揺れの強さをトラウマ値（0〜1）で持ち、撃つ・攻撃されるなどで足して、時間で減らす。揺れの量はトラウマの 2 乗 × なめらかなノイズ。
 // 弾の向き・照準・体の向きには入れない（入れるのは描く行列だけ。FirstPersonCamera::setShake）。
 // 弾道のずれは AimRecoil・AimPunch だけで決め、「押さえれば当たる」をはっきりさせるため。

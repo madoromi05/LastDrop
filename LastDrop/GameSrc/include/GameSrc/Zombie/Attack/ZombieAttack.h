@@ -12,7 +12,7 @@
 //   Recover ：噛んだ後・空振りの後、アニメの終わりまで流して元の姿勢へ戻る
 // 体を引きずる体は、足元へ腕を伸ばして 1 回当てるだけ（startSwing。つかまない。アニメの代わりに自分の時計で進める）。
 //   Swing   ：腕を伸ばしている。決まった時刻に、届く所に相手が居れば当たる（居なければ空振り）。その後 Recover
-// 値の理由は SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3 章と 9 章（2026-11-05 に引っかきから噛みつきへ戻した）。
+// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章と 9 章（2026-11-05 に引っかきから噛みつきへ戻した）。
 class ZombieAttack{
 public:
 	enum class Phase{

@@ -18,7 +18,7 @@ class ZombieModel;
 class DrawCulling;
 
 // 弾が当たった後に出る、見せるだけの物（弾痕・砂ぼこり・血しぶき・血の跡・千切れた部位）の持ち主
-// （SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-3。2026-11-02 GameWorld から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-3。2026-11-02 GameWorld から分けた）。
 // 頼む側（CombatResolver）は「ここに出して」と言うだけで、いつ消えるか・どれだけ出すか（頭なら多く）はここが決める。
 // どれも GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため。GameWorld の ★1）。
 // 当たり判定の名簿には載らない（千切れた部位が地面へ落ちるときに、地面を聞くだけ）。

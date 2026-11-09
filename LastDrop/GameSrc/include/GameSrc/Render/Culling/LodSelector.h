@@ -1,7 +1,7 @@
 #ifndef INCLUDED_LOD_SELECTOR_H
 #define INCLUDED_LOD_SELECTOR_H
 
-// 置物 1 つの、今描く細かさの段（LOD）を覚えて選び直す係（SummaryPlan/個別仕様/OptimizationC_Plan.txt 8 章・Q8）。
+// 置物 1 つの、今描く細かさの段（LOD）を覚えて選び直す係（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 8 章・Q8）。
 // 画面の上の大きさ（画素）で選ぶ。境目に幅を持たせ、粗くするときと細かくするときで境目を変える（境目の上で行ったり来たりしないように）。
 // 段を選び直すのは目から見る絵だけ（DrawCulling が決める）。影のパスは最後に選んだ段（current）か、一番粗い段を使う。
 // 描くための状態だけを持ち、ゲームの進行には使わない。

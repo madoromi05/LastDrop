@@ -46,7 +46,7 @@ enum SoundId{
 	SOUND_FLASHLIGHT_CLICK,	// 銃の懐中電灯のスイッチ（付ける・消す）
 	// ── 銃（末尾に足す。理由は上と同じ）──
 	SOUND_PISTOL_SHOT,		// 拳銃の銃声
-	// ── 漁る・包帯（段階R3。末尾に足す。理由は上と同じ。SummaryPlan/個別仕様/R3_Plan.txt Q7）──
+	// ── 漁る・包帯（段階R3。末尾に足す。理由は上と同じ。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q7）──
 	SOUND_LOOT_SEARCH_METAL,	// 開けている間（ループ）：ゴミ箱（金属を探るガサガサ）
 	SOUND_LOOT_SEARCH_WOOD,		// 開けている間（ループ）：木箱
 	SOUND_LOOT_SEARCH_CLOTH,	// 開けている間（ループ）：死体（服を探る）

@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// 夜の光（月・補助光・空・環境光・街灯・懐中電灯）の調整値。仕様は SummaryPlan/個別仕様/PbrNightLighting_Plan.txt の 7・8・9・11 章。
+// 夜の光（月・補助光・空・環境光・街灯・懐中電灯）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/PbrNightLighting_Plan.txt の 7・8・9・11 章。
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // 初期値は夜（遊びの値）。昼の値は dayLightingParams()（見比べ・不具合探し用。F6 → Render の Day ボタン）。
 // 色はどれも画像の色と同じ数（sRGB）。シェーダでリニアへ直してから強さを掛ける。
@@ -78,7 +78,8 @@ struct LightingParams{
 		v( "moonRadius", moonRadius, 0.1f, 5.f, "deg" );            // 0 は不可（半径で割るため）
 		v( "moonDiscIntensity", moonDiscIntensity, 0.f, 20.f, "x" );
 		v( "moonHaloIntensity", moonHaloIntensity, 0.f, 1.f, "x" );
-		v( "moonHaloFalloff", moonHaloFalloff, 1.f, 32.f, "x" );     // 0 は不可（広がりで割るため）		v( "groundColor", groundColor, 0.f, 1.f, "" );
+		v( "moonHaloFalloff", moonHaloFalloff, 1.f, 32.f, "x" );     // 0 は不可（広がりで割るため）
+		v( "groundColor", groundColor, 0.f, 1.f, "" );
 		v( "ambientIntensity", ambientIntensity, 0.f, 8.f, "x" );
 		v( "fogHalfDistance", fogHalfDistance, 5.f, 1000.f, "m" );    // 0 は不可（半分の距離で割るため）
 		v( "fogGroundDensity", fogGroundDensity, 0.f, 0.2f, "/m" );

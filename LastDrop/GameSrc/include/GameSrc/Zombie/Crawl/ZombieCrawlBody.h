@@ -7,7 +7,7 @@ class SkinnedMeshInstance;
 class ZombieCrawlLayout;
 class CharacterMover;
 
-// 脚を失って倒れた体を、胸を中心に動かすための形（ゾンビ 1 体ぶん。SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
+// 脚を失って倒れた体を、胸を中心に動かすための形（ゾンビ 1 体ぶん。SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
 // 倒れ終わった姿勢で一度だけ「足元から胸まで」と「見た目の向きから進む向き（腰 → 首）までのずれ」を測り、
 // その後は胸の位置と進む向きから、見た目の向き・足元を決め直す（胸を中心に向きを変えるので、向きを変えると足元が回る）。
 // ZombieCrawl（腕の骨を曲げる姿勢の書き換え）とは別物で、こちらは置き場所の計算だけ。

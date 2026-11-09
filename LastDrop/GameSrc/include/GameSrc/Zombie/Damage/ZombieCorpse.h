@@ -2,8 +2,8 @@
 #define INCLUDED_ZOMBIE_CORPSE_H
 
 // 倒れ終わったゾンビが、死体として残り、地面へ沈んで消えるまでの時間（ゾンビ1体ぶん）。
-// 倒れ終わってから決まった時間残し、決まった時間かけて沈め、沈み終わったら消えてよい（SummaryPlan/個別仕様/ZombieDamage_Plan.txt）。
-// 時計は倒れ終わってからの 1 本だけ（沈み始め・沈む量・消える時刻・残り秒をすべてここから求める。SummaryPlan/個別仕様/ZombieSplit2_Plan.txt の 6 章）。
+// 倒れ終わってから決まった時間残し、決まった時間かけて沈め、沈み終わったら消えてよい（SummaryPlan/個別仕様/ゾンビ/ZombieDamage_Plan.txt）。
+// 時計は倒れ終わってからの 1 本だけ（沈み始め・沈む量・消える時刻・残り秒をすべてここから求める。SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 6 章）。
 // 状態（Corpse → Sinking）を切り替える・見た目の位置を下げるのは持ち主（Zombie）。ここは時間と、どれだけ沈めるかだけ。
 class ZombieCorpse{
 public:

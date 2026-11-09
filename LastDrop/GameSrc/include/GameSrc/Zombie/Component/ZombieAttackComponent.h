@@ -14,7 +14,7 @@ class ZombieRootMotionSpan;
 class ZombieAnimationSet;
 struct ChaseTarget;
 
-// ゾンビの攻撃（段階は ZombieAttack、間合いは ZombieAttackReach。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 3・9 章）。
+// ゾンビの攻撃（段階は ZombieAttack、間合いは ZombieAttackReach。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3・9 章）。
 // 立っている体は「つかむ → 噛む → 離す」（噛むときは首と背骨を突き出す。ZombieFlinch::lunge）、
 // 体を引きずっている体は足元へ腕を伸ばして 1 回当てる。どちらもこの部品が攻撃を始めるか決めて始め、手を伸ばす間は相手の方へ寄り、段階を進める。
 // いつ「始めるか」を聞くか（考えた後・歩く前）は呼ぶ側（ZombieBrainComponent・ZombieCrawlComponent）が決める。

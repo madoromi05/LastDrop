@@ -7,7 +7,7 @@
 using namespace GameLib;
 
 namespace{
-	// 見える絵の揺れ（CameraShake のトラウマ。0〜1）。仕様は SummaryPlan/個別仕様/CameraShake_Recoil_Plan.txt の 3・4 章。
+	// 見える絵の揺れ（CameraShake のトラウマ。0〜1）。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 3・4 章。
 	// 射撃は 1 発ごとに足すが、射撃だけでは kFireTraumaLimit より揺らさない（連射しても揺れすぎない）。
 	const float kFireTrauma = 0.12f;
 	const float kFireTraumaLimit = 0.45f;

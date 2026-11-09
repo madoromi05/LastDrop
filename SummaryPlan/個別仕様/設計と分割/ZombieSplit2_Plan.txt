@@ -99,7 +99,7 @@
 ================================================================================
  置き場所：GameSrc/include/GameSrc/Zombie/ZombieLocomotion.h・src/Zombie/ZombieLocomotion.cpp
 
-   // ゾンビ1体の「どこへ行き、どちらを向いて、どう進むか」（SummaryPlan/個別仕様/ZombieChase_Plan.txt・ZombiePath_Plan.txt・
+   // ゾンビ1体の「どこへ行き、どちらを向いて、どう進むか」（SummaryPlan/個別仕様/ゾンビ/ZombieChase_Plan.txt・ZombiePath_Plan.txt・
    // ZombieCrowd_Plan.txt）。行き先を決めるのは ZombieChase、建物を回り込む通り道は ZombiePath（どちらもここが持つ）。
    // 向く点には、近くの仲間から離れる向きと、フラつきで倒れている側への流れを混ぜる。
    // 足元と向きは持ち主（Zombie）が持ち、関数ごとに渡す。攻撃を始めてよいか・どのアニメを流すかは知らない
@@ -197,7 +197,7 @@
  置き場所：GameSrc/include/GameSrc/Zombie/ZombieCorpse.h・src/Zombie/ZombieCorpse.cpp
 
    // 倒れ終わったゾンビが、死体として残り、地面へ沈んで消えるまでの時間（ゾンビ1体ぶん）。
-   // 倒れ終わってから 10 秒残し、1.5 秒かけて 0.5m 沈め、沈み終わったら消えてよい（SummaryPlan/個別仕様/ZombieDamage_Plan.txt）。
+   // 倒れ終わってから 10 秒残し、1.5 秒かけて 0.5m 沈め、沈み終わったら消えてよい（SummaryPlan/個別仕様/ゾンビ/ZombieDamage_Plan.txt）。
    // 状態（Corpse → Sinking）を切り替える・見た目を下げるのは持ち主（Zombie）。ここは時間と、どれだけ沈めるかだけ。
    class ZombieCorpse{
    public:

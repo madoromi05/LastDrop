@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DAY_CONDITION_H
 #define INCLUDED_DAY_CONDITION_H
 
-// 日ごとの条件（SummaryPlan/個別仕様/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる。
+// 日ごとの条件（SummaryPlan/個別仕様/出撃と帰還/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる。
 // 調整値（LightingParams など）は書き換えず、使う所でこの倍率を掛ける（F6 の値が正のまま）。
 // どの日にどれが出るかは RunRules、何日目がどれかを持つのは RunState。
 enum class DayCondition{

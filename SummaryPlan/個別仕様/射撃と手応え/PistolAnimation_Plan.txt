@@ -333,7 +333,7 @@
 
  14-7 作り直し（2026-11-04 夜。ユーザー「idle や歩きのときアサルトライフルと姿勢・腕の位置が全然違う。同じ感じに」）
   ・Blender でゲームと同じ当て方（体はライフルのアニメ・腕は胸から写す・目の位置と縦 60 度）を再現して描いて比べた
-    （tools/pose_compare_render.py。比べた絵は SummaryPlan/個別仕様/images/PistolReady_*.png）
+    （tools/pose_compare_render.py。比べた絵は SummaryPlan/個別仕様/射撃と手応え/images/PistolReady_*.png）
   ・原因：14-6 の pistol_ready は Shooting.fbx の体の上で作り、右手首の「位置」だけをライフルに合わせていた。
     ゲームの体はライフルのアニメで、胸の傾きが Shooting.fbx と大きく違うので、胸から腕を写すと拳銃がほぼ真上を向き、両手が胸に縮こまっていた
   ・直し方（ツール）：pistol_ready をライフルの構え（rifle_idle）の体の上で作る。拳銃の握りの中心をライフルの握りの中心に、向き（銃口・上）を

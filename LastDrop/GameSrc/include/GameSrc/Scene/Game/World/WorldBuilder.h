@@ -23,7 +23,7 @@ struct WorldBuildTarget{
 	GameObjectWorld* objects;         // 置物を spawn する先
 };
 
-// 町を最初に一度だけ組み立てる係（「どこに何を置くか」。SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-2。2026-11-02 GameWorld から分けた）。
+// 町を最初に一度だけ組み立てる係（「どこに何を置くか」。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-2。2026-11-02 GameWorld から分けた）。
 // 置き場所は TownMap、置物が何で出来ているかは PropFactory、漁れる場所の中身の出やすさは LootTable が決める。ここは町の決まり
 // （中身を決める乱数の種・ガソリンを入れる箱の選び方）を持つ。歩ける床の形は作らない（GameWorld が TownCache から借りる）。
 // 置いた物の持ち主にはならない（建物の並びは GameWorld、置物は GameObjectWorld が持つ）。

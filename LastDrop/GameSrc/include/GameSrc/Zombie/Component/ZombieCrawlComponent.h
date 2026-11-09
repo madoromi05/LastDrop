@@ -16,7 +16,7 @@ class ZombieRootMotionSpan;
 class ZombieAnimationSet;
 struct ChaseTarget;
 
-// 脚を失って倒れた後（Downed）、倒れ終わったら腕で体を引きずって追ってくる（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
+// 脚を失って倒れた後（Downed）、倒れ終わったら腕で体を引きずって追ってくる（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
 // 引きずる腕・胸の置き場所は ZombieCrawler（ZombieDismemberComponent が持つ。残っている腕しか使えないため）、ここはいつ・どちらへ引くかを決める。
 // 追いついたら、立っている体と同じく ZombieAttackComponent で攻撃を始める（気付く前はうろつかず、その場でもがくだけ）。
 class ZombieCrawlComponent : public Component{

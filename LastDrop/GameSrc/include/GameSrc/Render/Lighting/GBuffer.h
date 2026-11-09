@@ -14,7 +14,7 @@ enum class MotionKind{
 	FirstPerson, // 手元（自キャラの体・腕・銃・弾）。カメラと一緒に動くので、画面の上ではほぼ止まっている
 };
 
-// G-Buffer（ディファードで、色を出す前の面の情報を画面ぶん持つ描画先）。仕様は SummaryPlan/個別仕様/GBuffer_Plan.txt 4・6 章。
+// G-Buffer（ディファードで、色を出す前の面の情報を画面ぶん持つ描画先）。仕様は SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt 4・6 章。
 // 3 枚の並び（何をどの形式で持つか）は Resource/Shader/GBuffer.hlsli に書いてあり、形式はここと揃える。
 // 深度は持たず、PostProcess の深度を借りて一緒に描く（後から描く半透明の板も同じ深度で隠れるように）。
 //

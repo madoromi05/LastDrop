@@ -1,4 +1,4 @@
-// PBR の式（SummaryPlan/個別仕様/PbrNightLighting_Plan.txt 4 章）。ディファードのライティングのパス（DeferredLighting.hlsl）と半透明の板（LitQuad.hlsl）が使う。
+// PBR の式（SummaryPlan/個別仕様/グラフィック/PbrNightLighting_Plan.txt 4 章）。ディファードのライティングのパス（DeferredLighting.hlsl）と半透明の板（LitQuad.hlsl）が使う。
 //   拡散反射：Lambert   鏡面反射：Cook-Torrance（D：GGX  G：Smith の Schlick-GGX 近似  F：Schlick）
 //   材質：メタリック・ラフネス（粗さ・金属。Blender・glTF・Unreal と同じ）
 // 式は「面の BRDF（surfaceBrdf）」と「ライトの向きと届く光（evaluateLight。種類は LightList.hlsli）」に分ける。

@@ -7,7 +7,7 @@
 
 // 銃の種類。増やすときはここに1つ足し、WeaponCatalog.cpp の表にも1行足す（ここを見れば全種類が分かる）。
 // 銃ごとの決まり（弾倉・連射・威力・反動・持ち方…）は表にデータで持ち、銃の処理（GunComponent など）には書かない。
-// 種類を足しても、処理は変えずに表へ 1 行足すだけで済むようにするため。SummaryPlan/個別仕様/Pistol_Plan.txt。
+// 種類を足しても、処理は変えずに表へ 1 行足すだけで済むようにするため。SummaryPlan/個別仕様/射撃と手応え/Pistol_Plan.txt。
 enum WeaponId{
 	WEAPON_PISTOL, // 拳銃（9mm。出撃のたびにタダでもらえる）
 	WEAPON_RIFLE,  // ライフル（AKM。町で拾う）

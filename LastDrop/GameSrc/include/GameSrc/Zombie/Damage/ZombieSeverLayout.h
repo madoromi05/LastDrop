@@ -9,7 +9,7 @@ class SkinnedMeshData;
 // 部位欠損の「設計図」。体力が 0 になった部位を、どの関節で切り、どの骨と部位が一緒に無くなるか。
 // 骨の番号はメッシュが同じなら同じなので、ゾンビの種類ごとに1つだけ作り（ZombieModel が持つ）、全員で共有する。
 // 1体ごとに変わるもの（どこを失ったか）は持たない（ZombieDismemberment が持つ）。
-// 表は .cpp だけが知っている（SummaryPlan/個別仕様/ZombieDismember_Plan.txt の 2 章）。胴は切れない。
+// 表は .cpp だけが知っている（SummaryPlan/個別仕様/ゾンビ/ZombieDismember_Plan.txt の 2 章）。胴は切れない。
 class ZombieSeverLayout{
 public:
 	// 1つの部位を切るときの決まり。

@@ -63,7 +63,7 @@ ZombieDirector::~ZombieDirector() {
 }
 
 void ZombieDirector::provideShared() {
-	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の B）。
+	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の B）。
 	mObjects->provide( &mPathBudget );
 	mObjects->provide( &mContext );
 	mObjects->provide( &mHearing );
@@ -73,7 +73,7 @@ void ZombieDirector::setup( const TownMap& map ) {
 	if ( !mZombieData->isReady() ) {
 		return;
 	}
-	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
+	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる。SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt）。
 	std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
 	rootMotionAnimations.push_back( kZombieStaggerAnimation );
 	rootMotionAnimations.push_back( kZombieAttackAnimation );

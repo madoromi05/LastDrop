@@ -1,7 +1,7 @@
 # =====================================================================
 # texture_to_dds.ps1
 #   Resource/Texture/<用途>/ の TGA を、GPU がそのまま読める圧縮形式（BC7 / BC5）の DDS にする。ミップも前もって全段入れる。
-#   仕様は SummaryPlan/個別仕様/LinearToneMap_Plan.txt の 8 章（グラフィック段階 1 の 1-b）。
+#   仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 8 章（グラフィック段階 1 の 1-b）。
 #     色の画像   … BC7_UNORM_SRGB（-srgbi：TGA の数を画像の色として読み、ミップはリニアで平均してもらう）
 #     法線マップ … BC5_UNORM（x と y だけ持つ。z はシェーダが作り直す。GameLib の PixelLightingNormalMapPsHlsl.h・Lighting.hlsli）
 #     数の画像   … BC7_UNORM（色ではない数をそのまま。材質の画像 ORM・水たまりの模様。SsrDecalMaterial_Plan.txt 5・6 章）

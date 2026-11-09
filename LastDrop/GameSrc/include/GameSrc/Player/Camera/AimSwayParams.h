@@ -1,7 +1,7 @@
 #ifndef INCLUDED_AIM_SWAY_PARAMS_H
 #define INCLUDED_AIM_SWAY_PARAMS_H
 
-// 照準のぶれ（AimSway）の調整値。仕様は SummaryPlan/個別仕様/AimSway_Plan.txt の 3・6 章。
+// 照準のぶれ（AimSway）の調整値。仕様は SummaryPlan/個別仕様/射撃と手応え/AimSway_Plan.txt の 3・6 章。
 // 角度は「覗いているとき」の大きさ（腰だめは hipScale 倍）。起動中に F6 のエディタで動かせる。
 // どれも見た目を確かめる前の初期値。小さめから始めて、画面で見ながら上げる。
 struct AimSwayParams{

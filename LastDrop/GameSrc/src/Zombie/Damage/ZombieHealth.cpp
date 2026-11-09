@@ -12,10 +12,10 @@ namespace{
 		float multiplier; // 当たったときのダメージの倍率
 		bool fatal;       // この部位が 0 になったら倒れるか
 		// 当たるたびに、この確率でその部位の体力を一気に 0 にする（クリティカル。0 なら起きない）。
-		// SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 4 章。
+		// SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 4 章。
 		float criticalChance;
 	};
-	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。値の理由は SummaryPlan/個別仕様/ZombieDamage_Plan.txt の 3 章。
+	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieDamage_Plan.txt の 3 章。
 	const PartRule kPartRules[] = {
 		{  80.f, 1.5f,  true,  0.1f }, // Head          一番効くが、ふだんは 1 発では倒れない（3 発で 0）。10% で弾けて倒れる
 		{ 120.f, 1.0f,  false, 0.f  }, // Torso         基準。全体と同じ値なので、胴だけ撃てば全体と同時に 0

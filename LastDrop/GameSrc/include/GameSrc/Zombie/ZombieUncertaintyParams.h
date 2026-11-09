@@ -7,9 +7,9 @@ namespace GameLib{
 	}
 }
 
-// ゾンビの「倒れるまでが読めない」「狙いにくい」ための値（仕様は SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt）。
+// ゾンビの「倒れるまでが読めない」「狙いにくい」ための値（仕様は SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt）。
 // 起動中に F6 のエディタで動かせる。どれも画面で確かめる前の初期値。
-// 湧く体ごとの値（丈夫さ・揺れの長さ）を、この幅から選ぶ関数も持つ（SummaryPlan/個別仕様/ZombieSplit4_Plan.txt の 4 章）。
+// 湧く体ごとの値（丈夫さ・揺れの長さ）を、この幅から選ぶ関数も持つ（SummaryPlan/個別仕様/設計と分割/ZombieSplit4_Plan.txt の 4 章）。
 struct ZombieUncertaintyParams{
 	// ── 体力の個体差（3 章）──
 	// 湧くときに、この間から一様に丈夫さを選び、全体と全部の部位の最大体力に掛ける。

@@ -20,7 +20,7 @@ class GameObject;
 class GameObjectWorld;
 
 // 置物（置物の車・漁れるゴミ箱と木箱・落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物）を部品から組み立てる
-// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/GameWorldSplit_Plan.txt の ★5）。
+// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt の ★5）。
 // 部品の並び・形のファイル・名前・材質・中身の量を 1 か所で決める（「何で出来ているか」）。
 // どこに置くか・何個置くかは使う側（WorldBuilder：最初に置く物、GameWorld：カバンから捨てた物）が決める。
 // 形の構築に失敗していたら、どの spawn も置かずに nullptr を返す（理由は MeshCache がデバッグ出力済み。

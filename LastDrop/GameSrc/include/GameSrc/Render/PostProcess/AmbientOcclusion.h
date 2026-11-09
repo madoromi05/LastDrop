@@ -9,7 +9,7 @@
 
 class GBuffer;
 
-// SSAO（物の隙間の暗がり）を作る（シェーダは Resource/Shader/Ssao.hlsl・SsaoBlur.hlsl）。仕様は SummaryPlan/個別仕様/SsaoTranslucent_Plan.txt 5・6 章。
+// SSAO（物の隙間の暗がり）を作る（シェーダは Resource/Shader/Ssao.hlsl・SsaoBlur.hlsl）。仕様は SummaryPlan/個別仕様/グラフィック/SsaoTranslucent_Plan.txt 5・6 章。
 // G-Buffer の法線と深度を読み、画面の半分の大きさの描画先（RG16F。r に AO、g に目からの奥行き）へ描き、
 // 奥行きを見たぼかしを横 → 縦の 2 回掛ける（1 枚目 → 2 枚目 → 1 枚目）。値は SsaoParams。
 // 結果はライティング（環境光にだけ掛ける）と表示（F6 → Render の G-Buffer の「SSAO」）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）。

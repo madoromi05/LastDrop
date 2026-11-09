@@ -8,7 +8,7 @@ class AudioEngine;
 //   小数のずれがたまらない。ゲームが使う倍率への直し方は、ここの関数だけに置く。
 // ・保存はキーコンフィグ（InputConfig）と同じく、PseudoXml で文字列にして fstream で書く
 //   （FileIO はファイルが無いと止まることがあるため）。
-// SummaryPlan/個別仕様/OptionsMenu_Plan.txt。
+// SummaryPlan/個別仕様/UI/OptionsMenu_Plan.txt。
 struct GameSettings{
 	static const int kVolumeMin = 0;
 	static const int kVolumeMax = 100;

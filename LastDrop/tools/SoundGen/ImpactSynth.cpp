@@ -5,7 +5,7 @@ using namespace Synth;
 // 着弾音は「弾が当たった瞬間の破裂」と「その後に残る物」（破片が散る・砂が落ちる・金属が響く）でできている。
 // どの材質でも骨組みは同じで、違うのは各層の高さと強さだけなので、足音（FootstepSynth.cpp）と同じく
 // 骨組みを1つの関数（makeImpact）にし、材質ごとの違いは表（kRecipes）の数値で表す。
-// 数値は初期値。ゲームの中で聞いて直す（SummaryPlan/個別仕様/ImpactSound_Plan.txt 6 章）。
+// 数値は初期値。ゲームの中で聞いて直す（SummaryPlan/個別仕様/射撃と手応え/ImpactSound_Plan.txt 6 章）。
 namespace{
 	const float kFadeOut = 0.05f;		// お尻を切るときのフェード（秒）
 	// 揺らぎ（別テイク）ごとのばらつき。連射で同じ所に当たり続けても、毎回少し違う音にする。

@@ -8,7 +8,7 @@
 
 class SkinnedMeshData;
 
-// 1 体ぶんのアニメの再生（SummaryPlan/個別仕様/MidPrioritySplit_Plan.txt 6 章。2026-11-09 SkinnedMeshInstance から分けた）。
+// 1 体ぶんのアニメの再生（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 6 章。2026-11-09 SkinnedMeshInstance から分けた）。
 // 自分の骨格を持ち、時刻を進めて、骨格の根から見たボーンの姿勢（ポーズ）を求める。書き換え・置き場所・描画は知らない（SkinnedMeshInstance）。
 // アニメの切り替えは2通り。setAnimation は即座に切り替え、crossFadeTo は切り替え直前に見えていたポーズから
 // 新しいアニメへ数フレームかけて混ぜる（クロスフェード）。混ぜるのはボーンごとの姿勢行列（MatrixBlend）。

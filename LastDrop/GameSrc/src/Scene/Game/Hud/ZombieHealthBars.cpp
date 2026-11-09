@@ -198,7 +198,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
 			attackPhaseName( attack->attack().phase() ) );
 	} else if ( zombie.isCrawling() ) {
-		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
+		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
 		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
 	} else if ( state == ZombieStateComponent::State::Alive && zombie.getComponent< ZombieChaseComponent >()->mode() == ZombieChase::Mode::Chase && world.player() ) {
 		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため。

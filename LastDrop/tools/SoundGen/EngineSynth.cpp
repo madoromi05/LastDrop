@@ -4,7 +4,7 @@
 
 using namespace Synth;
 
-// 脱出の車のエンジン（SummaryPlan/個別仕様/FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成する。
+// 脱出の車のエンジン（SummaryPlan/個別仕様/出撃と帰還/FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成する。
 // エンジンの音は「燃える回数（毎秒）の低い周期音」と、その倍音、こもったノイズでできている（4 気筒・アイドリング 約 800 回転なら、
 // 毎秒 約 27 回燃える）。掛ける音は、セル（スターター）が数回クランクを回す「グッ・グッ」の後に、燃え始めてアイドリングへ移る。
 namespace{

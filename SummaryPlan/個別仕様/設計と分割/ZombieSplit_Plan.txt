@@ -100,7 +100,7 @@
 
    // 攻撃・よろけ・倒れるアニメの間、腰の前後の動き（根の動き）を、壁・車に当たりながら置き場所へ移す区間（1 体ぶん）。
    // 移動の箱と bodyCenter は始めた所（アンカー）に残し、置き場所だけを根に付いて行かせ、絵はその分だけ戻して置く
-   // （SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。いつ始めて・どの表で・誰を通り抜けるかは持ち主（Zombie）が決める。
+   // （SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt）。いつ始めて・どの表で・誰を通り抜けるかは持ち主（Zombie）が決める。
    class ZombieRootMotionSpan{
    public:
        // 置き場所を動かすとき、ほかの動くもののどれを通り抜けるか（今の Zombie::RootPass をそのまま移す）。
@@ -146,7 +146,7 @@
 ================================================================================
  置き場所：GameSrc/include/GameSrc/Zombie/ZombieStagger.h・src/Zombie/ZombieStagger.cpp
 
-   // よろけの最中か・次のよろけを出せるまでの間あけ、を数える（SummaryPlan/個別仕様/ZombieStagger_Plan.txt）。
+   // よろけの最中か・次のよろけを出せるまでの間あけ、を数える（SummaryPlan/個別仕様/ゾンビ/ZombieStagger_Plan.txt）。
    // フルオートで当て続けても、よろけ続けて動けなくならないようにするため。頭に当たったときは間あけを待たない。
    // アニメを流す・止めるのは持ち主（Zombie）。ここは時間と「出してよいか」だけ。
    class ZombieStagger{
@@ -174,7 +174,7 @@
  今の ZombieCrawl（腕の骨を曲げる、姿勢の書き換え）とは別にする。ZombieCrawl は「骨をどう曲げるか」、
  こちらは「倒れた体の胸の位置と、進む向きと見た目の向きのずれ」（置き場所の計算）で、仕事が違う。
 
-   // 脚を失って倒れた体を、胸を中心に動かすための形（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt）。
+   // 脚を失って倒れた体を、胸を中心に動かすための形（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
    // 倒れ終わった姿勢で一度だけ測り、その後は胸の位置と進む向きから、見た目の向き・足元を決め直す。
    class ZombieCrawlBody{
    public:

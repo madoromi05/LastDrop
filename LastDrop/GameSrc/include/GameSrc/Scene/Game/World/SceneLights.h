@@ -11,7 +11,7 @@ class GameWorld;
 class WorldRenderer;
 class FirstPersonCamera;
 
-// 1 回の描画の、ライトの一覧と影のマップを作る係（SummaryPlan/個別仕様/MidPrioritySplit_Plan.txt 1 章。2026-11-09 SceneRenderer から分けた）。
+// 1 回の描画の、ライトの一覧と影のマップを作る係（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 1 章。2026-11-09 SceneRenderer から分けた）。
 // 一覧に足すのは：月（平行光。CSM の影 3 枚）・補助光・懐中電灯（スポット。影 1 枚）・銃口の光・交差点の街灯・空と環境光と霧と月の絵。
 // どれも調整値（LightingParams。初期値は夜。PbrNightLighting_Plan.txt 7 章）から毎フレーム作る（F6 ですぐ効くように）。
 // 今日の条件（停電・霧の日）は世界から読む。描く手順（G-Buffer → ライティング → …）は知らない（SceneRenderer が lights() を渡して進める）。

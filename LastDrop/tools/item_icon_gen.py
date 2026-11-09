@@ -4,7 +4,7 @@
 #   カバンの画面（InventoryScreen）に出す物の絵（アイコン）を、物の 3D モデルを Blender で撮って作る。
 #   どの物も同じ向きのカメラ・同じライト・透明の背景で撮るので、並べたときに揃う（タルコフ・RE:2 の物の絵と同じ作り方）。
 #   物は、絵の枠いっぱいに収まるように、モデルの外側の箱からカメラの写す範囲を決める（物の大きさを手で合わせない）。
-#   仕様は SummaryPlan/個別仕様/ItemIcon_Plan.txt。
+#   仕様は SummaryPlan/個別仕様/UI/ItemIcon_Plan.txt。
 #
 #   絵は TGA（RGBA・透明の背景）で書く。UI は ToneMap の後に、sRGB ではない画面へそのまま描くので、
 #   ゲームでは色の変換をせずに読む（TEXTURE_COLOR_SPACE_LINEAR）。そのため Blender の色の見え方は「Standard」にする

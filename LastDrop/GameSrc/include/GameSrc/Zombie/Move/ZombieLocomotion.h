@@ -13,12 +13,12 @@ class HitWorld;
 class ZombieCrowd;
 struct ChaseTarget;
 
-// ゾンビ1体の「どこへ行き、どちらを向いて、どう進むか」（SummaryPlan/個別仕様/ZombieChase_Plan.txt・ZombiePath_Plan.txt・
+// ゾンビ1体の「どこへ行き、どちらを向いて、どう進むか」（SummaryPlan/個別仕様/ゾンビ/ZombieChase_Plan.txt・ZombiePath_Plan.txt・
 // ZombieCrowd_Plan.txt・ZombieCrawl_Plan.txt）。行き先を決めるのは ZombieChase、建物を回り込む通り道は ZombiePath（どちらもここが持つ）。
 // 立っている体は、向く点に近くの仲間から離れる向きと、フラつきで倒れている側への流れを混ぜる。這っている体は混ぜない。
 // 足元と向きは持ち主（Zombie）が持ち、関数ごとに渡す。攻撃を始めてよいか・どのアニメを流すかは知らない。
 // 考える（thinkStanding / thinkCrawling）と動く（walkStep / standAside）を分けてあり、その間で持ち主が攻撃を始めるかを見る
-// （SummaryPlan/個別仕様/ZombieSplit2_Plan.txt の 3 章）。
+// （SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
 class ZombieLocomotion{
 public:
 	// 向きを変える速さが違う（這っている体はゆっくり）。

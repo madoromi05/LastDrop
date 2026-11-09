@@ -12,7 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// ── 往復の時間割（SummaryPlan/個別仕様/ZombieCrawl_Plan.txt の 0・4 章）──
+	// ── 往復の時間割（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt の 0・4 章）──
 	// 1 往復の長さ（秒）。前半で手を前へ運び、後半で引く。左右は半周ずらすので、引くのは 1 往復に 2 回。
 	const float kStrokeSeconds = 1.25f;
 	const float kPhasePerTick = 1.f / ( kStrokeSeconds * GameTime::kTicksPerSecond );

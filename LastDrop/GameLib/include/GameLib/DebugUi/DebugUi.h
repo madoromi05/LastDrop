@@ -3,7 +3,7 @@
 
 #include <cstdint>
 
-// 開発用のエディタ（Dear ImGui）の土台。計画書は SummaryPlan/個別仕様/DebugTools_Profiling_Plan.txt の 4 章。
+// 開発用のエディタ（Dear ImGui）の土台。計画書は SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 4 章。
 // Debug と Profile ビルド（ZF_EDITOR）だけで動き、Release ではすべて何もしない関数になる（ImGui 自体もビルドしない）。
 //
 // ここが持つのは ImGui の準備・片付け・1 フレームの始めと描画・F6 での開け閉め・入力の受け渡しだけ。

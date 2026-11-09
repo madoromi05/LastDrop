@@ -1,7 +1,7 @@
 #ifndef INCLUDED_LOOT_PARAMS_H
 #define INCLUDED_LOOT_PARAMS_H
 
-// 漁れる場所と包帯の調整値（開けるのにかかる秒・空になる確率・包帯の効き目）。仕様は SummaryPlan/個別仕様/R3_Plan.txt（Q3・Q6・Q10・Q12・Q13）。
+// 漁れる場所と包帯の調整値（開けるのにかかる秒・空になる確率・包帯の効き目）。仕様は SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt（Q3・Q6・Q10・Q12・Q13）。
 // 起動中に F6 のエディタ（Tuning の「Loot」）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // 場所ごとに出やすい物（重み・数）は LootTable.cpp の表（データ）。どれも遊んで確かめる前の初期値（R3_Plan.txt 10 章の「遊んで」で決める）。
 struct LootParams{

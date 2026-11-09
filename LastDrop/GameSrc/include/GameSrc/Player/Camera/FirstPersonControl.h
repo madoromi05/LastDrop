@@ -13,7 +13,7 @@ struct GameSettings;
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る。
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）。
-// 中身は係へ任せる（SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 6 章。2026-11-09 分けた。外から呼ぶ口は前のまま）：
+// 中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。2026-11-09 分けた。外から呼ぶ口は前のまま）：
 //   操作を作る … CommandReader　／　反動・揺れ・照準のぶれ … ViewEffects　／　相手の顔へ向ける … LookPull
 //   ここに残るのは、視点を回す（感度）・カーソルの固定・カメラを置く、と係を呼ぶ順番。
 //

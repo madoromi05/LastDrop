@@ -6,7 +6,7 @@
 class LootContainerComponent;
 class GameObject;
 
-// 漁れる場所を開けている途中（E を押してから中を見る画面が開くまで。SummaryPlan/個別仕様/R3_Plan.txt Q6）。
+// 漁れる場所を開けている途中（E を押してから中を見る画面が開くまで。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q6）。
 // どの場所を開けているか・経った秒・かかる秒だけを持つ。何をしたら取りやめか（動く・撃つ・構える・攻撃された・E をもう一度）を決めるのは
 // 呼ぶ側（GameScene が操作と出来事から interrupted を作る）。Interactor に足すと「見る係」と「待つ係」が混ざるので分けた。
 // 場所は GameObjectHandle で指す（開けている間に死体が消えても、消えた物を指したままにならない）。

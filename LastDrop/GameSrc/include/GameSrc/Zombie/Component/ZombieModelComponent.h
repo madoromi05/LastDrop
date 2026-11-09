@@ -7,7 +7,7 @@
 class ZombieModel;
 
 // ゾンビの形・アニメ・当たり判定の設計図（ZombieModel。同じ種類の全員で共有する）を持つ部品
-// （SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の ★2）。
+// （SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の ★2）。
 // ゾンビの部品（ZombieState・ZombieChase・ZombieHealth など）は、付けるときに設計図を受け取らず、ここから借りる。
 // どの設計図のゾンビにするかを決めるのは、この部品を付ける 1 か所だけになる。付けたときから在るので awake から借りてよい。
 class ZombieModelComponent : public Component{

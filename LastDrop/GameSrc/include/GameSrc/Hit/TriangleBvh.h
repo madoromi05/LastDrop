@@ -7,7 +7,7 @@
 // 三角形の集まりを、箱の木（BVH）に分けたもの。線分が触れる箱だけを下りて、調べる三角形を数十個に絞る。
 // TriangleMesh が持ち、作るのは set の時に 1 回だけ（同じメッシュの建物は MeshCache で 1 つを共有する）。
 // 三角形の頂点そのものは持たない（TriangleMesh の位置とつながりを、問い合わせのたびに借りる）。
-// 作り方（SummaryPlan/個別仕様/OptimizationB_Plan.txt 6 章）：三角形の中心を囲む箱の一番長い辺の向きで、
+// 作り方（SummaryPlan/個別仕様/最適化と計測/OptimizationB_Plan.txt 6 章）：三角形の中心を囲む箱の一番長い辺の向きで、
 // 中心の並びの真ん中（中央値）で 2 つに分ける。分け方が一言で言え、木の深さがいつも log2(三角形の数) 程度に収まるため。
 class TriangleBvh{
 public:

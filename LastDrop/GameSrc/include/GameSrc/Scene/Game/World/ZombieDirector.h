@@ -26,7 +26,7 @@ class GameObject;
 class GameObjectWorld;
 struct DayConditionEffect;
 
-// ゾンビの数と、ゾンビ全員の周りを受け持つ係（SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 3-2。2026-11-09 GameWorld から分けた）。
+// ゾンビの数と、ゾンビ全員の周りを受け持つ係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-2。2026-11-09 GameWorld から分けた）。
 //   数     … 設計図（ZombieModel）・組み立て（ZombieFactory）・見えない所へ湧かせる（ZombieSpawner）・同時に居られる数（今日の条件）
 //   周り   … Think の段で全員が読む物（追う先・群れ・攻撃に行っている体・アニメの間引きの視点・道探しの回数）
 //   音     … 音をゾンビ全員へ知らせる ZombieHearing（共有の棚に置き、音を立てる部品が引く）

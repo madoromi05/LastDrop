@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
 # orm_gen.py
-#   材質の画像（ORM：r AO・g 粗さ・b 金属）を作る。仕様は SummaryPlan/個別仕様/MaterialTexture_Plan.txt 4・5 章（グラフィック段階11）。
+#   材質の画像（ORM：r AO・g 粗さ・b 金属）を作る。仕様は SummaryPlan/個別仕様/グラフィック/MaterialTexture_Plan.txt 4・5 章（グラフィック段階11）。
 #   メッシュは作り直さない（形・UV はそのまま。ORM は色の画像と同じ UV で読む）。作った後は、メッシュの txt に ormmap を足し、
 #   roughness・metallic を 1 にする（ゲームは「txt の数値 × ORM」で読む。SsrDecalMaterial_Plan.txt 5-1）。
 #   元の画像の種類で、作り方が 3 つある（設定にどれを書くかで決まる）。

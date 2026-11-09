@@ -10,7 +10,7 @@
 
 class GBuffer;
 
-// 映り込み（SSR）を作る（シェーダは Resource/Shader/Ssr.hlsl・SsrBlur.hlsl）。仕様は SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 7 章。
+// 映り込み（SSR）を作る（シェーダは Resource/Shader/Ssr.hlsl・SsrBlur.hlsl）。仕様は SummaryPlan/個別仕様/グラフィック/SsrDecalMaterial_Plan.txt 7 章。
 // ライティングした後のシーンの色・G-Buffer の法線と粗さ・深度を読み、画面の半分の大きさの描画先（RGBA16F。rgb 映る色 × 確からしさ・
 // a 確からしさ）へ描き、奥行きを見たぼかしを横 → 縦の 2 回掛ける（SSAO の AmbientOcclusion と同じ形）。値は SsrParams。
 // 進み方は Hi-Z（HiZBuffer。HiZSsr_Plan.txt 6 章）か、今までの直線（F6 の Hi-Z を切ったとき）。

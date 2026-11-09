@@ -10,8 +10,8 @@ class Inventory;
 // 拾う物は、すぐ使わずに「差し出す」（offeredStack）。どのマスへ入れるかを遊ぶ人がカバンの画面で選び、入れた分だけ takeOffered で受け取る
 // （InventoryPickup_Plan.txt Q3。2026-11-05 に、自動で入れる形から変えた）。
 // 漁れる場所（ゴミ箱・木箱・死体）は、中のマス目（lootGrid）を見せる。開けるまでの時間と中を見る画面は呼ぶ側
-// （LootSearch・LootScreen。SummaryPlan/個別仕様/R3_Plan.txt 5 章）。
-// 画面には文字の案内を出さず、物の上にマークだけを出す（InteractMarkers。SummaryPlan/個別仕様/InteractMarker_Plan.txt）。
+// （LootSearch・LootScreen。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章）。
+// 画面には文字の案内を出さず、物の上にマークだけを出す（InteractMarkers。SummaryPlan/個別仕様/UI/InteractMarker_Plan.txt）。
 class IInteractable{
 public:
 	virtual ~IInteractable(){}

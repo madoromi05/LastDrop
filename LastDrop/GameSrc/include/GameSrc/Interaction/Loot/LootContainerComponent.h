@@ -7,7 +7,7 @@
 #include "GameSrc/Interaction/Loot/LootTable.h"
 #include "GameLib/Math/Random.h"
 
-// 漁れる場所の部品（ゴミ箱・木箱・ゾンビの死体。SummaryPlan/個別仕様/R3_Plan.txt 5 章）。
+// 漁れる場所の部品（ゴミ箱・木箱・ゾンビの死体。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt 5 章）。
 // 中身のマス目（2 × 3）と、どの表の場所か・もう開けたか、を持つ。どの物に付けても同じ部品（違うのは表の種類だけ）。
 // 見た目と箱は同じ物の別の部品（車・ゴミ箱・木箱は StaticModelComponent。死体はゾンビの体）。
 // 開けるまで待つのは LootSearch、中を見る画面は LootScreen（どちらも GameScene が持つ）。ここは中身と「開けたか」だけ。

@@ -7,7 +7,7 @@
 #   3. マテリアルを1つにまとめた FBX を書き出す。
 #   書き出した FBX は fbx_to_gamelib.py の static モード（テクスチャ1組）でそのまま変換できる。
 #
-#   orm_path を書くと、材質の画像（r：AO・g：粗さ・b：金属。SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 5 章）も
+#   orm_path を書くと、材質の画像（r：AO・g：粗さ・b：金属。SummaryPlan/個別仕様/グラフィック/SsrDecalMaterial_Plan.txt 5 章）も
 #   同じ区画の並びで書き出す。そのときの AO は ORM の r へ入れる（albedo に焼かない。SSAO と二重に暗くならないように）。
 #   orm_path が無ければ今までどおり、AO（凹みの陰）がある区画は albedo に掛け合わせて焼き込む。Height は扱わない。
 #

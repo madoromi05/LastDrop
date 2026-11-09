@@ -50,7 +50,7 @@ bool PlayerFactory::isReady() const {
 
 GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
 	// HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。付ける順は自由
-	// （部品は awake で自分の物を作り、start で隣の部品を借りる。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）。
+	// （部品は awake で自分の物を作り、start で隣の部品を借りる。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）。
 	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise）は、行を消せばその振る舞いだけ無くなる
 	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない）。
 	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く。

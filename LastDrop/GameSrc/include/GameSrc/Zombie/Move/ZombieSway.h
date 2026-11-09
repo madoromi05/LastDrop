@@ -8,7 +8,7 @@ class ZombieFlinchLayout;
 
 // ゾンビ1体ぶんの「フラつき」。胴を背骨で左右に倒し、頭を左右へ揺らす（足は地面に付けたまま）。
 // 頭を狙いにくくするのが目的なので、見た目だけでなく部位の当たり判定も一緒に動かす
-// （持ち主が SkinnedMeshInstance::setBodyPoseModifier に渡す。SummaryPlan/個別仕様/ZombieUncertainty_Plan.txt の 6 章）。
+// （持ち主が SkinnedMeshInstance::setBodyPoseModifier に渡す。SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt の 6 章）。
 // 揺れは 2 つの波を足す。ふだんの左右の揺れに、ゆっくりの波が重なったときだけ大きく傾く（よろめき）。
 // いつ・どれだけ揺らすか（強さ）は知らない（Zombie が自キャラとの距離から決める）。急に揺れ出さないよう、強さは少しずつ寄せる。
 // 胴を曲げる関節は、のけぞりと同じ設計図（ZombieFlinchLayout の胴のまとまり）を借りる。

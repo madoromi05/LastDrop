@@ -9,7 +9,7 @@ class SkinnedMeshData;
 
 // 1回だけ流すアニメ（攻撃・よろけ・倒れる）の、フレームごとの根の骨（腰）の水平の位置の表（ルートモーション）。
 // 変換で根の動きを消していないので、これらのアニメは腰が前後へ動く（攻撃で 0.47m 踏み込む・倒れて 0.9〜1.2m 動く）。
-// その動きを置き場所へ移すのに使う（移し方は Zombie。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
+// その動きを置き場所へ移すのに使う（移し方は Zombie。SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt）。
 // 上下（倒れて腰が下がる）と回転は表にしない（姿勢のまま見せる）。
 // 表はメッシュとアニメが同じなら同じなので、種類ごと・アニメごとに1つだけ作る（ZombieModel が持つ）。作るときに全フレームの姿勢を計算する。
 class ZombieRootMotion{

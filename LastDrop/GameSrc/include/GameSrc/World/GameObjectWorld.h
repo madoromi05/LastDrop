@@ -12,7 +12,7 @@
 class CollisionWorld;
 class HitWorld;
 
-// 世界に置く物（GameObject）の持ち主（SummaryPlan/個別仕様/ComponentSystem2_Plan.txt。画像の obj_manager）。
+// 世界に置く物（GameObject）の持ち主（SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt。画像の obj_manager）。
 // ・provide：世界に 1 つの物を共有の棚へ置く（部品が Component::shared で引く。ComponentSystem3_Plan.txt の B）。
 //   載せる名簿（CollisionWorld・HitWorld）は作るときに自分で置く
 // ・create：物を作って持つ（まだ動かない）。部品を addComponent で付ける

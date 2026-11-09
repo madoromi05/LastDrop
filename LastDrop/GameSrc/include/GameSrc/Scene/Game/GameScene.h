@@ -28,7 +28,7 @@ enum class PlayerCondition;
 class GameResources;
 class EscapeCarComponent;
 
-// ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
+// ゲーム本編（町の 1 日＝1 回の出撃。SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt）。自キャラを一人称(FPS)視点で動かし、町で漁って脱出点から帰る。
 // WASD で移動（Shift で走る）、マウスで視点を回す。E で、見ている物を拾う。左クリックを押している間、銃を撃つ。R で弾を込める。
 // Escape from Tarkov のように自分の体（腕・銃・脚）が見える方式。視点は頭の骨に付き、歩きの揺れも出る。
 // 持ち物は拠点のカバン（RunState）の写しで始まる。開いている脱出点の円に決まった秒だけ立つと脱出し、1 日の結果の画面へ進む。
@@ -37,7 +37,7 @@ class EscapeCarComponent;
 // （途中でやめると、その日をやり直せるので、死んでからやめて逃げられないように。R2_Plan.txt Q3）。
 // Tab でカバンを開く（一時停止と同じく世界と音を止め、InventoryScreen を重ねる。もう一度 Tab か ESC で戻る。GridInventory_Plan.txt）。
 // 漁れる場所（車・ゴミ箱・木箱・死体）を見て E を押すと開け始め（LootSearch。動く・撃つ・構える・攻撃される・E で取りやめ）、
-// 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。SummaryPlan/個別仕様/R3_Plan.txt。
+// 開け終わったら中を見る画面（LootScreen。カバンと同じく世界と音を止める。ESC・E・Tab で戻る）。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt。
 //
 // このクラスは、部品を「1回の描画の中でどの順に動かすか」だけを決める。中身はそれぞれの部品が持つ:
 //   世界（町・キャラ・物・当たり判定）  … GameWorld

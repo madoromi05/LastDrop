@@ -7,7 +7,7 @@
 #include <memory>
 
 // ゾンビの使うアニメと、どのアニメをどう繋ぎ・どの根の動きで流すか（ZombieAnimationSet）と、攻撃・よろけ・倒れる間に
-// 腰の動きを置き場所へ移す区間（ZombieRootMotionSpan。SummaryPlan/個別仕様/ZombieRootMotion_Plan.txt）。
+// 腰の動きを置き場所へ移す区間（ZombieRootMotionSpan。SummaryPlan/個別仕様/ゾンビ/ZombieRootMotion_Plan.txt）。
 // 区間は見た目と滑る移動を借りるので、同じ物の SkinnedModelComponent・CharacterColliderComponent を awake で借りて作る
 // （どちらも付けたときから在る物。作った区間・アニメの組は、隣の部品が start から借りる）。
 // いつ区間を始め・閉じるかは ZombieBrainComponent が決める。

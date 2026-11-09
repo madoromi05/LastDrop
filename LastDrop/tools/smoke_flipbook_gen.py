@@ -2,7 +2,7 @@
 # =====================================================================
 # smoke_flipbook_gen.py
 #   着弾の砂ぼこりのコマ送りの絵（ImpactDustList が粒ごとに 1 コマを貼る）を作る。
-#   仕様は SummaryPlan/個別仕様/EffectFlipbook_Plan.txt の 4-1。
+#   仕様は SummaryPlan/個別仕様/射撃と手応え/EffectFlipbook_Plan.txt の 4-1。
 #
 #   4×4 のます目に 16 コマ。左上から右へ、行ごとに下へ 0〜15 コマ目（Render/Flipbook と同じ並び）。
 #   はじめは小さく濃いかたまり → ぼけた丸が外へ広がって大きくなる → ふちがふんわりして少し薄れる。

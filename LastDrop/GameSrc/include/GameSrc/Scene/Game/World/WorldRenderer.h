@@ -14,7 +14,7 @@ class Building;
 class DrawCulling;
 struct LightSource;
 
-// 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/GameWorldSplit_Plan.txt 2-1・★4。2026-11-02 GameWorld から分けた）。
+// 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-1・★4。2026-11-02 GameWorld から分けた）。
 // 持ち主はシーン（GameScene）。世界は描き方を知らない（描く順・間引き・パイプラインを変えても、世界の進め方は変わらない）。
 // 世界の物は const で読むだけ。エフェクト（EffectManager）だけは描くときに並べ替えるので書いてよい形で借りる。
 // 物ごとの GPU の時間を印（Profiling::gpuMark）で分ける（Buildings・Props・Ground・Player・Zombies）。

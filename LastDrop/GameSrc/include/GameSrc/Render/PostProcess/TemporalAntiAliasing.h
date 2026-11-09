@@ -9,7 +9,7 @@
 
 class GBuffer;
 
-// TAA（時間をまたいだアンチエイリアス。シェーダは Resource/Shader/Taa.hlsl・TaaCopy.hlsl）。仕様は SummaryPlan/個別仕様/Taa_Plan.txt 7 章。
+// TAA（時間をまたいだアンチエイリアス。シェーダは Resource/Shader/Taa.hlsl・TaaCopy.hlsl）。仕様は SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 7 章。
 // 履歴（前のフレームまでに混ぜた色。RGBA16F・画面の大きさ）を 2 枚持って行き来し、今のシーンの色と混ぜた物を新しい履歴へ書き、
 // それをシーンの色へ写し戻す（シーンの色を読みながらシーンの色へは書けないため）。値は TaaParams。
 // 描く行列のずらしは TemporalJitter（GameScene）。ここは前のフレームの「ずらしていない射影×ビュー」を覚えておく。

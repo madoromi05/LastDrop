@@ -13,10 +13,10 @@ class HitWorld;
 //   Search ：見失った。最後に見た場所へ向かい、着いたら Wander に戻る（まず立つ）
 // 気付くのは「見えている（前は遠くまで・それ以外は近くだけ。間に壁・建物が無い）」か「撃たれた」とき（alert）。
 // 銃声を聞いたら（hearNoise）、体ごとに少し遅れてから、聞いた所へ探しに行く（Search。追っている間は聞かない。
-// SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。
+// SummaryPlan/個別仕様/ゾンビ/ZombieHearing_Plan.txt）。
 // 見えているかの線は決まった間隔でしか引かない（地面の判定は重いので）。体ごとに引く時刻をずらす。
 // ここが決めるのは最後に向かいたい所だけ。建物を回り込む通り道は ZombiePath が決める（Chase・Search の間だけ）。
-// 値の理由は SummaryPlan/個別仕様/ZombieChase_Plan.txt と ZombiePath_Plan.txt。
+// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieChase_Plan.txt と ZombiePath_Plan.txt。
 class ZombieChase{
 public:
 	enum class Mode{

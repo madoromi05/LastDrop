@@ -10,7 +10,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 4 章）。
+	// つかまれた瞬間に、視点をゾンビの顔へ向ける長さ（秒。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 4 章）。
 	const float kLookPullSeconds = 0.25f;
 	const int kLookPullTicks = GameTime::secondsToTicks( kLookPullSeconds );
 }

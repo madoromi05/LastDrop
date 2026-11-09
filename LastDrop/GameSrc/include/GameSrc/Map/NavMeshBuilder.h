@@ -5,7 +5,7 @@ class CollisionWorld;
 class dtNavMesh;
 
 // 町の歩ける床の形（ナビメッシュ）を、移動の当たり判定の動かない形から Recast で作る係
-// （SummaryPlan/個別仕様/MidPrioritySplit_Plan.txt 4 章。2026-11-09 NavMesh から分けた。値の理由は ZombieNavMesh_Plan.txt）。
+// （SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 4 章。2026-11-09 NavMesh から分けた。値の理由は ZombieNavMesh_Plan.txt）。
 // 手順：材料の三角形を集める（建物の WallMesh・車などの箱・床 1 枚）→ Recast の設定 → 多角形にする → Detour の形へ詰める。
 // 作った形の上で道を探すのは NavMesh（ここは作って渡すだけで、持たない）。
 class NavMeshBuilder{

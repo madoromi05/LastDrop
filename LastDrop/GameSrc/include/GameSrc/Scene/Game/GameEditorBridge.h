@@ -12,7 +12,7 @@ class FirstPersonControl;
 class ModalController;
 
 // 本編のシーンと、確認用の道具（F6 のエディタ・確認用のキー・FireProbe）をつなぐ係
-// （SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 7-2。2026-11-09 GameScene から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 7-2。2026-11-09 GameScene から分けた）。
 // GameScene は ZF_EDITOR のとき（Debug・Profile）だけこれを持つ（Release には持たない。ファイルは他の確認用の道具と同じく、どの構成でもビルドする）。
 // 観察用カメラ（FreeCamera）と確認用の表示（GameDebugOverlay）は持たない（どのカメラで描くか・パイプラインの途中に挟む、が描画の順番そのものなので、シーンに残す）。
 class GameEditorBridge{

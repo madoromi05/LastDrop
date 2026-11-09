@@ -17,10 +17,10 @@ class PathBudget;
 // 点との距離では見ない（逃げる自キャラを追う間は、歩けていても距離が縮まらないため）。
 // 行き先が 1 ティックで大きく飛んだら（新しい銃声の所へ向かい直した）、すぐ調べ直して数え直す。
 // 歩いているのに向かう点の向きへ決まった時間進めなければ（群れ・床の形に無い小さな物に詰まった）、左右の通れる方へ少しよけてから
-// 向かい直す（SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
+// 向かい直す（SummaryPlan/個別仕様/ゾンビ/ZombieCrowd_Plan.txt の 5 章。値は ZombieCrowdParams）。
 // 道を探す（findPath）のは PathBudget が許したときだけ。待たされたら前の通り道（無ければ行き先へまっすぐ）のまま歩き、次のティックに頼み直す
-// （SummaryPlan/個別仕様/OptimizationC_Plan.txt 6 章）。
-// 値の理由は SummaryPlan/個別仕様/ZombiePath_Plan.txt（道探しを NavMesh に替えたのは ZombieNavMesh_Plan.txt）。
+// （SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 6 章）。
+// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombiePath_Plan.txt（道探しを NavMesh に替えたのは ZombieNavMesh_Plan.txt）。
 class ZombiePath{
 public:
 	// probePhase: まっすぐ通れるかを調べる時刻をずらす番号（何体目か）。同じティックに全員が線を引かないようにする。

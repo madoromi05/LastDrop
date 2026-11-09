@@ -1,7 +1,7 @@
 // 中間の描画先に描いたシーンを、画面へ写す（PostProcess::endScene）。
 // シーンはリニア（光の量に比例した数）で描いてある。明るい所のにじみ（ブルーム。Bloom::apply が作った絵）を足し、
 // 露出を掛けて ACES で 0〜1 に収め（トーンマップ）、周辺を少し暗くし（ビネット）、最後に画面の色（sRGB）へ戻す。
-// 順番と理由は SummaryPlan/個別仕様/LinearToneMap_Plan.txt 6 章。
+// 順番と理由は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt 6 章。
 // 噛まれた瞬間は周辺を赤へ寄せ・ぼかし・暗くし（真ん中は触らない）、死んだ後は全体を暗くする（PostProcess::setDamageFlash・setPain・setFade）。
 // トーンマップの直後にカラーグレーディング（夜の色）を掛け、画面の色（8bit）へ落とす直前にディザ（縞を消す弱いノイズ）を足す
 // （NightFinish_Plan.txt 4・6・7 章）。グレーディングはビネット・赤みより前（噛まれた赤みを青寄りの色温度で濁らせない）。

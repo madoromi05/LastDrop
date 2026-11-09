@@ -17,7 +17,7 @@ struct ItemStack{
 // 別のマス目へ動かす（倉庫 ⇔ カバン）のは moveBetween。「カバンに銃は 1 丁」などの入れてよい物の決まりは知らない（ItemTransfer が持つ）。
 // マスの番号は 行 × 列の数 ＋ 列（左上が 0）。2 マスの物は横に並んだ 2 マスを使い、左のマスが中身を持つ（ownerCell）。
 // 描く・入力を読むことはしない（カバンの画面 InventoryScreen の仕事）。何マス使うか・何個重ねるかは ItemSpec の表で決める。
-// SummaryPlan/個別仕様/GridInventory_Plan.txt。
+// SummaryPlan/個別仕様/出撃と帰還/GridInventory_Plan.txt。
 class ItemGrid{
 public:
 	// columns / rows: 1 以上。

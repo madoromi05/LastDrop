@@ -3,7 +3,7 @@
 
 #include <vector>
 
-// 1 ティックに道を探して（NavMesh::findPath）よい回数を数え、超えた頼みを順番待ちにする係（SummaryPlan/個別仕様/OptimizationC_Plan.txt 6 章）。
+// 1 ティックに道を探して（NavMesh::findPath）よい回数を数え、超えた頼みを順番待ちにする係（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 6 章）。
 // 銃声で何十体もが一度に向かい直しても、探す処理が 1 ティックに集まらないようにする（Detour の dtPathQueue と同じ考え）。
 // 待つ順は先に頼んだ順（ずっと待たされる体が出ないように）。待つ間どう歩くかは頼んだ側（ZombiePath）が決める。
 // 待つ体は毎ティック頼み直す決まり。前のティックに頼み直さなかった頼みは捨てる（待つ間に倒れた体などが列の前を塞ぎ続けないように）。

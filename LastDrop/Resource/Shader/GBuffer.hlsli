@@ -1,4 +1,4 @@
-// G-Buffer の並び（SummaryPlan/個別仕様/GBuffer_Plan.txt 4 章・PbrNightLighting_Plan.txt 5 章）。書く側（StaticMeshGBuffer.hlsl・
+// G-Buffer の並び（SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt 4 章・PbrNightLighting_Plan.txt 5 章）。書く側（StaticMeshGBuffer.hlsl・
 // SkinnedMeshGBuffer.hlsl）と読む側（DeferredLighting.hlsl）が、並びをここだけで知る。並びを変えるときは、ここと GBuffer.cpp の形式を一緒に直す。
 //   t2 / RT0  RGBA8_SRGB : rgb 色（頂点色×材質の色×画像。リニアで書くと GPU が sRGB にして入れる）  a 予備
 //   t3 / RT1  RGBA16F    : xyz 法線（ワールド・長さ 1・法線マップ済み）                          a 動きの種類（0 町・0.5 ゾンビ・1 手元。TAA）

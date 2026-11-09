@@ -27,7 +27,7 @@ mono_crash.*
 /LastDrop/Profiling/
 # F6 のエディタで保存した調整値のプリセット（試している間の控え。決まった値は Copy as C++ でコードへ戻す）
 /LastDrop/Tuning/
-# 5 日間の続き（倉庫・カバン・ハイスコア。遊ぶ人ごとの物。SummaryPlan/個別仕様/R2_Plan.txt 7 章）
+# 5 日間の続き（倉庫・カバン・ハイスコア。遊ぶ人ごとの物。SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt 7 章）
 /LastDrop/save.xml
 /LastDrop/save.xml.tmp
 # 画像の元の TGA（DDS を作る途中の物。ゲームは DDS を読む。tools/texture_to_dds.ps1）

@@ -21,9 +21,9 @@ class ZombieHealthComponent;
 class ZombieDismemberComponent;
 struct ChaseTarget;
 
-// ゾンビ 1 体の部品を、1 ティックの中で呼ぶ順番を決める部品（Think の段で動く。SummaryPlan/個別仕様/ZombieBrainSplit_Plan.txt）。
+// ゾンビ 1 体の部品を、1 ティックの中で呼ぶ順番を決める部品（Think の段で動く。SummaryPlan/個別仕様/設計と分割/ZombieBrainSplit_Plan.txt）。
 // 判断はそれぞれの部品が持ち、ここは順番だけを書く（順番を間違えると 1 ティック遅れの揺れが出るので、1 か所で見えるようにする）。
-// ゾンビの物の部品（ZombieFactory が付ける。付ける順は自由。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）：
+// ゾンビの物の部品（ZombieFactory が付ける。付ける順は自由。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）：
 //   必須：Transform（足元と向き）・ZombieModel（設計図）・SkinnedModel（見た目）・Hitbox（部位の命中）・
 //         CharacterCollider（移動の当たり判定と滑る移動）・ZombieDismember（部位欠損・引きずる腕）・ZombieRootMotion（アニメと根の動き）・
 //         ZombieState（状態と体の位置）・ZombieChase（立って追う・うろつく・道探し・フラつき）
@@ -50,10 +50,10 @@ public:
 	ZombieBrainComponent();
 
 	// position で銃声がした（届くかは持ち主が決める）。立っている（か、体を引きずっている）、よろけ・攻撃の最中でなければ、
-	// 少し遅れてからそこへ探しに来る（SummaryPlan/個別仕様/ZombieHearing_Plan.txt）。
+	// 少し遅れてからそこへ探しに来る（SummaryPlan/個別仕様/ゾンビ/ZombieHearing_Plan.txt）。
 	void hearNoise( const GameLib::Math::Vector3& position );
 	// 自キャラの足音がした（届くかは持ち主が決める）。聞ける体なら、撃たれたときと同じく見えていなくても気付く
-	// （SummaryPlan/個別仕様/ZombieFootstepHearing_Plan.txt Q2）。聞ける条件は hearNoise と同じ。
+	// （SummaryPlan/個別仕様/ゾンビ/ZombieFootstepHearing_Plan.txt Q2）。聞ける条件は hearNoise と同じ。
 	void hearFootsteps();
 
 	// Component（必須の部品と、共有の棚の TickContext が要る）

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_ZOMBIE_CROWD_PARAMS_H
 #define INCLUDED_ZOMBIE_CROWD_PARAMS_H
 
-// ゾンビどうしの押し合い・物への引っかかりを直す値（仕様は SummaryPlan/個別仕様/ZombieCrowd_Plan.txt の 3〜5 章）。
+// ゾンビどうしの押し合い・物への引っかかりを直す値（仕様は SummaryPlan/個別仕様/ゾンビ/ZombieCrowd_Plan.txt の 3〜5 章）。
 // 起動中に F6 のエディタで動かせる。どれも画面で確かめる前の初期値。
 struct ZombieCrowdParams{
 	// ── 分離（近くのゾンビから離れる向きを、歩く向きに混ぜる）──
@@ -18,7 +18,7 @@ struct ZombieCrowdParams{
 	float sidestepReach = 0.5f;        // よける点にこれより近づいたら終わり（m）
 	float backstepDistance = 1.f;      // 左右どちらも通れないときに下がる距離（m）
 
-	// ── 道探しの分散（SummaryPlan/個別仕様/OptimizationC_Plan.txt 6 章）──
+	// ── 道探しの分散（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 6 章）──
 	// 1 ティックに道を探して（NavMesh::findPath）よい回数。超えた体は次のティックへ回る。四捨五入して使う。
 	float pathSearchesPerTick = 2.f;
 

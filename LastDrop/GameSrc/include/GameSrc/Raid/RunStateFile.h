@@ -3,7 +3,7 @@
 
 class RunState;
 
-// 5 日間の様子（RunState）を save.xml へ書く・読む係（SummaryPlan/個別仕様/MidPrioritySplit_Plan.txt 2 章。2026-11-09 RunState から分けた）。
+// 5 日間の様子（RunState）を save.xml へ書く・読む係（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 2 章。2026-11-09 RunState から分けた）。
 // 保存の書き方は GameSettings と同じ（PseudoXml を文字列にして fstream）。形は R2_Plan.txt 7 章（形を変えたら RunStateFile.cpp の版を上げる）。
 // RunState の公開の口だけを読み書きする（中身の並べ方は知らない）。置き場所は起動した場所（settings.xml と同じ）。
 class RunStateFile{

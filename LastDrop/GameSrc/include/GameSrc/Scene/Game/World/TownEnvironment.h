@@ -17,7 +17,7 @@ class HitWorld;
 class GameObjectWorld;
 
 // 町（地図・道路と歩道・建物・ゾンビの歩ける床・建物の隠れの表）を作って持つ係
-// （SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt 3-1。2026-11-09 GameWorld から分けた）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-1。2026-11-09 GameWorld から分けた）。
 // 出撃の始めのロードで一度だけ作り、その後は読まれるだけ（増えも減りもしない）。
 // 当たり判定の名簿 2 つと物の並びは持たない（町だけの物ではないので GameWorld が持ち、作るときに借りる）。
 // 置物（車・漁れる場所）は物の並びへ置くので、ここには残らない（持ち主は GameObjectWorld）。

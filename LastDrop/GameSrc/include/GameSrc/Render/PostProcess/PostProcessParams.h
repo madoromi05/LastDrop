@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// 画面へ写す処理（PostProcess・Bloom・Present.hlsl）の調整値。仕様は SummaryPlan/個別仕様/LinearToneMap_Plan.txt の 6・7 章、
+// 画面へ写す処理（PostProcess・Bloom・Present.hlsl）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 6・7 章、
 // カラーグレーディングは NightFinish_Plan.txt 6 章、FXAA は 8 章。
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれもリニア化（2026-10-26）の直後の初期値。画面で見ながら、今までの絵より暗い所がつぶれないように合わせる。

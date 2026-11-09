@@ -11,7 +11,7 @@ class StaticMeshData;
 class StaticMeshLods;
 class LodSelector;
 
-// 物を描くかどうかを決める 1 か所（SummaryPlan/個別仕様/OptimizationA_Plan.txt 6 章）。次の 3 つで間引く。
+// 物を描くかどうかを決める 1 か所（SummaryPlan/個別仕様/最適化と計測/OptimizationA_Plan.txt 6 章）。次の 3 つで間引く。
 //   映る範囲：ViewFrustum（今まで通り）
 //   描く距離：霧でほとんど見えなくなる距離より遠い物（目から見る絵だけ。影は月の範囲がもともと狭い）
 //   小ささ  ：画面（影なら影のマップ）の上で 2 画素より小さい物（缶・落ちている物・切れた腕や脚だけ）

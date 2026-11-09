@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Random.h"
 
-// 傷ついた瞬間の怯み（エイムパンチ）で、狙いへ足す上下・左右の角度を決める。仕様は SummaryPlan/個別仕様/CameraShake_Recoil_Plan.txt の 4 章。
+// 傷ついた瞬間の怯み（エイムパンチ）で、狙いへ足す上下・左右の角度を決める。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 4 章。
 // punch で上と左右ランダムへ跳ね、その後は時間で 0 へ戻る。弾の向きも一緒に動く（攻撃された瞬間は狙いが外れる）。
 // 何で傷ついたかは知らない（呼ぶのは持ち主の FirstPersonControl）。跳ねる量・戻る速さは AimPunch.cpp の定数で直す。
 class AimPunch{

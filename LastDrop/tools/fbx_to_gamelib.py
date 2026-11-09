@@ -50,7 +50,7 @@ CONFIG = {
     "tree_name": "skel",       # <Tree name>。ゲーム側 createTree(この名前)
     "mesh_texture": "",         # <SkinnedMesh texture>。空なら無地
     "mesh_normalmap": "",       # <SkinnedMesh normalmap>。空なら法線マップ無し
-    # <StaticMesh ormmap>（材質の画像。r AO・g 粗さ・b 金属。SummaryPlan/個別仕様/SsrDecalMaterial_Plan.txt 5 章）。空なら無し。
+    # <StaticMesh ormmap>（材質の画像。r AO・g 粗さ・b 金属。SummaryPlan/個別仕様/グラフィック/SsrDecalMaterial_Plan.txt 5 章）。空なら無し。
     # texture_export_size > 0 なら、texture_sources の mesh_orm_roughness（必須）・mesh_orm_metallic・mesh_orm_ao を 1 枚にして書き出す。
     # ORM を付けた材質は、material_params の roughness / metallic を 1 にする（ゲームは「数値 × 画像」で読む）。
     "mesh_orm": "",
@@ -123,11 +123,11 @@ CONFIG = {
     # 暗い線・光る線（鏡）になるため。道路キットのように、1 枚の画像に部品の絵を並べた元画像に使う。
     "fill_island_padding": False,
     # >0 なら、書き出すメッシュ全部の三角形の数がこの数を超えたとき、Blender の Decimate（Collapse）で減らしてから書き出す
-    # （SummaryPlan/個別仕様/OptimizationS246_Plan.txt 2 章）。全メッシュを同じ割合で減らす。0 なら減らさない。
+    # （SummaryPlan/個別仕様/最適化と計測/OptimizationS246_Plan.txt 2 章）。全メッシュを同じ割合で減らす。0 なら減らさない。
     # 形のかどは法線マップが補う。スキンのあるモデルもウェイト（頂点グループ）を保ったまま減る。
     "max_triangles": 0,
     # static モードのみ。粗いモデル（LOD）を作る割合の並び（書き出す形の三角形の数に対する割合。例: [0.5, 0.25]）。
-    # 1 つ目を <out_path の名前>_lod1.txt、2 つ目を _lod2.txt へ書き出す（SummaryPlan/個別仕様/OptimizationC_Plan.txt 8 章）。
+    # 1 つ目を <out_path の名前>_lod1.txt、2 つ目を _lod2.txt へ書き出す（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 8 章）。
     # 細かいモデルを書き出した後に、同じ形を Decimate（Collapse）でさらに減らして書く。画像は細かいモデルと同じ物を使う。
     "lods": [],
 }

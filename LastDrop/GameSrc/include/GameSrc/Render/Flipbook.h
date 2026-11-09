@@ -3,7 +3,7 @@
 
 #include "GameSrc/Render/LitQuadBatch.h"
 
-// 1 枚の絵をます目に分けて並べた「コマ」の場所を答える（フリップブック。仕様は SummaryPlan/個別仕様/EffectFlipbook_Plan.txt の 4 章）。
+// 1 枚の絵をます目に分けて並べた「コマ」の場所を答える（フリップブック。仕様は SummaryPlan/個別仕様/射撃と手応え/EffectFlipbook_Plan.txt の 4 章）。
 // コマは左上から右へ、行ごとに下へ 0, 1, 2 … と並ぶ（tools/smoke_flipbook_gen.py・muzzle_flash_gen.py が書く並び）。
 // 絵そのものは持たない（持ち主が Texture と一緒に持ち、LitQuadBatch::add へコマの UV を渡す）。
 // コマとコマの間はなめらかにつながない（2 コマを重ねて描かない。重ねると板が 2 倍になり、半透明の順番も崩れる）。

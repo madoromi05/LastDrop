@@ -4,7 +4,7 @@
 class StaticMeshData;
 class MeshCache;
 
-// 1 つの置物の、細かさの段（LOD）ごとの形（SummaryPlan/個別仕様/OptimizationC_Plan.txt 8 章）。0 が元の細かい形で、番号が大きいほど粗い。
+// 1 つの置物の、細かさの段（LOD）ごとの形（SummaryPlan/個別仕様/最適化と計測/OptimizationC_Plan.txt 8 章）。0 が元の細かい形で、番号が大きいほど粗い。
 // 粗い形は変換ツールが <名前>_lod1.txt・_lod2.txt に書き出す（tools/configs の "lods"）。どの段も同じモデルの空間・同じ画像。
 // 形は MeshCache から借りるだけの小さな値（コピーしてよい）。読み込みが済んでいない段・無い段を頼まれたら、細かい側の段を返す。
 // 当たり判定は元の形だけを使う（見た目だけを粗くする）。

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_TAA_PARAMS_H
 #define INCLUDED_TAA_PARAMS_H
 
-// TAA の調整値。仕様は SummaryPlan/個別仕様/Taa_Plan.txt の 7-5 章。
+// TAA の調整値。仕様は SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt の 7-5 章。
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれも見た目を確かめる前の初期値。履歴を混ぜる割合を上げるほど縁はなめらかになるが、ぼけと残像が出やすい。
 // 箱の広さを下げるほど残像は消えるが、細い物のちらつきが戻る。

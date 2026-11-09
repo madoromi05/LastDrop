@@ -19,7 +19,7 @@ public:
 	///使う途中で中身が増える物（OS のフォントの文字の画像）に使う。CPU 側に width × height × 4 バイト残る。
 	static Texture createWritable( int width, int height );
 	///TGAもしくはDDS。拡張子で判別する。
-	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため。SummaryPlan/個別仕様/LinearToneMap_Plan.txt 3 章）。
+	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため。SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt 3 章）。
 	static Texture create( const char* filename, TextureColorSpace colorSpace = TEXTURE_COLOR_SPACE_LINEAR );
 	///TGAもしくはDDSの中身を渡す。最初にDDSと書いてあればDDSとみなし、それ以外はTGAとみなす。
 	static Texture create( const char* fileData, int fileSize );

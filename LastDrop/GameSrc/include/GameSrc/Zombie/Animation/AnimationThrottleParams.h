@@ -1,7 +1,7 @@
 #ifndef INCLUDED_ANIMATION_THROTTLE_PARAMS_H
 #define INCLUDED_ANIMATION_THROTTLE_PARAMS_H
 
-// ゾンビのアニメを間引く段の値（SummaryPlan/個別仕様/OptimizationB_Plan.txt 9 章・Q8）。起動中に F6 のエディタで動かせる。
+// ゾンビのアニメを間引く段の値（SummaryPlan/個別仕様/最適化と計測/OptimizationB_Plan.txt 9 章・Q8）。起動中に F6 のエディタで動かせる。
 // 間隔はティックの数。F6 の欄は小数しか扱わないので小数で持ち、使う所で四捨五入する（1 より小さければ 1）。
 struct AnimationThrottleParams{
 	// 前のフレームで目に映っていて、目からこれより遠い体は「遠い」段（m）。霧で輪郭がぼやけ始めるくらい。

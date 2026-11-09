@@ -10,7 +10,7 @@ namespace Graphics{
 }
 }
 
-// 今どの描き方で物を描いているか（SummaryPlan/個別仕様/GBuffer_Plan.txt 6-2）。
+// 今どの描き方で物を描いているか（SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt 6-2）。
 //   Forward：描いたその場で色を出す（固定パイプライン・SkinnedMesh.hlsl。ゲーム本編の外のテスト用シーン）
 //   GBuffer：色を出さず、面の情報（色・法線・材質）を G-Buffer へ書く
 //   Shadow ：光の側から見た深度だけを影のマップへ書く（Shadow_Plan.txt 4 章）

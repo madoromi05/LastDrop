@@ -14,7 +14,7 @@
 
 class GameObjectWorld;
 
-// 世界に置く物 1 つ（Unity の GameObject と同じ考え方。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt・ComponentSystem3_Plan.txt）。
+// 世界に置く物 1 つ（Unity の GameObject と同じ考え方。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt・ComponentSystem3_Plan.txt）。
 // 何の物かを表す種類（タグ）と名前と、付けた部品（Component）を持つ。振る舞いは部品が持ち、物そのものは何もしない。
 // ・作るのは GameObjectWorld::create。部品を addComponent で付け終えてから GameObjectWorld::spawn で動かし始める
 // ・同じ種類の部品は 1 つまで。付ける順は自由（Component の awake・start の約束）

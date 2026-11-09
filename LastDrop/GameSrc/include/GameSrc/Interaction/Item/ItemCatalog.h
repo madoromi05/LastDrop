@@ -6,11 +6,11 @@ enum ItemId{
 	ITEM_FUEL,     // ガソリンの携行缶（車へ運ぶ）
 	ITEM_AMMO_762, // ライフルの予備の弾（7.62 NATO。1 つが 1 発。R で弾倉へ込める）
 	// 銃もカバンの 1 マスを使う（RE:2 と同じ。手に持っている銃も入っている）。どの銃かは WeaponCatalog が銃の物の種類から引く。
-	// 銃は 1 種類 1 丁だけ（弾倉の中身は銃の物〈GunComponent〉が持ち続けるので、同じ銃を 2 丁持つ形は無い）。SummaryPlan/個別仕様/Pistol_Plan.txt。
+	// 銃は 1 種類 1 丁だけ（弾倉の中身は銃の物〈GunComponent〉が持ち続けるので、同じ銃を 2 丁持つ形は無い）。SummaryPlan/個別仕様/射撃と手応え/Pistol_Plan.txt。
 	ITEM_PISTOL,
 	ITEM_RIFLE,
 	ITEM_AMMO_9MM, // 拳銃の予備の弾（9mm。1 つが 1 発）
-	// 段階R3 で足した物（SummaryPlan/個別仕様/R3_Plan.txt Q4。町の漁れる場所から出る）。保存は saveName で書くので、後ろに足しても古い保存は読める。
+	// 段階R3 で足した物（SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q4。町の漁れる場所から出る）。保存は saveName で書くので、後ろに足しても古い保存は読める。
 	ITEM_BANDAGE,  // 包帯（カバンの画面の「使う」で体力が戻る）
 	ITEM_WATCH,    // 腕時計（小さい売れる物。今はスコアの点だけ。強化の材料にするかは段階R5）
 	ITEM_LAPTOP,   // ノートパソコン（大きい売れる物。2 マス）
@@ -31,7 +31,7 @@ enum ItemKind{
 
 // アイテム1種類の決まり。持ち方の決まり（何マス使うか・1 マスに何個重ねるか）はここにデータで持ち、Inventory・ItemGrid の処理には書かない。
 // 種類を足しても、マス目の処理は変えずにこの表へ 1 行足すだけで済むようにするため。
-// 何個まで持てるかは決めない（カバンの空きのマス目が上限）。SummaryPlan/個別仕様/GridInventory_Plan.txt。
+// 何個まで持てるかは決めない（カバンの空きのマス目が上限）。SummaryPlan/個別仕様/出撃と帰還/GridInventory_Plan.txt。
 struct ItemSpec{
 	const char* name; // 画面に出す名前（日本語。F6 の ImGui は日本語の字を持たないので、そちらは saveName を出す）
 	// 保存のファイル（save.xml）に書く名前（英小文字）。ItemId の番号で書くと、並びを変えたときに古いファイルが別の物になるため。
@@ -43,7 +43,7 @@ struct ItemSpec{
 	// 包帯・腕時計・ノートパソコンの形は tools/loot_prop_gen.py で作る（R3_Plan.txt Q2）。
 	const char* groundFile;
 	// カバンの画面に出す絵のファイル（tools/item_icon_gen.py で物の 3D モデルを撮って作る。設定は tools/configs/item_icons.json）。
-	// 1 マスの物は正方形、2 マスの物は横 2 : 縦 1 の絵。SummaryPlan/個別仕様/ItemIcon_Plan.txt。
+	// 1 マスの物は正方形、2 マスの物は横 2 : 縦 1 の絵。SummaryPlan/個別仕様/UI/ItemIcon_Plan.txt。
 	const char* icon;
 	int cellSize;     // 使うマスの数（1 か 2。2 は横に並んだ 2 マス）
 	int stackSize;    // 1 マスに重ねられる数（1 なら重ねない）

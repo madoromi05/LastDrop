@@ -1,7 +1,7 @@
 #ifndef INCLUDED_ZOMBIE_ATTACK_PARAMS_H
 #define INCLUDED_ZOMBIE_ATTACK_PARAMS_H
 
-// ゾンビがつかんでいる間（Hold）の、自キャラとの距離・向きを合わせる値（SummaryPlan/個別仕様/ZombieAttack_Plan.txt の 10 章）。
+// ゾンビがつかんでいる間（Hold）の、自キャラとの距離・向きを合わせる値（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 10 章）。
 // つかむ位置がその時の間合い（0.9〜1.6m・左右 45°）のままだと、手が離れて見えたり、踏み込みで自キャラへめり込んだりするので、
 // つかんだら決まった距離・正面へ寄せる。起動中に F6 のエディタで動かせる。
 struct ZombieAttackParams{

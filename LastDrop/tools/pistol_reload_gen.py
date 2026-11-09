@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # =====================================================================
 # pistol_reload_gen.py
-#   拳銃のリロードの腕のアニメを作る（Mixamo に拳銃のリロードが無いため）。仕様は SummaryPlan/個別仕様/PistolAnimation_Plan.txt。
+#   拳銃のリロードの腕のアニメを作る（Mixamo に拳銃のリロードが無いため）。仕様は SummaryPlan/個別仕様/射撃と手応え/PistolAnimation_Plan.txt。
 #   Shooting.fbx（両手で拳銃を構えた Mixamo のアニメ）の 1 フレーム目を、骨ごとの向きで自キャラ（Ch15）の骨格に写した構えから始めて、構えで終わる。
 #   構えそのもの（pistol_hold。覗いたとき）と、覗いていない間の構え（pistol_ready。ライフルと同じ所に持つ）も、止まったアニメとして
 #   ここで書き出す（ゲームの腕の差し替えに使う）。pistol_ready は、ライフルの構え（rifle_idle）の体の上で、拳銃の握りをライフルの握りと

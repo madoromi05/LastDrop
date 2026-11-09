@@ -1,7 +1,7 @@
 #ifndef INCLUDED_SHADOW_PARAMS_H
 #define INCLUDED_SHADOW_PARAMS_H
 
-// 影の調整値（懐中電灯・月の影）。仕様は SummaryPlan/個別仕様/Shadow_Plan.txt の 7・9 章。
+// 影の調整値（懐中電灯・月の影）。仕様は SummaryPlan/個別仕様/グラフィック/Shadow_Plan.txt の 7・9 章。
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれも見た目を確かめる前の初期値。にきび（面に自分の影が縞で落ちる）が消える所までだけ、ずらしを上げる
 // （上げすぎると、物の根元で影が離れる・壁の裏に光が回る）。

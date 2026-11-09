@@ -134,7 +134,7 @@ void ZombieBrainComponent::update() {
 }
 
 void ZombieBrainComponent::chase( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd, ZombieAttackComponent* attack ) {
-	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/ZombieSplit2_Plan.txt の 3 章）。
+	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
 	ZombieLocomotion::Intent intent = mChase->think( target, hitWorld, crowd );
 	if ( attack && attack->tryStart( target ) ) {
 		return;

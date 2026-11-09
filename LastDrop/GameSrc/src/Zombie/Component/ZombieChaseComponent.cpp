@@ -61,7 +61,7 @@ ZombieSway& ZombieChaseComponent::sway() {
 }
 
 ZombieLocomotion::Intent ZombieChaseComponent::think( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd ) {
-	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/ZombieSplit2_Plan.txt の 3 章）。
+	// 考える（見て・行き先を決め・向きを変える）→ 攻撃を始めるか → 動く、の順（SummaryPlan/個別仕様/設計と分割/ZombieSplit2_Plan.txt の 3 章）。
 	float weaveDegree = mSway->weaveDegree( zombieUncertaintyParams().weaveDegree ); // 揺れている間は、倒れている側へ少し流れる
 	ZombieLocomotion::Intent intent = mLocomotion->thinkStanding( *mPosition, mState->eyePosition(), target, hitWorld, crowd, weaveDegree, mAngleY );
 	mMesh->setAngleY( *mAngleY ); // この後、歩かずに攻撃を始めても、向きは見た目に写しておく

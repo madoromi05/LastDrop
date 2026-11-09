@@ -1,7 +1,7 @@
 #ifndef INCLUDED_RAID_PARAMS_H
 #define INCLUDED_RAID_PARAMS_H
 
-// 出撃と帰還（1 日の時間・脱出の車・ガソリン・スコアの重み）の調整値。仕様は SummaryPlan/個別仕様/R2_Plan.txt（Q4・Q9）と
+// 出撃と帰還（1 日の時間・脱出の車・ガソリン・スコアの重み）の調整値。仕様は SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt（Q4・Q9）と
 // FuelEscapeLoading_Plan.txt（脱出の車とガソリン。2026-11-05 に脱出点の円から変えた）。
 // 小数の値は起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
 // どれも遊んで確かめる前の初期値。

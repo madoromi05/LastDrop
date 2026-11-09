@@ -18,7 +18,7 @@ class CharacterColliderComponent;
 
 // 一人称(FPS)で操作する自キャラの「操作を読んで隣の部品へ頼む」部品（画像の PlayerComponent）。Input の段で動く。
 // 体は常にカメラの水平の向きを向き、WASD はその向き基準の前後・横歩きになる。入力デバイスは読まない（操作は PlayerCommand で受け取る）。
-// 自キャラの物の部品（GameWorld::placePlayer が付ける。付ける順は自由。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt）：
+// 自キャラの物の部品（GameWorld::placePlayer が付ける。付ける順は自由。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）：
 //   必須：Transform（足元と向き）・SkinnedModel（見た目）・FirstPersonBody（一人称の体の見せ方）・
 //         PlayerLocomotion（歩き方のアニメと速さ）・CharacterCollider（移動の当たり判定と滑る移動）
 //   任意（外すとその振る舞いだけ無くなる。使う所ごとに getComponent で引く）：

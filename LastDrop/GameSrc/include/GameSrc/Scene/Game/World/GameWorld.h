@@ -25,8 +25,8 @@ class PlayerComponent;
 
 // 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
 // 飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主。
-// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/GameWorldSplit_Plan.txt。2026-11-02 分けた。
-// 町とゾンビは SummaryPlan/個別仕様/HighPrioritySplit_Plan.txt で 2026-11-09 に分けた）：
+// ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt。2026-11-02 分けた。
+// 町とゾンビは SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt で 2026-11-09 に分けた）：
 //   町（地図・地面・建物・歩ける床・隠れの表） … TownEnvironment（組み立ては WorldBuilder、置物の部品の並びは PropFactory）
 //   ゾンビの数と周り・音を知らせる     … ZombieDirector（組み立ては ZombieFactory、音は ZombieHearing）
 //   自キャラ                       … PlayerFactory（自キャラの足音・銃声は、自キャラの PlayerNoiseComponent が ZombieHearing へ）
@@ -121,7 +121,7 @@ public:
 	bool isPlayerDead() const;
 
 private:
-	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/ComponentSystem3_Plan.txt の ★6）。
+	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の ★6）。
 	// 自キャラ（と手に持つ銃）を町の出発点へ置く（place から。組み立ては mPlayerFactory）。
 	void placePlayer();
 
@@ -142,7 +142,7 @@ private:
 	// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）。
 	ZombieDirector mZombies;
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ
-	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/ComponentSystem2_Plan.txt）。
+	// （名簿への登録・解除もここが行う。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt）。
 	// 物が名簿・町の歩ける床・mZombies の物を借りるので、それらより後に宣言する（＝先に破棄される）。
 	GameObjectWorld mObjects;
 	// 当たった後を解決する・使う物を探す。mObjects・mEffects・名簿を借りるので、それらより後に宣言する。

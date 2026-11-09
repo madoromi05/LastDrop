@@ -1,4 +1,4 @@
-// TAA（時間をまたいだアンチエイリアス。TemporalAntiAliasing::resolve。SummaryPlan/個別仕様/Taa_Plan.txt 7 章）。
+// TAA（時間をまたいだアンチエイリアス。TemporalAntiAliasing::resolve。SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 7 章）。
 // 今のシーンの色（毎フレーム 1 画素より細かくずらして描いた物。TemporalJitter）と、前のフレームまでに混ぜた履歴を混ぜて、新しい履歴を書く。
 // 何フレームかの色が混ざるので、1 画素の中を細かく調べたのと同じになり、縁のギザギザと、細い物のちらつきが消える。
 //   前のフレームのどこを読むか：G-Buffer の RT1 の a（動きの種類。Taa_Plan.txt 6 章）で分ける

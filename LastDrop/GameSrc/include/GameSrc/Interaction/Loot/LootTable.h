@@ -5,7 +5,7 @@
 #include "GameSrc/Audio/SoundCatalog.h"
 #include "GameLib/Math/Random.h"
 
-// 漁れる場所の種類（SummaryPlan/個別仕様/R3_Plan.txt Q1。車のトランクは FuelEscapeLoading_Plan.txt 改訂 2 で消した）。種類ごとに、出やすい物・開けるのにかかる秒・開けている音が違う。
+// 漁れる場所の種類（SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q1。車のトランクは FuelEscapeLoading_Plan.txt 改訂 2 で消した）。種類ごとに、出やすい物・開けるのにかかる秒・開けている音が違う。
 // 見た目（車・ゴミ箱・木箱の形、死体）は種類と関係なく PropFactory・CombatResolver が決める。
 enum class LootTableId{
 	Dumpster, // ゴミ箱（9mm・包帯・腕時計）

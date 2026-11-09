@@ -20,7 +20,7 @@
 // 形はとげにはせず、光のふちの出方が少し違うだけ（炎の形は描かない、の決まりのまま）。
 // 覗いているときは、照準のすぐ先が白く埋まらないよう、覗き具合に合わせて小さく・薄くする。
 // 銃口の位置は持たない（描くたびに今の銃から取り直したものを受け取る。反動・歩きの揺れで銃口から離れないように）。
-// 計画は SummaryPlan/個別仕様/MuzzleFlash_Plan.txt。
+// 計画は SummaryPlan/個別仕様/射撃と手応え/MuzzleFlash_Plan.txt。
 class MuzzleFlash{
 public:
 	MuzzleFlash();

@@ -11,7 +11,7 @@ struct GameSettings;
 // 本編の一時停止メニュー（ESC）。止めた本編の画の上に半透明の黒を重ね、見出しとボタン（MenuCatalog::pause）を出す。
 // Options から設定と操作の一覧のページへ行ける（ページの切り替えはタイトルと同じ MenuPages）。
 // 世界・音を止める・動かし直すのは本編（GameScene）。ここはメニューの操作と描画だけを持つ。
-// ボタンの並べ方はメニュー画面と同じ（MenuLayout）。SummaryPlan/個別仕様/PauseMenu_Plan.txt・OptionsMenu_Plan.txt。
+// ボタンの並べ方はメニュー画面と同じ（MenuLayout）。SummaryPlan/個別仕様/UI/PauseMenu_Plan.txt・OptionsMenu_Plan.txt。
 class PauseMenu{
 public:
 	// renderer / settings / audio: 借りる。所有権は受け取らない。nullptr 不可。このメニューより長く生きていること。

@@ -1,4 +1,4 @@
-// 霧（SummaryPlan/個別仕様/NightFinish_Plan.txt 5 章）。霧のパス（Fog.hlsl）・半透明の板（LitQuad.hlsl）・G-Buffer の表示（DeferredLighting.hlsl）が使う。
+// 霧（SummaryPlan/個別仕様/グラフィック/NightFinish_Plan.txt 5 章）。霧のパス（Fog.hlsl）・半透明の板（LitQuad.hlsl）・G-Buffer の表示（DeferredLighting.hlsl）が使う。
 // 霧の値はライトの一覧（LightList.hlsli の gFog）、目の位置は gEyePosition から読む。
 //   距離の霧：( d × k )²（2 乗の指数。Direct3D 9 の FOG_EXP2 と同じ形）。近くは薄いまま、奥で急に濃くなる
 //   高さの霧：濃さ ρ(y) = 濃さ × exp( −b × y ) を、目から位置までの線の上で足し合わせる（Inigo Quilez「Better Fog」）

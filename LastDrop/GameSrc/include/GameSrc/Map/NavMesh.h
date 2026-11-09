@@ -9,7 +9,7 @@ class CollisionWorld;
 class dtNavMesh;
 class dtNavMeshQuery;
 
-// 町の歩ける床の形（ナビメッシュ）と、その上の道探し。Recast で作り、Detour で探す（SummaryPlan/個別仕様/ZombieNavMesh_Plan.txt）。
+// 町の歩ける床の形（ナビメッシュ）と、その上の道探し。Recast で作り、Detour で探す（SummaryPlan/個別仕様/ゾンビ/ZombieNavMesh_Plan.txt）。
 // 作るのは NavMeshBuilder（2026-11-09 に分けた。MidPrioritySplit_Plan.txt 4 章）。ここは作った形を持ち、道を探す・確認用の縁を出す。
 // 材料は移動の当たり判定の動かない形（建物の WallMesh・車などの箱）なので、物を置けば床の形に勝手に穴が開く（手で図を直す所が無い）。
 // 途中で消える物（落ちているガソリン缶）・キャラは入れない（歩く側が壁に沿って滑り、詰まったら横へよける）。

@@ -7,7 +7,7 @@ namespace GameLib{
 	}
 }
 
-// 走るゾンビの値（仕様は SummaryPlan/個別仕様/R4_Plan.txt）。起動中に F6 のエディタで動かせる。
+// 走るゾンビの値（仕様は SummaryPlan/個別仕様/出撃と帰還/R4_Plan.txt）。起動中に F6 のエディタで動かせる。
 // 走るゾンビが「速すぎて怖い／遅すぎて怖くない」は遊んで決める（RaidLoop_Spec.txt Q11）ので、速さ・割合はここに集める。
 struct ZombieRunParams{
 	// 湧いた体が「走る体」になる確率（0〜1）。湧いたときに 1 回だけ引く（変えたら次に湧く体から効く。R4_Plan Q1）。

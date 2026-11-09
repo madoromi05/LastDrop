@@ -23,7 +23,7 @@ struct AnimationView{
 	int viewCell;
 };
 
-// ゾンビ 1 体の、アニメの姿勢を求めるティックを間引く係（SummaryPlan/個別仕様/OptimizationB_Plan.txt 9 章）。
+// ゾンビ 1 体の、アニメの姿勢を求めるティックを間引く係（SummaryPlan/個別仕様/最適化と計測/OptimizationB_Plan.txt 9 章）。
 // 段（近い・遠い・映らない）を決め、「このティックは姿勢を求めるか」を答える。姿勢を求めないティックは、
 // 持ち主が SkinnedMeshInstance::advance で時刻だけを進める（動きは遅れず、飛ぶだけ）。
 // ViewFrustum は「ゲームの進行に使わない」約束だが、ここでは腕や脚の形が数ティック古くなるだけで、体の位置・状態の移り変わりは変わらない
