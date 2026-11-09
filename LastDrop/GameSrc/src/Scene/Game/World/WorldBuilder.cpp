@@ -55,7 +55,7 @@ WorldBuilder::WorldBuilder( MeshCache* meshes, const TownMap* map, const PropFac
 	ASSERT( meshes && map && props && "WorldBuilder : an argument is null." );
 }
 
-void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot ) const {
+void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, bool lampsLit ) const {
 	target.ground->place( *mMap );
 	target.hitWorld->addBlocker( target.ground ); // 地面も弾・視線を止める（地面全体で1つの物）
 	target.collisionWorld->setGround( target.ground ); // キャラは地面の高さに乗る（歩道の段差）
@@ -70,6 +70,10 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot ) co
 	// 消火栓は見た目の置物（置けなくても〈形の構築の失敗〉その場所に無いだけで遊べる）。
 	for ( const TownPlacement& p : mMap->fireHydrants() ) {
 		mProps->spawnFireHydrant( target.objects, toPosition( p ), p.yawDegree );
+	}
+	// 街灯の柱も見た目の置物（同じ）。照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る。
+	for ( const TownPlacement& p : mMap->streetLights() ) {
+		mProps->spawnStreetLamp( target.objects, toPosition( p ), p.yawDegree, lampsLit );
 	}
 	placeEscapeCar( target.objects, escapeCarSpot ); // 町に置く車はこの 1 台だけ（乗れない置物の車は置かない）
 }

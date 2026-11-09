@@ -1,0 +1,22 @@
+{
+    "mode": "static",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/街頭/FBX+PBR/PBR/StreetLight.002.fbx",
+    "out_path": "../../Resource/Model/Prop/streetlamp_off.txt",
+    "split_vertices": true,
+    "scale": 1.0,
+    "center_origin": true,
+    "material_colors": {
+        "M_StreetLight_002_A": [0.208, 0.192, 0.180],
+        "M_StreetLight_002_B": [0.30, 0.30, 0.28]
+    },
+    "plain_material_params": {
+        "roughness": 0.75,
+        "metallic": 0.0,
+        "specular": [0.1, 0.1, 0.1],
+        "sharpness": 20.0
+    },
+    "plain_materials": {
+        "M_StreetLight_002_B": { "roughness": 0.2, "emission": 0.0 }
+    },
+    "lods": [0.5, 0.25]
+}

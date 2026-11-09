@@ -21,6 +21,7 @@
 #include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
+#include "GameSrc/Scene/Game/World/GameWorld.h"
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Raid/RaidRecord.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
@@ -57,6 +58,8 @@ namespace{
 	RaidSession* gRaid = nullptr;    // GameScene から受け取った、1 回の出撃（無ければ nullptr）
 	RaidRecord* gRaidRecord = nullptr; // GameScene から受け取った、出撃の間で受け渡す物（無ければ nullptr）
 	InteractionSystem* gInteraction = nullptr; // GameScene から受け取った、漁れる場所を探す係（無ければ nullptr）
+	GameWorld* gWorld = nullptr;     // GameScene から受け取った、今の出撃の世界（今日の条件を切り替える。無ければ nullptr）
+	const char* const kRandomConditionName = "random"; // 日の条件の一覧の、固定しない（次の出撃から毎回ランダム）の行
 
 	// F6 で出し入れする物（ユーザー指定の 4 種類。銃とその弾を並べて置く。2026-11-05 に段階R3 の 3 つも足した）。
 	// ガソリンは 2 マスの持ち帰る物なので、ここでは触らない。
@@ -175,17 +178,32 @@ namespace{
 			}
 			return;
 		}
-		// 次の出撃（Retry・もう一度）の条件。固定していなければ毎回ランダム（世界を作るときに読むので、今の出撃には効かない）。
-		bool forced = gRaidRecord->hasForcedCondition();
-		ImGui::Text( "Next condition: %s", forced ? dayConditionEffect( gRaidRecord->forcedCondition() ).saveName : "random" );
-		ImGui::SameLine();
-		if ( ImGui::SmallButton( "Next" ) ) {
-			int next = forced ? ( static_cast< int >( gRaidRecord->forcedCondition() ) + 1 ) % static_cast< int >( DayCondition::Count ) : 0;
-			gRaidRecord->forceCondition( static_cast< DayCondition >( next ) );
+		// 日の条件（DayCondition_Plan.txt）。一覧から選ぶと今の出撃にすぐ効き（GameWorld::changeDayCondition）、
+		// 次の出撃（Retry・もう一度）にも引き継ぐ。random は次の出撃から毎回ランダムに戻すだけ（今の出撃の条件はそのまま）。
+		if ( gWorld ) {
+			ImGui::Text( "Today: %s", dayConditionEffect( gWorld->dayConditionKind() ).saveName );
 		}
-		ImGui::SameLine();
-		if ( ImGui::SmallButton( "Random" ) ) {
-			gRaidRecord->clearForcedCondition();
+		bool forced = gRaidRecord->hasForcedCondition();
+		const char* preview = forced ? dayConditionEffect( gRaidRecord->forcedCondition() ).saveName : kRandomConditionName;
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x * kSliderWidthRatio );
+		if ( ImGui::BeginCombo( "Condition", preview ) ) {
+			if ( ImGui::Selectable( kRandomConditionName, !forced ) ) {
+				gRaidRecord->clearForcedCondition();
+			}
+			for ( int i = 0; i < static_cast< int >( DayCondition::Count ); ++i ) {
+				DayCondition condition = static_cast< DayCondition >( i );
+				bool selected = forced && ( gRaidRecord->forcedCondition() == condition );
+				if ( ImGui::Selectable( dayConditionEffect( condition ).saveName, selected ) ) {
+					gRaidRecord->forceCondition( condition );
+					if ( gWorld ) {
+						gWorld->changeDayCondition( condition );
+					}
+				}
+				if ( selected ) {
+					ImGui::SetItemDefaultFocus();
+				}
+			}
+			ImGui::EndCombo();
 		}
 		if ( gRaid && ImGui::SmallButton( "Retry now" ) ) {
 			SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
@@ -220,6 +238,7 @@ namespace{
 			case GameObjectTag::LootContainer: return "LootContainer";
 			case GameObjectTag::EscapeCar: return "EscapeCar";
 			case GameObjectTag::FireHydrant: return "FireHydrant";
+			case GameObjectTag::StreetLamp: return "StreetLamp";
 		}
 		return "?";
 	}
@@ -504,6 +523,10 @@ void setInteraction( InteractionSystem* interaction ) {
 	gInteraction = interaction;
 }
 
+void setWorld( GameWorld* world ) {
+	gWorld = world;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -529,6 +552,9 @@ void setRaidRecord( RaidRecord* ) {
 }
 
 void setInteraction( InteractionSystem* ) {
+}
+
+void setWorld( GameWorld* ) {
 }
 
 } //namespace EditorWindow

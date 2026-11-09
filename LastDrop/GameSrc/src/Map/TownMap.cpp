@@ -164,6 +164,21 @@ namespace{
 	const float kFaceRoadFromEast = -90.f; // 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
 	const float kFaceRoadFromWest = 90.f;
 
+	// ── 街灯（ランタン型の柱。光は柱の頭から。StreetLamp_Plan.txt 4 章）──
+	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる。
+	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）。
+	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）。
+	const float kLampFromCurb = 0.5f;      // 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
+	const float kLampPastJunction = 1.5f;  // 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
+	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）。
+	const float kLampClearance = 3.f;
+	const float kLampDodge = 4.f;
+	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり。StreetLamp_Plan.txt Q2）。区間の長さの半分。
+	const float kLampDarkCarDistance = 0.5f * kBlockSize;
+	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる。
+	const float kLampAlongEastWest = kAsBuilt;
+	const float kLampAlongNorthSouth = kQuarterTurn;
+
 	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13。2026-11-05 に脱出点の円から変えた）。
 	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
 	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
@@ -377,13 +392,82 @@ namespace{
 		return { x, kSidewalkHeight, z, yaw };
 	}
 
-	// 交差点の真ん中を、道の本数から並べる（町の形を変えても直さなくてよい）。外周の道の交差点も入れる。
-	void addJunctionCenters( std::vector< TownPlacement >* junctions ) {
-		const float kNoOffset = 0.f;
-		const float kNoYaw = 0.f; // 向きは使わない
+	// 道の番号 index から見た、町の中心の側（+1 は番号が増える向き）。本数 count の真ん中より手前なら +1。
+	float towardCenter( int index, int count ) {
+		return ( index < 0.5f * ( count - 1 ) ) ? 1.f : -1.f;
+	}
+
+	float squaredFlatDistance( const TownPlacement& a, const TownPlacement& b ) {
+		float dx = a.x - b.x;
+		float dz = a.z - b.z;
+		return dx * dx + dz * dz;
+	}
+
+	// 柱 lamp が置物（props の中のどれか）に近すぎれば、道に沿って（alongX・alongZ は道の向きの単位ベクトル）置物から遠ざける。
+	TownPlacement dodgeProps( TownPlacement lamp, float alongX, float alongZ, const std::vector< const std::vector< TownPlacement >* >& props ) {
+		const float clearance = kLampClearance * kLampClearance;
+		for ( const std::vector< TownPlacement >* list : props ) {
+			for ( const TownPlacement& prop : *list ) {
+				if ( squaredFlatDistance( lamp, prop ) >= clearance ) {
+					continue;
+				}
+				float along = ( lamp.x - prop.x ) * alongX + ( lamp.z - prop.z ) * alongZ;
+				float away = ( along >= 0.f ) ? 1.f : -1.f; // 置物より先にあれば先へ、手前にあれば手前へ
+				lamp.x += away * kLampDodge * alongX;
+				lamp.z += away * kLampDodge * alongZ;
+				return lamp; // 1 回ずらせば、区間の中の置物どうしは離れているので足りる
+			}
+		}
+		return lamp;
+	}
+
+	bool nearEscapeCar( const TownPlacement& lamp, const std::vector< TownEscapeCarSpot >& cars ) {
+		for ( const TownEscapeCarSpot& car : cars ) {
+			if ( squaredFlatDistance( lamp, car.placement ) < kLampDarkCarDistance * kLampDarkCarDistance ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び。cars: 脱出の車の置き場所（近くの区間には立てない）。
+	void addStreetLamps( std::vector< TownPlacement >* lamps, const std::vector< const std::vector< TownPlacement >* >& props,
+	const std::vector< TownEscapeCarSpot >& cars ) {
+		const float curbToLamp = 0.5f * kRoadWidth + kLampFromCurb;          // 道の中心から柱まで（道を横切る向き）
+		const float junctionToLamp = 0.5f * kStreetWidth + kLampPastJunction; // 交差点の中心から柱まで（道に沿う向き）
+		const float kEast = 1.f;
+		const float kSouth = 1.f;
+		const float kNone = 0.f;
+		// 交差点の柱：東西の道の、町の中心側の角。
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			for ( int column = 0; column < kColumnNumber; ++column ) {
-				junctions->push_back( toPlacement( { static_cast< float >( column ), static_cast< float >( row ), kNoOffset, kNoOffset, kNoYaw } ) );
+				TownPlacement lamp = {
+					roadX( static_cast< float >( column ) ) + towardCenter( column, kColumnNumber ) * junctionToLamp,
+					kSidewalkHeight,
+					roadZ( static_cast< float >( row ) ) + towardCenter( row, kRowNumber ) * curbToLamp,
+					kLampAlongEastWest };
+				lamps->push_back( dodgeProps( lamp, kEast, kNone, props ) );
+			}
+		}
+		// 区間の真ん中の柱。東西の道（row）の区間と、南北の道（column）の区間。
+		for ( int row = 0; row < kRowNumber; ++row ) {
+			bool perimeter = ( row == 0 || row == kRowNumber - 1 );
+			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
+				float side = perimeter ? towardCenter( row, kRowNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kSouth : -kSouth );
+				TownPlacement lamp = { roadX( column + 0.5f ), kSidewalkHeight, roadZ( static_cast< float >( row ) ) + side * curbToLamp, kLampAlongEastWest };
+				if ( !nearEscapeCar( lamp, cars ) ) {
+					lamps->push_back( dodgeProps( lamp, kEast, kNone, props ) );
+				}
+			}
+		}
+		for ( int column = 0; column < kColumnNumber; ++column ) {
+			bool perimeter = ( column == 0 || column == kColumnNumber - 1 );
+			for ( int row = 0; row + 1 < kRowNumber; ++row ) {
+				float side = perimeter ? towardCenter( column, kColumnNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kEast : -kEast );
+				TownPlacement lamp = { roadX( static_cast< float >( column ) ) + side * curbToLamp, kSidewalkHeight, roadZ( row + 0.5f ), kLampAlongNorthSouth };
+				if ( !nearEscapeCar( lamp, cars ) ) {
+					lamps->push_back( dodgeProps( lamp, kNone, kSouth, props ) );
+				}
 			}
 		}
 	}
@@ -400,9 +484,6 @@ TownMap::TownMap() :
 	addPerimeterFloor( &mGroundTiles );
 
 	addZombieSpawnPoints( &mZombieSpawnPoints );
-	addJunctionCenters( &mJunctions );
-	// 街灯は交差点ごとに 1 本（道の途中にも置くと明るくなりすぎ、選ぶ数も増える。PbrNightLighting_Plan.txt Q4）。
-	mStreetLights = mJunctions;
 	for ( const StreetSpot& spot : kDumpsters ) {
 		mDumpsters.push_back( toPlacement( spot ) );
 	}
@@ -415,6 +496,8 @@ TownMap::TownMap() :
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
+	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから（StreetLamp_Plan.txt 4 章）。
+	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );
 }
 
 const std::vector< TownTile >& TownMap::groundTiles() const {
@@ -460,11 +543,6 @@ const std::vector< TownPlacement >& TownMap::fireHydrants() const {
 const std::vector< GroundZone >& TownMap::groundZones() const {
 	return mGroundZones;
 }
-
-const std::vector< TownPlacement >& TownMap::junctions() const {
-	return mJunctions;
-}
-
 
 const std::vector< TownPlacement >& TownMap::streetLights() const {
 	return mStreetLights;

@@ -96,6 +96,12 @@ void ZombieDirector::setup( const TownMap& map ) {
 		&mZombieModel->footprint(), mRandom.getInt(), mDay->zombieCount );
 }
 
+void ZombieDirector::onDayConditionChanged() {
+	if ( mSpawner ) {
+		mSpawner->setTargetCount( mDay->zombieCount );
+	}
+}
+
 bool ZombieDirector::spawn( const Vector3& position, float yawDegree ) {
 	// 同時に居られるゾンビの数（死体も数える）は、今日の条件で決まる（群れの日は多い）。
 	if ( !mFactory || mObjects->count< ZombieBrainComponent >() >= mDay->zombieCount ) {

@@ -80,7 +80,8 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	if ( mRenderer->muzzleLight( &muzzle ) ) {
 		mLights.add( muzzle );
 	}
-	// 交差点の街灯。16 個を超えた分は、LightList が目から遠い物から外す（PbrNightLighting_Plan.txt 8 章）。
+	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す（PbrNightLighting_Plan.txt 8 章）。
+	// 外れた柱もガラスは光ったまま（模型の発光。StreetLamp_Plan.txt Q3）。
 	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）。
 	float streetLightIntensity = params.streetLightIntensity * mWorld->dayCondition().streetLightScale;
 	if ( streetLightIntensity > 0.f ) {

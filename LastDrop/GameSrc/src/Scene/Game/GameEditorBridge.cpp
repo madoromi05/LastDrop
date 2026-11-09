@@ -39,6 +39,7 @@ GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setRaid( nullptr );
 	EditorWindow::setRaidRecord( nullptr );
 	EditorWindow::setInteraction( nullptr );
+	EditorWindow::setWorld( nullptr );
 }
 
 void GameEditorBridge::markReady() {
@@ -60,6 +61,7 @@ void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSess
 	EditorWindow::setInventory( inventory );       // F6 の Inventory の欄（物を足す・行を増やす）
 	EditorWindow::setRaid( session );              // F6 の Raid の欄（経った時間・すぐ脱出）
 	EditorWindow::setRaidRecord( record );         // 同じ欄の、次の出撃の条件
+	EditorWindow::setWorld( world );               // 同じ欄の、今の出撃の条件を切り替える
 	EditorWindow::setInteraction( &world->interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
 }
 

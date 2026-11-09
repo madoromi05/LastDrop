@@ -43,12 +43,14 @@ struct LightingParams{
 	float fogGroundDensity = 0.015f; // 車道の面での高さの霧の濃さ（1/m）。這うゾンビが 10m 先で見えること（Q3）を上限にする
 	float fogHeightHalf = 1.f;       // 高さの霧が半分に薄まる高さ（m）
 
-	// ── 街灯（点光源。交差点ごとに 1 本。TownMap::streetLights）── 道の明るい所・暗い所を作る（PbrNightLighting_Plan.txt 8 章）
+	// ── 街灯（点光源。柱 1 本に 1 つ。TownMap::streetLights）── 道の明るい所・暗い所を作る（PbrNightLighting_Plan.txt 8 章）
 	// 色はナトリウム灯風の暖かいオレンジ。強さは「真下（高さの距離）の地面で強さ / 高さ² の明るさ」になる
-	float streetLightHeight = 5.f;   // 光の高さ（m。車道の面から）
-	float streetLightRange = 14.f;   // 届く距離（m。光から。真下から横へ届くのは √(距離² − 高さ²) ≒ 13m）
+	// 2026-11-09 に柱の模型（ランタン型 3.86m）を置き、光をガラスの中へ移した。前より低く数も多い（16 → 38 本）ので、
+	// 届く距離と強さを下げた（初期値。画面で合わせる。StreetLamp_Plan.txt 5 章）。
+	float streetLightHeight = 3.29f; // 光の高さ（m。柱の足元〈歩道の面〉から。ランタンのガラスの真ん中。模型を変えたら合わせる）
+	float streetLightRange = 12.f;   // 届く距離（m。光から。真下から横へ届くのは √(距離² − 高さ²) ≒ 11.5m）
 	GameLib::Math::Vector3 streetLightColor = GameLib::Math::Vector3( 1.f, 0.72f, 0.42f );
-	float streetLightIntensity = 30.f;
+	float streetLightIntensity = 12.f;
 
 	// ── 懐中電灯（スポット。銃に付けて T で付ける。PbrNightLighting_Plan.txt 9 章）── 夜の FPS で一番効く光（段階 4 で影も付ける）
 	// 光は銃口の少し前に置き、銃口の向きへ照らす（照準のぶれで銃が揺れると光も揺れる）。銃より前に置くので、銃そのものは照らさない

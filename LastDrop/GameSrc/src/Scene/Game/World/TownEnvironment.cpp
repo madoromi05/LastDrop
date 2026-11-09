@@ -16,7 +16,7 @@ TownEnvironment::TownEnvironment( MeshCache* meshes, TownCache* town, const Prop
 	ASSERT( meshes && town && props && "TownEnvironment : an argument is null." );
 }
 
-void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot ) {
+void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot, bool lampsLit ) {
 	LOAD_SCOPE( "town", "WorldBuilder::build" );
 	mEscapeCarSpot = escapeCarSpot;
 	WorldBuildTarget target;
@@ -25,7 +25,7 @@ void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld,
 	target.collisionWorld = collisionWorld;
 	target.hitWorld = hitWorld;
 	target.objects = objects;
-	mBuilder.build( target, escapeCarSpot );
+	mBuilder.build( target, escapeCarSpot, lampsLit );
 }
 
 NavMesh* TownEnvironment::buildNavMesh( const CollisionWorld& collisionWorld ) {

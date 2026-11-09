@@ -132,6 +132,11 @@ bool ZombieSpawner::isVisible( const View& view, const Vector3& head ) const {
 	return !mHitWorld->isBlocked( view.playerEye, toHead );
 }
 
+void ZombieSpawner::setTargetCount( int targetCount ) {
+	ASSERT( targetCount > 0 && "ZombieSpawner::setTargetCount : targetCount must be positive." );
+	mTargetCount = targetCount;
+}
+
 int ZombieSpawner::targetCount() const {
 	return mTargetCount;
 }

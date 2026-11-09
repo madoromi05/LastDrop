@@ -52,6 +52,9 @@ public:
 	// 歩いて追ってくるゾンビを 1 体出す（倒れ方は体ごとにランダム）。update の外（ティックの間）で呼ぶ。
 	// setup の前・形の構築に失敗した・数が上限に達しているなら出さずに false。
 	bool spawn( const GameLib::Math::Vector3& position, float yawDegree );
+	// 今日の条件（借りている day）の中身が替わった（F6）。湧かせる係の目標の数を合わせる（同時に居られる数と足音は毎回 day から読む）。
+	// setup の前なら何もしない（setup で day から読む）。
+	void onDayConditionChanged();
 
 	// ティックの始めに、このティックに道を探してよい回数を戻す（OptimizationC_Plan.txt 6 章）。
 	void beginTick();

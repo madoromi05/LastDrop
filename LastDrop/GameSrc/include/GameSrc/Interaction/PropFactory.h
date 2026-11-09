@@ -41,6 +41,12 @@ public:
 	GameObject* spawnEscapeCar( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, int requiredFuel ) const;
 	// 消火栓（見た目の置物。動かない箱として名簿へ載る。使えない・漁れない）。
 	GameObject* spawnFireHydrant( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
+	// 街灯の柱（見た目の置物。動かない箱。StreetLamp_Plan.txt）。lit: ガラスが光る形か、消えた形か（停電の日は消えた形。Q4）。
+	// 照らす光は置かない（シーンが TownMap::streetLights から作る）。
+	GameObject* spawnStreetLamp( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree, bool lit ) const;
+	// world に置いた街灯の柱を全部、ガラスが光る形（lit）か消えた形に替える（F6 で今日の条件を切り替えたとき）。world: nullptr 不可。
+	// update の外で呼ぶ。形の構築に失敗していれば替えない。
+	void relightStreetLamps( GameObjectWorld* world, bool lit ) const;
 	// 拾うと消えるガソリン（カバンから捨てたとき）。外せる箱で移動を止める（ユーザー指定）。
 	GameObject* spawnFuel( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
 	// 地面に落ちている銃（拾うとカバンへ入る）。id: どの銃か。上を歩ける。
@@ -55,6 +61,8 @@ private:
 	GameObject* spawnGroundItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;
 	// 物の種類 item の、落ちた形（ItemSpec::groundFile を持つ物だけ）。
 	const StaticMeshLods& groundShapes( ItemId item ) const;
+	// 街灯の形（lit: ガラスが光る形か、消えた形か）。
+	const StaticMeshLods& streetLampShapes( bool lit ) const;
 	// 動かない置物の物を作り、見た目と箱の部品まで付けて返す（まだ spawn しない。呼ぶ側が残りの部品を付けて spawn する）。
 	// data: 構築済みであること。material: 表面の材質（着弾音）。
 	GameObject* createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshLods& shapes,
@@ -64,6 +72,8 @@ private:
 	StaticMeshLods mVehicleShapes;  // どれも MeshCache から借りる。置物の車（細かさの段ごと）
 	StaticMeshLods mFuelCanShapes;  // ガソリンの携行缶（細かさの段ごと）
 	StaticMeshLods mFireHydrantShapes; // 消火栓（細かさの段ごと）
+	StaticMeshLods mStreetLampShapes;    // 街灯（ガラスが光る形。細かさの段ごと）
+	StaticMeshLods mStreetLampOffShapes; // 街灯（ガラスが消えた形。同上）
 	StaticMeshLods mDumpsterShapes; // ゴミ箱（1 段だけ。tools/loot_prop_gen.py で作る）
 	StaticMeshLods mCrateShapes;    // 木箱（同上）
 	// 落ちた形（物の種類ごと。形のファイルは ItemCatalog の groundFile。1 段だけ）。map なのは、groundFile の無い種類の分を持たないため。

@@ -10,7 +10,6 @@
 #include "GameSrc/Scene/Game/PlayerFeedback.h"
 #include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Raid/RaidSession.h"
-#include "GameSrc/Raid/DayCondition.h"
 #include "GameSrc/Scene/Game/Screen/ModalController.h"
 #include "GameSrc/Scene/Game/Screen/PauseMenu.h"
 #include "GameSrc/Scene/Game/Screen/BagController.h"
@@ -95,9 +94,7 @@ private:
 	bool isFreeCameraActive() const; // 観察用カメラを使っているか（Release では常に false）
 
 	GameResources* mResources;   // 借りているだけ
-	// 今回の条件（停電・霧など）。世界を作るときに読むので、mWorld より先に宣言する（＝先に決まる）。
-	DayCondition mCondition;
-	// 世界。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）。
+	// 世界。今回の条件（停電・霧など）も世界が持つ。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）。
 	GameWorld mWorld;
 	// 世界を画面へ写す（ディファードのパイプライン。View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）。
 	SceneRenderer mSceneRenderer;

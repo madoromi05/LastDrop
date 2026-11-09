@@ -38,8 +38,9 @@ public:
 	// 全データの構築後に一度だけ、地面・建物・置物の車・漁れる場所（ゴミ箱・木箱）・脱出の車を置く。
 	// 漁れる場所のうち RaidParams::fuelCanCount か所に、ガソリンを 1 個ずつ入れる（FuelEscapeLoading_Plan.txt Q15）。
 	// escapeCarSpot: 脱出の車を置く所（TownMap::escapeCarSpots の番号）。
+	// lampsLit: 街灯をガラスが光る形で置くか（停電の日は消えた形。StreetLamp_Plan.txt Q4）。
 	// 構築に失敗したデータ（理由は MeshCache がデバッグ出力済み）の物は置かない（その物が無いまま、他の確認はできる）。
-	void build( const WorldBuildTarget& target, int escapeCarSpot ) const;
+	void build( const WorldBuildTarget& target, int escapeCarSpot, bool lampsLit ) const;
 
 private:
 	// data の建物を placements の場所へ建てる。data: nullptr 不可。

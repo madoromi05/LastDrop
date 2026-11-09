@@ -31,8 +31,8 @@ public:
 
 	// ── ロード（GameWorld の同じ名前の段から、この順で呼ぶ）──
 	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（WorldBuilder）。
-	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号）。
-	void build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot );
+	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号）。lampsLit: 街灯のガラスが光る形で置くか（停電の日は false）。
+	void build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot, bool lampsLit );
 	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。build の後。
 	// 借りた床を返す（ゾンビの部品が共有の棚から引くので、棚の持ち主が置く）。
 	NavMesh* buildNavMesh( const CollisionWorld& collisionWorld );

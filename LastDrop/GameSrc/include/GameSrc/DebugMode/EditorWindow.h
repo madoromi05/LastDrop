@@ -9,7 +9,7 @@
 //   Tuning：調整値の構造体（TuningPanel。自キャラ・銃・視点・ゾンビの群れ。プリセットの保存・読み込みと Copy as C++）
 //   Objects：世界に置いた物の一覧（Unity の Hierarchy。名前・タグ・部品の数。ComponentSystem2_Plan.txt の ★6）
 //   Inventory：銃 2 種と弾 2 種を好きな数だけ足す・減らす・カバンを空にする・行を増やす／減らす（GridInventory_Plan.txt。拾いに行かずに試すため）
-//   Raid：すぐ脱出する・次の出撃の条件を決める・すぐ始め直す（SimpleRun_Plan.txt C9。出撃の流れをすぐ試すため）
+//   Raid：すぐ脱出する・日の条件を一覧から選ぶ（今の出撃にすぐ効き、次の出撃にも引き継ぐ）・すぐ始め直す（SimpleRun_Plan.txt C9。出撃の流れをすぐ試すため）
 //   Zombies / Audio：まだ灰色の見出しだけ
 // ImGui の土台（開け閉め・入力の受け渡し）は GameLib の DebugUi が持つ。ここは窓の中身だけ。
 class GameObjectWorld;
@@ -17,6 +17,7 @@ class Inventory;
 class RaidSession;
 class RaidRecord;
 class InteractionSystem;
+class GameWorld;
 
 namespace EditorWindow{
 
@@ -39,6 +40,9 @@ void setRaidRecord( RaidRecord* record );
 // Loot の欄で触る、漁れる場所（中身を振り直す・全部開けたことにする。R3_Plan.txt Q13）。本編が渡す。所有権は受け取らない。
 // nullptr なら欄に何も出さない。シーンが終わるときに nullptr へ戻す。Release では何もしない。
 void setInteraction( InteractionSystem* interaction );
+// Raid の欄で今日の条件を切り替える、今の出撃の世界（GameWorld::changeDayCondition）。本編が渡す。所有権は受け取らない。
+// nullptr なら今の出撃には効かせない（次の出撃の固定だけ）。シーンが終わるときに nullptr へ戻す。Release では何もしない。
+void setWorld( GameWorld* world );
 
 } //namespace EditorWindow
 

@@ -16,6 +16,9 @@ namespace{
 	const char* kVehicleFile = "Resource/Model/Prop/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
 	const char* kFuelCanFile = "Resource/Model/Prop/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上。2026-11-08 に metal_jerrycan へ差し替え）
 	const char* kFireHydrantFile = "Resource/Model/Prop/fire_hydrant.txt"; // tools/configs/fire_hydrant_atlas.json → fire_hydrant.json で変換（同上）
+	// 街灯は tools/configs/streetlamp.json・streetlamp_off.json で変換（同上。画像は使わず色だけ。ガラスは別の部品で発光だけ違う）。
+	const char* kStreetLampFile = "Resource/Model/Prop/streetlamp.txt";
+	const char* kStreetLampOffFile = "Resource/Model/Prop/streetlamp_off.txt";
 	// ゴミ箱・木箱は tools/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上。R3_Plan.txt Q2）。
 	const char* kDumpsterFile = "Resource/Model/Prop/dumpster.txt";
 	const char* kCrateFile = "Resource/Model/Prop/crate.txt";
@@ -31,6 +34,7 @@ namespace{
 	const char* kDumpsterName = "Dumpster";
 	const char* kCrateName = "Crate";
 	const char* kFireHydrantName = "FireHydrant";
+	const char* kStreetLampName = "StreetLamp";
 
 	const int kFuelPerCan = 1;
 	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）。
@@ -43,6 +47,8 @@ PropFactory::PropFactory( MeshCache* meshes ) :
 	mVehicleShapes( StaticMeshLods::request( meshes, kVehicleFile ) ),
 	mFuelCanShapes( StaticMeshLods::request( meshes, kFuelCanFile ) ),
 	mFireHydrantShapes( StaticMeshLods::request( meshes, kFireHydrantFile ) ),
+	mStreetLampShapes( StaticMeshLods::request( meshes, kStreetLampFile ) ),
+	mStreetLampOffShapes( StaticMeshLods::request( meshes, kStreetLampOffFile ) ),
 	mDumpsterShapes( meshes->staticMesh( kDumpsterFile ) ),
 	mCrateShapes( meshes->staticMesh( kCrateFile ) ) {
 	ASSERT( meshes && "PropFactory : meshes is null." );
@@ -102,6 +108,36 @@ GameObject* PropFactory::spawnFireHydrant( GameObjectWorld* world, const Vector3
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
 	world->spawn( obj );
 	return obj;
+}
+
+GameObject* PropFactory::spawnStreetLamp( GameObjectWorld* world, const Vector3& position, float yawDegree, bool lit ) const {
+	const StaticMeshLods& shapes = streetLampShapes( lit );
+	if ( !shapes.full()->isReady() ) {
+		return nullptr;
+	}
+	// 背丈 3.9m あり遠くからも見える（光るガラスが目印になる）ので、大きい物の側（Large）で間引く。
+	GameObject* obj = createProp( world, GameObjectTag::StreetLamp, kStreetLampName, shapes, position, yawDegree,
+		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
+	world->spawn( obj );
+	return obj;
+}
+
+void PropFactory::relightStreetLamps( GameObjectWorld* world, bool lit ) const {
+	ASSERT( world && "PropFactory::relightStreetLamps : world is null." );
+	const StaticMeshLods& shapes = streetLampShapes( lit );
+	if ( !shapes.full()->isReady() ) {
+		return;
+	}
+	// 光る形と消えた形は同じ頂点（ガラスの発光だけ違う）なので、描く形だけを替える。
+	world->forEach< StaticModelComponent >( [ &shapes ]( StaticModelComponent& model ) {
+		if ( model.gameObject()->tag() == GameObjectTag::StreetLamp ) {
+			model.setShapes( shapes );
+		}
+	} );
+}
+
+const StaticMeshLods& PropFactory::streetLampShapes( bool lit ) const {
+	return lit ? mStreetLampShapes : mStreetLampOffShapes;
 }
 
 GameObject* PropFactory::spawnFuel( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {

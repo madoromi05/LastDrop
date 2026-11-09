@@ -26,6 +26,9 @@ public:
 	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く。
 	void draw( const DrawCulling& culling ) const;
 	const StaticMeshInstance& mesh() const;
+	// 描く形だけを shapes に替える（街灯のガラスが光る形と消えた形。F6 で今日の条件を切り替えたとき）。
+	// shapes は今の形と同じ頂点の物（材質だけ違う）であること。弾・視線の当たりと箱は元の形のまま。
+	void setShapes( const StaticMeshLods& shapes );
 
 	// Component（TransformComponent が要る）
 	void awake() override;

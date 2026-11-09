@@ -44,9 +44,11 @@ public:
 	// 最初の 1 回は、目標の数まで（湧いてよい場所が足りる分だけ）まとめて足す。それ以降は多くても 1 か所。
 	// 持ち主は、全員の update と flush が済んだ後（名簿をたどっていない所）で呼び、足された所へ出す。out: nullptr 不可。
 	void update( const View& view, std::vector< Order >* out );
+	// 目標の数を替える（F6 で今日の条件を切り替えたとき）。1 以上。多い分のゾンビは消さない（減るのを待つ）。
+	void setTargetCount( int targetCount );
 
 	// ── 確認用の表示（F3）が読む ──
-	int targetCount() const;          // 目標の数（作るときに受け取った値）
+	int targetCount() const;          // 目標の数（作るときに受け取った値か、setTargetCount で替えた値）
 	int standingCount() const;        // 最後の update で渡された、立っている数
 	float secondsUntilNext() const;   // 次の補充までの残り（秒。補充を待っていない間は補充の間隔そのもの）
 
@@ -67,7 +69,7 @@ private:
 	GameLib::Math::Random mRandom;
 	bool mPlacedInitial;  // 始めに置く分を済ませたか
 	int mRefillTicks;     // 次の補充までの残り（ティック）
-	int mTargetCount;     // 立っているゾンビの目標の数（作るときに受け取る）
+	int mTargetCount;     // 立っているゾンビの目標の数（作るときに受け取る。F6 で替わる）
 	int mStandingCount;   // 確認用（同上）
 };
 

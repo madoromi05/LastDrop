@@ -63,7 +63,13 @@ CONFIG = {
     # ORM を付けた材質は roughness / metallic を倍率の 1 にするが、ORM の無い単色部品ではそれが値そのものになり、
     # metallic 1（金属 100%）で真っ黒に見えるため（2026-11-03。LOD を作り直して見つかった）。例: {"roughness": 0.8, "metallic": 0.0}
     "plain_material_params": {},
-    "frame_step": 1,            # アニメを何フレームおきにサンプリングするか
+    # static モードのみ。マテリアル名 → 材質値。そのマテリアルの面を、画像を貼らない単色の部品（<StaticMesh> 1 つ）に分ける。
+    # 色は material_colors、材質値は material_params ← plain_material_params ← ここに書いた値の順に上書きする。
+    # 1 つのメッシュの中で一部だけ材質を変えたいモデル用（街灯のガラスだけ光らせる、など。StreetLamp_Plan.txt 3 章）。
+    # 分けた部品は Decimate・LOD では減らさない（光る所など、形を崩したくない小さな部品に使うため）。
+    # 例: {"M_StreetLight_002_B": {"emission": 1.0}}
+    "plain_materials": {},
+    "frame_step": 1,           # アニメを何フレームおきにサンプリングするか
     "translate_root_only": True,  # True: 根ボーンだけ移動カーブを出す(関節は回転のみ)
     "flip_winding": False,      # 三角形の巻き順を反転する（AXIS_CONVERT が鏡像変換のときだけ必要）
     "anim_name": "",            # 空でない場合、出力アニメ名をこれに固定する(Take 001対策)
@@ -253,6 +259,60 @@ def filter_islands(mesh_objs):
         bm.to_mesh(obj.data)
         bm.free()
         print("ISLANDS", obj.name, "removed verts", len(doomed), "left", len(obj.data.vertices))
+
+
+PLAIN_PART_KEY = "gamelib_plain_part"  # separate_plain_materials で分けた部品に付ける印（値はマテリアル名。Decimate から外し、別の部品に書く）
+
+
+def keep_faces(obj, keeps):
+    # obj のメッシュのうち、keeps(面) が True の面だけを残す。
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    doomed = [face for face in bm.faces if not keeps(face)]
+    bmesh.ops.delete(bm, geom=doomed, context="FACES")
+    bm.to_mesh(obj.data)
+    bm.free()
+    obj.data.update()
+
+
+def face_material_name_of(obj, face):
+    # bmesh の面のマテリアル名（無ければ ""）。
+    slots = obj.material_slots
+    mat = slots[face.material_index].material if face.material_index < len(slots) else None
+    return mat.name if mat else ""
+
+
+def separate_plain_materials(mesh_objs):
+    # plain_materials のマテリアルの面を、マテリアルごとに別のオブジェクトへ移す（emit_static_mesh が別の単色の部品として書き出す）。
+    # 返り値：書き出すメッシュの並び（分けた部品を足したもの）。どの面にも当たらない名前はエラーにする（書き間違いに気付くため）。
+    names = set(CONFIG["plain_materials"])
+    if not names:
+        return mesh_objs
+    found = set()
+    result = list(mesh_objs)
+    for obj in mesh_objs:
+        used = {face_material_name(obj, p) for p in obj.data.polygons}
+        for name in sorted(used & names):
+            plain = obj.copy()
+            plain.data = obj.data.copy()
+            plain.name = "%s_%s" % (obj.name, name)
+            for collection in obj.users_collection:
+                collection.objects.link(plain)
+            keep_faces(plain, lambda face, source=obj, target=name: face_material_name_of(source, face) == target)
+            keep_faces(obj, lambda face, source=obj, target=name: face_material_name_of(source, face) != target)
+            plain[PLAIN_PART_KEY] = name
+            result.append(plain)
+            found.add(name)
+            print("PLAIN", obj.name, "->", plain.name, "faces", len(plain.data.polygons))
+    missing = names - found
+    if missing:
+        raise RuntimeError("plain_materials のマテリアルを使う面がありません: %s" % sorted(missing))
+    return result
+
+
+def shape_meshes(mesh_objs):
+    # Decimate・LOD で減らすメッシュ（separate_plain_materials で分けた部品を除く）。
+    return [o for o in mesh_objs if not o.get(PLAIN_PART_KEY)]
 
 
 def flip_faces(mesh_objs):
@@ -512,12 +572,15 @@ def material_attrs(texture, normalmap, params, ormmap=""):
     return attrs
 
 
-def mesh_element_attrs(textured):
+def mesh_element_attrs(textured, overrides=None):
     # メッシュ要素に付ける材質属性。
     # textured=False のパーツ（UVの無い単色部品）にはテクスチャを付けない。
+    # overrides: plain_materials で分けた部品の材質値（最後に上書きする）。
     params = dict(CONFIG["material_params"])
     if not textured:
         params.update(CONFIG["plain_material_params"])
+    if overrides:
+        params.update(overrides)
     return material_attrs(CONFIG["mesh_texture"] if textured else "",
                           CONFIG["mesh_normalmap"] if textured else "",
                           params,
@@ -763,10 +826,10 @@ def emit_skinned_mesh(mesh_objs, armature):
 
 # ------------------- <StaticMesh> 出力 -------------------
 
-def emit_static_part(mesh_objs, textured):
+def emit_static_part(mesh_objs, textured, overrides=None):
     # パーツ1つ = <StaticMesh> 要素1つ = ゲーム側で1回の描画（1つの見た目）。
     lines = []
-    lines.append('\t<StaticMesh%s>' % mesh_element_attrs(textured))
+    lines.append('\t<StaticMesh%s>' % mesh_element_attrs(textured, overrides))
     emit_geometry(mesh_objs, lines, lambda obj: (lambda v: ''), textured)  # 頂点に足す属性は無い
     lines.append('\t</StaticMesh>')
     print("PART", "textured" if textured else "plain", [o.name for o in mesh_objs])
@@ -776,16 +839,22 @@ def emit_static_part(mesh_objs, textured):
 def emit_static_mesh(mesh_objs):
     # テクスチャを貼るメッシュ（UVあり）と、マテリアル色だけで塗るメッシュ（UVなし）を別パーツに分ける。
     # 焼き込み済みモデルは「壁はテクスチャ、窓枠やガラスは単色」のように両方が混ざっていることが多い。
+    # plain_materials で分けた部品（PLAIN_PART_KEY）は、マテリアルごとに別の単色のパーツにする（材質値をそれぞれに書くため）。
+    separated = [o for o in mesh_objs if o.get(PLAIN_PART_KEY)]
+    rest = [o for o in mesh_objs if o not in separated]
     if CONFIG["mesh_texture"]:
-        textured = [o for o in mesh_objs if o.data.uv_layers.active]
+        textured = [o for o in rest if o.data.uv_layers.active]
     else:
         textured = []
-    plain = [o for o in mesh_objs if o not in textured]
+    plain = [o for o in rest if o not in textured]
     out = ""
     for group in split_by_vertex_limit(textured, True):
         out += emit_static_part(group, True)
     for group in split_by_vertex_limit(plain, False):
         out += emit_static_part(group, False)
+    for name, overrides in CONFIG["plain_materials"].items():
+        for group in split_by_vertex_limit([o for o in separated if o[PLAIN_PART_KEY] == name], False):
+            out += emit_static_part(group, False, overrides)
     return out
 
 
@@ -1074,15 +1143,16 @@ def main():
     if CONFIG["mode"] == "static":
         filter_islands(mesh_objs)
         flip_faces(mesh_objs)
-        decimate_meshes(mesh_objs)  # 島を除いた後の、書き出す形で数える
+        mesh_objs = separate_plain_materials(mesh_objs)
+        decimate_meshes(shape_meshes(mesh_objs))  # 島を除いた後の、書き出す形で数える
         adjust_static_transform(mesh_objs)
         if not lods_only_from_args():
             write_container(CONFIG["out_path"], emit_static_mesh(mesh_objs))
             export_mesh_textures(mesh_objs)
         # 粗いモデルは、細かいモデルの三角形の数に対する割合で順に減らす（2 つ目は 1 つ目をさらに減らした形）。
-        full = triangle_count(mesh_objs)
+        full = triangle_count(shape_meshes(mesh_objs))
         for index, ratio in enumerate(CONFIG["lods"], start=1):
-            decimate_to(mesh_objs, max(1, int(full * ratio)))
+            decimate_to(shape_meshes(mesh_objs), max(1, int(full * ratio)))
             write_container(lod_path(index), emit_static_mesh(mesh_objs))
     else:
         decimate_meshes(mesh_objs)

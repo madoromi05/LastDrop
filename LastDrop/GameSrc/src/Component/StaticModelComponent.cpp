@@ -2,6 +2,7 @@
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Hit/HitWorld.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshData.h"
 
 #include "GameLib/GameLib.h"
 
@@ -32,6 +33,11 @@ void StaticModelComponent::draw( const DrawCulling& culling ) const {
 
 const StaticMeshInstance& StaticModelComponent::mesh() const {
 	return mMesh;
+}
+
+void StaticModelComponent::setShapes( const StaticMeshLods& shapes ) {
+	ASSERT( shapes.full() && shapes.full()->isReady() && "StaticModelComponent::setShapes : shapes must be ready." );
+	mShapes = shapes;
 }
 
 bool StaticModelComponent::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {

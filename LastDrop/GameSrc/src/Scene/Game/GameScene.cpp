@@ -48,9 +48,8 @@ namespace{
 
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
-	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ。SimpleRun_Plan.txt Q5・C9）。世界を作る時の 1 回だけ読む。
-	mCondition( resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
-	mWorld( &resources->meshes(), &resources->town(), dayConditionEffect( mCondition ) ),
+	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ。SimpleRun_Plan.txt Q5・C9）。世界が持つ（F6 で今の出撃のまま替えられる）。
+	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
 	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
 	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾。SimpleRun_Plan.txt Q6・C4）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),

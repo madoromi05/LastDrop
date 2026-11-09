@@ -19,8 +19,8 @@ namespace{
 	const float kSpotLineLength = 3.f; // スポットの照らす向きの線の長さ（m）
 	const int kMarkLines = 5;          // 十字 3 本＋縦の線 1 本＋スポットの向き 1 本
 	const int kVerticesPerLine = 2;
-	// 一度に描ける線の数。ライト 16 個より多め（街灯 16＋マズルフラッシュ。選ばれなかった物も描く）× 1 個ぶんの線。
-	const int kMaxDrawnLights = 32;
+	// 一度に描ける線の数。ライト 16 個より多め（街灯 38＋懐中電灯＋マズルフラッシュ。選ばれなかった物も描く）× 1 個ぶんの線。
+	const int kMaxDrawnLights = 48;
 	const int kLineCapacity = kMaxDrawnLights * ( kCircleSegments + kMarkLines );
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 }

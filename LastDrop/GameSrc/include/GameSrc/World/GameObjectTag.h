@@ -16,6 +16,7 @@ enum class GameObjectTag{
 	LootContainer, // 漁れる置物（ゴミ箱・木箱。動かない。R3_Plan.txt Q1）
 	EscapeCar,   // 今日の脱出の車（ガソリンを入れる。漁れない。FuelEscapeLoading_Plan.txt）
 	FireHydrant, // 消火栓（見た目の置物。動かない箱で移動を止める。使えない）
+	StreetLamp,  // 街灯の柱（見た目の置物。動かない箱。光はシーンが柱の頭から出す。StreetLamp_Plan.txt）
 };
 
 #endif

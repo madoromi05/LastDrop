@@ -31,10 +31,17 @@ namespace{
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
 	}
+
+	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形。StreetLamp_Plan.txt Q4）。
+	bool lampsLit( const DayConditionEffect& day ) {
+		const float kLightsOut = 0.f;
+		return day.streetLightScale > kLightsOut;
+	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes, TownCache* town, const DayConditionEffect& day ) :
-	mDay( day ),
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition ) :
+	mCondition( condition ),
+	mDay( dayConditionEffect( condition ) ),
 	mPlayerFactory( meshes ),
 	mPropFactory( meshes ),
 	mTown( meshes, town, &mPropFactory ),
@@ -57,7 +64,7 @@ GameWorld::~GameWorld() {
 }
 
 void GameWorld::buildTown( int escapeCarSpot ) {
-	mTown.build( &mCollisionWorld, &mHitWorld, &mObjects, escapeCarSpot );
+	mTown.build( &mCollisionWorld, &mHitWorld, &mObjects, escapeCarSpot, lampsLit( mDay ) );
 }
 
 void GameWorld::buildNavMesh() {
@@ -193,8 +200,19 @@ const ZombieDirector& GameWorld::zombies() const {
 	return mZombies;
 }
 
+void GameWorld::changeDayCondition( DayCondition condition ) {
+	mCondition = condition;
+	mDay = dayConditionEffect( condition ); // 街灯の光・霧（SceneLights）・足音（ZombieHearing）・同時に居られる数は、ここを毎回読む
+	mZombies.onDayConditionChanged();       // 湧かせる係が作るときに受け取った目標の数を合わせる
+	mPropFactory.relightStreetLamps( &mObjects, lampsLit( mDay ) );
+}
+
 const DayConditionEffect& GameWorld::dayCondition() const {
 	return mDay;
+}
+
+DayCondition GameWorld::dayConditionKind() const {
+	return mCondition;
 }
 
 const CollisionWorld& GameWorld::collisionWorld() const {

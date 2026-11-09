@@ -46,8 +46,8 @@ public:
 	// 部品の読み込みを頼むだけ（非同期）。meshes->update() が true を返してから、下のロードの段階を順に呼ぶ。
 	// meshes: 設計図を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所。
 	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること。
-	// day: 今日の条件の効き目（ゾンビの数・足音の届く距離。表の 1 行は起動中ずっとあるので参照で持つ。DayCondition_Plan.txt）。
-	GameWorld( MeshCache* meshes, TownCache* town, const DayConditionEffect& day );
+	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数。DayCondition_Plan.txt）。F6 の changeDayCondition で替わる。
+	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
@@ -85,6 +85,10 @@ public:
 	// （そのとき物は無くなる。捨てる前に呼ぶ側が確かめる手段は無いので、置けなかったことだけ返す）。
 	// cameraYaw: カメラの水平の向き（度。0 は +Z）。
 	bool dropItem( const ItemStack& stack, float cameraYaw );
+	// 今日の条件を今の出撃のまま切り替える（F6 の Raid の欄。遊び直さずに見比べるため）。update の外で呼ぶ。
+	// 街灯の光・霧・足音は次の読み取りから、ゾンビの目標の数は次の補充から、街灯のガラスはすぐ替わる。
+	// 多い分のゾンビは消さない（群れ → ふつうでも、居るゾンビはそのまま）。出撃の始めの知らせは出し直さない。
+	void changeDayCondition( DayCondition condition );
 
 	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );
@@ -100,7 +104,8 @@ public:
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
 	const TownEnvironment& town() const;                // 町（地図・道路と歩道・建物・歩ける床・隠れの表）
 	const ZombieDirector& zombies() const;              // ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
-	const DayConditionEffect& dayCondition() const;		// 今日の条件（街灯・霧・HUD はシーンがここから読む）
+	const DayConditionEffect& dayCondition() const;		// 今日の条件の効き目（街灯・霧・HUD はシーンがここから読む）
+	DayCondition dayConditionKind() const;				// 今日の条件がどれか（F6 の Raid の欄が出す）
 	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
 	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
 	const BulletList& bullets() const;					// 飛んでいる弾
@@ -125,8 +130,10 @@ private:
 	// 自キャラ（と手に持つ銃）を町の出発点へ置く（place から。組み立ては mPlayerFactory）。
 	void placePlayer();
 
-	// 今日の条件の効き目（DayCondition.cpp の表の 1 行。借りているだけ）。
-	const DayConditionEffect& mDay;
+	// 今日の条件と、その効き目（DayCondition.cpp の表の 1 行の写し。F6 で書き替わるので写して持つ）。
+	// ゾンビの係が mDay を指して読むので、mZombies より先に宣言する。
+	DayCondition mCondition;
+	DayConditionEffect mDay;
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する。
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;

@@ -71,10 +71,8 @@ public:
 	// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）。
 	const std::vector< TownPlacement >& fireHydrants() const;
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
-	// 交差点の真ん中（道の中心どうしが交わる所。向きは使わない）。街灯の置き場所に使う。
-	const std::vector< TownPlacement >& junctions() const;
-	// 街灯の置き場所（足元。高さ 0 の道の中心。向きは使わない）。今は交差点ごとに 1 本（PbrNightLighting_Plan.txt 8 章・Q4）。
-	// 光の高さ・届く距離・色・強さは LightingParams が決め、光を作るのはシーン（柱の模型はまだ無い）。
+	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中（StreetLamp_Plan.txt 4 章）。
+	// 柱は WorldBuilder が置き、光は柱の頭（足元 + LightingParams::streetLightHeight）からシーンが出す。届く距離・色・強さも LightingParams。
 	const std::vector< TownPlacement >& streetLights() const;
 
 private:
@@ -89,7 +87,6 @@ private:
 	std::vector< TownEscapeCarSpot > mEscapeCarSpots;
 	std::vector< TownPlacement > mFireHydrants;
 	std::vector< GroundZone > mGroundZones;
-	std::vector< TownPlacement > mJunctions;
 	std::vector< TownPlacement > mStreetLights;
 };
 
