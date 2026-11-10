@@ -25,7 +25,7 @@ namespace{
 	const float kListLineHeight = 28.f;     // UI_TEXT_NORMAL の文字より少し広く
 	const float kListColumnX[] = { -220.f, 20.f }; // 列ごとの左端（画面の横の中央から）。操作の名前・キーの名前
 	const float kListButtonGap = 24.f;      // 最後の行の真ん中から、ボタンの上端まで
-	// RE:2 風の左寄せのメニュー（画素。座標の高さ 480 で、モックの 720 の 2/3。TitleScreen_Plan.txt）。
+	// RE:2 風の左寄せのメニュー（画素。座標の高さ 480 で、モックの 720 の 2/3）。
 	// 縦の位置は画面の高さに対する割合、そこからの間は画素。横は画面の左端から。
 	const float kSideMarginX = 80.f;            // 題名・ひと言・案内の左端
 	const float kSideTitleTopRatio = 0.24f;     // 題名の上端（画面の上から）

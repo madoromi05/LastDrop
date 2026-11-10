@@ -15,7 +15,7 @@
 #include <memory>
 
 namespace{
-	// RE:2 風（MENU_LOOK_SIDE）の見た目。位置は UiScreen、色は MenuPalette。TitleScreen_Plan.txt。
+	// RE:2 風（MENU_LOOK_SIDE）の見た目。位置は UiScreen、色は MenuPalette。
 	const float kTitleLetterSpacing = 6.f;   // 題名の字の間（文字の高さの 0.12 倍くらい。広げすぎると背景の街灯にかかる）
 	const float kTaglineLetterSpacing = 2.4f; // ひと言の字の間（文字の高さの 0.2 倍くらい）
 	// 背景の絵の左を暗くする範囲（画面の幅に対する割合）。題名とメニューの行が収まる所までは濃いまま、そこから薄れる。
@@ -60,7 +60,7 @@ namespace{
 		}
 		int itemIndex = 0; // 上から何番目か（UiScreen::sideMenuItemRect の番号）
 		for ( const MenuDefinition::Button& button : definition.buttons ) {
-			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex ), button.label, activateOf( button, openPage ) ) );
+			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex ), button.label, activateOf( button, openPage ) , UiMenuItem::kLatinSpacing ) );
 			++itemIndex;
 		}
 		canvas->add( std::make_unique< UiKeyHintRow >( UI_ANCHOR_LEFT, UiScreen::keyHintPosition(), kKeyHints ) );

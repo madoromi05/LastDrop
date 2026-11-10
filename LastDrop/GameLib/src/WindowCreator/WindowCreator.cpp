@@ -1,5 +1,5 @@
 #ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0601 // Windows 7+ (required for DX11/DXGI 1.1)
+#define _WIN32_WINNT 0x0601
 #endif
 
 #include <tchar.h>

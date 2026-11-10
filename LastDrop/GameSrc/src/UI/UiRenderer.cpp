@@ -14,7 +14,7 @@ namespace{
 	// OS のフォントから文字の絵を作る（GameLib::Scene::Font の OS 版）。どちらも日本語の字があり、Windows 10 以降に必ずある。
 	// 1 つの大きさの中では英数字も同じフォントで描く（混ぜると高さと線の太さが揃わない）。
 	const char* kGothic = "Yu Gothic UI"; // 小さくても読みやすい。HUD・設定画面
-	const char* kMincho = "Yu Mincho";    // 静かで重い見た目（RE:2 風のメニュー。TitleScreen_Plan.txt）
+	const char* kMincho = "Yu Mincho";    // 静かで重い見た目（RE:2 風のメニュー）
 	// 大きさごとの書体。UiTextSize の並びと同じ順。
 	// charHeight はゲームの座標の画素（目安）。実際のフォントは、これに画面の細かさ（fitFontsToScreen の倍率）を掛けた高さで作る。
 	struct TextStyle{

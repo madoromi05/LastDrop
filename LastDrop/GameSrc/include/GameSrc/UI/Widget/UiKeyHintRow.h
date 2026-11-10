@@ -9,7 +9,7 @@
 
 // 画面の下の操作の案内の列（「[Enter] 決定  [Esc] 戻る」）。キーの名前を細い枠で囲み、その右に説明を書き、横に並べる。
 // 案内の幅は文字の幅で決まるので、並べる位置はここで描くときに求める（作る側は左端の位置だけを渡す）。
-// 色は MenuPalette。TitleScreen_Plan.txt ★3。
+// 色は MenuPalette。TitleScreen_Plan.txt。
 class UiKeyHintRow : public IUiElement{
 public:
 	// 案内 1 つ。key: 枠の中に書くキーの名前。description: その右に書く説明。

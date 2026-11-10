@@ -14,10 +14,10 @@ enum MenuPageId{
 	MENU_PAGE_CONTROLS, // 操作の一覧。ControlsPage
 };
 
-// メニューの最初のページの並べ方（見た目）。
+// メニューの最初のページの並べ方（見た目）。TitleScreen_Plan.txt。
 enum MenuLook{
-	MENU_LOOK_CENTER, // 見出しを上に、板のボタンを画面の中央に縦に（一時停止。今までの形）
-	MENU_LOOK_SIDE,   // RE:2 風。題名・ひと言・板なしの行を左に寄せ、背景の絵の左を暗くする（タイトル。TitleScreen_Plan.txt）
+	MENU_LOOK_CENTER, // 見出しを上に、板のボタンを画面の中央に縦に（一時停止）
+	MENU_LOOK_SIDE,   // RE:2 風。題名・ひと言・板なしの行を左に寄せ、背景の絵の左を暗くする（タイトル）
 };
 
 // メニュー1枚の中身（見出しと、縦に並べるボタン）。何を並べるかだけを書いたデータで、作るのは MenuCatalog。

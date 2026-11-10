@@ -13,9 +13,13 @@
 // 色は MenuPalette。TitleScreen_Plan.txt。
 class UiMenuItem : public IUiElement, public IUiSelectable{
 public:
+	// 字の間（画素）。英字の大文字は広く、日本語は詰めて並べる。
+	static constexpr float kLatinSpacing = 5.f;
+	static constexpr float kJapaneseSpacing = 2.4f;
+
 	// anchor / rect: 行の範囲（画素。マウスで選べる範囲もこれ）。rect.left は anchor からのずれ、rect.top は画面の上端から。
 	// label: 書く文字（英語）。onActivate: 押したときの処理（空は不可）。
-	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate );
+	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate ,float letterSpacing );
 
 	virtual void draw( UiRenderer& renderer ) const;
 	virtual bool contains( const GameLib::Math::Vector2& point ) const;
@@ -25,14 +29,13 @@ public:
 private:
 	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う。
 	UiRect screenRect() const;
-	// 選ばれているときの線・帯・ひし形を積む。
-	void drawSelectedMarks( UiRenderer& renderer, const UiRect& rect ) const;
 
 	UiAnchor mAnchor;
 	UiRect mRect; // left は mAnchor からのずれ（理由は UiAnchor.h）
 	std::string mLabel;
 	std::function< void() > mOnActivate;
 	bool mSelected;
+	float mLetterSpacing;
 };
 
 #endif
