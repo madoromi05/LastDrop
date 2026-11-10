@@ -10,7 +10,6 @@
 
 // RE:2 風のメニューの 1 行（左寄せの文字。板は描かない）。選ばれている間は、上下の細い線・左から右へ薄れる帯・赤いひし形を出す。
 // UiButton（板のボタン）と同じく、押したときの処理は作る側が onActivate で渡し、どれを選ぶか・いつ決定するかは UiCanvas が決める。
-// 色は MenuPalette。TitleScreen_Plan.txt。
 class UiMenuItem : public IUiElement, public IUiSelectable{
 public:
 	// 字の間（画素）。英字の大文字は広く、日本語は詰めて並べる。

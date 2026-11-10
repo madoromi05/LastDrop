@@ -7,8 +7,8 @@
 #include "Framework.h"
 
 namespace{
-	// 止めた画を暗くする板の色。後ろの町が少し見える暗さ（止まっていることと、どこで止めたかが分かる）。
-	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
+	// 止めた画を暗くする板の色。後ろの町がうっすら見え（どこで止めたかが分かる）、上に直接書く細い白い字が読める暗さ。
+	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.74f );
 }
 
 PauseMenu::PauseMenu( UiRenderer* renderer, GameSettings* settings, AudioEngine* audio, std::function< void() > onResume ) :
@@ -30,7 +30,7 @@ bool PauseMenu::back() {
 }
 
 void PauseMenu::draw() {
-	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、ボタンの板より下になる）。
+	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、選んでいる行の帯より下になる）。
 	UiRect screen;
 	screen.left = 0.f;
 	screen.top = 0.f;

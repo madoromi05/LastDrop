@@ -45,8 +45,9 @@ public:
 	static UiRect sideRuleRect();
 	// 赤い線の下のひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う）。
 	static GameLib::Math::Vector2 sideTaglinePosition();
-	// 縦に並べる行の index 番目（0 が一番上）の範囲。
-	static UiRect sideMenuItemRect( int index );
+	// 縦に並べる count 行のうち、index 番目（0 が一番上）の範囲。
+	// 一番下の行の位置は行の数によらず同じで、行が多いほど上へ伸びる。
+	static UiRect sideMenuItemRect( int index, int count );
 	// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）。
 	static GameLib::Math::Vector2 keyHintPosition();
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。

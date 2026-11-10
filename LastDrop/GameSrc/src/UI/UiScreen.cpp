@@ -33,7 +33,7 @@ namespace{
 	const float kSideRuleWidth = 48.f;
 	const float kSideRuleThickness = 1.5f;
 	const float kSideRuleToTagline = 18.f;      // 赤い線からひと言の縦の真ん中まで
-	const float kSideMenuTopRatio = 0.58f;      // 最初の行の上端（画面の上から）
+	const float kSideMenuBottomRatio = 0.81f;   // 一番下の行の下端（画面の上から）
 	const float kSideMenuItemLeft = 69.f;       // 行の左端（帯と線はここから。文字は行の中の余白の分だけ右）
 	const float kSideMenuItemWidth = 253.f;
 	const float kSideMenuItemHeight = 35.f;
@@ -121,10 +121,15 @@ Vector2 UiScreen::sideTaglinePosition() {
 	return Vector2( kSideMarginX, sideRuleRect().bottom() + kSideRuleToTagline );
 }
 
-UiRect UiScreen::sideMenuItemRect( int index ) {
+UiRect UiScreen::sideMenuItemRect( int index, int count ) {
+	ASSERT( index >= 0 && index < count && "UiScreen : bad side menu item index." );
+	const float pitch = kSideMenuItemHeight + kSideMenuItemSpacing; // 行の上端から次の行の上端まで
+	// 行のまとまり全体の高さ。間は行と行のあいだにだけあり、一番下の行の下には無いので 1 つ引く。
+	const float blockHeight = pitch * count - kSideMenuItemSpacing;
+	const float blockTop = Framework::instance().height() * kSideMenuBottomRatio - blockHeight;
 	UiRect rect;
 	rect.left = kSideMenuItemLeft;
-	rect.top = Framework::instance().height() * kSideMenuTopRatio + index * ( kSideMenuItemHeight + kSideMenuItemSpacing );
+	rect.top = blockTop + index * pitch;
 	rect.width = kSideMenuItemWidth;
 	rect.height = kSideMenuItemHeight;
 	return rect;

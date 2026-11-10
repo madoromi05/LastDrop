@@ -1,4 +1,4 @@
-# MenuRestyle の書き方（段0・段1）
+# MenuRestyle の書き方（段0〜段2）
 
 仕様は `MenuRestyle_Plan.txt`。ここは「どのファイルの何をどう書くか」だけ。
 段0・段1 では **画面の見た目は変わらない**（タイトルが今と同じに見えれば成功）。
@@ -374,10 +374,160 @@ float UiKeyHintRow::drawHint( UiRenderer& renderer, const Hint& hint, float x, f
 
 ---
 
-## 確かめ方
+## 段1 の確かめ方
 1. Debug・Release・Profile（x64）でビルドが通る。
 2. タイトルを開き、**今と同じに見える**こと：選んでいる行の帯・線・赤いひし形、START などの字の間、下の [Enter] [Esc] の枠。
 3. 書けたら Claude に「段1 書いた」と伝える → Claude がファイルを読んで、差分と規約（定数の置き場所・コメント）を確かめる。
+
+---
+
+## 段2 一時停止を RE:2 風にする
+
+一時停止は背景の絵を持たない（`backdrop` が nullptr）ので、`buildSide` は絵と左の影を飛ばし、止めた町の画の上に題名・赤い線・行・下の案内だけを出す。
+町を暗くする板は PauseMenu が描く（今のまま。濃さだけ上げる）。
+変えるファイルは 5 つ：MenuCatalog.cpp・UiScreen.h・UiScreen.cpp・MenuLayout.cpp・PauseMenu.cpp（と MenuLayout.h のコメント）。
+
+### 2-1 MenuCatalog：一時停止を SIDE にし、文字を大文字にする
+
+**`GameSrc/src/Scene/Menu/MenuCatalog.cpp`**
+```cpp
+// 変更前
+	const char* kPauseHeading = "Pause";
+// 変更後
+	const char* kPauseHeading = "PAUSE";
+```
+```cpp
+// 変更前
+	// 文字は大文字（RE:2 風の行は字の間を広げた大文字で並べる。一時停止のボタンは変えない）。
+// 変更後
+	// 文字は大文字（RE:2 風の行は字の間を広げた大文字で並べる）。
+```
+```cpp
+// 変更前
+	menu.buttons.push_back( { "Resume", onResume } );
+	menu.buttons.push_back( { "Options", nullptr, MENU_PAGE_OPTIONS } );
+	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い。
+	menu.buttons.push_back( { "Retry", changeTo( SceneManager::SCENE_GAME ) } );
+	menu.buttons.push_back( { "Title", changeTo( SceneManager::SCENE_TITLE ) } );
+	menu.buttons.push_back( { "Quit", []() { Framework::instance().requestEnd(); } } );
+	return menu;
+// 変更後
+	menu.buttons.push_back( { "RESUME", onResume } );
+	menu.buttons.push_back( { "OPTIONS", nullptr, MENU_PAGE_OPTIONS } );
+	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い。
+	menu.buttons.push_back( { "RETRY", changeTo( SceneManager::SCENE_GAME ) } );
+	menu.buttons.push_back( { "TITLE", changeTo( SceneManager::SCENE_TITLE ) } );
+	menu.buttons.push_back( { "QUIT", []() { Framework::instance().requestEnd(); } } );
+	menu.look = MENU_LOOK_SIDE;
+	return menu;
+```
+`headingColor` の行はまだ消さない（SIDE では使わないが、消すのは段5 でまとめて）。
+
+### 2-2 UiScreen：行の数を受け取り、まとまりの下端を揃える
+
+今は「最初の行の上端」を画面の 58% に固定している。行が 5 つの一時停止でこのまま並べると、下の案内にかかる。
+そこで「最後の行の下端」を固定し、行が多いほど上へ伸ばす。
+画面の高さ 480 で、タイトルの 3 行は今より 0.6 画素上がるだけ（見て分からない）。5 行の一時停止は上端が 202 画素で、赤い線（177 画素）の下に収まる。
+
+**`GameSrc/include/GameSrc/UI/UiScreen.h`**
+```cpp
+// 変更前
+	// 縦に並べる行の index 番目（0 が一番上）の範囲。
+	static UiRect sideMenuItemRect( int index );
+// 変更後
+	// 縦に並べる行の index 番目（0 が一番上）の範囲。count: 行の数。まとまりの下端を揃え、行が多いほど上へ伸ばす。
+	static UiRect sideMenuItemRect( int index, int count );
+```
+
+**`GameSrc/src/UI/UiScreen.cpp`**（定数）
+```cpp
+// 変更前
+	const float kSideMenuTopRatio = 0.58f;      // 最初の行の上端（画面の上から）
+// 変更後
+	const float kSideMenuBottomRatio = 0.81f;   // 一番下の行の下端（画面の上から）
+```
+**`GameSrc/src/UI/UiScreen.cpp`**（関数）
+```cpp
+// 変更前
+UiRect UiScreen::sideMenuItemRect( int index ) {
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = Framework::instance().height() * kSideMenuTopRatio + index * ( kSideMenuItemHeight + kSideMenuItemSpacing );
+	rect.width = kSideMenuItemWidth;
+	rect.height = kSideMenuItemHeight;
+	return rect;
+}
+// 変更後
+UiRect UiScreen::sideMenuItemRect( int index, int count ) {
+	ASSERT( index >= 0 && index < count && "UiScreen : bad menu item index." );
+	const float pitch = kSideMenuItemHeight + kSideMenuItemSpacing; // 行の上端から次の行の上端まで
+	const float blockHeight = count * pitch - kSideMenuItemSpacing; // 一番下の行の下には間を置かない
+	const float blockTop = Framework::instance().height() * kSideMenuBottomRatio - blockHeight;
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = blockTop + index * pitch;
+	rect.width = kSideMenuItemWidth;
+	rect.height = kSideMenuItemHeight;
+	return rect;
+}
+```
+
+### 2-3 MenuLayout：行の数を渡す
+
+**`GameSrc/src/Scene/Menu/MenuLayout.cpp`**（buildSide の中）
+```cpp
+// 変更前
+		int itemIndex = 0; // 上から何番目か（UiScreen::sideMenuItemRect の番号）
+		for ( const MenuDefinition::Button& button : definition.buttons ) {
+			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex ), button.label, activateOf( button, openPage ), UiMenuItem::kLatinSpacing ) );
+			++itemIndex;
+		}
+// 変更後
+		const int itemCount = static_cast< int >( definition.buttons.size() );
+		int itemIndex = 0; // 上から何番目か（UiScreen::sideMenuItemRect の番号）
+		for ( const MenuDefinition::Button& button : definition.buttons ) {
+			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex, itemCount ), button.label, activateOf( button, openPage ), UiMenuItem::kLatinSpacing ) );
+			++itemIndex;
+		}
+```
+
+**`GameSrc/include/GameSrc/Scene/Menu/MenuLayout.h`**（コメントだけ）
+```cpp
+// 変更前
+	MENU_LOOK_CENTER, // 見出しを上に、板のボタンを画面の中央に縦に（一時停止）
+	MENU_LOOK_SIDE,   // RE:2 風。題名・ひと言・板なしの行を左に寄せ、背景の絵の左を暗くする（タイトル）
+// 変更後
+	MENU_LOOK_CENTER, // 見出しを上に、板のボタンを画面の中央に縦に
+	MENU_LOOK_SIDE,   // RE:2 風。題名・ひと言・板なしの行を左に寄せ、背景の絵があればその左を暗くする（タイトル・一時停止）
+```
+
+### 2-4 PauseMenu：暗くする板を濃くする
+
+板のボタンが無くなり、町の画の上に白い細い字を直接書くので、後ろを今より暗くして字を読みやすくする。
+
+**`GameSrc/src/Scene/Game/Screen/PauseMenu.cpp`**
+```cpp
+// 変更前
+	// 止めた画を暗くする板の色。後ろの町が少し見える暗さ（止まっていることと、どこで止めたかが分かる）。
+	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
+// 変更後
+	// 止めた画を暗くする板の色。後ろの町がうっすら見え（どこで止めたかが分かる）、上に書く細い白い字が読める暗さ。
+	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.74f );
+```
+```cpp
+// 変更前
+	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、ボタンの板より下になる）。
+// 変更後
+	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、選んでいる行の帯より下になる）。
+```
+
+## 段2 の確かめ方
+1. Debug・Release・Profile（x64）でビルドが通る。
+2. タイトル：今と同じに見える（行の位置が 0.6 画素上がるだけ）。
+3. 本編で ESC：町が暗くなり、左に PAUSE・赤い線・5 行（RESUME〜QUIT）・下に [Enter] [Esc] が出る。行が下の案内にかからない。
+4. RESUME で戻る・OPTIONS で設定が開く（設定はまだ前の見た目でよい）・RETRY / TITLE / QUIT が今まで通り動く。
+5. 4:3 の窓（640×480）でも、題名と行が赤い線や案内と重ならない。
+6. 書けたら Claude に「段2 書いた」と伝える。
 
 ## 参考
 - Extract Function（同じ処理を 1 か所に出す）：https://refactoring.com/catalog/extractFunction.html

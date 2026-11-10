@@ -3,9 +3,8 @@
 
 #include "GameSrc/Render/VertexColor.h"
 
-// RE:2 風のメニュー（タイトル画面から使う。TitleScreen_Plan.txt）の色。
+// RE:2 風のメニュー（タイトル画面から使う）の色。
 // 部品（UiMenuItem・UiKeyHintRow）と並べ方（MenuLayout）が同じ色を使うので 1 か所に置く。
-// 値は claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD）の色をそのまま 0..1 にした物。
 // 画面は sRGB ではなく、UI は ToneMap の後にそのまま描くので、モックの 16 進の色と同じ数で同じ色に見える。
 // 赤（ACCENT）は印と線だけに使う（文字には使わない。黒地では細い文字が読みにくい）。
 namespace MenuPalette{

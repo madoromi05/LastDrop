@@ -58,9 +58,10 @@ namespace{
 		if ( definition.tagline ) {
 			canvas->add( std::make_unique< UiLabel >( definition.tagline, UI_ANCHOR_LEFT, UiScreen::sideTaglinePosition(), UI_TEXT_CAPTION, UI_ALIGN_MIDDLE_LEFT, MenuPalette::TEXT_SUB, kTaglineLetterSpacing ) );
 		}
+		const int itemCount = static_cast< int >( definition.buttons.size() );
 		int itemIndex = 0; // 上から何番目か（UiScreen::sideMenuItemRect の番号）
 		for ( const MenuDefinition::Button& button : definition.buttons ) {
-			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex ), button.label, activateOf( button, openPage ) , UiMenuItem::kLatinSpacing ) );
+			canvas->add( std::make_unique< UiMenuItem >( UI_ANCHOR_LEFT, UiScreen::sideMenuItemRect( itemIndex, itemCount ), button.label, activateOf( button, openPage ), UiMenuItem::kLatinSpacing ) );
 			++itemIndex;
 		}
 		canvas->add( std::make_unique< UiKeyHintRow >( UI_ANCHOR_LEFT, UiScreen::keyHintPosition(), kKeyHints ) );
