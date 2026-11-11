@@ -14,7 +14,8 @@ enum UiTextSize{
 	UI_TEXT_LARGE,  // 画面の見出し（一時停止の Pause など）
 	// RE:2 風のメニュー（明朝体）
 	UI_TEXT_TITLE,   // ゲームの題名
-	UI_TEXT_MENU,    // 左寄せのメニューの 1 行
+	UI_TEXT_HEADING, // 設定・操作の一覧の見出し（左上）
+	UI_TEXT_MENU,   // 左寄せのメニューの 1 行
 	UI_TEXT_CAPTION, // 題名の下のひと言・画面の下の操作の案内
 
 	UI_TEXT_SIZE_NUMBER,

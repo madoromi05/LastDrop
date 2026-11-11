@@ -26,7 +26,8 @@ namespace{
 		{ kGothic, 20, true },  // UI_TEXT_NORMAL
 		{ kGothic, 48, true },  // UI_TEXT_LARGE
 		{ kMincho, 48, false }, // UI_TEXT_TITLE   （游明朝はモックの字より幅が広いので、84px / 720 の 2/3 より少し小さく。背景の街灯にかからない幅）
-		{ kMincho, 18, false }, // UI_TEXT_MENU    （26px / 720）
+		{ kMincho, 32, false }, // UI_TEXT_HEADING （見出しは画数の多い日本語なので、40px / 720 の 2/3 より大きく）
+		{ kMincho, 18, false }, // UI_TEXT_MENU   （26px / 720）
 		{ kMincho, 12, false }, // UI_TEXT_CAPTION （18px / 720）
 	};
 	const bool kItalic = false;

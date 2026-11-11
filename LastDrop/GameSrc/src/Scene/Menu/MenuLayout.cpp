@@ -18,6 +18,7 @@ namespace{
 	// RE:2 風（MENU_LOOK_SIDE）の見た目。位置は UiScreen、色は MenuPalette。
 	const float kTitleLetterSpacing = 6.f;   // 題名の字の間（文字の高さの 0.12 倍くらい。広げすぎると背景の街灯にかかる）
 	const float kTaglineLetterSpacing = 2.4f; // ひと言の字の間（文字の高さの 0.2 倍くらい）
+	const float kHeadingLetterSpacing = 6.4f; // 設定・操作の一覧の見出しの字の間（文字の高さの 0.2 倍くらい）
 	// 背景の絵の左を暗くする範囲（画面の幅に対する割合）。題名とメニューの行が収まる所までは濃いまま、そこから薄れる。
 	const float kShadeSolidUntil = 0.22f;
 	const float kShadeFadeUntil = 0.62f;
@@ -76,4 +77,10 @@ void MenuLayout::build( UiCanvas* canvas, const MenuDefinition& definition, std:
 	case MENU_LOOK_SIDE:   buildSide( canvas, definition, openPage ); break;
 	default: ASSERT( false && "MenuLayout : bad look." ); break;
 	}
+}
+
+void MenuLayout::buildSideHeading( UiCanvas* canvas, const char* heading ) {
+	ASSERT( canvas && heading && "MenuLayout : canvas or heading is null." );
+	canvas->add( std::make_unique< UiLabel >( heading, UI_ANCHOR_LEFT, UiScreen::sideHeadingPosition(), UI_TEXT_HEADING, UI_ALIGN_LEFT, MenuPalette::TEXT, kHeadingLetterSpacing ) );
+	canvas->add( std::make_unique< UiBar >( UI_ANCHOR_LEFT, UiScreen::sideHeadingRuleRect(), MenuPalette::ACCENT ) );
 }

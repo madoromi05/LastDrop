@@ -4,7 +4,7 @@
 #include "GameSrc/Render/VertexColor.h"
 
 // RE:2 風のメニュー（タイトル画面から使う）の色。
-// 部品（UiMenuItem・UiKeyHintRow）と並べ方（MenuLayout）が同じ色を使うので 1 か所に置く。
+// 部品（UiMenuItem・UiSlider・UiKeyHintRow など）と並べ方（MenuLayout）が同じ色を使うので 1 か所に置く。
 // 画面は sRGB ではなく、UI は ToneMap の後にそのまま描くので、モックの 16 進の色と同じ数で同じ色に見える。
 // 赤（ACCENT）は印と線だけに使う（文字には使わない。黒地では細い文字が読みにくい）。
 namespace MenuPalette{
@@ -19,6 +19,9 @@ namespace MenuPalette{
 	const unsigned SELECTED_LINE = VertexColor::pack( 0.910f, 0.894f, 0.863f, 0.28f );
 	const unsigned SELECTED_BAND = VertexColor::pack( 0.910f, 0.894f, 0.863f, 0.12f );
 	const unsigned SELECTED_BAND_END = VertexColor::pack( 0.910f, 0.894f, 0.863f, 0.f );
+	// 設定のスライダーのバー。細い線の上に、溜まっている所を明るい線で重ねる。
+	const unsigned BAR_TRACK = VertexColor::pack( 0.227f, 0.220f, 0.204f );    // #3a3834
+	const unsigned BAR_FILL = VertexColor::pack( 0.788f, 0.769f, 0.729f );     // #c9c4ba
 	// 背景の絵の左を暗くする影（UiShade）。#050505。
 	const unsigned SHADE = VertexColor::pack( 0.020f, 0.020f, 0.020f, 0.92f );
 }

@@ -38,6 +38,14 @@ namespace{
 	const float kSideMenuItemWidth = 253.f;
 	const float kSideMenuItemHeight = 35.f;
 	const float kSideMenuItemSpacing = 3.f;     // 行と行の間
+	// 設定・操作の一覧の見出しと、設定の行。
+	const float kSideHeadingTopRatio = 0.19f;   // 見出しの上端（画面の上から）
+	const float kSideHeadingToRule = 44.f;      // 見出しの上端から赤い線まで（見出しの文字の高さ 32 ＋ 間 12）
+	const float kSideHeadingRuleWidth = 37.f;
+	const float kSideSettingTopRatio = 0.35f;   // 設定の最初の行の上端（画面の上から）
+	const float kSideSettingRowWidth = 507.f;   // 名前・バー・数字が並ぶ幅
+	const float kSideSettingRowHeight = 40.f;   // スライダーの行（メニューの行より高く、バーを触りやすく）
+	const float kSideSettingLinkGap = 19.f;     // 最後のスライダーの行から、ページを開く行までの間
 	const float kKeyHintBottomMargin = 27.f;    // 画面の下端から案内の縦の真ん中まで
 	// 本編の HUD（画素）。
 	const float kStatusMargin = 16.f;      // 画面の左端・下端からの余白
@@ -131,6 +139,39 @@ UiRect UiScreen::sideMenuItemRect( int index, int count ) {
 	rect.left = kSideMenuItemLeft;
 	rect.top = blockTop + index * pitch;
 	rect.width = kSideMenuItemWidth;
+	rect.height = kSideMenuItemHeight;
+	return rect;
+}
+
+Vector2 UiScreen::sideHeadingPosition() {
+	return Vector2( kSideMarginX, Framework::instance().height() * kSideHeadingTopRatio );
+}
+
+UiRect UiScreen::sideHeadingRuleRect() {
+	UiRect rect;
+	rect.left = kSideMarginX;
+	rect.top = sideHeadingPosition().y + kSideHeadingToRule;
+	rect.width = kSideHeadingRuleWidth;
+	rect.height = kSideRuleThickness;
+	return rect;
+}
+
+UiRect UiScreen::sideSettingRowRect( int index ) {
+	ASSERT( index >= 0 && "UiScreen : bad side setting row index." );
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = Framework::instance().height() * kSideSettingTopRatio + index * ( kSideSettingRowHeight + kSideMenuItemSpacing );
+	rect.width = kSideSettingRowWidth;
+	rect.height = kSideSettingRowHeight;
+	return rect;
+}
+
+UiRect UiScreen::sideSettingLinkRect( int rowCount, int index ) {
+	ASSERT( rowCount > 0 && index >= 0 && "UiScreen : bad side setting link index." );
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = sideSettingRowRect( rowCount - 1 ).bottom() + kSideSettingLinkGap + index * ( kSideMenuItemHeight + kSideMenuItemSpacing );
+	rect.width = kSideSettingRowWidth;
 	rect.height = kSideMenuItemHeight;
 	return rect;
 }

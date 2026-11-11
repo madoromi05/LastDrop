@@ -44,6 +44,8 @@ namespace MenuLayout{
 	// definition の見出しとボタンを、definition.look の並べ方で canvas に足す。canvas: nullptr 不可。
 	// openPage: ページを開くボタン（opens が MENU_PAGE_NONE 以外）が押されたときに呼ぶ。そのボタンがあるなら空は不可。
 	void build( UiCanvas* canvas, const MenuDefinition& definition, std::function< void( MenuPageId ) > openPage );
+	// 左上に見出しと赤い線を足す（設定・操作の一覧のページ。MENU_LOOK_SIDE と同じ見た目）。canvas: nullptr 不可。heading: 書く文字。
+	void buildSideHeading( UiCanvas* canvas, const char* heading );
 }
 
 #endif

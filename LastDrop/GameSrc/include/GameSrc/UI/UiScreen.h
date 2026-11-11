@@ -48,6 +48,14 @@ public:
 	// 縦に並べる count 行のうち、index 番目（0 が一番上）の範囲。
 	// 一番下の行の位置は行の数によらず同じで、行が多いほど上へ伸びる。
 	static UiRect sideMenuItemRect( int index, int count );
+	// 設定・操作の一覧の見出しの左上（UI_ALIGN_LEFT で使う）。
+	static GameLib::Math::Vector2 sideHeadingPosition();
+	// 見出しの下の赤い短い線の範囲。
+	static UiRect sideHeadingRuleRect();
+	// 設定のスライダーの index 行目（0 が一番上）の範囲。
+	static UiRect sideSettingRowRect( int index );
+	// rowCount 行のスライダーの下に、少し空けて並べるページを開く行（操作の一覧・戻る）の index 番目の範囲。
+	static UiRect sideSettingLinkRect( int rowCount, int index );
 	// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）。
 	static GameLib::Math::Vector2 keyHintPosition();
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。

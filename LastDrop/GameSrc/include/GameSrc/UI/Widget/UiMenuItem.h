@@ -17,8 +17,8 @@ public:
 	static constexpr float kJapaneseSpacing = 2.4f;
 
 	// anchor / rect: 行の範囲（画素。マウスで選べる範囲もこれ）。rect.left は anchor からのずれ、rect.top は画面の上端から。
-	// label: 書く文字（英語）。onActivate: 押したときの処理（空は不可）。
-	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate ,float letterSpacing );
+	// label: 書く文字。onActivate: 押したときの処理（空は不可）。letterSpacing: 字の間。kLatinSpacing か kJapaneseSpacing。
+	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate, float letterSpacing );
 
 	virtual void draw( UiRenderer& renderer ) const;
 	virtual bool contains( const GameLib::Math::Vector2& point ) const;

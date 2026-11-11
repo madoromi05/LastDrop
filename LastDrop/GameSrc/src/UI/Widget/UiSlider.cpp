@@ -1,6 +1,8 @@
 #include "GameSrc/UI/Widget/UiSlider.h"
+#include "GameSrc/UI/Widget/UiMenuItem.h"
+#include "GameSrc/UI/Widget/SelectionMarks.h"
 #include "GameSrc/UI/UiRenderer.h"
-#include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/UI/MenuPalette.h"
 
 #include "GameLib/GameLib.h"
 #include <algorithm>
@@ -9,22 +11,16 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 行の板の色。ボタン（UiButton）と同じく、選ばれているかどうかを明るさで分ける。
-	const unsigned kPlateColor = VertexColor::pack( 0.15f, 0.15f, 0.15f, 0.8f );
-	const unsigned kSelectedPlateColor = VertexColor::pack( 0.3f, 0.3f, 0.3f, 0.95f );
-	const unsigned kLabelColor = VertexColor::pack( 0.9f, 0.9f, 0.9f );
-	// バー。溜まっている所は、選ばれている間だけボタンと同じ燃料の色（黄）にする。
-	const unsigned kBarBackColor = VertexColor::pack( 0.05f, 0.05f, 0.05f, 0.9f );
-	const unsigned kBarFillColor = VertexColor::pack( 0.7f, 0.7f, 0.7f );
-	const unsigned kSelectedBarFillColor = VertexColor::pack( 0.85f, 0.65f, 0.15f );
-
-	// 行の中の並べ方（画素。行の左端・右端から）。名前 → バー → 数字の順。
-	const float kLabelInset = 16.f;     // 行の左端から名前まで
-	const float kBarLeftInset = 230.f;  // 行の左端からバーの左端まで（一番長い名前「Mouse Sensitivity」が収まる幅）
-	const float kBarRightInset = 90.f;  // 行の右端からバーの右端まで（数字を書く場所を空ける）
-	const float kValueRightInset = 70.f; // 行の右端から数字の左端まで
-	const float kBarHeight = 12.f;
+	// 行の中の並べ方（画素。座標の高さ 480 で、モックの 720 の 2/3）。左から 印 → 名前 → バー → 数字。
+	const float kLabelWidth = 147.f;     // 名前の欄の幅（一番長い「効果音の音量」が収まる幅）
+	const float kColumnGap = 12.f;       // 名前とバー、バーと数字の間
+	const float kValueWidth = 48.f;      // 数字の欄の幅（"1.25" が収まる幅。数字は欄の右に寄せる）
+	const float kPaddingRight = 11.f;    // 行の右端から数字の右端まで（左の余白と同じ）
+	const float kBarThickness = 1.5f;    // バーの線の太さ
+	const float kBarHitHeight = 16.f;    // バーをクリックできる縦の幅（線は細いので、上下に広げて取る）
+	const float kThumbRadius = 5.5f;     // 今の値の所のひし形（中心から角まで）
 	const float kHalf = 0.5f;
+	const UiTextSize kTextSize = UI_TEXT_MENU;
 }
 
 UiSlider::UiSlider( UiAnchor anchor, const UiRect& rect, const char* label, const Range& range,
@@ -43,18 +39,29 @@ UiSlider::UiSlider( UiAnchor anchor, const UiRect& rect, const char* label, cons
 
 void UiSlider::draw( UiRenderer& renderer ) const {
 	UiRect row = screenRect();
-	renderer.addRect( row, mSelected ? kSelectedPlateColor : kPlateColor );
-	renderer.addText( mLabel.c_str(), Vector2( row.left + kLabelInset, row.center().y ), UI_TEXT_NORMAL, UI_ALIGN_MIDDLE_LEFT, kLabelColor );
+	if ( mSelected ) {
+		SelectionMarks::draw( renderer, row );
+	}
+	// 名前は日本語なので、メニューの日本語の行（操作の一覧・戻る）と同じ字の間にする。
+	renderer.addText( mLabel.c_str(), Vector2( SelectionMarks::labelLeft( row ), row.center().y ), kTextSize, UI_ALIGN_MIDDLE_LEFT,
+		mSelected ? MenuPalette::TEXT_SELECTED : MenuPalette::TEXT_DIM, UiMenuItem::kJapaneseSpacing );
 
+	// バー：細い線 → 溜まっている所の明るい線 → 今の値の所のひし形。
 	int value = mGetValue();
 	UiRect bar = barRect();
-	renderer.addRect( bar, kBarBackColor );
-	UiRect fill = bar;
-	fill.width = bar.width * static_cast< float >( value - mRange.minValue ) / static_cast< float >( mRange.maxValue - mRange.minValue );
-	renderer.addRect( fill, mSelected ? kSelectedBarFillColor : kBarFillColor );
+	float ratio = static_cast< float >( value - mRange.minValue ) / static_cast< float >( mRange.maxValue - mRange.minValue );
+	UiRect line = bar;
+	line.height = kBarThickness;
+	line.top = bar.center().y - kBarThickness * kHalf;
+	renderer.addRect( line, MenuPalette::BAR_TRACK );
+	line.width = bar.width * ratio;
+	renderer.addRect( line, MenuPalette::BAR_FILL );
+	renderer.addDiamond( Vector2( bar.left + bar.width * ratio, bar.center().y ), kThumbRadius, MenuPalette::TEXT );
 
+	// 数字は欄の右に寄せる（桁が変わっても右端が揃う）。
 	std::string text = mFormatValue( value );
-	renderer.addText( text.c_str(), Vector2( row.right() - kValueRightInset, row.center().y ), UI_TEXT_NORMAL, UI_ALIGN_MIDDLE_LEFT, kLabelColor );
+	float valueRight = row.right() - kPaddingRight;
+	renderer.addText( text.c_str(), Vector2( valueRight - renderer.textWidth( text.c_str(), kTextSize ), row.center().y ), kTextSize, UI_ALIGN_MIDDLE_LEFT, MenuPalette::TEXT );
 }
 
 bool UiSlider::contains( const Vector2& point ) const {
@@ -89,10 +96,10 @@ UiRect UiSlider::screenRect() const {
 UiRect UiSlider::barRect() const {
 	UiRect row = screenRect();
 	UiRect bar;
-	bar.left = row.left + kBarLeftInset;
-	bar.width = row.width - kBarLeftInset - kBarRightInset;
-	bar.height = kBarHeight;
-	bar.top = row.center().y - kBarHeight * kHalf;
+	bar.left = SelectionMarks::labelLeft( row ) + kLabelWidth + kColumnGap;
+	bar.width = row.right() - kPaddingRight - kValueWidth - kColumnGap - bar.left;
+	bar.height = kBarHitHeight;
+	bar.top = row.center().y - kBarHitHeight * kHalf;
 	return bar;
 }
 

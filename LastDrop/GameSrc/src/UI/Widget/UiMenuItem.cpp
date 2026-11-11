@@ -7,13 +7,13 @@
 
 using namespace GameLib::Math;
 
-UiMenuItem::UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate , float letterSpacing) :
+UiMenuItem::UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate, float letterSpacing ) :
 	mAnchor( anchor ),
 	mRect( rect ),
 	mLabel( label ),
 	mOnActivate( onActivate ),
 	mSelected( false ),
-	mLetterSpacing(letterSpacing){
+	mLetterSpacing( letterSpacing ) {
 	ASSERT( label && mOnActivate && "UiMenuItem : label or onActivate is empty." );
 }
 
