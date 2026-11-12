@@ -437,3 +437,6 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# superpowers の brainstorm の作業ファイル
+.superpowers/brainstorm/
