@@ -34,7 +34,7 @@ public:
 	mCharCapacity( charCapacity ),
 	mRequests( requestCapacity ), //リクエスト確保
 	mGlyphScale( 1.f ){
-		//TODO:ステート変更命令の最大数はとりあえず文字数分。過剰すぎる。
+		//TODO:ステート変更命令の最大数はとりあえず文字数分。過剰すぎる
 		mPrimitiveRenderer = PrimitiveRenderer::create( charCapacity * 2, charCapacity + 4 );
 		//draw二回呼ぶのに対処するための変数
 		mPreviousFrameId = Manager().frameId() - 1; //過ぎ去った値に
@@ -77,18 +77,18 @@ public:
 		//文字バッファを用意
 		Array< Char > chars( mCharCapacity );
 		int charPosition = 0;
-		//リクエストを取り出して処理。
+		//リクエストを取り出して処理
 		while ( mRequests.size() > 0 ){
 			Request& r = *mRequests.get();
 			Vector2 pos = r.mPosition;
 			float charHeight = static_cast< float >( r.mFont.charHeight() ) / mGlyphScale;
-			//一文字づつ取り出す。文字列は UTF-8（/utf-8 でビルドするため）。code は Unicode のコードポイント。
+			//一文字づつ取り出す。文字列は UTF-8（/utf-8 でビルドするため）。code は Unicode のコードポイント
 			const char* s = r.mString.c_str();
 			int byteCount = 0;
 			for ( ; *s != '\0'; s += byteCount ){
 				//Char準備
 				int code = Utf8::decode( s, &byteCount );
-				if ( code == '\n' ){ //改行文字ですな。
+				if ( code == '\n' ){ //改行文字ですな
 					pos.x = r.mPosition.x;
 					pos.y += charHeight;
 					continue;
@@ -101,16 +101,16 @@ public:
 					&c.mUv1,
 					code );
 				if ( found ){ //文字あった
-					//現在位置にピクセルを加えていく。
+					//現在位置にピクセルを加えていく
 					c.mSize.setSub( c.mUv1, c.mUv0 );
-					//テクスチャから幅と高さをもらって、ピクセルに直す比を求める。
+					//テクスチャから幅と高さをもらって、ピクセルに直す比を求める
 					c.mSize.x *= static_cast< float >( c.mTexture.width() ) / mGlyphScale;
 					c.mSize.y *= static_cast< float >( c.mTexture.height() ) / mGlyphScale;
 				}else{ //文字なかった。豆腐を出す
 					c.mSize.set( charHeight, charHeight ); //正方形
 				}
 				//カリングと折り返し計算
-				//折り返しアリの時はちょっとでもはみ出すなら折り返す。
+				//折り返しアリの時はちょっとでもはみ出すなら折り返す
 				if ( r.mWrap ){
 					if ( pos.x + c.mSize.x > screenSize.x ){
 						pos.x = r.mPosition.x;
@@ -121,7 +121,7 @@ public:
 						break;
 					}
 				}
-				//縦が完全にあふれた場合のみ終了。
+				//縦が完全にあふれた場合のみ終了
 				if ( pos.y > screenSize.y ){
 					break;
 				}

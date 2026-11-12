@@ -8,7 +8,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kHalf = 0.5f;
-	// 縦の位置は画面の高さに対する割合、そこからの間は画素。横は画面の左端から。
+	// 縦の位置は画面の高さに対する割合、そこからの間は画素。横は画面の左端から
 	const float kSideMarginX = 80.f;            // 題名・ひと言・案内の左端
 	const float kSideTitleTopRatio = 0.24f;     // 題名の上端（画面の上から）
 	const float kSideTitleToRule = 62.f;        // 題名の上端から赤い線まで（題名の文字の高さ 48 ＋ 間 14）
@@ -20,7 +20,7 @@ namespace{
 	const float kSideMenuItemWidth = 253.f;
 	const float kSideMenuItemHeight = 35.f;
 	const float kSideMenuItemSpacing = 3.f;     // 行と行の間
-	// 設定・操作の一覧の見出しと、設定の行。
+	// 設定・操作の一覧の見出しと、設定の行
 	const float kSideHeadingTopRatio = 0.19f;   // 見出しの上端（画面の上から）
 	const float kSideHeadingToRule = 44.f;      // 見出しの上端から赤い線まで（見出しの文字の高さ 32 ＋ 間 12）
 	const float kSideHeadingRuleWidth = 37.f;
@@ -31,7 +31,7 @@ namespace{
 	const float kControlsColumnGap = 37.f;      // 操作の一覧の列と列の間
 	const float kSideBackBottomRatio = 0.867f;  // 操作の一覧の「戻る」の行の下端（画面の上から）
 	const float kKeyHintBottomMargin = 27.f;    // 画面の下端から案内の縦の真ん中まで
-	// 本編の HUD（画素）。
+	// 本編の HUD（画素）
 	const float kStatusMargin = 16.f;      // 画面の左端・下端からの余白
 	const float kStatusLineHeight = 26.f;  // 状態表示1行の高さ（UI_TEXT_NORMAL の文字より少し広く）
 }
@@ -73,7 +73,7 @@ Vector2 UiScreen::sideTaglinePosition() {
 UiRect UiScreen::sideMenuItemRect( int index, int count ) {
 	ASSERT( index >= 0 && index < count && "UiScreen : bad side menu item index." );
 	const float pitch = kSideMenuItemHeight + kSideMenuItemSpacing; // 行の上端から次の行の上端まで
-	// 行のまとまり全体の高さ。間は行と行のあいだにだけあり、一番下の行の下には無いので 1 つ引く。
+	// 行のまとまり全体の高さ。間は行と行のあいだにだけあり、一番下の行の下には無いので 1 つ引く
 	const float blockHeight = pitch * count - kSideMenuItemSpacing;
 	const float blockTop = Framework::instance().height() * kSideMenuBottomRatio - blockHeight;
 	UiRect rect;

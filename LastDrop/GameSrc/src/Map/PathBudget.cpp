@@ -29,7 +29,7 @@ bool PathBudget::tryAcquire( const void* requester ) {
 		it = mQueue.insert( mQueue.end(), request );
 	}
 	it->lastTick = mTick;
-	// 列の前から、残りの回数ぶんだけ通す（前に並ぶ体がこのティックにまだ頼みに来ていなくても、その分を後ろの体に回さない。順番を守るため）。
+	// 列の前から、残りの回数ぶんだけ通す（前に並ぶ体がこのティックにまだ頼みに来ていなくても、その分を後ろの体に回さない。順番を守るため）
 	int position = static_cast< int >( it - mQueue.begin() );
 	if ( position >= mRemaining ) {
 		return false;

@@ -2,7 +2,7 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// よろけが終わってから、次のよろけを出さない時間（秒）。頭に当たったときは待たない。
+	// よろけが終わってから、次のよろけを出さない時間（秒）。頭に当たったときは待たない
 	const float kCooldownSeconds = 1.f;
 	const int kCooldownTicks = GameTime::secondsToTicks( kCooldownSeconds );
 }

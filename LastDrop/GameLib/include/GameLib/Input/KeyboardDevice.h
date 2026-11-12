@@ -24,5 +24,5 @@ public:
 // ────────────────────────────────────────────────
 class KeyboardDevice : public InputDeviceBase<int>
 {
-    // 特に追加実装なし。AddInputButtonFormat<KeyboardButtonFormat>() で使う。
+    // 特に追加実装なし。AddInputButtonFormat<KeyboardButtonFormat>() で使う
 };

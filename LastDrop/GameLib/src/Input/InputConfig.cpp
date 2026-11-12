@@ -36,7 +36,7 @@ namespace
     const int kVersion = 1;
     const int kBindingAttributeCount = 4;
 
-    // 読んだ番号が、今ある列挙の範囲に入っているか（古い・壊れたファイルの行を飛ばすため）。
+    // 読んだ番号が、今ある列挙の範囲に入っているか（古い・壊れたファイルの行を飛ばすため）
     bool IsKnownRecord(int a_collector, int a_work, int a_device)
     {
         return a_collector == static_cast<int>(CollectorId::InGame)
@@ -44,7 +44,7 @@ namespace
             && a_device >= 0 && a_device <= static_cast<int>(DeviceKind::GamePadAxis);
     }
 
-    // 1 行（<Binding .../>）を読む。4 つの属性がそろい、番号が範囲に入っていれば true。
+    // 1 行（<Binding .../>）を読む。4 つの属性がそろい、番号が範囲に入っていれば true
     bool ReadBinding(PseudoXml::ConstElement a_element, BindingRecord* a_out)
     {
         if (!a_element.name() || std::strcmp(a_element.name(), kBindingName) != 0) return false;
@@ -110,7 +110,7 @@ void InputConfig::rebind(CollectorId a_collector, WorkId a_work, DeviceKind a_de
 
 void InputConfig::addMissingWorks(const BindingRecord* a_defaults, int a_count)
 {
-    // 先に「ファイルに割り当てがある操作」を決めてから足す（足した既定の行で、同じ操作の 2 行目を飛ばさないように）。
+    // 先に「ファイルに割り当てがある操作」を決めてから足す（足した既定の行で、同じ操作の 2 行目を飛ばさないように）
     std::vector<BindingRecord> missing;
     for (int i = 0; i < a_count; ++i)
     {
@@ -141,7 +141,7 @@ void InputConfig::addMissingWorks(const BindingRecord* a_defaults, int a_count)
 //   </InputConfig>
 //
 // PseudoXml のテキストの一番外（doc.root）は名前を書かない入れ物なので、その子に InputConfig の要素を作る
-// （GameSettings の settings.xml と同じ形）。一番外に名前を付けても書き出されず、読むときにも名前は無い。
+// （GameSettings の settings.xml と同じ形）。一番外に名前を付けても書き出されず、読むときにも名前は無い
 // ────────────────────────────────────────────────
 bool InputConfig::save(const char* a_path) const
 {
@@ -178,8 +178,8 @@ bool InputConfig::save(const char* a_path) const
 // ────────────────────────────────────────────────
 // 読込：ファイルを std::ifstream で読み、PseudoXml で解析する
 // ファイルが無い／壊れている／InputConfig の要素が無い場合は false を返す（呼び側で loadDefaults にフォールバック）
-// 一番外の入れ物の子から InputConfig の要素を探す（save と同じ形）。読めない行（属性が欠けている・知らない番号）は飛ばす。
-// version は今 1 だけなので、読むが比べない（形を変えたときに、ここで読み分ける）。
+// 一番外の入れ物の子から InputConfig の要素を探す（save と同じ形）。読めない行（属性が欠けている・知らない番号）は飛ばす
+// version は今 1 だけなので、読むが比べない（形を変えたときに、ここで読み分ける）
 // ────────────────────────────────────────────────
 bool InputConfig::load(const char* a_path)
 {

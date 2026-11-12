@@ -32,12 +32,12 @@ namespace{
 	// 倒れるときのアニメ
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
-	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない。
+	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない
 	const char* kZombieDownedAnimation = "death1";
 	const char* kZombieStaggerAnimation = "gethit";			// 撃たれてよろけるときのアニメ
 	const char* kZombieIdleAnimation = "idle1";				// 気付く前・追いついた・見失って探し終えたときに立つアニメ
-	// 立っている体の攻撃の種類。ここを替えれば、流す攻撃のアニメも一緒に替わる。
-	// つかみも消さずに残してある（Grab にすれば、つかむ → 噛むになる）。
+	// 立っている体の攻撃の種類。ここを替えれば、流す攻撃のアニメも一緒に替わる
+	// つかみも消さずに残してある（Grab にすれば、つかむ → 噛むになる）
 	const ZombieAttackStyle kZombieAttackStyle = ZombieAttackStyle::Swing;
 	const char* kZombieSwingAnimation = "atack1"; // 右手を 1 回振り下ろす
 	const char* kZombieGrabAnimation = "atack3";  // 両手でつかんで噛む
@@ -64,12 +64,12 @@ ZombieDirector::ZombieDirector( MeshCache* meshes, GameObjectWorld* objects, con
 	mContext.crowd = &mCrowd;
 }
 
-// ZombieFactory などの定義が見える所で破棄する。
+// ZombieFactory などの定義が見える所で破棄する
 ZombieDirector::~ZombieDirector() {
 }
 
 void ZombieDirector::provideShared() {
-	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く）。
+	// 世界に 1 つの物を共有の棚へ置く（部品が付けるときの引数ではなく、ここから引く）
 	mObjects->provide( &mPathBudget );
 	mObjects->provide( &mContext );
 	mObjects->provide( &mHearing );
@@ -79,15 +79,15 @@ void ZombieDirector::setup( const TownMap& map ) {
 	if ( !mZombieData->isReady() ) {
 		return;
 	}
-	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる）。
+	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる）
 	std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
 	rootMotionAnimations.push_back( kZombieStaggerAnimation );
 	rootMotionAnimations.push_back( kZombieAttackAnimation );
 	mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, kZombieRunAnimation, rootMotionAnimations );
 	mFactory = std::make_unique< ZombieFactory >( mZombieModel.get(), kZombieAttackStyle );
-	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）。
+	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）
 	mRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
-	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）。
+	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）
 	std::vector< Vector3 > spawnPoints;
 	for ( const TownPlacement& p : map.zombieSpawnPoints() ) {
 		spawnPoints.push_back( toPosition( p ) );
@@ -103,7 +103,7 @@ void ZombieDirector::onDayConditionChanged() {
 }
 
 bool ZombieDirector::spawn( const Vector3& position, float yawDegree ) {
-	// 同時に居られるゾンビの数（死体も数える）は、今日の条件で決まる（群れの日は多い）。
+	// 同時に居られるゾンビの数（死体も数える）は、今日の条件で決まる（群れの日は多い）
 	if ( !mFactory || mObjects->count< ZombieBrainComponent >() >= mDay->zombieCount ) {
 		return false;
 	}
@@ -117,7 +117,7 @@ bool ZombieDirector::spawn( const Vector3& position, float yawDegree ) {
 	animations.stagger = kZombieStaggerAnimation;
 	animations.attack = kZombieAttackAnimation;
 	// 何体目か（mZombieNumber）で見通しを調べる時刻をずらす。うろつき方の乱数の種も体ごとに変える
-	// （同じ種だと全員が同じ向き・同じ間で歩き出す）。
+	// （同じ種だと全員が同じ向き・同じ間で歩き出す）
 	mFactory->spawn( mObjects, position, yawDegree, animations, mZombieNumber, mRandom.getInt() );
 	++mZombieNumber;
 	return true;
@@ -133,14 +133,14 @@ void ZombieDirector::setAnimationView( const Matrix44& projectionView, const Vec
 }
 
 void ZombieDirector::prepareThink( const GameObject* player ) {
-	// ゾンビが追う先は自キャラ（このティックに動いた後の位置）。自キャラが居なければ追わない。
+	// ゾンビが追う先は自キャラ（このティックに動いた後の位置）。自キャラが居なければ追わない
 	mContext.target = nullptr;
 	if ( player ) {
 		const PlayerHealthComponent* health = player->getComponent< PlayerHealthComponent >();
 		mChaseTarget.position = player->getComponent< TransformComponent >()->position();
 		mChaseTarget.eyePosition = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
-		// 体力の部品を外した自キャラ（死なない）も襲う。つかまれている間・離された直後は、ほかのゾンビもつかまない。
-		// つかまれる部品（PlayerGrabComponent）を外した自キャラは襲わない。
+		// 体力の部品を外した自キャラ（死なない）も襲う。つかまれている間・離された直後は、ほかのゾンビもつかまない
+		// つかまれる部品（PlayerGrabComponent）を外した自キャラは襲わない
 		const PlayerGrabComponent* grab = player->getComponent< PlayerGrabComponent >();
 		mChaseTarget.attackable = ( !health || health->canBeAttacked() ) && grab && grab->canBeGrabbed();
 		mChaseTarget.attackTaken = false; // 体ごとに決め直す（ZombieBrainComponent::update）
@@ -148,14 +148,14 @@ void ZombieDirector::prepareThink( const GameObject* player ) {
 		mContext.target = &mChaseTarget;
 	}
 	// 攻撃に行っているゾンビ（前のティックから続いている 1 体）。Think の段の途中で攻撃を始めた体も、そこへ入って
-	// 後の体が攻撃を始めない（同じティックに 2 体が攻撃を始めないように）。
+	// 後の体が攻撃を始めない（同じティックに 2 体が攻撃を始めないように）
 	mContext.attacker = nullptr;
 	mObjects->forEach< ZombieAttackComponent >( [ this ]( const ZombieAttackComponent& attack ) {
 		if ( !mContext.attacker && attack.isAttacking() ) {
 			mContext.attacker = attack.gameObject();
 		}
 	} );
-	// 立って歩ける体の位置（このティックに動く前）。近くの仲間を避けるのに全員が読む（倒れた体・這う体・死体は数えない）。
+	// 立って歩ける体の位置（このティックに動く前）。近くの仲間を避けるのに全員が読む（倒れた体・這う体・死体は数えない）
 	mCrowd.clear();
 	mObjects->forEach< ZombieStateComponent >( [ this ]( const ZombieStateComponent& zombie ) {
 		if ( zombie.state() == ZombieStateComponent::State::Alive ) {

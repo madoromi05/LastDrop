@@ -20,7 +20,7 @@ namespace{
 	const int kFirstCell = 0;
 	const float kHalf = 0.5f;
 
-	// マス 1 つの一辺（画素）。町のカバンの画面と同じ大きさ（物の絵が同じに見えるように）。
+	// マス 1 つの一辺（画素）。町のカバンの画面と同じ大きさ（物の絵が同じに見えるように）
 	const float kCellSize = 64.f;
 	const float kGridTop = 96.f;       // マス目の上端（座標の高さ 480 に、見出し・カバンの 4 行・下の欄が入る所）
 	const float kGridGap = 72.f;       // カバンと場所の間
@@ -35,7 +35,7 @@ namespace{
 	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
 	const char* kEquippedMark = "E";
 
-	// 後ろの町を透かして見せる濃さ（町のカバンの画面と同じ 0.5）。
+	// 後ろの町を透かして見せる濃さ（町のカバンの画面と同じ 0.5）
 	const float kPanelAlpha = 0.5f;
 	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );
 	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
@@ -45,7 +45,7 @@ namespace{
 
 LootScreen::LootScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
-	// カバンは銃 1 種類 1 丁。場所の中身は決まり無し（銃を置いていってもよい）。
+	// カバンは銃 1 種類 1 丁。場所の中身は決まり無し（銃を置いていってもよい）
 	mPicker( renderer, &mIcons, GridRule::CarryLimit, GridRule::Free ),
 	mPreviousCursor( 0.f, 0.f ) {
 	ASSERT( mRenderer && "LootScreen : renderer is null." );
@@ -92,7 +92,7 @@ void LootScreen::handleInput( ItemGrid* bag, ItemGrid* loot ) {
 
 void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* title, ItemId equipped ) {
 	layout( bag, loot );
-	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）。
+	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）
 	UiRect screen;
 	screen.left = 0.f;
 	screen.top = 0.f;
@@ -113,7 +113,7 @@ void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* ti
 	}
 	mPicker.draw( bag, loot, true );
 	mPicker.view( kBag ).drawMark( bag, equipped, kEquippedMark );
-	// 空の場所でも「何も無い」は出さない（空のマス目だけで分かる）。
+	// 空の場所でも「何も無い」は出さない（空のマス目だけで分かる）
 	drawFooter( bag, loot );
 	mRenderer->draw();
 }

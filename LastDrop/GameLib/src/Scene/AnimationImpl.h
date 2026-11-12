@@ -15,7 +15,7 @@ namespace Scene{
 
 class Animation::Impl : public ReferenceType{
 public:
-	//この関数はコンテナを使うので、インクルードループを避けるためにAnimation.cppにおいてある。
+	//この関数はコンテナを使うので、インクルードループを避けるためにAnimation.cppにおいてある
 	Impl( PseudoXml::ConstElement&, Container::Impl& );
 	~Impl(){
 		mName = 0; //コンテナが持っている文字列なのでここでは参照をはずすだけ
@@ -40,7 +40,7 @@ public:
 	Container::Impl* container(){
 		return mContainer;
 	}
-	//全ノードのうち最も長い周期。
+	//全ノードのうち最も長い周期
 	float period() const {
 		float r = 0.f;
 		for ( int i = 0; i < mNodeNumber; ++i ){

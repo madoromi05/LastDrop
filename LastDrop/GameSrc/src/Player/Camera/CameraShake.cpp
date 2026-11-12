@@ -8,28 +8,28 @@
 using namespace GameLib;
 
 namespace{
-	// トラウマが 1 秒に減る量。1.6/秒なので、攻撃された 0.8 は 0.5 秒、射撃の 0.45 は約 0.3 秒で消える。
+	// トラウマが 1 秒に減る量。1.6/秒なので、攻撃された 0.8 は 0.5 秒、射撃の 0.45 は約 0.3 秒で消える
 	const float kTraumaDecayPerSecond = 1.6f;
 	const float kTraumaDecayPerTick = kTraumaDecayPerSecond / GameTime::kTicksPerSecond;
-	// トラウマ 1 のときの一番大きな角度（度）。ロールは真ん中（照準）を動かさないので、上下・左右より大きくしてよい。
+	// トラウマ 1 のときの一番大きな角度（度）。ロールは真ん中（照準）を動かさないので、上下・左右より大きくしてよい
 	const float kMaxPitch = 1.2f;
 	const float kMaxYaw = 1.2f;
 	const float kMaxRoll = 2.5f;
-	// 1 秒にノイズの格子をいくつ進むか（≒ 1 秒に向きが変わる回数）。大きいほど細かく震える。
+	// 1 秒にノイズの格子をいくつ進むか（≒ 1 秒に向きが変わる回数）。大きいほど細かく震える
 	const float kNoisePerSecond = 18.f;
 	const float kNoisePerTick = kNoisePerSecond / GameTime::kTicksPerSecond;
-	// mPhase がこれを超えたら折り返す（float の精度が落ちる前に）。
+	// mPhase がこれを超えたら折り返す（float の精度が落ちる前に）
 	const int kPhaseWrap = 1024;
 
-	// 上下・左右・ロールのノイズを別の列から読む（同じ列だと 3 つが同じ形で動いてしまう）。
+	// 上下・左右・ロールのノイズを別の列から読む（同じ列だと 3 つが同じ形で動いてしまう）
 	enum Channel{
 		CHANNEL_PITCH,
 		CHANNEL_YAW,
 		CHANNEL_ROLL,
 	};
 
-	// 整数から −1〜1 の値を作る（同じ入力なら同じ値。決まった間隔に置く乱数の代わり）。
-	// 掛ける数は、ビットをよく混ぜることが知られている整数ハッシュの定数（lowbias32 と黄金比）。意味のある量ではない。
+	// 整数から −1〜1 の値を作る（同じ入力なら同じ値。決まった間隔に置く乱数の代わり）
+	// 掛ける数は、ビットをよく混ぜることが知られている整数ハッシュの定数（lowbias32 と黄金比）。意味のある量ではない
 	float latticeValue( unsigned seed, int channel, int index ) {
 		unsigned h = seed ^ ( static_cast< unsigned >( index ) * 0x9E3779B1u ) ^ ( static_cast< unsigned >( channel ) * 0x85EBCA77u );
 		h ^= h >> 16;
@@ -66,7 +66,7 @@ void CameraShake::update() {
 }
 
 float CameraShake::noise( int channel ) const {
-	// 前後の格子の値を smoothstep でつなぐ（バリューノイズ）。乱数をそのまま使うとガタガタに跳ねるため。
+	// 前後の格子の値を smoothstep でつなぐ（バリューノイズ）。乱数をそのまま使うとガタガタに跳ねるため
 	int index = static_cast< int >( mPhase );
 	float t = ScalarMath::smoothStep( mPhase - static_cast< float >( index ) );
 	float a = latticeValue( mSeed, channel, mLatticeBase + index );

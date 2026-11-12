@@ -11,15 +11,15 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 1 まとまりを曲げる角度の上限（度）。フルオートで当て続けても曲がりすぎないように。
+	// 1 まとまりを曲げる角度の上限（度）。フルオートで当て続けても曲がりすぎないように
 	const float kMaxDegree = 60.f;
-	// 押した分が戻るまでの時間（秒）と、そのとき残っている割合。毎ティック同じ割合を掛けて、滑らかに減らす（行き過ぎない）。
+	// 押した分が戻るまでの時間（秒）と、そのとき残っている割合。毎ティック同じ割合を掛けて、滑らかに減らす（行き過ぎない）
 	const float kReturnSeconds = 0.25f;
 	const float kRemainAfterReturn = 0.05f;
 	const float kDecayPerTick = Math::pow( kRemainAfterReturn, 1.f / ( kReturnSeconds * GameTime::kTicksPerSecond ) );
-	// これより小さい角度（度）は 0 とみなして曲げない（戻りきった後に毎回計算しないため）。
+	// これより小さい角度（度）は 0 とみなして曲げない（戻りきった後に毎回計算しないため）
 	const float kNegligibleDegree = 0.1f;
-	// 噛むときに首を押す回数（1 回 20°なので 2 回で 40°。背骨は 1 回）。
+	// 噛むときに首を押す回数（1 回 20°なので 2 回で 40°。背骨は 1 回）
 	const int kLungeHeadPushes = 2;
 }
 
@@ -35,7 +35,7 @@ void ZombieFlinch::push( BodyPart part, const Vector3& direction ) {
 }
 
 void ZombieFlinch::lunge( const Vector3& rootDirection ) {
-	// 噛む突き出しは、撃たれたのけぞりとは別の動きなので倍率を掛けない（首 40°・背骨 12° のまま）。
+	// 噛む突き出しは、撃たれたのけぞりとは別の動きなので倍率を掛けない（首 40°・背骨 12° のまま）
 	const float headDegree = mLayout->groups()[ mLayout->groupOf( BodyPart::Head ) ].kickDegree;
 	const float torsoDegree = mLayout->groups()[ mLayout->groupOf( BodyPart::Torso ) ].kickDegree;
 	for ( int i = 0; i < kLungeHeadPushes; ++i ) {

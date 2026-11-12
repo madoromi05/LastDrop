@@ -82,7 +82,7 @@ void FireProbe::onTick( bool fired, bool dryFired ) {
 }
 
 void FireProbe::write( const char* line ) const {
-	// 押したときだけ書くので、毎回開いて足す（強制終了しても、そこまでの行は残る）。
+	// 押したときだけ書くので、毎回開いて足す（強制終了しても、そこまでの行は残る）
 	std::ofstream file( kLogFile, std::ios::app );
 	if ( file ) {
 		file << line << '\n';

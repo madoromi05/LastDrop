@@ -8,13 +8,13 @@
 namespace GameLib{
 namespace Profiling{
 
-// 目標のフレームレート（60fps は必ず守る、144fps を目指す）。
+// 目標のフレームレート（60fps は必ず守る、144fps を目指す）
 const double kRequiredFps = 60.0;
 const double kGoalFps = 144.0;
-// 1 フレームの予算（秒）。スパイクの判定と画面の表示に使う。
+// 1 フレームの予算（秒）。スパイクの判定と画面の表示に使う
 const double kFrameBudgetSeconds = 1.0 / kRequiredFps;
 
-// 1 区間の記録。
+// 1 区間の記録
 struct ScopeEvent{
 	const char* name;
 	int depth;       // 入れ子の深さ（0 が一番外）
@@ -22,13 +22,13 @@ struct ScopeEvent{
 	long long end;   // 閉じる前は 0
 };
 
-// 1 フレームの記録。時刻は QueryPerformanceCounter の値。
+// 1 フレームの記録。時刻は QueryPerformanceCounter の値
 struct FrameRecord{
-	// 1 フレームに残す区間の上限。ティックを上限の 5 回回しても足りる数にしてある。
+	// 1 フレームに残す区間の上限。ティックを上限の 5 回回しても足りる数にしてある
 	static const int kMaxScopes = 256;
-	// 1 フレームに残す印の上限。ボタンを同時にいくつか押し、弾が出てゾンビに当たっても足りる数。
+	// 1 フレームに残す印の上限。ボタンを同時にいくつか押し、弾が出てゾンビに当たっても足りる数
 	static const int kMaxEvents = 16;
-	// 1 フレームに残す回数（addCount）の種類の上限。地面・描画の設定など、比べたい物の数より多めに。
+	// 1 フレームに残す回数（addCount）の種類の上限。地面・描画の設定など、比べたい物の数より多めに
 	static const int kMaxCounters = 24;
 	long long index;        // 起動してから何番目のフレームか
 	long long begin;        // beginFrame
@@ -52,7 +52,7 @@ struct FrameRecord{
 	double counterValues[ kMaxCounters ];
 };
 
-// 閉じたフレームの時間の内訳（秒）。frame = sleep + cpu + present + other。
+// 閉じたフレームの時間の内訳（秒）。frame = sleep + cpu + present + other
 struct FrameTimes{
 	double frame;
 	double sleep;   // フレーム制限の待ち
@@ -61,31 +61,31 @@ struct FrameTimes{
 	double other;   // Present の後から次のフレームまで（窓のメッセージ処理）
 };
 FrameTimes timesOf( const FrameRecord& frame );
-// 区間の長さ（秒）。閉じていなければ 0。
+// 区間の長さ（秒）。閉じていなければ 0
 double secondsOf( const ScopeEvent& scope );
 
-// 直近のフレームの記録を、決まった数だけ輪にして持つ。
-// 画面の表示・CSV・スパイクの書き出しは、ここから読む（計測のコードは 1 つ）。
+// 直近のフレームの記録を、決まった数だけ輪にして持つ
+// 画面の表示・CSV・スパイクの書き出しは、ここから読む（計測のコードは 1 つ）
 class FrameTimeline{
 public:
 	static const int kHistory = 240; // 残すフレーム数（144Hz でも 1.6 秒ぶん）
 
 	FrameTimeline();
-	// 前のフレームを閉じて、新しいフレームを始める。閉じたフレームを返す（最初の 1 回は nullptr）。
+	// 前のフレームを閉じて、新しいフレームを始める。閉じたフレームを返す（最初の 1 回は nullptr）
 	const FrameRecord* begin( long long at );
-	// 今のフレーム。まだ 1 回も始まっていなければ nullptr。
+	// 今のフレーム。まだ 1 回も始まっていなければ nullptr
 	FrameRecord* current();
-	// 区間を開く。残せなければ -1。
+	// 区間を開く。残せなければ -1
 	int pushScope( const char* name, long long at );
-	// pushScope で開いた区間を閉じる。開いた後にフレームが変わっていたら何もしない。
+	// pushScope で開いた区間を閉じる。開いた後にフレームが変わっていたら何もしない
 	void popScope( int slot, long long frameIndex, long long at );
-	// 終わってから分かった区間（begin〜end）を、今の深さで足す。
+	// 終わってから分かった区間（begin〜end）を、今の深さで足す
 	void addFinishedScope( const char* name, long long begin, long long end );
-	// 今のフレームに印を足す。フレームが始まっていなければ何もしない。
+	// 今のフレームに印を足す。フレームが始まっていなければ何もしない
 	void addEvent( const char* name );
-	// 今のフレームの回数 name に amount を足す。フレームが始まっていなければ何もしない。
+	// 今のフレームの回数 name に amount を足す。フレームが始まっていなければ何もしない
 	void addCount( const char* name, double amount );
-	// 閉じたフレームを新しい方から読む（ago = 0 が直前に閉じたフレーム）。無ければ nullptr。
+	// 閉じたフレームを新しい方から読む（ago = 0 が直前に閉じたフレーム）。無ければ nullptr
 	const FrameRecord* closed( int ago ) const;
 private:
 	FrameRecord& slotOf( long long index );

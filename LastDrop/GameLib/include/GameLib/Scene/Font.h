@@ -25,20 +25,20 @@ public:
 		unsigned char mWidth; //幅情報(ピクセル)
 		unsigned char mHeight; //高さ情報(ピクセル)
 	};
-	///テクスチャを使ったビットマップフォントを生成。文字の高さは最大値を採用。
+	///テクスチャを使ったビットマップフォントを生成。文字の高さは最大値を採用
 	static Font create( 
 		const char** textureFileNames, //テクスチャファイル名配列
 		int textureNumber,
 		BitmapChar* BitmapChars,
 		int bitmapCharNumber );
-	///テクスチャを使ったビットマップフォントを生成。文字の高さは最大値を採用。
+	///テクスチャを使ったビットマップフォントを生成。文字の高さは最大値を採用
 	static Font create(
 		const char** textureFileData, //テクスチャDDSイメージ配列
 		const int* textureFileSizes, //テクスチャデータサイズ配列
 		int textureNumber,
 		BitmapChar* bitmapChars,
 		int CharNumber );
-	///OSから動的にフォントデータを取得する。文字の高さ、内部テクスチャ幅などは指定。
+	///OSから動的にフォントデータを取得する。文字の高さ、内部テクスチャ幅などは指定
 	static Font create(
 		const char* osFontName,
 		int charHeightHint, //これは目安。実際にいくつかはgetCharHeightを参照せよ
@@ -48,7 +48,7 @@ public:
 		bool antialias = false,
 		int internalTextureWidth = 512,
 		int internalTextureHeight = 512 );
-	///文字情報を取得。見つからないとfalseを返す。
+	///文字情報を取得。見つからないとfalseを返す
 	bool getChar( 
 		Graphics::Texture* textureOut,
 		Vector2* uvTopLeftOut,

@@ -1,15 +1,15 @@
-// G-Buffer を読んで画面を作る全画面のパス（DeferredLighting。GBuffer_Plan.txt 7・8 章）。2 つの使い方がある。
-//   表示が Final（0）：ライティング。PBR の式（Pbr.hlsli）で、シーンの色（HDR・リニア）へ描く。
+// G-Buffer を読んで画面を作る全画面のパス（DeferredLighting。GBuffer_Plan.txt 7・8 章）。2 つの使い方がある
+//   表示が Final（0）：ライティング。PBR の式（Pbr.hlsli）で、シーンの色（HDR・リニア）へ描く
 //                    何も描かれていない画素には空を描く（LightList.hlsli の skyColor。7 章）
 //   それ以外       ：G-Buffer の中身の表示。ToneMap を通さず、PostProcess の後に画面（バックバッファ・ガンマの色）へ直接写す
-// 霧はここでは掛けない（次の霧のパス Fog.hlsl）。霧の量の表示（Fog）だけ同じ式を読む。
+// 霧はここでは掛けない（次の霧のパス Fog.hlsl）。霧の量の表示（Fog）だけ同じ式を読む
 #include "GBuffer.hlsli"
 #include "Pbr.hlsli"
 #include "DeferredConstants.hlsli"
 #include "Fog.hlsli"
 #include "SsaoUpsample.hlsli"
 
-// DeferredLighting.h の GBufferView と同じ番号。
+// DeferredLighting.h の GBufferView と同じ番号
 static const uint kViewFinal     = 0;
 static const uint kViewAlbedo    = 1;
 static const uint kViewNormal    = 2;
@@ -27,33 +27,33 @@ static const uint kViewSsrColor  = 13;
 static const uint kViewMotion    = 14;
 static const uint kViewHiZ       = 15;
 
-// 動きの種類の表示の色（RT1 の a。GBuffer.cpp の kMotionValues：0 動かない物・0.5 動く物・1 手元）。
+// 動きの種類の表示の色（RT1 の a。GBuffer.cpp の kMotionValues：0 動かない物・0.5 動く物・1 手元）
 static const float3 kMotionMovingColor = float3(0.2, 0.4, 1.0);
 static const float3 kMotionFirstPersonColor = float3(1.0, 0.25, 0.25);
 static const float kMotionMovingThreshold = 0.25;      // これより大きければ動く物
 static const float kMotionFirstPersonThreshold = 0.75; // これより大きければ手元
 
-// SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ）。
-// 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl。
+// SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ）
+// 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl
 Texture2D gReflection : register(t13);
 Texture2D<float> gHiZView : register(t15); // 表示の Hi-Z だけが読む（DeferredLighting.cpp の kHiZViewSlot）
 static const float kMinConfidence = 1e-3; // SSR color の表示で、これより確からしさが小さい所は黒（0 で割らない）
 
-// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き）。番号は DeferredLighting.cpp の kOcclusionSlot。
-// ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）。
+// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き）。番号は DeferredLighting.cpp の kOcclusionSlot
+// ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）
 Texture2D gOcclusion : register(t10);
 
 static const float3 kNothingColor = float3(0.0, 0.0, 0.0);
 
 // ── 影の表示（ライトの一覧と影のマップを付けて描く。GameScene::draw） ──
-// 月の影の枚ごとの色（1 枚目 赤・2 枚目 緑・3 枚目 青）。下の絵の明るさに掛けて、どこが何枚目かを見る。
+// 月の影の枚ごとの色（1 枚目 赤・2 枚目 緑・3 枚目 青）。下の絵の明るさに掛けて、どこが何枚目かを見る
 static const float3 kCascadeColors[3] = { float3(1.0, 0.25, 0.25), float3(0.25, 1.0, 0.25), float3(0.25, 0.5, 1.0) };
 static const float kCascadeBaseBrightness = 0.3; // 下の絵が真っ黒でも枚の色が見えるよう、明るさの下限
 static const float kHalfScreen = 0.5;
-// 懐中電灯の影のマップは透視なので、深度がほとんど 1 の近くに集まる。累乗で広げて、近い物と遠い物の差を見えるようにする。
+// 懐中電灯の影のマップは透視なので、深度がほとんど 1 の近くに集まる。累乗で広げて、近い物と遠い物の差を見えるようにする
 static const float kPerspectiveDepthContrast = 32.0;
 
-// 画面を 4 つに分けて影のマップを写す（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目）。付いていない影のマップは黒。
+// 画面を 4 つに分けて影のマップを写す（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目）。付いていない影のマップは黒
 float3 shadowMapsView(float2 uv)
 {
     uint column = (uv.x >= kHalfScreen) ? 1 : 0;
@@ -68,7 +68,7 @@ float3 shadowMapsView(float2 uv)
     return depth;
 }
 
-// 月の影のどの枚かを色で塗る（範囲の外は下の絵のまま）。奥行きの測り方は cascadedShadowVisibility と同じ。
+// 月の影のどの枚かを色で塗る（範囲の外は下の絵のまま）。奥行きの測り方は cascadedShadowVisibility と同じ
 float3 cascadeView(float3 world, float3 albedo)
 {
     float brightness = max(dot(linearToSrgb(albedo), float3(0.299, 0.587, 0.114)), kCascadeBaseBrightness);
@@ -87,7 +87,7 @@ FullScreenVertex VSMain(uint id : SV_VertexID)
 
 float4 PSMain(FullScreenVertex p) : SV_Target
 {
-    // 写す先（画面）の描画範囲は G-Buffer と大きさ・位置がずれることがある（setViewport の範囲）ので、uv から画素を求める。
+    // 写す先（画面）の描画範囲は G-Buffer と大きさ・位置がずれることがある（setViewport の範囲）ので、uv から画素を求める
     uint width, height;
     gSceneDepth.GetDimensions(width, height);
     int3 pixel = int3(p.uv * float2(width, height), 0);
@@ -101,7 +101,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     {
         if (view == kViewFinal)
         {
-            // 何も描かれていない所は空。目から、この画素の一番奥（深度 1）へ向かう向きでグラデーションを引く。
+            // 何も描かれていない所は空。目から、この画素の一番奥（深度 1）へ向かう向きでグラデーションを引く
             float3 skyDirection = normalize(reconstructWorldPosition(p.uv, kFarDepth) - gEyePosition.xyz);
             return float4(skyColor(skyDirection), 1.0);
         }
@@ -116,7 +116,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         s.position = reconstructWorldPosition(p.uv, depth);
         s.normal = normalize(gGBufferNormal.Load(pixel).xyz); // デカールが混ぜた法線は長さが 1 でない
         s.albedo = gGBufferAlbedo.Load(pixel).rgb;
-        // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない）。
+        // 材質の AO（今は 1）× SSAO。ambientLighting だけが s.occlusion を掛ける（ライトと発光は暗くしない）
         s.occlusion = material.r * upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(s.position));
         s.roughness = material.g;
         s.metallic = material.b;
@@ -149,7 +149,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     }
     else if (view == kViewPosition)
     {
-        // 1m ごとの格子。位置の戻しが正しければ、カメラを動かしても格子は壁・地面に貼り付いたまま。
+        // 1m ごとの格子。位置の戻しが正しければ、カメラを動かしても格子は壁・地面に貼り付いたまま
         c = frac(reconstructWorldPosition(p.uv, depth));
     }
     else if (view == kViewCascade)
@@ -158,17 +158,17 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     }
     else if (view == kViewFog)
     {
-        // 霧の量（0 黒〜1 白）。空の画素は上で黒にしている（霧のパスも空には掛けない）。
+        // 霧の量（0 黒〜1 白）。空の画素は上で黒にしている（霧のパスも空には掛けない）
         c = fogAmount(reconstructWorldPosition(p.uv, depth));
     }
     else if (view == kViewSsao)
     {
-        // SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）。
+        // SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）
         c = upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(reconstructWorldPosition(p.uv, depth)));
     }
     else if (view == kViewSsr || view == kViewSsrColor)
     {
-        // 半分の大きさなので、この画素が入っている画素をそのまま読む（ぼかした後の結果）。
+        // 半分の大きさなので、この画素が入っている画素をそのまま読む（ぼかした後の結果）
         uint reflectionWidth, reflectionHeight;
         gReflection.GetDimensions(reflectionWidth, reflectionHeight);
         float4 reflection = gReflection.Load(int3(p.uv * float2(reflectionWidth, reflectionHeight), 0));
@@ -183,7 +183,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     }
     else if (view == kViewHiZ)
     {
-        // 選んだ段の、この画素が入っている升目の一番手前の深度を、Depth と同じ物差しで。段が粗いほど手前の物が太って見える。
+        // 選んだ段の、この画素が入っている升目の一番手前の深度を、Depth と同じ物差しで。段が粗いほど手前の物が太って見える
         uint hiZWidth, hiZHeight, hiZLevels;
         gHiZView.GetDimensions(0, hiZWidth, hiZHeight, hiZLevels);
         uint level = min((uint)gViewParams.z, hiZLevels - 1);

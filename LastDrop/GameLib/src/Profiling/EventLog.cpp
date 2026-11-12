@@ -9,12 +9,12 @@ namespace GameLib{
 namespace Profiling{
 
 void EventLog::onFrameClosed( const FrameRecord& frame ){
-	// 止まっていたフレームは時間に意味が無いので、印も後の更新も数えない。
+	// 止まっていたフレームは時間に意味が無いので、印も後の更新も数えない
 	if ( frame.suspended ){
 		return;
 	}
 	FrameTimes times = timesOf( frame );
-	// 新しい方から見て、まだ決まっていない印の「後のフレーム」を更新する。
+	// 新しい方から見て、まだ決まっていない印の「後のフレーム」を更新する
 	for ( auto it = mRecent.rbegin(); it != mRecent.rend(); ++it ){
 		if ( it->framesSeen >= kFollowFrames ){
 			break; // これより古い印はもう決まっている

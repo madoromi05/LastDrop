@@ -41,7 +41,7 @@ public:
 		mAttributes = mDocument->allocateAttribute( mAttributeNumber );
 		tag->giveAttributes( mAttributes );
 
-		//空要素タグなら子はいないのでここで抜ける。
+		//空要素タグなら子はいないのでここで抜ける
 		if ( tag->type() == Tag::TYPE_BEGIN_END ){
 			return;
 		}
@@ -54,10 +54,10 @@ public:
 				++( *p ); //<の次へ移動
 				Tag tmpTag( p, e, mDocument ); //タグ解釈を丸投げ
 				Tag::Type type = tmpTag.type();
-				if ( type == Tag::TYPE_END ){ //終了タグなら終わり。抜ける。
+				if ( type == Tag::TYPE_END ){ //終了タグなら終わり。抜ける
 					break; //終わる
 				}else if ( type == Tag::TYPE_COMMENT ){
-					; //何もしない。
+					; //何もしない
 				}else{ //開始、空要素どちらでもこの処理は必要
 					Element::Impl* tmpE = children.add(); //子に追加
 					tmpE->setDocument( mDocument );
@@ -93,7 +93,7 @@ public:
 			mChildren[ i ].build( s, stringBuffer );
 		}
 	}
-	//単純に一個づつ呼んで行く。
+	//単純に一個づつ呼んで行く
 	void convertToString( OStringStream* out, int indent ) const {
 		//インデントの数だけタブを書く
 		for ( int i = 0; i < indent; ++i ){
@@ -135,7 +135,7 @@ public:
 			*out << ">\r\n"; //開始タグ終わり
 			//子に流す
 			for ( int i = 0; i < mChildNumber; ++i ){
-				//名前がセットされていれば。
+				//名前がセットされていれば
 				if ( mChildren[ i ].name() ){
 					mChildren[ i ].convertToString( out, indent + 1 );
 				}

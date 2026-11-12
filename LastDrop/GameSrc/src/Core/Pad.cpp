@@ -4,7 +4,7 @@
 using namespace GameLib::Input;
 
 namespace {
-    // 計測の印を付ける操作の持ち主（自キャラを動かすのは 0 番だけ）。
+    // 計測の印を付ける操作の持ち主（自キャラを動かすのは 0 番だけ）
     const int kProfiledPlayer = 0;
 }
 
@@ -38,9 +38,9 @@ void Pad::setupDevicesAndBindings()
 
 void Pad::loadOrDefault(int playerId)
 {
-    // 保存済み設定があればそれを、無ければ GameLib 側のデフォルト表を採用する。
-    // デフォルト割当（どのキーを何に）は GameLib が持つので Pad は番号で引くだけ。
-    // 保存済み設定を読めたときも、保存した後に足した操作（ファイルに無い操作）はデフォルト表で補う。
+    // 保存済み設定があればそれを、無ければ GameLib 側のデフォルト表を採用する
+    // デフォルト割当（どのキーを何に）は GameLib が持つので Pad は番号で引くだけ
+    // 保存済み設定を読めたときも、保存した後に足した操作（ファイルに無い操作）はデフォルト表で補う
     int count = 0;
     const BindingRecord* defaults = DefaultBindings(playerId, &count);
     if (m_configs[playerId].load(InputConfigFilePath(playerId)))
@@ -56,8 +56,8 @@ void Pad::loadOrDefault(int playerId)
 
 void Pad::applyConfig(int playerId)
 {
-    // 設定（唯一の正）を実際の Input に反映する。
-    // Bind がデバイス生成・物理キー登録・割当まで自己完結する。
+    // 設定（唯一の正）を実際の Input に反映する
+    // Bind がデバイス生成・物理キー登録・割当まで自己完結する
     for (const auto& record : m_configs[playerId].records())
     {
         m_builders[playerId]->Bind(record);
@@ -74,8 +74,8 @@ void Pad::update()
         m_inputs[i].Update();
     }
 #ifdef ZF_EDITOR
-    // 押した操作を計測の印にする（どのボタンを押した時に重いかを、CSV・スパイクの JSON・右上の表示で見るため）。
-    // 名前は GameLib が持つ（ここには文字列を書かない）。割り当てが無い操作・軸の操作（Look）は押されたことにならない。
+    // 押した操作を計測の印にする（どのボタンを押した時に重いかを、CSV・スパイクの JSON・右上の表示で見るため）
+    // 名前は GameLib が持つ（ここには文字列を書かない）。割り当てが無い操作・軸の操作（Look）は押されたことにならない
     for (int work = 0; work < kWorkIdCount; ++work)
     {
         WorkId id = static_cast<WorkId>(work);
@@ -107,8 +107,8 @@ const std::vector<BindingRecord>& Pad::bindings(int playerId) const { return m_c
 // ────────────────────────────────────────────────
 // キーコンフィグ
 //
-// 設定（m_configs）を書き換え → Input へ反映 → ファイルへ保存、を1か所に集約。
-// UI 側は「どの操作にどのキー」を渡すだけでよく、保存や反映は意識しなくてよい。
+// 設定（m_configs）を書き換え → Input へ反映 → ファイルへ保存、を1か所に集約
+// UI 側は「どの操作にどのキー」を渡すだけでよく、保存や反映は意識しなくてよい
 // ────────────────────────────────────────────────
 void Pad::addKeyboardBindingToWork(WorkId work, char asciiKey, int playerId)
 {
@@ -160,7 +160,7 @@ void Pad::removeJoystickBindingFromWork(WorkId work, int buttonCode, int playerI
 
 // ────────────────────────────────────────────────
 // ゲームコード向けショートカット（アクション名＝関数名）
-//   移動系は「押されている間」、Fire は「押した瞬間」を返す。
+//   移動系は「押されている間」、Fire は「押した瞬間」を返す
 // ────────────────────────────────────────────────
 bool InputUp   (int playerId) { return Pad::instance()->isOn(WorkId::Up, playerId); }
 bool InputDown (int playerId) { return Pad::instance()->isOn(WorkId::Down, playerId); }

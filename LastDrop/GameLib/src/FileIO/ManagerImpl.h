@@ -268,7 +268,7 @@ public:
 			}
 			error = notification = true;
 		}else{
-			//次の段階。サイズが正常か計測します。
+			//次の段階。サイズが正常か計測します
 			streamsize readSize;
 			streamsize originalSize;
 			mArchives[ archiveIndex ].getFileSize( &readSize, &originalSize, entryIndex, stream );
@@ -280,7 +280,7 @@ public:
 					HALT( "FileIO : file is too big! 2GB is maximum.");
 				}
 				error = notification = true;
-			}else if ( mLoadedSum + originalSize > mErrorLimit ){ //限界を超えた。
+			}else if ( mLoadedSum + originalSize > mErrorLimit ){ //限界を超えた
 				oss.str( "" );
 				oss << "FileIO : EXCEED ERROR LIMIT! this file is not loaded. ( " << fn.c_str() << " )";
 				cout << oss.str().c_str() << endl;
@@ -317,7 +317,7 @@ public:
 					size,
 					entryIndex, 
 					stream );
-				if ( readError ){ //読めない。途中でファイル消されるとかな。
+				if ( readError ){ //読めない。途中でファイル消されるとかな
 					oss.str( "" );
 					oss << "FileIO : read error! can't read entire file! ( " << fn.c_str() << " )";
 					cout << oss.str().c_str() << endl;
@@ -329,7 +329,7 @@ public:
 				if ( !error ){
 					//読み終わった
 					size = static_cast< int >( originalSize ); //さっきまで圧縮後サイズだったので
-					buffer[ size ] = '\0'; //安心設計。0終端。
+					buffer[ size ] = '\0'; //安心設計。0終端
 				}
 			}
 			if ( stream ){
@@ -338,8 +338,8 @@ public:
 		}
 		//最終処理
 		mMutex.lock();
-		InIt it = mInFiles.find( fn ); //ここでもう一回あるか確認。
-		if ( it == mInFiles.end() ){ //ない。
+		InIt it = mInFiles.find( fn ); //ここでもう一回あるか確認
+		if ( it == mInFiles.end() ){ //ない
 			error = true;
 		}
 		if ( error ){
@@ -459,7 +459,7 @@ public:
 			}
 		}
 		if ( !( *streamOut ) ){
-			*archiveIndex = -1; //ついにみつかりませんでした。
+			*archiveIndex = -1; //ついにみつかりませんでした
 		}
 	}
 	Mutex mMutex;

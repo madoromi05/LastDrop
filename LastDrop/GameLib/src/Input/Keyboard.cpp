@@ -3,7 +3,7 @@
 
 #include "Input/ManagerImpl.h"
 
-//キーボードの実体はマネージャである。
+//キーボードの実体はマネージャである
 namespace GameLib{
 namespace Input{
 

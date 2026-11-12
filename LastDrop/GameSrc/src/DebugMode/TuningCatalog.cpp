@@ -43,14 +43,14 @@ namespace{
 	const int kVersion = 1;
 	const char* kTemporarySuffix = ".tmp";
 
-	// 構造体 1 つ分。今の値（取り出す関数の先）と、既定値（作り直した構造体）を並べて渡す。
+	// 構造体 1 つ分。今の値（取り出す関数の先）と、既定値（作り直した構造体）を並べて渡す
 	class ITuningGroup{
 	public:
 		virtual ~ITuningGroup() {}
 		virtual const char* elementName() const = 0; // ファイルの要素の名前
 		virtual const char* structName() const = 0;  // 見出しと C++ のコピーに出す名前
 		virtual const char* headerPath() const = 0;  // C++ のコピーに出す、構造体のヘッダの場所
-		// 今の値と既定値の項目を、同じ順に集める。
+		// 今の値と既定値の項目を、同じ順に集める
 		virtual void collect( TuningCollector* live, TuningCollector* defaults ) = 0;
 	};
 
@@ -75,7 +75,7 @@ namespace{
 		Params mDefaults; // 作ったままの値＝コードの既定値（書き換えない）
 	};
 
-	// 調整値の一覧。構造体を足すときはここに 1 行足す。並びはエディタの見出しの順。
+	// 調整値の一覧。構造体を足すときはここに 1 行足す。並びはエディタの見出しの順
 	std::vector< std::unique_ptr< ITuningGroup > > makeGroups() {
 		std::vector< std::unique_ptr< ITuningGroup > > groups;
 		groups.push_back( std::make_unique< TuningGroup< WeaponPoseParams > >(
@@ -86,50 +86,50 @@ namespace{
 			"Look", "LookParams", "GameSrc/Player/LookParams.h", &lookParams ) );
 		groups.push_back( std::make_unique< TuningGroup< AimSwayParams > >(
 			"AimSway", "AimSwayParams", "GameSrc/Player/AimSwayParams.h", &aimSwayParams ) );
-		// 1 日の時間・脱出点・スコアの重み（遊んで決める値）。
+		// 1 日の時間・脱出点・スコアの重み（遊んで決める値）
 		groups.push_back( std::make_unique< TuningGroup< RaidParams > >(
 			"Raid", "RaidParams", "GameSrc/Raid/RaidParams.h", &raidParams ) );
-		// 漁れる場所の開ける秒・空になる確率・包帯の効き目（遊んで決める値）。
+		// 漁れる場所の開ける秒・空になる確率・包帯の効き目（遊んで決める値）
 		groups.push_back( std::make_unique< TuningGroup< LootParams > >(
 			"Loot", "LootParams", "GameSrc/Interaction/LootParams.h", &lootParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieCrowdParams > >(
 			"ZombieCrowd", "ZombieCrowdParams", "GameSrc/Zombie/ZombieCrowdParams.h", &zombieCrowdParams ) );
-		// つかんでいる間の距離・向きを合わせる値。
+		// つかんでいる間の距離・向きを合わせる値
 		groups.push_back( std::make_unique< TuningGroup< ZombieAttackParams > >(
 			"ZombieAttack", "ZombieAttackParams", "GameSrc/Zombie/ZombieAttackParams.h", &zombieAttackParams ) );
-		// 撃たれたときに押し下げる距離・のけぞりの倍率。
+		// 撃たれたときに押し下げる距離・のけぞりの倍率
 		groups.push_back( std::make_unique< TuningGroup< ZombieStaggerParams > >(
 			"ZombieStagger", "ZombieStaggerParams", "GameSrc/Zombie/Damage/ZombieStaggerParams.h", &zombieStaggerParams ) );
 		groups.push_back( std::make_unique< TuningGroup< ZombieUncertaintyParams > >(
 			"ZombieUncertainty", "ZombieUncertaintyParams", "GameSrc/Zombie/ZombieUncertaintyParams.h", &zombieUncertaintyParams ) );
-		// 走るゾンビの割合・速さ・脚の線（遊んで決める値）。
+		// 走るゾンビの割合・速さ・脚の線（遊んで決める値）
 		groups.push_back( std::make_unique< TuningGroup< ZombieRunParams > >(
 			"ZombieRun", "ZombieRunParams", "GameSrc/Zombie/ZombieRunParams.h", &zombieRunParams ) );
-		// ゾンビのアニメを間引く段。
+		// ゾンビのアニメを間引く段
 		groups.push_back( std::make_unique< TuningGroup< AnimationThrottleParams > >(
 			"AnimationThrottle", "AnimationThrottleParams", "GameSrc/Zombie/AnimationThrottleParams.h", &animationThrottleParams ) );
-		// 置物の細かさの段（LOD）の境目。
+		// 置物の細かさの段（LOD）の境目
 		groups.push_back( std::make_unique< TuningGroup< LodParams > >(
 			"Lod", "LodParams", "GameSrc/Render/LodSelector.h", &lodParams ) );
-		// 露出・ブルーム（リニア化の後に合わせ直す値）。
+		// 露出・ブルーム（リニア化の後に合わせ直す値）
 		groups.push_back( std::make_unique< TuningGroup< PostProcessParams > >(
 			"PostProcess", "PostProcessParams", "GameSrc/Render/PostProcessParams.h", &postProcessParams ) );
-		// 月・空・環境光（夜の暗さ）。昼との切り替えは F6 → Render の Day / Night。
+		// 月・空・環境光（夜の暗さ）。昼との切り替えは F6 → Render の Day / Night
 		groups.push_back( std::make_unique< TuningGroup< LightingParams > >(
 			"Lighting", "LightingParams", "GameSrc/Render/LightingParams.h", &lightingParams ) );
-		// 影を読む位置のずらし・影の濃さ。
+		// 影を読む位置のずらし・影の濃さ
 		groups.push_back( std::make_unique< TuningGroup< ShadowParams > >(
 			"Shadow", "ShadowParams", "GameSrc/Render/ShadowParams.h", &shadowParams ) );
-		// 物の隙間の暗がり。絵は F6 → Render の G-Buffer の SSAO で見る。
+		// 物の隙間の暗がり。絵は F6 → Render の G-Buffer の SSAO で見る
 		groups.push_back( std::make_unique< TuningGroup< SsaoParams > >(
 			"SSAO", "SsaoParams", "GameSrc/Render/SsaoParams.h", &ssaoParams ) );
-		// 雨上がりの水たまり。道路の材質だけに効く。
+		// 雨上がりの水たまり。道路の材質だけに効く
 		groups.push_back( std::make_unique< TuningGroup< PuddleParams > >(
 			"Puddle", "PuddleParams", "GameSrc/Render/PuddleParams.h", &puddleParams ) );
-		// 映り込み。絵は F6 → Render の G-Buffer の SSR で見る。
+		// 映り込み。絵は F6 → Render の G-Buffer の SSR で見る
 		groups.push_back( std::make_unique< TuningGroup< SsrParams > >(
 			"SSR", "SsrParams", "GameSrc/Render/SsrParams.h", &ssrParams ) );
-		// TAA。F6 → Render のアンチエイリアスが TAA のときだけ効く。
+		// TAA。F6 → Render のアンチエイリアスが TAA のときだけ効く
 		groups.push_back( std::make_unique< TuningGroup< TaaParams > >(
 			"TAA", "TaaParams", "GameSrc/Render/TaaParams.h", &taaParams ) );
 		return groups;
@@ -169,7 +169,7 @@ namespace{
 		return true;
 	}
 
-	// 1 つの要素（構造体 1 つ分）の属性を、その構造体の項目へ入れる。
+	// 1 つの要素（構造体 1 つ分）の属性を、その構造体の項目へ入れる
 	void loadGroup( PseudoXml::ConstElement element, ITuningGroup* group, std::vector< std::string >* warnings ) {
 		TuningCollector live;
 		TuningCollector defaults;
@@ -182,7 +182,7 @@ namespace{
 				warnings->push_back( "Unknown item: " + where );
 				continue;
 			}
-			// 読めた数が項目の値の数に届かなければ、その項目は既定値のまま（途中まで入れない）。
+			// 読めた数が項目の値の数に届かなければ、その項目は既定値のまま（途中まで入れない）
 			const int kMaxCount = 3;
 			float values[ kMaxCount ];
 			if ( attribute.getFloatValues( values, item->count ) != item->count ) {
@@ -242,7 +242,7 @@ bool save( const std::string& path, std::string* error ) {
 		element.setAttributeNumber( static_cast< int >( live.items().size() ) );
 		for ( size_t i = 0; i < live.items().size(); ++i ) {
 			const TuningItem& item = live.items()[ i ];
-			// 値は自分で文字にする（PseudoXml の float の配列は 4 桁で丸めるので、元の値へ戻らない）。
+			// 値は自分で文字にする（PseudoXml の float の配列は 4 桁で丸めるので、元の値へ戻らない）
 			element.attribute( static_cast< int >( i ) ).set( item.name, TuningVisitors::fileText( item ).c_str() );
 		}
 	}
@@ -267,7 +267,7 @@ bool save( const std::string& path, std::string* error ) {
 			return false;
 		}
 	}
-	// MSVC の rename は、置き換え先があっても上書きする（MoveFileEx の MOVEFILE_REPLACE_EXISTING と同じ）。
+	// MSVC の rename は、置き換え先があっても上書きする（MoveFileEx の MOVEFILE_REPLACE_EXISTING と同じ）
 	std::filesystem::rename( temporary, target, code );
 	if ( code ) {
 		*error = "Cannot replace " + path + " (" + code.message() + ")";
@@ -288,7 +288,7 @@ bool load( const std::string& path, std::vector< std::string >* warnings ) {
 		return false;
 	}
 	resetAll();
-	// 書いた要素はルートの子になる（ルートそのものは名前を持たない入れ物。GameSettings と同じ）。
+	// 書いた要素はルートの子になる（ルートそのものは名前を持たない入れ物。GameSettings と同じ）
 	PseudoXml::ConstElement root = doc.root();
 	bool found = false;
 	for ( int r = 0; r < root.childNumber(); ++r ) {

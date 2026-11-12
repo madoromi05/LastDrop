@@ -4,9 +4,9 @@
 
 using namespace Synth;
 
-// 脱出の車のエンジン（SummaryPlan/個別仕様/出撃と帰還/FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成する。
+// 脱出の車のエンジン（SummaryPlan/個別仕様/出撃と帰還/FuelEscapeLoading_Plan.txt Q5）。手元に車の録音が無いので合成する
 // エンジンの音は「燃える回数（毎秒）の低い周期音」と、その倍音、こもったノイズでできている（4 気筒・アイドリング 約 800 回転なら、
-// 毎秒 約 27 回燃える）。掛ける音は、セル（スターター）が数回クランクを回す「グッ・グッ」の後に、燃え始めてアイドリングへ移る。
+// 毎秒 約 27 回燃える）。掛ける音は、セル（スターター）が数回クランクを回す「グッ・グッ」の後に、燃え始めてアイドリングへ移る
 namespace{
 	const float kPi = 3.14159265f;
 	const float kTwoPi = 2.f * kPi;
@@ -51,7 +51,7 @@ namespace{
 	const float kStartFadeOut = 0.4f;     // 終わりはアイドリングのループへつなぐので、消えるように
 	const float kStartPeak = 0.6f;
 
-	// start 秒目から duration 秒、エンジンの燃える音を足す。rpmScale( 経った秒 ) で回転を変え、level( 経った秒 ) で大きさを変える。
+	// start 秒目から duration 秒、エンジンの燃える音を足す。rpmScale( 経った秒 ) で回転を変え、level( 経った秒 ) で大きさを変える
 	template< class RpmScale, class Level >
 	void addEngineHum( Buffer* buffer, float start, float duration, RpmScale rpmScale, Level level, Random* random ) {
 		float phase = random->unit() * kTwoPi;
@@ -66,7 +66,7 @@ namespace{
 			float time = static_cast< float >( i ) / kSampleRate;
 			float jitter = 1.f + kIdleJitter * std::sin( kTwoPi * kIdleJitterHz * time );
 			float frequency = kIdleFiringHz * rpmScale( time ) * jitter;
-			// 位相を少しずつ進める（回転が変わった瞬間に波形が飛ばないように。サイレンと同じ）。
+			// 位相を少しずつ進める（回転が変わった瞬間に波形が飛ばないように。サイレンと同じ）
 			phase += kTwoPi * frequency / kSampleRate;
 			float sample = 0.f;
 			for ( int n = 0; n < kIdleHarmonics; ++n ) {
@@ -74,7 +74,7 @@ namespace{
 				float amplitude = 1.f / std::pow( static_cast< float >( harmonic ), kIdleRolloff );
 				sample += std::sin( phase * harmonic + harmonicPhases[ n ] ) * amplitude;
 			}
-			// 1 回燃えるごとに膨らむ（低い周期の「ドッドッ」）。
+			// 1 回燃えるごとに膨らむ（低い周期の「ドッドッ」）
 			float pulse = 1.f - kIdlePulseDepth + kIdlePulseDepth * std::pow( std::fabs( std::sin( phase * kIdlePulseRate ) ), kIdlePulseSharpness );
 			float noise = rumble.process( random->bipolar() ) * kIdleNoiseGain;
 			( *buffer )[ first + i ] += ( sample * pulse + noise * pulse ) * level( time );
@@ -93,7 +93,7 @@ Buffer makeEngineIdle( Random* random ) {
 
 Buffer makeEngineStart( Random* random ) {
 	Buffer buffer = makeBuffer( kStartLength );
-	// セルが回る間：クランクの「グッ」と、モーターのうなり。
+	// セルが回る間：クランクの「グッ」と、モーターのうなり
 	for ( int i = 0; i < kCrankCount; ++i ) {
 		float start = i * kCrankInterval;
 		addThump( &buffer, start, kCrankThumpHz, kCrankThumpDecay, kCrankThumpGain );
@@ -104,7 +104,7 @@ Buffer makeEngineStart( Random* random ) {
 		float time = static_cast< float >( i ) / kSampleRate;
 		buffer[ i ] += std::sin( kTwoPi * kStarterWhineHz * time ) * kStarterWhineGain;
 	}
-	// 燃え始め：低い「ボン」と、一度回転が上がってアイドリングへ落ちる音。
+	// 燃え始め：低い「ボン」と、一度回転が上がってアイドリングへ落ちる音
 	addBoom( &buffer, kCatchSeconds, kCatchBoomAttack, kCatchBoomDecay, kCatchBoomCutoff, kCatchBoomGain, random );
 	auto rpmScale = []( float time ) {
 		float t = ( time < kCatchRevSeconds ) ? time / kCatchRevSeconds : 1.f;

@@ -19,7 +19,7 @@ namespace{
 	const float kSpotLineLength = 3.f; // スポットの照らす向きの線の長さ（m）
 	const int kMarkLines = 5;          // 十字 3 本＋縦の線 1 本＋スポットの向き 1 本
 	const int kVerticesPerLine = 2;
-	// 一度に描ける線の数。ライト 16 個より多め（街灯 38＋懐中電灯＋マズルフラッシュ。選ばれなかった物も描く）× 1 個ぶんの線。
+	// 一度に描ける線の数。ライト 16 個より多め（街灯 38＋懐中電灯＋マズルフラッシュ。選ばれなかった物も描く）× 1 個ぶんの線
 	const int kMaxDrawnLights = 48;
 	const int kLineCapacity = kMaxDrawnLights * ( kCircleSegments + kMarkLines );
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
@@ -53,7 +53,7 @@ void LightDebugDrawer::draw( const LightList& lights, const Matrix44& projection
 			tip.setMadd( p, light.direction, kSpotLineLength );
 			mRenderer.addLine( p, tip, color, color );
 		}
-		// 届く球が地面を切る円（光が地面より届く距離以上高ければ、地面には届かないので描かない）。
+		// 届く球が地面を切る円（光が地面より届く距離以上高ければ、地面には届かないので描かない）
 		float height = p.y - kGroundHeight;
 		if ( height < light.range ) {
 			float radius = sqrt( light.range * light.range - height * height );

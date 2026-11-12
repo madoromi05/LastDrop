@@ -4,8 +4,8 @@
 
 bool gThrowWhenHalt = false;
 
-//このファイルではnewしないよう配慮する。
-//newの中からも呼ばれうるからだ。
+//このファイルではnewしないよう配慮する
+//newの中からも呼ばれうるからだ
 namespace GameLib{
 
 void halt( const char* filename, int line, const char* message ){

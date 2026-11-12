@@ -9,16 +9,16 @@
 // ────────────────────────────────────────────────
 // デバイス層：インターフェース
 //
-// IInputDeviceBase は型消去のためのインターフェース。
+// IInputDeviceBase は型消去のためのインターフェース
 // InputDeviceCentor が shared_ptr<IInputDeviceBase> で全デバイスを
-// 同じコンテナに入れるために必要。
+// 同じコンテナに入れるために必要
 // ────────────────────────────────────────────────
 class IInputDeviceBase
 {
 public:
     virtual ~IInputDeviceBase() = default;
 
-    // 毎フレーム呼ぶ更新処理。フォーマット層を通して物理デバイスを読む。
+    // 毎フレーム呼ぶ更新処理。フォーマット層を通して物理デバイスを読む
     virtual void Update() = 0;
 
     // ボタン名でビットフラグ (KeyStatus) を取得
@@ -42,9 +42,9 @@ public:
 //
 // KeyCodeType = このデバイスが使うキーコードの型
 //
-// 複数の Format を持てる。
+// 複数の Format を持てる
 // 例: キーボードデバイスに「通常キーフォーマット」「ファンクションキーフォーマット」を
-//     両方登録するといった拡張が可能。
+//     両方登録するといった拡張が可能
 // ────────────────────────────────────────────────
 template<typename KeyCodeType>
 class InputDeviceBase : public IInputDeviceBase
@@ -55,7 +55,7 @@ public:
     //
     // 各フォーマットの各ボタンについて
     // 「前フレームの状態」と「今フレームの物理押下フラグ」から
-    // Free / Press / Hold / Release を決定してキャッシュする。
+    // Free / Press / Hold / Release を決定してキャッシュする
     //
     // ビットフラグ遷移表:
     //   前がFree  + 今押下 → Free クリア, Press セット, Hold セット

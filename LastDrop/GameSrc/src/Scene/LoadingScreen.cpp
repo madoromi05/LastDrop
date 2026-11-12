@@ -11,7 +11,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kHalf = 0.5f;
-	// 画面の真ん中からの高さ（上が負）。
+	// 画面の真ん中からの高さ（上が負）
 	const float kHeadingAboveCenter = 40.f;
 	const float kLabelBelowCenter = 10.f;
 	const float kBarBelowCenter = 40.f;
@@ -38,7 +38,7 @@ void LoadingScreen::draw( const char* heading, const char* label, float progress
 	float centerX = width * kHalf;
 	float centerY = height * kHalf;
 
-	// 前の画面（タイトル・結果）が残らないよう、画面全体を黒で塗る（世界はまだ描いていない）。
+	// 前の画面（タイトル・結果）が残らないよう、画面全体を黒で塗る（世界はまだ描いていない）
 	UiRect back = { 0.f, 0.f, width, height };
 	mRenderer->addRect( back, kBackColor );
 

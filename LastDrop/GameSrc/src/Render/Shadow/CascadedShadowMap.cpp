@@ -12,7 +12,7 @@ using namespace GameLib::Math;
 namespace{
 	const float kHalf = 0.5f;
 	const float kNearestCascadeStart = 0.f; // 一番手前の枚は目から受け持つ
-	// 光の向きがほぼ真上・真下のときは、世界の上を「上」にすると行列が作れないので、奥（+Z）を上にする（ShadowMap.cpp と同じ）。
+	// 光の向きがほぼ真上・真下のときは、世界の上を「上」にすると行列が作れないので、奥（+Z）を上にする（ShadowMap.cpp と同じ）
 	const float kNearlyVertical = 0.99f;
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
 	const Vector3 kVerticalUp( 0.f, 0.f, 1.f );
@@ -26,7 +26,7 @@ namespace{
 	const int kMinInterval = 1; // 描き直す間隔の下限（毎フレーム）
 
 	// 枚ごとに描き直すフレームをずらす数。手前の枚は毎フレームなので 0、2 枚目から 0, 1, … とずらす
-	// （既定の間隔 2・4 なら、2 枚目は偶数のフレーム・3 枚目は 4 で割って 3 余るフレームで、同じフレームに重ならない）。
+	// （既定の間隔 2・4 なら、2 枚目は偶数のフレーム・3 枚目は 4 で割って 3 余るフレームで、同じフレームに重ならない）
 	int phaseOf( int cascade ) {
 		return ( cascade > 0 ) ? cascade - 1 : 0;
 	}
@@ -60,7 +60,7 @@ CascadedShadowMap::CascadedShadowMap( int size ) :
 
 void CascadedShadowMap::update( const Vector3& eye, const Vector3& viewDirection, float fieldOfViewY, float aspect,
 	const Vector3& lightDirection, const float ( &cascadeEnds )[ kCascadeCount ], float casterMargin, const Refresh& refresh ) {
-	// 行列の作り方が前と変わったら（F6 で影の調整値・月の向き・画角を動かした）、全部の枚を描き直す。
+	// 行列の作り方が前と変わったら（F6 で影の調整値・月の向き・画角を動かした）、全部の枚を描き直す
 	Placement placement;
 	placement.lightDirection = lightDirection;
 	for ( int i = 0; i < kCascadeCount; ++i ) {
@@ -73,10 +73,10 @@ void CascadedShadowMap::update( const Vector3& eye, const Vector3& viewDirection
 	mPlacement = placement;
 	mInvalid = false;
 
-	// 画面の角の向きは、カメラの向きから「奥へ 1 進むと横へ lateral 離れる」。縦の tan と横の tan（縦 × 縦横比）の合成。
+	// 画面の角の向きは、カメラの向きから「奥へ 1 進むと横へ lateral 離れる」。縦の tan と横の tan（縦 × 縦横比）の合成
 	float tanHalfY = Math::tan( fieldOfViewY * kHalf );
 	float lateral = tanHalfY * Math::sqrt( 1.f + aspect * aspect );
-	// 光の向きの基準（光から見た右と上）。原点から光の向きを見る行列の行が、そのまま右・上の向きになる。
+	// 光の向きの基準（光から見た右と上）。原点から光の向きを見る行列の行が、そのまま右・上の向きになる
 	Matrix34 basis;
 	basis.setViewTransform( kOrigin, lightDirection, lightUp( lightDirection ) );
 	Vector3 right( basis.m00, basis.m01, basis.m02 );
@@ -97,20 +97,20 @@ void CascadedShadowMap::update( const Vector3& eye, const Vector3& viewDirection
 
 void CascadedShadowMap::placeCascade( int cascade, const Vector3& eye, const Vector3& viewDirection, float lateral,
 	const Vector3& lightDirection, const Vector3& right, const Vector3& upward, float start, float end, float casterMargin ) {
-	// この枚が受け持つ「奥 start〜end の映る所」を包む球。中心は真ん中の奥、半径は中心から奥の角まで（奥の角が一番遠い）。
+	// この枚が受け持つ「奥 start〜end の映る所」を包む球。中心は真ん中の奥、半径は中心から奥の角まで（奥の角が一番遠い）
 	float middle = ( start + end ) * kHalf;
 	float halfDepth = ( end - start ) * kHalf;
 	float farLateral = end * lateral;
 	float radius = Math::sqrt( halfDepth * halfDepth + farLateral * farLateral );
 	Vector3 center;
 	center.setMadd( eye, viewDirection, middle );
-	// 中心を影のマップの 1 画素の単位で丸める（光から見た右・上の向きの座標を丸め、その差だけ動かす）。
+	// 中心を影のマップの 1 画素の単位で丸める（光から見た右・上の向きの座標を丸め、その差だけ動かす）
 	float texel = radius * 2.f / static_cast< float >( mSize );
 	float x = center.dot( right );
 	float y = center.dot( upward );
 	center.madd( right, std::floor( x / texel ) * texel - x );
 	center.madd( upward, std::floor( y / texel ) * texel - y );
-	// 光の目は、球より光の側へ casterMargin 離した所（球の外の高い建物の影も描けるように）。
+	// 光の目は、球より光の側へ casterMargin 離した所（球の外の高い建物の影も描けるように）
 	Vector3 lightEye;
 	lightEye.setMadd( center, lightDirection, -( radius + casterMargin ) );
 	Matrix34 view;

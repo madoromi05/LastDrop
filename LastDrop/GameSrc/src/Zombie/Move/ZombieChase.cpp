@@ -10,58 +10,58 @@ using namespace GameLib::Math;
 
 namespace{
 	// 気付く
-	// 前（向きから左右 kFieldOfViewHalfDegree の内）に居る自キャラは、これより近ければ気付く（m。目から目まで）。
-	// 追っている間は、向き問わずこの距離まで見失わない。
+	// 前（向きから左右 kFieldOfViewHalfDegree の内）に居る自キャラは、これより近ければ気付く（m。目から目まで）
+	// 追っている間は、向き問わずこの距離まで見失わない
 	const float kFarSightRange = 15.f;
-	// 横・後ろに居る自キャラは、これより近いときだけ気付く（m）。後ろから近づけるように前より短くする。
+	// 横・後ろに居る自キャラは、これより近いときだけ気付く（m）。後ろから近づけるように前より短くする
 	const float kNearSightRange = 10.f;
-	// 前とみなす範囲（度。向きから左右それぞれ）。上下は見ない（水平の向きだけ）。
+	// 前とみなす範囲（度。向きから左右それぞれ）。上下は見ない（水平の向きだけ）
 	const float kFieldOfViewHalfDegree = 60.f;
-	// 見通しの線を引く間隔（秒）。気付くのがこれだけ遅れてもよい長さ。
+	// 見通しの線を引く間隔（秒）。気付くのがこれだけ遅れてもよい長さ
 	const float kSightIntervalSeconds = 0.3f;
 	const int kSightIntervalTicks = GameTime::secondsToTicks( kSightIntervalSeconds );
 
 	// ── 近づく──
-	// 自キャラにこれより近づいたら止まる（m。足元どうし、水平だけ）。
+	// 自キャラにこれより近づいたら止まる（m。足元どうし、水平だけ）
 	const float kStopDistance = 1.2f;
-	// 止まった後、自キャラがこれより離れたら歩き出す（止まる距離より少し長くして、境目で歩く・止まるを繰り返さない）。
+	// 止まった後、自キャラがこれより離れたら歩き出す（止まる距離より少し長くして、境目で歩く・止まるを繰り返さない）
 	const float kResumeDistance = 1.5f;
-	// 最後に見た場所・うろつく先にこれより近づいたら着いたとみなす（m）。
+	// 最後に見た場所・うろつく先にこれより近づいたら着いたとみなす（m）
 	const float kArriveDistance = 0.5f;
 
 	// ── うろつく──
-	// うろつく先の向きの幅（度。今の向きから左右それぞれ）。前寄りにして、行ったり来たりせず少しずつ町を流れていく。
+	// うろつく先の向きの幅（度。今の向きから左右それぞれ）。前寄りにして、行ったり来たりせず少しずつ町を流れていく
 	const float kWanderHalfAngle = 90.f;
-	// うろつく先までの距離（m）。
+	// うろつく先までの距離（m）
 	const float kWanderMinDistance = 3.f;
 	const float kWanderMaxDistance = 8.f;
-	// 着いてから次を選ぶまで立っている長さ（秒。毎回この間でランダム）。
+	// 着いてから次を選ぶまで立っている長さ（秒。毎回この間でランダム）
 	const float kWanderWaitMinSeconds = 1.f;
 	const float kWanderWaitMaxSeconds = 3.f;
-	// うろつく先を選び直す回数。全部壁に当たったら、もう一度立ってから後ろ向きを基準に選ぶ。
+	// うろつく先を選び直す回数。全部壁に当たったら、もう一度立ってから後ろ向きを基準に選ぶ
 	const int kWanderPickTries = 4;
-	// うろつく先へ通るかを調べる線の高さ（m。足元から）。歩道の段差（0.15m）には当たらず、車・壁には当たる高さ。
+	// うろつく先へ通るかを調べる線の高さ（m。足元から）。歩道の段差（0.15m）には当たらず、車・壁には当たる高さ
 	const float kWanderProbeHeight = 0.5f;
-	// 線を行き先より先まで伸ばす長さ（m）。行き先が壁にくっついて、体（長方形）がめり込む先を選ばないように。
+	// 線を行き先より先まで伸ばす長さ（m）。行き先が壁にくっついて、体（長方形）がめり込む先を選ばないように
 	const float kWanderClearance = 0.5f;
-	// この長さ（m）近づくたびに「近づけている」とみなす。壁に沿って滑るだけで行き先へ寄れていないのを見分ける。
+	// この長さ（m）近づくたびに「近づけている」とみなす。壁に沿って滑るだけで行き先へ寄れていないのを見分ける
 	const float kWanderProgressDistance = 0.3f;
-	// 近づけないまま、これだけ過ぎたら選び直す（秒）。
+	// 近づけないまま、これだけ過ぎたら選び直す（秒）
 	const float kWanderStallSeconds = 1.f;
 	const int kWanderStallTicks = GameTime::secondsToTicks( kWanderStallSeconds );
 	const float kHalfTurn = 180.f;
 
 	// ── 銃声を聞く──
-	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように。
+	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように
 	const float kNoiseDelayMinSeconds = 0.2f;
 	const float kNoiseDelayMaxSeconds = 1.0f;
 
-	// 向き angleY（度。0 は +Z、90 は +X）の水平の向き（長さ 1）。
+	// 向き angleY（度。0 は +Z、90 は +X）の水平の向き（長さ 1）
 	Vector3 forwardOf( float angleY ) {
 		return Vector3( GameLib::Math::sin( angleY ), 0.f, GameLib::Math::cos( angleY ) );
 	}
 
-	// toTarget が、向き angleY から左右 kFieldOfViewHalfDegree の内か（水平だけで見る）。
+	// toTarget が、向き angleY から左右 kFieldOfViewHalfDegree の内か（水平だけで見る）
 	bool isInFieldOfView( float angleY, const Vector3& toTarget ) {
 		Vector3 flat( toTarget.x, 0.f, toTarget.z );
 		float length = flat.length();
@@ -158,7 +158,7 @@ void ZombieChase::updateSight( const Vector3& eye, float angleY, const ChaseTarg
 bool ZombieChase::canSee( const Vector3& eye, float angleY, const ChaseTarget& target, const HitWorld& hitWorld ) const {
 	Vector3 toTarget;
 	toTarget.setSub( target.eyePosition, eye );
-	// 重い線より先に、距離と向きで外す（後ろの遠くに居る相手には線を引かない）。
+	// 重い線より先に、距離と向きで外す（後ろの遠くに居る相手には線を引かない）
 	bool far = ( mMode == Mode::Chase ) || isInFieldOfView( angleY, toTarget );
 	float range = far ? kFarSightRange : kNearSightRange;
 	if ( toTarget.squareLength() > range * range ) {
@@ -179,7 +179,7 @@ void ZombieChase::updateNoise() {
 
 void ZombieChase::updateChase( const Vector3& self ) {
 	float distance = FlatMath::distance( self, mDestination );
-	// 止まっている間は、少し離れるまで歩き出さない。
+	// 止まっている間は、少し離れるまで歩き出さない
 	mWalking = mWalking ? ( distance > kStopDistance ) : ( distance > kResumeDistance );
 }
 
@@ -217,7 +217,7 @@ void ZombieChase::updateWander( const Vector3& self, float angleY, const HitWorl
 		mWanderBestDistance = distance;
 		mWanderStallTicks = 0;
 	} else if ( ++mWanderStallTicks >= kWanderStallTicks ) {
-		// 壁に沿って滑るだけで寄れていない。立たずに、次のティックで今の向きから選び直す。
+		// 壁に沿って滑るだけで寄れていない。立たずに、次のティックで今の向きから選び直す
 		mWalking = false;
 		mWanderWaitTicks = 0;
 	}

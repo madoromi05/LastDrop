@@ -8,17 +8,17 @@
 using namespace GameLib;
 
 namespace{
-	// アニメ・合図の時刻・長さは銃ごとの表（WeaponCatalog の WeaponReloadSpec）。アニメは player.json の game_fps でゲームのフレームに直してある。
-	// 腕をアニメへ切り替える・戻す長さ（秒）。急に切り替えると腕が跳ねて見える。
+	// アニメ・合図の時刻・長さは銃ごとの表（WeaponCatalog の WeaponReloadSpec）。アニメは player.json の game_fps でゲームのフレームに直してある
+	// 腕をアニメへ切り替える・戻す長さ（秒）。急に切り替えると腕が跳ねて見える
 	const float kArmBlendSeconds = 0.15f;
-	// 挿す合図の前に、手の弾倉を銃の差し込み口へ寄せる長さ（秒）。手の位置と差し込み口はアニメで少しずれているので、跳ばずにはめるため。
+	// 挿す合図の前に、手の弾倉を銃の差し込み口へ寄せる長さ（秒）。手の位置と差し込み口はアニメで少しずれているので、跳ばずにはめるため
 	const float kMagazineSeatSeconds = 0.2f;
 
 	const int kInactive = -1;
 	const int kNoTick = -1; // 来ない合図（スライドを引かないリロードの CUE_BOLT）
 
-	// seconds が from → to の間をどれだけ進んだか（0〜1。曲線を掛けた値）。
-	// 曲線は始めと終わりがゆっくりになる物（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため。
+	// seconds が from → to の間をどれだけ進んだか（0〜1。曲線を掛けた値）
+	// 曲線は始めと終わりがゆっくりになる物（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため
 	float easedProgress( float seconds, float from, float to ) {
 		float t = ( seconds - from ) / ( to - from );
 		return ScalarMath::smoothStep( Math::min( 1.f, Math::max( 0.f, t ) ) );
@@ -56,7 +56,7 @@ const char* WeaponReload::animationName() const {
 }
 
 int WeaponReload::animationSecondsToTicks( float animationSeconds ) const {
-	// 速めて流すので、アニメの時刻より早く来る。
+	// 速めて流すので、アニメの時刻より早く来る
 	return GameTime::secondsToTicks( animationSeconds / animationRate() );
 }
 

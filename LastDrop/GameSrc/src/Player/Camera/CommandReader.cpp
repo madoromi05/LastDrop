@@ -3,12 +3,12 @@
 #include "GameSrc/Math/ScalarMath.h"
 
 namespace{
-	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）。
+	// 押されていれば 1、いなければ 0（逆方向同士を引き算して軸にする）
 	float axisValue( bool on ) {
 		return on ? 1.f : 0.f;
 	}
 
-	// 移動の軸の上限（キーとスティックを同時に入れても PlayerCommand の -1〜1 に収める）。
+	// 移動の軸の上限（キーとスティックを同時に入れても PlayerCommand の -1〜1 に収める）
 	const float kMoveAxisLimit = 1.f;
 }
 
@@ -18,7 +18,7 @@ CommandReader::CommandReader() :
 }
 
 void CommandReader::read( bool cursorLocked ) {
-	// キーとパッドのスティックを足す。スティックの縦は下が正なので、前（上）を正にするため引く。
+	// キーとパッドのスティックを足す。スティックの縦は下が正なので、前（上）を正にするため引く
 	AxisStatus move = InputMove();
 	mCommand.forward = ScalarMath::clampSigned( axisValue( InputUp() ) - axisValue( InputDown() ) - move.m_height, kMoveAxisLimit );
 	mCommand.strafe = ScalarMath::clampSigned( axisValue( InputRight() ) - axisValue( InputLeft() ) + move.m_width, kMoveAxisLimit );

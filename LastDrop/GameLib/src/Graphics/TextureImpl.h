@@ -164,7 +164,7 @@ public:
 	void ensureGpuUploaded(){
 		if ( !mNeedsUpload && mGpuTexture ) return;
 		if ( mMips.empty() && mCompressed.levels.empty() ) return;
-		// 後から書き足せる画像は、大きさも形式も変わらないので、作り直さず中身だけ送り直す。
+		// 後から書き足せる画像は、大きさも形式も変わらないので、作り直さず中身だけ送り直す
 		if ( mKeepsCpuPixels && mGpuTexture ){
 			for ( size_t i = 0; i < mMips.size(); ++i ){
 				mContext->UpdateSubresource( mGpuTexture, static_cast< UINT >( i ), nullptr, mMips[ i ].pixels.data(), mMips[ i ].width * 4, 0 );
@@ -176,7 +176,7 @@ public:
 		if ( mSRV       ){ mSRV->Release();        mSRV = 0; }
 		if ( mGpuTexture){ mGpuTexture->Release(); mGpuTexture = 0; }
 
-		// 送る中身は、圧縮した DDS（ブロックのまま）か、CPU で展開した画素（TGA・古い形の DDS・lock で書いた物）のどちらか。
+		// 送る中身は、圧縮した DDS（ブロックのまま）か、CPU で展開した画素（TGA・古い形の DDS・lock で書いた物）のどちらか
 		const bool compressed = !mCompressed.levels.empty();
 		int mipLevels = static_cast< int >( compressed ? mCompressed.levels.size() : mMips.size() );
 		vector< D3D11_SUBRESOURCE_DATA > initData( mipLevels );
@@ -196,8 +196,8 @@ public:
 		desc.Height         = static_cast< UINT >( compressed ? mCompressed.levels[ 0 ].height : mMips[ 0 ].height );
 		desc.MipLevels      = static_cast< UINT >( mipLevels );
 		desc.ArraySize      = 1;
-		// 色の画像は _SRGB にして、シェーダが読むときに GPU がリニアへ直す（線形のフィルタもリニアで掛かる）。
-		// 圧縮した DDS は、ファイルに書いてある形式のまま（_SRGB かどうかも texconv が決めた。readCompressedDds で指定と比べてある）。
+		// 色の画像は _SRGB にして、シェーダが読むときに GPU がリニアへ直す（線形のフィルタもリニアで掛かる）
+		// 圧縮した DDS は、ファイルに書いてある形式のまま（_SRGB かどうかも texconv が決めた。readCompressedDds で指定と比べてある）
 		if ( compressed ){
 			desc.Format = mCompressed.format;
 		}else{
@@ -207,9 +207,9 @@ public:
 		desc.Usage          = D3D11_USAGE_DEFAULT;
 		desc.BindFlags      = D3D11_BIND_SHADER_RESOURCE;
 
-		// 中身は CreateTexture2D の初期データで渡さず、空で作ってから UpdateSubresource で書き込む。
+		// 中身は CreateTexture2D の初期データで渡さず、空で作ってから UpdateSubresource で書き込む
 		// Intel Iris Xe（内蔵 GPU）では、初期データ付きで作ったテクスチャをシェーダーで読むと、何かでコピー元に使われるまで
-		// 全画素が白・不透明に見えた（フォントの文字が四角く塗りつぶされた）。WARP では起きない。ドライバー側の問題とみて回避する。
+		// 全画素が白・不透明に見えた（フォントの文字が四角く塗りつぶされた）。WARP では起きない。ドライバー側の問題とみて回避する
 		HRESULT hr = mDevice->CreateTexture2D( &desc, nullptr, &mGpuTexture );
 		ASSERT( SUCCEEDED( hr ) && "CreateTexture2D failed" );
 		for ( int i = 0; i < mipLevels; ++i ){
@@ -224,15 +224,15 @@ public:
 		hr = mDevice->CreateShaderResourceView( mGpuTexture, &srvDesc, &mSRV );
 		ASSERT( SUCCEEDED( hr ) && "CreateShaderResourceView failed" );
 
-		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる）。
-		// 名前のある画像（ファイルから読んだ物）だけ。lock で書く画像は書き直すたびに来るので数えない。
+		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる）
+		// 名前のある画像（ファイルから読んだ物）だけ。lock で書く画像は書き直すたびに来るので数えない
 		if ( !mProfileName.empty() ){
 			size_t bytes = 0;
 			for ( int i = 0; i < mipLevels; ++i ){
 				int rows = compressed ? ( mCompressed.levels[ i ].height + DdsReader::kBlockPixels - 1 ) / DdsReader::kBlockPixels : mMips[ i ].height;
 				bytes += static_cast< size_t >( initData[ i ].SysMemPitch ) * rows;
 			}
-			// 起動中に読んだ画像の合計。消した画像は引かない（読み込みの量を見る数で、今あるメモリの量ではない）。
+			// 起動中に読んだ画像の合計。消した画像は引かない（読み込みの量を見る数で、今あるメモリの量ではない）
 			static size_t sUploadedBytes = 0;
 			sUploadedBytes += bytes;
 			const size_t kKiB = 1024;
@@ -393,8 +393,8 @@ public:
 				if ( mFile.isError() ){
 					mIsError = true;
 				}else{
-					// 画像を展開して GPU へ送るのは、ここ（最初に isReady を呼んだ描画の中）。
-					// ゲームが始まった後に初めて使うテクスチャだと、ここがプレイ中のひっかかりになる。
+					// 画像を展開して GPU へ送るのは、ここ（最初に isReady を呼んだ描画の中）
+					// ゲームが始まった後に初めて使うテクスチャだと、ここがプレイ中のひっかかりになる
 					Profiling::addLoadWait( mProfileName.c_str(), mRequestedAt );
 					LOAD_SCOPE( "texture", mProfileName.c_str() );
 					if ( mExtension == EXT_DDS ) readDDS( mFile.data(), mFile.size() );
@@ -555,8 +555,8 @@ public:
 		unlock( 0 );
 	}
 
-	// tools/convert/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）。
-	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる。
+	// tools/convert/texture_to_dds.ps1 で作った BC 圧縮の DDS を、展開せずにブロックのまま持つ（ミップもファイルの物を使う）
+	// 読めない形式・色の指定との食い違いは、黙って変な絵を出すより止めて知らせる
 	void readCompressedDds( const char* data, int size ){
 		std::string error;
 		if ( !DdsReader::read( data, size, &mCompressed, &error ) ){
@@ -581,7 +581,7 @@ public:
 			readCompressedDds( data, size );
 			return;
 		}
-		// ここから下は古い形の、圧縮していない DDS（Texture::write が書く物）。
+		// ここから下は古い形の、圧縮していない DDS（Texture::write が書く物）
 		int sh = getUnsigned( data + 12 );
 		int sw = getUnsigned( data + 16 );
 		mOriginalWidth  = sw;
@@ -635,21 +635,21 @@ public:
 		unlock( 0 );
 	}
 
-	// ミップを作るときの画素の並び（BGRA が 8bit ずつ。アルファは一番上の 8bit）と、縮める前の 4 画素。
+	// ミップを作るときの画素の並び（BGRA が 8bit ずつ。アルファは一番上の 8bit）と、縮める前の 4 画素
 	static const int kChannelBits = 8;
 	static const int kChannels = 4;
 	static const int kAlphaShift = 24;
 	static const unsigned kChannelMask = 0xff;
 	static const int kMipSourcePixels = 4;
-	// リニアの数は 16bit（0〜65535）で持つ。8bit の色 256 段を 4 つ足しても溢れず、暗い所の差も潰れない。
+	// リニアの数は 16bit（0〜65535）で持つ。8bit の色 256 段を 4 つ足しても溢れず、暗い所の差も潰れない
 	static const int kSrgbLevels = 256;
 	static const int kLinearBits = 16;
 	static constexpr float kLinearMax = static_cast< float >( ( 1 << kLinearBits ) - 1 );
-	// リニア → 色の表の段数（16bit を下の 4bit 捨てて引く）。暗い所でも 1 段のずれが 8bit の色の 1 より小さくなる細かさ。
+	// リニア → 色の表の段数（16bit を下の 4bit 捨てて引く）。暗い所でも 1 段のずれが 8bit の色の 1 より小さくなる細かさ
 	static const int kLinearToSrgbBits = 12;
 	static const int kLinearToSrgbShift = kLinearBits - kLinearToSrgbBits;
 
-	// 色の画像のミップをリニアで平均するための表。pow を画素ごとに呼ぶと、4096² の読み込みが目に見えて遅くなるため。
+	// 色の画像のミップをリニアで平均するための表。pow を画素ごとに呼ぶと、4096² の読み込みが目に見えて遅くなるため
 	struct SrgbTables{
 		unsigned short toLinear[ kSrgbLevels ];             // 8bit の色 → 16bit のリニア
 		unsigned char  toSrgb[ 1 << kLinearToSrgbBits ];    // 16bit のリニアの上 12bit → 8bit の色
@@ -661,7 +661,7 @@ public:
 			}
 			const int steps = 1 << kLinearToSrgbBits;
 			for ( int i = 0; i < steps; ++i ){
-				// 段の真ん中の値で引く（切り捨てで引くと、全体が暗い側へ寄る）。
+				// 段の真ん中の値で引く（切り捨てで引くと、全体が暗い側へ寄る）
 				float linear = ( i + 0.5f ) / steps;
 				toSrgb[ i ] = static_cast< unsigned char >( ColorSpace::linearToSrgb( linear ) * colorMax + 0.5f );
 			}
@@ -672,7 +672,7 @@ public:
 		return sTables;
 	}
 	// 4 画素の、shift の位置の 8bit を平均する。asSrgb なら sRGB の色としてリニアで平均する
-	// （画像の数のまま平均すると、遠くの縮んだ絵が暗い側へ寄るため）。
+	// （画像の数のまま平均すると、遠くの縮んだ絵が暗い側へ寄るため）
 	static unsigned averageChannel( const unsigned* quad, int shift, bool asSrgb ){
 		const unsigned half = kMipSourcePixels / 2; // 四捨五入
 		unsigned sum = 0;
@@ -703,7 +703,7 @@ public:
 					src[ 2*x ], src[ 2*x+1 ], src[ 2*x+srcPitch ], src[ 2*x+srcPitch+1 ] };
 				unsigned averaged = 0;
 				for ( int shift = 0; shift < kChannelBits * kChannels; shift += kChannelBits ){
-					// アルファは色ではない（覆う割合）ので、色の画像でもそのまま平均する。
+					// アルファは色ではない（覆う割合）ので、色の画像でもそのまま平均する
 					bool linear = srgb && ( shift != kAlphaShift );
 					averaged |= averageChannel( quad, shift, linear ) << shift;
 				}
@@ -721,7 +721,7 @@ public:
 		if ( !mGpuTexture ) return nullptr;
 		D3D11_TEXTURE2D_DESC desc;
 		mGpuTexture->GetDesc( &desc );
-		// 圧縮した絵は 1 画素 4 バイトとして読み戻せない（write はデバッグ用なので、TGA から読んだ絵だけ書ければよい）。
+		// 圧縮した絵は 1 画素 4 バイトとして読み戻せない（write はデバッグ用なので、TGA から読んだ絵だけ書ければよい）
 		if ( DdsReader::blockBytes( desc.Format ) > 0 ) return nullptr;
 		D3D11_TEXTURE2D_DESC sd = desc;
 		sd.Usage          = D3D11_USAGE_STAGING;
@@ -750,13 +750,13 @@ public:
 	bool                      mNeedsUpload;
 	Extension                 mExtension;
 	char*                     mName;
-	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）。
+	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）
 	long long                 mRequestedAt;
 	string                    mProfileName;
 	TextureColorSpace         mColorSpace; // 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
-	// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）。
+	// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）
 	DdsReader::Image          mCompressed;
-	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる。
+	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる
 	bool                      mKeepsCpuPixels = false;
 };
 

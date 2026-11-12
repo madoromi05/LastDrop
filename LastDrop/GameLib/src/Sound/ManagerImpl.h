@@ -30,7 +30,7 @@ public:
 		ZeroMemory( &format, sizeof( PCMWAVEFORMAT ) );
 		format.wBitsPerSample = 16;
 		format.wFormatTag = WAVE_FORMAT_PCM;
-		format.nChannels = 1; //モノラルでいいや。
+		format.nChannels = 1; //モノラルでいいや
 		format.nSamplesPerSec = 44100;
 		format.nBlockAlign = format.nChannels * format.wBitsPerSample / 8;
 		format.nAvgBytesPerSec = format.nSamplesPerSec * format.nBlockAlign;

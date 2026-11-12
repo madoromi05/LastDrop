@@ -10,12 +10,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 間引く段の値（F6 で動かせる。毎ティック読むので、変えたらすぐ効く）。
+	// 間引く段の値（F6 で動かせる。毎ティック読むので、変えたらすぐ効く）
 	AnimationThrottleParams gThrottleParams;
 
 	const unsigned kMinInterval = 1; // 毎ティック
 
-	// 小数で持つ間隔（ティック）を、四捨五入して 1 以上の整数にする。
+	// 小数で持つ間隔（ティック）を、四捨五入して 1 以上の整数にする
 	unsigned intervalOf( float ticks ) {
 		const float kRound = 0.5f;
 		int rounded = static_cast< int >( ticks + kRound );
@@ -40,14 +40,14 @@ AnimationThrottle::Level AnimationThrottle::judge( const AnimationView* view, co
 	if ( !view || !hitboxes.bounds( &boundsMin, &boundsMax ) ) {
 		return Level::Near; // まだ描いていない・箱が置かれていない間は間引かない
 	}
-	// 描くかを決める箱（DrawCulling::showsPosed）と同じ広げ方にする（描く体を「映らない」段にしないため）。
+	// 描くかを決める箱（DrawCulling::showsPosed）と同じ広げ方にする（描く体を「映らない」段にしないため）
 	Vector3 margin( DrawCulling::kPoseMargin );
 	boundsMin -= margin;
 	boundsMax += margin;
 	if ( !view->frustum.mayContain( boundsMin, boundsMax ) ) {
 		return Level::Hidden;
 	}
-	// 描く時と同じく、建物の向こうに隠れた体も映らない（DrawCulling::showsPosed と同じ足元で聞く）。
+	// 描く時と同じく、建物の向こうに隠れた体も映らない（DrawCulling::showsPosed と同じ足元で聞く）
 	if ( view->visibility && !view->visibility->showsPoint( view->viewCell, position ) ) {
 		return Level::Hidden;
 	}
@@ -66,7 +66,7 @@ bool AnimationThrottle::shouldPose( Level level, bool mustPose ) {
 	} else if ( level == Level::Hidden ) {
 		interval = intervalOf( gThrottleParams.hiddenIntervalTicks );
 	}
-	// 間引かない間が終わった後も、体ごとのずれ（mPhase）は保ったままの刻みに戻る。
+	// 間引かない間が終わった後も、体ごとのずれ（mPhase）は保ったままの刻みに戻る
 	bool poses = !mHasPosed || mustPose || ( ( mTick + mPhase ) % interval == 0 );
 	if ( !poses ) {
 		PROFILE_COUNT( "Anim.skipped", 1 ); // 間引いた回数

@@ -42,7 +42,7 @@ const FrameRecord* FrameTimeline::begin( long long at ){
 	FrameRecord& frame = slotOf( mCurrentIndex );
 	frame.index = mCurrentIndex;
 	frame.begin = at;
-	// 呼ばれなかった区切りは、直前の区切りと同じ時刻にしておく（その区間の長さが 0 になる）。
+	// 呼ばれなかった区切りは、直前の区切りと同じ時刻にしておく（その区間の長さが 0 になる）
 	frame.sleepEnd = at;
 	frame.presentBegin = at;
 	frame.presentEnd = at;
@@ -123,7 +123,7 @@ void FrameTimeline::addCount( const char* name, double amount ){
 	if ( !frame ){
 		return;
 	}
-	// 別の翻訳単位の同じ文字列リテラルはポインタが違うことがあるので、ポインタが違えば中身でも比べる。
+	// 別の翻訳単位の同じ文字列リテラルはポインタが違うことがあるので、ポインタが違えば中身でも比べる
 	for ( int i = 0; i < frame->counterCount; ++i ){
 		if ( frame->counterNames[ i ] == name || strcmp( frame->counterNames[ i ], name ) == 0 ){
 			frame->counterValues[ i ] += amount;
@@ -140,7 +140,7 @@ void FrameTimeline::addCount( const char* name, double amount ){
 }
 
 const FrameRecord* FrameTimeline::closed( int ago ) const {
-	// 今のフレームはまだ閉じていないので、その 1 つ前から数える。
+	// 今のフレームはまだ閉じていないので、その 1 つ前から数える
 	long long index = mCurrentIndex - 1 - ago;
 	if ( ago < 0 || index < 0 || ago >= kHistory - 1 ){
 		return nullptr;

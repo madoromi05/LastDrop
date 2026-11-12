@@ -15,9 +15,9 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Decal.hlsl";
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // Decal.hlsl の b1
 
-	// 箱（1 辺 1・中心が原点）の 6 面。面ごとに外向き n と、面に沿う 2 本 u・v（u × v = n）。
+	// 箱（1 辺 1・中心が原点）の 6 面。面ごとに外向き n と、面に沿う 2 本 u・v（u × v = n）
 	// 隅を c−u−v → c+u−v → c+u+v → c−u+v の順に並べると、三角形の表（GameLib の CULL_BACK で残る側）が外を向く
-	// （メッシュの三角形と同じ向き。MeshMaterial::apply のコメント）。描くときは裏（箱の内側の面）だけ描く。
+	// （メッシュの三角形と同じ向き。MeshMaterial::apply のコメント）。描くときは裏（箱の内側の面）だけ描く
 	const int kFaceNumber = 6;
 	const Vector3 kFaceNormal[ kFaceNumber ] = {
 		Vector3( 1.f, 0.f, 0.f ), Vector3( -1.f, 0.f, 0.f ), Vector3( 0.f, 1.f, 0.f ),
@@ -40,7 +40,7 @@ namespace{
 	const int kMatrixFloats = 16;
 	const int kRowFloats = 4;
 	const int kLocalRows = 3;
-	// Decal.hlsl の cbuffer DecalConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// Decal.hlsl の cbuffer DecalConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct DecalConstants{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float toLocal[ kLocalRows ][ kRowFloats ];    // ワールド → 箱の中の座標（行ごと）
@@ -51,8 +51,8 @@ namespace{
 	};
 	static_assert( sizeof( DecalConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * ( kLocalRows + 4 ) ), "DecalConstants : keep the HLSL layout." );
 
-	// axis（箱の軸。長さは箱の 1 辺が何 m か）に沿った「箱の中の座標」を出す行：(axis / |axis|², −center・axis / |axis|²)。
-	// 軸どうしが直交しているので、逆行列を作らずに内積だけで戻せる。
+	// axis（箱の軸。長さは箱の 1 辺が何 m か）に沿った「箱の中の座標」を出す行：(axis / |axis|², −center・axis / |axis|²)
+	// 軸どうしが直交しているので、逆行列を作らずに内積だけで戻せる
 	void writeLocalRow( const Vector3& axis, const Vector3& center, float* row ) {
 		const float inverseSquared = 1.f / axis.dot( axis );
 		row[ 0 ] = axis.x * inverseSquared;
@@ -121,7 +121,7 @@ void DecalBatch::draw( Graphics::Texture albedo, Graphics::Texture normalMap, co
 	m.setNormalMap( normalMap );
 	m.setShader( mShader );
 	// 絵のアルファで、G-Buffer の色と法線に混ぜる。G-Buffer のアルファはデータ（RT1 の a は動きの種類）なので書き換えない
-	// （BLEND_LINEAR は描画先のアルファを絵のアルファで上書きし、弾痕の下の壁が「手元」と読まれる）。
+	// （BLEND_LINEAR は描画先のアルファを絵のアルファで上書きし、弾痕の下の壁が「手元」と読まれる）
 	m.setBlendMode( Graphics::BLEND_LINEAR_KEEP_ALPHA );
 	m.enableDepthTest( false );               // 当たっているかはシェーダが深度から決める（目が箱の中でも描けるように）
 	m.enableDepthWrite( false );
@@ -132,7 +132,7 @@ void DecalBatch::draw( Graphics::Texture albedo, Graphics::Texture normalMap, co
 		m.draw( 0, kBoxVertexNumber / kVerticesPerTriangle );
 	}
 	mDecals.clear();
-	// 物を描くときの設定へ戻す（裏表は物を描く側が毎回決める。MeshMaterial::apply）。
+	// 物を描くときの設定へ戻す（裏表は物を描く側が毎回決める。MeshMaterial::apply）
 	m.setShader( Graphics::Shader() );
 	m.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 	m.setBlendMode( Graphics::BLEND_OPAQUE );
@@ -141,7 +141,7 @@ void DecalBatch::draw( Graphics::Texture albedo, Graphics::Texture normalMap, co
 }
 
 void DecalBatch::setDecalConstants( const Decal& decal, const Matrix44& inverseProjectionView ) {
-	// 箱の 3 本の軸（箱の中の 1 が何 m か）。横・縦は半分の長さの 2 倍、厚さは面の前後に halfDepth ずつ。
+	// 箱の 3 本の軸（箱の中の 1 が何 m か）。横・縦は半分の長さの 2 倍、厚さは面の前後に halfDepth ずつ
 	Vector3 axisX;
 	axisX.setMul( decal.right, kFull );
 	Vector3 axisY;

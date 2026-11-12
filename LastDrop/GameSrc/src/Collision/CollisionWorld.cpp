@@ -13,7 +13,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// candidate が best より早ければ best を置き換える。
+	// candidate が best より早ければ best を置き換える
 	void keepEarlier( const SweepHit& candidate, SweepHit* best, bool* found ) {
 		if ( !*found || candidate.time < best->time ) {
 			*best = candidate;
@@ -21,7 +21,7 @@ namespace{
 		}
 	}
 
-	// candidate が best より深ければ best を置き換える。
+	// candidate が best より深ければ best を置き換える
 	void keepDeeper( const Vector3& candidate, Vector3* best, bool* found ) {
 		if ( !*found || candidate.squareLength() > best->squareLength() ) {
 			*best = candidate;
@@ -29,28 +29,28 @@ namespace{
 		}
 	}
 
-	// 真上から見た、軸に沿った範囲（x・z の最小〜最大）。遠い面のかけらを、細かい判定の前に捨てるために使う。
+	// 真上から見た、軸に沿った範囲（x・z の最小〜最大）。遠い面のかけらを、細かい判定の前に捨てるために使う
 	struct Reach{
 		Vector3 low;
 		Vector3 high;
-		// low〜high の範囲と重なる（接するも含む）か。y は見ない。
+		// low〜high の範囲と重なる（接するも含む）か。y は見ない
 		bool touches( const Vector3& otherLow, const Vector3& otherHigh ) const {
 			return low.x <= otherHigh.x && otherLow.x <= high.x && low.z <= otherHigh.z && otherLow.z <= high.z;
 		}
 	};
 
-	// ますの大きさ（m）。体（幅 0.5m 前後）の数倍にして、1 回の問い合わせで引くますを 1〜4 個にする。
+	// ますの大きさ（m）。体（幅 0.5m 前後）の数倍にして、1 回の問い合わせで引くますを 1〜4 個にする
 	const float kGridCellSize = 4.f;
 	// 動く体をますへ入れる時に足す余裕（m）。ますを入れ直すのはティックの始めだけなので、そのティックの中で動ける分
-	// （走っても 1 ティック 0.1m 前後）より十分大きくする。
+	// （走っても 1 ティック 0.1m 前後）より十分大きくする
 	const float kBodyGridMargin = 0.5f;
 
-	// 長方形を向きによらず囲める円の半径（中心から隅までの長さ）。
+	// 長方形を向きによらず囲める円の半径（中心から隅までの長さ）
 	float coverRadius( const BoxCollider& box ) {
 		return Math::sqrt( box.halfWidthX * box.halfWidthX + box.halfWidthZ * box.halfWidthZ );
 	}
 
-	// 長方形を真上から囲む範囲に margin を足した物。
+	// 長方形を真上から囲む範囲に margin を足した物
 	Reach boundsOf( const BoxCollider& box, float margin ) {
 		float radius = coverRadius( box ) + margin;
 		Reach reach;
@@ -59,7 +59,7 @@ namespace{
 		return reach;
 	}
 
-	// box を delta だけ動かす間に届く範囲。長方形は、向きによらず囲める円（中心から隅までの長さ）で見積もる。
+	// box を delta だけ動かす間に届く範囲。長方形は、向きによらず囲める円（中心から隅までの長さ）で見積もる
 	Reach reachOf( const BoxCollider& box, const Vector3& delta ) {
 		float radius = coverRadius( box );
 		Vector3 end;
@@ -112,7 +112,7 @@ void CollisionWorld::refreshBodies() {
 
 void CollisionWorld::updateGrids() const {
 	if ( mStaticGridDirty ) {
-		// ますで覆う範囲は、動かない物を全部囲む箱に、ます 1 つ分の余裕を足した物。範囲の外の体は端のますに入るので、外へ出ても漏れない。
+		// ますで覆う範囲は、動かない物を全部囲む箱に、ます 1 つ分の余裕を足した物。範囲の外の体は端のますに入るので、外へ出ても漏れない
 		Reach area{ Vector3( FLOAT_MAX ), Vector3( -FLOAT_MAX ) };
 		for ( const BoxCollider& box : mBoxes ) {
 			Reach reach = boundsOf( box, 0.f );

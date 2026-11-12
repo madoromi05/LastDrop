@@ -24,13 +24,13 @@ namespace RenderTargetDetail{
 		return DXGI_FORMAT_R8G8B8A8_UNORM;
 	}
 
-	// 画面の大きさ screen に倍率 scale を掛けた大きさ（四捨五入、下限 kMinSize）。
+	// 画面の大きさ screen に倍率 scale を掛けた大きさ（四捨五入、下限 kMinSize）
 	inline int scaledSize( int screen, float scale ){
 		int r = static_cast< int >( static_cast< float >( screen ) * scale + 0.5f );
 		return ( r < kMinSize ) ? kMinSize : r;
 	}
 
-	// w×h から 1×1 になるまでの段の数（D3D11 と同じく、段ごとに半分の切り捨て）。
+	// w×h から 1×1 になるまでの段の数（D3D11 と同じく、段ごとに半分の切り捨て）
 	inline int fullMipChain( int w, int h ){
 		int larger = ( w > h ) ? w : h;
 		int levels = 1;
@@ -41,7 +41,7 @@ namespace RenderTargetDetail{
 		return levels;
 	}
 
-	// 段 mip の一辺（半分の切り捨て、下限 1）。
+	// 段 mip の一辺（半分の切り捨て、下限 1）
 	inline int mipSize( int size, int mip ){
 		int r = size >> mip;
 		return ( r < 1 ) ? 1 : r;
@@ -50,8 +50,8 @@ namespace RenderTargetDetail{
 
 class RenderTarget::Impl : public ReferenceType{
 public:
-	// screenScale: RenderTargetDetail::kFixedSize なら width/height の固定サイズ。正なら画面の倍率（width/height は今の画面の大きさ）。
-	// mipLevels: 段の数。RenderTarget::FULL_MIP_CHAIN なら 1 画素まで全部（大きさが変わったら数え直す）。
+	// screenScale: RenderTargetDetail::kFixedSize なら width/height の固定サイズ。正なら画面の倍率（width/height は今の画面の大きさ）
+	// mipLevels: 段の数。RenderTarget::FULL_MIP_CHAIN なら 1 画素まで全部（大きさが変わったら数え直す）
 	Impl( int width, int height, RenderTargetFormat format, float screenScale, int mipLevels, ID3D11Device* device ) :
 	mTexture( 0 ),
 	mRTV( 0 ),
@@ -74,7 +74,7 @@ public:
 	~Impl(){
 		releaseDxObjects();
 	}
-	// 画面倍率で作った物を、今の画面の大きさに合わせる（同じ大きさなら何もしない）。
+	// 画面倍率で作った物を、今の画面の大きさに合わせる（同じ大きさなら何もしない）
 	void fitToScreen( int screenWidth, int screenHeight ){
 		if ( mScreenScale == RenderTargetDetail::kFixedSize ){
 			return;
@@ -93,7 +93,7 @@ public:
 	ID3D11Texture2D*          mTexture;
 	ID3D11RenderTargetView*   mRTV;  // 段 0 に描く
 	ID3D11ShaderResourceView* mSRV;  // 全部の段を読む
-	// 段ごとの描く・読む view（段が 2 つ以上のときだけ。[ 0 ] は段 0）。
+	// 段ごとの描く・読む view（段が 2 つ以上のときだけ。[ 0 ] は段 0）
 	std::vector< ID3D11RenderTargetView* >   mMipRTVs;
 	std::vector< ID3D11ShaderResourceView* > mMipSRVs;
 	int mWidth;
@@ -127,7 +127,7 @@ private:
 		mHeight = h;
 		mMipLevels = levels;
 	}
-	// 段ごとの view。縮小のパスは「段 i に描きながら段 i−1 を読む」（同じ画像の別の段なので、D3D11 は両方を同時に付けられる）。
+	// 段ごとの view。縮小のパスは「段 i に描きながら段 i−1 を読む」（同じ画像の別の段なので、D3D11 は両方を同時に付けられる）
 	void createMipViews( DXGI_FORMAT format, int levels ){
 		mMipRTVs.assign( levels, 0 );
 		mMipSRVs.assign( levels, 0 );

@@ -10,20 +10,20 @@
 using namespace GameLib::Math;
 
 namespace{
-	// まっすぐ通れるかを調べる間隔（秒）。角を曲がった後、これだけ古い向きで歩くことがある。
+	// まっすぐ通れるかを調べる間隔（秒）。角を曲がった後、これだけ古い向きで歩くことがある
 	const float kProbeIntervalSeconds = 0.5f;
 	const int kProbeIntervalTicks = GameTime::secondsToTicks( kProbeIntervalSeconds );
-	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）。
+	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）
 	const float kWaypointReachDistance = 1.f;
-	// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように。
+	// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように
 	const float kReplanDistance = 3.f;
-	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m。
+	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m
 	const float kDestinationJumpDistance = 1.f;
-	// 自分が向く点の向きへこの長さ（m）進むたびに「進めている」とみなす（うろつきと同じ値）。
+	// 自分が向く点の向きへこの長さ（m）進むたびに「進めている」とみなす（うろつきと同じ値）
 	// 点との距離ではなく自分の動きで見るのは、逃げる自キャラ（ゾンビより速い）を追う間、まっすぐ歩けていても
-	// 距離が縮まらず詰まったとみなされ、横へよけてしまうため。向く点の向きだけを数えるので、壁に沿って滑るだけの動きは数えない。
+	// 距離が縮まらず詰まったとみなされ、横へよけてしまうため。向く点の向きだけを数えるので、壁に沿って滑るだけの動きは数えない
 	const float kProgressDistance = 0.3f;
-	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす。
+	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす
 	const float kMinDirectionLength = 0.001f;
 }
 
@@ -58,7 +58,7 @@ bool walking ) {
 	}
 	mLastDestination = destination;
 	mHasLastDestination = true;
-	// よけている間は、よける点へ着くか決まった時間がたつまで、そちらを向く。終わったらこのティックに通り道を調べ直す。
+	// よけている間は、よける点へ着くか決まった時間がたつまで、そちらを向く。終わったらこのティックに通り道を調べ直す
 	if ( mSidestepTicks > 0 ) {
 		--mSidestepTicks;
 		if ( mSidestepTicks > 0 && FlatMath::distance( self, mSidestepPoint ) > params.sidestepReach ) {
@@ -91,7 +91,7 @@ bool walking ) {
 		mProgressOrigin = self;
 		mStallTicks = 0;
 	} else {
-		// 数え始めた所から動いた分のうち、向く点の向きへ進んだ長さ（水平だけ）。点が近すぎて向きが無ければ進めているとみなす。
+		// 数え始めた所から動いた分のうち、向く点の向きへ進んだ長さ（水平だけ）。点が近すぎて向きが無ければ進めているとみなす
 		Vector3 moved( self.x - mProgressOrigin.x, 0.f, self.z - mProgressOrigin.z );
 		Vector3 toPoint( point.x - self.x, 0.f, point.z - self.z );
 		float length = toPoint.length();
@@ -103,7 +103,7 @@ bool walking ) {
 		}
 	}
 	if ( mStallTicks >= GameTime::secondsToTicks( params.sidestepAfterSeconds ) ) {
-		// 一度よけた後にまた詰まったら、着けない所かもしれない印を付ける（Search ならあきらめる。Chase はよけ続ける）。
+		// 一度よけた後にまた詰まったら、着けない所かもしれない印を付ける（Search ならあきらめる。Chase はよけ続ける）
 		if ( mSidestepCount > 0 ) {
 			mStuck = true;
 		}
@@ -122,7 +122,7 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	} else {
 		forward *= 1.f / length;
 	}
-	// 前への向きを左右へ 90° 回した 2 つ（水平）。どちらが左かは問わない（通れる方・近い方で選ぶ）。
+	// 前への向きを左右へ 90° 回した 2 つ（水平）。どちらが左かは問わない（通れる方・近い方で選ぶ）
 	Vector3 sideA( forward.z, 0.f, -forward.x );
 	Vector3 sideB( -forward.z, 0.f, forward.x );
 	Vector3 pointA;
@@ -154,19 +154,19 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const N
 		return;
 	}
 	if ( mRoute.empty() || FlatMath::distance( mRouteGoal, destination ) > kReplanDistance ) {
-		// 今のティックに探す回数が残っていなければ、前の通り道のまま歩き、次のティックにもう一度調べる（間隔を待たない）。
+		// 今のティックに探す回数が残っていなければ、前の通り道のまま歩き、次のティックにもう一度調べる（間隔を待たない）
 		if ( !mBudget->tryAcquire( this ) ) {
 			mProbeTicks = 1;
 			return;
 		}
-		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる。
+		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる
 		navMesh.findPath( self, destination, &mRoute );
 		mNext = 0;
 		mRouteGoal = destination;
 		resetProgress();
 		return;
 	}
-	// 次の次の点が見えていれば、今の点は飛ばす（角を斜めに曲がる）。
+	// 次の次の点が見えていれば、今の点は飛ばす（角を斜めに曲がる）
 	if ( mNext + 1 < static_cast< int >( mRoute.size() ) && navMesh.isWalkable( self, mRoute[ mNext + 1 ] ) ) {
 		++mNext;
 		resetProgress();

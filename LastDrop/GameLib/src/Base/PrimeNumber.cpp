@@ -167,7 +167,7 @@ const int gPrimeNumberTableMaximum = 10000;
 } //namespace {}
 
 //和算の開平を二進法で行う。最大16回のループを回してしまう
-//wikipediaの筆算の項参照のこと。
+//wikipediaの筆算の項参照のこと
 int sqrt( int n ){
 	//最大桁を調べる
 	int start = 30;
@@ -209,7 +209,7 @@ bool isPrimeNumber( int n ){
 			int t = gPrimeNumbers[ middle ];
 			if ( t < n ){ //小さい。後ろにある
 				first = middle + 1; //先頭を置換
-			}else if ( t > n ){ //大きい。前にある。
+			}else if ( t > n ){ //大きい。前にある
 				last = middle - 1; //末尾を置換
 			}else{
 				first = last = middle;
@@ -221,7 +221,7 @@ bool isPrimeNumber( int n ){
 		if ( ( n & 1 ) == 0 ){
 			return false;
 		}
-		//後は馬鹿正直に調べる他ない。
+		//後は馬鹿正直に調べる他ない
 		//奇数なので、偶数で割れるわけもなくチェックは無用
 		int root = sqrt( n );
 		for ( int i = 3; i <= root; i += 2 ){
@@ -242,16 +242,16 @@ int next( int n ){
 			int t = gPrimeNumbers[ middle ];
 			if ( t < n ){ //小さい。後ろにある
 				first = middle + 1; //先頭を置換
-			}else if ( t > n ){ //大きい。前にある。
+			}else if ( t > n ){ //大きい。前にある
 				last = middle - 1; //末尾を置換
 			}else{
 				first = last = middle;
 			}
 		}
 		if ( n < gPrimeNumbers[ first ] ){
-			n = gPrimeNumbers[ first ]; //大きければそれを返す。
+			n = gPrimeNumbers[ first ]; //大きければそれを返す
 		}else{ //小さいから等しければ次を返す
-			n = gPrimeNumbers[ first + 1 ]; //最終要素以下なのでこれは範囲内。
+			n = gPrimeNumbers[ first + 1 ]; //最終要素以下なのでこれは範囲内
 		}
 	}else{
 		//さて、nが偶数なら+1、奇数なら+2
@@ -264,7 +264,7 @@ int next( int n ){
 					break;
 				}
 			}
-			if ( i > root ){ //最後まで行った。
+			if ( i > root ){ //最後まで行った
 				break;
 			}
 			n += 2;
@@ -289,7 +289,7 @@ int previous( int n ){
 			int t = gPrimeNumbers[ middle ];
 			if ( t < n ){ //小さい。後ろにある
 				first = middle + 1; //先頭を置換
-			}else if ( t > n ){ //大きい。前にある。
+			}else if ( t > n ){ //大きい。前にある
 				last = middle - 1; //末尾を置換
 			}else{
 				first = last = middle;
@@ -297,8 +297,8 @@ int previous( int n ){
 		}
 		if ( n > gPrimeNumbers[ first ] ){ //小さければそれを返す
 			n = gPrimeNumbers[ first ];
-		}else{ //同じか大きいなら一個前を返す。
-			n = gPrimeNumbers[ first - 1 ]; //n>=4なので範囲外はない。
+		}else{ //同じか大きいなら一個前を返す
+			n = gPrimeNumbers[ first - 1 ]; //n>=4なので範囲外はない
 		}
 	}else{
 		//さて、nが偶数なら-1、奇数なら-2
@@ -311,7 +311,7 @@ int previous( int n ){
 					break;
 				}
 			}
-			if ( i > root ){ //最後まで行った。
+			if ( i > root ){ //最後まで行った
 				return n;
 			}
 			n -= 2;

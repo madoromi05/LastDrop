@@ -3,15 +3,15 @@
 
 namespace GameLib{
 
-///キュー。要素数が限界を超えなければ循環するのでいつまでも使える。
+///キュー。要素数が限界を超えなければ循環するのでいつまでも使える
 template< class T > class Queue{
 public:
-	///デフォルト。サイズ、最大容量は0。
+	///デフォルト。サイズ、最大容量は0
 	Queue();
-	///最大容量を指定。
+	///最大容量を指定
 	explicit Queue( int capacity );
 	~Queue();
-	///再確保。中身がある状態で呼ぶとassert。clear()しろ。
+	///再確保。中身がある状態で呼ぶとassert。clear()しろ
 	void setCapacity( int size );
 	///最大容量取得
 	int capacity() const;
@@ -19,7 +19,7 @@ public:
 	int size() const;
 	///全解放
 	void clear();
-	///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと。
+	///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと
 	T* pushBack();
 	///末尾に追加
 	void pushBack( const T& );

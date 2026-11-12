@@ -19,9 +19,9 @@ public:
 	void setVolume( int volume );
 	bool isPlaying() const; //再生中ですか？
 
-	///ストリーミングバッファに書き込む。再生位置が近づきすぎて失敗した場合はfalseを返す。音飛びする。
+	///ストリーミングバッファに書き込む。再生位置が近づきすぎて失敗した場合はfalseを返す。音飛びする
 	bool write( int position, const char* data, int size );
-	///ストリーミングバッファに無音を書き込む。再生位置が近づきすぎて失敗した場合はfalseを返す。音飛びする。
+	///ストリーミングバッファに無音を書き込む。再生位置が近づきすぎて失敗した場合はfalseを返す。音飛びする
 	bool fillSilence( int position, int size );
 	///再生中のバッファ位置をバイト単位で返す
 	int position() const;

@@ -5,16 +5,16 @@ namespace GameLib{
 
 /*参照カウンタ式共有ポインタ
 
-スレッドセーフではないことに注意。
+スレッドセーフではないことに注意
 ConstSharedPtrは元の型のconst関数しか呼ばせたくない時のために
-あるもので、ConstSharedPtrとあるところはSharedPtrでもいい。
+あるもので、ConstSharedPtrとあるところはSharedPtrでもいい
 
 ConstSharedPtr< int > foo(){
    return SharedPtr< int >( 0 );
 }
 や、
 ConstSharedPtr< int > a = SharedPtr< int >();
-がオーケーだということだ。
+がオーケーだということだ
 */
 template< class T > class SharedPtr{
 public:

@@ -23,7 +23,7 @@ namespace ShaderDetail{
 	const char* const kVertexTarget = "vs_5_0";
 	const char* const kPixelTarget  = "ps_5_0";
 
-	// 読んだファイルと、そのときの更新時刻。どれかが変わったら作り直す。
+	// 読んだファイルと、そのときの更新時刻。どれかが変わったら作り直す
 	struct FileStamp{
 		std::string path;
 		FILETIME writeTime;
@@ -38,7 +38,7 @@ namespace ShaderDetail{
 		return true;
 	}
 
-	// path を丸ごと読み、読んだことを files に記録する。開けなければ false。
+	// path を丸ごと読み、読んだことを files に記録する。開けなければ false
 	inline bool readFile( const std::string& path, std::vector< char >* out, std::vector< FileStamp >* files ){
 		FILE* fp = nullptr;
 		if ( fopen_s( &fp, path.c_str(), "rb" ) != 0 || !fp ){
@@ -62,14 +62,14 @@ namespace ShaderDetail{
 		return true;
 	}
 
-	// path の入っているフォルダ（末尾の区切りまで）。区切りが無ければ空。
+	// path の入っているフォルダ（末尾の区切りまで）。区切りが無ければ空
 	inline std::string directoryOf( const std::string& path ){
 		std::string::size_type p = path.find_last_of( "/\\" );
 		return ( p == std::string::npos ) ? std::string() : path.substr( 0, p + 1 );
 	}
 
-	// #include を、元のファイルと同じフォルダから読む。読んだファイルを記録して、ホットリロードの監視対象にする。
-	// D3D_COMPILE_STANDARD_FILE_INCLUDE でも読めるが、何を読んだかが分からず、.hlsli の変更で作り直せないため自前で持つ。
+	// #include を、元のファイルと同じフォルダから読む。読んだファイルを記録して、ホットリロードの監視対象にする
+	// D3D_COMPILE_STANDARD_FILE_INCLUDE でも読めるが、何を読んだかが分からず、.hlsli の変更で作り直せないため自前で持つ
 	class IncludeHandler : public ID3DInclude{
 	public:
 		IncludeHandler( const std::string& directory, std::vector< FileStamp >* files ) :
@@ -130,10 +130,10 @@ namespace ShaderDetail{
 		if ( p ){ p->Release(); p = 0; }
 	}
 
-	// コンパイルした結果（バイトコード）を、起動中はファイル名ごとに覚えておく（FuelEscapeLoading_Plan.txt 5 章 L4）。
-	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす（Profile のロードの半分がコンパイルだった）。
-	// 読んだファイル（#include も）の更新時刻を一緒に覚え、どれかが変わっていたら使わずにコンパイルし直す（ホットリロードはそのまま効く）。
-	// 入口・ターゲット・フラグはどのシェーダも同じ（kVertexEntry など）なので、ファイル名だけで引ける。
+	// コンパイルした結果（バイトコード）を、起動中はファイル名ごとに覚えておく（FuelEscapeLoading_Plan.txt 5 章 L4）
+	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす（Profile のロードの半分がコンパイルだった）
+	// 読んだファイル（#include も）の更新時刻を一緒に覚え、どれかが変わっていたら使わずにコンパイルし直す（ホットリロードはそのまま効く）
+	// 入口・ターゲット・フラグはどのシェーダも同じ（kVertexEntry など）なので、ファイル名だけで引ける
 	struct CompiledShader{
 		std::vector< char > vs;
 		std::vector< char > ps;
@@ -181,7 +181,7 @@ public:
 	bool isValid() const {
 		return mVS && mPS;
 	}
-	// 読んだファイル（#include 含む）のどれかが、前回のコンパイルの後に変わったか。
+	// 読んだファイル（#include 含む）のどれかが、前回のコンパイルの後に変わったか
 	bool isSourceChanged() const {
 		for ( const ShaderDetail::FileStamp& f : mFiles ){
 			FILETIME now;
@@ -194,12 +194,12 @@ public:
 		}
 		return false;
 	}
-	// ファイルを読んでコンパイルし、成功したら作ったシェーダに差し替える。失敗したら今のシェーダのまま mError に理由を残す。
+	// ファイルを読んでコンパイルし、成功したら作ったシェーダに差し替える。失敗したら今のシェーダのまま mError に理由を残す
 	bool compile(){
 		using namespace ShaderDetail;
-		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい。
+		// 起動中に HLSL をコンパイルしているので、ロードの中でも重い所になりやすい
 		LOAD_SCOPE( "shader", mFilename.c_str() );
-		// 起動中に同じファイルをコンパイル済みで、読んだファイルが変わっていなければ、その結果から作る。
+		// 起動中に同じファイルをコンパイル済みで、読んだファイルが変わっていなければ、その結果から作る
 		auto cached = compiledShaders().find( mFilename );
 		if ( cached != compiledShaders().end() && isUnchanged( cached->second.files ) ){
 			const CompiledShader& c = cached->second;
@@ -208,7 +208,7 @@ public:
 		std::vector< FileStamp > files;
 		std::vector< char > source;
 		if ( !readFile( mFilename, &source, &files ) ){
-			// 無いファイルも、更新時刻0として見張る（後から置かれたら作り直すため）。
+			// 無いファイルも、更新時刻0として見張る（後から置かれたら作り直すため）
 			FileStamp missing = {};
 			missing.path = mFilename;
 			files.push_back( missing );
@@ -250,7 +250,7 @@ public:
 		return true;
 	}
 
-	// バイトコードからシェーダと頂点の並びを作り、成功したら今のシェーダに差し替える。files: そのとき読んだファイル（見張る物）。
+	// バイトコードからシェーダと頂点の並びを作り、成功したら今のシェーダに差し替える。files: そのとき読んだファイル（見張る物）
 	bool createShaders( const void* vsCode, size_t vsSize, const void* psCode, size_t psSize,
 		const std::vector< ShaderDetail::FileStamp >& files ){
 		using namespace ShaderDetail;
@@ -293,11 +293,11 @@ private:
 		for ( int i = 0; i < n; ++i ){
 			elements[ i ] = ShaderDetail::toInputElement( mFormat.element( i ), mFormat.offset( i ) );
 		}
-		// 頂点を読まないシェーダ（SV_VertexID だけの全画面描画）でも作れる。余った要素は使われないだけ。
+		// 頂点を読まないシェーダ（SV_VertexID だけの全画面描画）でも作れる。余った要素は使われないだけ
 		return SUCCEEDED( mDevice->CreateInputLayout( elements, static_cast< UINT >( n ),
 			vsCode, vsSize, out ) );
 	}
-	// 失敗を記録する。読めたファイルは監視対象にする（直して保存したら、もう一度コンパイルするため）。
+	// 失敗を記録する。読めたファイルは監視対象にする（直して保存したら、もう一度コンパイルするため）
 	void fail( const std::string& message, const std::vector< ShaderDetail::FileStamp >& files ){
 		mError = message;
 		if ( !files.empty() ){

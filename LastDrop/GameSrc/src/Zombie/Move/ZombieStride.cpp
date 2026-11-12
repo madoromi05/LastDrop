@@ -15,10 +15,10 @@ using namespace GameLib::Math;
 
 namespace{
 	// 前後のこのフレーム数ずつで平らにする。左右の足が入れ替わる所で、どちらが地面についているかが揺れて
-	// 1フレームだけ大きく・小さくなるのをならす（5フレーム＝約 0.08 秒。歩き方の波は残る長さ）。
+	// 1フレームだけ大きく・小さくなるのをならす（5フレーム＝約 0.08 秒。歩き方の波は残る長さ）
 	const int kSmoothRadius = 2;
 
-	// アニメ時刻 time の足先の位置（骨格の根の空間＝置き場所と向きを掛ける前。単位は m）。
+	// アニメ時刻 time の足先の位置（骨格の根の空間＝置き場所と向きを掛ける前。単位は m）
 	void toePositions( const SkinnedMeshData* data, Scene::Tree* skeleton, std::vector< Matrix34 >* pose, float time,
 	int leftToe, int rightToe, Vector3* left, Vector3* right ) {
 		skeleton->updateAnimation( time );
@@ -43,8 +43,8 @@ ZombieStride::ZombieStride( const SkinnedMeshData* data, Scene::Animation walk, 
 	skeleton.setAnimation( walk );
 	std::vector< Matrix34 > pose( data->boneNumber() );
 
-	// 1フレームごとに、地面についている足（低い方の足先）が水平に動いた長さ。
-	// 向きは見ない（足は後ろへしか動かないので、長さだけで足りる）。
+	// 1フレームごとに、地面についている足（低い方の足先）が水平に動いた長さ
+	// 向きは見ない（足は後ろへしか動かないので、長さだけで足りる）
 	std::vector< float > raw( frameNumber );
 	for ( int f = 0; f < frameNumber; ++f ) {
 		Vector3 leftNow, rightNow, leftNext, rightNext;

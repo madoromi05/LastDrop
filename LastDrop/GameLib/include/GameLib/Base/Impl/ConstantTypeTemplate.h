@@ -1,7 +1,7 @@
-//参照インターフェイス型のConst版を作る時に楽にするためのもの。
+//参照インターフェイス型のConst版を作る時に楽にするためのもの
 //#define TYPE ActualType
 //#define CONST_TYPE ActualConstType
-//と書いてからインクルードすること。もちろんActualTypeは本当の型の名前だ。
+//と書いてからインクルードすること。もちろんActualTypeは本当の型の名前だ
 //メンバ変数はmBase固定
 
 CONST_TYPE::CONST_TYPE(){

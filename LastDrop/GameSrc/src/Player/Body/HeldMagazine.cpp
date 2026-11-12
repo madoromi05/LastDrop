@@ -19,7 +19,7 @@ void HeldMagazine::takeOut( const SkinnedMeshInstance& holder, const Matrix34& g
 	if ( !holder.boneMatrix( mHandBone, &hand ) ) {
 		return;
 	}
-	// 手から見た弾倉 = 手の逆 × 銃（弾倉は銃に付いた場所にある）。
+	// 手から見た弾倉 = 手の逆 × 銃（弾倉は銃に付いた場所にある）
 	Matrix34 toHand;
 	toHand.setInverse( hand );
 	mInHand.setMul( toHand, gun );

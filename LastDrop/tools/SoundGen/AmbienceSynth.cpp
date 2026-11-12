@@ -4,7 +4,7 @@
 
 using namespace Synth;
 
-// 環境音。今は脱出のサイレンだけ（風・鳥・虫・発電機・飛行機は 2026-10-23 に消した。ユーザー指定）。
+// 環境音。今は脱出のサイレンだけ（風・鳥・虫・発電機・飛行機は 2026-10-23 に消した。ユーザー指定）
 namespace{
 	const float kPi = 3.14159265358979f;
 	const float kTwoPi = 2.f * kPi;
@@ -32,7 +32,7 @@ namespace{
 	const float kSirenLateEchoCutoff = 1000.f;
 	const float kSirenPeak = 0.7f;
 
-	// サイレンの回転の高さ（Hz）。上がりきる → 回り続ける → 落ちる。
+	// サイレンの回転の高さ（Hz）。上がりきる → 回り続ける → 落ちる
 	float sirenFrequency( float time ) {
 		if ( time < kSirenFallStart ) {
 			float rise = kSirenStartHz + ( kSirenHighHz - kSirenStartHz ) * ( 1.f - std::exp( -time / kSirenRiseTime ) );
@@ -43,7 +43,7 @@ namespace{
 		return kSirenHighHz + ( kSirenLowHz - kSirenHighHz ) * fall;
 	}
 
-	// サイレンの大きさ。回転が落ちていくにつれて小さくなる。
+	// サイレンの大きさ。回転が落ちていくにつれて小さくなる
 	float sirenLevel( float time ) {
 		if ( time < kSirenFallStart ) {
 			return 1.f;
@@ -54,7 +54,7 @@ namespace{
 
 Buffer makeSiren( Random* random ) {
 	Buffer buffer = makeBuffer( kSirenLength );
-	// 音程が動き続けるので、位相を少しずつ進める（時刻×周波数で求めると、周波数が変わった瞬間に波形が飛ぶ）。
+	// 音程が動き続けるので、位相を少しずつ進める（時刻×周波数で求めると、周波数が変わった瞬間に波形が飛ぶ）
 	float phases[ kSirenHarmonics ] = {};
 	float secondPhases[ kSirenHarmonics ] = {};
 	for ( int n = 0; n < kSirenHarmonics; ++n ) {

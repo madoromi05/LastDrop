@@ -94,11 +94,11 @@ const Vector3& u ){
 	Vector3 x, y, z;
 	z.setSub( p, t ); //注視点からカメラ位置へのベクタをZ軸に
 	z.normalize();
-	x.setCross( u, z ); //上ベクタとZ軸の外積をX軸に。上ベクタが上向きなら左向きがX軸プラス。
+	x.setCross( u, z ); //上ベクタとZ軸の外積をX軸に。上ベクタが上向きなら左向きがX軸プラス
 	x.normalize();
 	y.setCross( z, x ); //Z,Xの外積がY
 
-	//移動分は今作った回転行列にカメラ座標を乗算してマイナスにすればいい。
+	//移動分は今作った回転行列にカメラ座標を乗算してマイナスにすればいい
 	float t03 = -( x.x * p.x + x.y * p.y + x.z * p.z );
 	float t13 = -( y.x * p.x + y.y * p.y + y.z * p.z );
 	float t23 = -( z.x * p.x + z.y * p.y + z.z * p.z );

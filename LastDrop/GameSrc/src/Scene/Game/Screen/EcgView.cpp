@@ -47,8 +47,8 @@ namespace {
 		}
 	}
 
-	// a→b（x は左→右の前提）を area の左右 [left,right] で水平に切ってから積む。
-	// 線を引く命令にクリップが無いので、はみ出す端は線上の点を内分して境界へ寄せる（パネルからはみ出させない）。
+	// a→b（x は左→右の前提）を area の左右 [left,right] で水平に切ってから積む
+	// 線を引く命令にクリップが無いので、はみ出す端は線上の点を内分して境界へ寄せる（パネルからはみ出させない）
 	void addClippedLine( UiRenderer* renderer, const Vector2& a, const Vector2& b, float left, float right, unsigned color ) {
 		const float span = b.x - a.x;
 		if (span <= 0.f) {
@@ -72,22 +72,22 @@ EcgView::EcgView( UiRenderer* renderer ) :
 void EcgView::draw( const UiRect& area, PlayerCondition condition ) {
 	const EcgStyle style = styleFor( condition );
 
-	// 背景の板（半透明。後ろの町を少し透かす）。
+	// 背景の板（半透明。後ろの町を少し透かす）
 	const unsigned kPanelColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.35f );
 	mRenderer->addRect( area, kPanelColor );
 
-	// 波線。等間隔サンプリングではなく、1拍の制御点をそのまま画素座標へ置いて線で結ぶ。
-	// こうすると鋭い R 波の頂点が必ず頂点として描かれ、スクロールしても高さがブレない（アンダーサンプリングを避ける）。
+	// 波線。等間隔サンプリングではなく、1拍の制御点をそのまま画素座標へ置いて線で結ぶ
+	// こうすると鋭い R 波の頂点が必ず頂点として描かれ、スクロールしても高さがブレない（アンダーサンプリングを避ける）
 	const float baseline = area.top + area.height * kHalf;
 	const float beatWidth = area.width / style.beatCount;
 	const float left = area.left;
 	const float right = area.left + area.width;
 
-	// 実時間（ミリ秒）から横ずらし量を出し、右→左へ流す。1 時間でひとまわり（大きい値での精度落ちを避ける）。
+	// 実時間（ミリ秒）から横ずらし量を出し、右→左へ流す。1 時間でひとまわり（大きい値での精度落ちを避ける）
 	const float seconds = ( GameLib::Framework::instance().time() % 3600000u ) * 0.001f;
 	const float scroll = seconds * style.speed; // 画素
 
-	// area に掛かる拍の範囲（端で切れる拍も拾えるよう前後に1拍ずつ余裕を持たせる）。
+	// area に掛かる拍の範囲（端で切れる拍も拾えるよう前後に1拍ずつ余裕を持たせる）
 	const int beatBegin = static_cast< int >( floorf( ( left  + scroll ) / beatWidth ) ) - 1;
 	const int beatEnd   = static_cast< int >( floorf( ( right + scroll ) / beatWidth ) ) + 1;
 
@@ -95,13 +95,13 @@ void EcgView::draw( const UiRect& area, PlayerCondition condition ) {
 	Vector2 prev( 0.f, 0.f );
 	for (int beat = beatBegin; beat <= beatEnd; ++beat) {
 		for (int i = 0; i < kBeatPoints; ++i) {
-			// 波形座標（拍の通し位置）→ 画面 x。scroll が増えると左へ流れる。
+			// 波形座標（拍の通し位置）→ 画面 x。scroll が増えると左へ流れる
 			const float waveX = ( static_cast< float >( beat ) + kBeat[ i ].t ) * beatWidth;
 			const Vector2 cur( waveX - scroll, baseline - kBeat[ i ].h * style.amplitude );
 			if (hasPrev) {
 				addClippedLine( mRenderer, prev, cur, left, right, style.color );
 			}
-			// つなぎ目を丸くつないで隙間を消す（線の太さと同じ直径）。パネル内の点だけに置く（端の外ははみ出すので置かない）。
+			// つなぎ目を丸くつないで隙間を消す（線の太さと同じ直径）。パネル内の点だけに置く（端の外ははみ出すので置かない）
 			if (cur.x >= left && cur.x <= right) {
 				mRenderer->addDisc( cur, kThickness * kHalf, style.color );
 			}

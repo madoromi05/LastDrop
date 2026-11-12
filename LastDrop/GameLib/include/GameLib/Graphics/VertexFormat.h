@@ -6,9 +6,9 @@
 namespace GameLib{
 namespace Graphics{
 
-///頂点の形（どの要素がどの順に並ぶか）。Shader を作るときに渡し、頂点バッファの読み方（InputLayout）を決める。
-///要素はすべてストリーム0に、並べた順に詰めて置く。
-///ただの値なのでコピーしてよい（GPU の資源は持たない。InputLayout は Shader が作って持つ）。
+///頂点の形（どの要素がどの順に並ぶか）。Shader を作るときに渡し、頂点バッファの読み方（InputLayout）を決める
+///要素はすべてストリーム0に、並べた順に詰めて置く
+///ただの値なのでコピーしてよい（GPU の資源は持たない。InputLayout は Shader が作って持つ）
 class VertexFormat{
 public:
 	enum{ MAX_ELEMENT = 8 };

@@ -8,20 +8,20 @@ namespace Synth{
 namespace{
 	const float kPi = 3.14159265358979f;
 	const float kTwoPi = 2.f * kPi;
-	// 指数減衰は decay の何倍まで計算するか（e^-7 ≈ 0.0009。これより先は聞こえない）。
+	// 指数減衰は decay の何倍まで計算するか（e^-7 ≈ 0.0009。これより先は聞こえない）
 	const float kDecayTail = 7.f;
-	// setCenter で係数を計算し直す間隔（サンプル）。毎サンプルだと重く、耳ではこの細かさで十分。
+	// setCenter で係数を計算し直す間隔（サンプル）。毎サンプルだと重く、耳ではこの細かさで十分
 	const int kSweepUpdateInterval = 32;
-	// 低い一打で、叩いた瞬間だけ音程を上げる量と長さ（打撃のアタック感）。
+	// 低い一打で、叩いた瞬間だけ音程を上げる量と長さ（打撃のアタック感）
 	const float kThumpPitchBend = 0.6f;
 	const float kThumpBendTime = 0.012f;
 	const float kThumpAttack = 0.002f;
-	// 粒のばらつき（中心周波数と大きさ）。
+	// 粒のばらつき（中心周波数と大きさ）
 	const float kGrainPitchSpread = 0.3f;
 	const float kGrainMinGain = 0.3f;
 	const unsigned kRandomFallbackSeed = 0x9E3779B9u; // xorshift は種 0 だと 0 しか出ないため
 	const float kRandomScale = 1.f / 4294967296.f;    // 2^32 分の1
-	// ローパスを通したノイズは元のノイズよりずっと小さくなるので、他の部品と同じ gain で釣り合うよう持ち上げる。
+	// ローパスを通したノイズは元のノイズよりずっと小さくなるので、他の部品と同じ gain で釣り合うよう持ち上げる
 	// （200Hz の1極ローパス2段は、白色ノイズの通る帯域が約 160Hz 分＝全帯域の約 1/140 なので、振幅はおよそ 1/12 になる）
 	const float kBoomMakeup = 10.f;
 }
@@ -71,7 +71,7 @@ BandPass::BandPass( float centerHz, float q ) :
 }
 
 void BandPass::setCenter( float centerHz ) {
-	// RBJ Audio EQ Cookbook の「中心で 0dB」のバンドパス。
+	// RBJ Audio EQ Cookbook の「中心で 0dB」のバンドパス
 	float w0 = kTwoPi * centerHz / kSampleRate;
 	float alpha = std::sin( w0 ) / ( 2.f * mQ );
 	float a0 = 1.f + alpha;
@@ -126,7 +126,7 @@ void addNoiseSweep( Buffer* buffer, float start, float duration, float fromHz, f
 		if ( i % kSweepUpdateInterval == 0 ) {
 			filter.setCenter( fromHz + ( toHz - fromHz ) * progress );
 		}
-		// 山なりの包絡（sin の半周）。擦れは始まりも終わりもなだらか。
+		// 山なりの包絡（sin の半周）。擦れは始まりも終わりもなだらか
 		float envelope = std::sin( kPi * progress );
 		( *buffer )[ first + i ] += filter.process( random->bipolar() ) * envelope * gain;
 	}
@@ -158,7 +158,7 @@ void addThump( Buffer* buffer, float start, float frequency, float decay, float 
 }
 
 void addBoom( Buffer* buffer, float start, float attack, float decay, float cutoffHz, float gain, Random* random ) {
-	// 1段のローパスだと高音がかなり漏れて「ザッ」が混ざるので、2段重ねて低音だけにする。
+	// 1段のローパスだと高音がかなり漏れて「ザッ」が混ざるので、2段重ねて低音だけにする
 	OnePoleLowPass first( cutoffHz );
 	OnePoleLowPass second( cutoffHz );
 	int begin = toSamples( start );
@@ -186,7 +186,7 @@ void addChirp( Buffer* buffer, float start, float fromHz, float toHz, float dura
 	float phase = 0.f;
 	for ( int i = 0; i < length && first + i < static_cast< int >( buffer->size() ); ++i ) {
 		float progress = static_cast< float >( i ) / length;
-		// 周波数は比で動かす（耳は音程を比で感じるので、直線より自然に上がって聞こえる）。
+		// 周波数は比で動かす（耳は音程を比で感じるので、直線より自然に上がって聞こえる）
 		float frequency = fromHz * std::pow( toHz / fromHz, progress );
 		phase += kTwoPi * frequency / kSampleRate;
 		float envelope = std::sin( kPi * progress );
@@ -197,7 +197,7 @@ void addChirp( Buffer* buffer, float start, float fromHz, float toHz, float dura
 void addEcho( Buffer* buffer, float delay, float gain, float cutoffHz ) {
 	int offset = toSamples( delay );
 	OnePoleLowPass filter( cutoffHz );
-	// 後ろから足すと、足した結果をもう一度拾って二重に返してしまうので、元の音を写してから足す。
+	// 後ろから足すと、足した結果をもう一度拾って二重に返してしまうので、元の音を写してから足す
 	Buffer source = *buffer;
 	for ( int i = 0; i + offset < static_cast< int >( buffer->size() ); ++i ) {
 		( *buffer )[ i + offset ] += filter.process( source[ i ] ) * gain;
@@ -220,7 +220,7 @@ void normalize( Buffer* buffer, float peak ) {
 }
 
 void saturate( Buffer* buffer, float drive ) {
-	// 先に一番大きい所を 1 にそろえてから潰す（元の音量で潰れ方が変わらないように）。
+	// 先に一番大きい所を 1 にそろえてから潰す（元の音量で潰れ方が変わらないように）
 	normalize( buffer, 1.f );
 	float scale = 1.f / std::tanh( drive ); // 潰した後も一番大きい所が 1 のままになるように
 	for ( float& sample : *buffer ) {
@@ -244,7 +244,7 @@ void makeLoopSeamless( Buffer* buffer, float crossfade ) {
 	int fade = toSamples( crossfade );
 	int loopLength = static_cast< int >( buffer->size() ) - fade;
 	// 頭の fade サンプルを「お尻の続き」から「元の頭」へ入れ替えていく。こうすると最後のサンプルの次に頭が来ても
-	// 波形が途切れない。ノイズ同士は相関が無いので、音量が中ほどで下がらない等パワーの重み（平方根）で混ぜる。
+	// 波形が途切れない。ノイズ同士は相関が無いので、音量が中ほどで下がらない等パワーの重み（平方根）で混ぜる
 	for ( int i = 0; i < fade; ++i ) {
 		float weight = static_cast< float >( i ) / fade;
 		( *buffer )[ i ] = ( *buffer )[ i ] * std::sqrt( weight ) + ( *buffer )[ loopLength + i ] * std::sqrt( 1.f - weight );

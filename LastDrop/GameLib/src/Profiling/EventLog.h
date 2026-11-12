@@ -10,7 +10,7 @@ namespace Profiling{
 
 struct FrameRecord;
 
-// 印 1 つぶんの記録。
+// 印 1 つぶんの記録
 struct EventRecord{
 	const char* name;
 	long long frame;          // 印の付いたフレーム
@@ -20,17 +20,17 @@ struct EventRecord{
 	int framesSeen;           // worstAfterSeconds に入れたフレームの数（kFollowFrames になったら決まり）
 };
 
-// 印（PROFILE_EVENT・押したボタン）の付いたフレームが、どれだけ重かったかをまとめる。
+// 印（PROFILE_EVENT・押したボタン）の付いたフレームが、どれだけ重かったかをまとめる
 // 弾を撃った後に音や血しぶきの準備が少し遅れて来ることもあるので、印のフレームだけでなく
-// 後に続くフレームも見る。直近のものだけを残す（画面の表示・ImGui の Perf 欄で読む）。
+// 後に続くフレームも見る。直近のものだけを残す（画面の表示・ImGui の Perf 欄で読む）
 class EventLog{
 public:
 	static const int kFollowFrames = 10;     // 印のフレームを含めて、何フレーム見るか
 	static const size_t kRecentLimit = 64;   // 残す印の数
 
-	// 閉じたフレームを渡す。前の印の「後のフレーム」を更新し、このフレームの印を足す。
+	// 閉じたフレームを渡す。前の印の「後のフレーム」を更新し、このフレームの印を足す
 	void onFrameClosed( const FrameRecord& frame );
-	// 古い順。
+	// 古い順
 	const std::deque< EventRecord >& recent() const;
 private:
 	std::deque< EventRecord > mRecent;

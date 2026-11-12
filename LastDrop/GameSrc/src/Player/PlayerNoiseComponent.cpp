@@ -9,15 +9,15 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// 足音が届く距離（m。自キャラの足元から水平だけ。壁では切らない）。
-	// 走りは横・後ろの目（10m）より遠くまで届き、歩きはそれより短いので、そっと歩けば後ろを抜けられる。
+	// 足音が届く距離（m。自キャラの足元から水平だけ。壁では切らない）
+	// 走りは横・後ろの目（10m）より遠くまで届き、歩きはそれより短いので、そっと歩けば後ろを抜けられる
 	const float kWalkFootstepHearingRange = 5.f;
 	const float kRunFootstepHearingRange = 18.f;
-	// 足音を知らせる間隔（秒。ゾンビが目の線を引く間隔と同じ。毎ティック全員を調べないため）。
+	// 足音を知らせる間隔（秒。ゾンビが目の線を引く間隔と同じ。毎ティック全員を調べないため）
 	const float kFootstepNoiseIntervalSeconds = 0.3f;
 	const int kFootstepNoiseIntervalTicks = GameTime::secondsToTicks( kFootstepNoiseIntervalSeconds );
 
-	// 歩き方 gait の足音が届く距離（m。止まっていれば 0）。
+	// 歩き方 gait の足音が届く距離（m。止まっていれば 0）
 	float footstepHearingRange( Gait gait ) {
 		switch ( gait ) {
 			case GAIT_WALK: return kWalkFootstepHearingRange;

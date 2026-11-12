@@ -20,7 +20,7 @@ Document::Impl::~Impl(){
 
 bool Document::Impl::isReady(){
 	bool r = false;
-	if ( mRoot->name() ){ //名前がNULLでないならbuild済み。
+	if ( mRoot->name() ){ //名前がNULLでないならbuild済み
 		r = true;
 	}else if ( mFile ){ //ロード中
 		if ( mFile.isFinished() ){ //ロード終わった
@@ -58,7 +58,7 @@ void Document::Impl::build( const char* data, int size ){
 	}
 }
 
-//単純に一個づつ呼んで行く。
+//単純に一個づつ呼んで行く
 void Document::Impl::convertToString( string* out ) const {
 	OStringStream oss;
 	int childN = mRoot->childNumber();
@@ -73,7 +73,7 @@ void Document::Impl::convertToString( string* out ) const {
 	*out = &t[ 0 ];
 }
 
-//単純に一個づつ呼んで行く。
+//単純に一個づつ呼んで行く
 void Document::Impl::convertToBinary( Array< char >* out ) const {
 	int childN = mRoot->childNumber();
 	OStringStream binaryOut;

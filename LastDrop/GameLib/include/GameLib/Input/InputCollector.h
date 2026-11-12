@@ -8,7 +8,7 @@
 // ワーク層：シーン別の入力割り当てを管理するクラス
 //
 // 「ワーク名 → {デバイス名 → {ボタン名の集合}}」という
-// 3重マップで割り当てを保持する。
+// 3重マップで割り当てを保持する
 //
 // 使い方：
 //   auto col = input.AddCollector("InGame");
@@ -16,7 +16,7 @@
 //   col->AddButtonToButtonWork("Attack", "Mouse",    "Left");
 //   // → "Attack" は Keyboard の Enter か Mouse の Left どちらでも発動
 //
-// SetActive(false) でシーン切替時に無効化できる。
+// SetActive(false) でシーン切替時に無効化できる
 // ────────────────────────────────────────────────
 class InputCollector
 {

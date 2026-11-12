@@ -6,7 +6,7 @@ namespace Math{
 
 class Vector3;
 
-///3次元同次座標として使うべきクラス。そのため演算はほとんど用意しない。
+///3次元同次座標として使うべきクラス。そのため演算はほとんど用意しない
 class Vector4{
 public:
 	Vector4();

@@ -3,13 +3,13 @@
 
 #include <string>
 
-// ゲームで鳴らす音の一覧（音の目録）。ゲームコードは音を SoundId だけで呼び、ファイル名は知らない。
-// ファイル名・揺らぎの数・聞こえる距離は「音素材の性質」なので、この目録（SoundCatalog.cpp）だけに書く。
+// ゲームで鳴らす音の一覧（音の目録）。ゲームコードは音を SoundId だけで呼び、ファイル名は知らない
+// ファイル名・揺らぎの数・聞こえる距離は「音素材の性質」なので、この目録（SoundCatalog.cpp）だけに書く
 //
-// 目録はゲーム本体と音の生成ツール（tools/SoundGen）の両方がリンクする。
-// ツールはこの目録のファイル名で WAV を書き出し、ゲームは同じ名前で読むので、名前の食い違いが起きない。
-// 録音素材に差し替えるときは、目録の名前の WAV を Resource/Sound に置き、目録で recorded にする（SoundGen が上書きしなくなる）。
-// ゲームのコードは変わらない。
+// 目録はゲーム本体と音の生成ツール（tools/SoundGen）の両方がリンクする
+// ツールはこの目録のファイル名で WAV を書き出し、ゲームは同じ名前で読むので、名前の食い違いが起きない
+// 録音素材に差し替えるときは、目録の名前の WAV を Resource/Sound に置き、目録で recorded にする（SoundGen が上書きしなくなる）
+// ゲームのコードは変わらない
 enum SoundId{
 	// ── 足音（床の材質ごと）──
 	SOUND_FOOTSTEP_CONCRETE,
@@ -50,7 +50,7 @@ enum SoundId{
 	SOUND_LOOT_SEARCH_METAL,	// 開けている間（ループ）：ゴミ箱（金属を探るガサガサ）
 	SOUND_LOOT_SEARCH_WOOD,		// 開けている間（ループ）：木箱
 	SOUND_LOOT_SEARCH_CLOTH,	// 開けている間（ループ）：死体（服を探る）
-	// 開け終わった音・包帯を巻いた音は作らない（中を見る画面・カバンの画面の間は音の装置ごと止めるので、鳴らしても閉じた後に鳴る）。
+	// 開け終わった音・包帯を巻いた音は作らない（中を見る画面・カバンの画面の間は音の装置ごと止めるので、鳴らしても閉じた後に鳴る）
 	// ── 脱出の車（末尾に足す。理由は上と同じ） ──
 	SOUND_CAR_ENGINE_START,	// エンジンを掛ける（セルが回って掛かる。1 回）。車から鳴らす
 	SOUND_CAR_ENGINE_IDLE,		// エンジンのアイドリング（ループ）。車から鳴らす
@@ -59,7 +59,7 @@ enum SoundId{
 	SOUND_NUM, // 音の種類の数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 };
 
-// 1種類の音の素材の性質。
+// 1種類の音の素材の性質
 struct SoundEntry{
 	const char* baseName;	// ファイル名の元（"<baseName>_<揺らぎ番号>.wav"）
 	int variationCount;		// 揺らぎ（同じ音の別テイク）の数。毎回同じ音だと機械的に聞こえるので、鳴らすたびに選び直す
@@ -70,9 +70,9 @@ struct SoundEntry{
 	float startSeconds;		// 鳴らし始める位置（秒）。頭に無音がある録音素材で、その分を飛ばすのに使う（0 なら頭から）
 };
 
-// 音の種類の性質を返す。id は SOUND_NUM 未満であること。
+// 音の種類の性質を返す。id は SOUND_NUM 未満であること
 const SoundEntry& soundEntry( SoundId id );
-// 揺らぎ1つぶんのファイルの、プロジェクトのフォルダからの相対パス（例: "Resource/Sound/footstep_concrete_0.wav"）。
+// 揺らぎ1つぶんのファイルの、プロジェクトのフォルダからの相対パス（例: "Resource/Sound/footstep_concrete_0.wav"）
 std::string soundFilePath( SoundId id, int variation );
 
 #endif

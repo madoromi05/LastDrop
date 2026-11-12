@@ -13,9 +13,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 画面（影のマップ）の上でこれより小さい物は描かない（画素）。
+	// 画面（影のマップ）の上でこれより小さい物は描かない（画素）
 	const float kMinPixels = 2.f;
-	// 霧の後に残る色がこの段の数の 1 段より少なければ、見えないとみなす（8bit の色の 1 段 ＝ 1/255）。
+	// 霧の後に残る色がこの段の数の 1 段より少なければ、見えないとみなす（8bit の色の 1 段 ＝ 1/255）
 	const float kColorSteps = 255.f;
 	const float kHalf = 0.5f;
 	const float kNoLimit = 0.f; // 距離・小ささを見ない
@@ -42,7 +42,7 @@ DrawCulling::DrawCulling( const Matrix44& projectionView, const Vector3& eye, fl
 
 DrawCulling DrawCulling::forCamera( const Matrix44& projectionView, const Vector3& eye, float drawDistance, float fieldOfViewY,
 	int screenHeight, const TownVisibility* visibility ) {
-	// 画面の上の半径（画素）＝ 半径 ÷ 距離 × ( 画面の高さ ÷ 2 ) ÷ tan( 縦の画角 ÷ 2 )。これが kMinPixels になる「半径 ÷ 距離」。
+	// 画面の上の半径（画素）＝ 半径 ÷ 距離 × ( 画面の高さ ÷ 2 ) ÷ tan( 縦の画角 ÷ 2 )。これが kMinPixels になる「半径 ÷ 距離」
 	float pixelsPerRadiusPerDistance = static_cast< float >( screenHeight ) * kHalf / Math::tan( fieldOfViewY * kHalf );
 	DrawCulling culling( projectionView, eye, drawDistance, kMinPixels / pixelsPerRadiusPerDistance, kNoLimit, pixelsPerRadiusPerDistance,
 		LodPolicy::Select );
@@ -59,8 +59,8 @@ DrawCulling DrawCulling::forOrthographicShadow( const Matrix44& projectionView, 
 }
 
 float DrawCulling::drawDistanceForFog( float fogHalfDistance ) {
-	// 距離の霧で残る割合は exp( −( d × √ln2 ÷ 半分の距離 )² ) ＝ 2^( −( d ÷ 半分の距離 )² )（Fog.hlsli・LightList::setEnvironment）。
-	// これが 1 ÷ kColorSteps になる d ＝ 半分の距離 × √( log2( kColorSteps ) )（半分の距離 40m なら約 113m）。
+	// 距離の霧で残る割合は exp( −( d × √ln2 ÷ 半分の距離 )² ) ＝ 2^( −( d ÷ 半分の距離 )² )（Fog.hlsli・LightList::setEnvironment）
+	// これが 1 ÷ kColorSteps になる d ＝ 半分の距離 × √( log2( kColorSteps ) )（半分の距離 40m なら約 113m）
 	return fogHalfDistance * Math::sqrt( Math::log2( kColorSteps ) );
 }
 
@@ -71,7 +71,7 @@ bool DrawCulling::shows( const Vector3& boundsMin, const Vector3& boundsMax, Tar
 		}
 		return false;
 	}
-	// 目から箱の一番近い所までの距離（目が箱の中なら 0）。遠さも小ささも、一番大きく見える所で決める（見える物を消さない側）。
+	// 目から箱の一番近い所までの距離（目が箱の中なら 0）。遠さも小ささも、一番大きく見える所で決める（見える物を消さない側）
 	Vector3 nearest(
 		ScalarMath::clamp( mEye.x, boundsMin.x, boundsMax.x ),
 		ScalarMath::clamp( mEye.y, boundsMin.y, boundsMax.y ),
@@ -134,7 +134,7 @@ const StaticMeshData* DrawCulling::chooseLod( const StaticMeshLods& shapes, LodS
 	if ( mLodPolicy == LodPolicy::Coarsest ) {
 		level = StaticMeshLods::kLevelNumber - 1;
 	} else if ( mLodPolicy == LodPolicy::Select ) {
-		// 画面の上の半径（画素）＝ 囲む球の半径 ÷ 中心までの距離 × 倍率。目が球の中なら一番大きく見える（距離を半径で止める）。
+		// 画面の上の半径（画素）＝ 囲む球の半径 ÷ 中心までの距離 × 倍率。目が球の中なら一番大きく見える（距離を半径で止める）
 		Vector3 size;
 		size.setSub( boundsMax, boundsMin );
 		float radius = size.length() * kHalf;

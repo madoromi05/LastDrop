@@ -27,7 +27,7 @@ namespace{
 	const long long kFileTimeUnitsPerSecond = 10000000; // FILETIME は 100 ナノ秒単位
 	const double kMillisecondsPerSecond = 1000.0;
 
-	// 計測の部品をまとめて持つ。最初に使ったときに作り、終了まで持つ。
+	// 計測の部品をまとめて持つ。最初に使ったときに作り、終了まで持つ
 	struct State{
 		FrameTimeline timeline;
 		FrameRecorder recorder;
@@ -71,7 +71,7 @@ namespace{
 		return frame ? frame->index : -1;
 	}
 
-	// プロセスが作られた時刻を、QueryPerformanceCounter の時刻に直す。
+	// プロセスが作られた時刻を、QueryPerformanceCounter の時刻に直す
 	long long processStartTime(){
 		long long nowCounter = now();
 		FILETIME creation, exitTime, kernel, user;
@@ -109,11 +109,11 @@ void beginFrame(){
 	}
 	s.recorder.add( *closed );
 	s.events.onFrameClosed( *closed );
-	// 書き出しは新しいフレームの中で起きるので、そのフレームに印を付ける（遅い理由が分かるように）。
+	// 書き出しは新しいフレームの中で起きるので、そのフレームに印を付ける（遅い理由が分かるように）
 	if ( s.spikes.writeIfSpike( *closed, s.loads.recentItems() ) ){
 		s.timeline.current()->wroteFile = true;
 	}
-	// CPU と GPU のどちらが重いかは、閉じたフレームが増えるたびに決め直す（表示は右上と Perf の欄）。
+	// CPU と GPU のどちらが重いかは、閉じたフレームが増えるたびに決め直す（表示は右上と Perf の欄）
 	FrameAverages averages = averageFrames( s.timeline, kAveragedFrames );
 	s.bound.update( Graphics::Manager().isVSync(), averages.cpu, s.gpuHistory.averageTotal( kAveragedFrames ) );
 }
@@ -127,7 +127,7 @@ void endLimiterSleep(){
 
 void beginPresent(){
 	State& s = state();
-	// GPU にフレームの終わりの時刻を打ち、数フレーム前の結果が読めたら残す。
+	// GPU にフレームの終わりの時刻を打ち、数フレーム前の結果が読めたら残す
 	GpuTimer::Result result;
 	if ( s.gpu.endFrame( &result ) ){
 		s.gpuHistory.add( result );
@@ -280,7 +280,7 @@ void toggleRecording(){
 }
 
 void drawOverlay(){
-	// エディタを開いている間は、同じ数字が Perf の欄に出るので出さない。
+	// エディタを開いている間は、同じ数字が Perf の欄に出るので出さない
 	if ( DebugUi::isOpen() || !overlayVisible() ){
 		return;
 	}

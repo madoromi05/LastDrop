@@ -13,10 +13,10 @@ public:
 	const T& operator*() const;
 	T* operator->();
 	const T* operator->() const;
-	operator void*() const; //これのおかげでif ( p ){ と書ける。
+	operator void*() const; //これのおかげでif ( p ){ と書ける
 private:
-	void operator=( AutoPtr< T >& ); //代入は禁止。管理の移譲はわかりにくい。
-	AutoPtr( AutoPtr< T >& ); //コピーコンストラクタも禁止。管理の移譲はわかりにくい。
+	void operator=( AutoPtr< T >& ); //代入は禁止。管理の移譲はわかりにくい
+	AutoPtr( AutoPtr< T >& ); //コピーコンストラクタも禁止。管理の移譲はわかりにくい
 
 	T* mPointer;
 };

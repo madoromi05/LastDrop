@@ -8,11 +8,11 @@ using namespace GameLib::Math;
 namespace{
 	const int kAxisNumber = 3;
 	const float kHalf = 0.5f;
-	// これより短い向きは「向きが無い」とみなす（0 で割らない・向きの決まらない軸を使わないため）。
+	// これより短い向きは「向きが無い」とみなす（0 で割らない・向きの決まらない軸を使わないため）
 	const float kMinAxisLength = 0.000001f;
-	// 広がりが一番大きい向きを求める反復（べき乗法）の回数。体の部位の点なら十分に収束する。
+	// 広がりが一番大きい向きを求める反復（べき乗法）の回数。体の部位の点なら十分に収束する
 	const int kPowerIterations = 32;
-	// 長い辺に直交する面の基準を作るときの補助の向き。長い辺とほぼ平行なら、もう一方を使う。
+	// 長い辺に直交する面の基準を作るときの補助の向き。長い辺とほぼ平行なら、もう一方を使う
 	const Vector3 kHelperUp( 0.f, 1.f, 0.f );
 	const Vector3 kHelperSide( 1.f, 0.f, 0.f );
 	const float kNearlyParallel = 0.9f;
@@ -26,8 +26,8 @@ namespace{
 		return sum;
 	}
 
-	// 点の広がりが一番大きい向き（共分散行列の一番大きい固有値の固有ベクトル）をべき乗法で求める。
-	// 広がりが無い（点が1か所に集まっている）なら kHelperUp を返す。
+	// 点の広がりが一番大きい向き（共分散行列の一番大きい固有値の固有ベクトル）をべき乗法で求める
+	// 広がりが無い（点が1か所に集まっている）なら kHelperUp を返す
 	Vector3 principalAxis( const std::vector< Vector3 >& points, const Vector3& mean ) {
 		float covariance[ kAxisNumber ][ kAxisNumber ] = {};
 		for ( const Vector3& p : points ) {
@@ -57,8 +57,8 @@ namespace{
 		return axis;
 	}
 
-	// 長い辺 longAxis（長さ1）に直交する面の中で、点の広がりが一番大きい向き（長さ1）。
-	// 面の上の2次元の共分散から、広がりが一番大きい角度を直接求める（2×2 の固有ベクトルは角度の式で出せる）。
+	// 長い辺 longAxis（長さ1）に直交する面の中で、点の広がりが一番大きい向き（長さ1）
+	// 面の上の2次元の共分散から、広がりが一番大きい角度を直接求める（2×2 の固有ベクトルは角度の式で出せる）
 	Vector3 crossSectionAxis( const std::vector< Vector3 >& points, const Vector3& mean, const Vector3& longAxis ) {
 		const Vector3& helper = ( Math::abs( longAxis.dot( kHelperUp ) ) < kNearlyParallel ) ? kHelperUp : kHelperSide;
 		Vector3 u;
@@ -103,7 +103,7 @@ bool BoxFitter::fit( const std::vector< Vector3 >& points, const Vector3* longAx
 	axes[ 1 ] = crossSectionAxis( points, mean, axes[ 0 ] );
 	axes[ 2 ].setCross( axes[ 0 ], axes[ 1 ] );
 
-	// 決めた向きごとに、点を落とした範囲を求める。
+	// 決めた向きごとに、点を落とした範囲を求める
 	Vector3 center( 0.f, 0.f, 0.f );
 	float halfExtent[ kAxisNumber ];
 	for ( int a = 0; a < kAxisNumber; ++a ) {
@@ -118,7 +118,7 @@ bool BoxFitter::fit( const std::vector< Vector3 >& points, const Vector3* longAx
 		halfExtent[ a ] = Math::max( ( high - low ) * kHalf, minHalfExtent );
 	}
 
-	// 列 a が「a 番目の向き × 幅の半分」、移動が中心。-1〜1 の立方体がこの箱になる。
+	// 列 a が「a 番目の向き × 幅の半分」、移動が中心。-1〜1 の立方体がこの箱になる
 	Matrix34& m = *boxOut;
 	m.m00 = axes[ 0 ].x * halfExtent[ 0 ]; m.m01 = axes[ 1 ].x * halfExtent[ 1 ]; m.m02 = axes[ 2 ].x * halfExtent[ 2 ]; m.m03 = center.x;
 	m.m10 = axes[ 0 ].y * halfExtent[ 0 ]; m.m11 = axes[ 1 ].y * halfExtent[ 1 ]; m.m12 = axes[ 2 ].y * halfExtent[ 2 ]; m.m13 = center.y;

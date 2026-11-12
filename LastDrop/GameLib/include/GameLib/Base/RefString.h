@@ -6,11 +6,11 @@
 namespace GameLib{
 //using namespace std;
 
-//参照型文字列クラス。
+//参照型文字列クラス
 /*!
-参照しか持たないため、元のデータが破棄されれば非常に危険なことになる。
+参照しか持たないため、元のデータが破棄されれば非常に危険なことになる
 const char*のみでは不便な場合、NULL終端が不可能な場合で、
-かつ性能が気になる場合に限って使うことを推奨する。
+かつ性能が気になる場合に限って使うことを推奨する
 */
 class RefString{
 public:
@@ -27,9 +27,9 @@ public:
 	void setSize( int );
 	///lastは最後の文字そのもの。+1するな。last==-1だと始点だけ変える
 	void clamp( int first, int last = -1 ); 
-	int find( char ) const; //前から文字を探して位置を返す。見つからないと-1。
-	int rfind( char ) const; //後から文字を探して位置を返す。見つからないと-1。
-	///参照先文字列をコピーしてポインタを返す。自前でdeleteすること。
+	int find( char ) const; //前から文字を探して位置を返す。見つからないと-1
+	int rfind( char ) const; //後から文字を探して位置を返す。見つからないと-1
+	///参照先文字列をコピーしてポインタを返す。自前でdeleteすること
 	char* copyOriginal() const;
 
 	bool operator==( const RefString& ) const;

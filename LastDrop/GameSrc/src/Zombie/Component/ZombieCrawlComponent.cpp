@@ -52,7 +52,7 @@ void ZombieCrawlComponent::update( const ChaseTarget* target, const HitWorld& hi
 		mRootSpan->end( mPosition ); // ここから先は胸の位置で動かす（足元は絵の根から測り直す）
 		startCrawling();
 	}
-	// 攻撃は外せる部品なので、使うたびに引く（外されていれば、追いついてももがくだけ）。
+	// 攻撃は外せる部品なので、使うたびに引く（外されていれば、追いついてももがくだけ）
 	ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >();
 	bool attacking = attack && attack->isActive();
 	ZombieCrawler::Effort effort = ZombieCrawler::Effort::Still;
@@ -65,13 +65,13 @@ void ZombieCrawlComponent::update( const ChaseTarget* target, const HitWorld& hi
 	} else {
 		effort = chase( target, hitWorld, attack, &moving );
 	}
-	// 腕で引いた分だけ進む。壁・車に当たったら胸の位置で沿って滑る。
+	// 腕で引いた分だけ進む。壁・車に当たったら胸の位置で沿って滑る
 	float distance = mCrawler->moveArms( effort, attack && attack->attack().isAttacking(), moving );
 	if ( distance > 0.f ) {
 		mCrawler->moveCenter( mLocomotion->walkStep( distance, *mAngleY ) );
 	}
 	mCrawler->place( *mAngleY, *mMover, mMesh, mPosition ); // 胸の位置と進む向きから、見た目の向き・足元を決め直す
-	// 見えている相手（追っている・攻撃している間）へ顔を向ける。置き場所を決めた後の骨格の根の空間で渡す。
+	// 見えている相手（追っている・攻撃している間）へ顔を向ける。置き場所を決めた後の骨格の根の空間で渡す
 	bool looking = target && ( mLocomotion->mode() == ZombieChase::Mode::Chase || ( attack && attack->isActive() ) );
 	Vector3 lookPoint( 0.f, 0.f, 0.f );
 	if ( looking ) {
@@ -110,7 +110,7 @@ bool* moving ) {
 	if ( !intent.walking ) {
 		return ZombieCrawler::Effort::Struggle; // 追いついて待っている
 	}
-	// 向きを変えている最中も腕は動かす（その場で向きを変える動きに見せる）。進むのは向き終わってから。
+	// 向きを変えている最中も腕は動かす（その場で向きを変える動きに見せる）。進むのは向き終わってから
 	*moving = intent.facing;
 	return ZombieCrawler::Effort::Crawl;
 }

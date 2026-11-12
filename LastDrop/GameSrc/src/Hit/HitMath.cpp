@@ -13,11 +13,11 @@ namespace{
 	const int kAxisNumber = 3;
 	const int kNoAxis = -1;                // 入った面が無い（始点が中）
 	const float kOutward = 1.f;
-	// 三角形と線分がほぼ平行・三角形の面積がほぼ0とみなす大きさ（行列式）。
+	// 三角形と線分がほぼ平行・三角形の面積がほぼ0とみなす大きさ（行列式）
 	const float kParallelEpsilon = 1e-12f;
 
-	// 軸ごとの「入る時刻・出る時刻」を重ねていく（スラブ法）。重なりが無くなれば外れ。
-	// low/high: その軸の幅。enterAxis: 一番遅く入った軸（面の法線に使う）。nullptr なら記録しない。
+	// 軸ごとの「入る時刻・出る時刻」を重ねていく（スラブ法）。重なりが無くなれば外れ
+	// low/high: その軸の幅。enterAxis: 一番遅く入った軸（面の法線に使う）。nullptr なら記録しない
 	bool clipAxis( float start, float move, float low, float high, int axis,
 	float* enterTime, float* exitTime, int* enterAxis, float* enterSign ) {
 		if ( Math::abs( move ) < kMinMove ) {
@@ -31,7 +31,7 @@ namespace{
 			*enterTime = enter;
 			if ( enterAxis ) {
 				*enterAxis = axis;
-				// 正の向きに進んで入ったなら、入った面は低い側（外向きの法線は負）。
+				// 正の向きに進んで入ったなら、入った面は低い側（外向きの法線は負）
 				*enterSign = ( move > 0.f ) ? -kOutward : kOutward;
 			}
 		}
@@ -78,7 +78,7 @@ float* enterTime ) {
 
 bool HitMath::segmentTriangle( const Vector3& origin, const Vector3& delta,
 const Vector3& v0, const Vector3& v1, const Vector3& v2, float* time, Vector3* normal ) {
-	// Möller–Trumbore 法。当たる点を「v0 + u*edge1 + v*edge2」と「origin + t*delta」の両方で表して解く。
+	// Möller–Trumbore 法。当たる点を「v0 + u*edge1 + v*edge2」と「origin + t*delta」の両方で表して解く
 	Vector3 edge1;
 	Vector3 edge2;
 	edge1.setSub( v1, v0 );
@@ -109,7 +109,7 @@ const Vector3& v0, const Vector3& v1, const Vector3& v2, float* time, Vector3* n
 	*time = t;
 	normal->setCross( edge1, edge2 );
 	normal->normalize();
-	// 両面とも当たるので、線分が来た側を向ける（弾痕を貼る向き・跳ね返りに使うため）。
+	// 両面とも当たるので、線分が来た側を向ける（弾痕を貼る向き・跳ね返りに使うため）
 	if ( normal->dot( delta ) > 0.f ) {
 		normal->setNeg( *normal );
 	}
@@ -117,7 +117,7 @@ const Vector3& v0, const Vector3& v1, const Vector3& v2, float* time, Vector3* n
 }
 
 void HitMath::normalToWorld( const Matrix34& toLocal, const Vector3& localNormal, Vector3* out ) {
-	// 置いた行列 M の法線は (M^-1)^T で移す。M^-1 = toLocal なので、その転置を掛ける（移動は掛けない）。
+	// 置いた行列 M の法線は (M^-1)^T で移す。M^-1 = toLocal なので、その転置を掛ける（移動は掛けない）
 	out->set(
 		toLocal.m00 * localNormal.x + toLocal.m10 * localNormal.y + toLocal.m20 * localNormal.z,
 		toLocal.m01 * localNormal.x + toLocal.m11 * localNormal.y + toLocal.m21 * localNormal.z,

@@ -60,7 +60,7 @@ void draw( const PerfSources& sources ){
 		if ( !load.name.empty() ){
 			ImGui::Text( "load %s#%d %.2fs", load.name.c_str(), load.attempt, load.seconds );
 		}
-		// 直近の印：そのフレームの時間・cpu と、後に続くフレーム（EventLog::kFollowFrames 枚）の一番長い時間。
+		// 直近の印：そのフレームの時間・cpu と、後に続くフレーム（EventLog::kFollowFrames 枚）の一番長い時間
 		const std::deque< EventRecord >& recent = sources.events->recent();
 		if ( !recent.empty() ){
 			const EventRecord& event = recent.back();

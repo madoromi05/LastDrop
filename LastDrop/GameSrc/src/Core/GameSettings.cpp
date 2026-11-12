@@ -13,7 +13,7 @@
 using namespace GameLib;
 
 namespace{
-	// 置き場所はキーコンフィグ（input_p0.xml）と同じく、起動した場所。
+	// 置き場所はキーコンフィグ（input_p0.xml）と同じく、起動した場所
 	const char* kFilePath = "settings.xml";
 	const char* kElementName = "Settings";
 	const char* kAttrMasterVolume = "masterVolume";
@@ -26,8 +26,8 @@ namespace{
 		return std::min( std::max( value, minValue ), maxValue );
 	}
 
-	// 音量の数（0〜100）を掛ける倍率にする。そのままではなく 2 乗する（50 で 0.25 倍）。
-	// 耳は音の大きさを比で感じるので、真ん中あたりで動かしたときに変わったのが分かりやすい。
+	// 音量の数（0〜100）を掛ける倍率にする。そのままではなく 2 乗する（50 で 0.25 倍）
+	// 耳は音の大きさを比で感じるので、真ん中あたりで動かしたときに変わったのが分かりやすい
 	float volumeGain( int volume ) {
 		float ratio = static_cast< float >( volume ) / static_cast< float >( GameSettings::kVolumeMax );
 		return ratio * ratio;
@@ -77,14 +77,14 @@ bool GameSettings::load() {
 	if ( !doc || doc.isError() ) {
 		return false;
 	}
-	// 書いた要素はルートの子になる（ルートそのものは名前を持たない入れ物）。
+	// 書いた要素はルートの子になる（ルートそのものは名前を持たない入れ物）
 	PseudoXml::ConstElement root = doc.root();
 	for ( int i = 0; i < root.childNumber(); ++i ) {
 		PseudoXml::ConstElement e = root.child( i );
 		if ( !e.name() || std::strcmp( e.name(), kElementName ) != 0 ) {
 			continue;
 		}
-		// ファイルに無い項目は既定値のまま（後で項目を足しても、古いファイルを読める）。
+		// ファイルに無い項目は既定値のまま（後で項目を足しても、古いファイルを読める）
 		for ( int j = 0; j < e.attributeNumber(); ++j ) {
 			PseudoXml::ConstAttribute a = e.attribute( j );
 			const char* name = a.name();

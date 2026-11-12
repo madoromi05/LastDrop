@@ -1,7 +1,7 @@
 #ifndef INCLUDED_GAMELIB_MATH_FUNCTIONS_H
 #define INCLUDED_GAMELIB_MATH_FUNCTIONS_H
 
-//数学ライブラリ。角度単位は度。
+//数学ライブラリ。角度単位は度
 namespace GameLib{
 namespace Math{
 

@@ -10,22 +10,22 @@
 namespace GameLib{
 	namespace Input{
 
-		// 入力システムの実体(唯一のインスタンス)。
-		// Manager は値渡しできる軽量ハンドルに過ぎず、状態はすべてここに集約する。
+		// 入力システムの実体(唯一のインスタンス)
+		// Manager は値渡しできる軽量ハンドルに過ぎず、状態はすべてここに集約する
 		// どの Manager ハンドルからも同じ実体を参照させるため、また
-		// create/destroy でプロセス全体の生存期間を一元管理するためにグローバルにしている。
+		// create/destroy でプロセス全体の生存期間を一元管理するためにグローバルにしている
 		ManagerImpl* gManagerImpl;
 
 		Manager::Manager(){
 			// 入力デバイスはメインスレッドのウィンドウに紐付くため、
-			// 別スレッドからハンドルを生成させない(生成時点で不正利用を弾く)。
+			// 別スレッドからハンドルを生成させない(生成時点で不正利用を弾く)
 			ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );
 		}
 
 		void Manager::create( void* wh ){
-			// 二重生成は実体のリークにつながるため強く禁止する。
+			// 二重生成は実体のリークにつながるため強く禁止する
 			STRONG_ASSERT( !gManagerImpl );
-			// void* で受けるのは公開ヘッダを Windows.h から切り離すため。ここで HWND へ復元する。
+			// void* で受けるのは公開ヘッダを Windows.h から切り離すため。ここで HWND へ復元する
 			gManagerImpl = NEW ManagerImpl( static_cast< HWND >( wh ) );
 		}
 
@@ -37,7 +37,7 @@ namespace GameLib{
 			gManagerImpl->update( pointerScale, pointerOffset );
 		}
 
-		// ハンドル自体は状態を持たないため、コンストラクタで生成して値返しするだけでよい。
+		// ハンドル自体は状態を持たないため、コンストラクタで生成して値返しするだけでよい
 		Manager Manager::instance(){
 			return Manager();
 		}
@@ -68,7 +68,7 @@ namespace GameLib{
 		}
 
 		Joystick Manager::joystick( int i ) const {
-			// 実体の配列を直接指すハンドルを返すので、範囲外アクセスを事前に弾く。
+			// 実体の配列を直接指すハンドルを返すので、範囲外アクセスを事前に弾く
 			ASSERT( i >= 0 && i < gManagerImpl->mJoystickNumber );
 			return Joystick( &gManagerImpl->mJoysticks[ i ] );
 		}

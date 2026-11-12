@@ -19,19 +19,19 @@ namespace{
 	const char* kBackLabel = "戻る";
 	const int kPlayer = 0;          // 一覧に見せるのは自キャラを動かす 0 番の割り当て
 
-	// 一覧の 1 行。works の操作に割り当てたキーを、順に並べて見せる。
+	// 一覧の 1 行。works の操作に割り当てたキーを、順に並べて見せる
 	struct Line{
 		const char* action;
 		std::vector< WorkId > works;
 	};
 
-	// まとまり 1 つ。左の列から順に 1 列ずつ使う。
+	// まとまり 1 つ。左の列から順に 1 列ずつ使う
 	struct Group {
 		const char* name;
 		std::vector< Line > lines;
 	};
 
-	// 移動は W A S D と読めるよう、上・左・下・右の順に並べる。
+	// 移動は W A S D と読めるよう、上・左・下・右の順に並べる
 		const std::vector< Group > kGroups = {
 			{ "移動", {
 				{ "移動", { WorkId::Up, WorkId::Left, WorkId::Down, WorkId::Right } },
@@ -52,17 +52,17 @@ namespace{
 			} },
 	};
 
-	// 画面の下の操作の案内。ESC で設定へ戻る（MenuPages）。
+	// 画面の下の操作の案内。ESC で設定へ戻る（MenuPages）
 	const std::vector< UiKeyHintRow::Hint > kKeyHints = {
 		{ "Esc", "戻る" },
 	};
 
-	// パッド（DirectInput のジョイスティック・GamePad）の割り当てか。
+	// パッド（DirectInput のジョイスティック・GamePad）の割り当てか
 	bool isPadDevice( DeviceKind device ) {
 		return device == DeviceKind::Joystick || device == DeviceKind::GamePadButton || device == DeviceKind::GamePadAxis;
 	}
 
-	// line の行。キーとマウスの名前を 1 つずつ並べる（パッドは見せない。PC のキーとマウスで遊ぶ前提）。
+	// line の行。キーとマウスの名前を 1 つずつ並べる（パッドは見せない。PC のキーとマウスで遊ぶ前提）
 		UiKeyBindingGroup::Row rowOf( const Line & line ) {
 		UiKeyBindingGroup::Row row;
 		row.action = line.action;

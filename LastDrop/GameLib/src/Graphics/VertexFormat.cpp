@@ -5,7 +5,7 @@ namespace GameLib{
 namespace Graphics{
 
 namespace{
-	// 要素1つのバイト数。並びは VertexElement と同じ。
+	// 要素1つのバイト数。並びは VertexElement と同じ
 	int elementSize( VertexElement e ){
 		switch ( e ){
 			case VERTEX_POSITION4:     return 16; // float4
@@ -20,7 +20,7 @@ namespace{
 		return 0;
 	}
 
-	// Graphics::Vertex（Vertex.h）と同じ並び。変えると固定パイプラインの頂点が読めなくなる。
+	// Graphics::Vertex（Vertex.h）と同じ並び。変えると固定パイプラインの頂点が読めなくなる
 	const VertexElement kStandardElements[] = {
 		VERTEX_POSITION4,
 		VERTEX_NORMAL3,
@@ -31,7 +31,7 @@ namespace{
 }
 
 VertexFormat::VertexFormat() : mElementNumber( kStandardElementNumber ){
-	// create は中で VertexFormat を作る（＝この関数を呼ぶ）ので、ここでは使わず直接詰める。
+	// create は中で VertexFormat を作る（＝この関数を呼ぶ）ので、ここでは使わず直接詰める
 	for ( int i = 0; i < kStandardElementNumber; ++i ){
 		mElements[ i ] = kStandardElements[ i ];
 	}

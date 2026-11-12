@@ -6,7 +6,7 @@ namespace Input{
 
 class Keyboard{
 public:
-	enum Key{ //isKeyOn,isKeyPressedの引数。a-z,0-9はそのまま文字定数で入れること。
+	enum Key{ //isKeyOn,isKeyPressedの引数。a-z,0-9はそのまま文字定数で入れること
 		KEY_RETURN = 0x80, //128番以降を使う
 		KEY_TAB,
 		KEY_ESC,

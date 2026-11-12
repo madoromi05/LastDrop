@@ -27,7 +27,7 @@ void HudController::clearMarkers() {
 
 void HudController::addAmmo() {
 	const GunComponent* gun = HoldComponent::heldGun( mWorld->player() );
-	// 消えていく途中に銃を手放した（捨てた・死んだ）ら、その場で出すのをやめる（出す物が無い）。
+	// 消えていく途中に銃を手放した（捨てた・死んだ）ら、その場で出すのをやめる（出す物が無い）
 	if ( !gun || !mAmmoHudVisibility.isVisible() ) {
 		return;
 	}
@@ -41,9 +41,9 @@ void HudController::addAmmo() {
 
 void HudController::draw( const FirstPersonCamera& camera, const RaidSession& session, const DayConditionEffect& dayCondition,
 	float searchProgress, RaidHud::ProgressKind waitingKind ) {
-	// 積むだけ（1 回の描画で UiRenderer::draw がまとめて描く）。
+	// 積むだけ（1 回の描画で UiRenderer::draw がまとめて描く）
 	mInteractMarkers.add( camera, mUi );
 	addAmmo(); // 右下の弾数
-	// 真ん中の照準「+」は出さない。
+	// 真ん中の照準「+」は出さない
 	mHud.draw( session, dayCondition, searchProgress, waitingKind );
 }

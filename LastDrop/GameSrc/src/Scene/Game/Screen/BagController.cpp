@@ -29,7 +29,7 @@ bool BagController::canOpen() const {
 }
 
 void BagController::open() {
-	// 銃のマスの「弾倉の数/大きさ」を今の数にする（町の中では銃の物が本当の数を持つ）。
+	// 銃のマスの「弾倉の数/大きさ」を今の数にする（町の中では銃の物が本当の数を持つ）
 	storeMagazineRounds( *mInventory, *mWorld );
 	mScreen.open();
 	mModals->enter( ModalController::Mode::Bag ); // 一時停止と同じ遷移(音を止め、入力を放し、カーソルを外す)
@@ -56,7 +56,7 @@ bool BagController::offeredStack( ItemStack* out ) const {
 	if ( !mOffer || !mOffer->offeredStack( out ) ) {
 		return false;
 	}
-	// 銃は弾倉の数を銃の物から読む（拾った銃のマスにも「30/30」が出るように）。
+	// 銃は弾倉の数を銃の物から読む（拾った銃のマスにも「30/30」が出るように）
 	if ( weaponForItem( out->item ) != WEAPON_NONE ) {
 		out->loadedRounds = magazineRoundsOf( mWorld->objects(), out->item );
 	}
@@ -94,8 +94,8 @@ void BagController::finishPlacingIfDone() {
 }
 
 void BagController::handleInput() {
-	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない）。
-	// ESC は拾った物を持っている・メニュー・動かしている途中なら、まずそれを取りやめる（拾うのをやめても開いたまま）。
+	// Tab でも ESC でも閉じる（ESC で一時停止のメニューは開かない）
+	// ESC は拾った物を持っている・メニュー・動かしている途中なら、まずそれを取りやめる（拾うのをやめても開いたまま）
 	if ( InputInventory() ) {
 		close();
 		return;
@@ -123,11 +123,11 @@ void BagController::handleInput() {
 		quickPlaceOffered();
 		break;
 	case InventoryScreen::Request::DROP:
-		// 手に持っている銃を捨てたら、閉じた後の最初のティックで素手になる（HoldComponent::syncWithInventory）。
+		// 手に持っている銃を捨てたら、閉じた後の最初のティックで素手になる（HoldComponent::syncWithInventory）
 		dropFromBag( request.cell );
 		break;
 	case InventoryScreen::Request::EQUIP: {
-		// 開いている間は世界が止まっているので、持ち替えの時間は作らない（RE:2 と同じ）。
+		// 開いている間は世界が止まっているので、持ち替えの時間は作らない（RE:2 と同じ）
 		GameObject* player = mWorld->player();
 		HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
 		if ( hold ) {
@@ -143,7 +143,7 @@ void BagController::handleInput() {
 void BagController::dropFromBag( int cell ) {
 	ItemStack dropped = mInventory->takeAll( cell );
 	if ( !mWorld->dropItem( dropped, mControl->camera().yaw() ) ) {
-		// 置けなかった（形の構築に失敗した）。無くさないようカバンへ戻す（空いたばかりなので必ず入る）。
+		// 置けなかった（形の構築に失敗した）。無くさないようカバンへ戻す（空いたばかりなので必ず入る）
 		for ( int i = 0; i < dropped.amount; ++i ) {
 			mInventory->add( dropped.item );
 		}

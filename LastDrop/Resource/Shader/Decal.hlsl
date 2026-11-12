@@ -1,8 +1,8 @@
-// デカール（弾痕など。DecalBatch::draw。SsrDecalMaterial_Plan.txt 8 章）。G-Buffer の色（RT0）と法線（RT1）へ、絵をアルファで混ぜて書く。
+// デカール（弾痕など。DecalBatch::draw。SsrDecalMaterial_Plan.txt 8 章）。G-Buffer の色（RT0）と法線（RT1）へ、絵をアルファで混ぜて書く
 // 箱（1 辺 1 の立方体）をデカール 1 つごとの行列で描き、画素に見えている面の位置を深度から戻して、箱の中にある所だけに貼る
-// （Persson「Volume Decals」）。面そのものに書くので、壁の角・窓枠の端からはみ出さず、面から浮かせる必要も無い。
-// 箱は裏だけ描き、奥行きの判定はしない（目が箱の中にあっても描けるように。当たっているかはここで決める）。
-// 描くのは動かない物を G-Buffer へ描いた後・動く物の前（GBuffer::beginDecals〜endDecals）。後から描くキャラがデカールを上書きして消す。
+// （Persson「Volume Decals」）。面そのものに書くので、壁の角・窓枠の端からはみ出さず、面から浮かせる必要も無い
+// 箱は裏だけ描き、奥行きの判定はしない（目が箱の中にあっても描けるように。当たっているかはここで決める）
+// 描くのは動かない物を G-Buffer へ描いた後・動く物の前（GBuffer::beginDecals〜endDecals）。後から描くキャラがデカールを上書きして消す
 #include "Common.hlsli"
 #include "DepthPosition.hlsli"
 
@@ -10,7 +10,7 @@ Texture2D        gDecalAlbedo : register(t0); // Manager::setTexture（絵の色
 Texture2D        gDecalNormal : register(t1); // Manager::setNormalMap（凹みの法線。BC5 で x・y だけ持つ）
 Texture2D<float> gSceneDepth  : register(t5); // GBuffer::beginDecals が付けるシーンの深度（GBuffer.hlsli の t5 と同じ番号）
 
-// DecalBatch.cpp の DecalConstants と同じ並び。
+// DecalBatch.cpp の DecalConstants と同じ並び
 cbuffer DecalConstants : register(b1)
 {
     float4 gDecalInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
@@ -44,7 +44,7 @@ DecalOutput PSMain(float4 position : SV_Position)
     float depth = gSceneDepth.Load(int3(position.xy, 0));
     float2 uv = position.xy / float2(width, height);
     float3 world = worldPositionFromDepth(gDecalInverseProjectionView, uv, depth);
-    // 面の向き：隣の画素との位置の差から作り、目の方へ向ける。差分は捨てる（discard）前に取る（2×2 の画素で一緒に計算するため）。
+    // 面の向き：隣の画素との位置の差から作り、目の方へ向ける。差分は捨てる（discard）前に取る（2×2 の画素で一緒に計算するため）
     float3 surface = normalize(cross(ddx(world), ddy(world)));
     float3 view = world - worldPositionFromDepth(gDecalInverseProjectionView, uv, 0.0);
     surface = (dot(surface, view) > 0.0) ? -surface : surface;
@@ -61,13 +61,13 @@ DecalOutput PSMain(float4 position : SV_Position)
     float facingFade = saturate((dot(surface, gDecalFacing.xyz) - kMinFacing) / kFacingFadeRange);
     float alpha = color.a * gDecalFacing.w * depthFade * facingFade;
 
-    // 凹みの法線：絵の向き（横・縦・面の外向き）でワールドへ回す。z は x・y から作り直す（BC5）。
+    // 凹みの法線：絵の向き（横・縦・面の外向き）でワールドへ回す。z は x・y から作り直す（BC5）
     float2 bumpXy = gDecalNormal.Sample(gClampSampler, decalUv).xy * 2.0 - 1.0;
     float bumpZ = sqrt(saturate(1.0 - dot(bumpXy, bumpXy)));
     float3 normal = normalize(gDecalRight.xyz * bumpXy.x + gDecalUp.xyz * bumpXy.y + gDecalFacing.xyz * bumpZ);
 
     // どちらもアルファで混ぜる（BLEND_LINEAR_KEEP_ALPHA。G-Buffer のアルファは書き換えない）。混ぜた法線は長さが 1 でなくなるので、
-    // 読む側（ライティング）で直す。
+    // 読む側（ライティング）で直す
     DecalOutput o;
     o.albedo = float4(color.rgb, alpha);
     o.normal = float4(normal, alpha);

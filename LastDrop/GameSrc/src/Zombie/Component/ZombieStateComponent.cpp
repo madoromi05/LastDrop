@@ -13,7 +13,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 目の高さ（m。足元から）。ここから自キャラの目が見えているかを調べる。身長 1.82m の目の辺り。
+	// 目の高さ（m。足元から）。ここから自キャラの目が見えているかを調べる。身長 1.82m の目の辺り
 	const float kEyeHeight = 1.6f;
 }
 
@@ -39,7 +39,7 @@ void ZombieStateComponent::start() {
 	mRootSpan = &rootMotion->span();
 	mAnimations = &rootMotion->animations();
 	requireComponent< CharacterColliderComponent >()->setShape( this ); // 移動の当たり判定の形はここが答える
-	// collider に自分を覚えさせたので、自分にも外せない印を付ける（requireComponent で引いた側にしか印が付かないため）。
+	// collider に自分を覚えさせたので、自分にも外せない印を付ける（requireComponent で引いた側にしか印が付かないため）
 	requireComponent< ZombieStateComponent >();
 }
 
@@ -93,6 +93,6 @@ Vector3 ZombieStateComponent::headPosition() const {
 }
 
 BoxCollider ZombieStateComponent::collider() const {
-	// 体を引きずっている間は、胸の位置に置く（壁に当たるのは胸。頭・足は少しめり込むことがある）。
+	// 体を引きずっている間は、胸の位置に置く（壁に当たるのは胸。頭・足は少しめり込むことがある）
 	return mModel->footprint().place( bodyCenter(), *mAngleY );
 }

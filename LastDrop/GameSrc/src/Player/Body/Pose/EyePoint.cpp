@@ -17,9 +17,9 @@ void EyePoint::apply( std::vector< Matrix34 >* pose ) {
 		return; // 足元から一定の高さのまま
 	}
 	// 目の向きは頭の骨の回転ではなくキャラの前方（+Z）で決める。頭の骨はアニメで揺れるので、
-	// 回転まで使うと覗いた銃ごと画面が傾いて酔いやすい。位置の揺れ（歩きの上下）だけを視点に出す。
+	// 回転まで使うと覗いた銃ごと画面が傾いて酔いやすい。位置の揺れ（歩きの上下）だけを視点に出す
 	// 頭の骨から目までの出し方は、背骨と同じくピッチぶん傾ける。傾けないと、見上げたときに目が上半身に対して
-	// 下（あご・胸の側）へずれ、腕を下から見上げる形になって、腕が前へ突っ張って見える。
+	// 下（あご・胸の側）へずれ、腕を下から見上げる形になって、腕が前へ突っ張って見える
 	const WeaponPoseParams& params = weaponPoseParams();
 	Vector3 eyeFromHead;
 	mRig->viewRotation().mul33( &eyeFromHead, Vector3( 0.f, params.eyeAboveHead, params.eyeForward ) );

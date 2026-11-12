@@ -16,13 +16,13 @@ namespace{
 	const char* kVehicleFile = "Resource/Model/Prop/uaz.txt"; // tools/configs/uaz_atlas.json → uaz.json で変換（実物大・原点は底面の中心）
 	const char* kFuelCanFile = "Resource/Model/Prop/fuelcan.txt"; // tools/configs/fuelcan_atlas.json → fuelcan.json で変換（同上）
 	const char* kFireHydrantFile = "Resource/Model/Prop/fire_hydrant.txt"; // tools/configs/fire_hydrant_atlas.json → fire_hydrant.json で変換（同上）
-	// 街灯は tools/configs/streetlamp.json・streetlamp_off.json で変換（同上。画像は使わず色だけ。ガラスは別の部品で発光だけ違う）。
+	// 街灯は tools/configs/streetlamp.json・streetlamp_off.json で変換（同上。画像は使わず色だけ。ガラスは別の部品で発光だけ違う）
 	const char* kStreetLampFile = "Resource/Model/Prop/streetlamp.txt";
 	const char* kStreetLampOffFile = "Resource/Model/Prop/streetlamp_off.txt";
-	// ゴミ箱・木箱は tools/modelgen/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上）。
+	// ゴミ箱・木箱は tools/modelgen/loot_prop_gen.py で作った FBX を tools/configs/dumpster.json・crate.json で変換（同上）
 	const char* kDumpsterFile = "Resource/Model/Prop/dumpster.txt";
 	const char* kCrateFile = "Resource/Model/Prop/crate.txt";
-	// 落ちた物の形のファイルは物の表（ItemCatalog の groundFile）、落ちている銃の形のファイルは銃ごとの表（WeaponCatalog の groundFile）にある。
+	// 落ちた物の形のファイルは物の表（ItemCatalog の groundFile）、落ちている銃の形のファイルは銃ごとの表（WeaponCatalog の groundFile）にある
 
 	// ── 物の名前（確認用。F6 のエディタの物の一覧・デバッグ出力。ゲームの判断はタグで行う）──
 	const char* kFuelName = "Fuel";
@@ -37,13 +37,13 @@ namespace{
 	const char* kStreetLampName = "StreetLamp";
 
 	const int kFuelPerCan = 1;
-	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）。
+	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）
 	const GroundMaterial kMetalMaterial = GROUND_METAL;
 	const GroundMaterial kWoodMaterial = GROUND_WOOD;
 }
 
 PropFactory::PropFactory( MeshCache* meshes ) :
-	// 車と缶は粗い形（LOD）も読む（弾の箱は小さく、2 画素未満で消えるので段を持たない）。
+	// 車と缶は粗い形（LOD）も読む（弾の箱は小さく、2 画素未満で消えるので段を持たない）
 	mVehicleShapes( StaticMeshLods::request( meshes, kVehicleFile ) ),
 	mFuelCanShapes( StaticMeshLods::request( meshes, kFuelCanFile ) ),
 	mFireHydrantShapes( StaticMeshLods::request( meshes, kFireHydrantFile ) ),
@@ -103,7 +103,7 @@ GameObject* PropFactory::spawnFireHydrant( GameObjectWorld* world, const Vector3
 	if ( !mFireHydrantShapes.full()->isReady() ) {
 		return nullptr;
 	}
-	// 背丈 0.8m・幅 0.3m ほどの細い物なので、小さすぎれば描かない側（Small）で間引く。
+	// 背丈 0.8m・幅 0.3m ほどの細い物なので、小さすぎれば描かない側（Small）で間引く
 	GameObject* obj = createProp( world, GameObjectTag::FireHydrant, kFireHydrantName, mFireHydrantShapes, position, yawDegree,
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
 	world->spawn( obj );
@@ -115,7 +115,7 @@ GameObject* PropFactory::spawnStreetLamp( GameObjectWorld* world, const Vector3&
 	if ( !shapes.full()->isReady() ) {
 		return nullptr;
 	}
-	// 背丈 3.9m あり遠くからも見える（光るガラスが目印になる）ので、大きい物の側（Large）で間引く。
+	// 背丈 3.9m あり遠くからも見える（光るガラスが目印になる）ので、大きい物の側（Large）で間引く
 	GameObject* obj = createProp( world, GameObjectTag::StreetLamp, kStreetLampName, shapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
 	world->spawn( obj );
@@ -128,7 +128,7 @@ void PropFactory::relightStreetLamps( GameObjectWorld* world, bool lit ) const {
 	if ( !shapes.full()->isReady() ) {
 		return;
 	}
-	// 光る形と消えた形は同じ頂点（ガラスの発光だけ違う）なので、描く形だけを替える。
+	// 光る形と消えた形は同じ頂点（ガラスの発光だけ違う）なので、描く形だけを替える
 	world->forEach< StaticModelComponent >( [ &shapes ]( StaticModelComponent& model ) {
 		if ( model.gameObject()->tag() == GameObjectTag::StreetLamp ) {
 			model.setShapes( shapes );
@@ -167,7 +167,7 @@ GameObject* PropFactory::spawnWeaponDrop( GameObjectWorld* world, WeaponId id, c
 }
 
 GameObject* PropFactory::spawnDroppedItem( GameObjectWorld* world, const ItemStack& stack, const Vector3& position, float yawDegree ) const {
-	// 物の種類ではなく分類で分ける（弾や銃の種類を足しても、ここは変えずに表へ 1 行足すだけで済むように）。
+	// 物の種類ではなく分類で分ける（弾や銃の種類を足しても、ここは変えずに表へ 1 行足すだけで済むように）
 	switch ( itemSpec( stack.item ).kind ) {
 	case ITEM_KIND_FUEL:
 		ASSERT( stack.amount == kFuelPerCan && "PropFactory::spawnDroppedItem : fuel is one can." );
@@ -197,7 +197,7 @@ GameObject* PropFactory::spawnGroundItem( GameObjectWorld* world, const ItemStac
 		return nullptr;
 	}
 	bool isAmmo = ( itemSpec( stack.item ).kind == ITEM_KIND_AMMO );
-	// 足元の小さな物でつまずかないよう、移動の名簿には載せない（上を歩ける）。
+	// 足元の小さな物でつまずかないよう、移動の名簿には載せない（上を歩ける）
 	GameObject* obj = createProp( world, isAmmo ? GameObjectTag::AmmoDrop : GameObjectTag::ItemDrop, isAmmo ? kAmmoDropName : kItemDropName,
 		shapes, position, yawDegree, DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough, kMetalMaterial );
 	obj->addComponent< ItemComponent >( stack.item, stack.amount );

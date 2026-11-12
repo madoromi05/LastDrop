@@ -6,14 +6,14 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 血しぶきの量と大きさの倍率（1 回は BloodSpray::kMaxScale まで）。
-	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（頭は 1.5 → 上限）。
+	// 血しぶきの量と大きさの倍率（1 回は BloodSpray::kMaxScale まで）
+	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（頭は 1.5 → 上限）
 	const float kBodyBloodScale = 0.8f;                 // ふつう（少し控えめにして、重い命中との差を作る）
 	const float kHeadBloodScale = BloodSpray::kMaxScale; // 頭に当たった（倒れていない）
 	const float kHeavyBloodScale = 1.2f;                // 部位が飛んだ・倒した（切り口からは別に kSeverBloodScale が出る）
-	// 部位が千切れたときに切り口から出す血しぶきの倍率。当たったときより大きく、一番多く出す（BloodSpray::kMaxDropNumber まで）。
+	// 部位が千切れたときに切り口から出す血しぶきの倍率。当たったときより大きく、一番多く出す（BloodSpray::kMaxDropNumber まで）
 	const float kSeverBloodScale = BloodSpray::kMaxScale;
-	// 頭が弾けたときは、上限の血しぶきを弾の向き・真上・撃った側の 3 方向へ出す（1 回では上限を超えられないため）。
+	// 頭が弾けたときは、上限の血しぶきを弾の向き・真上・撃った側の 3 方向へ出す（1 回では上限を超えられないため）
 	const float kBurstBloodScale = BloodSpray::kMaxScale;
 	const Vector3 kUp( 0.f, 1.f, 0.f );
 	const float kReverse = -1.f;
@@ -27,8 +27,8 @@ namespace{
 		}
 	}
 
-	// 血の跡の幅の半分（m）。
-	// 滴の跡は飛び散った血の半分（落ちた滴だけなので小さい）。
+	// 血の跡の幅の半分（m）
+	// 滴の跡は飛び散った血の半分（落ちた滴だけなので小さい）
 	const float kSplatterHalfSize = 0.125f;
 	const float kLargeSplatterHalfSize = 0.175f;
 	const float kDripSizeRatio = 0.5f;

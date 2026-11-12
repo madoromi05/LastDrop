@@ -34,7 +34,7 @@ template< class T > inline const T* AutoPtr< T >::operator->() const {
 	return mPointer; 
 }
 	
-//ポインタをそのまま返すと悪用される恐れがあるので、非ゼロなら0xffffffffを返す。
+//ポインタをそのまま返すと悪用される恐れがあるので、非ゼロなら0xffffffffを返す
 template< class T > inline AutoPtr< T >::operator void*() const {
 	return ( mPointer ) ? reinterpret_cast< void* >( ~0 ) : 0;
 }

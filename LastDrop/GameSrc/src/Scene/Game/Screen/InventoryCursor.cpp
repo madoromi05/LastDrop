@@ -45,7 +45,7 @@ bool InventoryCursor::back() {
 }
 
 void InventoryCursor::forgetStale( const ItemGrid& grid ) {
-	// F6 で行を減らした・物を足したときに、消えたマスや、もう無い物を指したままにしない。
+	// F6 で行を減らした・物を足したときに、消えたマスや、もう無い物を指したままにしない
 	mSelected = std::min( mSelected, grid.cellCount() - 1 );
 	if ( mMode == Mode::Moving && ( mMovingFrom >= grid.cellCount() || grid.ownerCell( mMovingFrom ) != mMovingFrom ) ) {
 		back();
@@ -89,7 +89,7 @@ InventoryCursor::Request InventoryCursor::decide( Inventory* inventory, ItemId e
 	const Request nothing = { Request::NONE, kNoCell };
 	ASSERT( inventory && "InventoryCursor::decide : inventory is null." );
 	if ( mMode == Mode::Placing ) {
-		// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）。
+		// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）
 		return ( incoming && inventory->countPlaceableInto( mSelected, *incoming ) > 0 ) ? Request{ Request::PLACE, mSelected } : nothing;
 	}
 	if ( mMode == Mode::Moving ) {
@@ -103,11 +103,11 @@ InventoryCursor::Request InventoryCursor::decide( Inventory* inventory, ItemId e
 void InventoryCursor::openMenu( const ItemGrid& grid, ItemId equipped, bool injured ) {
 	ItemId item = grid.stackAt( grid.ownerCell( mSelected ) ).item;
 	mMenuCount = 0;
-	// 銃で、まだ手に持っていなければ Equip を一番上に（拾った銃をすぐ持てるように）。
+	// 銃で、まだ手に持っていなければ Equip を一番上に（拾った銃をすぐ持てるように）
 	if ( weaponForItem( item ) != WEAPON_NONE && item != equipped ) {
 		mMenuItems[ mMenuCount++ ] = MENU_EQUIP;
 	}
-	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない）。
+	// 体力を戻す物は、減っているときだけ「使う」を一番上に（満タンでは出さない）
 	if ( itemSpec( item ).kind == ITEM_KIND_MEDICAL && injured ) {
 		mMenuItems[ mMenuCount++ ] = MENU_USE;
 	}
@@ -162,7 +162,7 @@ InventoryCursor::Request InventoryCursor::activateMenu( const ItemGrid& grid ) {
 void InventoryCursor::place( Inventory* inventory ) {
 	const ItemGrid& grid = inventory->grid();
 	ItemId item = grid.stackAt( mMovingFrom ).item;
-	// 元の場所を選んだら取りやめ（動かさない）。
+	// 元の場所を選んだら取りやめ（動かさない）
 	if ( grid.placementCell( item, mSelected ) == mMovingFrom ) {
 		back();
 		return;

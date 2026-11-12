@@ -11,7 +11,7 @@ namespace{
 	const int kNormalZombies = 30;     // ふつうの日
 	const int kHordeZombies = 45;      // 群れの日（ふつうの 1.5 倍）
 
-	// DayCondition の順に並べる（static_assert で数を確かめる）。
+	// DayCondition の順に並べる（static_assert で数を確かめる）
 	const DayConditionEffect kEffects[] = {
 		// 名前        見出し         一言                       街灯        霧          足音           ゾンビ
 		{ "normal",   "夜", "いつもの町",               kKeep,      kKeep,      kKeep,         kNormalZombies },

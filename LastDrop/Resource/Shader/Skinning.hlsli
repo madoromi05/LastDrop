@@ -1,7 +1,7 @@
 // スキンメッシュ（キャラ）を GPU で変形する頂点シェーダ（SkinningPipeline）。色を出す SkinnedMesh.hlsl と、
-// G-Buffer へ描く SkinnedMeshGBuffer.hlsl が同じ VSMain を使う（ピクセルシェーダだけが違う）。
-// 頂点は1体ぶんを全キャラで共有し、骨の行列（置き場所×ポーズ×bindInverse）だけを体ごとに b1 で渡す。
-// 変形の式は以前の CPU スキニング（SkinnedMeshData::deform）と同じ：位置・法線を4本の骨で重み付きに合成する。
+// G-Buffer へ描く SkinnedMeshGBuffer.hlsl が同じ VSMain を使う（ピクセルシェーダだけが違う）
+// 頂点は1体ぶんを全キャラで共有し、骨の行列（置き場所×ポーズ×bindInverse）だけを体ごとに b1 で渡す
+// 変形の式は以前の CPU スキニング（SkinnedMeshData::deform）と同じ：位置・法線を4本の骨で重み付きに合成する
 #ifndef INCLUDED_SKINNING_HLSLI
 #define INCLUDED_SKINNING_HLSLI
 
@@ -9,7 +9,7 @@
 
 #define MAX_BONES 128 // SkinningPipeline.h の kMaxBones と同じ値にする
 
-// 骨1本 = 3行（3x4 行列の行ごとの float4）。
+// 骨1本 = 3行（3x4 行列の行ごとの float4）
 cbuffer BonePalette : register(b1)
 {
     float4 gBoneRows[MAX_BONES * 3];
@@ -58,7 +58,7 @@ PixelInput VSMain(SkinnedVertex v)
         normal += skinVector(v.normal, v.bones[i]) * v.weights[i];
     }
     PixelInput o;
-    // 骨の行列に置き場所まで入っているので、ワールド行列は単位行列（gTransform = 射影×ビュー）。
+    // 骨の行列に置き場所まで入っているので、ワールド行列は単位行列（gTransform = 射影×ビュー）
     o.position = toClip(float4(position, 1.0));
     o.worldPosition = position;
     o.worldNormal = normal;

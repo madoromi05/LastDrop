@@ -46,7 +46,7 @@ float pow( float a, float b ){
 }
 
 float log2( float a ){
-	//底の変換公式を使う。
+	//底の変換公式を使う
 	//log_a(x) = ln(x) / ln(a)
 	//今a=2なので、ln(x) / ln(2)を計算すればいい
 	float logE = logf( a );

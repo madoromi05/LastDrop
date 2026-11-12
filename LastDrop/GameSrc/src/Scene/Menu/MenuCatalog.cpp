@@ -7,11 +7,11 @@ using namespace GameLib;
 namespace{
 	const char* kGameTitle = "ZOMBIE ESCAPE"; // 仮の名前
 	const char* kTitleBackdrop = "Resource/UI/title_backdrop.tga";
-	// 絵の街灯は真ん中より右にあるので、はみ出た横は右を多めに切る（4:3 の画面でも題名と街灯が重ならない）。
+	// 絵の街灯は真ん中より右にあるので、はみ出た横は右を多めに切る（4:3 の画面でも題名と街灯が重ならない）
 	const float kTitleBackdropAlignX = 0.25f;
 	const char* kPauseHeading = "PAUSE";
 
-	// 押されたら種別 id のシーンへ切り替える処理。ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）。
+	// 押されたら種別 id のシーンへ切り替える処理。ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）
 	std::function< void() > changeTo( SceneManager::SceneId id ) {
 		return [ id ]() { SceneManager::instance().requestChange( id ); };
 	}
@@ -33,7 +33,7 @@ MenuDefinition MenuCatalog::pause( std::function< void() > onResume ) {
 	menu.heading = kPauseHeading;
 	menu.buttons.push_back( { "RESUME", onResume } );
 	menu.buttons.push_back( { "OPTIONS", nullptr, MENU_PAGE_OPTIONS } );
-	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い。
+	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い
 	menu.buttons.push_back( { "RETRY", changeTo( SceneManager::SCENE_GAME ) } );
 	menu.buttons.push_back( { "TITLE", changeTo( SceneManager::SCENE_TITLE ) } );
 	menu.buttons.push_back( { "QUIT", []() { Framework::instance().requestEnd(); } } );

@@ -30,7 +30,7 @@ void ExtractionTracker::tick( const Vector3& feet ) {
 		return;
 	}
 	for ( const ExtractZone& zone : mZones ) {
-		// 高さは見ない（歩道の段差・車道の面のどちらでも同じ円に入る）。
+		// 高さは見ない（歩道の段差・車道の面のどちらでも同じ円に入る）
 		Vector3 toFeet;
 		toFeet.setSub( feet, zone.position );
 		toFeet.y = 0.f;

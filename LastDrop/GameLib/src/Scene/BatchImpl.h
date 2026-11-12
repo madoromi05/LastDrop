@@ -19,7 +19,7 @@ using namespace GameLib::Math;
 
 class Batch::Impl{
 public:
-	//この関数はコンテナを使うので、インクルードループを避けるためにBatch.cppにおいてある。
+	//この関数はコンテナを使うので、インクルードループを避けるためにBatch.cppにおいてある
 	Impl( PseudoXml::ConstElement& e, Container::Impl& );
 	~Impl(){
 		mName = 0; //コンテナが持っている文字列なのでここでは参照をはずすだけ

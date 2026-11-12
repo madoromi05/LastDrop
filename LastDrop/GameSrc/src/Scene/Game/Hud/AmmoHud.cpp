@@ -12,7 +12,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// 並べ方（座標の高さ 480 のときの画素）。数の文字の幅は外から測れないので、
-	// 「弾倉の数」「/」「予備の数」をそれぞれ決まった列の真ん中に置く（弾倉は 2 桁・予備は 3 桁が収まる間隔）。
+	// 「弾倉の数」「/」「予備の数」をそれぞれ決まった列の真ん中に置く（弾倉は 2 桁・予備は 3 桁が収まる間隔）
 	const float kMarginRight = 16.f;   // 板の右端から画面の右端まで
 	const float kMarginBottom = 16.f;  // 板の下端から画面の下端まで
 	const float kBoardWidth = 176.f;
@@ -26,7 +26,7 @@ namespace{
 	const float kHalf = 0.5f;
 	const int kTextSize = 16;
 
-	// 色（r, g, b と、一番濃いときの不透明度。濃さ opacity を掛けて使う）。
+	// 色（r, g, b と、一番濃いときの不透明度。濃さ opacity を掛けて使う）
 	struct Color{
 		float r;
 		float g;
@@ -46,7 +46,7 @@ namespace{
 		return VertexColor::pack( color.r, color.g, color.b, color.a * opacity );
 	}
 
-	// 弾倉の数の色（満タン → 緑、空 → 赤、それ以外 → 白）。
+	// 弾倉の数の色（満タン → 緑、空 → 赤、それ以外 → 白）
 	const Color& roundsColor( int rounds, int capacity ) {
 		if ( rounds >= capacity ) {
 			return kFullColor;
@@ -74,7 +74,7 @@ void AmmoHud::add( const Ammo& ammo, float opacity ) {
 	board.height = kBoardHeight;
 	mRenderer->addRect( board, packWithOpacity( kBoardColor, opacity ) );
 
-	// 絵は読み終えるまで出さない（数だけ出す）。
+	// 絵は読み終えるまで出さない（数だけ出す）
 	if ( const Graphics::Texture* icon = mIcons.icon( ammo.weapon ) ) {
 		UiRect iconRect;
 		iconRect.left = board.left + kIconLeft;

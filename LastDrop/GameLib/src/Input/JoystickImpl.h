@@ -43,7 +43,7 @@ public:
 		DIJOYSTATE2 state;
 		hr = mDevice->GetDeviceState( sizeof( DIJOYSTATE2 ), &state );
 		if ( SUCCEEDED( hr ) ){
-			//rgbButtons は番号ボタンの 128 個だけ。上下左右（128 番以降）は下の POV から決めるので、ここでは読まない。
+			//rgbButtons は番号ボタンの 128 個だけ。上下左右（128 番以降）は下の POV から決めるので、ここでは読まない
 			for ( int i = 0; i < NUMBERED_BUTTON_MAX; ++i ){
 				mButtons[ mDoubleBufferIndex ][ i ] = state.rgbButtons[ i ] ? true : false;
 			}
@@ -84,7 +84,7 @@ public:
 					dy = 1;
 				}
 			}
-			//離している向き（0）も毎回書く（前のフレームの値が残って、押したままにならないように）。
+			//離している向き（0）も毎回書く（前のフレームの値が残って、押したままにならないように）
 			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_RIGHT ] = ( dx > 0 );
 			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_LEFT ] = ( dx < 0 );
 			mButtons[ mDoubleBufferIndex ][ Joystick::BUTTON_UP ] = ( dy > 0 );

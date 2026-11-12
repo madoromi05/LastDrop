@@ -11,11 +11,11 @@
 #include <vector>
 
 namespace{
-	// プリセットの置き場所（起動した場所から見た所。.gitignore に入れてある）と拡張子。
+	// プリセットの置き場所（起動した場所から見た所。.gitignore に入れてある）と拡張子
 	const char* kDirectory = "Tuning";
 	const char* kExtension = ".xml";
 	const int kNameCapacity = 64;
-	// ファイル名に使えない文字（Windows）。打たれたら保存しない。
+	// ファイル名に使えない文字（Windows）。打たれたら保存しない
 	const char* kInvalidNameCharacters = "\\/:*?\"<>|";
 	const float kNameWidthRatio = 0.5f; // 名前の欄の幅（欄の幅に対して。Save ボタンを同じ行に残す）
 	const ImVec4 kWarningColor( 1.f, 0.85f, 0.2f, 1.f );

@@ -22,7 +22,7 @@ public:
 	mTextures( 0 ),
 	mTextureNumber( textureNumber ),
 	mCharNumber( bitmapCharNumber ){
-		//テクスチャを一挙に生成します。
+		//テクスチャを一挙に生成します
 		mTextures = NEW Texture[ mTextureNumber ];
 		for ( int i = 0; i < mTextureNumber; ++i ){
 			mTextures[ i ] = Texture::create( textureFileNames[ i ] );
@@ -53,7 +53,7 @@ public:
 	mTextures( 0 ),
 	mTextureNumber( textureNumber ),
 	mCharNumber( bitmapCharNumber ){
-		//テクスチャを一挙に生成します。
+		//テクスチャを一挙に生成します
 		mTextures = NEW Texture[ mTextureNumber ];
 		for ( int i = 0; i < mTextureNumber; ++i ){
 			mTextures[ i ] = Texture::create( textureFileData[ i ], textureFileSizes[ i ] );
@@ -99,7 +99,7 @@ public:
 			}
 		}
 		if ( mChars[ first ].mCode == code ){
-			//発見。
+			//発見
 			Char& c = mChars[ first ];
 			*texture = mTextures[ c.mTexturePage ];
 			float tw = static_cast< float >( texture->width() );

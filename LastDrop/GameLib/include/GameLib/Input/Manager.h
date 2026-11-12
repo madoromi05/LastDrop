@@ -20,19 +20,19 @@ public:
 	Keyboard keyboard() const;
 	Joystick joystick( int i = 0 ) const;
 	int joystickNumber() const;
-	// パッド（0〜GamePad::PAD_MAX-1 番）。つながっていなくても返す（isConnected で見分ける）。
+	// パッド（0〜GamePad::PAD_MAX-1 番）。つながっていなくても返す（isConnected で見分ける）
 	GamePad gamePad( int i = 0 ) const;
 
 	// カーソルロック（TPS/FPS の視点操作用）。ロック中は毎フレームカーソルを画面中央へ戻し、
-	// 中央からのずれを Mouse::velocityX/Y として返す（画面端で移動量が0にならない）。
-	// ロック中はカーソルを隠し、ウィンドウの外へ出ないよう閉じ込める。ウィンドウが非アクティブの間は効かない。
-	// Mouse::x/y はロック中は画面中央を指したままになる。
+	// 中央からのずれを Mouse::velocityX/Y として返す（画面端で移動量が0にならない）
+	// ロック中はカーソルを隠し、ウィンドウの外へ出ないよう閉じ込める。ウィンドウが非アクティブの間は効かない
+	// Mouse::x/y はロック中は画面中央を指したままになる
 	void setCursorLocked( bool );
 	bool isCursorLocked() const;
 
-	// 開発用のエディタ（DebugUi）が入力を使っている間、ゲームに渡さない（FPS のカーソルロックとの取り合いを避けるため）。
-	// mouse：ボタン・ホイール・移動量を 0 にし、カーソルロックも外す（ゲームが頼んだロックは覚えておき、外れたら戻す）。
-	// keyboard：キーを全部離したことにする。DebugUi が毎フレーム呼ぶ。効くのは次に入力を読むとき。
+	// 開発用のエディタ（DebugUi）が入力を使っている間、ゲームに渡さない（FPS のカーソルロックとの取り合いを避けるため）
+	// mouse：ボタン・ホイール・移動量を 0 にし、カーソルロックも外す（ゲームが頼んだロックは覚えておき、外れたら戻す）
+	// keyboard：キーを全部離したことにする。DebugUi が毎フレーム呼ぶ。効くのは次に入力を読むとき
 	void setUiCapture( bool mouse, bool keyboard );
 
 	//以下知らなくていい

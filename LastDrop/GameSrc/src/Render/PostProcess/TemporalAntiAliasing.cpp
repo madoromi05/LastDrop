@@ -13,13 +13,13 @@ namespace{
 	const char* kCopyShaderFile = "Resource/Shader/TaaCopy.hlsl";
 	const float kScreenScale = 1.f; // シーンの色と同じ大きさ
 
-	// Taa.hlsl の番号と揃える（GBuffer.hlsli の t3 法線＝動きの種類・t5 深度、t6 今の色・t7 前の履歴 / b1）。
+	// Taa.hlsl の番号と揃える（GBuffer.hlsli の t3 法線＝動きの種類・t5 深度、t6 今の色・t7 前の履歴 / b1）
 	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
 	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kCurrentSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
 	const int kHistorySlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// TaaCopy.hlsl の番号（t2 新しい履歴）。
+	// TaaCopy.hlsl の番号（t2 新しい履歴）
 	const int kCopySourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 
 	const float kUseHistory = 0.f;     // Taa.hlsl の gTaaHistoryWeight.w：履歴を使う
@@ -27,7 +27,7 @@ namespace{
 
 	const int kMatrixFloats = 16;
 	const int kRowFloats = 4;
-	// Taa.hlsl の cbuffer TaaConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// Taa.hlsl の cbuffer TaaConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct TaaConstants{
 		float inverseProjectionView[ kMatrixFloats ];  // 行ごと（Matrix44 の m00..m33 の順）
 		float previousProjectionView[ kMatrixFloats ];
@@ -69,7 +69,7 @@ TemporalAntiAliasing::TemporalAntiAliasing() :
 
 void TemporalAntiAliasing::resolve( const Graphics::RenderTarget& sceneColor, const GBuffer& gbuffer, Graphics::DepthTarget depth,
 	const Matrix44& jitteredProjectionView, const Matrix44& projectionView ) {
-	// 画面の大きさが変わったら、履歴の中身は使えない（作り直された描画先は空）。
+	// 画面の大きさが変わったら、履歴の中身は使えない（作り直された描画先は空）
 	const int width = sceneColor.width();
 	const int height = sceneColor.height();
 	const bool usesHistory = mValid && ( width == mWidth ) && ( height == mHeight );
@@ -92,7 +92,7 @@ void TemporalAntiAliasing::resolve( const Graphics::RenderTarget& sceneColor, co
 
 	const int next = ( mCurrent + 1 ) % kHistoryNumber;
 	Graphics::Manager gm = Graphics::Manager::instance();
-	// 今の色と前の履歴を混ぜて、新しい履歴へ書く。
+	// 今の色と前の履歴を混ぜて、新しい履歴へ書く
 	gm.setRenderTargets( &mHistory[ next ], 1, Graphics::DepthTarget() );
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	gm.setShader( mShader );
@@ -102,12 +102,12 @@ void TemporalAntiAliasing::resolve( const Graphics::RenderTarget& sceneColor, co
 	gm.setShaderResource( kHistorySlot, mHistory[ mCurrent ] );
 	gm.setConstantBuffer( kConstantSlot, mConstants );
 	gm.drawFullScreen();
-	// 新しい履歴を、シーンの色へ写し戻す。
+	// 新しい履歴を、シーンの色へ写し戻す
 	gm.setRenderTargets( &sceneColor, 1, Graphics::DepthTarget() ); // 付けていた読み込み元（t2 以降）はここで外れる
 	gm.setShader( mCopyShader );
 	gm.setShaderResource( kCopySourceSlot, mHistory[ next ] );
 	gm.drawFullScreen();
-	// 後から描く物（固定パイプライン）に残さない。
+	// 後から描く物（固定パイプライン）に残さない
 	gm.setShader( Graphics::Shader() );
 	gm.setShaderResource( kCopySourceSlot, Graphics::RenderTarget() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );

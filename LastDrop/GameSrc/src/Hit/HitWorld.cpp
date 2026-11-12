@@ -76,7 +76,7 @@ bool HitWorld::findNearerBlocker( const Vector3& origin, const Vector3& delta, b
 }
 
 bool HitWorld::isBlocked( const Vector3& origin, const Vector3& delta ) const {
-	// どれか1つに当たれば足りるので、一番手前を探さずに見つけた所で止める。
+	// どれか1つに当たれば足りるので、一番手前を探さずに見つけた所で止める
 	for ( const IRayBlocker* blocker : mBlockers ) {
 		float time;
 		Vector3 normal;

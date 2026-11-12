@@ -4,7 +4,7 @@
 
 using namespace GameLib::Math;
 
-// 最初のかけらで必ず置き換わるよう、空の範囲は min を最大・max を最小にしておく。
+// 最初のかけらで必ず置き換わるよう、空の範囲は min を最大・max を最小にしておく
 WallMesh::WallMesh() :
 	mBoundsMin( FLOAT_MAX ),
 	mBoundsMax( -FLOAT_MAX ) {

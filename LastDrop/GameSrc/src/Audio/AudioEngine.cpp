@@ -11,9 +11,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 同時に鳴らせる数。一歩で足音・服・装備の3つ鳴るので、走りながら連続で鳴っても足りる数にする。
+	// 同時に鳴らせる数。一歩で足音・服・装備の3つ鳴るので、走りながら連続で鳴っても足りる数にする
 	const int kMaxOneShots = 32;
-	// 同時に鳴らせるループの数（環境音3つ・発電機・飛行機 ＋ 余裕）。
+	// 同時に鳴らせるループの数（環境音3つ・発電機・飛行機 ＋ 余裕）
 	const int kMaxLoops = 8;
 	const ma_uint32 kListener = 0; // miniaudio は聞き手を複数持てるが、一人称なので1人だけ使う
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
@@ -21,7 +21,7 @@ namespace{
 
 class AudioEngine::Impl{
 public:
-	// 鳴らしている音1つ。ma_sound は内部で自分自身の場所を覚えるので、作った後は動かさない（配列の中に置いたままにする）。
+	// 鳴らしている音1つ。ma_sound は内部で自分自身の場所を覚えるので、作った後は動かさない（配列の中に置いたままにする）
 	struct Voice{
 		ma_sound sound;
 		bool used;
@@ -30,21 +30,21 @@ public:
 	Impl();
 	~Impl();
 
-	// id の揺らぎを1つ選ぶ。直前と同じものは避ける（続けて同じ音が鳴ると機械的に聞こえるため）。読めた揺らぎが無ければ nullptr。
+	// id の揺らぎを1つ選ぶ。直前と同じものは避ける（続けて同じ音が鳴ると機械的に聞こえるため）。読めた揺らぎが無ければ nullptr
 	ma_sound* chooseSource( SoundId id );
-	// voice に id の音を用意して鳴らし始める。position が nullptr なら 2D。
+	// voice に id の音を用意して鳴らし始める。position が nullptr なら 2D
 	bool startVoice( Voice* voice, SoundId id, Bus bus, const Vector3* position, float volume, float pitch, bool looping );
 	void releaseVoice( Voice* voice );
 	Voice* findFreeOneShot();
-	// 空いているループの枠で id を鳴らし始め、その枠の番号を返す。position が nullptr なら 2D。
+	// 空いているループの枠で id を鳴らし始め、その枠の番号を返す。position が nullptr なら 2D
 	LoopHandle startLoopVoice( SoundId id, Bus bus, const Vector3* position, float volume );
 
 	ma_engine mEngine;
 	bool mEngineReady;
 	ma_sound_group mBuses[ BUS_NUM ];
 	bool mBusReady[ BUS_NUM ];
-	// 読み込んだ音の元（揺らぎごと）。鳴らすときはこれを写した Voice を作る（元そのものは鳴らさない）。
-	// 写しは波形のデータを共有する（miniaudio の resource manager が持つ）ので、何個鳴らしてもメモリは増えない。
+	// 読み込んだ音の元（揺らぎごと）。鳴らすときはこれを写した Voice を作る（元そのものは鳴らさない）
+	// 写しは波形のデータを共有する（miniaudio の resource manager が持つ）ので、何個鳴らしてもメモリは増えない
 	std::vector< std::unique_ptr< ma_sound > > mSources[ SOUND_NUM ];
 	int mLastVariation[ SOUND_NUM ];
 	Voice mOneShots[ kMaxOneShots ];
@@ -79,7 +79,7 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 	for ( int i = 0; i < BUS_NUM; ++i ) {
 		mBusReady[ i ] = ( ma_sound_group_init( &mEngine, 0, nullptr, &mBuses[ i ] ) == MA_SUCCESS );
 	}
-	// 目録の音を全部読み込む（まだ数が少ないので、起動時にまとめて読んで展開しておく）。
+	// 目録の音を全部読み込む（まだ数が少ないので、起動時にまとめて読んで展開しておく）
 	for ( int i = 0; i < SOUND_NUM; ++i ) {
 		SoundId id = static_cast< SoundId >( i );
 		for ( int variation = 0; variation < soundEntry( id ).variationCount; ++variation ) {
@@ -87,7 +87,7 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 			LOAD_SCOPE( "sound", path.c_str() ); // 読み込みと展開（MA_SOUND_FLAG_DECODE）。起動のロードに入る
 			auto source = std::make_unique< ma_sound >();
 			if ( ma_sound_init_from_file( &mEngine, path.c_str(), MA_SOUND_FLAG_DECODE, nullptr, nullptr, source.get() ) != MA_SUCCESS ) {
-				// tools/SoundGen を実行していないとここに来る。
+				// tools/SoundGen を実行していないとここに来る
 				GameLib::cout << "AudioEngine: sound not found: " << path.c_str() << GameLib::endl;
 				continue;
 			}
@@ -97,7 +97,7 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 }
 
 AudioEngine::Impl::~Impl() {
-	// 写し（Voice）→ 元 → バス → エンジン の順に片付ける（後のものが前のものを参照しているため）。
+	// 写し（Voice）→ 元 → バス → エンジン の順に片付ける（後のものが前のものを参照しているため）
 	for ( Voice& voice : mOneShots ) {
 		releaseVoice( &voice );
 	}
@@ -126,7 +126,7 @@ ma_sound* AudioEngine::Impl::chooseSource( SoundId id ) {
 	}
 	int variation = 0;
 	if ( count > 1 ) {
-		// 直前の揺らぎを除いた count - 1 個から選び、直前以降の番号は1つずらす。
+		// 直前の揺らぎを除いた count - 1 個から選び、直前以降の番号は1つずらす
 		int previous = mLastVariation[ id ];
 		variation = std::uniform_int_distribution< int >( 0, count - 2 )( mRandom );
 		if ( previous >= 0 && variation >= previous ) {
@@ -158,7 +158,7 @@ bool AudioEngine::Impl::startVoice( Voice* voice, SoundId id, Bus bus, const Vec
 		ma_sound_set_max_distance( &voice->sound, entry.maxDistance );
 	}
 	if ( entry.startSeconds > 0.f ) {
-		// 位置はサンプルの番号で渡すので、素材のサンプリング周波数で秒から直す。取れなければ頭から鳴らす。
+		// 位置はサンプルの番号で渡すので、素材のサンプリング周波数で秒から直す。取れなければ頭から鳴らす
 		ma_uint32 sampleRate = 0;
 		if ( ma_sound_get_data_format( &voice->sound, nullptr, nullptr, &sampleRate, nullptr, 0 ) == MA_SUCCESS ) {
 			ma_sound_seek_to_pcm_frame( &voice->sound, static_cast< ma_uint64 >( entry.startSeconds * sampleRate ) );
@@ -208,7 +208,7 @@ bool AudioEngine::isReady() const {
 }
 
 void AudioEngine::update() {
-	// 鳴り終わった音を片付けて、次の音に使えるようにする。片付けは音声のスレッドではなくここ（ゲームのスレッド）で行う。
+	// 鳴り終わった音を片付けて、次の音に使えるようにする。片付けは音声のスレッドではなくここ（ゲームのスレッド）で行う
 	for ( Impl::Voice& voice : mImpl->mOneShots ) {
 		if ( voice.used && ma_sound_at_end( &voice.sound ) ) {
 			mImpl->releaseVoice( &voice );
@@ -220,7 +220,7 @@ void AudioEngine::setPaused( bool paused ) {
 	if ( !mImpl->mEngineReady ) {
 		return;
 	}
-	// 出力の装置ごと止める。鳴っている途中の音は、その位置のまま止まって続きから鳴る（音ごとに止めて覚え直さなくてよい）。
+	// 出力の装置ごと止める。鳴っている途中の音は、その位置のまま止まって続きから鳴る（音ごとに止めて覚え直さなくてよい）
 	if ( paused ) {
 		ma_engine_stop( &mImpl->mEngine );
 	} else {

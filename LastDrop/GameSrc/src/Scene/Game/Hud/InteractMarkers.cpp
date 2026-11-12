@@ -12,13 +12,13 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ。
+	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ
 	const float kMarkDistance = 4.f;
 
-	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）。
+	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）
 	const char* kMarkTexture = "Resource/UI/ui_interact_mark.tga";
 
-	// 画面の上の大きさ（画素）。遠くても見えるよう、距離では縮めない（ゾンビの頭上の体力のバーと同じ）。
+	// 画面の上の大きさ（画素）。遠くても見えるよう、距離では縮めない（ゾンビの頭上の体力のバーと同じ）
 	const float kSmallSize = 14.f;  // 近くの物
 	const float kTargetSize = 34.f; // 見ている物（中に「E」が入る大きさ）
 	const float kHalf = 0.5f;
@@ -28,7 +28,7 @@ namespace{
 	const unsigned kKeyColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );     // 白いひし形の上の「E」
 	const char* kKeyText = "E";
 
-	// center を中心にした size 四方。
+	// center を中心にした size 四方
 	UiRect squareAround( const Vector2& center, float size ) {
 		UiRect rect;
 		rect.left = center.x - size * kHalf;
@@ -45,7 +45,7 @@ InteractMarkers::InteractMarkers() :
 }
 
 void InteractMarkers::update( const InteractionSystem& interaction, const Vector3& eye, const IInteractable* target, const Inventory& inventory ) {
-	// 読み込みは非同期なので、読めたかを毎回確かめる（isReady は読み込みを進めるので const の add では呼べない）。
+	// 読み込みは非同期なので、読めたかを毎回確かめる（isReady は読み込みを進めるので const の add では呼べない）
 	mHasTexture = mTexture.isReady() && !mTexture.isError();
 	mNearby.clear();
 	mMarks.clear();
@@ -67,7 +67,7 @@ void InteractMarkers::clear() {
 void InteractMarkers::add( const FirstPersonCamera& camera, UiRenderer* renderer ) const {
 	ASSERT( renderer && "InteractMarkers::add : renderer is null." );
 	Matrix44 projectionView = camera.projectionViewMatrix();
-	// 絵が変わるたびに描く回数が増えるので、ひし形を全部積んでから文字を積む（UiRenderer は文字を後でまとめて描く）。
+	// 絵が変わるたびに描く回数が増えるので、ひし形を全部積んでから文字を積む（UiRenderer は文字を後でまとめて描く）
 	for ( const Mark& mark : mMarks ) {
 		Vector2 screen;
 		if ( !ScreenProjection::worldToScreen( projectionView, mark.position, &screen ) ) {

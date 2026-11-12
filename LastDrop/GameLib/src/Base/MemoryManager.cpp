@@ -4,7 +4,7 @@
 #undef max
 #endif
 
-#include <cstring> //sprintfなどなど。使いたくないが仕方ない。
+#include <cstring> //sprintfなどなど。使いたくないが仕方ない
 #include <cstdio>
 #include <locale>
 #include "GameLib/GameLib.h"
@@ -16,43 +16,43 @@
 #define USE_DEBUG_INFO
 #endif
 
-//このファイルの中はC++のライブラリを使わないで書かれている。
-//何故かと言えば、newから呼ばれる場所なのに、中でnewするようなことをしたら無限再帰に陥るからだ。
-//C++のライブラリは中で勝手にnewするのでどれを使っていいとは判断しがたいのである。
-//C言語の関数は基本的に使うなと書いたが、どうしても使うべき時というのはあるものだ。
+//このファイルの中はC++のライブラリを使わないで書かれている
+//何故かと言えば、newから呼ばれる場所なのに、中でnewするようなことをしたら無限再帰に陥るからだ
+//C++のライブラリは中で勝手にnewするのでどれを使っていいとは判断しがたいのである
+//C言語の関数は基本的に使うなと書いたが、どうしても使うべき時というのはあるものだ
 
 namespace GameLib{
 
-namespace{ //ある程度安定動作するまではずしておく。デバグしにくくて仕方ない。
+namespace{ //ある程度安定動作するまではずしておく。デバグしにくくて仕方ない
 
 using namespace std;
 
-//型別名。コードを短くしたい。
+//型別名。コードを短くしたい
 typedef unsigned U4; //バイト無符号別名
 typedef unsigned short U2; //2バイト無符号別名
 
 //設定定数群
 const U4 MAX_NORMAL_BLOCK_SIZE = 128 * 1024; //これ以上はVirtualAllocで直接確保
 const U4 HEAP_REGION_SIZE_BIT = 24; //OSから一気にせしめる領域サイズ(例えば20で1MB, 24で16MB)
-const U4 ALIGN = 8; //アラインサイズ4,8,16あたりから選ぼう。4を選ぶ時はdoubleがないことを保障すること。
+const U4 ALIGN = 8; //アラインサイズ4,8,16あたりから選ぼう。4を選ぶ時はdoubleがないことを保障すること
 //導出定数群
 const U4 HEAP_REGION_SIZE = ( 1 << HEAP_REGION_SIZE_BIT );
 const U4 TABLE_NUMBER = ( HEAP_REGION_SIZE_BIT - 3 ) * 4; //空きリスト箱の数(4ごとに倍になるのでサイズビット数の4倍だが、4,8,12,16と始まるため、いろいろあって-3)
 
 //ブロックフラグ
 /*
-でかいブロックかを知りたいのは、解放時。解放するときだから、使用中に決まっている。
-一方、空かどうかを知りたいのはHeap内とわかってからだから、同じビットを使いまわす。
+でかいブロックかを知りたいのは、解放時。解放するときだから、使用中に決まっている
+一方、空かどうかを知りたいのはHeap内とわかってからだから、同じビットを使いまわす
 */
-const U4 FLAG_LARGE_BLOCK = ( 1 << 0 ); //でかいブロックです。
-const U4 FLAG_EMPTY = ( 1 << 0 ); //空いてます。
+const U4 FLAG_LARGE_BLOCK = ( 1 << 0 ); //でかいブロックです
+const U4 FLAG_EMPTY = ( 1 << 0 ); //空いてます
 const U4 FLAG_PREV_EMPTY = ( 1 << 1 ); //前のブロックは空きです
 const U4 SIZE_MASK = ~( FLAG_PREV_EMPTY | FLAG_EMPTY );
 
 #ifdef USE_DEBUG_INFO
 //ファイル名ハッシュ
 /*
-デバグ情報用のファイル名は、グローバル変数にまとめて置いておく。4バイトを惜しんだためだ。
+デバグ情報用のファイル名は、グローバル変数にまとめて置いておく。4バイトを惜しんだためだ
 */
 const U2 FILE_INDEX_MAX = 65521; //65536以下最大の素数
 const U2 FILE_INDEX_UNKNOWN = FILE_INDEX_MAX - 1;
@@ -72,7 +72,7 @@ U2 getFileNameIndex( const char* p ){
 			return i;
 		}
 	}
-	//こっちに来るようだと相当終わってる。たぶん満足な速度では動かない。
+	//こっちに来るようだと相当終わってる。たぶん満足な速度では動かない
 	for ( U2 i = 0; i < h; ++i ){
 		if ( !gFileNames[ i ] || ( gFileNames[ i ] == p ) ){
 			gFileNames[ i ] = p;
@@ -154,12 +154,12 @@ void deallocateMemory( void* p ){
 #endif
 
 struct Lock{
-	Lock(){} //デフォルトコンストラクタは何もしない。グローバルに置かれる事態を想定する。
+	Lock(){} //デフォルトコンストラクタは何もしない。グローバルに置かれる事態を想定する
 	Lock( bool f ){
 		mLock = ( f ) ? 1 : 0;
 	}
 	void lock(){
-		//何回か試してダメなら一旦スレッドを切り替える。
+		//何回か試してダメなら一旦スレッドを切り替える
 		int count = 0;
 		while ( InterlockedCompareExchange( &mLock, 1, 0 ) != 0 ){
 			++count;
@@ -193,22 +193,22 @@ U4 getBitNumber( U4 a ){
 			first = last = middle;
 		}
 	}
-	//差が0か1になっているので、lastを返す。
+	//差が0か1になっているので、lastを返す
 	return last;
 }
 
 inline U4 getHeadIndex( U4 size ){
 	U4 r;
 	//テーブルは
-	//最初の8個は4i。(0,4,8...)。切捨て。
-	//そこから上は32,40,48,56のように4つごとに倍。
+	//最初の8個は4i。(0,4,8...)。切捨て
+	//そこから上は32,40,48,56のように4つごとに倍
 	if ( size <= 32 ){	//32バイトまでは線形。4,8,12...と並ぶ
 		r = size >> 2;
 	}else{
-		//まずsizeが何ビットの数なのかを確定させる。
+		//まずsizeが何ビットの数なのかを確定させる
 		U4 bits = getBitNumber( size );
-		//4bitの数なら、[2bit*5, 2bit*8)の範囲にある。
-		//8-9,10-11,12-13,14-15のどの範囲かは、12ビット目、つまり2と4の位を見ればいい。
+		//4bitの数なら、[2bit*5, 2bit*8)の範囲にある
+		//8-9,10-11,12-13,14-15のどの範囲かは、12ビット目、つまり2と4の位を見ればいい
 		//4bitの数なら1bit右シフトして0-7にし、この下位2bitを見る
 		U4 idx = ( size >> ( bits - 3 ) ) & 0x3;
 		r = ( bits - 4 ) * 4 + idx;
@@ -223,15 +223,15 @@ public:
 	mReserved( reserved ),
 	mNext( 0 ),
 	mLock( false ){
-		//最初のでかいブロックを作る。-4はprevSize分ケチってる。最初のブロックより前なんてないからだ。
+		//最初のでかいブロックを作る。-4はprevSize分ケチってる。最初のブロックより前なんてないからだ
 		U4 body = align( sizeof( Heap ) + VACANT_HEADER_SIZE - 4, ALIGN ) - VACANT_HEADER_SIZE;
-		U4 bodySize = HEAP_REGION_SIZE - body - 8; //8バイト減らすのは、次のブロックに無理やり書き込む4バイトと、フラグをセットする次の4倍バイトの分。
+		U4 bodySize = HEAP_REGION_SIZE - body - 8; //8バイト減らすのは、次のブロックに無理やり書き込む4バイトと、フラグをセットする次の4倍バイトの分
 
 		//リンク初期化
 		for ( int i = 0; i < TABLE_NUMBER; ++i ){
 			U4 headAddr = diff( mHeads[ i ], this );
 			U4* head = mHeads[ i ];
-			head[ PREV_SIZE ] = head[ SIZE ] = 0xffffffff; //誰も見ないところなので死にそうな数を入れておく。
+			head[ PREV_SIZE ] = head[ SIZE ] = 0xffffffff; //誰も見ないところなので死にそうな数を入れておく
 			head[ NEXT ] = head[ PREV ] = headAddr; //ループ
 		}
 		//最初のバッファをリストに挿入
@@ -252,7 +252,7 @@ check();
 		return r;
 	}
 	void removeFromList( U4 addr ){
-		if ( getSize( addr ) >= VACANT_HEADER_SIZE ){ //サイズが足りてないものは遅延開放中。
+		if ( getSize( addr ) >= VACANT_HEADER_SIZE ){ //サイズが足りてないものは遅延開放中
 			U4 next = getNext( addr );
 			U4 prev = getPrev( addr );
 			setPrev( next, prev );
@@ -261,7 +261,7 @@ check();
 	}
 	void insertToList( U4 addr, U4 size ){
 		STRONG_ASSERT( addr < 0xfffff8 );
-		U4 index = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味。
+		U4 index = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味
 		//新しいリストに差し込む。先頭に挿入
 		U4 first = mHeads[ index ][ NEXT ];
 		U4 last = getPrev( first );
@@ -313,7 +313,7 @@ check();
 #ifdef STRONG_DEBUG
 check();
 #endif
-				}else{ //残らない。このブロックをそのまま用いる。
+				}else{ //残らない。このブロックをそのまま用いる
 					removeFromList( current ); //リストから切り離す
 #ifdef USE_DEBUG_INFO
 					setDebugInfo( current, debugInfo );
@@ -345,7 +345,7 @@ check();
 #endif
 		U4 addr = diff( p, this ) - OCCUPYED_HEADER_SIZE;
 		U4 sizeWithFlag = getSize( addr );
-		//削除は、まず前後との融合が可能かどうかを調べる。
+		//削除は、まず前後との融合が可能かどうかを調べる
 		bool prevIsEmpty = ( ( sizeWithFlag & FLAG_PREV_EMPTY ) != 0 );
 		U4 size = ( sizeWithFlag & SIZE_MASK );
 		U4 next = addr + size;
@@ -359,7 +359,7 @@ check();
 			STRONG_ASSERT( prevSize == ( prevSizeWithFlag & SIZE_MASK ) );
 		}
 		U4 nextSizeWithFlagDebug = getSize( next );
-		STRONG_ASSERT( !( nextSizeWithFlagDebug & FLAG_PREV_EMPTY ) ); //使ってるんだから空いてるわけないです。
+		STRONG_ASSERT( !( nextSizeWithFlagDebug & FLAG_PREV_EMPTY ) ); //使ってるんだから空いてるわけないです
 
 		//解放済みマークで塗りつぶし
 		ptrdiff_t fillSize = ptr( this ) + next - ptr( p );
@@ -371,7 +371,7 @@ check();
 		bool nextIsEmpty = ( ( nextSizeWithFlag & FLAG_EMPTY ) != 0 );
 		U4 nextSize = ( nextSizeWithFlag & SIZE_MASK );
 
-		if ( prevIsEmpty ){ //前が空いてる。
+		if ( prevIsEmpty ){ //前が空いてる
 			U4 prevSize = getPrevSize( addr );
 			U4 prev = addr - prevSize;
 			if ( nextIsEmpty ){ //次も空いてる
@@ -413,8 +413,8 @@ check();
 #ifdef STRONG_DEBUG
 check();
 #endif
-			}else{ //くっついてない。
-				if ( size >= VACANT_HEADER_SIZE ){ //リストにつなげる状況でだけつなぐ。足りないときは隣が解放されるのを待つ。
+			}else{ //くっついてない
+				if ( size >= VACANT_HEADER_SIZE ){ //リストにつなげる状況でだけつなぐ。足りないときは隣が解放されるのを待つ
 					insertToList( addr, size );
 				}
 				setEmptyFlag( addr );
@@ -430,8 +430,8 @@ check();
 		/*
 		ここで行うチェックは、
 		１．アドレス順のチェック。前サイズ、サイズ、ブロック境界等々の整合性
-		２．リンク昇順のチェック。空いているか。サイズは適正か。
-		３．リンク降順のチェック。空いているか。サイズは適正か。
+		２．リンク昇順のチェック。空いているか。サイズは適正か
+		３．リンク降順のチェック。空いているか。サイズは適正か
 		*/
 		U4 begin = align( sizeof( Heap ) + VACANT_HEADER_SIZE - 4, ALIGN ) - VACANT_HEADER_SIZE;
 		U4 current = begin;
@@ -457,9 +457,9 @@ check();
 			current = mHeads[ i ][ NEXT ];
 			while ( current != head ){
 				U4 sizeWithFlag = getSize( current );
-				STRONG_ASSERT( sizeWithFlag & FLAG_EMPTY ); //空いてるはずだろ。
+				STRONG_ASSERT( sizeWithFlag & FLAG_EMPTY ); //空いてるはずだろ
 				U4 size = sizeWithFlag & SIZE_MASK;
-				U4 idx = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味。
+				U4 idx = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味
 				STRONG_ASSERT( idx == i );
 				current = getNext( current );
 			}
@@ -467,9 +467,9 @@ check();
 			current = mHeads[ i ][ PREV ];
 			while ( current != head ){
 				U4 sizeWithFlag = getSize( current );
-				STRONG_ASSERT( sizeWithFlag & FLAG_EMPTY ); //空いてるはずだろ。
+				STRONG_ASSERT( sizeWithFlag & FLAG_EMPTY ); //空いてるはずだろ
 				U4 size = sizeWithFlag & SIZE_MASK;
-				U4 idx = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味。
+				U4 idx = getHeadIndex( size - OCCUPYED_HEADER_SIZE + 4 );//ヘッダ分引いて、4バイトのブロックに食い込むので、このサイズが正味
 				STRONG_ASSERT( idx == i );
 				current = getPrev( current );
 			}
@@ -522,10 +522,10 @@ check();
 		mLock.unlock();
 	}
 	enum Header{
-		PREV_SIZE = 0, //こいつは前のブロックが空いてる時だけつかう。それ以外の時は壊されている。
+		PREV_SIZE = 0, //こいつは前のブロックが空いてる時だけつかう。それ以外の時は壊されている
 		SIZE = 1,
 #ifdef USE_DEBUG_INFO
-		DEBUG_INFO = 2, //次と共用。こいつは使用中しか使わない。
+		DEBUG_INFO = 2, //次と共用。こいつは使用中しか使わない
 #endif
 		NEXT = 2,
 		PREV = 3,
@@ -615,8 +615,8 @@ public:
 			r = allocateLb( size );
 #endif
 		}else{
-			//ヒープにallocate()させる。ダメなら次へ。
-			Heap* current = mHead; //ロック不要。0なら0で結構。0以外ならどれでもかまわん。
+			//ヒープにallocate()させる。ダメなら次へ
+			Heap* current = mHead; //ロック不要。0なら0で結構。0以外ならどれでもかまわん
 			while ( current ){
 				if ( current->tryLock() ){
 #ifdef USE_DEBUG_INFO
@@ -633,7 +633,7 @@ public:
 			}
 
 			if ( !r ){
-				//空きがない。ヒープを足さないといけません。
+				//空きがない。ヒープを足さないといけません
 				Heap* newHeap = Heap::create();
 #ifdef USE_DEBUG_INFO
 				r = newHeap->allocate( size, debugInfo );
@@ -656,7 +656,7 @@ STRONG_ASSERT( r && "BUG!" ); //ここはありえない。バグだ
 		if ( !p ){ //0回避
 			return;
 		}
-		//mNextが0なら、でかいブロックです。
+		//mNextが0なら、でかいブロックです
 		if ( isLb( p ) ){
 			deallocateLb( p );
 		}else{ //そうでない場合、まずAreaの先頭を割り出して、Areaに削除させる
@@ -667,9 +667,9 @@ STRONG_ASSERT( r && "BUG!" ); //ここはありえない。バグだ
 		}
 	}
 	void write( const char* filename ){
-		//この中でnewを使うわけには行かない。
-		//それは即座にofstreamもだめだということを意味する。中でnewするからだ。
-		//よって、このファイルの中ではC標準ライブラリで事を行う。
+		//この中でnewを使うわけには行かない
+		//それは即座にofstreamもだめだということを意味する。中でnewするからだ
+		//よって、このファイルの中ではC標準ライブラリで事を行う
 		FILE* fp = 0;
 		if ( filename ){
 			setlocale( LC_ALL, "" );
@@ -678,7 +678,7 @@ STRONG_ASSERT( r && "BUG!" ); //ここはありえない。バグだ
 		}else{
 			::OutputDebugStringA( "\n" );
 		}
-		char str[ 8192 ]; //大過剰に取るよ。ここでケチっても何の得もないからな。本当sprintfはダメだなと思う。
+		char str[ 8192 ]; //大過剰に取るよ。ここでケチっても何の得もないからな。本当sprintfはダメだなと思う
 		int l = 0;
 		l += sprintf_s( str + l, 8192 - l, "[ MemoryManager::write() ]\n" );
 		l += sprintf_s( str + l, 8192 - l, "totalSize = %d ( %x ) : %.2fMB\n", mTotalSize, mTotalSize, static_cast< float >( mTotalSize ) / 1024.f / 1024.f );
@@ -837,9 +837,9 @@ checkLb();
 #endif
 		setLbNext( prev, next );
 		setLbPrev( next, prev );
-		if ( mLbHead == p ){ //先頭の削除が来た。
+		if ( mLbHead == p ){ //先頭の削除が来た
 			mLbHead = next; //次のポインタに変更
-			if ( mLbHead == p ){ //次にしてもなお同じということは最後の一個だ。
+			if ( mLbHead == p ){ //次にしてもなお同じということは最後の一個だ
 				mLbHead = 0; //抹殺
 			}
 		}
@@ -870,7 +870,7 @@ checkLb();
 	static const int NEXT = PREV + sizeof( void* );
 	static const int LB_HEADER_SIZE = NEXT;
 
-	static bool isLb( void* p ){//サイズは必ず4バイト前にある。
+	static bool isLb( void* p ){//サイズは必ず4バイト前にある
 		U4* up = cast< U4 >( p, -SIZE );
 		return ( *up & FLAG_LARGE_BLOCK );
 	}

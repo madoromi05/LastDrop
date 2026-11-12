@@ -9,7 +9,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 画素（座標の高さ 480 で。モックの 720 の 2/3）。
+	// 画素（座標の高さ 480 で。モックの 720 の 2/3）
 	const float kKeyToDescription = 7.f; // 枠の右から説明まで
 	const float kHintGap = 19.f;        // 説明の右から次の案内の枠まで
 	const UiTextSize kTextSize = UI_TEXT_CAPTION;

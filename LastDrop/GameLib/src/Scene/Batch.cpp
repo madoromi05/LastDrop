@@ -12,7 +12,7 @@ namespace GameLib{
 namespace Scene{
 using namespace GameLib::Graphics;
 
-//BatchImpl.hに置きたいが、コンテナにアクセスする関係でおけず、ここに置く。
+//BatchImpl.hに置きたいが、コンテナにアクセスする関係でおけず、ここに置く
 Batch::Impl::Impl( PseudoXml::ConstElement& e, Container::Impl& c ) : 
 mDiffuseColor( 1.f, 1.f, 1.f ),
 mSpecularColor( 1.f, 1.f, 1.f ),

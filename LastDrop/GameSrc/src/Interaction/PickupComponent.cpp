@@ -14,11 +14,11 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 見る箱を、頂点を囲む箱から四方と上へ広げる長さ（m）。7.62 の弾薬のような小さな物も、狙わずに拾えるように。
+	// 見る箱を、頂点を囲む箱から四方と上へ広げる長さ（m）。7.62 の弾薬のような小さな物も、狙わずに拾えるように
 	const float kLookMargin = 0.15f;
 	const float kHalf = 0.5f;
 
-	// 見る箱（box を kLookMargin だけ広げ、地面 Y=0 から上へ立てた箱）を -1〜1 の立方体にする行列。
+	// 見る箱（box を kLookMargin だけ広げ、地面 Y=0 から上へ立てた箱）を -1〜1 の立方体にする行列
 	Matrix34 makeLookBoxToLocal( const BoxCollider& box ) {
 		float halfHeight = box.height * kHalf + kLookMargin;
 		Matrix34 world = PlacementMatrix::make( Vector3( box.center.x, box.height * kHalf, box.center.z ), box.angleY );
@@ -36,7 +36,7 @@ PickupComponent::PickupComponent() :
 
 void PickupComponent::start() {
 	mItem = requireComponent< ItemComponent >();
-	// 頂点を囲む箱は、見た目から求める（BoxColliderComponent と同じ箱。見た目は awake で置き場所へ動いている）。
+	// 頂点を囲む箱は、見た目から求める（BoxColliderComponent と同じ箱。見た目は awake で置き場所へ動いている）
 	mLookBoxToLocal = makeLookBoxToLocal( MeshBoundsBox::make( requireComponent< StaticModelComponent >()->mesh() ) );
 }
 

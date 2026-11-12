@@ -49,7 +49,7 @@ public:
 		}
 	}
 	~Impl(){
-		// 記録中の CSV は PC の情報（GPU）と一緒に書くので、Graphics::Manager を消す前に書き出す。
+		// 記録中の CSV は PC の情報（GPU）と一緒に書くので、Graphics::Manager を消す前に書き出す
 		Profiling::shutdown();
 		DebugUi::destroy(); // D3D11 のデバイスを借りているので、Graphics::Manager より先に片付ける
 		if ( mArchiveNames ){
@@ -66,7 +66,7 @@ public:
 	}
 
 	void start( void* windowHandle ){
-		// 起動のロードはプロセスが作られた時から数える（ここまでの窓づくりも入る）。終わりは最初のシーンの絵が出た所。
+		// 起動のロードはプロセスが作られた時から数える（ここまでの窓づくりも入る）。終わりは最初のシーンの絵が出た所
 		Profiling::beginBootLoad();
 		Threading::Manager::create( 0 );
 		if ( mArchiveNumber > 0 ){
@@ -161,13 +161,13 @@ public:
 			PROFILE_SCOPE( "Input" );
 			Input::Manager().update( pointerScale, pointerOffset );
 		}
-		// エディタの 1 フレームを始める。ここから postUpdate までの間に、ゲーム側も ImGui で描ける。
+		// エディタの 1 フレームを始める。ここから postUpdate までの間に、ゲーム側も ImGui で描ける
 		DebugUi::beginFrame();
-		// 3D は異方性つきで読む。点サンプリングだと、浅い角度で見た路面の細い線が粗いミップでつぶれて太く見える。
+		// 3D は異方性つきで読む。点サンプリングだと、浅い角度で見た路面の細い線が粗いミップでつぶれて太く見える
 		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
 	}
 	void postUpdate(){
-		// デバッグ文字・2D は画素をにじませない。
+		// デバッグ文字・2D は画素をにじませない
 		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_POINT );
 		{
 			PROFILE_SCOPE( "PerfOverlay" );
@@ -177,7 +177,7 @@ public:
 			PROFILE_SCOPE( "DebugString" );
 			mDebugStringRenderer.draw();
 		}
-		// エディタは一番上に描く（ポストプロセスも HUD も済んだ後）。
+		// エディタは一番上に描く（ポストプロセスも HUD も済んだ後）
 		DebugUi::render();
 		Graphics::Manager().endDraw();
 	}
@@ -237,8 +237,8 @@ void Framework::postUpdate(){
 	gImpl->postUpdate();
 }
 
-//起動後は、ウィンドウの縦横比に合わせて変わる描画側（Graphics）の大きさを返す。
-//起動前（WindowCreator::configure でウィンドウの大きさを決めるとき）は設定値を返す。
+//起動後は、ウィンドウの縦横比に合わせて変わる描画側（Graphics）の大きさを返す
+//起動前（WindowCreator::configure でウィンドウの大きさを決めるとき）は設定値を返す
 int Framework::width() const {
 	return gImpl->mStarted ? Graphics::Manager().width() : gImpl->mWidth;
 }

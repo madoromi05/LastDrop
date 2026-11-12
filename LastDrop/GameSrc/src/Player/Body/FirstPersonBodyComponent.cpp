@@ -24,7 +24,7 @@ const FirstPersonBody& FirstPersonBodyComponent::body() const {
 }
 
 Vector3 FirstPersonBodyComponent::eyePosition() const {
-	// FirstPersonBody が骨格の根の空間で求めた目を、置き場所・向きでワールドへ置く（頂点と同じ式）。
+	// FirstPersonBody が骨格の根の空間で求めた目を、置き場所・向きでワールドへ置く（頂点と同じ式）
 	Vector3 eye;
 	mModel->mesh().rootMatrix().mul( &eye, mBody->eyePosition() );
 	return eye;

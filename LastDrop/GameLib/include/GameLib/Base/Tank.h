@@ -7,22 +7,22 @@ namespace GameLib{
 
 ///足し終わるまでアクセスせず、いくつ足すかがわからない、という用途のためのもの
 /*!
-水をためて一気に流すイメージでタンクとしたが、もっといい名前があれば募集。
-内部的には容量単位(blockSize)づつ内部でアロケートして継ぎ足していく。
+水をためて一気に流すイメージでタンクとしたが、もっといい名前があれば募集
+内部的には容量単位(blockSize)づつ内部でアロケートして継ぎ足していく
 
-アクセスはgetCurrent()で取得、toNext()で次へ。rewind()で最初からアクセスしなおせる。
+アクセスはgetCurrent()で取得、toNext()で次へ。rewind()で最初からアクセスしなおせる
 */
 template< class T > class Tank{
 public:
 	explicit Tank( int blockSize = 16 );
 	~Tank();
-	///再確保。中身がある状態で呼ぶとassert。clear()しろ。
+	///再確保。中身がある状態で呼ぶとassert。clear()しろ
 	void setBlockSize( int blockSize );
 	///現在の要素数取得
 	int size() const;
 	///全解放
 	void clear();
-	///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと。
+	///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと
 	T* add();
 	///末尾に追加
 	void add( const T& );
@@ -36,9 +36,9 @@ public:
 	const T* get() const;
 	///最初の要素にポインタを戻す
 	void rewind();
-	///単なる配列に変換。前もってsize()したサイズでnewした領域を渡すこと。
+	///単なる配列に変換。前もってsize()したサイズでnewした領域を渡すこと
 	void copyTo( T* ) const;
-	///Arrayにコピー。空でないと怒られる。
+	///Arrayにコピー。空でないと怒られる
 	void copyTo( Array< T >* ) const;
 private:
 	struct Block{

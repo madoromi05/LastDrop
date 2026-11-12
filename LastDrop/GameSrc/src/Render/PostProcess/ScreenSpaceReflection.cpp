@@ -15,27 +15,27 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Ssr.hlsl";
 	const char* kBlurShaderFile = "Resource/Shader/SsrBlur.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率）。SsrCommon.hlsli の kSsrHalfStep と揃える。
+	// 描画先の大きさ（画面に対する倍率）。SsrCommon.hlsli の kSsrHalfStep と揃える
 	const float kResolutionScale = 0.5f;
 
-	// Ssr.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t4 材質・t5 深度、t6 シーンの色 / b1）。
+	// Ssr.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t4 材質・t5 深度、t6 シーンの色 / b1）
 	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
 	const int kMaterialSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 2;
 	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kSceneColorSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
 	const int kHiZSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5; // Ssr.hlsl の t7
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// SsrBlur.hlsl の番号（t2 ぼかす元・t5 深度 / b1）。
+	// SsrBlur.hlsl の番号（t2 ぼかす元・t5 深度 / b1）
 	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 
-	// 映り込み無し（確からしさ 0）。SSR を切っている間の結果。
+	// 映り込み無し（確からしさ 0）。SSR を切っている間の結果
 	const Vector4 kNoReflection( 0.f, 0.f, 0.f, 0.f );
 	const float kHorizontal[ 2 ] = { 1.f, 0.f };
 	const float kVertical[ 2 ] = { 0.f, 1.f };
 
 	const int kMatrixFloats = 16;
 	const int kRowFloats = 4;
-	// Ssr.hlsl の cbuffer SsrConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// Ssr.hlsl の cbuffer SsrConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct SsrConstants{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float projectionView[ kMatrixFloats ];
@@ -53,7 +53,7 @@ namespace{
 		float unused2;
 	};
 	static_assert( sizeof( SsrConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kRowFloats * 3 ), "SsrConstants : keep the HLSL layout." );
-	// SsrBlur.hlsl の cbuffer SsrBlurConstants と同じ並び。
+	// SsrBlur.hlsl の cbuffer SsrBlurConstants と同じ並び
 	struct SsrBlurConstants{
 		float inverseProjectionView[ kMatrixFloats ];
 		float viewDepthRow[ kRowFloats ]; // 射影×ビューの 4 行目（m30..m33）
@@ -138,10 +138,10 @@ void ScreenSpaceReflection::draw( const GBuffer& gbuffer, const Graphics::Render
 	gm.setShaderResource( kHiZSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kSceneColorSlot, Graphics::RenderTarget() );
-	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。ぼかしも粗さを読む。
+	// 横 → 縦（7-4）。縦の結果は作った先へ戻すので、結果はいつも mReflection。ぼかしも粗さを読む
 	blur( mReflection, mBlurScratch, gbuffer, depth, inverse, projectionView, kHorizontal[ 0 ], kHorizontal[ 1 ] );
 	blur( mBlurScratch, mReflection, gbuffer, depth, inverse, projectionView, kVertical[ 0 ], kVertical[ 1 ] );
-	// 後から描く物（固定パイプライン）に残さない。
+	// 後から描く物（固定パイプライン）に残さない
 	gm.setShader( Graphics::Shader() );
 	gm.setShaderResource( kMaterialSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );

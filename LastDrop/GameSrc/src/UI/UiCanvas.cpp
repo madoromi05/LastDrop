@@ -29,13 +29,13 @@ void UiCanvas::handleInput( const UiInput& input ) {
 		return;
 	}
 	int count = static_cast< int >( mSelectables.size() );
-	// マウスで値を動かしている間は、離すまでその部品だけに付いていく（ほかの部品の上を通っても選び直さない）。
+	// マウスで値を動かしている間は、離すまでその部品だけに付いていく（ほかの部品の上を通っても選び直さない）
 	if ( !input.held ) {
 		mDragging = kNone;
 	} else if ( mDragging != kNone && input.cursorMoved ) {
 		mAdjustables[ mDragging ]->dragTo( input.cursor );
 	}
-	// マウス：動いたときだけ、カーソルの下の部品を選ぶ（止まっているマウスがキーで選んだものを奪わないように）。
+	// マウス：動いたときだけ、カーソルの下の部品を選ぶ（止まっているマウスがキーで選んだものを奪わないように）
 	int pointed = findSelectableAt( input.cursor );
 	if ( input.cursorMoved && pointed != kNone && mDragging == kNone ) {
 		select( pointed );
@@ -53,8 +53,8 @@ void UiCanvas::handleInput( const UiInput& input ) {
 	if ( selectedAdjustable && input.rightPressed ) {
 		selectedAdjustable->adjust( 1 );
 	}
-	// 決定は最後に1回だけ（activate でシーンが切り替わる予約をしたら、この画面ではそれ以上何もしない）。
-	// 値を動かせる部品のクリックは、決定ではなく「その場所の値にして、ドラッグを始める」。
+	// 決定は最後に1回だけ（activate でシーンが切り替わる予約をしたら、この画面ではそれ以上何もしない）
+	// 値を動かせる部品のクリックは、決定ではなく「その場所の値にして、ドラッグを始める」
 	if ( input.clicked && pointed != kNone && mAdjustables[ pointed ] ) {
 		select( pointed );
 		mDragging = pointed;

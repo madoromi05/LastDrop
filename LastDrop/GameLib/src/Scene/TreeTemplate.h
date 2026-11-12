@@ -20,10 +20,10 @@ namespace PseudoXml{
 namespace Scene{
 using namespace Math;
 
-//ツリーの原型。ライブラリの外からは見えないのでいつものImplはない。
+//ツリーの原型。ライブラリの外からは見えないのでいつものImplはない
 class TreeTemplate{
 public:
-	TreeTemplate( PseudoXml::ConstElement&, Container::Impl& ); //これはcpp内。
+	TreeTemplate( PseudoXml::ConstElement&, Container::Impl& ); //これはcpp内
 	~TreeTemplate(){
 		SAFE_DELETE_ARRAY( mNodes );
 		mName = 0; //コンテナが持っている文字列なのでここでは参照をはずすだけ

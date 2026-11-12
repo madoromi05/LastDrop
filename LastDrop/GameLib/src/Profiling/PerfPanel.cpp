@@ -37,7 +37,7 @@ namespace{
 		double maxSeconds; // 1 フレームあたりの合計の、一番大きい物
 	};
 
-	// 同じ名前でも別の翻訳単位の文字列リテラルはポインタが違うことがあるので、中身で比べる。
+	// 同じ名前でも別の翻訳単位の文字列リテラルはポインタが違うことがあるので、中身で比べる
 	int findScope( const std::vector< ScopeStat >& stats, const char* name ){
 		for ( size_t i = 0; i < stats.size(); ++i ){
 			if ( strcmp( stats[ i ].name, name ) == 0 ){
@@ -51,7 +51,7 @@ namespace{
 		return static_cast< float >( seconds * kMillisecondsPerSecond );
 	}
 
-	// 予算の線を、直前に描いたグラフの上に引く。
+	// 予算の線を、直前に描いたグラフの上に引く
 	void drawBudgetLine( float scaleMax ){
 		ImVec2 minCorner = ImGui::GetItemRectMin();
 		ImVec2 maxCorner = ImGui::GetItemRectMax();
@@ -68,7 +68,7 @@ namespace{
 		}
 		ImGui::Text( "frame %.2f ms (max %.2f)  %.0f fps", toMs( a.frame ), toMs( a.longest ),
 			( a.frame > 0.0 ) ? 1.0 / a.frame : 0.0 );
-		// 細い窓でも切れないよう 2 行に分ける。
+		// 細い窓でも切れないよう 2 行に分ける
 		ImGui::Text( "cpu %.2f  present %.2f", toMs( a.cpu ), toMs( a.present ) );
 		ImGui::Text( "sleep %.2f  other %.2f", toMs( a.sleep ), toMs( a.other ) );
 		double gpu = sources.gpu->averageTotal( kAveragedFrames );
@@ -88,7 +88,7 @@ namespace{
 	}
 
 	void drawGraphs( const FrameTimeline& timeline ){
-		// 古い方から並べる（右端が今）。
+		// 古い方から並べる（右端が今）
 		std::vector< float > frames;
 		std::vector< float > cpus;
 		for ( int ago = FrameTimeline::kHistory - 1; ago >= 0; --ago ){
@@ -170,7 +170,7 @@ namespace{
 			for ( const ScopeStat& stat : stats ){
 				ImGui::TableNextRow();
 				ImGui::TableNextColumn();
-				// Indent( 0 ) は既定の幅で字下げしてしまうので、入れ子の時だけ呼ぶ。
+				// Indent( 0 ) は既定の幅で字下げしてしまうので、入れ子の時だけ呼ぶ
 				float indent = kScopeIndent * stat.depth;
 				if ( stat.depth > 0 ){
 					ImGui::Indent( indent );
@@ -188,7 +188,7 @@ namespace{
 		}
 	}
 
-	// 回数（addCount）ごとの 1 フレームあたりの平均と最大（直近 240 フレーム）。そのフレームに無い回数は 0 と数える。
+	// 回数（addCount）ごとの 1 フレームあたりの平均と最大（直近 240 フレーム）。そのフレームに無い回数は 0 と数える
 	void drawCounters( const FrameTimeline& timeline ){
 		struct CounterStat{
 			const char* name;

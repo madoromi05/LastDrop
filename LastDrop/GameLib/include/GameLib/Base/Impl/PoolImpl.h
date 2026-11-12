@@ -42,7 +42,7 @@ template< class T > inline void Pool< T >::clear(){
 template< class T > inline T* Pool< T >::allocate( int n ){
 	T* r = 0;
 	Block* b = mLastBlock;
-	if ( b->mSize - b->mUsedNumber < n ){ //足りない場合確保。
+	if ( b->mSize - b->mUsedNumber < n ){ //足りない場合確保
 		//標準ブロックサイズで足りないなら必要数分だけアロケート
 		int allocateSize = ( n > mDefaultBlockSize ) ? n : mDefaultBlockSize;
 		b = NEW Block;
@@ -65,7 +65,7 @@ template< class T > inline T* Pool< T >::allocate( int n ){
 template< class T > inline T* Pool< T >::allocate( const T* a, int n ){
 	T* r = 0;
 	Block* b = mLastBlock;
-	if ( b->mSize - b->mUsedNumber < n ){ //足りない場合確保。
+	if ( b->mSize - b->mUsedNumber < n ){ //足りない場合確保
 		//標準ブロックサイズで足りないなら必要数分だけアロケート
 		int allocateSize = ( n > mDefaultBlockSize ) ? n : mDefaultBlockSize;
 		b = NEW Block;

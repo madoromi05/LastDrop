@@ -12,11 +12,11 @@ using namespace GameLib::Math;
 
 namespace{
 	const char* kStaticMeshShaderFile = "Resource/Shader/StaticMeshShadow.hlsl";
-	// 光の外側の角度に足す余白（度。半角）。外側の縁のぎりぎりの所まで影のマップに入れる（PCF で隣の画素を読むため）。
+	// 光の外側の角度に足す余白（度。半角）。外側の縁のぎりぎりの所まで影のマップに入れる（PCF で隣の画素を読むため）
 	const float kSpotFieldMargin = 2.f;
 	const float kHalf = 0.5f;
 	const float kSquareAspect = 1.f; // 影のマップは正方形
-	// 照らす向きがほぼ真上・真下のときは、世界の上を「上」にすると行列が作れないので、奥（+Z）を上にする。
+	// 照らす向きがほぼ真上・真下のときは、世界の上を「上」にすると行列が作れないので、奥（+Z）を上にする
 	const float kNearlyVertical = 0.99f;
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
 	const Vector3 kVerticalUp( 0.f, 0.f, 1.f );
@@ -55,7 +55,7 @@ void ShadowMap::begin( const Matrix44& lightProjectionView ) {
 
 void ShadowMap::end() {
 	RenderPass::endShadow();
-	// 後から描く物（固定パイプライン）に残さない。
+	// 後から描く物（固定パイプライン）に残さない
 	Graphics::Manager::instance().setShader( Graphics::Shader() );
 }
 
@@ -84,6 +84,6 @@ Matrix44 spotShadowProjectionView( const Vector3& position, const Vector3& direc
 }
 
 float spotShadowTexelSizeAtOneMeter( float outerAngleDegree, int mapSize ) {
-	// 光から 1m の所の、影のマップに入る幅は 2 × tan( 画角の半分 )。それを画素の数で割る。
+	// 光から 1m の所の、影のマップに入る幅は 2 × tan( 画角の半分 )。それを画素の数で割る
 	return 2.f * tan( spotFieldOfView( outerAngleDegree ) * kHalf ) / static_cast< float >( mapSize );
 }

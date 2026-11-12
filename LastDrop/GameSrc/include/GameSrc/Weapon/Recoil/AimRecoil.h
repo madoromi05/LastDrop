@@ -3,25 +3,25 @@
 
 #include "GameLib/Math/Random.h"
 
-// 撃った反動による弾道のずれ（狙いへ足す上下・左右の角度）を決める。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 2 章。
-// 連射のたびにたまっていき、マウスを動かさなければ上へ上がりながら左右にふらつく。上は数発で頭打ちになる。
-// 撃ちやめると時間で 0 へ戻る（マウスで決めた向きそのものは変えないので、狙いは元の所へ戻る）。
-// 1 発ごとに跳ねて戻る視点の反動（ViewRecoil）とは別の量で、カメラへ足すのは持ち主（FirstPersonControl）が両方を合わせて行う。
-// 上がる量・ぶれる量・戻る速さを変えるときは AimRecoil.cpp の定数だけを直す。
+// 撃った反動による弾道のずれ（狙いへ足す上下・左右の角度）を決める。仕様は SummaryPlan/個別仕様/射撃と手応え/CameraShake_Recoil_Plan.txt の 2 章
+// 連射のたびにたまっていき、マウスを動かさなければ上へ上がりながら左右にふらつく。上は数発で頭打ちになる
+// 撃ちやめると時間で 0 へ戻る（マウスで決めた向きそのものは変えないので、狙いは元の所へ戻る）
+// 1 発ごとに跳ねて戻る視点の反動（ViewRecoil）とは別の量で、カメラへ足すのは持ち主（FirstPersonControl）が両方を合わせて行う
+// 上がる量・ぶれる量・戻る速さを変えるときは AimRecoil.cpp の定数だけを直す
 class AimRecoil{
 public:
-	// seed: 左右のぶれの乱数の種。
+	// seed: 左右のぶれの乱数の種
 	explicit AimRecoil( int seed );
 
-	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0。
+	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0
 	void update( float shotRecoil );
-	// 狙いの上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き）。
+	// 狙いの上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き）
 	float pitchOffset() const;
-	// 狙いの左右へ足す角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）。
+	// 狙いの左右へ足す角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）
 	float yawOffset() const;
 
 private:
-	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。scale: 足す量に掛ける反動の大きさ。
+	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。scale: 足す量に掛ける反動の大きさ
 	void kick( float scale );
 
 	GameLib::Math::Random mRandom;

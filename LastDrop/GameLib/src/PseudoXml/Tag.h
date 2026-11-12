@@ -12,11 +12,11 @@ namespace PseudoXml{
 
 class Attribute;
 
-///タグをテキストから生成するクラス。
+///タグをテキストから生成するクラス
 /*!
-中の文字列は参照(RefString)で、自力でnewして持った物ではない。
-元のテキストが存在している間しか使わないクラスという前提がある。
-また、作ったAttribute::Impl*は後でElementに渡すので何も残らない。
+中の文字列は参照(RefString)で、自力でnewして持った物ではない
+元のテキストが存在している間しか使わないクラスという前提がある
+また、作ったAttribute::Impl*は後でElementに渡すので何も残らない
 */
 class Tag{
 public:
@@ -26,7 +26,7 @@ public:
 		TYPE_END,
 		TYPE_BEGIN_END,
 	};
-	Tag( const char** p, const char* e, Document::Impl* document ); //これだけはcppに置く。
+	Tag( const char** p, const char* e, Document::Impl* document ); //これだけはcppに置く
 
 	Tag( const char* name ) : 
 	mName( name ),
@@ -35,7 +35,7 @@ public:
 	}
 	~Tag(){
 		//作ったタグは必ずElementの材料になっているはずで、
-		//mAttributesはgiveAttributesで渡してしまうはずだ。
+		//mAttributesはgiveAttributesで渡してしまうはずだ
 		ASSERT( mAttributes.size() == 0 );
 		mDocument = 0;
 	}

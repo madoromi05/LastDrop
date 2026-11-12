@@ -5,7 +5,7 @@
 
 using namespace GameLib::Math;
 
-// 最初の頂点で必ず置き換わるよう、空の箱は min を最大・max を最小にしておく。
+// 最初の頂点で必ず置き換わるよう、空の箱は min を最大・max を最小にしておく
 StaticMeshData::StaticMeshData() :
 	mBoundsMin( FLOAT_MAX ),
 	mBoundsMax( -FLOAT_MAX ),
@@ -59,7 +59,7 @@ bool StaticMeshData::isReady() const {
 }
 
 bool StaticMeshData::updateLoading() {
-	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）。
+	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）
 	bool allReady = true;
 	for ( int i = 0; i < mParts.size(); ++i ) {
 		if ( !mParts[ i ].updateLoading() ) {

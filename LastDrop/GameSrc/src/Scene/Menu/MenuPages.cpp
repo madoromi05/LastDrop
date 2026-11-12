@@ -36,7 +36,7 @@ void MenuPages::draw() {
 }
 
 bool MenuPages::back() {
-	// 予約がまだ済んでいなければ、予約したページから 1 つ上へ（ESC を続けて押したとき）。
+	// 予約がまだ済んでいなければ、予約したページから 1 つ上へ（ESC を続けて押したとき）
 	MenuPageId current = ( mRequested != MENU_PAGE_NONE ) ? mRequested : mPage;
 	switch ( current ) {
 	case MENU_PAGE_CONTROLS:
@@ -62,7 +62,7 @@ void MenuPages::request( MenuPageId page ) {
 }
 
 void MenuPages::open( MenuPageId page ) {
-	// 設定のページから最初のページへ戻るときに書く（値を変えるたびに書くと、ドラッグの間に何度も書くことになる）。
+	// 設定のページから最初のページへ戻るときに書く（値を変えるたびに書くと、ドラッグの間に何度も書くことになる）
 	if ( mPage != MENU_PAGE_MAIN && page == MENU_PAGE_MAIN ) {
 		mSettings->save();
 	}

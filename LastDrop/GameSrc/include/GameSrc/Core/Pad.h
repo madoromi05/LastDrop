@@ -14,11 +14,11 @@
 //
 // ゲームコードは
 //   InputRun() / InputFire()
-// のようなショートカット（このファイルの下）で呼べる。内部では Input クラスと InputBuilder を使っている。
+// のようなショートカット（このファイルの下）で呼べる。内部では Input クラスと InputBuilder を使っている
 //
 // デバイス名・ボタン名・ワーク名などの文字列は GameLib::Input::InputBuilder
 // （GameLib/src/Input/InputBuilder.cpp）が一元管理しており、
-// Pad はキーコードと列挙型（WorkId / DeviceKind 等）だけを扱う。
+// Pad はキーコードと列挙型（WorkId / DeviceKind 等）だけを扱う
 // ────────────────────────────────────────────────
 class Pad
 {
@@ -68,8 +68,8 @@ private:
     // プレイヤーごとに独立した Input インスタンスを持つ
     ::Input m_inputs[MAX_PLAYERS];
 
-    // プレイヤーごとの組み立て役（デバイス生成・キー登録・割当を自己完結）。
-    // Input への参照を握るので生成後は破棄しない。
+    // プレイヤーごとの組み立て役（デバイス生成・キー登録・割当を自己完結）
+    // Input への参照を握るので生成後は破棄しない
     std::unique_ptr<InputBuilder> m_builders[MAX_PLAYERS];
 
     // プレイヤーごとの割当設定（唯一の正。保存/読込・キーコンフィグの対象）
@@ -81,16 +81,16 @@ private:
 // ────────────────────────────────────────────────
 // ゲームコード向けショートカット（アクション名＝関数名）
 //
-// 文字列も enum も書かずに InputJump() のように入力を問い合わせる。
+// 文字列も enum も書かずに InputJump() のように入力を問い合わせる
 // ゲームロジック側は「何の操作か」だけを書けばよく、
-// デバイス・ワーク名・状態種別は一切意識しなくてよい。
+// デバイス・ワーク名・状態種別は一切意識しなくてよい
 //
 // 状態の意味は操作の性質に合わせて固定している：
 //   移動系（Up/Down/Left/Right/Jump） … 押されている間ずっと true
 //   Fire                              … 押した瞬間だけ true（トリガー）
 //
 // 内部では Pad::instance() に操作の番号（WorkId）を渡しているだけなので、
-// 割り当て変更やデバイス追加の影響はここには波及しない。
+// 割り当て変更やデバイス追加の影響はここには波及しない
 // ────────────────────────────────────────────────
 bool InputUp   (int playerId = 0);
 bool InputDown (int playerId = 0);
@@ -107,7 +107,7 @@ AxisStatus InputLookStick(int playerId = 0); // パッドのスティックの�
 bool InputMenu       (int playerId = 0);   // メニュー／中断（押した瞬間）
 bool InputAim        (int playerId = 0);   // 構える（押されている間）
 bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）
-// 確認用の切り替え（当たり判定・ゾンビの体力・観察用カメラ・無敵・ゾンビを出す・計測の CSV）はキーではなく F6 のボタン（DebugSwitches）。
+// 確認用の切り替え（当たり判定・ゾンビの体力・観察用カメラ・無敵・ゾンビを出す・計測の CSV）はキーではなく F6 のボタン（DebugSwitches）
 bool InputDebugCameraUp(int playerId = 0);     // 観察用カメラを上げる（押されている間）
 bool InputDebugCameraDown(int playerId = 0);   // 観察用カメラを下げる（押されている間）
 bool InputUiUp       (int playerId = 0);   // 画面の部品の選択を上へ（押した瞬間）

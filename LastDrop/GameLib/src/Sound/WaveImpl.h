@@ -116,7 +116,7 @@ public:
 					if ( !mIsError ){
 						waveSize = mFile.getInt( pos + 4 );
 						waveStart = pos + 8;
-						//データサイズがファイルサイズより小さい事が良くある。エラーにはしない。
+						//データサイズがファイルサイズより小さい事が良くある。エラーにはしない
 						if ( waveSize + waveStart > mFile.size() ){
 							waveSize = mFile.size() - waveStart;
 						}
@@ -127,10 +127,10 @@ public:
 				}
 				return true; //エラーでも終了
 			}else{
-				return false; //ロード終わってません。
+				return false; //ロード終わってません
 			}
 		}else{
-			return true; //そもそもファイルがないなら、完全に終わったか、最初からファイル経由でないか。
+			return true; //そもそもファイルがないなら、完全に終わったか、最初からファイル経由でないか
 		}
 	}
 	bool isError() const {

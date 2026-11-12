@@ -9,7 +9,7 @@ enum BlendMode{
 	BLEND_OPAQUE,
 	BLEND_LINEAR,
 	BLEND_ADDITIVE,
-	///色は BLEND_LINEAR と同じくアルファで混ぜ、描画先のアルファは書き換えない（アルファにデータを持つ描画先へ混ぜて描くとき。
+	///色は BLEND_LINEAR と同じくアルファで混ぜ、描画先のアルファは書き換えない（アルファにデータを持つ描画先へ混ぜて描くとき
 	///G-Buffer のデカール。RT1 の a は動きの種類）。BLEND_LINEAR は描画先のアルファを描いた物のアルファで上書きする
 	BLEND_LINEAR_KEEP_ALPHA,
 
@@ -41,8 +41,8 @@ enum LightingMode{
 	LIGHTING_PER_PIXEL,
 };
 
-///テクスチャの画素が何を表すか（Texture::create で指定する）。
-///色の画像を SRGB にすると、GPU が読むときにリニア（光の量に比例した数）へ直してくれる。
+///テクスチャの画素が何を表すか（Texture::create で指定する）
+///色の画像を SRGB にすると、GPU が読むときにリニア（光の量に比例した数）へ直してくれる
 enum TextureColorSpace{
 	TEXTURE_COLOR_SPACE_LINEAR, ///読んだ数をそのまま使う。色ではない数（法線マップ）と、そのまま画面へ出す画像（HUD・文字）
 	TEXTURE_COLOR_SPACE_SRGB,   ///色の画像（アルベド・エフェクト）。ミップもリニアで平均して作る
@@ -54,7 +54,7 @@ enum RenderTargetFormat{
 	RENDER_TARGET_RGBA16F, ///16bit浮動小数×4。1を超える明るさを持てる色（トーンマップ前の画面など）
 	RENDER_TARGET_R32F,    ///32bit浮動小数×1。深度・距離など1つの値
 	RENDER_TARGET_RG16F,   ///16bit浮動小数×2。分散シャドウマップ（深度と深度の2乗）など2つの値
-	///8bit×4 を sRGB で持つ。シェーダはリニアの数で書き、読むとリニアへ戻る（GPU が直す）。
+	///8bit×4 を sRGB で持つ。シェーダはリニアの数で書き、読むとリニアへ戻る（GPU が直す）
 	///暗い色を細かく持てるので、8bit に入れる色（G-Buffer のアルベドなど）に使う
 	RENDER_TARGET_RGBA8_SRGB,
 };

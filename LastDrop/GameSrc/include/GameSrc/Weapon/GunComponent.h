@@ -11,23 +11,23 @@
 class Inventory;
 
 // 銃の撃つ仕組み（画像の GunComponent）。どの銃か（弾倉・連射・使う弾…）は作る時に受け取る表の行（WeaponSpec）で決まる。連射の間隔は FireControl、弾倉の弾の数は Magazine、
-// 撃った反動の量は WeaponRecoil、リロードの時間割は WeaponReload に任せる（委譲）。
-// 引き金を引くか・リロードを始めるかは持つ側（PlayerComponent が HoldComponent 越しに）が決める。ここは「撃てたか」だけを答える。
-// 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）。
-// 予備の弾は持ち物（Inventory の、銃に合った弾 WeaponSpec::ammo）にあり、リロードを込め終えた瞬間に、そこから弾倉の足りない分だけ移す（弾倉に残っていた弾は捨てない）。
-// 弾倉が空で撃つ番が来たら、弾は出ずに空撃ちになる（dryFiredThisTick）。引き金を離すまで次の空撃ちはしない。
+// 撃った反動の量は WeaponRecoil、リロードの時間割は WeaponReload に任せる（委譲）
+// 引き金を引くか・リロードを始めるかは持つ側（PlayerComponent が HoldComponent 越しに）が決める。ここは「撃てたか」だけを答える
+// 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）
+// 予備の弾は持ち物（Inventory の、銃に合った弾 WeaponSpec::ammo）にあり、リロードを込め終えた瞬間に、そこから弾倉の足りない分だけ移す（弾倉に残っていた弾は捨てない）
+// 弾倉が空で撃つ番が来たら、弾は出ずに空撃ちになる（dryFiredThisTick）。引き金を離すまで次の空撃ちはしない
 class GunComponent : public Component{
 public:
-	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）。
+	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）
 	explicit GunComponent( const WeaponSpec& spec );
 
 	const WeaponSpec& spec() const;
 
-	// 撃つ番が来たら、弾倉に弾があれば 1 発撃ち、空なら空撃ちにする（1 ティックに 1 回）。
-	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）。
-	// 撃てない間も呼ぶ（次の1発までの間隔を、撃てない間に止めないため）。
+	// 撃つ番が来たら、弾倉に弾があれば 1 発撃ち、空なら空撃ちにする（1 ティックに 1 回）
+	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）
+	// 撃てない間も呼ぶ（次の1発までの間隔を、撃てない間に止めないため）
 	void pullTrigger( bool pulling, bool triggerHeld );
-	// 反動を 1 ティック進める（pullTrigger の後に呼ぶ。撃ったティックに跳ねる）。
+	// 反動を 1 ティック進める（pullTrigger の後に呼ぶ。撃ったティックに跳ねる）
 	void updateRecoil();
 	float recoilKick() const;  // 今の反動の量（FirstPersonBody::setRecoil へ渡す）
 
@@ -35,7 +35,7 @@ public:
 	bool canStartReload( const Inventory& inventory ) const; // リロード中でない・弾倉が満タンでない・予備がある
 	void startReload();
 	void cancelReload();  // 替えている途中でやめる（弾は込めない）
-	// 時間割を 1 ティック進め、込め終えたら予備（inventory）から弾倉の足りない分だけ移す。リロード中でなくても毎ティック呼ぶ（揺れを戻し、合図を消すため）。
+	// 時間割を 1 ティック進め、込め終えたら予備（inventory）から弾倉の足りない分だけ移す。リロード中でなくても毎ティック呼ぶ（揺れを戻し、合図を消すため）
 	void updateReload( Inventory* inventory );
 	const WeaponReload& reload() const;
 
@@ -44,7 +44,7 @@ public:
 	bool isReloading() const;
 	WeaponReload::Cue reloadCueThisTick() const; // 直前の updateReload で来たリロードの合図（弾倉を抜く・挿す・槓桿）
 	int magazineRounds() const;     // 弾倉に入っている弾の数
-	// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき。
+	// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき
 	void setMagazineRounds( int rounds );
 
 private:

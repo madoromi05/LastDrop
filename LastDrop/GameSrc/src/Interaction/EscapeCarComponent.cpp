@@ -6,7 +6,7 @@
 
 EscapeCarComponent::EscapeCarComponent( int requiredFuel ) :
 	mFuelRequired( requiredFuel ),
-	// 1 行にガソリン 1 個（横 2 マス）。行の数 = 要る数なので、ちょうど要る数だけ入る。
+	// 1 行にガソリン 1 個（横 2 マス）。行の数 = 要る数なので、ちょうど要る数だけ入る
 	mTank( itemSpec( ITEM_FUEL ).cellSize, requiredFuel ),
 	mFueled( false ) {
 	ASSERT( requiredFuel > 0 && "EscapeCarComponent : requiredFuel must be positive." );

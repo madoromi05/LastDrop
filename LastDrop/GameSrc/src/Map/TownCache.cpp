@@ -14,7 +14,7 @@
 TownCache::TownCache() {
 }
 
-// NavMesh・TownVisibility の定義が見える所で破棄する。
+// NavMesh・TownVisibility の定義が見える所で破棄する
 TownCache::~TownCache() {
 }
 

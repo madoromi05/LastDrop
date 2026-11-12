@@ -27,7 +27,7 @@ public:
 
 	void convertToString( OStringStream* out ) const;
 
-	//以下使用者は意識しなくて良い。
+	//以下使用者は意識しなくて良い
 	Element();
 	Element( const Element& );
 	~Element();

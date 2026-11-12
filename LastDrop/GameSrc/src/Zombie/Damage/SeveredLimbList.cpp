@@ -5,7 +5,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 同時に出しておける数。ゾンビ 1 体で腕 2・脚 2・頭 1 の 5 つまでなので、4〜5 体ぶん。
+	// 同時に出しておける数。ゾンビ 1 体で腕 2・脚 2・頭 1 の 5 つまでなので、4〜5 体ぶん
 	const int kCapacity = 24;
 	const unsigned kRandomSeed = 4517u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 }

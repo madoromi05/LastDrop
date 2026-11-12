@@ -81,7 +81,7 @@ void ItemGrid::removeOne( ItemId id ) {
 		if ( cell.owner != i || cell.stack.item != id ) {
 			continue;
 		}
-		// <= にして、同じ数なら後ろ（下）のマスを選ぶ。
+		// <= にして、同じ数なら後ろ（下）のマスを選ぶ
 		if ( smallest == kNotFound || cell.stack.amount <= mCells[ smallest ].stack.amount ) {
 			smallest = i;
 		}
@@ -125,7 +125,7 @@ int ItemGrid::countPlaceableInto( int cell, const ItemStack& stack ) const {
 	if ( isFree( mCells, owner, spec.cellSize ) ) {
 		return std::min( stack.amount, spec.stackSize );
 	}
-	// 1 つの物だけが使っていて、それが同じ物で重ねられるなら、その空きの分。
+	// 1 つの物だけが使っていて、それが同じ物で重ねられるなら、その空きの分
 	std::vector< int > others = ownersIn( mCells, owner, spec.cellSize, kEmpty );
 	if ( others.size() != 1 ) {
 		return 0;
@@ -280,10 +280,10 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 		return false; // 同じ所（動かさない。画面では取りやめとして扱う）
 	}
 
-	// 置く先のマスを使っている、動かす物とは別の物（2 マスの物を置く先に 1 マスの物が 2 つあることもある）。
+	// 置く先のマスを使っている、動かす物とは別の物（2 マスの物を置く先に 1 マスの物が 2 つあることもある）
 	std::vector< int > others = ownersIn( *cells, target, spec.cellSize, source );
 
-	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）。
+	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）
 	if ( others.size() == 1 ) {
 		Cell& into = ( *cells )[ others[ 0 ] ];
 		if ( into.stack.item == moving.item && spec.stackSize > 1 && into.stack.amount < spec.stackSize ) {
@@ -297,7 +297,7 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 		}
 	}
 
-	// ② 入れ替え。動かす物と、置く先の物をいったん全部どけてから置き直す。
+	// ② 入れ替え。動かす物と、置く先の物をいったん全部どけてから置き直す
 	std::vector< ItemStack > otherStacks;
 	for ( int other : others ) {
 		otherStacks.push_back( ( *cells )[ other ].stack );
@@ -308,7 +308,7 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 		return false;
 	}
 	place( cells, target, moving );
-	// どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ。
+	// どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ
 	for ( size_t i = 0; i < others.size(); ++i ) {
 		int size = itemSpec( otherStacks[ i ].item ).cellSize;
 		int row = source / mColumns + ( others[ i ] / mColumns - target / mColumns );
@@ -347,10 +347,10 @@ bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& t
 	if ( !target.isInside( placed / target.mColumns, placed % target.mColumns, spec.cellSize ) ) {
 		return false; // 列が足りない（1 列のマス目に 2 マスの物）
 	}
-	// 置く先を使っている物（別のマス目なので、動かす物自身は入っていない）。
+	// 置く先を使っている物（別のマス目なので、動かす物自身は入っていない）
 	std::vector< int > others = ownersIn( *targetCells, placed, spec.cellSize, kEmpty );
 
-	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）。
+	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）
 	if ( others.size() == 1 ) {
 		Cell& into = ( *targetCells )[ others[ 0 ] ];
 		if ( into.stack.item == moving.item && spec.stackSize > 1 && into.stack.amount < spec.stackSize ) {
@@ -364,7 +364,7 @@ bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& t
 		}
 	}
 
-	// ② 入れ替え。置く先の物を全部どけ、動かす物を置いてから、どけた物を元のマス目の空いた所へ。
+	// ② 入れ替え。置く先の物を全部どけ、動かす物を置いてから、どけた物を元のマス目の空いた所へ
 	std::vector< ItemStack > otherStacks;
 	for ( int other : others ) {
 		otherStacks.push_back( ( *targetCells )[ other ].stack );
@@ -375,7 +375,7 @@ bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& t
 		return false;
 	}
 	place( targetCells, placed, moving );
-	// どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ。
+	// どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ
 	for ( size_t i = 0; i < others.size(); ++i ) {
 		int size = itemSpec( otherStacks[ i ].item ).cellSize;
 		int row = source / mColumns + ( others[ i ] / target.mColumns - placed / target.mColumns );

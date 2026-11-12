@@ -76,7 +76,7 @@ public:
 		//親コンテナの解放チェック
 		Container::Impl* c = mTemplate->container(); 
 		c->release();
-		if ( c->referenceCount() == 0 ){ //自分が最後の参照を持っている。破棄。
+		if ( c->referenceCount() == 0 ){ //自分が最後の参照を持っている。破棄
 			SAFE_DELETE( c );
 		}
 		mTemplate = 0;
@@ -85,7 +85,7 @@ public:
 		updateWorldMatrix();
 		mNodes[ 0 ].draw( mColor, mTransparency );
 	}
-	//描画せずに各ノードのワールド行列だけ更新する（スキニングでボーン行列を読む用）。
+	//描画せずに各ノードのワールド行列だけ更新する（スキニングでボーン行列を読む用）
 	void updateWorldMatrix(){
 		//ルートのワールド行列を作る
 		Matrix34 w;
@@ -96,7 +96,7 @@ public:
 		w.scale( mScale );
 		mNodes[ 0 ].updateWorldMatrix( w );
 	}
-	//名前でノードを探し、その現在ワールド行列を返す。無ければ0。
+	//名前でノードを探し、その現在ワールド行列を返す。無ければ0
 	const Matrix34* nodeMatrix( const char* name ) const {
 		for ( int i = 0; i < mNodeNumber; ++i ){
 			if ( RefString( name ) == mNodes[ i ].name() ){
@@ -105,8 +105,8 @@ public:
 		}
 		return 0;
 	}
-	//名前でノードを探し、その番号を返す。無ければ-1。
-	//番号はノードの並び順で、同じ TreeTemplate から作った Tree すべてで共通（一度引けば、どの Tree にも使える）。
+	//名前でノードを探し、その番号を返す。無ければ-1
+	//番号はノードの並び順で、同じ TreeTemplate から作った Tree すべてで共通（一度引けば、どの Tree にも使える）
 	int nodeIndex( const char* name ) const {
 		for ( int i = 0; i < mNodeNumber; ++i ){
 			if ( RefString( name ) == mNodes[ i ].name() ){
@@ -115,7 +115,7 @@ public:
 		}
 		return -1;
 	}
-	//番号（nodeIndex の戻り値）で指定したノードの現在ワールド行列を返す。名前で探さないので毎フレーム呼んでよい。
+	//番号（nodeIndex の戻り値）で指定したノードの現在ワールド行列を返す。名前で探さないので毎フレーム呼んでよい
 	const Matrix34* nodeMatrix( int index ) const {
 		ASSERT( index >= 0 && index < mNodeNumber && "Tree::nodeMatrix : index is out of range." );
 		return &mNodes[ index ].worldMatrix();

@@ -14,20 +14,20 @@
 #include <memory>
 
 namespace{
-	// 字の間と影の範囲。位置は UiScreen、色は MenuPalette が持つ。
+	// 字の間と影の範囲。位置は UiScreen、色は MenuPalette が持つ
 	const float kTitleLetterSpacing = 6.f;   // 題名の字の間（文字の高さの 0.12 倍くらい。広げすぎると背景の街灯にかかる）
 	const float kTaglineLetterSpacing = 2.4f; // ひと言の字の間（文字の高さの 0.2 倍くらい）
 	const float kHeadingLetterSpacing = 6.4f; // 設定・操作の一覧の見出しの字の間（文字の高さの 0.2 倍くらい）
-	// 背景の絵の左を暗くする範囲（画面の幅に対する割合）。題名とメニューの行が収まる所までは濃いまま、そこから薄れる。
+	// 背景の絵の左を暗くする範囲（画面の幅に対する割合）。題名とメニューの行が収まる所までは濃いまま、そこから薄れる
 	const float kShadeSolidUntil = 0.22f;
 	const float kShadeFadeUntil = 0.62f;
-	// 画面の下の操作の案内。操作は UiCanvas の決まり（Enter / Space で決定、ESC で 1 ページ戻る。MenuScene）。
+	// 画面の下の操作の案内。操作は UiCanvas の決まり（Enter / Space で決定、ESC で 1 ページ戻る。MenuScene）
 	const std::vector< UiKeyHintRow::Hint > kKeyHints = {
 		{ "Enter", "決定" },
 		{ "Esc", "戻る" },
 	};
 
-	// ボタンの決定の処理。ページを開くボタンなら、そのページを開く処理にする。
+	// ボタンの決定の処理。ページを開くボタンなら、そのページを開く処理にする
 	std::function< void() > activateOf( const MenuDefinition::Button& button, const std::function< void( MenuPageId ) >& openPage ) {
 		if ( button.opens == MENU_PAGE_NONE ) {
 			return button.onActivate;
@@ -38,7 +38,7 @@ namespace{
 	}
 }
 
-// 背景の絵（左を暗く）→ 題名・赤い線・ひと言 → 板なしの行 → 下の案内。足した順に描くので、背景を先に足す。
+// 背景の絵（左を暗く）→ 題名・赤い線・ひと言 → 板なしの行 → 下の案内。足した順に描くので、背景を先に足す
 void MenuLayout::build( UiCanvas* canvas, const MenuDefinition& definition, std::function< void( MenuPageId ) > openPage ) {
 	ASSERT( canvas && "MenuLayout : canvas is null." );
 	ASSERT( definition.heading && "MenuLayout : heading is null." );

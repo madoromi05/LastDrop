@@ -15,9 +15,9 @@ namespace Profiling{
 namespace{
 	const double kMillisecondsPerSecond = 1000.0;
 	const int kCellBufferSize = 64;
-	// events 列は印の名前を ; でつなぐ（, は列の区切りなので使わない）。Excel の絞り込みで「Fire を含む」行だけを見られる。
-	// gpuMs は GPU の時間が読めたフレームだけ（数フレーム遅れて届き、間に合わなければ捨てるので空のこともある）。
-	// 1 行目は記録した日時（Excel が日時として読む形）。列名は 2 行目から。
+	// events 列は印の名前を ; でつなぐ（, は列の区切りなので使わない）。Excel の絞り込みで「Fire を含む」行だけを見られる
+	// gpuMs は GPU の時間が読めたフレームだけ（数フレーム遅れて届き、間に合わなければ捨てるので空のこともある）
+	// 1 行目は記録した日時（Excel が日時として読む形）。列名は 2 行目から
 	const char* const kStartedAtKey = "startedAt,";
 	const char* const kStoppedAtKey = ",stoppedAt,";
 	const char* const kHeader ="frame,frameMs,cpuMs,presentMs,sleepMs,otherMs,gpuMs,ticks,state,wroteFile,events";
@@ -25,7 +25,7 @@ namespace{
 	const float kNoGpu = -1.f; // GPU の時間がまだ・読めなかった
 	const char* const kGpuColumnPrefix = "gpu."; // GPU の区間の列の名前の頭（例：gpu.Buildings）
 	const char* const kCountColumnPrefix = "count."; // 回数（addCount）の列の名前の頭（例：count.Ground.tiles）
-	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと。
+	// state 列の値。loading と suspended の行は、プレイ中の平均や p99 に混ぜないこと
 	const char* const kStatePlaying = "playing";
 	const char* const kStateLoading = "loading";
 	const char* const kStateSuspended = "suspended";
@@ -97,7 +97,7 @@ void FrameRecorder::add( const FrameRecord& frame ){
 		}
 		row.events += frame.events[ i ];
 	}
-	// 同じ名前の区間（ティックごとの更新など）は 1 つの列に足す。
+	// 同じ名前の区間（ティックごとの更新など）は 1 つの列に足す
 	for ( int i = 0; i < frame.scopeCount; ++i ){
 		const ScopeEvent& scope = frame.scopes[ i ];
 		int column = columnOf( scope.name );
@@ -114,7 +114,7 @@ void FrameRecorder::add( const FrameRecord& frame ){
 			row.scopes.push_back( { column, ms } );
 		}
 	}
-	// 回数は区間の列と同じ並びに、名前の前に count. を付けて入れる（中身はミリ秒でなく、その値のまま）。
+	// 回数は区間の列と同じ並びに、名前の前に count. を付けて入れる（中身はミリ秒でなく、その値のまま）
 	for ( int i = 0; i < frame.counterCount; ++i ){
 		int column = columnOf( ( std::string( kCountColumnPrefix ) + frame.counterNames[ i ] ).c_str() );
 		row.scopes.push_back( { column, static_cast< float >( frame.counterValues[ i ] ) } );
@@ -123,11 +123,11 @@ void FrameRecorder::add( const FrameRecord& frame ){
 }
 
 void FrameRecorder::setGpu( const GpuTimer::Result& result ){
-	// 届くのは数フレーム前の分なので、後ろから探す。
+	// 届くのは数フレーム前の分なので、後ろから探す
 	for ( auto it = mRows.rbegin(); it != mRows.rend(); ++it ){
 		if ( it->frame == result.frame ){
 			it->gpuMs = static_cast< float >( result.totalSeconds * kMillisecondsPerSecond );
-			// 区間は区間の列（CPU の区間と同じ並び）に、名前の前に gpu. を付けて足す（CPU の区間と同じ名前でも混ざらない）。
+			// 区間は区間の列（CPU の区間と同じ並び）に、名前の前に gpu. を付けて足す（CPU の区間と同じ名前でも混ざらない）
 			for ( int i = 0; i < result.segmentCount; ++i ){
 				int column = columnOf( ( std::string( kGpuColumnPrefix ) + result.names[ i ] ).c_str() );
 				float ms = static_cast< float >( result.segmentSeconds[ i ] * kMillisecondsPerSecond );
@@ -174,7 +174,7 @@ std::string FrameRecorder::csvText( const std::string& stoppedDateTime ) const {
 		text += cell;
 		text += ',';
 		text += row.events;
-		// その行に無い区間は 0（そのフレームでは走らなかった）。
+		// その行に無い区間は 0（そのフレームでは走らなかった）
 		std::fill( scopeCells.begin(), scopeCells.end(), 0.f );
 		for ( const ScopeTotal& total : row.scopes ){
 			scopeCells[ static_cast< size_t >( total.column ) ] = total.milliseconds;

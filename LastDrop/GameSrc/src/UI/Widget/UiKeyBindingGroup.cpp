@@ -45,7 +45,7 @@ void UiKeyBindingGroup::drawRow( UiRenderer& renderer, const Row& row, const UiR
 	const float middleY = rect.center().y;
 	renderer.addText( row.action.c_str(), Vector2( rect.left, middleY ), kTextSize, UI_ALIGN_MIDDLE_LEFT, MenuPalette::TEXT, kActionLetterSpacing );
 
-	// キーの枠は行の右端に寄せる。先に全部の幅を測ってから、左の枠から順に描く。
+	// キーの枠は行の右端に寄せる。先に全部の幅を測ってから、左の枠から順に描く
 	float keysWidth = 0.f;
 	for (const std::string& key : row.keys) {
 		if (keysWidth > 0.f) {

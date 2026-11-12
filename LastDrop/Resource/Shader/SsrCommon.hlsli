@@ -1,7 +1,7 @@
-// 映り込み（SSR。SsrDecalMaterial_Plan.txt 7 章）の作る・ぼかす・混ぜるパスの共通の式。
+// 映り込み（SSR。SsrDecalMaterial_Plan.txt 7 章）の作る・ぼかす・混ぜるパスの共通の式
 // SSR の結果は画面の半分の大きさ（RGBA16F）で、rgb は「映る色 × 確からしさ」、a は確からしさ（ぼかしても色と確からしさがずれないよう、
-// 確からしさを掛けた色で持つ）。半分の大きさの画素 i は、元の画面の画素 2i の値（SSAO と同じ。Ssao.hlsl）。
-// 行列はパスごとに別の定数に入っているので、ここの関数は行（float4 × 4）を引数で受ける。
+// 確からしさを掛けた色で持つ）。半分の大きさの画素 i は、元の画面の画素 2i の値（SSAO と同じ。Ssao.hlsl）
+// 行列はパスごとに別の定数に入っているので、ここの関数は行（float4 × 4）を引数で受ける
 #ifndef INCLUDED_SSR_COMMON_HLSLI
 #define INCLUDED_SSR_COMMON_HLSLI
 
@@ -11,17 +11,17 @@
 static const float kSsrSkyDepth = 10000.0;  // 空の画素の奥行き（どの物とも近くないと分かる大きさ。Ssao.hlsl の kSkyDistance と同じ）
 static const uint kSsrHalfStep = 2;         // 半分の大きさの 1 画素 = 元の画面の 2 画素
 // ぼけた映り込み：この粗さまでは今までのくっきりした映り込み（段階 7 の上限）。ここから kSsrRoughRange の幅で、
-// 確からしさを下げ（Ssr.hlsl）、ぼかしの読む間隔を広げる（SsrBlur.hlsl）。0.4 + 0.3 = 0.7 が SsrParams::maxRoughness の初期値。
+// 確からしさを下げ（Ssr.hlsl）、ぼかしの読む間隔を広げる（SsrBlur.hlsl）。0.4 + 0.3 = 0.7 が SsrParams::maxRoughness の初期値
 static const float kSsrSharpRoughness = 0.4;
 static const float kSsrRoughRange = 0.3;
 
-// 粗さが kSsrSharpRoughness から kSsrRoughRange 進んだ割合（0〜1）。
+// 粗さが kSsrSharpRoughness から kSsrRoughRange 進んだ割合（0〜1）
 float ssrRoughBlend(float roughness)
 {
     return saturate((roughness - kSsrSharpRoughness) / kSsrRoughRange);
 }
 
-// ワールドの位置を、射影×ビュー（行）で画面の uv と奥行き（w）へ。w が 0 以下（目の後ろ）なら uv は使えない。
+// ワールドの位置を、射影×ビュー（行）で画面の uv と奥行き（w）へ。w が 0 以下（目の後ろ）なら uv は使えない
 float3 ssrProjectToScreen(float4 projectionView[4], float3 world)
 {
     float4 p = float4(world, 1.0);
@@ -30,8 +30,8 @@ float3 ssrProjectToScreen(float4 projectionView[4], float3 world)
     return float3(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5, clip.w);
 }
 
-// 元の画面の画素 pixel に見えている物の、目からの奥行き（m）。空なら kSsrSkyDepth。
-// inverseProjectionView：射影×ビューの逆（行）。viewDepthRow：射影×ビューの 4 行目（位置との内積が奥行き）。
+// 元の画面の画素 pixel に見えている物の、目からの奥行き（m）。空なら kSsrSkyDepth
+// inverseProjectionView：射影×ビューの逆（行）。viewDepthRow：射影×ビューの 4 行目（位置との内積が奥行き）
 float ssrViewDepthAt(Texture2D<float> depthTexture, float4 inverseProjectionView[4], float4 viewDepthRow, int2 pixel, uint2 depthSize)
 {
     int2 clamped = clamp(pixel, int2(0, 0), int2(depthSize) - 1);
@@ -45,8 +45,8 @@ float ssrViewDepthAt(Texture2D<float> depthTexture, float4 inverseProjectionView
     return viewDepth;
 }
 
-// 半分の大きさの結果を、元の画面の画素 pixel（奥行き viewDepth）へ拡大して読む（SsaoUpsample.hlsli の upsampleOcclusion と同じ考え）。
-// 近くの 4 画素を、双線形の重み × 奥行きの近さで混ぜる。4 画素とも奥行きが大きく違うときは、映り込み無し（0）にする。
+// 半分の大きさの結果を、元の画面の画素 pixel（奥行き viewDepth）へ拡大して読む（SsaoUpsample.hlsli の upsampleOcclusion と同じ考え）
+// 近くの 4 画素を、双線形の重み × 奥行きの近さで混ぜる。4 画素とも奥行きが大きく違うときは、映り込み無し（0）にする
 float4 upsampleReflection(Texture2D reflection, Texture2D<float> depthTexture, float4 inverseProjectionView[4], float4 viewDepthRow,
                           uint2 pixel, float viewDepth)
 {

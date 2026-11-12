@@ -39,7 +39,7 @@ public:
 		mLock = Mutex::create();
 
 		//コア数取得
-#ifdef NDEBUG //Debug版では自動では一個しか作らない。開発マシンで動いて他で動かない、を防ぐため。
+#ifdef NDEBUG //Debug版では自動では一個しか作らない。開発マシンで動いて他で動かない、を防ぐため
 		HANDLE process = GetCurrentProcess();
 		DWORD_PTR processMask = 0;
 		DWORD_PTR systemMask = 0;
@@ -70,7 +70,7 @@ public:
 		//スレッド終了待ち
 		for ( int i = 0; i < mThreadNumber; ++i ){
 			while ( true ){
-				//終わらない間セマフォを増やしながらぐるぐる待つ。decreaseで待ってるのでincreaseしないと起きない。
+				//終わらない間セマフォを増やしながらぐるぐる待つ。decreaseで待ってるのでincreaseしないと起きない
 				mQueueSemaphore.increase(); //キューに何か入っているように見せかけて起こす
 				if ( WAIT_OBJECT_0 == WaitForSingleObject( mThreads[ i ], 1 ) ){ 
 					CloseHandle( mThreads[ i ] );

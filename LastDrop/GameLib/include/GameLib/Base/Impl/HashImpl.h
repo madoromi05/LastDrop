@@ -31,7 +31,7 @@ template<> inline bool Hash< const char* >::isEqual( const char* const& a, const
 	const char* pb = b;
 
 	while ( *pa == *pb ){ //片方が先に終わってしまう時も検出できる
-		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ。
+		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ
 			return true;
 		}
 		++pa;
@@ -44,12 +44,12 @@ template<> inline bool Hash< const string* >::isEqual( const string* const& a, c
 	if ( a->size() != b->size() ){ //なくてもいいが、これで早く終われる可能性は高い
 		return false;
 	}
-	//サイズは一緒。
+	//サイズは一緒
 	const char* pa = a->c_str();
 	const char* pb = b->c_str();
 
 	while ( *pa == *pb ){ //片方が先に終わってしまう時も検出できる
-		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ。
+		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ
 			return true;
 		}
 		++pa;
@@ -62,12 +62,12 @@ template<> inline bool Hash< const RefString* >::isEqual( const RefString* const
 	if ( a->size() != b->size() ){ //なくてもいいが、これで早く終われる可能性は高い
 		return false;
 	}
-	//サイズは一緒。
+	//サイズは一緒
 	const char* pa = a->get();
 	const char* pb = b->get();
 
 	while ( *pa == *pb ){ //片方が先に終わってしまう時も検出できる
-		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ。
+		if ( *pa == '\0' ){ //ここまで等しくて同時に0になったってことは等しいってことだ
 			return true;
 		}
 		++pa;

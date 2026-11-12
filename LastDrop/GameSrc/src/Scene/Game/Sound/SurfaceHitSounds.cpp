@@ -4,11 +4,11 @@
 #include "GameLib/GameLib.h"
 
 namespace{
-	// 音量。ゾンビに当たった音と同じく素材そのままの大きさで鳴らし、遠さによる小ささは目録の聞こえる距離に任せる。
+	// 音量。ゾンビに当たった音と同じく素材そのままの大きさで鳴らし、遠さによる小ささは目録の聞こえる距離に任せる
 	const float kImpactVolume = 1.f;
 
-	// 材質ごとの着弾音。並びは GroundMaterial と同じ。
-	// 今の町にある物（建物・歩道＝コンクリート、車道＝砂利、車・缶＝金属）の音だけを持ち、町に無い材質は近い音を借りる。
+	// 材質ごとの着弾音。並びは GroundMaterial と同じ
+	// 今の町にある物（建物・歩道＝コンクリート、車道＝砂利、車・缶＝金属）の音だけを持ち、町に無い材質は近い音を借りる
 	const SoundId kImpactSounds[] = {
 		SOUND_IMPACT_CONCRETE, // コンクリート
 		SOUND_IMPACT_METAL,    // 金属

@@ -19,12 +19,12 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── 道探し（Detour の dtNavMeshQuery）──
-	// 一度の道探しで開ける多角形の数の上限（町の端から端までで数百）。
+	// 一度の道探しで開ける多角形の数の上限（町の端から端までで数百）
 	const int kMaxSearchNodes = 2048;
-	// 通り道の多角形の数・曲がる角の数の上限。町の端から端まで足りる数。
+	// 通り道の多角形の数・曲がる角の数の上限。町の端から端まで足りる数
 	const int kMaxPathPolys = 256;
 	const int kMaxCorners = 64;
-	// 点の近くの床を探す範囲（半分の大きさ。m）。上下は歩道の段差（0.15m）・自キャラの目の高さで呼ばれても床に届く広さ。
+	// 点の近くの床を探す範囲（半分の大きさ。m）。上下は歩道の段差（0.15m）・自キャラの目の高さで呼ばれても床に届く広さ
 	const float kSearchExtents[ 3 ] = { 2.f, 2.f, 2.f };
 	const int kCoordinates = 3;
 	const double kMillisecondsPerSecond = 1000.0;
@@ -64,7 +64,7 @@ bool NavMesh::build( const CollisionWorld& world ) {
 	mOutline.clear();
 	auto startTime = std::chrono::steady_clock::now();
 
-	// 床の形を作るのは NavMeshBuilder（Recast）。ここは受け取って、道を探す道具（Detour の query）を付ける。
+	// 床の形を作るのは NavMeshBuilder（Recast）。ここは受け取って、道を探す道具（Detour の query）を付ける
 	int polygonCount = 0;
 	std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh( NavMeshBuilder::build( world, &polygonCount ) );
 	if ( !navMesh ) {
@@ -113,7 +113,7 @@ bool NavMesh::isWalkable( const Vector3& from, const Vector3& to ) const {
 
 bool NavMesh::findPath( const Vector3& start, const Vector3& goal, std::vector< Vector3 >* out ) const {
 	ASSERT( out && "NavMesh : out is null." );
-	// 1 回の重さ（Path.ms ÷ Path.find）で、探す処理を途中で区切る作りが要るかを決める。
+	// 1 回の重さ（Path.ms ÷ Path.find）で、探す処理を途中で区切る作りが要るかを決める
 	PROFILE_TOTAL( "Path.ms" );
 	PROFILE_COUNT( "Path.find", 1 );
 	out->clear();
@@ -140,7 +140,7 @@ bool NavMesh::findPath( const Vector3& start, const Vector3& goal, std::vector< 
 	if ( polyNumber == 0 ) {
 		return false;
 	}
-	// 着けない（つながっていない床の上が行き先）ときは、たどり着ける最後の多角形の、行き先に一番近い所まで。
+	// 着けない（つながっていない床の上が行き先）ときは、たどり着ける最後の多角形の、行き先に一番近い所まで
 	float endPoint[ kCoordinates ];
 	dtVcopy( endPoint, goalPoint );
 	if ( polys[ polyNumber - 1 ] != goalRef ) {
@@ -153,7 +153,7 @@ bool NavMesh::findPath( const Vector3& start, const Vector3& goal, std::vector< 
 		return false;
 	}
 	// 最初の角は出発点そのもの・最後の角は行き先の床の上の点なので、どちらも入れない。最後は本当の行き先にする
-	// （ZombiePath が、動いていく行き先に付いていく点として書き換える）。
+	// （ZombiePath が、動いていく行き先に付いていく点として書き換える）
 	for ( int i = 1; i < cornerNumber - 1; ++i ) {
 		out->push_back( toVector( &corners[ i * kCoordinates ] ) );
 	}
@@ -178,7 +178,7 @@ void NavMesh::buildOutline() {
 		for ( int p = 0; p < tile->header->polyCount; ++p ) {
 			const dtPoly& poly = tile->polys[ p ];
 			for ( int e = 0; e < poly.vertCount; ++e ) {
-				// 隣の多角形と共有する辺は、番号の小さい方からだけ描く（同じ線を 2 本描かない）。neis は 1 始まりで、0 は隣が無い（床の縁）。
+				// 隣の多角形と共有する辺は、番号の小さい方からだけ描く（同じ線を 2 本描かない）。neis は 1 始まりで、0 は隣が無い（床の縁）
 				int neighbor = poly.neis[ e ];
 				bool sharedEdge = ( neighbor != 0 ) && !( neighbor & DT_EXT_LINK );
 				if ( sharedEdge && neighbor - 1 < p ) {

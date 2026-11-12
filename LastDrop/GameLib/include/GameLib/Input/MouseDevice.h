@@ -55,7 +55,7 @@ class MouseDevice : public InputDeviceBase<int>
 {
     // ボタンと軸で KeyCodeType が違うため、
     // ボタン用には MouseButtonFormat（Mouse::Button）を直接登録するのではなく、
-    // ボタンコードを int に統一したラッパーを使う。
+    // ボタンコードを int に統一したラッパーを使う
 };
 
 // ────────────────────────────────────────────────

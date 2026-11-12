@@ -10,15 +10,15 @@ namespace{
 	const bool kLosesFooting = true;
 	const bool kKeepsFooting = false;
 
-	// 部位1つの定義。名前は骨の名前の頭の共通部分を除いたもの（末尾の '*' でまとめて引く。BoneNamePattern）。
+	// 部位1つの定義。名前は骨の名前の頭の共通部分を除いたもの（末尾の '*' でまとめて引く。BoneNamePattern）
 	struct CutDefinition{
 		const char* jointBone;                 // nullptr なら切れない部位
 		const char* bones[ kMaxBoneNames ];    // 余りは nullptr
 		BodyPart parts[ kMaxParts ];           // 余りは BodyPart::Count
 		bool losesFooting;
 	};
-	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）。
-	// 足先（ToeBase）は Foot の子なので、脚と一緒に無くす（"LeftFoot*" では引けない名前のため別に書く）。
+	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）
+	// 足先（ToeBase）は Foot の子なので、脚と一緒に無くす（"LeftFoot*" では引けない名前のため別に書く）
 	const BodyPart kNone = BodyPart::Count;
 	const CutDefinition kCutDefinitions[] = {
 		// Head：首の上で切る（頭が 0 で倒れるときに飛ぶ）

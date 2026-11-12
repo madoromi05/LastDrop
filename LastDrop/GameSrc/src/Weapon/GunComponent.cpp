@@ -19,7 +19,7 @@ void GunComponent::pullTrigger( bool pulling, bool triggerHeld ) {
 	if ( !triggerHeld ) {
 		mDryFireLatched = false;
 	}
-	// 空撃ちの後は、離すまで引き金を引いていないことにする（押し続けてもカチッは 1 回。実銃も撃鉄が落ちるのは 1 回）。
+	// 空撃ちの後は、離すまで引き金を引いていないことにする（押し続けてもカチッは 1 回。実銃も撃鉄が落ちるのは 1 回）
 	if ( !mFire.update( pulling && !mDryFireLatched ) ) {
 		return;
 	}
@@ -60,7 +60,7 @@ void GunComponent::updateReload( Inventory* inventory ) {
 	if ( !mReload.update() ) {
 		return;
 	}
-	// 込め終えた。予備から弾倉の足りない分だけ移す（予備が足りなければ、ある分だけ）。
+	// 込め終えた。予備から弾倉の足りない分だけ移す（予備が足りなければ、ある分だけ）
 	int count = std::min( mMagazine.missingRounds(), inventory->count( mSpec->ammo ) );
 	for ( int i = 0; i < count; ++i ) {
 		inventory->remove( mSpec->ammo );

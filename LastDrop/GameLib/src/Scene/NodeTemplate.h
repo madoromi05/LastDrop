@@ -12,7 +12,7 @@ namespace Math{
 namespace Scene{
 using namespace Math;
 
-//ノードの原型。ライブラリの外からは見えないのでいつものImplはない。
+//ノードの原型。ライブラリの外からは見えないのでいつものImplはない
 class NodeTemplate{
 public:
 	NodeTemplate() :

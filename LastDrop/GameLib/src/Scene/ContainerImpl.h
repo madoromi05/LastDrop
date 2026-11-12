@@ -30,7 +30,7 @@ public:
 			RefString tmp( extraDataPath );
 			mExtraDataPath = allocateString( tmp );
 		}else{
-			mExtraDataPath = allocateString( RefString( ".\\" ) ); //ここ。
+			mExtraDataPath = allocateString( RefString( ".\\" ) ); //ここ
 		}
 		createFromElement( e );
 	}
@@ -60,12 +60,12 @@ public:
 		mDocument = Document::create( filename );
 	}
 	~Impl(){
-		//VertexBuffer, IndexBuffer, Textureは参照カウントで勝手に管理されている。ほうっておいて良い。
+		//VertexBuffer, IndexBuffer, Textureは参照カウントで勝手に管理されている。ほうっておいて良い
 		//まずいろいろ使っているTree
 		for ( int i = 0; i < mTrees.size(); ++i ){
 			SAFE_DELETE( mTrees[ i ] );
 		}
-		//次がBatchを消す。
+		//次がBatchを消す
 		for ( int i = 0; i < mBatches.size(); ++i ){
 			SAFE_DELETE( mBatches[ i ] );
 		}
@@ -174,12 +174,12 @@ public:
 		if ( mDocument ){
 			if ( mDocument.isReady() ){
 				ConstElement e = mDocument.root();
-				//子供が一人で名前がContainerの時に限って、子を渡す。
+				//子供が一人で名前がContainerの時に限って、子を渡す
 				if ( ( e.childNumber() == 1 ) && ( RefString( "Container" ) != e.name() ) ){
 					e = e.child( 0 );
 				}
 				createFromElement( e );
-				e.release(); //先に破棄。
+				e.release(); //先に破棄
 				mDocument.release();
 			}
 		}
@@ -304,7 +304,7 @@ private:
 		}
 	}
 
-	//ファイルからロードする時用のDocument.InFileでいちいちやってもいいのだが、面倒なのでこれ。
+	//ファイルからロードする時用のDocument.InFileでいちいちやってもいいのだが、面倒なのでこれ
 	Document mDocument;
 
 	//Graphicsのは参照型で格納
@@ -312,18 +312,18 @@ private:
 	Array< IndexBuffer > mIndexBuffers;
 	Array< Texture > mTextures;
 	Array< Animation::Impl* > mAnimations;
-	//SceneのはImplだったり型そのものだったり。
+	//SceneのはImplだったり型そのものだったり
 	Array< Batch::Impl* > mBatches;
 	Array< TreeTemplate* > mTrees;
 
-	//名前検索用のハッシュ。
-	//第一の型は参照で、実体が存在し続けることに依存している。注意。
+	//名前検索用のハッシュ
+	//第一の型は参照で、実体が存在し続けることに依存している。注意
 	//第二型は配列の添え字。物ごとに別のハッシュを作りたくないので、
-	//HashMultiMapにしてintの上のビットにそれが何なのかの印をつけている。
-	//これをしないと同じ名前のテクスチャとツリーがあった時に困るわけだ。
+	//HashMultiMapにしてintの上のビットにそれが何なのかの印をつけている
+	//これをしないと同じ名前のテクスチャとツリーがあった時に困るわけだ
 	HashMultiMap< const char*, int > mIndices;
 
-	//文字列格納用のプール。個々の型でnewしてると遅いからな。
+	//文字列格納用のプール。個々の型でnewしてると遅いからな
 	Pool< char > mStringPool;
 
 	//追加データ検索パス

@@ -11,8 +11,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// source のパーツ1つを、worlds の first 番目から count 枚ぶん置いた形を、destination へ作って GPU へ送る。
-	// 読んだ頂点で merged の囲む箱を広げる（描くかどうかを決める箱。StaticMeshInstance が使う）。
+	// source のパーツ1つを、worlds の first 番目から count 枚ぶん置いた形を、destination へ作って GPU へ送る
+	// 読んだ頂点で merged の囲む箱を広げる（描くかどうかを決める箱。StaticMeshInstance が使う）
 	void mergePart( const StaticMeshPart& sourcePart, const std::vector< Matrix34 >& worlds, int first, int count,
 	StaticMeshPart* destination, StaticMeshData* merged ) {
 		const int vertexNumber = sourcePart.sourceVertexNumber();
@@ -26,7 +26,7 @@ namespace{
 				const Graphics::Vertex& v = sourcePart.sourceVertex( i );
 				Vector3 position;
 				world.mul( &position, Vector3( v.mPosition.x, v.mPosition.y, v.mPosition.z ) );
-				// 法線は向きだけ移す。拡大が入っていると長さが変わるので、長さ1に戻す。
+				// 法線は向きだけ移す。拡大が入っていると長さが変わるので、長さ1に戻す
 				Vector3 normal;
 				world.mul33( &normal, v.mNormal );
 				normal.normalize();
@@ -36,19 +36,19 @@ namespace{
 			}
 			const int indexOffset = instance * indexNumber;
 			for ( int i = 0; i < indexNumber; ++i ) {
-				// 1パーツの頂点数は上限以下になるよう count を決めてあるので、16bit に収まる。
+				// 1パーツの頂点数は上限以下になるよう count を決めてあるので、16bit に収まる
 				destination->setIndex( indexOffset + i, static_cast< unsigned short >( vertexOffset + sourcePart.sourceIndex( i ) ) );
 			}
 		}
 		destination->upload();
 	}
 
-	// 頂点 vertexNumber 個のパーツを、1つのパーツ（インデックスが 16bit）に何枚ぶんまとめられるか。
+	// 頂点 vertexNumber 個のパーツを、1つのパーツ（インデックスが 16bit）に何枚ぶんまとめられるか
 	int instancesPerPart( int vertexNumber ) {
 		return MeshLoaderUtil::MAX_VERTEX_NUMBER / vertexNumber;
 	}
 
-	// instanceNumber 枚を、1パーツ perPart 枚ずつに分けたときのパーツ数（端数は切り上げ）。
+	// instanceNumber 枚を、1パーツ perPart 枚ずつに分けたときのパーツ数（端数は切り上げ）
 	int partNumberFor( int instanceNumber, int perPart ) {
 		return ( instanceNumber + perPart - 1 ) / perPart;
 	}
@@ -61,7 +61,7 @@ bool StaticMeshMerger::merge( const StaticMeshData& source, const std::vector< M
 		return false; // 置く物が無い（構築に失敗して置けなかった種類もここで終わる）
 	}
 	ASSERT( source.isReady() && source.keepsSourceVertices() && "StaticMeshMerger : source must be ready and keep its vertices." );
-	// 元のパーツ1つが、まとめた後は1つ以上のパーツになる（頂点数が上限を超えるぶんは分ける）。先に総数を数える。
+	// 元のパーツ1つが、まとめた後は1つ以上のパーツになる（頂点数が上限を超えるぶんは分ける）。先に総数を数える
 	int mergedPartNumber = 0;
 	for ( int p = 0; p < source.partNumber(); ++p ) {
 		int vertexNumber = source.part( p ).sourceVertexNumber();

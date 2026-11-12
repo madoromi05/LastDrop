@@ -38,7 +38,7 @@ void ZombieCorpseComponent::update() {
 			}
 			break;
 		case ZombieStateComponent::State::Sinking: {
-			// 見た目の位置だけ下げる（部位の箱も見た目に付いて沈む）。
+			// 見た目の位置だけ下げる（部位の箱も見た目に付いて沈む）
 			mCorpse.tick();
 			Vector3 shown = mRootSpan->meshRoot( *mPosition );
 			shown.y -= mCorpse.sinkDepth();
@@ -49,8 +49,8 @@ void ZombieCorpseComponent::update() {
 		case ZombieStateComponent::State::Downed:
 			break;
 	}
-	// 沈み終えたら、自分の物を消す印を付ける（物の寿命は物が決める）。
-	// 消えるのは全員の更新が済んだ後の flush（並びをたどっている最中には消えない）。2 回付けても 1 回にまとまる。
+	// 沈み終えたら、自分の物を消す印を付ける（物の寿命は物が決める）
+	// 消えるのは全員の更新が済んだ後の flush（並びをたどっている最中には消えない）。2 回付けても 1 回にまとまる
 	if ( isGone() ) {
 		gameObject()->world()->destroyLater( gameObject() );
 	}

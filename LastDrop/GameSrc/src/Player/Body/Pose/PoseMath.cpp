@@ -20,7 +20,7 @@ void PoseMath::transformBonesPartially( const Matrix34& transform, float weight,
 }
 
 void PoseMath::weaponAxes( const Matrix34& gun, Vector3* barrel, Vector3* side ) {
-	// 銃の向き（銃口 = モデルの +Z、上 = +Y）。持ち方の縮尺が入っているので長さ1にする。
+	// 銃の向き（銃口 = モデルの +Z、上 = +Y）。持ち方の縮尺が入っているので長さ1にする
 	barrel->set( gun.m02, gun.m12, gun.m22 );
 	barrel->normalize();
 	side->setCross( Vector3( gun.m01, gun.m11, gun.m21 ), *barrel );
@@ -28,14 +28,14 @@ void PoseMath::weaponAxes( const Matrix34& gun, Vector3* barrel, Vector3* side )
 }
 
 Matrix34 PoseMath::alignWeapon( const Matrix34& gun, const Matrix34& axes, const Vector3& anchor, const Vector3& goal ) {
-	// 銃の向きを、長さ1で直交する3軸にする（持ち方の縮尺を取り除く）。
+	// 銃の向きを、長さ1で直交する3軸にする（持ち方の縮尺を取り除く）
 	Vector3 barrel;
 	Vector3 gunSide;
 	weaponAxes( gun, &barrel, &gunSide );
 	Vector3 gunUp;
 	gunUp.setCross( barrel, gunSide );
 
-	// 回転: 銃の3軸を axes の3軸へ重ねる（= axes × 銃の軸の転置）。銃の傾き（カント）も axes に揃う。
+	// 回転: 銃の3軸を axes の3軸へ重ねる（= axes × 銃の軸の転置）。銃の傾き（カント）も axes に揃う
 	Matrix34 align;
 	align.setIdentity();
 	const int kAxisNumber = 3;
@@ -49,7 +49,7 @@ Matrix34 PoseMath::alignWeapon( const Matrix34& gun, const Matrix34& axes, const
 				+ axes( row, kBarrelAxis ) * barrel[ column ];
 		}
 	}
-	// 移動: 回した後の anchor が goal へ来るようにする。
+	// 移動: 回した後の anchor が goal へ来るようにする
 	Vector3 rotatedAnchor;
 	align.mul33( &rotatedAnchor, anchor );
 	align.m03 = goal.x - rotatedAnchor.x;

@@ -7,13 +7,13 @@
 
 /*
 <注意>
-添え字でmCapacity + i (0<=i<mTableSize)が使われていたら、それはダミーノードである。
-mNodes[ mCapacity + i ].mNextはmNodes[ mCapacity + i + 1 ]をさしている。
+添え字でmCapacity + i (0<=i<mTableSize)が使われていたら、それはダミーノードである
+mNodes[ mCapacity + i ].mNextはmNodes[ mCapacity + i + 1 ]をさしている
 */
 
 namespace GameLib{
 
-//先頭と末尾が特別扱いされないようにちょっと工夫をしている。
+//先頭と末尾が特別扱いされないようにちょっと工夫をしている
 template< class K, class V, class H > inline HashMultiMap< K, V, H >::HashMultiMap() : 
 mNexts( 0 ),
 mKeys( 0 ),
@@ -24,7 +24,7 @@ mTableSize( 0 ){
 	ASSERT( sizeof( K ) != 0 ); //ありえないよね？
 }
 
-//先頭と末尾が特別扱いされないようにちょっと工夫をしている。
+//先頭と末尾が特別扱いされないようにちょっと工夫をしている
 template< class K, class V, class H > inline HashMultiMap< K, V, H >::HashMultiMap( int capacity, int tableSize ) : 
 mNexts( 0 ),
 mKeys( 0 ),
@@ -85,7 +85,7 @@ template< class K, class V, class H > inline void HashMultiMap< K, V, H >::setCa
 	for ( int i = 0; i < mCapacity; ++i ){
 		mEmptyStack.push( i ); //空き番号リストに詰めていく
 	}
-	//mCapacity+0からmCapacity+mTableSize-1番はダミー要素。各列の先頭の前に位置する。
+	//mCapacity+0からmCapacity+mTableSize-1番はダミー要素。各列の先頭の前に位置する
 	for ( int i = 0; i < mTableSize; ++i ){
 		mNexts[ mCapacity + i ] = mCapacity + i + 1;
 	}
@@ -167,21 +167,21 @@ template< class K, class V, class H > inline int HashMultiMap< K, V, H >::find( 
 }
 
 template< class K, class V, class H > inline bool HashMultiMap< K, V, H >::remove( int position ){
-	//pの場所にある要素のハッシュ値をハッシュ値を計算しないで知りたい。
-	//そこで、一旦ヘッドテーブルに出るまでイテレータを進めて見る。
+	//pの場所にある要素のハッシュ値をハッシュ値を計算しないで知りたい
+	//そこで、一旦ヘッドテーブルに出るまでイテレータを進めて見る
 	int h = position;
 	while ( h < mCapacity ){
 		h = mNexts[ h ];
 	}
-	//一旦範囲外に出た。ここからmCapacityを引くと次のハッシュ値がわかる。
+	//一旦範囲外に出た。ここからmCapacityを引くと次のハッシュ値がわかる
 	h -= mCapacity;
 	//-1すればこいつのハッシュ値だ
 	h -= 1;
-	//ハッシュ値がわかったので、テーブルの先頭から辿っていってpを見つける。
+	//ハッシュ値がわかったので、テーブルの先頭から辿っていってpを見つける
 	int prev = mCapacity + h; //ヘッド
 	int p = mNexts[ prev ];
 	while ( p < mCapacity ){
-		if ( p == position ){ //発見。こいつを消す。
+		if ( p == position ){ //発見。こいつを消す
 			mNexts[ prev ] = mNexts[ p ]; //つなぎ変えて
 			mKeys[ p ].~K(); //デストラクト
 			mValues[ p ].~V(); //デストラクト
@@ -211,7 +211,7 @@ template< class K, class V, class H > inline void HashMultiMap< K, V, H >::clear
 	//デストラクトして回る
 	int prev = mCapacity; //ヘッド
 	int p = mNexts[ mCapacity ]; //ダミーヘッド
-	while ( p < mCapacity + mTableSize ){  //mCapacity + mTableSizeは存在しない。そこまではダミーとして存在する。
+	while ( p < mCapacity + mTableSize ){  //mCapacity + mTableSizeは存在しない。そこまではダミーとして存在する
 		if ( p < mCapacity ){
 			mNexts[ prev ] = mNexts[ p ]; //つなぎ変えて
 			mKeys[ p ].~K();

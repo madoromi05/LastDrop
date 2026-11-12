@@ -32,11 +32,11 @@ void WeaponBounds::apply( std::vector< Matrix34 >* pose ) {
 	if ( !mRig->hasWeapon() ) {
 		return;
 	}
-	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）で、頂点の範囲の8隅を移して囲む。
+	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）で、頂点の範囲の8隅を移して囲む
 	Matrix34 gun = mRig->weaponPlacement( *pose );
 	const int kCornerNumber = 8;
 	for ( int i = 0; i < kCornerNumber; ++i ) {
-		// i の各ビットで、その軸を最小・最大のどちらにするかを選ぶ（8通りで8隅）。
+		// i の各ビットで、その軸を最小・最大のどちらにするかを選ぶ（8通りで8隅）
 		Vector3 corner(
 			( i & 1 ) ? mRig->weaponMax.x : mRig->weaponMin.x,
 			( i & 2 ) ? mRig->weaponMax.y : mRig->weaponMin.y,

@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-// ブロック圧縮（BC1 / BC5 / BC7）の DDS を、GPU へそのまま送れる形に読み分ける（ファイルを読むだけ。D3D は触らない）。
-// tools/convert/texture_to_dds.ps1（texconv -dx10）が書く「DX10 の追加の頭」付きの DDS だけを読む。
-// 仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 8-4。
-// 古い形の DDS（追加の頭が無い・圧縮していない。Texture::write が書く物）は読まない（TextureImpl の readDDS が今までどおり読む）。
+// ブロック圧縮（BC1 / BC5 / BC7）の DDS を、GPU へそのまま送れる形に読み分ける（ファイルを読むだけ。D3D は触らない）
+// tools/convert/texture_to_dds.ps1（texconv -dx10）が書く「DX10 の追加の頭」付きの DDS だけを読む
+// 仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 8-4
+// 古い形の DDS（追加の頭が無い・圧縮していない。Texture::write が書く物）は読まない（TextureImpl の readDDS が今までどおり読む）
 //
 // ファイルの並び（https://learn.microsoft.com/ja-jp/windows/win32/direct3ddds/dx-graphics-dds-pguide）
 //   "DDS "（4）＋ DDS_HEADER（124）＋ DDS_HEADER_DXT10（20）＋ ミップ 0 → 1 → … の中身
@@ -17,7 +17,7 @@ namespace GameLib{
 namespace Graphics{
 namespace DdsReader{
 
-// ミップ 1 段ぶん。bytes は 4×4 画素のブロックを左上から行ごとに並べた物。
+// ミップ 1 段ぶん。bytes は 4×4 画素のブロックを左上から行ごとに並べた物
 struct Level{
 	int width;
 	int height;
@@ -30,7 +30,7 @@ struct Image{
 	std::vector< Level > levels; // [0] が一番大きい
 };
 
-// 頭の中の位置（バイト）と、決まった値。
+// 頭の中の位置（バイト）と、決まった値
 const int kMagicSize = 4;
 const int kHeaderSize = 124;
 const int kDx10HeaderSize = 20;
@@ -49,13 +49,13 @@ inline unsigned readUnsigned( const char* p ){
 	return u[ 0 ] | ( u[ 1 ] << 8 ) | ( u[ 2 ] << 16 ) | ( static_cast< unsigned >( u[ 3 ] ) << 24 );
 }
 
-// DX10 の追加の頭が付いた DDS か（読み分けの入口。"DDS " と FourCC "DX10" を見るだけ）。
+// DX10 の追加の頭が付いた DDS か（読み分けの入口。"DDS " と FourCC "DX10" を見るだけ）
 inline bool hasDx10Header( const char* data, int size ){
 	return size >= kDataOffset && std::memcmp( data, "DDS ", kMagicSize ) == 0 &&
 		std::memcmp( data + kFourCcOffset, "DX10", 4 ) == 0;
 }
 
-// format の 1 ブロック（4×4 画素）のバイト数。対応していない形式は 0。
+// format の 1 ブロック（4×4 画素）のバイト数。対応していない形式は 0
 inline int blockBytes( DXGI_FORMAT format ){
 	switch ( format ){
 		case DXGI_FORMAT_BC1_UNORM:
@@ -70,12 +70,12 @@ inline int blockBytes( DXGI_FORMAT format ){
 	}
 }
 
-// GPU が読むときにリニアへ直す（_SRGB の）形式か。
+// GPU が読むときにリニアへ直す（_SRGB の）形式か
 inline bool isSrgb( DXGI_FORMAT format ){
 	return format == DXGI_FORMAT_BC1_UNORM_SRGB || format == DXGI_FORMAT_BC7_UNORM_SRGB;
 }
 
-// data を読んで image に入れる。読めなかったら false と、その理由を error に入れる（止めるかは呼んだ側が決める）。
+// data を読んで image に入れる。読めなかったら false と、その理由を error に入れる（止めるかは呼んだ側が決める）
 inline bool read( const char* data, int size, Image* image, std::string* error ){
 	if ( !hasDx10Header( data, size ) ){
 		*error = "not a DDS with the DX10 header (convert with tools/convert/texture_to_dds.ps1)";
@@ -103,7 +103,7 @@ inline bool read( const char* data, int size, Image* image, std::string* error )
 		Level& level = image->levels[ i ];
 		level.width = width;
 		level.height = height;
-		// 4 画素に満たない段（2×2・1×1）も、ブロック 1 つぶんを持つ。
+		// 4 画素に満たない段（2×2・1×1）も、ブロック 1 つぶんを持つ
 		int blocksWide = ( width + kBlockPixels - 1 ) / kBlockPixels;
 		int blocksHigh = ( height + kBlockPixels - 1 ) / kBlockPixels;
 		level.rowPitch = blocksWide * bytesPerBlock;

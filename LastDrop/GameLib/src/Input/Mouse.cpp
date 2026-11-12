@@ -4,7 +4,7 @@
 
 #include "Input/ManagerImpl.h"
 
-//マウスの実体はマネージャである。
+//マウスの実体はマネージャである
 namespace GameLib{
 namespace Input{
 

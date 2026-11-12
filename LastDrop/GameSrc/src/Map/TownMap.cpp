@@ -8,14 +8,14 @@ namespace{
 	const float kRoadWidth = 7.71f;      // 車道の幅（二車線）
 	const float kCurbWidth = 1.43f;      // 縁石つきの歩道の帯の幅
 	const float kSidewalkHeight = 0.15f; // 歩道の面の高さ（車道の面から）
-	// 歩道の帯まで含めた道の幅。交差点は1辺がこの長さの正方形。
+	// 歩道の帯まで含めた道の幅。交差点は1辺がこの長さの正方形
 	const float kStreetWidth = kRoadWidth + 2.f * kCurbWidth;
 
 	// ── 町の形 ──
 	const int kColumnNumber = 4; // 南北に走る道の本数（両端は町の外周）
 	const int kRowNumber = 4;    // 東西に走る道の本数（同上）
-	// ブロック（歩道の帯に囲まれた内側）の1辺が部品何枚ぶんか。交差点と交差点の間に並べる直線の枚数でもある。
-	// 建物の元の足元の板（11.16m 四方。今は消した形を置く）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒。
+	// ブロック（歩道の帯に囲まれた内側）の1辺が部品何枚ぶんか。交差点と交差点の間に並べる直線の枚数でもある
+	// 建物の元の足元の板（11.16m 四方。今は消した形を置く）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒
 	const int kBlockTileNumber = 4;
 	const float kBlockSize = kBlockTileNumber * kTileLength;
 	const float kRoadPitch = kStreetWidth + kBlockSize; // 隣の道までの間隔
@@ -23,24 +23,24 @@ namespace{
 	// ── 高さ・大きさ ──
 	const float kRoadHeight = 0.f;
 	const float kActualSize = 1.f; // 部品を実寸のまま置く拡大率
-	// 町の外の土。1m 四方の板を広げて、道路の下に少し沈めて敷く（同じ高さだと道路とちらつく）。
+	// 町の外の土。1m 四方の板を広げて、道路の下に少し沈めて敷く（同じ高さだと道路とちらつく）
 	const float kEarthSize = 400.f;
 	const float kEarthDrop = 0.05f;
 
 	// ── 向き（度）。部品の +X がどちらを向くか（+X は 90 度で北を向く）──
-	// 建物は正面が +X、歩道の帯は歩道側が +X（車道側が -X）。
+	// 建物は正面が +X、歩道の帯は歩道側が +X（車道側が -X）
 	const float kFaceEast = 0.f;    // +X
 	const float kFaceNorth = 90.f;  // -Z
 	const float kFaceWest = 180.f;  // -X
 	const float kFaceSouth = -90.f; // +Z
-	// 直線の道路の部品は南北（z 方向）に走る向きで、横断歩道の部品は南北の道を横切る向き（x 方向に長い）で出来ている。
-	// どちらも 90 度回すと、東西の道用の向きになる。
+	// 直線の道路の部品は南北（z 方向）に走る向きで、横断歩道の部品は南北の道を横切る向き（x 方向に長い）で出来ている
+	// どちらも 90 度回すと、東西の道用の向きになる
 	const float kAsBuilt = 0.f;
 	const float kQuarterTurn = 90.f;
 
 	// ── 交差点。3×3 のますに分けて組み立てる（真ん中＝車道、辺の4ます、角の4ます）──
-	// 辺のますは、道が続く辺なら横断歩道、続かない辺（町の外周）なら歩道の帯。これで十字・T字・角が同じ手順で出来る。
-	// 角のますは、両隣の辺とも道が続くなら丸い歩道、どちらかが続かないなら、続かない辺の歩道の帯をそのまま延ばす。
+	// 辺のますは、道が続く辺なら横断歩道、続かない辺（町の外周）なら歩道の帯。これで十字・T字・角が同じ手順で出来る
+	// 角のますは、両隣の辺とも道が続くなら丸い歩道、どちらかが続かないなら、続かない辺の歩道の帯をそのまま延ばす
 	enum JunctionSide{
 		SIDE_NORTH,
 		SIDE_EAST,
@@ -60,7 +60,7 @@ namespace{
 		{  0.f,  1.f, kFaceSouth, kAsBuilt     },
 		{ -1.f,  0.f, kFaceWest,  kQuarterTurn },
 	};
-	// 角のます。はさむ2辺と、丸い歩道の向き（部品は、丸い側が -X・-Z（北西）を向く形で出来ている＝南東の角の向き）。
+	// 角のます。はさむ2辺と、丸い歩道の向き（部品は、丸い側が -X・-Z（北西）を向く形で出来ている＝南東の角の向き）
 	struct CornerLayout{
 		JunctionSide sideA;
 		JunctionSide sideB;
@@ -74,8 +74,8 @@ namespace{
 	};
 	const float kJunctionCellOffset = 0.5f * ( kRoadWidth + kCurbWidth ); // 交差点の中心から、辺のますの中心まで
 
-	// ブロックの中の建物4軒。ブロックの中心から見てどちら側か（-1 / +1）と、正面を向ける方角。
-	// 風車の形に4方向へ向けて、ブロックを囲むどの道にも入口が1つずつ面するようにする。
+	// ブロックの中の建物4軒。ブロックの中心から見てどちら側か（-1 / +1）と、正面を向ける方角
+	// 風車の形に4方向へ向けて、ブロックを囲むどの道にも入口が1つずつ面するようにする
 	struct BlockLot{
 		float sideX;
 		float sideZ;
@@ -90,15 +90,15 @@ namespace{
 	const float kLotOffset = 0.25f * kBlockSize; // ブロックの中心から建物の中心まで
 
 	// ── 町を囲む建物（足元の板の無い形。tools/configs/building_noground.json）──
-	// 外周の道の外側の歩道に正面の壁を合わせ、壁どうしが付く間隔で並べて、町の外へ出られなくする。
+	// 外周の道の外側の歩道に正面の壁を合わせ、壁どうしが付く間隔で並べて、町の外へ出られなくする
 	const float kBuildingBodyWidth = 7.83f;  // 建物の本体の幅（正面から見た左右。両端の柱まで）
 	const float kBuildingFrontDepth = 3.94f; // 建物の中心から正面の壁まで
-	// 囲む建物の足元に敷く床。足元の板が無いと、1階の引っ込んだ入口の奥に土が見えてしまうため。
-	// 床の部品を2倍に広げて使う（奥行きが入口の引っ込みより深ければ足り、広げた分だけ枚数が減る）。
+	// 囲む建物の足元に敷く床。足元の板が無いと、1階の引っ込んだ入口の奥に土が見えてしまうため
+	// 床の部品を2倍に広げて使う（奥行きが入口の引っ込みより深ければ足り、広げた分だけ枚数が減る）
 	const float kPerimeterFloorScale = 2.f;
 	const float kPerimeterFloorSize = kPerimeterFloorScale * kTileLength;
 
-	// 道の上の場所を、道の番号で書いたもの。
+	// 道の上の場所を、道の番号で書いたもの
 	struct StreetSpot{
 		float column;    // 南北に走る道の番号（西から 0。小数は道と道の間で、0.5 は 0 番と 1 番の真ん中）
 		float row;       // 東西に走る道の番号（北から 0。同上）
@@ -108,19 +108,19 @@ namespace{
 	};
 
 	// ── ゾンビ ──
-	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots）。
-	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）。
-	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）。
+	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots）
+	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）
+	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）
 	const float kSpawnBetweenJunctions = 0.5f;
-	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く。
+	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く
 	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
 
-	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）。
-	// 乗れない置物の車は置かない（脱出できる車と見分けが付かないため）。
+	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）
+	// 乗れない置物の車は置かない（脱出できる車と見分けが付かないため）
 	const float kLaneOffset = 0.25f * kRoadWidth; // 道の中心から車線の中心まで
 	// ── ゴミ箱と木箱（置き場所は毎日同じ） ──
 	// どれも車道の端（歩道の縁石の手前）に、長い辺を道に沿わせて置く。正面（+Z）は道の真ん中へ向ける
-	// （北の端は 0・南の端は 180・西の端は 90・東の端は -90）。ずれの 3.1〜3.2m は、車道の幅の半分（3.86m）から箱の奥行きの半分を引いた所。
+	// （北の端は 0・南の端は 180・西の端は 90・東の端は -90）。ずれの 3.1〜3.2m は、車道の幅の半分（3.86m）から箱の奥行きの半分を引いた所
 	const float kCurbSide = 3.1f;  // ゴミ箱（奥行き約 1m）
 	const float kCrateSide = 3.2f; // 木箱（奥行き約 0.6m）
 	const StreetSpot kDumpsters[] = {
@@ -140,8 +140,8 @@ namespace{
 
 	// ── 消火栓（見た目の置物。漁れない）──
 	// 交差点のすぐ先の、南北の道の歩道の帯（縁石の上）に置く。交差点の真四角の中は丸い歩道や横断歩道なので避け、
-	// 帯がまっすぐになる所（交差点の辺から少し先）に立てる。正面（+Z。大きい放水口の側）は車道へ向ける。
-	// 置く角は交差点ごとに変えて、同じ並びに見えないようにする。南北の道が外へ続かない側（外周の道の外）には置かない。
+	// 帯がまっすぐになる所（交差点の辺から少し先）に立てる。正面（+Z。大きい放水口の側）は車道へ向ける
+	// 置く角は交差点ごとに変えて、同じ並びに見えないようにする。南北の道が外へ続かない側（外周の道の外）には置かない
 	struct HydrantSpot{
 		int column;   // 交差点の番号（南北に走る道。西から 0）
 		int row;      // 交差点の番号（東西に走る道。北から 0）
@@ -156,33 +156,33 @@ namespace{
 		{ 0, 1,  1.f,  1.f }, // 西の外周の T 字路の南東の角
 		{ 3, 2, -1.f, -1.f }, // 東の外周の T 字路の北西の角
 	};
-	// 縁石の外側の線（車道の端）から、消火栓の中心まで。奥行き約 0.32m なので、縁石から少し離れて帯の上に収まる。
+	// 縁石の外側の線（車道の端）から、消火栓の中心まで。奥行き約 0.32m なので、縁石から少し離れて帯の上に収まる
 	const float kHydrantFromCurb = 0.45f;
-	// 交差点の辺（歩道の帯が始まる所）から、消火栓の中心まで。
+	// 交差点の辺（歩道の帯が始まる所）から、消火栓の中心まで
 	const float kHydrantPastJunction = 0.8f;
 	const float kFaceRoadFromEast = -90.f; // 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
 	const float kFaceRoadFromWest = 90.f;
 
 	// ── 街灯（ランタン型の柱。光は柱の頭から） ──
-	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる。
-	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）。
-	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）。
+	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる
+	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）
+	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）
 	const float kLampFromCurb = 0.5f;      // 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
 	const float kLampPastJunction = 1.5f;  // 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
-	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）。
+	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）
 	const float kLampClearance = 3.f;
 	const float kLampDodge = 4.f;
-	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分。
+	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分
 	const float kLampDarkCarDistance = 0.5f * kBlockSize;
-	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる。
+	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる
 	const float kLampAlongEastWest = kAsBuilt;
 	const float kLampAlongNorthSouth = kQuarterTurn;
 
-	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13）。
-	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）。
-	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）。
-	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）。
-	// 自キャラはその日の車の鼻先の前に、車の方を向いて立って始める（どれが脱出の車かすぐ分かるように）。
+	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13）
+	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）
+	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）
+	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）
+	// 自キャラはその日の車の鼻先の前に、車の方を向いて立って始める（どれが脱出の車かすぐ分かるように）
 	struct EscapeCarSpot{
 		const char* name;
 		StreetSpot spot;
@@ -194,7 +194,7 @@ namespace{
 	const float kAlongRoad = 0.f;   // 道に沿った向きには動かさない
 	const float kCarFacingEast = 90.f; // 車の向き（StreetSpot の決まり。90 で +X）
 	const float kCarFacingWest = -90.f;
-	// 車の中心から自キャラまで（車の向きの前へ。UAZ の長さ 約 4m の半分 ＋ 鼻先から約 4m 空けて、車の全体が視界に入るように）。
+	// 車の中心から自キャラまで（車の向きの前へ。UAZ の長さ 約 4m の半分 ＋ 鼻先から約 4m 空けて、車の全体が視界に入るように）
 	const float kStartAheadOfCar = 6.f;
 	const EscapeCarSpot kEscapeCarSpots[] = {
 		// 南側（町の内側）の車線。東を向く車の東に、西（車）を向いて立つ
@@ -205,7 +205,7 @@ namespace{
 		        { kSideMiddle, kSouthRoad, -kStartAheadOfCar, -kLaneOffset, kCarFacingEast } },
 	};
 
-	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る。
+	// 道の番号から、その道の中心の座標。町の中心が原点になるように振る
 	float roadX( float column ) {
 		return ( column - 0.5f * ( kColumnNumber - 1 ) ) * kRoadPitch;
 	}
@@ -214,7 +214,7 @@ namespace{
 		return ( row - 0.5f * ( kRowNumber - 1 ) ) * kRoadPitch;
 	}
 
-	// 町の中心から、外周の道の外側の歩道の端まで。
+	// 町の中心から、外周の道の外側の歩道の端まで
 	float townHalfSizeX() {
 		return roadX( static_cast< float >( kColumnNumber - 1 ) ) + 0.5f * kStreetWidth;
 	}
@@ -231,7 +231,7 @@ namespace{
 		tiles->push_back( { piece, { x, y, z, yawDegree }, scale } );
 	}
 
-	// 交差点1つを、ますごとの部品で組み立てる。isOpen は、4辺それぞれの先に道が続くか（添え字は JunctionSide）。
+	// 交差点1つを、ますごとの部品で組み立てる。isOpen は、4辺それぞれの先に道が続くか（添え字は JunctionSide）
 	void addJunction( std::vector< TownTile >* tiles, float centerX, float centerZ, const bool isOpen[ SIDE_NUM ] ) {
 		addTile( tiles, TOWN_PIECE_JUNCTION_CENTER, centerX, kRoadHeight, centerZ, kAsBuilt, kActualSize );
 		for ( int i = 0; i < SIDE_NUM; ++i ) {
@@ -253,14 +253,14 @@ namespace{
 				addTile( tiles, TOWN_PIECE_CORNER, x, kRoadHeight, z, corner.roundYaw, kActualSize );
 				addTile( tiles, TOWN_PIECE_CORNER_FILL, x, kRoadHeight, z, kAsBuilt, kActualSize );
 			} else {
-				// 道が続かない辺の歩道の帯を、角のますまで延ばす（両方とも続かない町の四隅では、どちらの向きでも同じ）。
+				// 道が続かない辺の歩道の帯を、角のますまで延ばす（両方とも続かない町の四隅では、どちらの向きでも同じ）
 				const SideLayout& closedSide = isOpen[ corner.sideA ] ? sideB : sideA;
 				addTile( tiles, TOWN_PIECE_CURB_STUB, x, kRoadHeight, z, closedSide.curbYaw, kActualSize );
 			}
 		}
 	}
 
-	// 道と道が交わる所すべてに交差点を置く。町の外周では、外へ向かう辺を閉じる（T字・角になる）。
+	// 道と道が交わる所すべてに交差点を置く。町の外周では、外へ向かう辺を閉じる（T字・角になる）
 	void addJunctions( std::vector< TownTile >* tiles ) {
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			for ( int column = 0; column < kColumnNumber; ++column ) {
@@ -274,10 +274,10 @@ namespace{
 		}
 	}
 
-	// 交差点と交差点の間の直線と、その両側の歩道の帯。
+	// 交差点と交差点の間の直線と、その両側の歩道の帯
 	void addStraights( std::vector< TownTile >* tiles ) {
 		const float curbOffset = 0.5f * ( kRoadWidth + kCurbWidth ); // 道の中心から帯の中心まで
-		// 東西に走る道。
+		// 東西に走る道
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			float z = roadZ( static_cast< float >( row ) );
 			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
@@ -289,7 +289,7 @@ namespace{
 				}
 			}
 		}
-		// 南北に走る道。
+		// 南北に走る道
 		for ( int column = 0; column < kColumnNumber; ++column ) {
 			float x = roadX( static_cast< float >( column ) );
 			for ( int row = 0; row + 1 < kRowNumber; ++row ) {
@@ -303,14 +303,14 @@ namespace{
 		}
 	}
 
-	// 道に囲まれたブロックごとに、歩道の高さの床1枚と、その上の建物を置く。
+	// 道に囲まれたブロックごとに、歩道の高さの床1枚と、その上の建物を置く
 	void addBlocks( std::vector< TownTile >* tiles, std::vector< TownPlacement >* buildings ) {
 		for ( int row = 0; row + 1 < kRowNumber; ++row ) {
 			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
 				float centerX = roadX( column + 0.5f );
 				float centerZ = roadZ( row + 0.5f );
 				// 床は部品1枚をブロックの大きさへ広げる（枚数を並べるより描く数を減らす）。建物は足元の板の無い形なので、
-				// 建物の間・引っ込んだ入口の奥にはこの床が見える。
+				// 建物の間・引っ込んだ入口の奥にはこの床が見える
 				addTile( tiles, TOWN_PIECE_PAVEMENT, centerX, kSidewalkHeight, centerZ, kAsBuilt, static_cast< float >( kBlockTileNumber ) );
 				for ( const BlockLot& lot : kBlockLots ) {
 					buildings->push_back( {
@@ -323,9 +323,9 @@ namespace{
 		}
 	}
 
-	// 町を建物で囲む。辺ごとに、町の内側を向けた建物を、壁どうしが付く間隔で端から端まで並べる。
-	// 列は辺の長さ以上になる軒数にして真ん中に合わせるので、両端は町の角から少しはみ出す。
-	// はみ出した分は隣の辺の列の裏に隠れ、角にすき間が出来ない。
+	// 町を建物で囲む。辺ごとに、町の内側を向けた建物を、壁どうしが付く間隔で端から端まで並べる
+	// 列は辺の長さ以上になる軒数にして真ん中に合わせるので、両端は町の角から少しはみ出す
+	// はみ出した分は隣の辺の列の裏に隠れ、角にすき間が出来ない
 	void addPerimeterBuildings( std::vector< TownPlacement >* buildings ) {
 		const float halfX = townHalfSizeX();
 		const float halfZ = townHalfSizeZ();
@@ -344,17 +344,17 @@ namespace{
 		}
 	}
 
-	// 囲む建物の足元に、歩道の高さの床を帯の形に敷く（町の4辺の外側）。
+	// 囲む建物の足元に、歩道の高さの床を帯の形に敷く（町の4辺の外側）
 	// 辺の長さが床の大きさで割り切れないので、4本の帯を風車の形に組む: 各辺とも片方の角から敷き始め、
-	// 隣の辺の帯の横腹に突き当てる。余った長さは反対の角から町の外へはみ出す（建物の裏で見えない）。
-	// 突き合わせて敷くので帯どうしが重ならず、同じ高さの面がちらつかない。
+	// 隣の辺の帯の横腹に突き当てる。余った長さは反対の角から町の外へはみ出す（建物の裏で見えない）
+	// 突き合わせて敷くので帯どうしが重ならず、同じ高さの面がちらつかない
 	void addPerimeterFloor( std::vector< TownTile >* tiles ) {
 		const float halfX = townHalfSizeX();
 		const float halfZ = townHalfSizeZ();
 		const float size = kPerimeterFloorSize;
 		const float centerLineX = halfX + 0.5f * size; // 東西の辺に沿う帯の中心線（町の中心からの距離）
 		const float centerLineZ = halfZ + 0.5f * size;
-		// 帯の長さは、辺の長さに、敷き終わりの側の角のます1つぶんを足したもの。
+		// 帯の長さは、辺の長さに、敷き終わりの側の角のます1つぶんを足したもの
 		const int numberAlongX = static_cast< int >( std::ceil( ( 2.f * halfX + size ) / size ) );
 		for ( int i = 0; i < numberAlongX; ++i ) {
 			float offset = ( i + 0.5f ) * size;
@@ -371,7 +371,7 @@ namespace{
 }
 
 namespace{
-	// ゾンビが湧く場所の候補を、交差点と、東西・南北に隣り合う交差点の真ん中に置く（道の本数から作るので、町の形を変えても直さなくてよい）。
+	// ゾンビが湧く場所の候補を、交差点と、東西・南北に隣り合う交差点の真ん中に置く（道の本数から作るので、町の形を変えても直さなくてよい）
 	void addZombieSpawnPoints( std::vector< TownPlacement >* points ) {
 		const float kNoOffset = 0.f;
 		const float kNoYaw = 0.f; // 向きは ZombieSpawner が湧かせるときに決める
@@ -391,7 +391,7 @@ namespace{
 	}
 
 
-	// 消火栓の置き場所（足元は歩道の面の高さ）。
+	// 消火栓の置き場所（足元は歩道の面の高さ）
 	TownPlacement hydrantPlacement( const HydrantSpot& spot ) {
 		float x = roadX( static_cast< float >( spot.column ) ) + spot.sideX * ( 0.5f * kRoadWidth + kHydrantFromCurb );
 		float z = roadZ( static_cast< float >( spot.row ) ) + spot.sideZ * ( 0.5f * kStreetWidth + kHydrantPastJunction );
@@ -399,7 +399,7 @@ namespace{
 		return { x, kSidewalkHeight, z, yaw };
 	}
 
-	// 道の番号 index から見た、町の中心の側（+1 は番号が増える向き）。本数 count の真ん中より手前なら +1。
+	// 道の番号 index から見た、町の中心の側（+1 は番号が増える向き）。本数 count の真ん中より手前なら +1
 	float towardCenter( int index, int count ) {
 		return ( index < 0.5f * ( count - 1 ) ) ? 1.f : -1.f;
 	}
@@ -410,7 +410,7 @@ namespace{
 		return dx * dx + dz * dz;
 	}
 
-	// 柱 lamp が置物（props の中のどれか）に近すぎれば、道に沿って（alongX・alongZ は道の向きの単位ベクトル）置物から遠ざける。
+	// 柱 lamp が置物（props の中のどれか）に近すぎれば、道に沿って（alongX・alongZ は道の向きの単位ベクトル）置物から遠ざける
 	TownPlacement dodgeProps( TownPlacement lamp, float alongX, float alongZ, const std::vector< const std::vector< TownPlacement >* >& props ) {
 		const float clearance = kLampClearance * kLampClearance;
 		for ( const std::vector< TownPlacement >* list : props ) {
@@ -437,7 +437,7 @@ namespace{
 		return false;
 	}
 
-	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び。cars: 脱出の車の置き場所（近くの区間には立てない）。
+	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び。cars: 脱出の車の置き場所（近くの区間には立てない）
 	void addStreetLamps( std::vector< TownPlacement >* lamps, const std::vector< const std::vector< TownPlacement >* >& props,
 	const std::vector< TownEscapeCarSpot >& cars ) {
 		const float curbToLamp = 0.5f * kRoadWidth + kLampFromCurb;          // 道の中心から柱まで（道を横切る向き）
@@ -445,7 +445,7 @@ namespace{
 		const float kEast = 1.f;
 		const float kSouth = 1.f;
 		const float kNone = 0.f;
-		// 交差点の柱：東西の道の、町の中心側の角。
+		// 交差点の柱：東西の道の、町の中心側の角
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			for ( int column = 0; column < kColumnNumber; ++column ) {
 				TownPlacement lamp = {
@@ -456,7 +456,7 @@ namespace{
 				lamps->push_back( dodgeProps( lamp, kEast, kNone, props ) );
 			}
 		}
-		// 区間の真ん中の柱。東西の道（row）の区間と、南北の道（column）の区間。
+		// 区間の真ん中の柱。東西の道（row）の区間と、南北の道（column）の区間
 		for ( int row = 0; row < kRowNumber; ++row ) {
 			bool perimeter = ( row == 0 || row == kRowNumber - 1 );
 			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
@@ -502,7 +502,7 @@ TownMap::TownMap() :
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
-	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから。
+	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから
 	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );
 }
 

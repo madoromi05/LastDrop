@@ -16,7 +16,7 @@ int toString16( char* out, unsigned a, int n ){ //nは16進化した時の最大
 	return n;
 }
 
-//先頭の0をそのままにして返す。
+//先頭の0をそのままにして返す
 //何故マイナス判定を中でやらないかと言えば、unsignedで受け取れば
 //マイナスのintが入らないし、intで受け取ればunsignedが入らないからである
 void toString10Core( char* out,  unsigned a, int n ){ //nは10進化した時の最大桁数。最大10
@@ -32,7 +32,7 @@ void toString10Core( char* out,  unsigned a, int n ){ //nは10進化した時の
 		100000000,
 		1000000000,
 	};
-	//10で割ったあまりを格納して、10で割る。
+	//10で割ったあまりを格納して、10で割る
 	for ( int i = 0; i < n - 1; ++i ){
 		int q = a / d[ n - 2 - i ];
 		out[ i ] = static_cast< char >( q );
@@ -166,12 +166,12 @@ int toString( char* out, float a, int precision ){
 	e -= 8; //その分桁ダウン
 
 	int e10 = 0;
-	if ( e > 0 ){ //2冪を乗算しつつ10で除する。
+	if ( e > 0 ){ //2冪を乗算しつつ10で除する
 		for ( int i = 0; i < e; ++i ){
 			if ( m > 0x80000000 ){ //あふれる！
 				m /= 10;
 				++e10;
-				if ( i + 2 < e ){ //まだ2回以上乗ずるならここでやってしまう。
+				if ( i + 2 < e ){ //まだ2回以上乗ずるならここでやってしまう
 					m <<= 2;
 					i += 2;
 				}
@@ -184,7 +184,7 @@ int toString( char* out, float a, int precision ){
 			if ( m < 0x19000000 ){ //ケタを上げます
 				m *= 10;
 				--e10;
-				if ( i + 2 < e ){ //まだ2回以上除するならここでやってしまう。
+				if ( i + 2 < e ){ //まだ2回以上除するならここでやってしまう
 					m >>= 2;
 					i += 2;
 				}
@@ -250,7 +250,7 @@ int toString( char* out, float a, int precision ){
 			break;
 		}
 	}
-	//e10が[-2,precision)にあればe記法は使わない。その方が短くなるからだ。
+	//e10が[-2,precision)にあればe記法は使わない。その方が短くなるからだ
 	if ( ( e10 >= -2 ) && ( e10 < precision ) ){ 
 		if ( e10 >= 0 ){ //第一位が整数の場合
 			for ( int i = 0; i < n; ++i ){

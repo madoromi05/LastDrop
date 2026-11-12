@@ -15,19 +15,19 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Ssao.hlsl";
 	const char* kBlurShaderFile = "Resource/Shader/SsaoBlur.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率）。Ssao.hlsl の kHalfResolutionStep と揃える。
+	// 描画先の大きさ（画面に対する倍率）。Ssao.hlsl の kHalfResolutionStep と揃える
 	const float kResolutionScale = 0.5f;
 	// 画面の上の半径の上限（画面の高さに対する割合。5-3）。手元の銃・腕で点が画面中に散らばらないように。調整しない
 	const float kMaxScreenRadius = 0.1f;
 
-	// Ssao.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t5 深度 / b1）。
+	// Ssao.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t5 深度 / b1）
 	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
 	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// SsaoBlur.hlsl の番号と揃える（t2 / b1）。
+	// SsaoBlur.hlsl の番号と揃える（t2 / b1）
 	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 
-	// SsaoBlur.hlsl の cbuffer SsaoBlurConstants と同じ並び（float 4 つ＝16 バイト）。xy が 1 画素ずつ進む向き。
+	// SsaoBlur.hlsl の cbuffer SsaoBlurConstants と同じ並び（float 4 つ＝16 バイト）。xy が 1 画素ずつ進む向き
 	struct SsaoBlurConstants{
 		float direction[ 2 ];
 		float unused[ 2 ];
@@ -35,12 +35,12 @@ namespace{
 	const SsaoBlurConstants kHorizontal = { { 1.f, 0.f }, { 0.f, 0.f } };
 	const SsaoBlurConstants kVertical = { { 0.f, 1.f }, { 0.f, 0.f } };
 
-	// SSAO を切っている間の結果（r：AO 1 ＝遮られていない、g：Ssao.hlsl の kSkyDistance と同じ遠さ）。
+	// SSAO を切っている間の結果（r：AO 1 ＝遮られていない、g：Ssao.hlsl の kSkyDistance と同じ遠さ）
 	const Vector4 kNoOcclusionColor( 1.f, 10000.f, 0.f, 1.f );
 
 	const int kMatrixFloats = 16;
 	const int kParamFloats = 8;
-	// Ssao.hlsl の cbuffer SsaoConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// Ssao.hlsl の cbuffer SsaoConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct SsaoConstants{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float projectionView[ kMatrixFloats ];
@@ -120,12 +120,12 @@ void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth
 	gm.drawFullScreen();
 	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
 	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
-	// 横 → 縦（6-1）。縦の結果は作った先へ戻すので、結果はいつも mOcclusion。
+	// 横 → 縦（6-1）。縦の結果は作った先へ戻すので、結果はいつも mOcclusion
 	if ( ssaoBlurEnabled() ) {
 		blur( mOcclusion, mBlurScratch, mBlurHorizontal );
 		blur( mBlurScratch, mOcclusion, mBlurVertical );
 	}
-	// 後から描く物（固定パイプライン）に残さない。
+	// 後から描く物（固定パイプライン）に残さない
 	gm.setShader( Graphics::Shader() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 }

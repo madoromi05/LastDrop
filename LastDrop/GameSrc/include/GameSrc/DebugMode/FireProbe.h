@@ -1,12 +1,12 @@
 #ifndef INCLUDED_FIRE_PROBE_H
 #define INCLUDED_FIRE_PROBE_H
 
-// 「ロード後、撃つボタンを 1 回押しても撃てない」の原因を調べる、仮の記録（FuelEscapeLoading_Plan.txt 4 章・F-0）。
-// 撃つボタンを押した・離した描画ごとに 1 行、Profiling/fire_log.txt へ書く。押した後のティックで撃てたか（空撃ちか）も書く。
-// 原因が決まって直したら、このクラスごと消す（ゲームの判断には使わない。読むだけ）。Debug・Profile（ZF_EDITOR）だけで使う。
+// 「ロード後、撃つボタンを 1 回押しても撃てない」の原因を調べる、仮の記録（FuelEscapeLoading_Plan.txt 4 章・F-0）
+// 撃つボタンを押した・離した描画ごとに 1 行、Profiling/fire_log.txt へ書く。押した後のティックで撃てたか（空撃ちか）も書く
+// 原因が決まって直したら、このクラスごと消す（ゲームの判断には使わない。読むだけ）。Debug・Profile（ZF_EDITOR）だけで使う
 class FireProbe{
 public:
-	// 描画ごとの入力と画面の状態（GameScene が beginFrame の最後に集めて渡す）。
+	// 描画ごとの入力と画面の状態（GameScene が beginFrame の最後に集めて渡す）
 	struct FrameState{
 		bool rawFireHeld;   // 撃つボタンを押しているか（Pad そのもの）
 		bool commandFire;   // 自キャラへ渡す「撃つ」（抑止・ロックを通した後）
@@ -19,7 +19,7 @@ public:
 		bool freeCamera;
 		bool dead;
 	};
-	// 持っている銃の状態（銃が無ければ hasGun = false で、ほかは読まない）。
+	// 持っている銃の状態（銃が無ければ hasGun = false で、ほかは読まない）
 	struct GunState{
 		bool hasGun;
 		bool inHand;     // しまっていない
@@ -31,11 +31,11 @@ public:
 
 	FireProbe();
 
-	// ロードが終わった描画（数え始め）。
+	// ロードが終わった描画（数え始め）
 	void markReady();
-	// 描画ごと（ロード後）。押した・離した描画だけ書く。
+	// 描画ごと（ロード後）。押した・離した描画だけ書く
 	void onFrame( const FrameState& frame, const GunState& gun );
-	// ティックごと（世界を進めた後）。押してから決まったティックの間に撃てたかを書く。
+	// ティックごと（世界を進めた後）。押してから決まったティックの間に撃てたかを書く
 	void onTick( bool fired, bool dryFired );
 
 private:

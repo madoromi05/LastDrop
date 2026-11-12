@@ -1,11 +1,11 @@
-// 音の生成ツール。SoundCatalog の音（録音素材 recorded を除く）を合成して、ゲームが読む WAV を書き出す。
+// 音の生成ツール。SoundCatalog の音（録音素材 recorded を除く）を合成して、ゲームが読む WAV を書き出す
 //
 // 使い方（ゲームのプロジェクトのフォルダを渡す。省略すると今のフォルダ）:
 //   SoundGen.exe <LastDrop のフォルダ>
-// 書き出し先は <フォルダ>/Resource/Sound/<名前>_<揺らぎ番号>.wav（名前は SoundCatalog.cpp）。
+// 書き出し先は <フォルダ>/Resource/Sound/<名前>_<揺らぎ番号>.wav（名前は SoundCatalog.cpp）
 //
-// 種は「音の番号と揺らぎ番号」から決めるので、何度実行しても同じ音になる。
-// レシピ（*Synth.cpp）を変えたときだけ音が変わる。
+// 種は「音の番号と揺らぎ番号」から決めるので、何度実行しても同じ音になる
+// レシピ（*Synth.cpp）を変えたときだけ音が変わる
 #include "Generators.h"
 #include "WaveWriter.h"
 
@@ -13,7 +13,7 @@
 #include <filesystem>
 
 namespace{
-	// 音ごとに種の範囲を離す（揺らぎ番号を足しても隣の音の種と重ならないように）。
+	// 音ごとに種の範囲を離す（揺らぎ番号を足しても隣の音の種と重ならないように）
 	const unsigned kSeedStride = 1000;
 	const unsigned kSeedBase = 1;	// 種 0 を避ける（xorshift は 0 から進まない）
 

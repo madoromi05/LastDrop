@@ -53,7 +53,7 @@ namespace{
 			__cpuid( registers, static_cast< int >( kCpuBrandFirstLeaf + i ) );
 			memcpy( brand + i * sizeof( registers ), registers, sizeof( registers ) );
 		}
-		// 前に空白が詰めてある CPU があるので落とす。
+		// 前に空白が詰めてある CPU があるので落とす
 		std::string text( brand );
 		size_t first = text.find_first_not_of( ' ' );
 		return ( first == std::string::npos ) ? "" : text.substr( first );
@@ -70,7 +70,7 @@ namespace{
 		if ( !GetLogicalProcessorInformationEx( RelationProcessorCore, info, &length ) ){
 			return 0;
 		}
-		// 1 コアにつき 1 件。件ごとに長さが違うので、Size ずつ進めて数える。
+		// 1 コアにつき 1 件。件ごとに長さが違うので、Size ずつ進めて数える
 		int cores = 0;
 		for ( DWORD offset = 0; offset < length; ){
 			auto* entry = reinterpret_cast< SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX* >( buffer.data() + offset );
@@ -80,7 +80,7 @@ namespace{
 		return cores;
 	}
 
-	// GetVersionEx は互換のため古い番号を返すことがあるので、ntdll の RtlGetVersion で読む。
+	// GetVersionEx は互換のため古い番号を返すことがあるので、ntdll の RtlGetVersion で読む
 	std::string osVersion(){
 		typedef LONG ( WINAPI *RtlGetVersionFunction )( OSVERSIONINFOW* );
 		HMODULE ntdll = GetModuleHandleA( "ntdll.dll" );
@@ -113,7 +113,7 @@ namespace{
 	}
 
 	// 実際に描画に使っているデバイスの GPU を書く（デバイスを作るときにアダプタを指定していないので、
-	// どの GPU が選ばれたかはここで初めて分かる）。
+	// どの GPU が選ばれたかはここで初めて分かる）
 	void writeGpu( JsonWriter* json ){
 		Graphics::ManagerImpl* graphics = Graphics::gManagerImpl;
 		if ( !graphics || !graphics->dxDevice() ){
@@ -133,7 +133,7 @@ namespace{
 			}
 			LARGE_INTEGER umd = {};
 			if ( SUCCEEDED( adapter->CheckInterfaceSupport( __uuidof( IDXGIDevice ), &umd ) ) ){
-				// 64 ビットに 16 ビットずつ 4 つの番号が入っている（例：31.0.15.5244）。
+				// 64 ビットに 16 ビットずつ 4 つの番号が入っている（例：31.0.15.5244）
 				long long v = umd.QuadPart;
 				char buffer[ kTextBufferSize ];
 				snprintf( buffer, sizeof( buffer ), "%lld.%lld.%lld.%lld",
@@ -197,7 +197,7 @@ void write( const char* key, JsonWriter* json ){
 	writeDisplay( json );
 	json->string( "os", osVersion() );
 	writePower( json );
-	// 再起動してからの時間。短ければ、ファイルを OS がまだ覚えていない（ロードが遅く出る）状態で測ったと分かる。
+	// 再起動してからの時間。短ければ、ファイルを OS がまだ覚えていない（ロードが遅く出る）状態で測ったと分かる
 	json->integer( "systemUptimeSeconds", static_cast< long long >( GetTickCount64() ) / kMillisecondsPerSecond );
 	json->endObject();
 }

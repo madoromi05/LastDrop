@@ -4,8 +4,8 @@
 #include "Synth.h"
 #include <string>
 
-// モノラル・16bit・Synth::kSampleRate の WAV ファイルに書き出す。-1〜1 を超えるサンプルは切り詰める。
-// 書き出せなければ false。
+// モノラル・16bit・Synth::kSampleRate の WAV ファイルに書き出す。-1〜1 を超えるサンプルは切り詰める
+// 書き出せなければ false
 bool writeWave( const std::string& path, const Synth::Buffer& buffer );
 
 #endif

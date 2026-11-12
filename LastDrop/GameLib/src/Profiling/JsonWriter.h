@@ -9,8 +9,8 @@
 namespace GameLib{
 namespace Profiling{
 
-// 計測の結果を JSON の文字列にする小さな書き手（読むことはしない）。
-// ライブラリを足さずに済ませるため自前にしてある。値の関数は、オブジェクトの中では key を、配列の中では nullptr を渡す。
+// 計測の結果を JSON の文字列にする小さな書き手（読むことはしない）
+// ライブラリを足さずに済ませるため自前にしてある。値の関数は、オブジェクトの中では key を、配列の中では nullptr を渡す
 // 例：
 //   JsonWriter json;
 //   json.beginObject( nullptr );
@@ -31,7 +31,7 @@ public:
 	void boolean( const char* key, bool value );
 	const std::string& text() const;
 private:
-	// 前の要素とのカンマ・改行・字下げ・キーを書く。
+	// 前の要素とのカンマ・改行・字下げ・キーを書く
 	void beginValue( const char* key );
 	void writeQuoted( const char* text );
 

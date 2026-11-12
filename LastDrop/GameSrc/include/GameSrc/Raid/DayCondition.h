@@ -1,10 +1,10 @@
 #ifndef INCLUDED_DAY_CONDITION_H
 #define INCLUDED_DAY_CONDITION_H
 
-// 日ごとの条件（SummaryPlan/個別仕様/出撃と帰還/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる。
-// 調整値（LightingParams など）は書き換えず、使う所でこの倍率を掛ける（F6 の値が正のまま）。
-// どれが出るかは RaidStart（出撃のたびにランダム）、F6 で固定したのは RaidRecord。
-// 今の出撃のまま替える（F6 の Raid の欄）のは GameWorld::changeDayCondition。
+// 日ごとの条件（SummaryPlan/個別仕様/出撃と帰還/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる
+// 調整値（LightingParams など）は書き換えず、使う所でこの倍率を掛ける（F6 の値が正のまま）
+// どれが出るかは RaidStart（出撃のたびにランダム）、F6 で固定したのは RaidRecord
+// 今の出撃のまま替える（F6 の Raid の欄）のは GameWorld::changeDayCondition
 enum class DayCondition{
 	Normal,
 	Blackout, // 停電：街灯が消える
@@ -24,9 +24,9 @@ struct DayConditionEffect{
 	int zombieCount;            // 立っているゾンビの目標と、同時に居られる数（死体も数える）
 };
 
-// condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）。
+// condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）
 const DayConditionEffect& dayConditionEffect( DayCondition condition );
-// 英字の名前から引く。知らない名前・nullptr はふつう（日の条件を保存し直すとき用に残す）。
+// 英字の名前から引く。知らない名前・nullptr はふつう（日の条件を保存し直すとき用に残す）
 DayCondition dayConditionFromSaveName( const char* name );
 
 #endif

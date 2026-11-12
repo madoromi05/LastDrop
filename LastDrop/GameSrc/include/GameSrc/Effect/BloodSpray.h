@@ -5,19 +5,19 @@
 #include <random>
 
 // 弾がゾンビに当たった瞬間に飛ぶ血しぶき1回分。当たった点から血の滴を、弾の抜ける向きへ多く・撃った側へ少し飛ばし、
-// 重力で弧を描いて落としながら広げて薄くし、決まった時間で終わる（isFinished）。
-// 作りは砂ぼこり（ImpactDust）と同じだが、血は粉より重い液体なので、本当の重力で落とし、ぼかさずに濃く見せる。
-// 滴の位置・大きさ・濃さを答えるだけで、描かない（まとめて描くのは BloodSprayList）。
+// 重力で弧を描いて落としながら広げて薄くし、決まった時間で終わる（isFinished）
+// 作りは砂ぼこり（ImpactDust）と同じだが、血は粉より重い液体なので、本当の重力で落とし、ぼかさずに濃く見せる
+// 滴の位置・大きさ・濃さを答えるだけで、描かない（まとめて描くのは BloodSprayList）
 class BloodSpray{
 public:
 	static const int kBaseDropNumber = 12; // scale 1 の滴の数（抜ける側 8 ＋ 撃った側 4。BloodSpray.cpp で確かめる）
 	static const int kMaxDropNumber = 24; // 1回分の滴の数の上限（部位が千切れたときの切り口の数。scale 2 で 12 粒の 2 倍）
-	// 1 回に出せる scale の上限（これを超えると滴の数が上限を超えて ASSERT で止まる）。
+	// 1 回に出せる scale の上限（これを超えると滴の数が上限を超えて ASSERT で止まる）
 	static constexpr float kMaxScale = static_cast< float >( kMaxDropNumber ) / kBaseDropNumber;
 
-	// point: 当たった位置（HitWorld::Hit の値）。direction: 弾の飛んでいた向き（長さ1）。
-	// scale: 量と大きさの倍率（1 が基準。ふつうの命中は少し小さく、頭は大きくする。値は持ち主が決める）。0 より大きく kMaxScale 以下。
-	// random: 滴の向き・速さのばらつきに使う。所有権は受け取らない。nullptr 不可。
+	// point: 当たった位置（HitWorld::Hit の値）。direction: 弾の飛んでいた向き（長さ1）
+	// scale: 量と大きさの倍率（1 が基準。ふつうの命中は少し小さく、頭は大きくする。値は持ち主が決める）。0 より大きく kMaxScale 以下
+	// random: 滴の向き・速さのばらつきに使う。所有権は受け取らない。nullptr 不可
 	BloodSpray( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, float scale, std::mt19937* random );
 	void update();            // 1ティック進める。終わった物に呼んでも何もしない
 	bool isFinished() const;  // 決まった時間がたったか（持ち主が消す）

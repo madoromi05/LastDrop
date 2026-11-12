@@ -1,10 +1,10 @@
-// ブルームの縮小（Bloom::apply）。1 つ大きい段を、半分の大きさの段へ縮めながらぼかす。
+// ブルームの縮小（Bloom::apply）。1 つ大きい段を、半分の大きさの段へ縮めながらぼかす
 #include "Common.hlsli"
 
 Texture2D gSource : register(t2); // Bloom.cpp の kSourceSlot（1 つ大きい段）
 
 // 読む所のずらし（読む元の画素単位）。書き先の 1 画素は読む元の 2×2 画素の真ん中にあたるので、
-// 斜めに 1 画素ずつずらした 4 か所は、どれも 2×2 画素の真ん中になる。線形補間で読めば 4×4 画素の平均になる。
+// 斜めに 1 画素ずつずらした 4 か所は、どれも 2×2 画素の真ん中になる。線形補間で読めば 4×4 画素の平均になる
 static const int kTapCount = 4;
 static const float2 kTapOffsets[kTapCount] =
 {

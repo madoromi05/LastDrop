@@ -12,7 +12,7 @@ namespace{
 	const char* kDownShaderFile = "Resource/Shader/BloomDown.hlsl";
 	const char* kUpShaderFile = "Resource/Shader/BloomUp.hlsl";
 
-	// 段の大きさ。最初の段は画面の半分で、そこから段ごとに半分にする。
+	// 段の大きさ。最初の段は画面の半分で、そこから段ごとに半分にする
 	const float kFirstLevelScale = 0.5f;
 	const float kLevelShrink = 0.5f;
 
@@ -20,13 +20,13 @@ namespace{
 	const int kSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
-	// BloomExtract.hlsl の cbuffer BloomConstants と同じ並び（float 4つ＝16バイト）。
+	// BloomExtract.hlsl の cbuffer BloomConstants と同じ並び（float 4つ＝16バイト）
 	struct BloomConstants{
 		float threshold;
 		float padding[ 3 ];
 	};
 
-	// source を読む shader で、destination 全体を描く。ブレンドは呼んだ側で決めておく。
+	// source を読む shader で、destination 全体を描く。ブレンドは呼んだ側で決めておく
 	void drawPass( const Graphics::Shader& shader, const Graphics::RenderTarget& source, const Graphics::RenderTarget& destination ) {
 		Graphics::Manager gm = Graphics::Manager::instance();
 		gm.setRenderTargets( &destination, 1, Graphics::DepthTarget() ); // 描画範囲が destination の大きさになる
@@ -50,26 +50,26 @@ Bloom::Bloom() {
 
 const Graphics::RenderTarget& Bloom::apply( const Graphics::RenderTarget& sceneColor ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
-	// しきい値は F6 で動かせるので、毎回書く（16 バイトだけ）。
-	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる。
+	// しきい値は F6 で動かせるので、毎回書く（16 バイトだけ）
+	// 昼の明るい面も 1 を少し超えることがあるので、画面全体がぼやけるようなら上げる
 	BloomConstants constants = { postProcessParams().bloomThreshold, { 0.f, 0.f, 0.f } };
 	mConstants.set( &constants, sizeof( constants ) );
 	gm.setConstantBuffer( kConstantSlot, mConstants );
 
-	// 取り出しと縮小は、前のフレームの絵を残さないよう上書きで描く（全画面なので消去は要らない）。
+	// 取り出しと縮小は、前のフレームの絵を残さないよう上書きで描く（全画面なので消去は要らない）
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	drawPass( mExtractShader, sceneColor, mLevels[ 0 ] );
 	for ( int i = 1; i < kLevelCount; ++i ) {
 		drawPass( mDownShader, mLevels[ i - 1 ], mLevels[ i ] );
 	}
-	// 小さい段から順に、1 つ大きい段へ加算する。最後に [0] へ全部の段が足される。
-	// 足し先の段は縮めるときに書いた絵がそのまま残っていて、それを土台にする。
+	// 小さい段から順に、1 つ大きい段へ加算する。最後に [0] へ全部の段が足される
+	// 足し先の段は縮めるときに書いた絵がそのまま残っていて、それを土台にする
 	gm.setBlendMode( Graphics::BLEND_ADDITIVE );
 	for ( int i = kLevelCount - 1; i > 0; --i ) {
 		drawPass( mUpShader, mLevels[ i ], mLevels[ i - 1 ] );
 	}
 
-	// 後から描く物に残さない。
+	// 後から描く物に残さない
 	gm.setShaderResource( kSourceSlot, Graphics::RenderTarget() );
 	gm.setConstantBuffer( kConstantSlot, Graphics::ConstantBuffer() );
 	return mLevels[ 0 ];

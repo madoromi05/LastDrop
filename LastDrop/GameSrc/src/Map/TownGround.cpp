@@ -11,9 +11,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 部品のファイル。並びは TownPiece と同じ。
-	// 道路キットの部品は tools/configs/road_*.json で変換（原点は真上から見た中心・一番下）。earth.txt は 1m 四方の無地の板（手書き）。
-	// 土の色はアスファルトの平均に合わせてある。部品のつなぎ目には数 mm のすき間があり、そこから見える土が明るいと路面に光る線が出るため。
+	// 部品のファイル。並びは TownPiece と同じ
+	// 道路キットの部品は tools/configs/road_*.json で変換（原点は真上から見た中心・一番下）。earth.txt は 1m 四方の無地の板（手書き）
+	// 土の色はアスファルトの平均に合わせてある。部品のつなぎ目には数 mm のすき間があり、そこから見える土が明るいと路面に光る線が出るため
 	const char* const kPieceFiles[ TOWN_PIECE_NUM ] = {
 		"Resource/Model/Map/road_straight.txt",
 		"Resource/Model/Map/road_center.txt",
@@ -27,7 +27,7 @@ namespace{
 		"Resource/Model/Map/earth.txt",
 	};
 
-	// 部品の種類ごとの足元の材質（足音の音色）。並びは TownPiece と同じ。車道は砂利、歩道はコンクリート。
+	// 部品の種類ごとの足元の材質（足音の音色）。並びは TownPiece と同じ。車道は砂利、歩道はコンクリート
 	const GroundMaterial kPieceMaterials[] = {
 		GROUND_GRAVEL,   // 直線の道路
 		GROUND_GRAVEL,   // 交差点の真ん中
@@ -42,22 +42,22 @@ namespace{
 	};
 	static_assert( sizeof( kPieceMaterials ) / sizeof( kPieceMaterials[ 0 ] ) == TOWN_PIECE_NUM, "kPieceMaterials must list every TownPiece" );
 
-	// 足元の材質を調べる縦の線分の両端（足元からの高さ、m）。
-	// キャラの足元は面の高さへ少しずつ近づく（CharacterMover::followGround）ので、段差を上る途中は面の方が足元より高い。
-	// 面を上から探せるよう、足元より上から下ろす。下の端は、車道より少し低く敷いてある町の外の土まで届かせる。
+	// 足元の材質を調べる縦の線分の両端（足元からの高さ、m）
+	// キャラの足元は面の高さへ少しずつ近づく（CharacterMover::followGround）ので、段差を上る途中は面の方が足元より高い
+	// 面を上から探せるよう、足元より上から下ろす。下の端は、車道より少し低く敷いてある町の外の土まで届かせる
 	const float kProbeTop = 1.f;
 	const float kProbeBottom = -1.f;
-	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ。
+	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ
 	const float kHeightProbeTop = MoveHeight::kStepOver;
 
-	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい。
+	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい
 	const float kGridCellSize = 4.f;
 }
 
 TownGround::TownGround( MeshCache* cache ) {
 	ASSERT( cache && "TownGround : cache is null." );
 	for ( int i = 0; i < TOWN_PIECE_NUM; ++i ) {
-		// 置いた後に1つへまとめるので、頂点を CPU に残す形で借りる（どれも数個〜数十個の頂点しか無い小さい部品）。
+		// 置いた後に1つへまとめるので、頂点を CPU に残す形で借りる（どれも数個〜数十個の頂点しか無い小さい部品）
 		mPieceData[ i ] = cache->staticMeshForMerging( kPieceFiles[ i ] );
 	}
 }
@@ -74,7 +74,7 @@ void TownGround::place( const TownMap& map ) {
 		mTiles.push_back( { instance, tile.piece } );
 		worlds[ tile.piece ].push_back( instance.worldMatrix() );
 	}
-	// 当たり判定のます。範囲は置いた部品の箱を全部囲む大きさ（町の外の土も入る）。
+	// 当たり判定のます。範囲は置いた部品の箱を全部囲む大きさ（町の外の土も入る）
 	if ( !mTiles.empty() ) {
 		Vector3 boundsMin = mTiles.front().mesh.boundsMin();
 		Vector3 boundsMax = mTiles.front().mesh.boundsMax();
@@ -87,7 +87,7 @@ void TownGround::place( const TownMap& map ) {
 			mGrid.add( static_cast< int >( i ), mTiles[ i ].mesh.boundsMin(), mTiles[ i ].mesh.boundsMax() );
 		}
 	}
-	// 種類ごとに、置いた全部を1つのメッシュへまとめる（描くのはこちら）。1枚も置けなかった種類は作らない。
+	// 種類ごとに、置いた全部を1つのメッシュへまとめる（描くのはこちら）。1枚も置けなかった種類は作らない
 	for ( int piece = 0; piece < TOWN_PIECE_NUM; ++piece ) {
 		auto merged = std::make_unique< StaticMeshData >();
 		if ( !StaticMeshMerger::merge( *mPieceData[ piece ], worlds[ piece ], merged.get() ) ) {
@@ -140,10 +140,10 @@ bool TownGround::heightBelow( const Vector3& position, float* height ) const {
 }
 
 const TownGround::Tile* TownGround::nearestTile( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
-	// 1 フレームに何十回も呼ばれるので、区間ではなく合計の時間と回数で測る。
+	// 1 フレームに何十回も呼ばれるので、区間ではなく合計の時間と回数で測る
 	PROFILE_TOTAL( "Ground.ms" );
 	PROFILE_COUNT( "Ground.query", 1 );
-	// 線分が上から見て通るますにかかる部品だけを調べる（足元の縦の線分なら 1 ますぶん）。
+	// 線分が上から見て通るますにかかる部品だけを調べる（足元の縦の線分なら 1 ますぶん）
 	mGrid.collect( origin, delta, &mCandidates );
 	PROFILE_COUNT( "Ground.tiles", static_cast< double >( mCandidates.size() ) );
 	const Tile* nearest = nullptr;

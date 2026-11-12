@@ -5,7 +5,7 @@
 #include "GameLib/Base/DebugStream.h"
 
 namespace{
-	// 骨の名前の書き方（末尾の '*' でまとめて引く）は BoneNamePattern。
+	// 骨の名前の書き方（末尾の '*' でまとめて引く）は BoneNamePattern
 	struct ArmDefinition{
 		const char* shoulder;
 		const char* elbow;
@@ -19,7 +19,7 @@ namespace{
 		const char* ankle;
 		const char* toe;
 	};
-	// 並びは ZombieCrawlLayout::Side と同じ。
+	// 並びは ZombieCrawlLayout::Side と同じ
 	const ArmDefinition kArmDefinitions[] = {
 		{ "LeftArm",  "LeftForeArm",  "LeftHand",  "LeftHandMiddle1",  "LeftHand*" },
 		{ "RightArm", "RightForeArm", "RightHand", "RightHandMiddle1", "RightHand*" },
@@ -37,9 +37,9 @@ namespace{
 	const char* kChestBone = "Spine2";
 	const char* kNeckBone = "Neck";
 	const char* kHeadBone = "Head";
-	// あごの骨は low_jaw1 → 2 → 3 と前へ並ぶ。一番前（あごの先）で顔の向きを測る。
+	// あごの骨は low_jaw1 → 2 → 3 と前へ並ぶ。一番前（あごの先）で顔の向きを測る
 	const char* kChinBone = "low_jaw3";
-	// 胸を反らせるときに一緒に回す骨（Spine2 から先。ZombieFlinchLayout の胴から先と同じ並び）。
+	// 胸を反らせるときに一緒に回す骨（Spine2 から先。ZombieFlinchLayout の胴から先と同じ並び）
 	const char* const kChestFollowerNames[] = {
 		"Spine2", "LeftShoulder", "RightShoulder", "LeftArm", "LeftForeArm", "LeftHand*",
 		"RightArm", "RightForeArm", "RightHand*", "Neck", "Head", "low_jaw*",

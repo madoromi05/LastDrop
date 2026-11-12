@@ -9,7 +9,7 @@ class RefString;
 
 ///バイナリファイルの読み込みを楽にするためのクラス
 /*!
-基本的にコピーは行わない。したがって、元の文字列は保持されている必要がある。
+基本的にコピーは行わない。したがって、元の文字列は保持されている必要がある
 */
 class IBinaryStream{
 public:
@@ -19,7 +19,7 @@ public:
 	~IBinaryStream();
 	///戻り値は読めたバイト数
 	int read( char*, int size );
-	///各種組み込み整数型用のバージョン。成功失敗は引数に返るが、渡さなければ何もしない。
+	///各種組み込み整数型用のバージョン。成功失敗は引数に返るが、渡さなければ何もしない
 	int readInt( bool* succeeded = 0 );
 	unsigned readUnsigned( bool* succeeded = 0 );
 	short readShort( bool* succeeded = 0 );

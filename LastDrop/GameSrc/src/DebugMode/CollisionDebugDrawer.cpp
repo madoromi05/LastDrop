@@ -19,33 +19,33 @@ namespace{
 	const int kRectCorners = 4;       // 真上から見た長方形の隅の数
 
 	// ── 部位の当たり判定（箱）──
-	// 隅の番号の 1・2・4 の位が、それぞれ X・Y・Z の -1/+1 にあたる（隅 i と i|位 を結ぶと辺になる）。
+	// 隅の番号の 1・2・4 の位が、それぞれ X・Y・Z の -1/+1 にあたる（隅 i と i|位 を結ぶと辺になる）
 	const int kCubeCorners = 8;
 	const int kCubeAxisBits[] = { 1, 2, 4 };
 	const int kCubeEdges = 12;
 	const float kCubeHalf = 1.f; // HitboxSet::boxMatrix が置く立方体の幅の半分（-1〜1）
 
-	// 線の色（VertexColor と同じ詰め方。メッシュの頂点カラーと同じ並び）。白を少し透かして、後ろの体や壁も見えるようにする。
+	// 線の色（VertexColor と同じ詰め方。メッシュの頂点カラーと同じ並び）。白を少し透かして、後ろの体や壁も見えるようにする
 	const float kLineOpacity = 0.5f; // 不透明度（1 で不透明、0 で見えない）
 	const unsigned kLineColor = VertexColor::pack( 1.f, 1.f, 1.f, kLineOpacity );
 
 	// ── 容量 ──
 	const int kVerticesPerLine = 2;
-	// 柱1本（輪の頂点 n 個）：「下の輪 n 本＋上の輪 n 本＋縦 n 本」の線。
+	// 柱1本（輪の頂点 n 個）：「下の輪 n 本＋上の輪 n 本＋縦 n 本」の線
 	const int kPillarLinesPerCorner = 3;
 	int pillarVertexCost( int ringSize ) {
 		return ringSize * kPillarLinesPerCorner * kVerticesPerLine;
 	}
-	// 部位の箱1つ：線 12 本。
+	// 部位の箱1つ：線 12 本
 	const int kBoxVertexCost = kCubeEdges * kVerticesPerLine;
-	// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋置物 20 個ぶんに余裕を持たせた。足りなくなったら増やす。
+	// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋置物 20 個ぶんに余裕を持たせた。足りなくなったら増やす
 	const int kVertexCapacity = 16000;
 	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
 	// ── 建物の面のかけら ──
-	// 線を壁の表面から浮かせる量（m）。表面とぴったり同じ奥行きだと、壁に隠れたり出たりしてちらつくため。
+	// 線を壁の表面から浮かせる量（m）。表面とぴったり同じ奥行きだと、壁に隠れたり出たりしてちらつくため
 	const float kWallLineLift = 0.01f;
-	// 名簿にある建物ぜんぶの、かけらの輪郭に要る頂点の数（かけら1つは、隅の数だけ線がある。建物1軒で約 750 個・6000 頂点）。
+	// 名簿にある建物ぜんぶの、かけらの輪郭に要る頂点の数（かけら1つは、隅の数だけ線がある。建物1軒で約 750 個・6000 頂点）
 	int wallVertexCost( const CollisionWorld& collisionWorld ) {
 		int cost = 0;
 		for ( const WallMesh& walls : collisionWorld.wallMeshes() ) {
@@ -63,7 +63,7 @@ namespace{
 	const int kRayHitAxisNumber = 3;       // 十字は X・Y・Z の3本
 	const int kRayHitVertexCost = ( kRayHitAxisNumber + 1 ) * kVerticesPerLine; // 十字3本＋法線1本
 
-	// 長方形（置物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は見た目と同じ行列（PlacementMatrix）。
+	// 長方形（置物・キャラ）の4隅を、回りの順に頂点の輪にする（地面の高さ）。置き方は見た目と同じ行列（PlacementMatrix）
 	void rectRing( const BoxCollider& box, std::vector< Vector3 >* ring ) {
 		const float kCornerSignX[ kRectCorners ] = { -1.f, 1.f, 1.f, -1.f };
 		const float kCornerSignZ[ kRectCorners ] = { -1.f, -1.f, 1.f, 1.f };
@@ -76,7 +76,7 @@ namespace{
 		}
 	}
 
-	// -1〜1 の立方体を boxMatrix で置いた箱の 8 隅（番号の決まりは kCubeAxisBits）。
+	// -1〜1 の立方体を boxMatrix で置いた箱の 8 隅（番号の決まりは kCubeAxisBits）
 	void cubeCorners( const Matrix34& boxMatrix, std::vector< Vector3 >* corners ) {
 		corners->clear();
 		for ( int i = 0; i < kCubeCorners; ++i ) {
@@ -92,7 +92,7 @@ namespace{
 
 	// ── 手前の物に隠れない柱（drawSeeThrough）──
 	const unsigned kSeeThroughColor = VertexColor::pack( 1.f, 0.85f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる黄（燃料の色）
-	// 一度に描ける箱の数。落ちている物（ガソリンの候補は 10 か所）に余裕を持たせた数。足りなくなったら増やす。
+	// 一度に描ける箱の数。落ちている物（ガソリンの候補は 10 か所）に余裕を持たせた数。足りなくなったら増やす
 	const int kSeeThroughBoxCapacity = 64;
 	const int kSeeThroughBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
 
@@ -111,7 +111,7 @@ void CollisionDebugDrawer::reserveWallVertices( const CollisionWorld& collisionW
 	if ( mRenderer && needed <= mWallVertexCapacity ) {
 		return;
 	}
-	// 建物は置いた後に増えないので、作り直すのはふつう最初の1回だけ。
+	// 建物は置いた後に増えないので、作り直すのはふつう最初の1回だけ
 	mWallVertexCapacity = needed;
 	mRenderer = Scene::PrimitiveRenderer::create( kVertexCapacity + mWallVertexCapacity, kBatchCapacity );
 }
@@ -184,11 +184,11 @@ const ICollisionBody* hiddenBody, const IHittable* hiddenTarget ) {
 }
 
 void CollisionDebugDrawer::addWallLines( const CollisionWorld& collisionWorld ) {
-	// 容量は reserveWallVertices が名簿から数えて確保済みなので、ここでは数えない。
+	// 容量は reserveWallVertices が名簿から数えて確保済みなので、ここでは数えない
 	for ( const WallMesh& walls : collisionWorld.wallMeshes() ) {
 		for ( const WallPiece& piece : walls.pieces() ) {
-			// 面の表の向き（三角形の回り順から決まる。メッシュの表と同じ）へ少し浮かせる。
-			// 隅が一直線に並ぶかけらは向きが決まらない（長さ 0）ので、浮かせない。
+			// 面の表の向き（三角形の回り順から決まる。メッシュの表と同じ）へ少し浮かせる
+			// 隅が一直線に並ぶかけらは向きが決まらない（長さ 0）ので、浮かせない
 			Vector3 edge0;
 			Vector3 edge1;
 			edge0.setSub( piece.corner[ 1 ], piece.corner[ 0 ] );
@@ -223,7 +223,7 @@ void CollisionDebugDrawer::addPillarLines( Scene::PrimitiveRenderer& renderer, c
 }
 
 void CollisionDebugDrawer::addBoxLines( const std::vector< Vector3 >& corners ) {
-	// 1 つの位だけ違う隅どうしを結ぶと、立方体の 12 辺になる。
+	// 1 つの位だけ違う隅どうしを結ぶと、立方体の 12 辺になる
 	for ( int i = 0; i < kCubeCorners; ++i ) {
 		for ( int bit : kCubeAxisBits ) {
 			if ( i & bit ) {

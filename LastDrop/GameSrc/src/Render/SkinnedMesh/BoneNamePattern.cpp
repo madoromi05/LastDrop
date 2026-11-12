@@ -6,7 +6,7 @@
 #include <string>
 
 namespace{
-	// 名前の末尾がこれなら、その前までで始まる骨を全部含める。
+	// 名前の末尾がこれなら、その前までで始まる骨を全部含める
 	const char kWildcard = '*';
 }
 

@@ -46,7 +46,7 @@ public:
 	mTextureWidth( textureWidth ),
 	mTextureHeight( textureHeight ){
 		//テクスチャ生成。とりあえず一枚
-		//途中から初めて出る字を描き足すので、GPU へ送った後も書ける画像にする（DX11 版の普通の画像は送った後に CPU 側の画素を捨てる）。
+		//途中から初めて出る字を描き足すので、GPU へ送った後も書ける画像にする（DX11 版の普通の画像は送った後に CPU 側の画素を捨てる）
 		Texture t = Texture::createWritable( mTextureWidth, mTextureHeight );
 		//マップに格納
 		mTextures.insert( make_pair( 0, t ) );
@@ -79,7 +79,7 @@ public:
 		//文字のメトリクス生成
 		TEXTMETRIC tm;
 		GetTextMetrics( mDeviceContextHandle, &tm );
-		mCharHeight = tm.tmHeight; //実際の値で上書き。
+		mCharHeight = tm.tmHeight; //実際の値で上書き
 		mCharAscent = tm.tmAscent; //ベースラインの上の寸法が必要
 	}
 	~FontImplOS(){
@@ -94,7 +94,7 @@ public:
 	Vector2* uvTopLeft,
 	Vector2* uvBottomRight,
 	int code ){
-		//コードテーブルにあれば使う。
+		//コードテーブルにあれば使う
 		CharIt cit = mChars.find( code );
 		const Char* c = 0;
 		if ( cit != mChars.end() ){
@@ -131,7 +131,7 @@ public:
 		DWORD size;
 		const UINT format = ( mAntiAliased ) ? GGO_GRAY8_BITMAP : GGO_BITMAP;
 		// まずは必要なバッファサイズを取得
-		// code は Unicode のコードポイント（StringRenderer が UTF-8 から読む）なので W 版で描く。
+		// code は Unicode のコードポイント（StringRenderer が UTF-8 から読む）なので W 版で描く
 		size = GetGlyphOutlineW(
 			mDeviceContextHandle,
 			static_cast< UINT >( code ),
@@ -139,7 +139,7 @@ public:
 			&gm, 0, NULL, &mat );
 		//寸法取得
 		int cellW = static_cast< int >( gm.gmCellIncX );
-		int cellH = static_cast< int >( mCharHeight ); //IncYは役立たず。
+		int cellH = static_cast< int >( mCharHeight ); //IncYは役立たず
 		int glyphW = static_cast< int >( gm.gmBlackBoxX );
 		int glyphH = static_cast< int >( gm.gmBlackBoxY );
 		int glyphX = static_cast< int >( gm.gmptGlyphOrigin.x );
@@ -197,7 +197,7 @@ public:
 			BYTE* data = NEW BYTE[ size ];
 			int srcPitch = ( glyphW + 3 ) & ~( 3 ); //4バイトアライン
 
-			// 二度目の呼び出しが本物。データ取得。
+			// 二度目の呼び出しが本物。データ取得
 			size = GetGlyphOutlineW(
 				mDeviceContextHandle,
 				static_cast< UINT >( code ),

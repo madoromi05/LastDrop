@@ -21,19 +21,19 @@ namespace{
 	const float kHeadingTop = 90.f;    // 見出しの真ん中
 	const float kFirstLineTop = 170.f; // 1 行目の真ん中
 	const float kLineHeight = 34.f;
-	// 行の列の左端（横の中央から）。名前・値。
+	// 行の列の左端（横の中央から）。名前・値
 	const float kNameColumn = -150.f;
 	const float kValueColumn = 60.f;
-	// 行（上から）。
+	// 行（上から）
 	enum ResultLine{
 		LINE_TIME,
 		LINE_KILLS,
 	};
-	// ボタン（横の中央からのずれ・上端・幅・高さ。メニューのボタンと同じ大きさ）。死んだときは上に「もう一度」を足す。
+	// ボタン（横の中央からのずれ・上端・幅・高さ。メニューのボタンと同じ大きさ）。死んだときは上に「もう一度」を足す
 	const UiRect kRetryRect = { -110.f, 340.f, 220.f, 44.f };
 	const UiRect kTitleRect = { -110.f, 400.f, 220.f, 44.f };
 
-	// 見出しは英語（タイトル・一時停止のボタンと同じ）。中の文字とボタンは日本語。
+	// 見出しは英語（タイトル・一時停止のボタンと同じ）。中の文字とボタンは日本語
 	const char* kEscapedHeading = "ESCAPED";
 	const char* kKilledHeading = "KILLED IN ACTION";
 	const char* kTimeName = "かかった時間";
@@ -52,7 +52,7 @@ namespace{
 	}
 
 	std::function< void() > changeTo( SceneManager::SceneId id ) {
-		// ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）。
+		// ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）
 		return [ id ]() { SceneManager::instance().requestChange( id ); };
 	}
 }
@@ -74,7 +74,7 @@ RaidEndScene::RaidEndScene( GameResources* resources ) :
 	std::snprintf( text, sizeof( text ), kKillsFormat, result.kills );
 	addLine( LINE_KILLS, kKillsName, text );
 
-	// ボタンは上から足す（上下キーで選ぶ順。始めは一番上が選ばれる）。
+	// ボタンは上から足す（上下キーで選ぶ順。始めは一番上が選ばれる）
 	if ( !escaped ) {
 		canvas.add( std::make_unique< UiButton >( UI_ANCHOR_CENTER, kRetryRect, kRetryLabel, changeTo( SceneManager::SCENE_GAME ) ) );
 	}
@@ -93,7 +93,7 @@ void RaidEndScene::beginFrame() {
 }
 
 void RaidEndScene::update() {
-	// 時間で進むものは無い。
+	// 時間で進むものは無い
 }
 
 void RaidEndScene::draw() {

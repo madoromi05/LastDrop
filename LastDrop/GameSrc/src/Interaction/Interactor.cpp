@@ -27,8 +27,8 @@ void Interactor::update( const Vector3& eye, const Vector3& direction,
 	if ( !target || !interactPressed || !target->canInteract( *inventory ) ) {
 		return;
 	}
-	// 漁れる場所・脱出の車の給油口は、中のマス目を見せる（開けるまで待つ・画面を開くのは呼ぶ側）。
-	// 拾う物は、置く所を選ぶまで入れない（呼ぶ側がカバンの画面を開く）。それ以外はすぐ使う。
+	// 漁れる場所・脱出の車の給油口は、中のマス目を見せる（開けるまで待つ・画面を開くのは呼ぶ側）
+	// 拾う物は、置く所を選ぶまで入れない（呼ぶ側がカバンの画面を開く）。それ以外はすぐ使う
 	ItemStack offered;
 	if ( target->lootGrid() ) {
 		mOpened = target;

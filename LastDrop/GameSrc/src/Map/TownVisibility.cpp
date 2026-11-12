@@ -12,31 +12,31 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ。
+	// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ
 	const float kCellSize = 4.f;
-	// 建物を見る点の間隔：ますの 1 辺をこの数に分けた格子の点（ますの中に (kViewSteps+1)² 点）。1 なら四隅だけ。
-	// 2（9 点）にしても Debug の確かめの見落としは 2 → 1 件にしか減らず、作る時間は 0.18 → 0.48 秒になったので 1 にした。
+	// 建物を見る点の間隔：ますの 1 辺をこの数に分けた格子の点（ますの中に (kViewSteps+1)² 点）。1 なら四隅だけ
+	// 2（9 点）にしても Debug の確かめの見落としは 2 → 1 件にしか減らず、作る時間は 0.18 → 0.48 秒になったので 1 にした
 	const int kViewSteps = 1;
-	// 建物の辺の上に置く「見られる点」の間隔（m）。
+	// 建物の辺の上に置く「見られる点」の間隔（m）
 	const float kTargetSpacing = 1.f;
-	// 見られる点を辺から外へずらす幅（m）。点が自分の長方形の上に乗って、線の端が触れた扱いにならないように。
+	// 見られる点を辺から外へずらす幅（m）。点が自分の長方形の上に乗って、線の端が触れた扱いにならないように
 	const float kTargetOffset = 0.05f;
-	// 遮る長方形を、体の高さの壁を囲む箱から縮める幅（m）。入口のへこみ・角の欠けの分（壁の外を通る線を遮らないように）。
+	// 遮る長方形を、体の高さの壁を囲む箱から縮める幅（m）。入口のへこみ・角の欠けの分（壁の外を通る線を遮らないように）
 	const float kOccluderInset = 0.5f;
-	// ゾンビ（ますどうし）を遮る建物の低さの下限（m）。ゾンビの背（約 1.8m）より高い建物だけが遮る。
+	// ゾンビ（ますどうし）を遮る建物の低さの下限（m）。ゾンビの背（約 1.8m）より高い建物だけが遮る
 	const float kCharacterHeight = 2.f;
-	// 目がこれより低い建物の上に出たら PVS を使わない分の余裕（m）。
+	// 目がこれより低い建物の上に出たら PVS を使わない分の余裕（m）
 	const float kEyeHeightMargin = 0.5f;
 	const int kBitsPerWord = 32;
 	const float kHalf = 0.5f;
-	// ますどうしの線を引く点（四隅）の組の答えを、まだ求めていない印。
+	// ますどうしの線を引く点（四隅）の組の答えを、まだ求めていない印
 	const signed char kUnknown = -1;
 
 	int wordsFor( int bitNumber ) {
 		return ( bitNumber + kBitsPerWord - 1 ) / kBitsPerWord;
 	}
 
-	// 上から見た線分 (ax,az)→(bx,bz) が、長方形 [minX,maxX]×[minZ,maxZ] を通るか（2D のスラブ法）。
+	// 上から見た線分 (ax,az)→(bx,bz) が、長方形 [minX,maxX]×[minZ,maxZ] を通るか（2D のスラブ法）
 	bool segmentTouchesRect( float ax, float az, float bx, float bz, float minX, float minZ, float maxX, float maxZ ) {
 		float enter = 0.f;
 		float leave = 1.f;
@@ -91,7 +91,7 @@ void TownVisibility::build( const std::vector< Building >& buildings ) {
 	if ( buildings.empty() ) {
 		return;
 	}
-	// 段ごとに作る。後の段は前の段の結果を読む。
+	// 段ごとに作る。後の段は前の段の結果を読む
 	Vector3 townMin;
 	Vector3 townMax;
 	buildFootprints( buildings, &townMin, &townMax );
@@ -193,7 +193,7 @@ void TownVisibility::bakeBuildingVisibility() {
 			}
 		}
 	}
-	// ますの見えうる建物 ＝ ますの中の見る点のどれかから見えうる建物（ビットを語ごとに足し合わせる）。
+	// ますの見えうる建物 ＝ ますの中の見る点のどれかから見えうる建物（ビットを語ごとに足し合わせる）
 	mBuildingBits.assign( static_cast< size_t >( cellNumber ) * mBuildingWords, 0u );
 	for ( int z = 0; z < mCountZ; ++z ) {
 		for ( int x = 0; x < mCountX; ++x ) {
@@ -241,7 +241,7 @@ void TownVisibility::bakeCellVisibility() {
 		int az = a / mCountX;
 		const int cornersA[ 4 ] = { az * vertexCountX + ax, az * vertexCountX + ax + 1, ( az + 1 ) * vertexCountX + ax, ( az + 1 ) * vertexCountX + ax + 1 };
 		for ( int b = 0; b < cellNumber; ++b ) {
-			// 建物の中のます（ゾンビは入れない）は表に載せない。showsPoint は、ゾンビ自身のますが閉じていれば見える扱いにする。
+			// 建物の中のます（ゾンビは入れない）は表に載せない。showsPoint は、ゾンビ自身のますが閉じていれば見える扱いにする
 			if ( !mCellOpen[ b ] ) {
 				continue;
 			}
@@ -331,7 +331,7 @@ bool TownVisibility::isBlocked( float ax, float az, float bx, float bz, float mi
 		float minZ = f.blockMinZ;
 		float maxX = f.blockMaxX;
 		float maxZ = f.blockMaxZ;
-		// 線の端が長方形の中にある（ますの隅が建物の足元に入った）なら、その建物では遮らない（見える物を消さない側）。
+		// 線の端が長方形の中にある（ますの隅が建物の足元に入った）なら、その建物では遮らない（見える物を消さない側）
 		if ( rectContains( ax, az, minX, minZ, maxX, maxZ ) || rectContains( bx, bz, minX, minZ, maxX, maxZ ) ) {
 			continue;
 		}
@@ -347,7 +347,7 @@ bool TownVisibility::seesBuilding( float x, float z, int building ) const {
 	if ( rectContains( x, z, f.minX, f.minZ, f.maxX, f.maxZ ) ) {
 		return true; // 見る点が建物の足元の中（庇の下など）
 	}
-	// 見る点を向いた辺（最大 2 本）の上に、間隔ごとの点を置いて線を引く。
+	// 見る点を向いた辺（最大 2 本）の上に、間隔ごとの点を置いて線を引く
 	struct Edge{
 		float ax, az, bx, bz;
 	};

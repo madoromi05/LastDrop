@@ -26,8 +26,8 @@ using namespace GameLib::Math;
 namespace{
 	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
 	const char* kPlayerFile = "Resource/Model/Character/player.txt"; // tools/configs/player.json で変換
-	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある（tools/configs/pistol.json・rifle.json などで変換）。
-	// 骨の名前の頭の共通部分（部位ごとの当たり判定で骨を引くのに使う）。
+	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある（tools/configs/pistol.json・rifle.json などで変換）
+	// 骨の名前の頭の共通部分（部位ごとの当たり判定で骨を引くのに使う）
 	const char* kBoneNamePrefix = "mixamorig:";
 
 	// ── 物の名前（確認用。F6 のエディタの物の一覧・デバッグ出力。ゲームの判断はタグで行う）──
@@ -51,11 +51,11 @@ bool PlayerFactory::isReady() const {
 
 GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
 	// HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。付ける順は自由
-	// （部品は awake で自分の物を作り、start で隣の部品を借りる）。
+	// （部品は awake で自分の物を作り、start で隣の部品を借りる）
 	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise）は、行を消せばその振る舞いだけ無くなる
-	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない）。
-	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く。
-	// 音は、動いた後の足元・撃った後の銃を読むため）。
+	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない）
+	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く
+	// 音は、動いた後の足元・撃った後の銃を読むため）
 	std::vector< const GameObject* > weapons;
 	for ( int i = 0; i < WEAPON_NUMBER; ++i ) {
 		weapons.push_back( spawnWeapon( world, static_cast< WeaponId >( i ) ) ); // 作れなかった銃（nullptr）は HoldComponent が飛ばす
@@ -80,7 +80,7 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 
 GameObject* PlayerFactory::spawnWeapon( GameObjectWorld* world, WeaponId id ) const {
 	const WeaponSpec& spec = weaponSpec( id );
-	// 構築に失敗していたら置かない（自キャラは素手で出す。キャラまで出さないと操作の確認ができないため）。
+	// 構築に失敗していたら置かない（自キャラは素手で出す。キャラまで出さないと操作の確認ができないため）
 	if ( !mWeaponData[ id ]->isReady() ) {
 		return nullptr;
 	}

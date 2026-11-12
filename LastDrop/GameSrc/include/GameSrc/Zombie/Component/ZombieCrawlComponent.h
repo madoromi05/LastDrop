@@ -16,15 +16,15 @@ class ZombieRootMotionSpan;
 class ZombieAnimationSet;
 struct ChaseTarget;
 
-// 脚を失って倒れた後（Downed）、倒れ終わったら腕で体を引きずって追ってくる（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）。
-// 引きずる腕・胸の置き場所は ZombieCrawler（ZombieDismemberComponent が持つ。残っている腕しか使えないため）、ここはいつ・どちらへ引くかを決める。
-// 追いついたら、立っている体と同じく ZombieAttackComponent で攻撃を始める（気付く前はうろつかず、その場でもがくだけ）。
+// 脚を失って倒れた後（Downed）、倒れ終わったら腕で体を引きずって追ってくる（SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt）
+// 引きずる腕・胸の置き場所は ZombieCrawler（ZombieDismemberComponent が持つ。残っている腕しか使えないため）、ここはいつ・どちらへ引くかを決める
+// 追いついたら、立っている体と同じく ZombieAttackComponent で攻撃を始める（気付く前はうろつかず、その場でもがくだけ）
 class ZombieCrawlComponent : public Component{
 public:
 	ZombieCrawlComponent();
 
-	// Downed の間、毎ティック。倒れ終わるまでは何もせず、倒れ終わったら引きずり始め、追う先へ向けて腕で体を引く。
-	// target: 追う先（nullptr なら追わない）。
+	// Downed の間、毎ティック。倒れ終わるまでは何もせず、倒れ終わったら引きずり始め、追う先へ向けて腕で体を引く
+	// target: 追う先（nullptr なら追わない）
 	void update( const ChaseTarget* target, const HitWorld& hitWorld );
 
 	// Component（ZombieModel・Transform・SkinnedModel・CharacterCollider・ZombieDismember・ZombieState・ZombieChase・
@@ -34,8 +34,8 @@ public:
 private:
 	bool canStart() const; // 前へ倒れるアニメで倒れ終わったか（引きずれる骨がそろっているか）
 	void startCrawling();
-	// 追う先を考えて、腕をどう動かすか（もがく・引く・止める）を決める。追いついたら攻撃を始める。moving: 進むか（向き終わったか）。
-	// attack: 攻撃の部品（外されていれば nullptr）。
+	// 追う先を考えて、腕をどう動かすか（もがく・引く・止める）を決める。追いついたら攻撃を始める。moving: 進むか（向き終わったか）
+	// attack: 攻撃の部品（外されていれば nullptr）
 	ZombieCrawler::Effort chase( const ChaseTarget* target, const HitWorld& hitWorld, ZombieAttackComponent* attack, bool* moving );
 
 	// ── 同じ物の部品（start で借りる）──

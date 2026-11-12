@@ -24,7 +24,7 @@ namespace{
 	// ── F6 の Spawn zombie でゾンビを出す（確認用。8m 前に 1 体） ──
 	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
 	const int kDebugSpawnNumber = 1;
-	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする。
+	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする
 	const float kDebugSpawnSpacing = 1.2f;
 	const float kFaceBackDegree = 180.f; // 自キャラの方を向かせる
 	const float kHalf = 0.5f;
@@ -49,7 +49,7 @@ void GameEditorBridge::markReady() {
 }
 
 void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera ) {
-	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（Debug と Profile ビルドだけで効く）。
+	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（Debug と Profile ビルドだけで効く）
 	GameObject* player = world->player();
 	bool& invincibleRequested = debugSwitches().toggleInvincible;
 	if ( invincibleRequested && player ) {
@@ -58,7 +58,7 @@ void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSess
 			health->toggleInvincible();
 		}
 	}
-	// F6 の Debug タブに今の状態を出す。
+	// F6 の Debug タブに今の状態を出す
 	const PlayerHealthComponent* playerHealth = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setFreeCameraActive( freeCamera );
@@ -80,13 +80,13 @@ void GameEditorBridge::spawnRequestedZombies( GameWorld* world, const FirstPerso
 	if ( !player ) {
 		return;
 	}
-	// 視点の水平の向きの前と右（PlayerLocomotionComponent::readMoveDirection の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）。
+	// 視点の水平の向きの前と右（PlayerLocomotionComponent::readMoveDirection の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）
 	float yaw = camera.yaw();
 	Vector3 forward( Math::sin( yaw ), 0.f, Math::cos( yaw ) );
 	Vector3 right( -Math::cos( yaw ), 0.f, Math::sin( yaw ) );
 	Vector3 center;
 	center.setMadd( player->getComponent< TransformComponent >()->position(), forward, kDebugSpawnDistance );
-	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）。
+	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）
 	float firstOffset = -kDebugSpawnSpacing * static_cast< float >( kDebugSpawnNumber - 1 ) * kHalf;
 	for ( int i = 0; i < kDebugSpawnNumber; ++i ) {
 		Vector3 position;

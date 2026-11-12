@@ -30,7 +30,7 @@ int FixedStepClock::ticksToRun() {
 	std::chrono::duration< double > elapsed = now - mPrevious;
 	mPrevious = now;
 	if ( mPaused ) {
-		// 止めている間の時間は貯めない（戻した瞬間に、止めていた分を早送りしないように）。
+		// 止めている間の時間は貯めない（戻した瞬間に、止めていた分を早送りしないように）
 		int stepTicks = mStepRequested ? kStepTicks : 0;
 		mStepRequested = false;
 		return stepTicks;
@@ -39,7 +39,7 @@ int FixedStepClock::ticksToRun() {
 
 	int ticks = static_cast< int >( mAccumulated / GameTime::kTickSeconds );
 	if ( ticks > GameTime::kMaxTicksPerFrame ) {
-		// 追いつけない分は捨てる（端数も残さない。捨てた直後に持ち越しで余分に進まないように）。
+		// 追いつけない分は捨てる（端数も残さない。捨てた直後に持ち越しで余分に進まないように）
 		mAccumulated = 0.0;
 		return GameTime::kMaxTicksPerFrame;
 	}

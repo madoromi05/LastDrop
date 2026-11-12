@@ -1,6 +1,6 @@
-// 静的メッシュ（建物・地面・車・置物・弾）を G-Buffer へ描く（StaticMeshPart::draw。RenderPass が GBuffer の間）。
-// 頂点の計算は固定パイプラインの「ピクセルごとのライティング」（GameLib/src/Graphics/PixelLightingVsHlsl.h）と同じ。
-// 材質の色・法線マップの強さは今どおり b0、粗さ・金属・発光は b3（GBuffer.hlsli）から読む。どちらも MeshMaterial::apply が渡す。G-Buffer の並びは GBuffer.hlsli。
+// 静的メッシュ（建物・地面・車・置物・弾）を G-Buffer へ描く（StaticMeshPart::draw。RenderPass が GBuffer の間）
+// 頂点の計算は固定パイプラインの「ピクセルごとのライティング」（GameLib/src/Graphics/PixelLightingVsHlsl.h）と同じ
+// 材質の色・法線マップの強さは今どおり b0、粗さ・金属・発光は b3（GBuffer.hlsli）から読む。どちらも MeshMaterial::apply が渡す。G-Buffer の並びは GBuffer.hlsli
 #include "GBuffer.hlsli"
 
 struct PixelInput

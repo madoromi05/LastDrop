@@ -19,7 +19,7 @@ using namespace Math;
 
 namespace Scene{
 
-///直接三角形、線分、点、2D長方形を描画するための便利クラス。速度的にはかなり無駄が多い。
+///直接三角形、線分、点、2D長方形を描画するための便利クラス。速度的にはかなり無駄が多い
 class PrimitiveRenderer{
 public:
 	///頂点数と、その他命令の数を指定して構築
@@ -34,7 +34,7 @@ public:
 	void setCullMode( Graphics::CullMode );
 	void setTransform( const Matrix44& );
 
-	///三角形を変換済み頂点で書く。つまりpは4要素ベクタ。
+	///三角形を変換済み頂点で書く。つまりpは4要素ベクタ
 	void addTransformedTriangle(
 		const Vector4& pos0,
 		const Vector4& pos1,
@@ -45,7 +45,7 @@ public:
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff,
 		unsigned color2 = 0xffffffff);
-	///三角形を変換済み頂点で書く。テクスチャなし。
+	///三角形を変換済み頂点で書く。テクスチャなし
 	void addTransformedTriangle(
 		const Vector4& pos0,
 		const Vector4& pos1,
@@ -72,7 +72,7 @@ public:
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff,
 		unsigned color2 = 0xffffffff );
-	///スクリーン座標(画素)で三角形を描く。addRectangle と同じ座標系で、長方形では作れない斜めの形（UI の線など）に使う。テクスチャなし。
+	///スクリーン座標(画素)で三角形を描く。addRectangle と同じ座標系で、長方形では作れない斜めの形（UI の線など）に使う。テクスチャなし
 	void addScreenTriangle(
 		const Vector2& pos0,
 		const Vector2& pos1,
@@ -80,7 +80,7 @@ public:
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff,
 		unsigned color2 = 0xffffffff );
-	///線分を描く。
+	///線分を描く
 	void addLine(
 		const Vector3& pos0,
 		const Vector3& pos1,
@@ -88,13 +88,13 @@ public:
 		const Vector2& uv1,
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff );
-	///線分を描く。テクスチャなし。
+	///線分を描く。テクスチャなし
 	void addLine(
 		const Vector3& pos0,
 		const Vector3& pos1,
 		unsigned color0 = 0xffffffff,
 		unsigned color1 = 0xffffffff );
-	///点を描く。
+	///点を描く
 	void addPoint(
 		const Vector3& pos,
 		const Vector2& uv,
@@ -103,7 +103,7 @@ public:
 	void addPoint(
 		const Vector3& pos,
 		unsigned color = 0xffffffff );
-	///Z=0平面に長方形を描く。座標系はスクリーン座標。
+	///Z=0平面に長方形を描く。座標系はスクリーン座標
 	void addRectangle(
 		const Vector2& pos0,
 		const Vector2& pos1,
@@ -111,7 +111,7 @@ public:
 		const Vector2& uv1,
 		unsigned color = 0xffffffff,
 		float depth = 0.f );
-	///Z=0平面に長方形を描く。座標系はスクリーン座標。テクスチャなし。
+	///Z=0平面に長方形を描く。座標系はスクリーン座標。テクスチャなし
 	void addRectangle(
 		const Vector2& pos0,
 		const Vector2& pos1,

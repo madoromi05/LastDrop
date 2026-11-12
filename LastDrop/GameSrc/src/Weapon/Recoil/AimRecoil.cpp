@@ -8,27 +8,27 @@ using namespace GameLib;
 
 namespace{
 	// ── 上（度。ライフル〈反動の大きさ 1〉のとき。ほかの銃は反動の大きさを掛ける） ──
-	// 1 発目に上がる角度。2 発目からはだんだん小さくし、kClimbShots 発目で 0 にする（数発で頭打ち）。
-	// 合計は kRiseFirst × (kClimbShots + 1) / 2 ＝ 3.5°。
+	// 1 発目に上がる角度。2 発目からはだんだん小さくし、kClimbShots 発目で 0 にする（数発で頭打ち）
+	// 合計は kRiseFirst × (kClimbShots + 1) / 2 ＝ 3.5°
 	const float kRiseFirst = 1.0f;
 	const int kClimbShots = 6;
-	// 頭打ちの後は、1 発ごとに上下へ ±kRiseBounce を足し、頭打ちの高さ ±kRiseBounceLimit に収める（上がり続けず、小さく揺れるだけ）。
+	// 頭打ちの後は、1 発ごとに上下へ ±kRiseBounce を足し、頭打ちの高さ ±kRiseBounceLimit に収める（上がり続けず、小さく揺れるだけ）
 	const float kRiseBounce = 0.3f;
 	const float kRiseBounceLimit = 0.6f;
 	const float kRiseTop = kRiseFirst * static_cast< float >( kClimbShots + 1 ) * 0.5f;
 
 	// ── 左右（度）──
-	// 1 発ごとに −kSidePerShot〜+kSidePerShot を一様乱数で足し、合計は ±kSideLimit で止める。
+	// 1 発ごとに −kSidePerShot〜+kSidePerShot を一様乱数で足し、合計は ±kSideLimit で止める
 	const float kSidePerShot = 0.45f;
 	const float kSideLimit = 2.5f;
 
 	// ── 戻り ──
 	// 最後の 1 発からこれだけ撃たなければ「撃ちやめた」とする。連射の間隔（FireControl の 600 発/分＝6 ティック）より 1 長く、
-	// 連射の途中で戻り始めないようにする。
+	// 連射の途中で戻り始めないようにする
 	const int kSettleTicks = 7;
-	// 撃ちやめた後、1 ティックごとに残る割合。0.9 で約 0.4 秒（24 ティックで 1/12）まで戻る。
+	// 撃ちやめた後、1 ティックごとに残る割合。0.9 で約 0.4 秒（24 ティックで 1/12）まで戻る
 	const float kReturnPerTick = 0.9f;
-	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）。
+	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）
 	const float kMinOffset = 0.001f;
 
 	float settle( float value ) {

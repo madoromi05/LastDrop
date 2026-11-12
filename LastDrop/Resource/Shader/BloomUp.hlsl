@@ -1,10 +1,10 @@
-// ブルームの足し戻し（Bloom::apply）。1 つ小さい段をぼかしながら広げ、1 つ大きい段へ加算で描く。
+// ブルームの足し戻し（Bloom::apply）。1 つ小さい段をぼかしながら広げ、1 つ大きい段へ加算で描く
 #include "Common.hlsli"
 
 Texture2D gSource : register(t2); // Bloom.cpp の kSourceSlot（1 つ小さい段）
 
-// 3×3 のテント（中心 4・辺 2・角 1）。xy が読む所のずらし（読む元の画素単位）、z が重み。
-// 小さい段の 1 画素が大きい段では 2×2 画素に広がるので、そのままだと四角いブロックが見える。テントでぼかして消す。
+// 3×3 のテント（中心 4・辺 2・角 1）。xy が読む所のずらし（読む元の画素単位）、z が重み
+// 小さい段の 1 画素が大きい段では 2×2 画素に広がるので、そのままだと四角いブロックが見える。テントでぼかして消す
 static const int kTapCount = 9;
 static const float3 kTaps[kTapCount] =
 {
@@ -31,6 +31,6 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     {
         sum += gSource.Sample(gClampSampler, v.uv + kTaps[i].xy * texel).rgb * kTaps[i].z;
     }
-    // α は 1 で出す（BLEND_ADDITIVE は「元の色 ＋ 描く色 × α」）。
+    // α は 1 で出す（BLEND_ADDITIVE は「元の色 ＋ 描く色 × α」）
     return float4(sum / kTotalWeight, 1.0);
 }

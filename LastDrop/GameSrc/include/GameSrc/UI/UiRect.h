@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector2.h"
 
-// 画面上の長方形（画素。左上が原点、右が +x、下が +y）。ボタンの範囲や背景の板に使う。
+// 画面上の長方形（画素。左上が原点、右が +x、下が +y）。ボタンの範囲や背景の板に使う
 struct UiRect{
 	float left;
 	float top;
@@ -16,7 +16,7 @@ struct UiRect{
 		const float kHalf = 0.5f;
 		return GameLib::Math::Vector2( left + width * kHalf, top + height * kHalf );
 	}
-	// point が長方形の中（端を含む）にあるか。
+	// point が長方形の中（端を含む）にあるか
 	bool contains( const GameLib::Math::Vector2& point ) const {
 		return point.x >= left && point.x <= right() && point.y >= top && point.y <= bottom();
 	}

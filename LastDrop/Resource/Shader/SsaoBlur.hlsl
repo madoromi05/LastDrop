@@ -1,7 +1,7 @@
-// SSAO のぼかし（AmbientOcclusion::draw。SsaoTranslucent_Plan.txt 6-1・Q3）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く。
+// SSAO のぼかし（AmbientOcclusion::draw。SsaoTranslucent_Plan.txt 6-1・Q3）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く
 // 画素ごとに回した点の並び（Ssao.hlsl）のざらつきを均す。重みはガウス（離れた画素ほど小さく）× 奥行きの近さで、
-// 奥行きが大きく違う画素（ゾンビの輪郭の外の壁など）は混ぜない（暗がりが輪郭の外へにじまない）。
-// 出力：r にぼかした AO、g に真ん中の奥行き（ぼかさずそのまま写す。拡大で使う）。
+// 奥行きが大きく違う画素（ゾンビの輪郭の外の壁など）は混ぜない（暗がりが輪郭の外へにじまない）
+// 出力：r にぼかした AO、g に真ん中の奥行き（ぼかさずそのまま写す。拡大で使う）
 #include "Common.hlsli"
 #include "SsaoUpsample.hlsli"
 
@@ -38,6 +38,6 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         weightSum += weight;
         sum += texel.r * weight;
     }
-    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上。
+    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上
     return float4(sum / weightSum, center.g, 0.0, 1.0);
 }

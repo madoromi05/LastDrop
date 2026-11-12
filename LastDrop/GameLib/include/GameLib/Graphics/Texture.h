@@ -11,17 +11,17 @@ namespace Graphics{
 
 class Texture{
 public:
-	///エレメントから生成。pathがあればファイル名の前に追加する。
+	///エレメントから生成。pathがあればファイル名の前に追加する
 	static Texture create( PseudoXml::ConstElement, const char* path = 0 );
 	//空のテクスチャ
 	static Texture create( int width, int height, bool createMipChain );
-	///後から書き足せる空のテクスチャ（ミップなし）。GPU へ送った後も CPU 側の画素を残し、unlock の後の次の描画で送り直す。
-	///使う途中で中身が増える物（OS のフォントの文字の画像）に使う。CPU 側に width × height × 4 バイト残る。
+	///後から書き足せる空のテクスチャ（ミップなし）。GPU へ送った後も CPU 側の画素を残し、unlock の後の次の描画で送り直す
+	///使う途中で中身が増える物（OS のフォントの文字の画像）に使う。CPU 側に width × height × 4 バイト残る
 	static Texture createWritable( int width, int height );
-	///TGAもしくはDDS。拡張子で判別する。
-	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため）。
+	///TGAもしくはDDS。拡張子で判別する
+	///colorSpace: 色の画像なら TEXTURE_COLOR_SPACE_SRGB（3D の絵をリニアで計算するため）
 	static Texture create( const char* filename, TextureColorSpace colorSpace = TEXTURE_COLOR_SPACE_LINEAR );
-	///TGAもしくはDDSの中身を渡す。最初にDDSと書いてあればDDSとみなし、それ以外はTGAとみなす。
+	///TGAもしくはDDSの中身を渡す。最初にDDSと書いてあればDDSとみなし、それ以外はTGAとみなす
 	static Texture create( const char* fileData, int fileSize );
 	///名前ゲット(ニセxmlからロードすればその名前。他は空。)
 	const char* name() const;
@@ -51,7 +51,7 @@ public:
 	///2冪に直される前の元の高さ
 	int originalHeight() const;
 	int mipmapNumber() const;
-	///ファイルに書き出す。成功失敗はチェックしない。デバグ用。
+	///ファイルに書き出す。成功失敗はチェックしない。デバグ用
 	void write( const char* filename );
 
 	//以下ユーザは意識しない関数群

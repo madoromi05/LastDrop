@@ -12,8 +12,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 最後のフレームを計算する時刻を、アニメの長さからこれだけ手前にする（フレーム）。
-	// GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前の姿勢を最後の値にする（SkinnedMeshInstance と同じ）。
+	// 最後のフレームを計算する時刻を、アニメの長さからこれだけ手前にする（フレーム）
+	// GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前の姿勢を最後の値にする（SkinnedMeshInstance と同じ）
 	const float kLastFrameMargin = 0.01f;
 }
 

@@ -7,7 +7,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 一番強く付いている骨が boneMask で true の頂点を transform で移して out に入れる（前の中身は捨てる）。
+	// 一番強く付いている骨が boneMask で true の頂点を transform で移して out に入れる（前の中身は捨てる）
 	void collectVertices( const SkinnedMeshData& data, const std::vector< bool >& boneMask, const Matrix34& transform, std::vector< Vector3 >* out ) {
 		out->clear();
 		for ( int i = 0; i < data.vertexNumber(); ++i ) {
@@ -26,7 +26,7 @@ void SkinnedMeshShape::collectBoneSpaceVertices( const SkinnedMeshData& data, co
 }
 
 Vector3 SkinnedMeshShape::boneSpaceJointPosition( const SkinnedMeshData& data, int anchorBone, int bone ) {
-	// bindInverse の逆＝レスト姿勢での骨の姿勢。その移動成分が関節の位置（モデルの空間）。
+	// bindInverse の逆＝レスト姿勢での骨の姿勢。その移動成分が関節の位置（モデルの空間）
 	Matrix34 restPose;
 	restPose.setInverse( data.bindInverse( bone ) );
 	Vector3 joint( restPose.m03, restPose.m13, restPose.m23 );

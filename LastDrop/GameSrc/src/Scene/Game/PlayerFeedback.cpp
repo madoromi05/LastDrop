@@ -72,17 +72,17 @@ void PlayerFeedback::syncView( const GameWorld& world, FirstPersonControl* contr
 	ASSERT( control && hud && "PlayerFeedback::syncView : an argument is null." );
 	const GameObject* player = world.player();
 	const GunComponent* gun = HoldComponent::heldGun( player ); // 素手なら nullptr
-	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）。
-	// 攻撃された怯み・揺れ（reactToAttacks で受けた分）もここでカメラへ渡す。
-	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）。
-	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）。
+	// 撃ったティックの弾は跳ねる前の向きへ飛び、跳ねた視点は次のティックから効く（1発目は狙った所へ飛ぶ）
+	// 攻撃された怯み・揺れ（reactToAttacks で受けた分）もここでカメラへ渡す
+	// 照準のぶれも同じく次のティックから効く（自キャラがいなければ既定の状態＝ぶれない）
+	// 反動の大きさは銃ごと（拳銃はライフルの半分。WeaponCatalog）
 	float shotRecoil = ( gun && gun->firedThisTick() ) ? gun->spec().recoilScale : kNoShotRecoil;
-	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない）。
+	// 右下の弾数は、銃を覗いている間とリロード中だけ出す（持っているだけでは出さない）
 	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
 	hud->updateAmmoVisibility( hold && gun && ( hold->isAiming() || gun->isReloading() ) );
 	control->updateViewEffects( shotRecoil, player ? PlayerAimSwaySource::read( *player ) : AimSwayBody() );
 	if ( player ) {
-		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す。
+		// 銃の見た目へ、弾の向き（weaponDirection）と同じ角度のぶれを渡す
 		player->getComponent< FirstPersonBodyComponent >()->setWeaponSway( control->camera().weaponSwayYaw(), control->camera().weaponSwayPitch() );
 		mBodySounds.update( *player );
 	}

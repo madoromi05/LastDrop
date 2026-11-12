@@ -7,15 +7,15 @@
 #include "GameLib/Profiling/Profiler.h"
 
 namespace{
-	// GBuffer.hlsli の gOrmMap の番号（t11）。t2〜t5 は G-Buffer を読む側、t10 は SSAO の結果が使うので重ならない所。
+	// GBuffer.hlsli の gOrmMap の番号（t11）。t2〜t5 は G-Buffer を読む側、t10 は SSAO の結果が使うので重ならない所
 	const int kOrmSlot = GameLib::Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 9;
 
 	RenderPassKind gCurrent = RenderPassKind::Forward;
 	const GameLib::Graphics::Shader* gStaticMeshShader = nullptr;     // GBuffer の間だけ指す（持ち主は GBuffer）
 	GameLib::Graphics::ConstantBuffer* gSurfaceConstants = nullptr;  // 同上
 	const GameLib::Graphics::Texture* gDefaultOrm = nullptr;         // 同上
-	// 直前に送った材質の値と画像（同じ材質が続くとき送り直さないため）。
-	// G-Buffer のパスの始めに忘れる（定数の中身は GBuffer が作り直すことがあり、画像の場所は終わりに外すため）。
+	// 直前に送った材質の値と画像（同じ材質が続くとき送り直さないため）
+	// G-Buffer のパスの始めに忘れる（定数の中身は GBuffer が作り直すことがあり、画像の場所は終わりに外すため）
 	bool gHasSentSurface = false;
 	SurfaceParams gSentSurface;
 	GameLib::Graphics::Texture gSentOrm;
@@ -73,9 +73,9 @@ const GameLib::Graphics::Shader& staticMeshShader() {
 
 void setSurface( const SurfaceParams& params, GameLib::Graphics::Texture orm ) {
 	ASSERT( gSurfaceConstants && "RenderPass : setSurface is only for the G-Buffer pass." );
-	// 材質の画像が無い材質は白 1 画素（シェーダは「数値 × 画像」なので、数値がそのまま使われる）。
+	// 材質の画像が無い材質は白 1 画素（シェーダは「数値 × 画像」なので、数値がそのまま使われる）
 	GameLib::Graphics::Texture shownOrm = orm ? orm : *gDefaultOrm;
-	// GBuffer.hlsli の cbuffer GBufferMaterial（float4 1 つ。粗さ・金属・発光・水たまり）。
+	// GBuffer.hlsli の cbuffer GBufferMaterial（float4 1 つ。粗さ・金属・発光・水たまり）
 	if ( !gHasSentSurface || !sameSurface( params, gSentSurface ) ) {
 		gSurfaceConstants->set( &params, sizeof( params ) );
 		gSentSurface = params;

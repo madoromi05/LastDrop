@@ -9,11 +9,11 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 確かめる点の数・目の高さ（m）・建物の面の上に置く点の間隔と高さ（m）。
+	// 確かめる点の数・目の高さ（m）・建物の面の上に置く点の間隔と高さ（m）
 	const int kVerifyPoints = 50;
 	const float kVerifyEyeHeight = 1.6f;
 	const float kVerifySpacing = 4.f;
-	// 面の上の点の高さ（建物の高さに対する割合）。屋根より上の点（建物ではない所）を見ないように、高さの中に収める。
+	// 面の上の点の高さ（建物の高さに対する割合）。屋根より上の点（建物ではない所）を見ないように、高さの中に収める
 	const float kVerifyHeightRatios[] = { 0.2f, 0.5f, 0.85f };
 	const int kVerifyReportedMisses = 5; // 出力へ詳しく書く見落としの数
 	const float kVerifyOffset = 0.1f; // 面の点を箱から外へずらす幅（m）
@@ -51,10 +51,10 @@ void TownVisibilityCheck::run( const TownVisibility& visibility, const std::vect
 				continue;
 			}
 			++hiddenPairs;
-			// 見られる長方形と高さ（TownVisibility の足元と同じ。建物の見た目を囲む箱）。
+			// 見られる長方形と高さ（TownVisibility の足元と同じ。建物の見た目を囲む箱）
 			const Vector3& low = buildings[ b ].mesh().boundsMin();
 			const Vector3& high = buildings[ b ].mesh().boundsMax();
-			// 箱の 4 面の上の点へ 3D の線を撃ち、何にも当たらないか、最初に当たるのがその建物なら「3D では見えた」。
+			// 箱の 4 面の上の点へ 3D の線を撃ち、何にも当たらないか、最初に当たるのがその建物なら「3D では見えた」
 			bool seen = false;
 			Vector3 seenTarget;
 			for ( float ratio : kVerifyHeightRatios ) {

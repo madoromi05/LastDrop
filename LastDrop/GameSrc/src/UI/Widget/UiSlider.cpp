@@ -11,7 +11,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 行の中の並べ方（画素。座標の高さ 480 で、モックの 720 の 2/3）。左から 印 → 名前 → バー → 数字。
+	// 行の中の並べ方（画素。座標の高さ 480 で、モックの 720 の 2/3）。左から 印 → 名前 → バー → 数字
 	const float kLabelWidth = 147.f;     // 名前の欄の幅（一番長い「効果音の音量」が収まる幅）
 	const float kColumnGap = 12.f;       // 名前とバー、バーと数字の間
 	const float kValueWidth = 48.f;      // 数字の欄の幅（"1.25" が収まる幅。数字は欄の右に寄せる）
@@ -42,11 +42,11 @@ void UiSlider::draw( UiRenderer& renderer ) const {
 	if ( mSelected ) {
 		SelectionMarks::draw( renderer, row );
 	}
-	// 名前は日本語なので、メニューの日本語の行（操作の一覧・戻る）と同じ字の間にする。
+	// 名前は日本語なので、メニューの日本語の行（操作の一覧・戻る）と同じ字の間にする
 	renderer.addText( mLabel.c_str(), Vector2( SelectionMarks::labelLeft( row ), row.center().y ), kTextSize, UI_ALIGN_MIDDLE_LEFT,
 		mSelected ? MenuPalette::TEXT_SELECTED : MenuPalette::TEXT_DIM, UiMenuItem::kJapaneseSpacing );
 
-	// バー：細い線 → 溜まっている所の明るい線 → 今の値の所のひし形。
+	// バー：細い線 → 溜まっている所の明るい線 → 今の値の所のひし形
 	int value = mGetValue();
 	UiRect bar = barRect();
 	float ratio = static_cast< float >( value - mRange.minValue ) / static_cast< float >( mRange.maxValue - mRange.minValue );
@@ -58,7 +58,7 @@ void UiSlider::draw( UiRenderer& renderer ) const {
 	renderer.addRect( line, MenuPalette::BAR_FILL );
 	renderer.addDiamond( Vector2( bar.left + bar.width * ratio, bar.center().y ), kThumbRadius, MenuPalette::TEXT );
 
-	// 数字は欄の右に寄せる（桁が変わっても右端が揃う）。
+	// 数字は欄の右に寄せる（桁が変わっても右端が揃う）
 	std::string text = mFormatValue( value );
 	float valueRight = row.right() - kPaddingRight;
 	renderer.addText( text.c_str(), Vector2( valueRight - renderer.textWidth( text.c_str(), kTextSize ), row.center().y ), kTextSize, UI_ALIGN_MIDDLE_LEFT, MenuPalette::TEXT );
@@ -73,7 +73,7 @@ void UiSlider::setSelected( bool selected ) {
 }
 
 void UiSlider::activate() {
-	// 決定キーでは何もしない（値は左右で変える。行の上でのクリックは UiCanvas が dragTo へ回す）。
+	// 決定キーでは何もしない（値は左右で変える。行の上でのクリックは UiCanvas が dragTo へ回す）
 }
 
 void UiSlider::adjust( int direction ) {
@@ -104,7 +104,7 @@ UiRect UiSlider::barRect() const {
 }
 
 void UiSlider::setClamped( int value ) {
-	// 刻みに揃える（ドラッグで 83 になったら 85 へ）。最小から数えた刻みの数を四捨五入する。
+	// 刻みに揃える（ドラッグで 83 になったら 85 へ）。最小から数えた刻みの数を四捨五入する
 	float steps = static_cast< float >( value - mRange.minValue ) / static_cast< float >( mRange.step );
 	int snapped = mRange.minValue + static_cast< int >( std::lround( steps ) ) * mRange.step;
 	mSetValue( std::min( std::max( snapped, mRange.minValue ), mRange.maxValue ) );

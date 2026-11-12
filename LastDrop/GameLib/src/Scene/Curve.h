@@ -41,7 +41,7 @@ public:
 		ASSERT( RefString( "Curve" ) == e.name() ); //Curveだよね？
 		ASSERT( e.childNumber() > 0 ); //データ一個はあるよね？
 		//名前取得
-		bool isRot = false; //ファイルは度なので、ラジアンに直す。
+		bool isRot = false; //ファイルは度なので、ラジアンに直す
 		int an = e.attributeNumber();
 		for ( int i = 0; i < an; ++i ){
 			ConstAttribute a = e.attribute( i );
@@ -116,8 +116,8 @@ public:
 		OPERATOR_DELETE( mKeys );
 	}
 	float operator()( float t ) const {
-		//ループ処理をする。最後のデータの時刻が周期と考える。これで循環するね。
-		//aから何回bが引けるかを計算するには、a -= toInt(a/b) * bで求まる。toIntは整数に切り捨てる関数としよう。キャストをうまくつかえば出来る。
+		//ループ処理をする。最後のデータの時刻が周期と考える。これで循環するね
+		//aから何回bが引けるかを計算するには、a -= toInt(a/b) * bで求まる。toIntは整数に切り捨てる関数としよう。キャストをうまくつかえば出来る
 		float quot = t / mKeys[ mKeyNumber - 1 ].mTime; //割ったものを整数に直すと商の整数が出る
 		int quotInt = static_cast< int >( quot ); 
 		t -= static_cast< float >( quotInt ) * mKeys[ mKeyNumber - 1 ].mTime;
@@ -172,7 +172,7 @@ public:
 			float v1 = mKeys[ end ].mLeftSlope; //終点の左傾き
 			//変数変換
 			t = ( t - t0 ) / ( t1 - t0 );
-			//at^3 + bt^2 + c + dで計算。c=v0、d=p0だ。
+			//at^3 + bt^2 + c + dで計算。c=v0、d=p0だ
 			float a = 2.f * ( p0 - p1 ) + ( v0 + v1 );
 			float b = 3.f * ( p1 - p0 ) - ( 2.f * v0 ) - v1;
 			//線形補間
@@ -192,7 +192,7 @@ public:
 	Type type() const {
 		return mType;
 	}
-	//ループの周期（最後のキーの時刻）。operator() はこの時刻で折り返す。
+	//ループの周期（最後のキーの時刻）。operator() はこの時刻で折り返す
 	float period() const {
 		return ( mKeyNumber > 0 ) ? mKeys[ mKeyNumber - 1 ].mTime : 0.f;
 	}

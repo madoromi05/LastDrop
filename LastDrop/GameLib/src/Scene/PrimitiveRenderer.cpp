@@ -321,7 +321,7 @@ public:
 
 		mVertexPosition += 6;
 	}
-	// スクリーン座標(画素)の三角形。addRectangle と同じ画素→クリップ空間変換で描くので、長方形では作れない斜めの形（UI の線など）に使える。
+	// スクリーン座標(画素)の三角形。addRectangle と同じ画素→クリップ空間変換で描くので、長方形では作れない斜めの形（UI の線など）に使える
 	void addScreenTriangle(
 	const Vector2& p0,
 	const Vector2& p1,
@@ -374,7 +374,7 @@ public:
 		Manager m;
 		//頂点バッファをセット
 		m.setVertexBuffer( mVertexBuffer );
-		//初期値をセットして回る。無駄ではあるが。
+		//初期値をセットして回る。無駄ではあるが
 		Matrix44 transform;
 		transform.setIdentity();
 		Matrix34 wm;
@@ -468,8 +468,8 @@ public:
 						break;
 					default: ASSERT( 0 ); break;
 				}
-				//mStart は頂点の番号。draw は三角形の番号を受けるので、頂点の番号で描く方を使う。
-				//draw に渡すと、2つ目以降のバッチが3倍ずれた所から描かれる（文字の絵が2枚以上になると崩れる）。
+				//mStart は頂点の番号。draw は三角形の番号を受けるので、頂点の番号で描く方を使う
+				//draw に渡すと、2つ目以降のバッチが3倍ずれた所から描かれる（文字の絵が2枚以上になると崩れる）
 				m.drawFromVertex( b.mStart, b.mPrimitiveNumber, prim );
 			}
 			//バッチが持ってるテクスチャハンドルを全部捨てる

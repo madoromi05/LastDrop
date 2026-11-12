@@ -13,7 +13,7 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kSkeletonTreeIndex = 0; // 変換ツールは <Tree> を1つだけ出力する
 
-	// GPU へ送る頂点1つ。並びは SkinningPipeline::vertexFormat() と同じ（位置・法線・色・UV・骨の番号・重み）。
+	// GPU へ送る頂点1つ。並びは SkinningPipeline::vertexFormat() と同じ（位置・法線・色・UV・骨の番号・重み）
 	struct SkinnedGpuVertex{
 		float position[ 4 ];
 		float normal[ 3 ];
@@ -28,7 +28,7 @@ namespace{
 
 SkinnedMeshData::Vertex::Vertex() :
 	mColor( VertexColor::WHITE ) { // data に color があれば上書き
-	// 未使用スロットの重みは0にしておく(GPU での変形の合成で無視されるように)。
+	// 未使用スロットの重みは0にしておく(GPU での変形の合成で無視されるように)
 	for ( int i = 0; i < MAX_INFLUENCE; ++i ) {
 		mBoneIndex[ i ] = 0;
 		mWeight[ i ] = 0.f;
@@ -86,7 +86,7 @@ void SkinnedMeshData::setIndex( int i, unsigned short value ) {
 }
 
 void SkinnedMeshData::setPart( int partIndex, int firstIndex, int indexNumber ) {
-	// 描画 API は三角形単位で範囲を受け取るので、ここで換算して持つ。
+	// 描画 API は三角形単位で範囲を受け取るので、ここで換算して持つ
 	mParts[ partIndex ].mFirstTriangle = firstIndex / kVerticesPerTriangle;
 	mParts[ partIndex ].mTriangleNumber = indexNumber / kVerticesPerTriangle;
 }
@@ -105,12 +105,12 @@ bool SkinnedMeshData::finish() {
 		return false;
 	}
 	if ( mBones.size() > SkinningPipeline::kMaxBones ) {
-		// 骨の行列はシェーダの定数バッファに入る数までしか渡せない。描けないデータは読み込みの時点で止める。
+		// 骨の行列はシェーダの定数バッファに入る数までしか渡せない。描けないデータは読み込みの時点で止める
 		GameLib::cout << "SkinnedMeshData: too many bones ( " << mBones.size() << " > " << SkinningPipeline::kMaxBones << " )." << GameLib::endl;
 		return false;
 	}
 	uploadGpuVertices();
-	// インデックスは変形しないので、GPUへ一度だけ送って作業用配列は捨てる。
+	// インデックスは変形しないので、GPUへ一度だけ送って作業用配列は捨てる
 	unsigned short* indices = mIndexBuffer.lock();
 	for ( int i = 0; i < mStagingIndices.size(); ++i ) {
 		indices[ i ] = mStagingIndices[ i ];
@@ -118,17 +118,17 @@ bool SkinnedMeshData::finish() {
 	mIndexBuffer.unlock( &indices );
 	mStagingIndices.clear();
 
-	// レスト姿勢(アニメ無し)の骨格から、各ボーンの bindInverse を確定する。
-	// 一時的な骨格で計算するので、インスタンスの骨格には影響しない。
+	// レスト姿勢(アニメ無し)の骨格から、各ボーンの bindInverse を確定する
+	// 一時的な骨格で計算するので、インスタンスの骨格には影響しない
 	Scene::Tree rest = createSkeleton();
 	rest.updateWorldMatrix();
 	for ( int i = 0; i < mBones.size(); ++i ) {
-		// ノードは名前で探すと骨の数ぶんの文字列比較になるので、ここで番号にしておく（毎フレームの computeBonePose が番号で読む）。
+		// ノードは名前で探すと骨の数ぶんの文字列比較になるので、ここで番号にしておく（毎フレームの computeBonePose が番号で読む）
 		mBones[ i ].mNodeIndex = rest.nodeIndex( mBones[ i ].mNodeName.c_str() );
 		if ( mBones[ i ].mNodeIndex >= 0 ) {
 			mBones[ i ].mBindInverse.setInverse( *rest.nodeMatrix( mBones[ i ].mNodeIndex ) );
 		} else {
-			// 骨名の不一致はエラーにならず「その骨だけ動かない」見た目になるので、ここで知らせる。
+			// 骨名の不一致はエラーにならず「その骨だけ動かない」見た目になるので、ここで知らせる
 			GameLib::cout << "SkinnedMeshData: bone node not found in Tree: " << mBones[ i ].mNodeName.c_str() << GameLib::endl;
 			mBones[ i ].mBindInverse.setIdentity();
 		}
@@ -140,7 +140,7 @@ bool SkinnedMeshData::finish() {
 void SkinnedMeshData::uploadGpuVertices() {
 	ASSERT( sizeof( SkinnedGpuVertex ) == static_cast< size_t >( SkinningPipeline::vertexFormat().stride() ) &&
 		"SkinnedMeshData : SkinnedGpuVertex does not match SkinningPipeline::vertexFormat()." );
-	// レスト姿勢のまま送る。体ごとのポーズは描くときに骨の行列で渡し、GPU が変形する（頂点は全インスタンスで共有）。
+	// レスト姿勢のまま送る。体ごとのポーズは描くときに骨の行列で渡し、GPU が変形する（頂点は全インスタンスで共有）
 	mGpuVertices = Graphics::VertexBuffer::create( mVertices.size(), SkinningPipeline::vertexFormat() );
 	void* locked = mGpuVertices.lockData();
 	SkinnedGpuVertex* dst = static_cast< SkinnedGpuVertex* >( locked );
@@ -203,7 +203,7 @@ const Vector3& SkinnedMeshData::restPosition( int i ) const {
 
 int SkinnedMeshData::strongestBone( int i ) const {
 	const Vertex& v = mVertices[ i ];
-	// 一番重みの大きい骨（重みは大きい順とは限らないので全部見る）。
+	// 一番重みの大きい骨（重みは大きい順とは限らないので全部見る）
 	int strongestSlot = 0;
 	for ( int slot = 1; slot < MAX_INFLUENCE; ++slot ) {
 		if ( v.mWeight[ slot ] > v.mWeight[ strongestSlot ] ) {
@@ -226,7 +226,7 @@ Scene::Animation SkinnedMeshData::animation( const char* name ) const {
 }
 
 bool SkinnedMeshData::updateLoading() {
-	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）。
+	// 途中でまだのパーツがあっても、残りのパーツも進める（全部のロードを同時に進めるため）
 	bool allReady = true;
 	for ( int i = 0; i < mParts.size(); ++i ) {
 		if ( !mParts[ i ].mMaterial.updateLoading() ) {
@@ -252,7 +252,7 @@ void SkinnedMeshData::computeSkinMatrices( const Matrix34& root, const std::vect
 std::vector< Matrix34 >* out ) const {
 	std::vector< Matrix34 >& skinMatrices = *out;
 	skinMatrices.resize( mBones.size() );
-	// 各ボーンの skin[b] = 置き場所 * ボーンの姿勢 * bindInverse。頂点（レスト姿勢）にこれを掛けるとワールドの位置になる。
+	// 各ボーンの skin[b] = 置き場所 * ボーンの姿勢 * bindInverse。頂点（レスト姿勢）にこれを掛けるとワールドの位置になる
 	for ( int b = 0; b < mBones.size(); ++b ) {
 		skinMatrices[ b ].setMul( root, bonePose[ b ] );
 		skinMatrices[ b ] *= mBones[ b ].mBindInverse;
@@ -270,12 +270,12 @@ void SkinnedMeshData::draw( const std::vector< Matrix34 >& skinMatrices ) const 
 	m.setVertexBuffer( mGpuVertices );
 	m.setIndexBuffer( mIndexBuffer );
 	mSkinning->begin( skinMatrices );
-	// 頂点・インデックス・骨の行列は全パーツ共通。見た目だけ差し替えて、パーツの範囲を描く。
+	// 頂点・インデックス・骨の行列は全パーツ共通。見た目だけ差し替えて、パーツの範囲を描く
 	for ( int i = 0; i < mParts.size(); ++i ) {
 		const Part& part = mParts[ i ];
 		part.mMaterial.apply(); // テクスチャ・法線マップ・材質値（ライトの値は b0 経由でシェーダへ渡る）
 		if ( !part.mMaterial.hasNormalMap() ) {
-			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）。
+			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）
 			m.setNormalMapStrength( kNoNormalMap );
 		}
 		RenderPass::countDraw( part.mTriangleNumber );

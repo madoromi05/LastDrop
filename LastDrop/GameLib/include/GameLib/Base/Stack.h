@@ -6,12 +6,12 @@ namespace GameLib{
 ///素直な固定サイズスタック
 template< class T > class Stack{
 public:
-	///デフォルト。サイズ、最大容量は0。
+	///デフォルト。サイズ、最大容量は0
 	Stack();
-	///最大容量を指定。
+	///最大容量を指定
 	explicit Stack( int capacity );
 	~Stack();
-	///再確保。中身がある状態で呼ぶとassert。clear()しろ。
+	///再確保。中身がある状態で呼ぶとassert。clear()しろ
 	void setCapacity( int size );
 	///最大容量取得
 	int capacity() const;

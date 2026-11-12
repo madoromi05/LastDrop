@@ -17,13 +17,13 @@
 
 class SkinningPipeline;
 
-// 線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。変形は GPU で行う（SkinningPipeline）。1体ぶんの状態は持たず、同じキャラ全員で共有する。
-// 持つもの: レスト姿勢の頂点＋ボーン重み（CPU 側と、GPU へ送った頂点バッファ）＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)。
-// CPU 側の頂点は当たり判定の箱づくり（SkinnedMeshShape）に使うので、GPU へ送った後も残す。
-// 見た目は「パーツ」（インデックスの範囲＋MeshMaterial）単位で持つ。体と髪でテクスチャが別のモデルは複数パーツになる。
-// 頂点・スキニングは全パーツ共通なので、パーツが増えても変形の負荷は増えない（描画呼び出しが増えるだけ）。
-// 1体ごとのポーズ・位置は SkinnedMeshInstance が持ち、computeSkinMatrices() / draw() にこのデータを使う。
-// ゾンビを何体出しても、頂点（GPU の頂点バッファも）・重み・テクスチャ・アニメは1つで済む。
+// 線形ブレンドスキニング(LBS)のスキンメッシュの「設計図」。変形は GPU で行う（SkinningPipeline）。1体ぶんの状態は持たず、同じキャラ全員で共有する
+// 持つもの: レスト姿勢の頂点＋ボーン重み（CPU 側と、GPU へ送った頂点バッファ）＋bindInverse、インデックス、見た目、骨格とアニメの入れ物(Container)
+// CPU 側の頂点は当たり判定の箱づくり（SkinnedMeshShape）に使うので、GPU へ送った後も残す
+// 見た目は「パーツ」（インデックスの範囲＋MeshMaterial）単位で持つ。体と髪でテクスチャが別のモデルは複数パーツになる
+// 頂点・スキニングは全パーツ共通なので、パーツが増えても変形の負荷は増えない（描画呼び出しが増えるだけ）
+// 1体ごとのポーズ・位置は SkinnedMeshInstance が持ち、computeSkinMatrices() / draw() にこのデータを使う
+// ゾンビを何体出しても、頂点（GPU の頂点バッファも）・重み・テクスチャ・アニメは1つで済む
 //
 // 使い方: create → set 系 → setContainer → finish（ここまでローダが行う）→ setSkinning（MeshCache が行う）→ インスタンスから draw
 class SkinnedMeshData{
@@ -34,72 +34,72 @@ public:
 	~SkinnedMeshData();
 
 	// ── 構築（ローダが使う）──
-	// 頂点数・インデックス数・ボーン数・パーツ数を確保する。partNumber は1以上。
+	// 頂点数・インデックス数・ボーン数・パーツ数を確保する。partNumber は1以上
 	void create( int vertexNumber, int indexNumber, int boneNumber, int partNumber );
-	// ボーンに対応する Tree のノード名を設定する。
+	// ボーンに対応する Tree のノード名を設定する
 	void setBone( int boneIndex, const char* nodeName );
-	// 頂点のレスト姿勢(モデル空間)を設定する。
+	// 頂点のレスト姿勢(モデル空間)を設定する
 	void setVertex( int i, const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& normal, const GameLib::Math::Vector2& uv );
-	// 頂点の影響ボーンと重みを設定する(slot: 0..MAX_INFLUENCE-1)。
+	// 頂点の影響ボーンと重みを設定する(slot: 0..MAX_INFLUENCE-1)
 	void setInfluence( int vertexIndex, int slot, int boneIndex, float weight );
-	// 頂点カラーを設定する(0..1)。テクスチャ無しでも部位ごとに色を付けられる。
+	// 頂点カラーを設定する(0..1)。テクスチャ無しでも部位ごとに色を付けられる
 	void setColor( int i, float r, float g, float b );
-	// 三角形インデックスを設定する。
+	// 三角形インデックスを設定する
 	void setIndex( int i, unsigned short value );
-	// パーツが使うインデックスの範囲を設定する。firstIndex / indexNumber は3の倍数（三角形単位）。
+	// パーツが使うインデックスの範囲を設定する。firstIndex / indexNumber は3の倍数（三角形単位）
 	void setPart( int partIndex, int firstIndex, int indexNumber );
-	// パーツの見た目(テクスチャ・法線マップ・材質値)。返す参照の寿命はこのデータと同じ。所有権は移らない。
+	// パーツの見た目(テクスチャ・法線マップ・材質値)。返す参照の寿命はこのデータと同じ。所有権は移らない
 	MeshMaterial& material( int partIndex );
-	// 骨格(<Tree>)とアニメ(<Animation>)の入れ物。インスタンスはここから自分の骨格を作る。
+	// 骨格(<Tree>)とアニメ(<Animation>)の入れ物。インスタンスはここから自分の骨格を作る
 	void setContainer( GameLib::Scene::Container );
-	// 設定し終えたら呼ぶ。頂点とインデックスをGPUへ送り、レスト姿勢から bindInverse を確定する。
-	// 骨格が無い・骨が多すぎる（SkinningPipeline::kMaxBones を超える）なら false（理由はデバッグ出力）。
+	// 設定し終えたら呼ぶ。頂点とインデックスをGPUへ送り、レスト姿勢から bindInverse を確定する
+	// 骨格が無い・骨が多すぎる（SkinningPipeline::kMaxBones を超える）なら false（理由はデバッグ出力）
 	bool finish();
-	// 描くときに使う GPU スキニングの道具。所有権は受け取らない。このデータより長く生きていること（MeshCache が持つ）。
+	// 描くときに使う GPU スキニングの道具。所有権は受け取らない。このデータより長く生きていること（MeshCache が持つ）
 	void setSkinning( SkinningPipeline* skinning );
 
 	// ── 利用（インスタンスが使う）──
-	// finish 済みで使える状態か。
+	// finish 済みで使える状態か
 	bool isReady() const;
 	int boneNumber() const;
-	// Tree のノード名からボーン番号（setBone の番号）を探す。無ければ -1。
-	// 武器を手に持たせるときなど、特定の骨の姿勢を読みたい側が使う（毎フレームではなく最初に1回引く）。
+	// Tree のノード名からボーン番号（setBone の番号）を探す。無ければ -1
+	// 武器を手に持たせるときなど、特定の骨の姿勢を読みたい側が使う（毎フレームではなく最初に1回引く）
 	int findBone( const char* nodeName ) const;
-	// ボーン番号から Tree のノード名。範囲外なら空文字列。腕の骨を名前の頭でまとめて探すときなどに使う。
+	// ボーン番号から Tree のノード名。範囲外なら空文字列。腕の骨を名前の頭でまとめて探すときなどに使う
 	const char* boneName( int boneIndex ) const;
 	// ── レスト姿勢の頂点（当たり判定の形を決める SkinnedMeshShape が読む） ──
 	int vertexNumber() const;
-	// 頂点 i のレスト姿勢の位置（モデル空間）。i: 0〜vertexNumber()-1。
+	// 頂点 i のレスト姿勢の位置（モデル空間）。i: 0〜vertexNumber()-1
 	const GameLib::Math::Vector3& restPosition( int i ) const;
-	// 頂点 i に一番強く付いている骨の番号（重みは大きい順とは限らないので全部見て選ぶ）。
+	// 頂点 i に一番強く付いている骨の番号（重みは大きい順とは限らないので全部見て選ぶ）
 	int strongestBone( int i ) const;
-	// 骨 bone の bindInverse（レスト姿勢のモデル空間 → 骨の空間）。
+	// 骨 bone の bindInverse（レスト姿勢のモデル空間 → 骨の空間）
 	const GameLib::Math::Matrix34& bindInverse( int bone ) const;
-	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）。
+	// 1体ぶんの骨格を新しく作る（ポーズは体ごとに別なので共有しない）
 	GameLib::Scene::Tree createSkeleton() const;
-	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）。
+	// 名前でアニメを探す。無ければ空の Animation（if( a ) で判定できる）
 	GameLib::Scene::Animation animation( const char* name ) const;
-	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true。
+	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true
 	bool updateLoading();
 
-	// pose の現在ポーズから、各ボーンの行列（骨格の根から見た姿勢）を bonePose へ書く。
-	// ボーンの並びは setBone の番号。Tree に無いボーンは単位行列。
-	// pose: createSkeleton で作った骨格であること（finish で引いたノードの番号で読むため。別の骨格を渡すと違う骨を読む）。
-	// ポーズを行列で取り出すのは、2つのポーズを混ぜて（クロスフェード）から変形できるようにするため。
-	// bonePose: boneNumber() 個ぶん。呼び出し側が持つ。nullptr 不可。
+	// pose の現在ポーズから、各ボーンの行列（骨格の根から見た姿勢）を bonePose へ書く
+	// ボーンの並びは setBone の番号。Tree に無いボーンは単位行列
+	// pose: createSkeleton で作った骨格であること（finish で引いたノードの番号で読むため。別の骨格を渡すと違う骨を読む）
+	// ポーズを行列で取り出すのは、2つのポーズを混ぜて（クロスフェード）から変形できるようにするため
+	// bonePose: boneNumber() 個ぶん。呼び出し側が持つ。nullptr 不可
 	void computeBonePose( GameLib::Scene::Tree& pose, std::vector< GameLib::Math::Matrix34 >* bonePose ) const;
-	// ボーンの姿勢 bonePose を root（置き場所と向き）へ置いた、ボーンごとの変形の行列（置き場所×ポーズ×bindInverse）を out へ書く。
-	// out: boneNumber() 個ぶん。呼び出し側（インスタンス）が持つ。nullptr 不可。計算はボーンの数だけ（頂点の数には比例しない）。
+	// ボーンの姿勢 bonePose を root（置き場所と向き）へ置いた、ボーンごとの変形の行列（置き場所×ポーズ×bindInverse）を out へ書く
+	// out: boneNumber() 個ぶん。呼び出し側（インスタンス）が持つ。nullptr 不可。計算はボーンの数だけ（頂点の数には比例しない）
 	void computeSkinMatrices( const GameLib::Math::Matrix34& root, const std::vector< GameLib::Math::Matrix34 >& bonePose, std::vector< GameLib::Math::Matrix34 >* out ) const;
-	// skinMatrices（computeSkinMatrices の結果）で GPU 変形して、パーツごとに描く。
-	// setSkinning されていない・シェーダが使えない（コンパイル失敗）なら描かない（理由は SkinningPipeline::errorMessage）。
+	// skinMatrices（computeSkinMatrices の結果）で GPU 変形して、パーツごとに描く
+	// setSkinning されていない・シェーダが使えない（コンパイル失敗）なら描かない（理由は SkinningPipeline::errorMessage）
 	void draw( const std::vector< GameLib::Math::Matrix34 >& skinMatrices ) const;
 
 private:
-	// CPU 側の頂点（レスト姿勢＋骨の番号と重み）を、GPU スキニング用の頂点バッファへ写す。finish で1回だけ呼ぶ。
+	// CPU 側の頂点（レスト姿勢＋骨の番号と重み）を、GPU スキニング用の頂点バッファへ写す。finish で1回だけ呼ぶ
 	void uploadGpuVertices();
 
-	// 1頂点分のレストデータと影響ボーン。
+	// 1頂点分のレストデータと影響ボーン
 	struct Vertex{
 		Vertex();
 		GameLib::Math::Vector3 mPosition;
@@ -109,17 +109,17 @@ private:
 		int mBoneIndex[ MAX_INFLUENCE ];
 		float mWeight[ MAX_INFLUENCE ];
 	};
-	// 1ボーン分。名前で Tree のノードと対応し、bindInverse を持つ。
+	// 1ボーン分。名前で Tree のノードと対応し、bindInverse を持つ
 	struct Bone{
 		Bone();
 		std::string mNodeName;
-		// Tree のノードの番号（Tree::nodeIndex）。finish で名前から1回だけ引いておき、毎フレームは番号で読む。
-		// Tree に無い骨は -1（その骨は動かない）。
+		// Tree のノードの番号（Tree::nodeIndex）。finish で名前から1回だけ引いておき、毎フレームは番号で読む
+		// Tree に無い骨は -1（その骨は動かない）
 		int mNodeIndex;
 		GameLib::Math::Matrix34 mBindInverse;
 	};
 
-	// 見た目1つ分。インデックスバッファのうち、この範囲の三角形をこの見た目で描く。
+	// 見た目1つ分。インデックスバッファのうち、この範囲の三角形をこの見た目で描く
 	struct Part{
 		Part();
 		int mFirstTriangle;

@@ -16,13 +16,13 @@ using namespace GameLib::Math;
 namespace{
 	const char* kElementName = "StaticMesh";
 
-	// <StaticMesh> 要素1つ（=パーツ1つ）を読み、GPUへ送るまでを行う。
-	// 読んだ頂点で data の囲む箱を広げる（パーツは GPU へ送った後に頂点を捨てるので、読むときに測る）。
+	// <StaticMesh> 要素1つ（=パーツ1つ）を読み、GPUへ送るまでを行う
+	// 読んだ頂点で data の囲む箱を広げる（パーツは GPU へ送った後に頂点を捨てるので、読むときに測る）
 	bool loadPart( StaticMeshPart* part, StaticMeshData* data, const ConstElement& mesh, TextureCache* textures ) {
-		// テクスチャ・法線マップ・材質値（<StaticMesh texture="..." normalmap="..." ...>）。
+		// テクスチャ・法線マップ・材質値（<StaticMesh texture="..." normalmap="..." ...>）
 		MeshLoaderUtil::loadMaterial( &part->material(), mesh, textures );
 
-		// まず Vertex/Index の数を数える。
+		// まず Vertex/Index の数を数える
 		int vertexNumber = 0;
 		int indexNumber = 0;
 		for ( int i = 0; i < mesh.childNumber(); ++i ) {
@@ -38,7 +38,7 @@ namespace{
 		}
 		part->create( vertexNumber, indexNumber );
 
-		// 各要素を出現順に流し込む（Vertex/Index はそれぞれ出現順が添え字になる）。
+		// 各要素を出現順に流し込む（Vertex/Index はそれぞれ出現順が添え字になる）
 		int vertexIndex = 0;
 		int indexIndex = 0;
 		for ( int i = 0; i < mesh.childNumber(); ++i ) {
@@ -52,7 +52,7 @@ namespace{
 				part->setVertex( vertexIndex, position, normal, uv );
 				data->extendBounds( position );
 
-				// 頂点カラー（テクスチャ無しのパーツはマテリアル色で塗る。無ければ白）。
+				// 頂点カラー（テクスチャ無しのパーツはマテリアル色で塗る。無ければ白）
 				ConstAttribute a = MeshLoaderUtil::findAttribute( child, "color" );
 				if ( a ) {
 					float color[ 3 ] = { 1.f, 1.f, 1.f };
@@ -63,7 +63,7 @@ namespace{
 			} else if ( name == "Index" ) {
 				ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( child, "value" );
 				if ( valueAttr ) {
-					// 頂点数は checkVertexNumber 済みなので 16bit に収まる。
+					// 頂点数は checkVertexNumber 済みなので 16bit に収まる
 					part->setIndex( indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
 				}
 				++indexIndex;
@@ -75,7 +75,7 @@ namespace{
 }
 
 bool StaticMeshLoader::load( StaticMeshData* data, ConstElement container, TextureCache* textures ) {
-	// <Container> 直下の <StaticMesh> がそれぞれパーツになる。まず数える。
+	// <Container> 直下の <StaticMesh> がそれぞれパーツになる。まず数える
 	int partNumber = 0;
 	for ( int i = 0; i < container.childNumber(); ++i ) {
 		if ( RefString( kElementName ) == container.child( i ).name() ) {

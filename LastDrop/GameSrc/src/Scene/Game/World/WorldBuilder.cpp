@@ -18,18 +18,18 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 建物は tools/configs/building_noground.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある。
-	// ブロックの中も町を囲むのも、足元の歩道の板を除いた同じ形。
-	// 足元はどちらも TownMap が敷く床（歩道の高さ）が見える。板があると、隣の板や床と重なって面がちらつくため。
+	// 建物は tools/configs/building_noground.json の scale で、ドアが人の背丈に合う大きさ（ドアの高さ約 2.0m）に縮めてある
+	// ブロックの中も町を囲むのも、足元の歩道の板を除いた同じ形
+	// 足元はどちらも TownMap が敷く床（歩道の高さ）が見える。板があると、隣の板や床と重なって面がちらつくため
 	const char* kBuildingFile = "Resource/Model/Map/building_noground.txt";
-	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす。
+	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす
 	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
 	}
 
-	// 箱に必ず入れる物。ガソリンは 1 個、ライフルは弾倉いっぱい。
+	// 箱に必ず入れる物。ガソリンは 1 個、ライフルは弾倉いっぱい
 	const ItemStack kFuelStack = { ITEM_FUEL, 1 };
 	ItemStack loadedRifle() {
 		const WeaponSpec& rifle = weaponSpec( WEAPON_RIFLE );
@@ -38,7 +38,7 @@ namespace{
 		return stack;
 	}
 
-	// count か所を 0〜spotCount−1 から選び、その場所の「必ず入れる物」に stack を足す（offset: 選んだ番号に足す数）。
+	// count か所を 0〜spotCount−1 から選び、その場所の「必ず入れる物」に stack を足す（offset: 選んだ番号に足す数）
 	void addToRandomSpots( std::vector< std::vector< ItemStack > >* guaranteed, int offset, int spotCount, int count,
 		const ItemStack& stack, Random* random ) {
 		for ( int spot : SpawnPicker::pick( spotCount, count, static_cast< unsigned >( random->getInt() ) ) ) {
@@ -50,7 +50,7 @@ namespace{
 WorldBuilder::WorldBuilder( MeshCache* meshes, const TownMap* map, const PropFactory* props ) :
 	mMap( map ),
 	mProps( props ),
-	// 建物は粗い形（LOD）を持たない（三角形の 85% が窓枠・ガラスの小さな部品で、Decimate で窓が崩れるため）。
+	// 建物は粗い形（LOD）を持たない（三角形の 85% が窓枠・ガラスの小さな部品で、Decimate で窓が崩れるため）
 	mBuildingShapes( meshes->staticMesh( kBuildingFile ) ) {
 	ASSERT( meshes && map && props && "WorldBuilder : an argument is null." );
 }
@@ -62,16 +62,16 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, boo
 	placeBuildings( target, mBuildingShapes, mMap->buildings() );
 	placeBuildings( target, mBuildingShapes, mMap->perimeterBuildings() );
 	// 弾を止める物として登録する。建物を並べ終えてから行う（push_back の途中で登録すると、
-	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）。
+	// 並べ直しで要素の場所が変わり、名簿が古い場所を指してしまうため）
 	for ( const Building& building : *target.buildings ) {
 		target.hitWorld->addBlocker( &building );
 	}
 	placeLootSpots( target.objects );
-	// 消火栓は見た目の置物（置けなくても〈形の構築の失敗〉その場所に無いだけで遊べる）。
+	// 消火栓は見た目の置物（置けなくても〈形の構築の失敗〉その場所に無いだけで遊べる）
 	for ( const TownPlacement& p : mMap->fireHydrants() ) {
 		mProps->spawnFireHydrant( target.objects, toPosition( p ), p.yawDegree );
 	}
-	// 街灯の柱も見た目の置物（同じ）。照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る。
+	// 街灯の柱も見た目の置物（同じ）。照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る
 	for ( const TownPlacement& p : mMap->streetLights() ) {
 		mProps->spawnStreetLamp( target.objects, toPosition( p ), p.yawDegree, lampsLit );
 	}
@@ -80,7 +80,7 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, boo
 
 void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes,
 const std::vector< TownPlacement >& placements ) const {
-	// 当たり判定を三角形から作るので、構築に失敗した建物は置かない。
+	// 当たり判定を三角形から作るので、構築に失敗した建物は置かない
 	if ( !shapes.full()->isReady() ) {
 		return;
 	}
@@ -93,13 +93,13 @@ const std::vector< TownPlacement >& placements ) const {
 }
 
 void WorldBuilder::placeLootSpots( GameObjectWorld* objects ) const {
-	// 置き場所は毎日同じで、中身だけ毎日変わる（起動からの時間を種にする。脱出の車の置き場所と同じ）。
-	// 置けなくても（形の構築の失敗）その場所が無いだけで遊べる。
+	// 置き場所は毎日同じで、中身だけ毎日変わる（起動からの時間を種にする。脱出の車の置き場所と同じ）
+	// 置けなくても（形の構築の失敗）その場所が無いだけで遊べる
 	Random random = Random::create( static_cast< int >( Framework::instance().time() ) );
-	// ガソリンを入れる箱を、漁れる場所（ゴミ箱 → 木箱の通し番号）から fuelCanCount か所選ぶ。
-	// 置物の車には物を入れない（改訂 2）。
-	// 1 か所に 1 個。選ぶのは場所の番号なので、形の構築に失敗して置けなかった場所に当たると、その分だけ町のガソリンが減る。
-	// ライフルは木箱の中から rifleCount か所。ガソリンと同じ木箱に当たったら両方入れる（2 × 3 に入る）。
+	// ガソリンを入れる箱を、漁れる場所（ゴミ箱 → 木箱の通し番号）から fuelCanCount か所選ぶ
+	// 置物の車には物を入れない（改訂 2）
+	// 1 か所に 1 個。選ぶのは場所の番号なので、形の構築に失敗して置けなかった場所に当たると、その分だけ町のガソリンが減る
+	// ライフルは木箱の中から rifleCount か所。ガソリンと同じ木箱に当たったら両方入れる（2 × 3 に入る）
 	const int dumpsterCount = static_cast< int >( mMap->dumpsters().size() );
 	const int crateCount = static_cast< int >( mMap->crates().size() );
 	const int spotCount = dumpsterCount + crateCount;

@@ -37,32 +37,32 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 #endif
 ) {
 	// TAA のときは、描く行列を 1 画素より細かく毎フレームずらす。カメラが置いた行列を、ずらした物で上書きし、
-	// 下の G-Buffer・SSAO・SSR・霧・デカール・半透明の板にも同じ行列を渡す（全部のパスが同じずれで揃う）。
-	// 映る範囲（DrawCulling）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）。
+	// 下の G-Buffer・SSAO・SSR・霧・デカール・半透明の板にも同じ行列を渡す（全部のパスが同じずれで揃う）
+	// 映る範囲（DrawCulling）と影はずらさない（1 画素より細かいずれは効かない／影は光の側から見た絵）
 	mJitter.advance( antiAliasingMode() == AntiAliasing::Taa );
 	const Matrix44 projectionView = mJitter.apply( camera.projectionViewMatrix(),
 		mPostProcess.sceneDepth().width(), mPostProcess.sceneDepth().height() );
 	Graphics::Manager::instance().setProjectionViewMatrix( projectionView );
-	// 攻撃された瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く。
+	// 攻撃された瞬間の赤み・痛み・死んだ後の暗さは、この描画の写すときに効く
 	mPostProcess.setDamageFlash( damage.flash );
 	mPostProcess.setPain( damage.pain );
 	mPostProcess.setFade( damage.fade );
-	// SSAO・SSR・ディザのノイズは、TAA のときだけフレームごとに動かす（TAA が均す）。TAA でないときは番号が 0 のまま。
+	// SSAO・SSR・ディザのノイズは、TAA のときだけフレームごとに動かす（TAA が均す）。TAA でないときは番号が 0 のまま
 	mPostProcess.setNoiseFrame( mJitter.frameIndex() );
 	mPostProcess.beginScene();
 	mLights.setup( camera ); // ライトの一覧と影の行列（SceneLights）
 	mLights.drawShadowMaps( camera );
-	// 不透明な物は G-Buffer へ描き、全画面 1 回でライティングする。
-	// フォワードへの切り替えは段階 3 の始めに消した（PBR の式とライトを 2 か所に書かない）。
+	// 不透明な物は G-Buffer へ描き、全画面 1 回でライティングする
+	// フォワードへの切り替えは段階 3 の始めに消した（PBR の式とライトを 2 か所に書かない）
 	const GBufferView view = gbufferView();
 	const bool showsGBuffer = ( view != GBufferView::Final );
-	// 映り込みの表示（SSR・SSR color）は、照らした後の色を映すので、表示中もライティングまで描く（表示は endScene の後に上から写す）。
+	// 映り込みの表示（SSR・SSR color）は、照らした後の色を映すので、表示中もライティングまで描く（表示は endScene の後に上から写す）
 	const bool showsReflection = ( view == GBufferView::Ssr || view == GBufferView::SsrColor );
 	const bool drawsLighting = !showsGBuffer || showsReflection;
 	mGBuffer.begin( mPostProcess.sceneDepth() );
-	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない。
+	// 視点を置いた後の行列から映る範囲を作り、映らない地面・建物を描かない
 	// 動かない物 → 弾痕（デカール）→ 動く物の順。デカールは画素に見えている面へ書くので、
-	// 後から描くキャラがデカールを上書きして、キャラには弾痕が乗らない。
+	// 後から描くキャラがデカールを上書きして、キャラには弾痕が乗らない
 	{
 		PROFILE_SCOPE( "World.draw" );
 		const DrawCulling culling = cameraCulling( camera );
@@ -71,14 +71,14 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 		mRenderer.drawDecals( projectionView );
 		Profiling::gpuMark( "Decals" );
 		mGBuffer.endDecals( mPostProcess.sceneDepth() );
-		// 動く物は動きの種類を G-Buffer へ書き分ける（TAA が前のフレームのどこを読むかを分ける）。
+		// 動く物は動きの種類を G-Buffer へ書き分ける（TAA が前のフレームのどこを読むかを分ける）
 		mGBuffer.setMotion( MotionKind::FirstPerson );
 		mRenderer.drawFirstPerson();
 		mGBuffer.setMotion( MotionKind::Moving );
 		mRenderer.drawCharacters( culling );
 	}
 	mGBuffer.end();
-	// SSAO は G-Buffer の後・ライティングの前。G-Buffer の表示（SSAO）でも見るので、表示中も作る。
+	// SSAO は G-Buffer の後・ライティングの前。G-Buffer の表示（SSAO）でも見るので、表示中も作る
 	mAmbientOcclusion.draw( mGBuffer, mPostProcess.sceneDepth(), projectionView, mJitter.frameIndex() );
 	Profiling::gpuMark( "SSAO" );
 	if ( drawsLighting ) {
@@ -86,8 +86,8 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 		mLights.lights().bindShadowMaps(); // 描画先を変えると t2 以降が外れるので、付け直す（LightList::bindShadowMaps）
 		mDeferredLighting.drawLighting( mGBuffer, mAmbientOcclusion.result(), mPostProcess.sceneDepth(), projectionView );
 		Profiling::gpuMark( "Lighting" );
-		// 映り込みはライティングの後・霧の前（照らした色を映し、映り込みにも霧が掛かる）。
-		// 作るパスはシーンの色を読むので、自分の描画先へ描いてから、シーンの色へ付け直して混ぜる。
+		// 映り込みはライティングの後・霧の前（照らした色を映し、映り込みにも霧が掛かる）
+		// 作るパスはシーンの色を読むので、自分の描画先へ描いてから、シーンの色へ付け直して混ぜる
 		if ( ssrEnabled() ) {
 			mReflection.buildHiZ( mPostProcess.sceneDepth() ); // F6 の Hi-Z を切っている間は作らない
 			Profiling::gpuMark( "Hi-Z" );
@@ -102,13 +102,13 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 			Profiling::gpuMark( "SSR" );
 		}
 		Profiling::gpuMark( "SSR composite" );
-		// 霧は半透明の板より前（板は自分で同じ霧を掛けるので、二重に掛けない）。
+		// 霧は半透明の板より前（板は自分で同じ霧を掛けるので、二重に掛けない）
 		if ( fogEnabled() ) {
 			mDeferredLighting.drawFog( mPostProcess.sceneDepth(), projectionView );
 		}
 		Profiling::gpuMark( "Fog" );
-		// TAA は霧の後・半透明の板の前（板は動きが取れず、マズルフラッシュに光の尾が出るため）。
-		// 見ているカメラが替わった（観察用カメラの切り替え。F6 の Debug タブ）フレームは、前の履歴が別の場所の絵なので捨てる。
+		// TAA は霧の後・半透明の板の前（板は動きが取れず、マズルフラッシュに光の尾が出るため）
+		// 見ているカメラが替わった（観察用カメラの切り替え。F6 の Debug タブ）フレームは、前の履歴が別の場所の絵なので捨てる
 		if ( &camera != mTaaCamera ) {
 			mTaa.invalidate();
 		}
@@ -123,7 +123,7 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 	}
 	mTaaCamera = &camera;
 	// 砂ぼこりなどの半透明の板は、G-Buffer と同じ深度で隠れるようシーンへ描く。板は深度を書かないので読み取り専用で付け、
-	// 同じ深度を読んで壁・地面に刺さった所を薄くする。弾痕は G-Buffer のデカールになった（上）。
+	// 同じ深度を読んで壁・地面に刺さった所を薄くする。弾痕は G-Buffer のデカールになった（上）
 	mPostProcess.resumeSceneReadOnlyDepth();
 	mLights.lights().bindShadowMaps();   // 板も懐中電灯の影を受ける（同じ evaluateLight を通る）
 	mRenderer.drawImpactDust( projectionView, camera.viewDirection(), camera.eyePosition() ); // 弾痕の上に舞う
@@ -135,26 +135,26 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 	debug->drawCollision( *mWorld, camera );
 	debug->drawLights( mLights.lights(), camera );
 #endif
-	// GPU の時間の区切り（Perf の欄の GPU）。世界の物ごとの印は WorldRenderer の中（Player〜Ground）。
-	// ここまでが弾痕・砂ぼこり・血・マズルフラッシュ・当たり判定の表示、次の印までが画面全体の処理（ブルームなど）。
+	// GPU の時間の区切り（Perf の欄の GPU）。世界の物ごとの印は WorldRenderer の中（Player〜Ground）
+	// ここまでが弾痕・砂ぼこり・血・マズルフラッシュ・当たり判定の表示、次の印までが画面全体の処理（ブルームなど）
 	Profiling::gpuMark( "Effects" );
 	mPostProcess.endScene();
 	if ( showsGBuffer ) {
-		// ToneMap を通さず中身の数のまま見るので、画面へ写した後に上から描く。
-		// 影の表示（Cascade・Shadow maps）はライトの一覧の定数と影のマップを読むので、外した物をもう一度付けて描く。
+		// ToneMap を通さず中身の数のまま見るので、画面へ写した後に上から描く
+		// 影の表示（Cascade・Shadow maps）はライトの一覧の定数と影のマップを読むので、外した物をもう一度付けて描く
 		mLights.lights().rebindConstants();
 		mLights.lights().bindShadowMaps();
 		mDeferredLighting.drawView( view, mGBuffer, mAmbientOcclusion.result(), mReflection.result(), mReflection.hiZ(),
 			mPostProcess.sceneDepth(), projectionView );
 		mLights.lights().unbind();
 	}
-	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）。
+	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）
 	Profiling::gpuMark( "GBufferView" );
 }
 
 const char* SceneRenderer::firstShaderError( const char* skinningError ) const {
 	// 画面に出せるのは1行なので、写す処理（PostProcess）→ キャラ（SkinningPipeline）→ G-Buffer → G-Buffer の表示の順に、
-	// 先に見つかったものを出す。
+	// 先に見つかったものを出す
 	const char* const shaderErrors[] = {
 		mPostProcess.errorMessage(),
 		skinningError,
@@ -175,8 +175,8 @@ const char* SceneRenderer::firstShaderError( const char* skinningError ) const {
 
 DrawCulling SceneRenderer::cameraCulling( const FirstPersonCamera& camera ) const {
 	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( mLights.fogHalfDistance() ) : kNoDrawDistance; // 霧の日は描く距離も縮む
-	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える。
-	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない）。
+	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える
+	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない）
 	const TownVisibility* visibility = pvsEnabled() ? &mWorld->town().visibility() : nullptr;
 	return DrawCulling::forCamera( camera.projectionViewMatrix(), camera.eyePosition(), drawDistance, camera.fieldOfView(),
 		mPostProcess.sceneDepth().height(), visibility );

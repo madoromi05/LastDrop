@@ -8,16 +8,16 @@ using namespace std;
 
 class RefString;
 
-///std::ostringstreamを置換するための物。速度に重点を置き、多少機能が犠牲になっている。
+///std::ostringstreamを置換するための物。速度に重点を置き、多少機能が犠牲になっている
 /*!
 std::ostringstreamとの相違点は、
-・str()がない。get()でArrayを渡して取り出す。
+・str()がない。get()でArrayを渡して取り出す
 ・clear()で全消去
 ・機能が少ない
 */
 class OStringStream{
 public:
-	OStringStream( int blockSize = 1024 ); //一回のnewサイズ。大きいほど負荷は軽いが、メモリは食う。
+	OStringStream( int blockSize = 1024 ); //一回のnewサイズ。大きいほど負荷は軽いが、メモリは食う
 	~OStringStream();
 	int precision( int );
 	OStringStream& operator<<( char );

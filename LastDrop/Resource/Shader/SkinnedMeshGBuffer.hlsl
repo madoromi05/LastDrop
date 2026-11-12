@@ -1,5 +1,5 @@
-// スキンメッシュ（キャラ）を GPU で変形して、G-Buffer へ描く（SkinningPipeline。RenderPass が GBuffer の間）。
-// 変形（VSMain）は SkinnedMesh.hlsl と同じ Skinning.hlsli。G-Buffer の並びは GBuffer.hlsli。
+// スキンメッシュ（キャラ）を GPU で変形して、G-Buffer へ描く（SkinningPipeline。RenderPass が GBuffer の間）
+// 変形（VSMain）は SkinnedMesh.hlsl と同じ Skinning.hlsli。G-Buffer の並びは GBuffer.hlsli
 #include "Skinning.hlsli"
 #include "GBuffer.hlsli"
 

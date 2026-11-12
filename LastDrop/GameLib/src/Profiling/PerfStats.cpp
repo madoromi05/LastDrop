@@ -9,9 +9,9 @@ namespace GameLib{
 namespace Profiling{
 
 namespace{
-	// 片方がもう片方のこの倍を超えたら、そちらが重いと決め直す。
+	// 片方がもう片方のこの倍を超えたら、そちらが重いと決め直す
 	const double kEnterRatio = 1.25;
-	// この倍の内側に戻ったら、釣り合っているとする（間の幅では前の判定を保つ）。
+	// この倍の内側に戻ったら、釣り合っているとする（間の幅では前の判定を保つ）
 	const double kStayRatio = 1.1;
 }
 

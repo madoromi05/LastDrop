@@ -13,7 +13,7 @@ namespace{
 	const uint32_t kRiffHeaderRest = 36;	// RIFF の大きさ = 36 + データの大きさ（"WAVE" + fmt チャンク + data の見出し）
 	const float kSampleMax = 32767.f;
 
-	// WAV はリトルエンディアン。Windows（x86/x64）のメモリの並びのまま書けばよい。
+	// WAV はリトルエンディアン。Windows（x86/x64）のメモリの並びのまま書けばよい
 	template< class T > void writeValue( std::ofstream& stream, T value ) {
 		stream.write( reinterpret_cast< const char* >( &value ), sizeof( T ) );
 	}

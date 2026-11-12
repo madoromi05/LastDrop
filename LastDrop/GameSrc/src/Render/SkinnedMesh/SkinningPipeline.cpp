@@ -16,7 +16,7 @@ namespace{
 	const int kFloatsPerRow = 4;
 	const int kFloatsPerBone = kRowsPerBone * kFloatsPerRow;
 
-	// 頂点の並び。SkinnedMeshData の GPU 頂点（SkinnedGpuVertex）と同じ順にする。
+	// 頂点の並び。SkinnedMeshData の GPU 頂点（SkinnedGpuVertex）と同じ順にする
 	const Graphics::VertexElement kElements[] = {
 		Graphics::VERTEX_POSITION4,
 		Graphics::VERTEX_NORMAL3,
@@ -68,7 +68,7 @@ const Graphics::Shader& SkinningPipeline::currentShader() const {
 void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
 	int boneNumber = static_cast< int >( skinMatrices.size() );
 	ASSERT( boneNumber <= kMaxBones && "SkinningPipeline : too many bones." );
-	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す。
+	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す
 	for ( int b = 0; b < boneNumber; ++b ) {
 		const Matrix34& m = skinMatrices[ b ];
 		float* row = &mBoneRows[ b * kFloatsPerBone ];
@@ -76,7 +76,7 @@ void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
 		row[ 4 ] = m.m10; row[ 5 ] = m.m11; row[ 6 ]  = m.m12; row[ 7 ]  = m.m13;
 		row[ 8 ] = m.m20; row[ 9 ] = m.m21; row[ 10 ] = m.m22; row[ 11 ] = m.m23;
 	}
-	// 使う骨のぶんだけ送る。残りの中身は不定になるが、頂点は骨の数より大きい番号を指さないので読まれない。
+	// 使う骨のぶんだけ送る。残りの中身は不定になるが、頂点は骨の数より大きい番号を指さないので読まれない
 	mBonePalette.set( mBoneRows.data(), boneNumber * kFloatsPerBone * static_cast< int >( sizeof( float ) ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();

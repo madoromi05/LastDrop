@@ -15,7 +15,7 @@ namespace Profiling{
 namespace OutputFiles{
 
 namespace{
-	// 書き出し先。作業フォルダ（VS から実行したときはプロジェクトのフォルダ）からの相対パス。
+	// 書き出し先。作業フォルダ（VS から実行したときはプロジェクトのフォルダ）からの相対パス
 	const char* const kDirectory = "Profiling";
 	const char* const kTemporarySuffix = ".tmp";
 	const int kTimestampBufferSize = 32;
@@ -40,9 +40,9 @@ std::string dateTime(){
 }
 
 std::string pathOf( const std::string& fileName ){
-	// 最初に呼ばれたときの時刻で 1 回だけ決める（起動中に書くファイルが全部同じフォルダに入る）。
+	// 最初に呼ばれたときの時刻で 1 回だけ決める（起動中に書くファイルが全部同じフォルダに入る）
 	static const std::string launchDirectory = std::string( kDirectory ) + "/" + timestamp();
-	// 既にあれば失敗するだけなので、毎回呼んでよい。親から順に作る。
+	// 既にあれば失敗するだけなので、毎回呼んでよい。親から順に作る
 	CreateDirectoryA( kDirectory, nullptr );
 	CreateDirectoryA( launchDirectory.c_str(), nullptr );
 	return launchDirectory + "/" + fileName;

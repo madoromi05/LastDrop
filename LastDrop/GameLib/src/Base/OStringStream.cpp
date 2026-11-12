@@ -37,7 +37,7 @@ public:
 			mBuffer.add( s[ i ] );
 		}
 	}
-	void add( float a ){ //さてどうやってやろう。
+	void add( float a ){ //さてどうやってやろう
 		char s[ 16 ];
 		int c = toString( s, a, mPrecision );
 		ASSERT( c <= 16 );

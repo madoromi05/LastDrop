@@ -14,7 +14,7 @@ namespace GameLib{
 namespace Profiling{
 
 namespace{
-	// スパイクの JSON のために残す、直近の読み込みの件数。
+	// スパイクの JSON のために残す、直近の読み込みの件数
 	const size_t kRecentItemLimit = 256;
 	const char* const kWaitCategory = "wait";
 	const char* const kLaunchCountFile = "launch_count.txt";
@@ -106,7 +106,7 @@ void LoadTracker::finish( long long at ){
 	mLast.attempt = attempt;
 	mLast.seconds = total;
 
-	// メインスレッドの処理は種類ごとに足す。待ちは並んで進むので足さず、一番長いものだけを出す。
+	// メインスレッドの処理は種類ごとに足す。待ちは並んで進むので足さず、一番長いものだけを出す
 	std::map< std::string, double > mainThreadSeconds;
 	double longestWait = 0.0;
 	for ( const LoadItem& item : mItems ){

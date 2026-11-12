@@ -6,7 +6,7 @@ using namespace GameLib::Math;
 namespace{
 	const int kNoBone = -1; // 銃を持つ手が無い（どの銃の段も、これで止まる）
 
-	// 抱え方・反動・目の位置の調整値（起動中に F6 で動かせる）。読むのは Pose/ の段（weaponPoseParams() で引く）。
+	// 抱え方・反動・目の位置の調整値（起動中に F6 で動かせる）。読むのは Pose/ の段（weaponPoseParams() で引く）
 	WeaponPoseParams gParams;
 }
 
@@ -23,10 +23,10 @@ FirstPersonBody::FirstPersonBody( const SkinnedMeshData* data ) :
 	mWeaponFeel( &mRig ),
 	mWeaponBounds( &mRig ) {
 	// 順番に意味がある（それぞれの段のヘッダ）：
-	// 腕の差し替えを最初にするのは、差し替えた腕も背骨の曲げ（視線の上下）に付いてくるようにするため。
-	// 目は曲げた後の頭で決める（曲げる前だと、見上げ・見下ろしで目と銃がずれる）。
-	// ぶれと反動は、置き終えた銃（覗いていればサイトが目に合った銃）から動かす。覗く補正より前に掛けると、合わせ直されて消える。
-	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）。
+	// 腕の差し替えを最初にするのは、差し替えた腕も背骨の曲げ（視線の上下）に付いてくるようにするため
+	// 目は曲げた後の頭で決める（曲げる前だと、見上げ・見下ろしで目と銃がずれる）
+	// ぶれと反動は、置き終えた銃（覗いていればサイトが目に合った銃）から動かす。覗く補正より前に掛けると、合わせ直されて消える
+	// 銃を囲むのは最後に銃を動かした後（見えている銃と当たり判定がずれないように）
 	mChain.add( &mArmOverride );
 	mChain.add( &mSpineBend );
 	mChain.add( &mEyePoint );
@@ -62,7 +62,7 @@ void FirstPersonBody::setHoldWeight( float weight ) {
 }
 
 void FirstPersonBody::setAimWeight( float weight ) {
-	// 覗き具合は 2 つの段が読む（サイトを目へ寄せる・反動の大きさを腰だめと覗くの間で取る）。
+	// 覗き具合は 2 つの段が読む（サイトを目へ寄せる・反動の大きさを腰だめと覗くの間で取る）
 	mWeaponPlace.setAimWeight( weight );
 	mWeaponFeel.setAimWeight( weight );
 }

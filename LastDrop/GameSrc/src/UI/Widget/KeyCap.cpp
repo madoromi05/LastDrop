@@ -5,7 +5,7 @@
 #include "GameLib/GameLib.h"
 
 namespace {
-	// 画素（座標の高さ 480 で）。
+	// 画素（座標の高さ 480 で）
 	const float kFramePaddingX = 5.f;  // 枠の左右の余白
 	const float kFramePaddingY = 1.f;  // 枠の上下の余白
 	const float kFrameThickness = 1.f; // 枠の線の太さ
@@ -25,7 +25,7 @@ float KeyCap::draw( UiRenderer& renderer, const char* key, float left, float mid
 	frame.width = width( renderer, key );
 	frame.height = renderer.lineHeight( kTextSize ) + kFramePaddingY * kBothSides;
 	frame.top = middleY - frame.height * kHalf;
-	// 枠は細い長方形 4 本（上・下・左・右）。
+	// 枠は細い長方形 4 本（上・下・左・右）
 	UiRect edge = frame;
 	edge.height = kFrameThickness;
 	renderer.addRect( edge, MenuPalette::KEY_FRAME );

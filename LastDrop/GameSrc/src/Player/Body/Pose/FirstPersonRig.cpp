@@ -11,7 +11,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 視線の上下を背骨へ振り分ける骨（根に近い順）。1本あたり ピッチ÷本数 ずつ曲げる。
+	// 視線の上下を背骨へ振り分ける骨（根に近い順）。1本あたり ピッチ÷本数 ずつ曲げる
 	const char* const kSpineBones[] = {
 		"mixamorig:Spine",
 		"mixamorig:Spine1",
@@ -19,31 +19,31 @@ namespace{
 	};
 	const int kSpineBoneNumber = sizeof( kSpineBones ) / sizeof( kSpineBones[ 0 ] );
 
-	// 背骨より根の側（曲げない下半身）。これと背骨以外は全部、背骨の先（上半身）として一緒に回す。
-	// 骨格から親子を引く手段が無い（Tree が公開していない）ので、少ない側を名前で持つ。
+	// 背骨より根の側（曲げない下半身）。これと背骨以外は全部、背骨の先（上半身）として一緒に回す
+	// 骨格から親子を引く手段が無い（Tree が公開していない）ので、少ない側を名前で持つ
 	const char* const kLowerBodyBones[] = {
 		"mixamorig:Hips",
 		"mixamorig:LeftUpLeg",  "mixamorig:LeftLeg",  "mixamorig:LeftFoot",  "mixamorig:LeftToeBase",  "mixamorig:LeftToe_End",
 		"mixamorig:RightUpLeg", "mixamorig:RightLeg", "mixamorig:RightFoot", "mixamorig:RightToeBase", "mixamorig:RightToe_End",
 	};
 
-	// 覗くときに一緒に動かす両腕。名前の頭で探す（"mixamorig:LeftHand" で指の骨 LeftHandIndex1 なども拾う）。
-	// 肩（Shoulder）から含めるのは、腕の付け根だけ動かすと二の腕が不自然に伸びるため。
+	// 覗くときに一緒に動かす両腕。名前の頭で探す（"mixamorig:LeftHand" で指の骨 LeftHandIndex1 なども拾う）
+	// 肩（Shoulder）から含めるのは、腕の付け根だけ動かすと二の腕が不自然に伸びるため
 	const char* const kArmBonePrefixes[] = {
 		"mixamorig:LeftShoulder",  "mixamorig:LeftArm",  "mixamorig:LeftForeArm",  "mixamorig:LeftHand",
 		"mixamorig:RightShoulder", "mixamorig:RightArm", "mixamorig:RightForeArm", "mixamorig:RightHand",
 	};
 
-	// 両手持ちで手首を曲げるときに一緒に回す骨（右手と指。"mixamorig:RightHandIndex1" なども拾う）。
+	// 両手持ちで手首を曲げるときに一緒に回す骨（右手と指。"mixamorig:RightHandIndex1" なども拾う）
 	const char* const kRightHandBonePrefixes[] = {
 		"mixamorig:RightHand",
 	};
 
-	// 目の位置を決める骨。頭は潰さずに描く（影・観察カメラでも頭が見えるように）。
-	// 腕・右手の骨の名前の頭のどれにも合わないので、両手持ち・胸元への寄せで頭は動かない（目を先に決めてよい理由。5-4）。
+	// 目の位置を決める骨。頭は潰さずに描く（影・観察カメラでも頭が見えるように）
+	// 腕・右手の骨の名前の頭のどれにも合わないので、両手持ち・胸元への寄せで頭は動かない（目を先に決めてよい理由。5-4）
 	const char* const kHeadBone = "mixamorig:Head";
 
-	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）。
+	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）
 	const char* const kChestBone = "mixamorig:Spine2";
 	const float kFallbackEyeHeight = 1.65f; // 頭の骨が無いときの、足元からの目の高さ（身長約1.8）
 
@@ -57,7 +57,7 @@ namespace{
 		return std::strncmp( text, prefix, std::strlen( prefix ) ) == 0;
 	}
 
-	// 名前の並びを骨の番号にする。見つからない名前は飛ばし、デバッグ出力で知らせる。
+	// 名前の並びを骨の番号にする。見つからない名前は飛ばし、デバッグ出力で知らせる
 	template< int N >
 	std::vector< int > findBones( const SkinnedMeshData* data, const char* const ( &names )[ N ] ) {
 		std::vector< int > bones;
@@ -72,7 +72,7 @@ namespace{
 		return bones;
 	}
 
-	// 名前の頭が prefixes のどれかに合う骨を全部集める。
+	// 名前の頭が prefixes のどれかに合う骨を全部集める
 	template< int N >
 	std::vector< int > findBonesByPrefix( const SkinnedMeshData* data, const char* const ( &prefixes )[ N ] ) {
 		std::vector< int > bones;
@@ -106,8 +106,8 @@ FirstPersonRig::FirstPersonRig( const SkinnedMeshData* data ) :
 	armBones = findBonesByPrefix( data, kArmBonePrefixes );
 	rightHandBones = findBonesByPrefix( data, kRightHandBonePrefixes );
 
-	// 背骨 i で回すのは「下半身でもなく、i より根の側の背骨でもない骨」。
-	// 根の側の背骨は、その背骨自身の回転で既に位置が決まっているので回さない。
+	// 背骨 i で回すのは「下半身でもなく、i より根の側の背骨でもない骨」
+	// 根の側の背骨は、その背骨自身の回転で既に位置が決まっているので回さない
 	for ( size_t i = 0; i < spineBones.size(); ++i ) {
 		SpineJoint joint;
 		joint.bone = spineBones[ i ];

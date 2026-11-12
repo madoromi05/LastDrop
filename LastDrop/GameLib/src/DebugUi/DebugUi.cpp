@@ -13,27 +13,27 @@
 #include "ThirdParty/imgui/imgui_impl_win32.h"
 #include "ThirdParty/imgui/imgui_impl_dx11.h"
 
-// imgui_impl_win32.h では、windows.h を持ち込まないよう宣言が #if 0 で外してあるので、使う側で宣言する（ImGui の決まり）。
+// imgui_impl_win32.h では、windows.h を持ち込まないよう宣言が #if 0 で外してあるので、使う側で宣言する（ImGui の決まり）
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
 
 namespace GameLib{
 namespace DebugUi{
 
 namespace{
-	// エディタを開け閉めするキー（F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）。
+	// エディタを開け閉めするキー（F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）
 	const ImGuiKey kToggleKey = ImGuiKey_F6;
-	// 開いている間、押している間だけマウスをエディタに渡すキー（ゲームの操作に Alt は使っていない）。
+	// 開いている間、押している間だけマウスをエディタに渡すキー（ゲームの操作に Alt は使っていない）
 	const ImGuiKey kEditKey = ImGuiMod_Alt;
 
 	bool gCreated = false;
 	bool gOpen = false;
 
-	// エディタの窓を触っている間（開いていて、Alt を押している）。それ以外はマウスもゲームのまま。
+	// エディタの窓を触っている間（開いていて、Alt を押している）。それ以外はマウスもゲームのまま
 	bool isEditing(){
 		return gOpen && ImGui::IsKeyDown( kEditKey );
 	}
 
-	// 触っていない間は、ImGui にマウスを使わせず、カーソルの形も変えさせない（カーソルロックとの取り合いを起こさない）。
+	// 触っていない間は、ImGui にマウスを使わせず、カーソルの形も変えさせない（カーソルロックとの取り合いを起こさない）
 	void applyMouseFlags( ImGuiIO& io, bool editing ){
 		const ImGuiConfigFlags kMouseFlags = ImGuiConfigFlags_NoMouse | ImGuiConfigFlags_NoMouseCursorChange;
 		if ( editing ){
@@ -51,7 +51,7 @@ void create( void* windowHandle ){
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	// 窓の位置は Editor の窓が毎フレーム決めるので、imgui.ini は書かない（ファイルが増えず git にも混ざらない）。
+	// 窓の位置は Editor の窓が毎フレーム決めるので、imgui.ini は書かない（ファイルが増えず git にも混ざらない）
 	io.IniFilename = nullptr;
 	io.LogFilename = nullptr;
 	ImGui::StyleColorsDark();
@@ -90,13 +90,13 @@ void beginFrame(){
 	if ( ImGui::IsKeyPressed( kToggleKey, false ) ){
 		gOpen = !gOpen;
 	}
-	// Alt は押したり離したりするので毎フレーム決め直す（ImGui に効くのは次の NewFrame から）。
+	// Alt は押したり離したりするので毎フレーム決め直す（ImGui に効くのは次の NewFrame から）
 	const bool editing = isEditing();
 	applyMouseFlags( io, editing );
-	// どちらが入力を使うかは、ImGui の前のフレームの判定で決める（ImGui のふつうの使い方）。
-	// 反映されるのは次に入力を読むとき（1 フレーム遅れ）。
+	// どちらが入力を使うかは、ImGui の前のフレームの判定で決める（ImGui のふつうの使い方）
+	// 反映されるのは次に入力を読むとき（1 フレーム遅れ）
 	// キーボードは「文字を打っている間」だけ止める（WantTextInput）。WantCaptureKeyboard はボタンを押している間なども
-	// 真になり、キーを押している途中で止まったり戻ったりして、1 回の F7 が 2 回に数えられた。
+	// 真になり、キーを押している途中で止まったり戻ったりして、1 回の F7 が 2 回に数えられた
 	Input::Manager().setUiCapture( editing, gOpen && io.WantTextInput );
 }
 
@@ -107,7 +107,7 @@ void render(){
 	PROFILE_SCOPE( "ImGui" );
 	Profiling::gpuMark( "UI" ); // ここまでが HUD・デバッグ文字の GPU の時間
 	ImGui::Render();
-	// ImGui はバックバッファへ描く（ステートは ImGui が保存して元に戻す）。
+	// ImGui はバックバッファへ描く（ステートは ImGui が保存して元に戻す）
 	Graphics::gManagerImpl->bindBackBuffer();
 	ImGui_ImplDX11_RenderDrawData( ImGui::GetDrawData() );
 	Profiling::gpuMark( "ImGui" );

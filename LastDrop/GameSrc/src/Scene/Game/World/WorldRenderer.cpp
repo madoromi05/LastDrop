@@ -17,7 +17,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 自キャラが手に持って出している銃の、銃口が光る部品と銃口の位置・向き。素手・銃をしまった後（銃口が無い）なら nullptr。
+	// 自キャラが手に持って出している銃の、銃口が光る部品と銃口の位置・向き。素手・銃をしまった後（銃口が無い）なら nullptr
 	MuzzleFlashComponent* heldMuzzleFlash( const GameObject* player, Vector3* muzzlePosition, Vector3* muzzleDirection ) {
 		if ( !player ) {
 			return nullptr;
@@ -40,7 +40,7 @@ WorldRenderer::WorldRenderer( const GameWorld* world, EffectManager* effects ) :
 }
 
 void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye ) {
-	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる。
+	// 建物は目に近い順。手前の建物が奥の建物を隠すので、奥の建物の画素の多くが色の計算の前に捨てられる
 	mBuildingDrawOrder.clear();
 	for ( const Building& building : mWorld->town().buildings() ) {
 		Vector3 toBuilding;
@@ -49,17 +49,17 @@ void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye )
 	}
 	std::sort( mBuildingDrawOrder.begin(), mBuildingDrawOrder.end(),
 		[]( const std::pair< float, const Building* >& a, const std::pair< float, const Building* >& b ) { return a.first < b.first; } );
-	// まとめて描くときも、形の中では近い順に詰めるので手前から描かれる（違う形どうしの順は混ざらない）。
+	// まとめて描くときも、形の中では近い順に詰めるので手前から描かれる（違う形どうしの順は混ざらない）
 	beginBuildings();
 	for ( const auto& entry : mBuildingDrawOrder ) {
 		addBuilding( *entry.second, culling );
 	}
 	endBuildings();
 	Profiling::gpuMark( "Buildings" );
-	// 置物（車・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）。
+	// 置物（車・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）
 	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
 	Profiling::gpuMark( "Props" );
-	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く。
+	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く
 	mWorld->town().ground().draw( culling.frustum() );
 	Profiling::gpuMark( "Ground" );
 }
@@ -69,7 +69,7 @@ void WorldRenderer::drawDecals( const Matrix44& projectionView ) {
 }
 
 void WorldRenderer::drawFirstPerson() const {
-	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので、動く物の中では最初に描く。
+	// 一人称の腕と銃は画面の大きな所を占め、いつも一番手前にあるので、動く物の中では最初に描く
 	drawPlayer();
 	mWorld->bullets().draw();
 	Profiling::gpuMark( "Player" );
@@ -93,8 +93,8 @@ void WorldRenderer::drawCharacters( const DrawCulling& culling ) const {
 }
 
 void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) {
-	// 深度だけなので、drawStatic のような近い順の並べ替えはしない（速さにほとんど効かない）。
-	// 自キャラは部位の箱で間引く（月の遠い枚には映らないことが多い）。
+	// 深度だけなので、drawStatic のような近い順の並べ替えはしない（速さにほとんど効かない）
+	// 自キャラは部位の箱で間引く（月の遠い枚には映らないことが多い）
 	const IHittable* playerTarget = mWorld->playerTarget();
 	if ( includesPlayer && playerTarget && culling.showsPosed( playerTarget->hitboxes(), DrawCulling::Target::Large ) ) {
 		drawPlayer();
@@ -138,7 +138,7 @@ void WorldRenderer::endBuildings() {
 }
 
 void WorldRenderer::drawZombies( const DrawCulling& culling ) const {
-	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く。
+	// 部位の箱（毎ティック今のポーズへ置き直している）を囲む箱で間引く
 	mWorld->objects().forEach< ZombieBrainComponent >( [ &culling ]( const ZombieBrainComponent& zombie ) {
 		const GameObject* object = zombie.gameObject();
 		if ( culling.showsPosed( object->getComponent< HitboxComponent >()->hitboxes(), DrawCulling::Target::Zombie ) ) {
@@ -158,7 +158,7 @@ void WorldRenderer::drawBloodSpray( const Matrix44& projectionView, const Vector
 void WorldRenderer::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) const {
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
-	// 撃った後に銃をしまったら、銃口が無いので描かない。
+	// 撃った後に銃をしまったら、銃口が無いので描かない
 	MuzzleFlashComponent* flash = heldMuzzleFlash( mWorld->player(), &muzzlePosition, &muzzleDirection );
 	if ( !flash ) {
 		return;

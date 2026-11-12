@@ -24,7 +24,7 @@ template< class T >	inline SharedPtr< T >::~SharedPtr(){
 			delete mReference->mPointer;
 			delete mReference;
 		}
-		mReference = 0; //いずれにせよポインタは0にする。
+		mReference = 0; //いずれにせよポインタは0にする
 	}
 }
 
@@ -33,15 +33,15 @@ template< class T >	inline SharedPtr< T >& SharedPtr< T >::operator=( T* p ){
 		if ( mReference->decrement() == 0 ){
 			delete mReference->mPointer;
 			if ( p ){ //ポインタが空でなければ
-				mReference->mPointer = p; //他に誰も使ってないのでこれを書き換えて流用。
+				mReference->mPointer = p; //他に誰も使ってないのでこれを書き換えて流用
 				mReference->mCount = 1;
 			}else{ //誰も使わないので消す
 				delete mReference;
 				mReference = 0;
 			}
-		}else if ( p ){ //ポインタが空でないので新たに生成。だが、referenceは他から見ているので触らない。
+		}else if ( p ){ //ポインタが空でないので新たに生成。だが、referenceは他から見ているので触らない
 			mReference = NEW Reference( p );
-		}else{ //ポインタが空。referenceは他から見ているので触らず、参照関係を切る。
+		}else{ //ポインタが空。referenceは他から見ているので触らず、参照関係を切る
 			mReference = 0;
 		}
 	}else if ( p ){
@@ -86,7 +86,7 @@ template< class T >	inline const T* SharedPtr< T >::operator->() const {
 	return ( mReference ) ? mReference->mPointer : 0;
 }
 
-//ポインタをそのまま返すと悪用される恐れがあるので、非ゼロなら0xffffffffを返す。
+//ポインタをそのまま返すと悪用される恐れがあるので、非ゼロなら0xffffffffを返す
 template< class T >	inline SharedPtr< T >::operator void*() const {
 	T* p = ( mReference ) ? mReference->mPointer : 0;
 	return ( p ) ? reinterpret_cast< void* >( ~0 ) : 0;

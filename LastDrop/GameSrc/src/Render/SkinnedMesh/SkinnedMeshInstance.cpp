@@ -85,8 +85,8 @@ void SkinnedMeshInstance::update() {
 	mPlayer.update();
 	mSkinStale = true;
 
-	// 体の書き換え（当たり判定も動く）→ 見た目だけの書き換え、の順に掛ける。
-	// アニメのポーズ（mPlayer.pose）に直接入れないのは、クロスフェードの混ぜ元に入り込み、混ぜた後にもう一度掛かって二重になるため。
+	// 体の書き換え（当たり判定も動く）→ 見た目だけの書き換え、の順に掛ける
+	// アニメのポーズ（mPlayer.pose）に直接入れないのは、クロスフェードの混ぜ元に入り込み、混ぜた後にもう一度掛かって二重になるため
 	if ( mBodyPoseModifier ) {
 		mBodyPose = mPlayer.pose();
 		mBodyPoseModifier->apply( &mBodyPose );
@@ -121,7 +121,7 @@ bool SkinnedMeshInstance::boneMatrix( int boneIndex, Matrix34* out ) const {
 	if ( !mPlayer.hasPose() || boneIndex < 0 || boneIndex >= static_cast< int >( mShownPose.size() ) ) {
 		return false;
 	}
-	// 頂点の変形（computeSkinMatrices）と同じ「置き場所 * ボーンの姿勢」。同じ式なので、付けた物が手からずれない。
+	// 頂点の変形（computeSkinMatrices）と同じ「置き場所 * ボーンの姿勢」。同じ式なので、付けた物が手からずれない
 	out->setMul( rootMatrix(), mShownPose[ boneIndex ] );
 	return true;
 }
@@ -150,8 +150,8 @@ void SkinnedMeshInstance::draw() const {
 	if ( !mPlayer.hasPose() ) {
 		return; // まだ update していない（見せるポーズが無い）
 	}
-	// 骨の行列は、ポーズか置き場所が変わった後に初めて描く時だけ作る。G-Buffer と影（最大 4 枚）で同じ体を何度描いても 1 回で済む。
-	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける。
+	// 骨の行列は、ポーズか置き場所が変わった後に初めて描く時だけ作る。G-Buffer と影（最大 4 枚）で同じ体を何度描いても 1 回で済む
+	// 置き場所と向きは、混ぜて書き換えた後のポーズにまとめて掛ける
 	if ( mSkinStale ) {
 		PROFILE_COUNT( "Skin.matrices", 1 ); // 骨の行列を作った回数
 		mData->computeSkinMatrices( rootMatrix(), mShownPose, &mSkinMatrices );

@@ -7,8 +7,8 @@
 using namespace GameLib::Input;
 
 // ────────────────────────────────────────────────
-// 文字列管理はすべてこのファイルの中に閉じ込める。
-// ゲーム側（Pad.cpp 等）はこれらの文字列を一切知らなくてよい。
+// 文字列管理はすべてこのファイルの中に閉じ込める
+// ゲーム側（Pad.cpp 等）はこれらの文字列を一切知らなくてよい
 // ────────────────────────────────────────────────
 namespace
 {
@@ -23,14 +23,14 @@ namespace
         case DeviceKind::Keyboard: return "Keyboard";
         case DeviceKind::Mouse:    return "Mouse";
         case DeviceKind::Joystick: return "Joystick";
-        // ボタンと軸は 1 つのデバイス（マウスと同じく、種別だけ分けて同じ名前）。
+        // ボタンと軸は 1 つのデバイス（マウスと同じく、種別だけ分けて同じ名前）
         case DeviceKind::GamePadButton:
         case DeviceKind::GamePadAxis: return "GamePad";
         default:                  return "";
         }
     }
 
-    // 文字列リテラルを返す（計測の印は名前のポインタを持ち続けるので、std::string にしない）。
+    // 文字列リテラルを返す（計測の印は名前のポインタを持ち続けるので、std::string にしない）
     const char* WorkName(WorkId a_work)
     {
         switch (a_work)
@@ -81,14 +81,14 @@ namespace
         }
     }
 
-    // キーコードを GameLib のキーボードへ渡す値にする。
-    // Keyboard::Key の特殊キー（0x80 以降）は char だと負になるので、符号なしで読み直す。
+    // キーコードを GameLib のキーボードへ渡す値にする
+    // Keyboard::Key の特殊キー（0x80 以降）は char だと負になるので、符号なしで読み直す
     int KeyboardKeyCode(char a_asciiKey)
     {
         return static_cast<unsigned char>(a_asciiKey);
     }
 
-    // 'w' -> "W" のように大文字化する。空白やカンマなど印字しにくい文字・特殊キーは個別に名前をつける。
+    // 'w' -> "W" のように大文字化する。空白やカンマなど印字しにくい文字・特殊キーは個別に名前をつける
     std::string KeyboardKeyName(char a_asciiKey)
     {
         switch (KeyboardKeyCode(a_asciiKey))
@@ -116,7 +116,7 @@ namespace
         }
     }
 
-    // 上下左右は Joystick::Button の固定コード、それ以外は 0 始まりの番号ボタン。
+    // 上下左右は Joystick::Button の固定コード、それ以外は 0 始まりの番号ボタン
     std::string JoystickButtonName(int a_buttonCode)
     {
         switch (a_buttonCode)
@@ -190,9 +190,9 @@ namespace
     constexpr int countOf(const T(&)[N]) { return N; }
 
     // ────────────────────────────────────────────────
-    // デフォルト割当表（このゲームの初期操作）。
-    // 「手続きの羅列」ではなく「データの表」。行を足す／消すだけで割当が変わる。
-    // ここが入力データの一元管理場所で、ゲーム側は番号で引くだけ。
+    // デフォルト割当表（このゲームの初期操作）
+    // 「手続きの羅列」ではなく「データの表」。行を足す／消すだけで割当が変わる
+    // ここが入力データの一元管理場所で、ゲーム側は番号で引くだけ
     // ────────────────────────────────────────────────
 
     // Player 0：キーボード＋マウス＋パッド
@@ -208,18 +208,18 @@ namespace
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
-        // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）。
+        // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）
         { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
-        // R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）。
+        // R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）
         { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
-        // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）。
+        // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },
-        // 開発中の確認用の切り替えにはキーを割り当てない（F6 のエディタのボタンで切り替える）。
-        // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）。
+        // 開発中の確認用の切り替えにはキーを割り当てない（F6 のエディタのボタンで切り替える）
+        // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::DebugCameraUp,   DeviceKind::Keyboard, ' ' },
         { CollectorId::InGame, WorkId::DebugCameraDown, DeviceKind::Keyboard, Keyboard::KEY_CONTROL },
         // 画面の部品（タイトル・クリア画面のボタン）の操作。矢印キーと WASD の両方で選べるようにする
-        // （W/S は移動の Up/Down と共有。ボタンの画面ではキャラを動かさないので重ならない）。
+        // （W/S は移動の Up/Down と共有。ボタンの画面ではキャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, Keyboard::KEY_UP },
         { CollectorId::InGame, WorkId::UiUp,     DeviceKind::Keyboard, 'w' },
         { CollectorId::InGame, WorkId::UiDown,   DeviceKind::Keyboard, Keyboard::KEY_DOWN },
@@ -227,21 +227,21 @@ namespace
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, Keyboard::KEY_RETURN },
         { CollectorId::InGame, WorkId::UiDecide, DeviceKind::Keyboard, ' ' },
         // 設定画面のスライダーの値を変える。上下と同じく矢印キーと WASD の両方で
-        // （A/D は移動の Left/Right と共有。設定の画面ではキャラを動かさないので重ならない）。
+        // （A/D は移動の Left/Right と共有。設定の画面ではキャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, Keyboard::KEY_LEFT },
         { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, 'a' },
         { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, Keyboard::KEY_RIGHT },
         { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, 'd' },
-        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）。
+        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）
         { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
-        // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）。
+        // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）
         { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
-        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない）。
+        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない）
         { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },
 
         // ── パッド（ボタンは Xbox の並び。DualSense なども対応表で同じ並びに置き換えて読む） ──
-        // タルコフは PC 版にパッド対応が無いので、よくある FPS の配置（LT 構える・RT 撃つ）に合わせる。
-        // Jump・Dodge は今どこからも読まれていないので割り当てない（A は使う・決定に回す）。
+        // タルコフは PC 版にパッド対応が無いので、よくある FPS の配置（LT 構える・RT 撃つ）に合わせる
+        // Jump・Dodge は今どこからも読まれていないので割り当てない（A は使う・決定に回す）
         { CollectorId::InGame, WorkId::Move,       DeviceKind::GamePadAxis,   static_cast<int>(GamePadAxisKind::LeftStick) },
         { CollectorId::InGame, WorkId::LookStick,  DeviceKind::GamePadAxis,   static_cast<int>(GamePadAxisKind::RightStick) },
         { CollectorId::InGame, WorkId::Run,        DeviceKind::GamePadButton, GamePad::BUTTON_LEFT_THUMB },
@@ -253,9 +253,9 @@ namespace
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
         { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
         { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_BACK },
-        // Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）。
+        // Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_Y },
-        // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）。
+        // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
         { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },
         { CollectorId::InGame, WorkId::UiLeft,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_LEFT },
@@ -287,7 +287,7 @@ std::string GameLib::Input::BindingDisplayName(const BindingRecord& a_record)
     case DeviceKind::Mouse:     return "Mouse " + MouseButtonName(static_cast<Mouse::Button>(a_record.code));
     case DeviceKind::Joystick:  return "Pad " + JoystickButtonName(a_record.code);
     case DeviceKind::MouseAxis:
-        // 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる。
+        // 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる
         return static_cast<MouseAxisKind>(a_record.code) == MouseAxisKind::Move ? "Mouse" : "Mouse " + MouseAxisName(static_cast<MouseAxisKind>(a_record.code));
     case DeviceKind::GamePadButton: return "Pad " + GamePadButtonName(a_record.code);
     case DeviceKind::GamePadAxis:   return "Pad " + GamePadAxisName(static_cast<GamePadAxisKind>(a_record.code));
@@ -342,7 +342,7 @@ std::shared_ptr<JoystickDevice> InputBuilder::AddJoystickDevice(int a_joystickIn
 
 std::shared_ptr<GamePadDevice> InputBuilder::AddGamePadDevice()
 {
-    // ボタンと軸は同じデバイス名（"GamePad"）の下に置く（DeviceKindName は 2 つの種別に同じ名前を返す）。
+    // ボタンと軸は同じデバイス名（"GamePad"）の下に置く（DeviceKindName は 2 つの種別に同じ名前を返す）
     auto device = m_input.AddDevice<GamePadDevice>(DeviceKindName(DeviceKind::GamePadButton));
     m_gamePadButtons = device->AddInputButtonFormat<GamePadButtonFormat>(kFormatButtons);
     m_gamePadAxes = device->AddInputAxisFormat<GamePadAxisFormat>(kFormatAxes);
@@ -392,7 +392,7 @@ void InputBuilder::SetCollectorActive(CollectorId a_id, bool a_active)
 
 // ─────────────────────────────────────────
 // 「無ければ生成、あれば取得」ヘルパ
-// Bind だけで入力系一式が組み上がるようにするための土台。
+// Bind だけで入力系一式が組み上がるようにするための土台
 // ─────────────────────────────────────────
 std::shared_ptr<KeyboardButtonFormat> InputBuilder::ensureKeyboardFormat()
 {
@@ -461,7 +461,7 @@ void InputBuilder::BindJoystickButton(CollectorId a_collector, WorkId a_work, in
 
 void InputBuilder::BindMouseAxis(CollectorId a_collector, WorkId a_work, MouseAxisKind a_axis)
 {
-    // 軸はボタンと別の「軸ワーク」に登録する（値は押下状態ではなく移動量）。
+    // 軸はボタンと別の「軸ワーク」に登録する（値は押下状態ではなく移動量）
     ensureMouseAxisFormat()->AddAxis(MouseAxisName(a_axis), static_cast<int>(a_axis));
     ensureCollector(a_collector)->AddAxisToAxisWork(
         WorkName(a_work), DeviceKindName(DeviceKind::Mouse), MouseAxisName(a_axis));
@@ -488,7 +488,7 @@ void InputBuilder::UnbindGamePadButton(CollectorId a_collector, WorkId a_work, i
 
 void InputBuilder::BindGamePadAxis(CollectorId a_collector, WorkId a_work, GamePadAxisKind a_axis)
 {
-    // スティックはマウスの軸と同じく「軸ワーク」に登録する（値は押下状態ではなく傾き）。
+    // スティックはマウスの軸と同じく「軸ワーク」に登録する（値は押下状態ではなく傾き）
     ensureGamePadAxisFormat()->AddAxis(GamePadAxisName(a_axis), static_cast<int>(a_axis));
     ensureCollector(a_collector)->AddAxisToAxisWork(
         WorkName(a_work), DeviceKindName(DeviceKind::GamePadAxis), GamePadAxisName(a_axis));

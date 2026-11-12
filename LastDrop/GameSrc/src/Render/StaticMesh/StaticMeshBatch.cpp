@@ -32,7 +32,7 @@ void StaticMeshBatch::add( const StaticMeshInstance& instance, const StaticMeshD
 }
 
 int StaticMeshBatch::groupIndexOf( const StaticMeshData* data ) {
-	// 形は数種類しかないので、順に探す。
+	// 形は数種類しかないので、順に探す
 	for ( int i = 0; i < static_cast< int >( mGroups.size() ); ++i ) {
 		if ( mGroups[ i ].data == data ) {
 			return i;

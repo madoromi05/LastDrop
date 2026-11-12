@@ -16,24 +16,24 @@ namespace{
 	const float kHalf = 0.5f;
 	const int kNone = -1;
 
-	// マスどうしの間（画素）。
+	// マスどうしの間（画素）
 	const float kCellGap = 4.f;
 	const float kIconInset = 3.f;      // マスの縁から絵まで（選んだ枠の太さより広く、枠が絵に掛からないように）
 	const float kBothSides = 2.f;      // 左右（上下）の両側の余白の分
-	// 数（2 桁）を置く右下の板。板の真ん中に数を置く。
+	// 数（2 桁）を置く右下の板。板の真ん中に数を置く
 	const float kAmountPlateWidth = 26.f;
 	const float kAmountPlateHeight = 20.f; // 文字（UI_TEXT_NORMAL の 20）と同じ高さ
 	const float kAmountInset = 3.f;    // マスの右下の角から板まで
 	const float kMarkPlateSize = 20.f; // 印（文字 1 つ）の板。文字と同じ高さの正方形
 
-	// 銃の弾倉の数（「12/12」）を置く左下の板。5 文字が入る幅（小さいマスでは、マスの幅に収める）。
+	// 銃の弾倉の数（「12/12」）を置く左下の板。5 文字が入る幅（小さいマスでは、マスの幅に収める）
 	const float kRoundsPlateWidth = 50.f;
 	const char* kRoundsFormat = "%d/%d";
 	const int kTextSize = 16;
 
 	const float kEmptyCellGray = 0.08f;
 	const float kDefaultEmptyAlpha = 0.85f;
-	// 物のあるマスの背景（どの物も同じ。物の見分けは絵で付ける）。空のマスより少し明るくして、物のある所が分かるように。
+	// 物のあるマスの背景（どの物も同じ。物の見分けは絵で付ける）。空のマスより少し明るくして、物のある所が分かるように
 	const float kItemCellGray = 0.2f;
 	const float kDefaultItemAlpha = 0.9f;
 	const float kOpaque = 1.f;        // 絵はそのままの色・濃さで貼る（白を掛ける）
@@ -49,8 +49,8 @@ namespace{
 		return VertexColor::pack( spec.red, spec.green, spec.blue, alpha );
 	}
 
-	// area の内側 kIconInset に、絵の縦横の比を保って収まる一番大きい長方形（真ん中に置く）。
-	// 2 マスの物の範囲は絵（2 : 1）とわずかに比が違うので、引き伸ばさずに収める。
+	// area の内側 kIconInset に、絵の縦横の比を保って収まる一番大きい長方形（真ん中に置く）
+	// 2 マスの物の範囲は絵（2 : 1）とわずかに比が違うので、引き伸ばさずに収める
 	UiRect fitIcon( const UiRect& area, const Graphics::Texture& texture ) {
 		float maxWidth = area.width - kIconInset * kBothSides;
 		float maxHeight = area.height - kIconInset * kBothSides;
@@ -115,7 +115,7 @@ int ItemGridView::cellAt( const ItemGrid& grid, const Vector2& point ) const {
 }
 
 void ItemGridView::drawCells( const ItemGrid& grid, int lifted ) {
-	// ① 背景（長方形だけ）。物のマスは同じ灰。絵が読めなかった物だけ、物の色で塗る（名前は選ぶと下の欄に出る）。
+	// ① 背景（長方形だけ）。物のマスは同じ灰。絵が読めなかった物だけ、物の色で塗る（名前は選ぶと下の欄に出る）
 	unsigned emptyColor = VertexColor::pack( kEmptyCellGray, kEmptyCellGray, kEmptyCellGray, mEmptyAlpha );
 	for ( int i = 0; i < grid.cellCount(); ++i ) {
 		if ( grid.ownerCell( i ) == kNone ) {
@@ -131,7 +131,7 @@ void ItemGridView::drawCells( const ItemGrid& grid, int lifted ) {
 		unsigned color = mIcons->icon( item ) ? VertexColor::pack( kItemCellGray, kItemCellGray, kItemCellGray, alpha ) : itemColor( item, alpha );
 		mRenderer->addRect( spanRect( grid, i, itemSpec( item ).cellSize ), color );
 	}
-	// ② 物の絵（まとめて積む）。持ち上げている物の元の場所は、背景と同じく薄くする。
+	// ② 物の絵（まとめて積む）。持ち上げている物の元の場所は、背景と同じく薄くする
 	for ( int i = 0; i < grid.cellCount(); ++i ) {
 		if ( grid.ownerCell( i ) != i ) {
 			continue;
@@ -139,7 +139,7 @@ void ItemGridView::drawCells( const ItemGrid& grid, int lifted ) {
 		ItemId item = grid.stackAt( i ).item;
 		drawIcon( spanRect( grid, i, itemSpec( item ).cellSize ), item, ( i == lifted ) ? kLiftedAlpha : kOpaque );
 	}
-	// ③ 数（絵の上に重ねる）。
+	// ③ 数（絵の上に重ねる）
 	drawAmounts( grid );
 }
 
@@ -163,12 +163,12 @@ void ItemGridView::drawAmounts( const ItemGrid& grid ) {
 		const ItemStack& stack = grid.stackAt( i );
 		const ItemSpec& spec = itemSpec( stack.item );
 		UiRect area = spanRect( grid, i, spec.cellSize );
-		// 重ねられる物だけ数を出す（ガソリンのように 1 つずつの物は数を出さない）。
+		// 重ねられる物だけ数を出す（ガソリンのように 1 つずつの物は数を出さない）
 		if ( spec.stackSize > 1 ) {
 			std::snprintf( text, sizeof( text ), "%d", stack.amount );
 			drawCornerText( area, text, true, kAmountPlateWidth, kTextColor );
 		}
-		// 銃は左下に「弾倉の数/弾倉の大きさ」。空は赤（リロードし忘れに気づけるように）。
+		// 銃は左下に「弾倉の数/弾倉の大きさ」。空は赤（リロードし忘れに気づけるように）
 		WeaponId weapon = weaponForItem( stack.item );
 		if ( weapon != WEAPON_NONE ) {
 			std::snprintf( text, sizeof( text ), kRoundsFormat, stack.loadedRounds, weaponSpec( weapon ).magazineCapacity );
@@ -184,7 +184,7 @@ void ItemGridView::drawCornerText( const UiRect& area, const char* text, bool ri
 	plate.left = right ? area.right() - kAmountInset - plate.width : area.left + kAmountInset;
 	plate.top = area.bottom() - kAmountInset - plate.height;
 	mRenderer->addRect( plate, kAmountPlateColor );
-	// 板の真ん中に置く（文字の幅は UiRenderer の外から測れないので、右揃えではなく板の中央揃えにする）。
+	// 板の真ん中に置く（文字の幅は UiRenderer の外から測れないので、右揃えではなく板の中央揃えにする）
 	mRenderer->addText( text, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, color );
 }
 

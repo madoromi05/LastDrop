@@ -13,16 +13,16 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kAxisNumber = 3;
 	const int kRootNode = 0;
-	// 葉に入れる三角形の数の上限。小さいほど木は深くなるが、葉で調べる三角形は減る（4 前後がよく使われる値）。
+	// 葉に入れる三角形の数の上限。小さいほど木は深くなるが、葉で調べる三角形は減る（4 前後がよく使われる値）
 	const int kMaxLeafTriangles = 4;
 	// 下りる途中で覚えておく節の数の上限。中央値で分けるので深さは log2(三角形の数 / 4) 程度
-	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする。
+	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする
 	const int kMaxStackDepth = 64;
 	// 節の箱を三角形からこれだけ広げる（m）。ぴったりの箱だと、三角形の縁にちょうど当たる線を、浮動小数の誤差で箱の方が外してしまい、
-	// 総当たりと答えが食い違う。当たる三角形は変わらず、箱を調べる数がわずかに増えるだけ。
+	// 総当たりと答えが食い違う。当たる三角形は変わらず、箱を調べる数がわずかに増えるだけ
 	const float kBoundsPadding = 0.001f;
 
-	// 三角形 triangle の 3 つの頂点。
+	// 三角形 triangle の 3 つの頂点
 	void corners( const std::vector< Vector3 >& positions, const std::vector< unsigned short >& indices, int triangle,
 		const Vector3** v0, const Vector3** v1, const Vector3** v2 ) {
 		int base = triangle * kVerticesPerTriangle;
@@ -51,7 +51,7 @@ void TriangleBvh::build( const std::vector< Vector3 >& positions, const std::vec
 		centers[ i ] *= kThird;
 		mTriangles.push_back( i );
 	}
-	// 二分木の節の数は「葉の数×2−1」を超えない。先に確保して、分ける途中で並びが動かないようにする。
+	// 二分木の節の数は「葉の数×2−1」を超えない。先に確保して、分ける途中で並びが動かないようにする
 	mNodes.reserve( static_cast< size_t >( triangleCount ) * 2 );
 	mNodes.push_back( Node() );
 	split( kRootNode, 0, triangleCount, positions, indices, centers );
@@ -59,7 +59,7 @@ void TriangleBvh::build( const std::vector< Vector3 >& positions, const std::vec
 
 void TriangleBvh::split( int nodeIndex, int first, int count, const std::vector< Vector3 >& positions,
 const std::vector< unsigned short >& indices, const std::vector< Vector3 >& centers ) {
-	// 受け持つ三角形を全部囲む箱と、中心だけを囲む箱（分ける向きを決める）。
+	// 受け持つ三角形を全部囲む箱と、中心だけを囲む箱（分ける向きを決める）
 	Vector3 boundsMin( FLOAT_MAX );
 	Vector3 boundsMax( -FLOAT_MAX );
 	Vector3 centerMin( FLOAT_MAX );
@@ -91,13 +91,13 @@ const std::vector< unsigned short >& indices, const std::vector< Vector3 >& cent
 			axis = a;
 		}
 	}
-	// 少なければ葉にする。中心が全部同じ所にある（分けても片方が空になる）ときも葉にする。
+	// 少なければ葉にする。中心が全部同じ所にある（分けても片方が空になる）ときも葉にする
 	if ( count <= kMaxLeafTriangles || extent[ axis ] <= 0.f ) {
 		node.firstChildOrTriangle = first;
 		node.triangleCount = count;
 		return;
 	}
-	// 中央値で分ける：真ん中の位置に来る三角形だけを決め、手前に小さい側・後ろに大きい側を集める（全部は並べない）。
+	// 中央値で分ける：真ん中の位置に来る三角形だけを決め、手前に小さい側・後ろに大きい側を集める（全部は並べない）
 	int half = count / 2;
 	std::vector< int >::iterator begin = mTriangles.begin() + first;
 	std::nth_element( begin, begin + half, begin + count, [ &centers, axis ]( int a, int b ) {
@@ -106,7 +106,7 @@ const std::vector< unsigned short >& indices, const std::vector< Vector3 >& cent
 	int leftChild = static_cast< int >( mNodes.size() );
 	node.firstChildOrTriangle = leftChild;
 	node.triangleCount = 0;
-	// push_back の後は node（参照）を使わない（reserve してあるので動かないが、念のため）。
+	// push_back の後は node（参照）を使わない（reserve してあるので動かないが、念のため）
 	mNodes.push_back( Node() );
 	mNodes.push_back( Node() );
 	split( leftChild, first, half, positions, indices, centers );
@@ -130,7 +130,7 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 	if ( isEmpty() ) {
 		return false;
 	}
-	// 下りる途中の節と、その箱に入る時刻。見つけた当たりより遠い箱は、取り出した時に飛ばす。
+	// 下りる途中の節と、その箱に入る時刻。見つけた当たりより遠い箱は、取り出した時に飛ばす
 	struct Pending{
 		int node;
 		float enterTime;
@@ -171,7 +171,7 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 			}
 			continue;
 		}
-		// 子の 2 つのうち、線分が先に入る方を後に積む（先に取り出して調べ、早く当たりを見つけて遠い方を飛ばすため）。
+		// 子の 2 つのうち、線分が先に入る方を後に積む（先に取り出して調べ、早く当たりを見つけて遠い方を飛ばすため）
 		Pending children[ 2 ];
 		int childCount = 0;
 		for ( int c = 0; c < 2; ++c ) {

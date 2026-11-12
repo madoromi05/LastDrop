@@ -12,9 +12,9 @@ namespace{
 }
 
 float AngleMath::wrapSigned( float degree ) {
-	// -180 を 0 周目の始まりにして、何周目かを floor で数えて引く（while で 1 周ずつ引くと、無限大で終わらない）。
+	// -180 を 0 周目の始まりにして、何周目かを floor で数えて引く（while で 1 周ずつ引くと、無限大で終わらない）
 	float wrapped = degree - kFullTurn * std::floor( ( degree + kHalfTurn ) / kFullTurn );
-	// -180 のすぐ下（-180.00001 など）は、360 を足した所で丸められてちょうど 180 になることがある。範囲の外なので戻す。
+	// -180 のすぐ下（-180.00001 など）は、360 を足した所で丸められてちょうど 180 になることがある。範囲の外なので戻す
 	return ( wrapped >= kHalfTurn ) ? wrapped - kFullTurn : wrapped;
 }
 

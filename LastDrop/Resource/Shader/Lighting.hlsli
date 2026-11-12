@@ -1,14 +1,14 @@
 // 固定パイプラインの「ピクセルごとのライティング＋法線マップ」（GameLib/src/Graphics/PixelLightingNormalMapPsHlsl.h）と
-// 同じ計算。自作シェーダで描くものも、固定パイプラインで描くものと同じ見た目にするために使う。
-// ライト・材質の値は Graphics::Manager の setLight〜 / setSpecular〜 / setNormalMapStrength で決まり、b0 に入る。
-// 法線マップを使わないときは、強さ（setNormalMapStrength）を 0 にすれば元の法線のまま（t1 が空でも読まれない値になる）。
+// 同じ計算。自作シェーダで描くものも、固定パイプラインで描くものと同じ見た目にするために使う
+// ライト・材質の値は Graphics::Manager の setLight〜 / setSpecular〜 / setNormalMapStrength で決まり、b0 に入る
+// 法線マップを使わないときは、強さ（setNormalMapStrength）を 0 にすれば元の法線のまま（t1 が空でも読まれない値になる）
 #ifndef INCLUDED_LIGHTING_HLSLI
 #define INCLUDED_LIGHTING_HLSLI
 
 #include "Common.hlsli"
 
-// b0（ピクセルシェーダ側）。GameLib/src/Graphics/ManagerImpl.h の PSCBufferData と同じ並び。
-// 頂点シェーダ側の b0（Common.hlsli の VSConstants）とは別物（ステージごとに b0 が別にある）。
+// b0（ピクセルシェーダ側）。GameLib/src/Graphics/ManagerImpl.h の PSCBufferData と同じ並び
+// 頂点シェーダ側の b0（Common.hlsli の VSConstants）とは別物（ステージごとに b0 が別にある）
 cbuffer PSConstants : register(b0)
 {
     float4 gAmbient;
@@ -25,7 +25,7 @@ cbuffer PSConstants : register(b0)
 Texture2D gAlbedo    : register(t0); // Manager::setTexture
 Texture2D gNormalMap : register(t1); // Manager::setNormalMap
 
-// 頂点タンジェント無しで、位置とUVの画面微分から接線基底を作り法線を摂動する。
+// 頂点タンジェント無しで、位置とUVの画面微分から接線基底を作り法線を摂動する
 float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
 {
     float3 dp1 = ddx(worldPosition);
@@ -39,7 +39,7 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
     float invmax = rsqrt(max(dot(tangent, tangent), dot(bitangent, bitangent)));
     tangent *= invmax;
     bitangent *= invmax;
-    // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）。
+    // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）
     float2 nxy = (gNormalMap.Sample(gWrapSampler, uv).xy * 2.0f - 1.0f) * gMaterialParams.x;
     float nz = sqrt(saturate(1.0f - dot(nxy, nxy)));
     float3 mapNormal = float3(nxy, nz);
@@ -48,9 +48,9 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
     return any(isnan(r)) ? normal : r; // 退化（UV面積0など）のときは元の法線へ
 }
 
-// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）が呼ぶ。
-// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使っていたのはテスト用のシーン（SkinTestScene）だけ。
-// SkinnedMesh.hlsl（shadePixel を呼ぶ）を今も描くのに使っているかは確かめていない（使っていた SkinTestScene はもう無い）。
+// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）が呼ぶ
+// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使っていたのはテスト用のシーン（SkinTestScene）だけ
+// SkinnedMesh.hlsl（shadePixel を呼ぶ）を今も描くのに使っているかは確かめていない（使っていた SkinTestScene はもう無い）
 // albedo: 頂点色×ディフューズ色×画像（リニア）  nv: 法線（長さ 1・法線マップ済み）
 // specularColor: (2+鋭さ)/2π を掛けた後のスペキュラの色（b0 の gSpecularColor.xyz と同じ形）  sharpness: 鋭さ
 float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specularColor, float sharpness)
@@ -83,7 +83,7 @@ float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specu
     return albedo * dc + sc * specularColor;
 }
 
-// 4灯のディフューズ・スペキュラ＋環境光＋発光で、1画素の色を求める。color: 頂点色×ディフューズ色。
+// 4灯のディフューズ・スペキュラ＋環境光＋発光で、1画素の色を求める。color: 頂点色×ディフューズ色
 float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNormal)
 {
     float3 nv = normalize(worldNormal);

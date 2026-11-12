@@ -118,8 +118,8 @@ public:
 			mButtons[ mDoubleBufferIndex ][ 1 ] = ( GetAsyncKeyState( VK_RBUTTON ) & 0xf000 ) ? true : false;
 			mButtons[ mDoubleBufferIndex ][ 2 ] = ( GetAsyncKeyState( VK_MBUTTON ) & 0xf000 ) ? true : false;
 			//前のフレームから今までに押して、もう離した短いクリックも、このフレームだけ押していることにする
-			//（重いフレームの間のクリックが「押していない」のまま消えないように。次のフレームで離したことになる）。
-			//前のフレームも押していたなら、押し続けているだけなので何もしない。
+			//（重いフレームの間のクリックが「押していない」のまま消えないように。次のフレームで離したことになる）
+			//前のフレームも押していたなら、押し続けているだけなので何もしない
 			const unsigned presses = WindowCreator().getAndResetMouseButtonPresses();
 			const unsigned pressBits[ BUTTON_MAX ] = {
 				WindowCreator::MOUSE_PRESS_LEFT, WindowCreator::MOUSE_PRESS_RIGHT, WindowCreator::MOUSE_PRESS_MIDDLE };
@@ -129,7 +129,7 @@ public:
 				}
 			}
 			mWheel = WindowCreator().getAndResetMouseWheel();
-			// 開発用のエディタが使っている入力は、ゲームに渡さない（Manager::setUiCapture）。
+			// 開発用のエディタが使っている入力は、ゲームに渡さない（Manager::setUiCapture）
 			if ( mUiCapturesKeyboard ){
 				for ( int i = 0; i < KEY_MAX; ++i ){
 					mKeys[ mDoubleBufferIndex ][ i ] = false;
@@ -205,14 +205,14 @@ public:
 	bool mUiCapturesMouse;    //開発用のエディタがマウスを使っているか（この間はロックも外す）
 	bool mUiCapturesKeyboard; //開発用のエディタがキーボードを使っているか（文字を打っている間）
 private:
-	//カーソルロック中なら、中央からのずれを移動量にしてカーソルを中央へ戻す。
-	//clientPos: 今フレームのカーソル位置（クライアント座標・変換前）。
+	//カーソルロック中なら、中央からのずれを移動量にしてカーソルを中央へ戻す
+	//clientPos: 今フレームのカーソル位置（クライアント座標・変換前）
 	void updateCursorLock( const POINT& clientPos, float pointerScale, const Vector2& pointerOffset ){
-		//エディタがマウスを使っている間は外す（ゲームが頼んだロックは mCursorLocked に残り、エディタを閉じれば戻る）。
+		//エディタがマウスを使っている間は外す（ゲームが頼んだロックは mCursorLocked に残り、エディタを閉じれば戻る）
 		bool capture = mCursorLocked && WindowCreator().isActive() && !mUiCapturesMouse;
 		applyCursorCapture( capture );
 		if ( !capture ){
-			//非アクティブ中に動いたカーソル位置から戻ってくるので、復帰した最初の1フレームは捨てる。
+			//非アクティブ中に動いたカーソル位置から戻ってくるので、復帰した最初の1フレームは捨てる
 			mDiscardLockedDelta = true;
 			return;
 		}
@@ -226,7 +226,7 @@ private:
 			mVelocityY = 0;
 			mDiscardLockedDelta = false;
 		}else{
-			//位置と同じ変換（スケール）を掛けて、ロックしていないときと同じ単位にする。
+			//位置と同じ変換（スケール）を掛けて、ロックしていないときと同じ単位にする
 			mVelocityX = static_cast< int >( static_cast< float >( clientPos.x - center.x ) * pointerScale );
 			mVelocityY = static_cast< int >( static_cast< float >( clientPos.y - center.y ) * pointerScale );
 		}
@@ -239,11 +239,11 @@ private:
 		ClientToScreen( mWindowHandle, &center );
 		SetCursorPos( center.x, center.y );
 	}
-	//カーソルの非表示とウィンドウ内への閉じ込めを、capture に合わせて切り替える。
+	//カーソルの非表示とウィンドウ内への閉じ込めを、capture に合わせて切り替える
 	void applyCursorCapture( bool capture ){
 		if ( capture ){
-			//1フレームで大きく動かしてもウィンドウの外をクリックしないよう、クライアント領域に閉じ込める。
-			//ウィンドウは動かせるので毎フレーム設定し直す。
+			//1フレームで大きく動かしてもウィンドウの外をクリックしないよう、クライアント領域に閉じ込める
+			//ウィンドウは動かせるので毎フレーム設定し直す
 			RECT rect;
 			GetClientRect( mWindowHandle, &rect );
 			POINT topLeft = { rect.left, rect.top };
@@ -255,7 +255,7 @@ private:
 		}else if ( mCursorHidden ){
 			ClipCursor( 0 );
 		}
-		//ShowCursor は呼んだ回数を数える仕組みなので、状態が変わったときだけ1回呼ぶ。
+		//ShowCursor は呼んだ回数を数える仕組みなので、状態が変わったときだけ1回呼ぶ
 		if ( capture != mCursorHidden ){
 			ShowCursor( capture ? FALSE : TRUE );
 			mCursorHidden = capture;
@@ -264,8 +264,8 @@ private:
 
 	bool mCursorHidden; //ShowCursor( FALSE ) 済みか（ClipCursor もこの間だけ掛けている）
 	bool mDiscardLockedDelta; //次のロック中フレームの移動量を捨てるか（ロック開始直後・アクティブ復帰直後）
-	//対応表（GamePadMapping）にあるパッドは型を問わず GamePad で読む（DualSense は GAMEPAD 型）。
-	//それ以外の JOYSTICK 型は今までどおり Joystick で読む（並びを置き換えないので、同じ機器を二重には読まない）。
+	//対応表（GamePadMapping）にあるパッドは型を問わず GamePad で読む（DualSense は GAMEPAD 型）
+	//それ以外の JOYSTICK 型は今までどおり Joystick で読む（並びを置き換えないので、同じ機器を二重には読まない）
 	static bool isJoystick( const DIDEVICEINSTANCE* instance ){
 		int type = instance->dwDevType & 0xff; //下位バイトがタイプ
 		return type == DI8DEVTYPE_JOYSTICK && !findGamePadLayout( instance->guidProduct.Data1 );
@@ -282,7 +282,7 @@ private:
 		self->createDevice( instance );
 		return DIENUM_CONTINUE;
 	}
-	//使う機器だけ作る（キーボード・マウスは DirectInput では読まない）。作れなければその機器を飛ばす（起動を止めない）。
+	//使う機器だけ作る（キーボード・マウスは DirectInput では読まない）。作れなければその機器を飛ばす（起動を止めない）
 	void createDevice( const DIDEVICEINSTANCE* instance ){
 		const GamePadLayout* layout = findGamePadLayout( instance->guidProduct.Data1 );
 		bool usePad = layout && ( mDirectInputPadNumber < GamePad::PAD_MAX );

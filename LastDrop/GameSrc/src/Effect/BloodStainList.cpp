@@ -11,33 +11,33 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// tools/texgen/blood_stain_gen.py で作る（TGA を作った後、tools/convert/texture_to_dds.ps1 blood_stain で DDS にする）。
+	// tools/texgen/blood_stain_gen.py で作る（TGA を作った後、tools/convert/texture_to_dds.ps1 blood_stain で DDS にする）
 	const char* kTextureFile = "Resource/Texture/Effect/blood_stain.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/blood_stain_normal.dds";
 
-	// 同時に残す数。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す。
+	// 同時に残す数。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す
 	const int kCapacity = 32;
-	// 残す時間と、薄くし始めるまでの時間（ティック）。弾痕（10 秒）より長く残し、戦った跡を見せる。
+	// 残す時間と、薄くし始めるまでの時間（ティック）。弾痕（10 秒）より長く残し、戦った跡を見せる
 	const int kLifeTicks = GameTime::secondsToTicks( 30.f );
 	const int kFadeStartTicks = GameTime::secondsToTicks( 20.f );
 	const int kFadeTicks = kLifeTicks - kFadeStartTicks; // 薄くしていく長さ
 
-	// デカールの箱の厚さの半分（m）。弾痕と同じ（角の奥の別の面まで届かない薄さ）。
+	// デカールの箱の厚さの半分（m）。弾痕と同じ（角の奥の別の面まで届かない薄さ）
 	const float kHalfDepth = 0.05f;
 
-	// 絵の並び（tools/texgen/blood_stain_gen.py の main と合わせる）。2×2 で、左上・右上・左下が飛び散った血、右下が滴の跡。
+	// 絵の並び（tools/texgen/blood_stain_gen.py の main と合わせる）。2×2 で、左上・右上・左下が飛び散った血、右下が滴の跡
 	const int kCellsPerRow = 2;
 	const float kCellUvSize = 1.f / kCellsPerRow;
 	const int kSplatterCellNumber = 3;
 	const int kDripCell = 3;
 
-	// 向きをばらすとき、1 つごとに回す角度（度。黄金角。BulletHoleList と同じ）。
+	// 向きをばらすとき、1 つごとに回す角度（度。黄金角。BulletHoleList と同じ）
 	const float kTurnPerStainDegree = 137.5f;
 	const float kFullTurnDegree = 360.f;
-	// 弾の向きを面に写した長さがこれより短ければ、面にほぼ垂直に撃ったとみなし、絵の向きをばらす（筋の向きが決まらないため）。
+	// 弾の向きを面に写した長さがこれより短ければ、面にほぼ垂直に撃ったとみなし、絵の向きをばらす（筋の向きが決まらないため）
 	const float kMinAlongSurface = 0.2f;
 
-	// 絵の向きを作るときの仮の「上」（BulletHoleList と同じ）。
+	// 絵の向きを作るときの仮の「上」（BulletHoleList と同じ）
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
@@ -63,7 +63,7 @@ BloodStainList::BloodStainList() :
 
 void BloodStainList::addSplatter( const Vector3& point, const Vector3& normal, const Vector3& direction, float halfSize,
 const IRayBlocker* attachedTo ) {
-	// 弾の向きから面に垂直な分を引いて、面に沿う向きにする。
+	// 弾の向きから面に垂直な分を引いて、面に沿う向きにする
 	Vector3 alongSurface = direction;
 	alongSurface.madd( normal, -direction.dot( normal ) );
 	Vector3 right;
@@ -99,7 +99,7 @@ const IRayBlocker* attachedTo ) {
 }
 
 Vector3 BloodStainList::nextTurnedDirection( const Vector3& normal ) {
-	// 面の上で直交する2本の向きを作り、法線まわりに回す（BulletHoleList::add と同じ）。
+	// 面の上で直交する2本の向きを作り、法線まわりに回す（BulletHoleList::add と同じ）
 	const Vector3& helper = ( Math::abs( normal.dot( kWorldUp ) ) > kParallelLimit ) ? kWorldRight : kWorldUp;
 	Vector3 tangent;
 	tangent.setCross( helper, normal );
@@ -127,14 +127,14 @@ void BloodStainList::removeAttachedTo( const IRayBlocker* attachedTo ) {
 }
 
 void BloodStainList::draw( const Matrix44& projectionView ) {
-	// isReady を呼ぶと読み込みが進む（毎フレーム、2 枚とも呼ぶ）。読めなかった絵では描かない。
+	// isReady を呼ぶと読み込みが進む（毎フレーム、2 枚とも呼ぶ）。読めなかった絵では描かない
 	const bool textureReady = mTexture.isReady() && !mTexture.isError();
 	const bool normalMapReady = mNormalMap.isReady() && !mNormalMap.isError();
 	if ( !textureReady || !normalMapReady || mStains.empty() || !decalsEnabled() ) {
 		return;
 	}
 	for ( const Stain& stain : mStains ) {
-		// kFadeStartTicks を過ぎたら、消えるまでに不透明度を 1 → 0 へ下げていく（BulletHoleList と同じ）。
+		// kFadeStartTicks を過ぎたら、消えるまでに不透明度を 1 → 0 へ下げていく（BulletHoleList と同じ）
 		float opacity = ( stain.age > kFadeStartTicks ) ? static_cast< float >( kLifeTicks - stain.age ) / kFadeTicks : 1.f;
 		mDecals.add( stain.center, stain.right, stain.up, stain.normal, kHalfDepth, opacity, cellUvRect( stain.cell ) );
 	}

@@ -1,10 +1,10 @@
 #ifndef INCLUDED_SHADOW_PARAMS_H
 #define INCLUDED_SHADOW_PARAMS_H
 
-// 影の調整値（懐中電灯・月の影）。仕様は SummaryPlan/個別仕様/グラフィック/Shadow_Plan.txt の 7・9 章。
-// 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）。
+// 影の調整値（懐中電灯・月の影）。仕様は SummaryPlan/個別仕様/グラフィック/Shadow_Plan.txt の 7・9 章
+// 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // どれも見た目を確かめる前の初期値。にきび（面に自分の影が縞で落ちる）が消える所までだけ、ずらしを上げる
-// （上げすぎると、物の根元で影が離れる・壁の裏に光が回る）。
+// （上げすぎると、物の根元で影が離れる・壁の裏に光が回る）
 struct ShadowParams{
 	// 影を読む位置を、面の法線の向きへずらす量（影のマップ 1 画素の大きさの何倍か）。にきびの主な対策（Normal Offset）
 	float normalOffsetTexels = 1.5f;
@@ -32,7 +32,7 @@ struct ShadowParams{
 	float moonRedrawAngle = 10.f;
 	float moonRedrawDistance = 2.f;
 
-	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）。
+	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）
 	template< class V > void visit( V& v ) {
 		v( "normalOffsetTexels", normalOffsetTexels, 0.f, 8.f, "px" );
 		v( "lightOffsetTexels", lightOffsetTexels, 0.f, 8.f, "px" );
@@ -51,10 +51,10 @@ struct ShadowParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（ShadowMap.cpp が持つ）。
+// 起動中ずっと 1 つだけの調整値（ShadowMap.cpp が持つ）
 ShadowParams& shadowParams();
-// 影を描くか（F6 → Render の Shadows。見比べと計測用）。false の間は影のパスごと描かず、ライトも影を読まない。
-// 起動中ずっと 1 つ（ShadowMap.cpp が持つ。初期値 true。Release では true のまま）。
+// 影を描くか（F6 → Render の Shadows。見比べと計測用）。false の間は影のパスごと描かず、ライトも影を読まない
+// 起動中ずっと 1 つ（ShadowMap.cpp が持つ。初期値 true。Release では true のまま）
 bool& shadowsEnabled();
 
 #endif

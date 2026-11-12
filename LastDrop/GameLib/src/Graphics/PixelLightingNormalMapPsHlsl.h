@@ -25,7 +25,7 @@ struct PSIn
     float3 wpos  : TEXCOORD1;
     float3 wnorm : TEXCOORD2;
 };
-// 頂点タンジェント無しで、位置とUVの画面微分から接線基底を作り法線を摂動する。
+// 頂点タンジェント無しで、位置とUVの画面微分から接線基底を作り法線を摂動する
 float3 perturbNormal( float3 N, float3 wpos, float2 uv )
 {
     float3 dp1 = ddx( wpos );
@@ -38,8 +38,8 @@ float3 perturbNormal( float3 N, float3 wpos, float2 uv )
     float3 B = dp2perp * duv1.y + dp1perp * duv2.y;
     float invmax = rsqrt( max( dot( T, T ), dot( B, B ) ) );
     T *= invmax; B *= invmax;
-    // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）。
-    // 末尾の係数が凹凸の強さ。0で無効、1で標準。モデルごとに MeshMaterial から渡る。
+    // 法線マップは XY だけ使い、Z は再構成する（青チャンネルの規約差に強い）
+    // 末尾の係数が凹凸の強さ。0で無効、1で標準。モデルごとに MeshMaterial から渡る
     float2 nxy = ( gNormalMap.Sample( gSampler, uv ).xy * 2.0f - 1.0f ) * gMaterialParams.x;
     // nxy.y = -nxy.y; // 凹凸が反転して見える場合はこの行を有効化（OpenGL式対策）
     float nz = sqrt( saturate( 1.0f - dot( nxy, nxy ) ) );

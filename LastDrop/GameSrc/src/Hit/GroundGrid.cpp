@@ -8,12 +8,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 線分の時刻（0〜1）の範囲。
+	// 線分の時刻（0〜1）の範囲
 	const float kSegmentBegin = 0.f;
 	const float kSegmentEnd = 1.f;
 
-	// 線分 origin + delta * t の 1 つの軸を、ますの範囲 minValue〜maxValue に入る t へ絞る（スラブ法）。
-	// 範囲に少しも入らなければ false。begin / end: 絞る t の範囲（入出力）。
+	// 線分 origin + delta * t の 1 つの軸を、ますの範囲 minValue〜maxValue に入る t へ絞る（スラブ法）
+	// 範囲に少しも入らなければ false。begin / end: 絞る t の範囲（入出力）
 	bool clipAxis( float origin, float delta, float minValue, float maxValue, float* begin, float* end ) {
 		if ( delta == 0.f ) {
 			return origin >= minValue && origin <= maxValue; // 軸に平行。範囲の外なら一度も入らない
@@ -28,8 +28,8 @@ namespace{
 		return *begin <= *end;
 	}
 
-	// 1 つの軸の、ますをたどる設定（Amanatides & Woo の DDA）。
-	// step: 隣のますへの向き（−1 / 0 / 1）。nextTime: 次のますの境目に着く t。stepTime: ます 1 つ分進む t。
+	// 1 つの軸の、ますをたどる設定（Amanatides & Woo の DDA）
+	// step: 隣のますへの向き（−1 / 0 / 1）。nextTime: 次のますの境目に着く t。stepTime: ます 1 つ分進む t
 	void setupAxis( float origin, float delta, float gridMin, float cellSize, int cell,
 		int* step, float* nextTime, float* stepTime ) {
 		if ( delta > 0.f ) {
@@ -62,7 +62,7 @@ void GroundGrid::reset( const Vector3& boundsMin, const Vector3& boundsMax, floa
 	mMinX = boundsMin.x;
 	mMinZ = boundsMin.z;
 	mCellSize = cellSize;
-	// 端がちょうど境目でも、最後のますに入るよう 1 つ足す。
+	// 端がちょうど境目でも、最後のますに入るよう 1 つ足す
 	mCountX = static_cast< int >( std::floor( ( boundsMax.x - boundsMin.x ) / cellSize ) ) + 1;
 	mCountZ = static_cast< int >( std::floor( ( boundsMax.z - boundsMin.z ) / cellSize ) ) + 1;
 	mCells.assign( static_cast< size_t >( mCountX * mCountZ ), std::vector< int >() );
@@ -94,7 +94,7 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 		return;
 	}
 	beginQuery();
-	// 線分のうち、ますの範囲の中を通る所だけにする。
+	// 線分のうち、ますの範囲の中を通る所だけにする
 	float begin = kSegmentBegin;
 	float end = kSegmentEnd;
 	float maxX = mMinX + mCountX * mCellSize;
@@ -114,7 +114,7 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 	float stepTimeZ;
 	setupAxis( origin.x, delta.x, mMinX, mCellSize, cellX, &stepX, &nextX, &stepTimeX );
 	setupAxis( origin.z, delta.z, mMinZ, mCellSize, cellZ, &stepZ, &nextZ, &stepTimeZ );
-	// 最初のますから最後のますまで、境目に着く順に隣へ進む。小数の誤差で最後のますを通り越しても止まるよう、回数にも上限を付ける。
+	// 最初のますから最後のますまで、境目に着く順に隣へ進む。小数の誤差で最後のますを通り越しても止まるよう、回数にも上限を付ける
 	int remaining = std::abs( lastX - cellX ) + std::abs( lastZ - cellZ );
 	collectCell( cellX, cellZ, items );
 	for ( ; remaining > 0; --remaining ) {
@@ -130,7 +130,7 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 		}
 		collectCell( cellX, cellZ, items );
 	}
-	// 小数の誤差で角をずれて進んだときも、線分の終わりのますは必ず入れる（入れ済みなら印で飛ばされる）。
+	// 小数の誤差で角をずれて進んだときも、線分の終わりのますは必ず入れる（入れ済みなら印で飛ばされる）
 	collectCell( lastX, lastZ, items );
 }
 

@@ -77,7 +77,7 @@ void StaticMeshPart::upload() {
 	}
 	mIndexBuffer.unlock( &indices );
 
-	// 弾の当たり判定用に、位置とつながりだけ写して残す（UV・法線・色は要らないので捨てる）。
+	// 弾の当たり判定用に、位置とつながりだけ写して残す（UV・法線・色は要らないので捨てる）
 	std::vector< Vector3 > positions( mStagingVertices.size() );
 	for ( int i = 0; i < mStagingVertices.size(); ++i ) {
 		const Vector4& p = mStagingVertices[ i ].mPosition;
@@ -90,8 +90,8 @@ void StaticMeshPart::upload() {
 	mShape.set( positions, triangleIndices );
 
 	mTriangleNumber = mStagingIndices.size() / kVerticesPerTriangle;
-	// GPUへ送ったので作業用配列は不要。建物1つで数百KBあるので持ち続けない（当たり判定の分は mShape に写した）。
-	// まとめる元にする部品だけは残す。
+	// GPUへ送ったので作業用配列は不要。建物1つで数百KBあるので持ち続けない（当たり判定の分は mShape に写した）
+	// まとめる元にする部品だけは残す
 	if ( !mKeepsSource ) {
 		mStagingVertices.clear();
 		mStagingIndices.clear();
@@ -112,9 +112,9 @@ void StaticMeshPart::draw( const Matrix34& world ) const {
 	}
 	bindForDraw();
 	Graphics::Manager m = Graphics::Manager::instance();
-	// G-Buffer へ描く間は、固定パイプラインの代わりに G-Buffer へ書くシェーダで描く（材質の値は apply が渡した物をそのまま読む）。
-	// シェーダは MeshMaterial::apply では選ばない（キャラも apply を通り、キャラのシェーダを上書きしてしまうため）。
-	// 影の間は、影のマップへ深度だけ描くシェーダ。
+	// G-Buffer へ描く間は、固定パイプラインの代わりに G-Buffer へ書くシェーダで描く（材質の値は apply が渡した物をそのまま読む）
+	// シェーダは MeshMaterial::apply では選ばない（キャラも apply を通り、キャラのシェーダを上書きしてしまうため）
+	// 影の間は、影のマップへ深度だけ描くシェーダ
 	if ( RenderPass::current() == RenderPassKind::GBuffer || RenderPass::current() == RenderPassKind::Shadow ) {
 		m.setShader( RenderPass::staticMeshShader() );
 	}
@@ -136,7 +136,7 @@ void StaticMeshPart::bindForDraw() const {
 	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
 	Graphics::Manager m = Graphics::Manager::instance();
 	if ( RenderPass::current() == RenderPassKind::GBuffer && !mMaterial.hasNormalMap() ) {
-		// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）。
+		// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）
 		m.setNormalMapStrength( kNoNormalMap );
 	}
 	m.setVertexBuffer( mVertexBuffer );

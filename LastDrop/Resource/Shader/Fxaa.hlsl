@@ -1,13 +1,13 @@
 // FXAA（PostProcess::drawFxaa。SummaryPlan/個別仕様/グラフィック/NightFinish_Plan.txt 8 章）。写した結果（8bit の中間。a に輝度）を読み、
-// 輪郭のギザギザを、輪郭を横切る向きに隣の画素と混ぜてなめらかにしながら画面へ写す。
-// 手順は FXAA 3.11 の Quality 版（Timothy Lottes, NVIDIA）と同じ。探す回数は Quality の 12 番（5 回）にした。
+// 輪郭のギザギザを、輪郭を横切る向きに隣の画素と混ぜてなめらかにしながら画面へ写す
+// 手順は FXAA 3.11 の Quality 版（Timothy Lottes, NVIDIA）と同じ。探す回数は Quality の 12 番（5 回）にした
 //   1) 真ん中と上下左右の輝度の差が小さければ、そのまま返す（平らな所。画面の大半はここで終わる）
 //   2) 斜めの 4 つも読み、輪郭が横向きか縦向きかを決める
 //   3) 輪郭に沿って両方向へ、輝度が「輪郭の上の平均」から大きく離れる所（輪郭の端）まで探す
 //   4) 近い方の端までの距離から、輪郭を横切る向きにどれだけずらして読むかを決める（端に近いほど大きく）
 //   5) 細かい模様（1 画素の点や線）は、周りの平均との差から別にずらす量を出し、4) と大きい方を使う
 //   6) ずらした位置を線形で読む（隣の画素と混ざる）
-// 中間も画面も画面の色（sRGB の数）のまま。ここでは直さない。
+// 中間も画面も画面の色（sRGB の数）のまま。ここでは直さない
 #include "Common.hlsli"
 
 Texture2D gInput : register(t2); // PostProcess.cpp の kFxaaInputSlot
@@ -20,12 +20,12 @@ cbuffer FxaaConstants : register(b1) // PostProcess.cpp の FxaaConstants と同
     float gUnused;
 };
 
-// 輪郭に沿って探す回数と、回ごとの歩幅（画素。FXAA 3.11 の FXAA_QUALITY__PRESET 12 と同じ。先へ行くほど広げて、長い輪郭も 5 回で探す）。
+// 輪郭に沿って探す回数と、回ごとの歩幅（画素。FXAA 3.11 の FXAA_QUALITY__PRESET 12 と同じ。先へ行くほど広げて、長い輪郭も 5 回で探す）
 static const int kSearchSteps = 5;
 static const float kSearchStride[kSearchSteps] = { 1.0, 1.5, 2.0, 4.0, 12.0 };
-// 輪郭の端とみなす、輝度の離れ方（真ん中と隣の差のうち大きい方の、この割合）。
+// 輪郭の端とみなす、輝度の離れ方（真ん中と隣の差のうち大きい方の、この割合）
 static const float kEndGradientRatio = 0.25;
-// 周りの平均の重み（上下左右 2・斜め 1 の合計 12 で割る）。
+// 周りの平均の重み（上下左右 2・斜め 1 の合計 12 で割る）
 static const float kNeighborWeight = 2.0;
 static const float kNeighborTotal = 12.0;
 
@@ -52,7 +52,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     float2 uv = v.uv;
     float4 center = gInput.SampleLevel(gClampSampler, uv, 0);
 
-    // 1) 上下左右との差。小さければ輪郭ではない（暗い所は gEdgeThresholdMin、明るい所は明るさに比例した差で見る）。
+    // 1) 上下左右との差。小さければ輪郭ではない（暗い所は gEdgeThresholdMin、明るい所は明るさに比例した差で見る）
     float lumaCenter = center.a;
     float lumaUp = lumaAt(uv, int2(0, -1));
     float lumaDown = lumaAt(uv, int2(0, 1));
@@ -65,7 +65,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     [branch]
     if (range >= max(gEdgeThresholdMin, lumaMax * gEdgeThreshold))
     {
-        // 2) 斜めも読み、横向きの輪郭（上下で明るさが変わる）か縦向きの輪郭かを、2 回差分の大きさで決める。
+        // 2) 斜めも読み、横向きの輪郭（上下で明るさが変わる）か縦向きの輪郭かを、2 回差分の大きさで決める
         float lumaUpLeft = lumaAt(uv, int2(-1, -1));
         float lumaUpRight = lumaAt(uv, int2(1, -1));
         float lumaDownLeft = lumaAt(uv, int2(-1, 1));
@@ -82,7 +82,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
                            + abs(lumaDownCorners - 2.0 * lumaDown);
         bool isHorizontal = edgeHorizontal >= edgeVertical;
 
-        // 輪郭を横切る向きで、明るさが大きく変わる側（−側：上か左／＋側：下か右）を選ぶ。
+        // 輪郭を横切る向きで、明るさが大きく変わる側（−側：上か左／＋側：下か右）を選ぶ
         float lumaNegative = isHorizontal ? lumaUp : lumaLeft;
         float lumaPositive = isHorizontal ? lumaDown : lumaRight;
         float gradientNegative = abs(lumaNegative - lumaCenter);
@@ -93,7 +93,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
         crossStep = isNegativeSteeper ? -crossStep : crossStep;
         float lumaEdgeAverage = 0.5 * (lumaCenter + (isNegativeSteeper ? lumaNegative : lumaPositive));
 
-        // 3) 輪郭の上（真ん中とその隣の境目）に乗り、輪郭に沿って両方向へ端を探す。
+        // 3) 輪郭の上（真ん中とその隣の境目）に乗り、輪郭に沿って両方向へ端を探す
         float2 edgeUv = uv;
         if (isHorizontal) { edgeUv.y += 0.5 * crossStep; } else { edgeUv.x += 0.5 * crossStep; }
         float2 alongStep = isHorizontal ? float2(texel.x, 0.0) : float2(0.0, texel.y);
@@ -118,9 +118,9 @@ float4 PSMain(FullScreenVertex v) : SV_Target
             }
         }
 
-        // 4) 近い方の端までの距離から、ずらす量（0〜0.5 画素。端に近いほど大きい）。
+        // 4) 近い方の端までの距離から、ずらす量（0〜0.5 画素。端に近いほど大きい）
         //    近い方の端の明るさの向き（輪郭の上の平均より暗いか明るいか）が真ん中と同じなら、ギザギザの段はその端の側に無いので、ずらさない
-        //    （ずらすと、段の無い所までぼける）。
+        //    （ずらすと、段の無い所までぼける）
         float distanceBackward = isHorizontal ? (uv.x - uvBackward.x) : (uv.y - uvBackward.y);
         float distanceForward = isHorizontal ? (uvForward.x - uv.x) : (uvForward.y - uv.y);
         bool isBackwardNearer = distanceBackward < distanceForward;
@@ -131,14 +131,14 @@ float4 PSMain(FullScreenVertex v) : SV_Target
         bool isEndDarker = (isBackwardNearer ? endBackward : endForward) < 0.0;
         edgeOffset = (isEndDarker != isCenterDarker) ? edgeOffset : 0.0;
 
-        // 5) 細かい模様：周りの平均と真ん中の差が、上下左右の差の幅に対してどれだけ大きいか（なめらかな曲線で強める）。
+        // 5) 細かい模様：周りの平均と真ん中の差が、上下左右の差の幅に対してどれだけ大きいか（なめらかな曲線で強める）
         float lumaAverage = (kNeighborWeight * (lumaUpDown + lumaLeftRight) + lumaLeftCorners + lumaRightCorners) / kNeighborTotal;
         float subpixelRatio = saturate(abs(lumaAverage - lumaCenter) / range);
         float subpixelCurve = (-2.0 * subpixelRatio + 3.0) * subpixelRatio * subpixelRatio; // smoothstep と同じ形
         float subpixelOffset = subpixelCurve * subpixelCurve * gSubpixel;
         float offset = max(edgeOffset, subpixelOffset);
 
-        // 6) 輪郭を横切る向きにずらして線形で読む。
+        // 6) 輪郭を横切る向きにずらして線形で読む
         float2 finalUv = uv;
         if (isHorizontal) { finalUv.y += offset * crossStep; } else { finalUv.x += offset * crossStep; }
         result = gInput.SampleLevel(gClampSampler, finalUv, 0).rgb;

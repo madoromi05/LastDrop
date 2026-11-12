@@ -1,9 +1,9 @@
-// 映り込み（SSR）のぼかし（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-4）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く。
-// 歩き始めを画素ごとにずらした（Ssr.hlsl）ざらつきを均す。重みはガウス × 奥行きの近さ（SSAO のぼかしと同じ考え）。
-// SSR の結果は奥行きを持たないので、奥行きはシーンの深度から読む（半分の大きさの画素 i は元の画面の画素 2i）。
-// 色は確からしさを掛けた物（SsrCommon.hlsli）なので、そのまま 4 つとも同じ重みで混ぜてよい。
+// 映り込み（SSR）のぼかし（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-4）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く
+// 歩き始めを画素ごとにずらした（Ssr.hlsl）ざらつきを均す。重みはガウス × 奥行きの近さ（SSAO のぼかしと同じ考え）
+// SSR の結果は奥行きを持たないので、奥行きはシーンの深度から読む（半分の大きさの画素 i は元の画面の画素 2i）
+// 色は確からしさを掛けた物（SsrCommon.hlsli）なので、そのまま 4 つとも同じ重みで混ぜてよい
 // 向きをばらした粗い面は、真ん中の粗さで読む間隔を広げ（0.4 以下は 1 画素・0.7 で 3 画素）、
-// 粗さが大きく違う画素は混ぜない（つやの違う面どうしの映り込みがにじみ合わないように）。
+// 粗さが大きく違う画素は混ぜない（つやの違う面どうしの映り込みがにじみ合わないように）
 #include "Common.hlsli"
 #include "SsrCommon.hlsli"
 
@@ -11,7 +11,7 @@ Texture2D        gSource          : register(t2); // ScreenSpaceReflection.cpp �
 Texture2D        gGBufferMaterial : register(t4); // 同 kMaterialSlot（G-Buffer の材質。g が粗さ。元の大きさ）
 Texture2D<float> gSceneDepth      : register(t5); // 同 kDepthSlot（シーンの深度。元の大きさ）
 
-// ScreenSpaceReflection.cpp の SsrBlurConstants と同じ並び。
+// ScreenSpaceReflection.cpp の SsrBlurConstants と同じ並び
 cbuffer SsrBlurConstants : register(b1)
 {
     float4 gBlurInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）
@@ -59,6 +59,6 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         weightSum += weight;
         sum += gSource.Load(int3(neighbor, 0)) * weight;
     }
-    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上。
+    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上
     return sum / weightSum;
 }

@@ -14,7 +14,7 @@ namespace{
 	const char* kStaticMeshShaderFile = "Resource/Shader/StaticMeshGBuffer.hlsl";
 	const float kScreenScale = 1.f; // PostProcess の深度と同じ大きさ（setRenderTargets は大きさの違う描画先を一緒に付けられない）
 
-	// 並びは Resource/Shader/GBuffer.hlsli と揃える。
+	// 並びは Resource/Shader/GBuffer.hlsli と揃える
 	const int kAlbedoIndex = 0;
 	const int kNormalIndex = 1;
 	const int kMaterialIndex = 2;
@@ -23,26 +23,26 @@ namespace{
 		Graphics::RENDER_TARGET_RGBA16F,    // 法線（-1〜1）。8bit に入らない数なので浮動小数
 		Graphics::RENDER_TARGET_RGBA8,      // AO・粗さ・金属・発光（どれも 0〜1。色ではないので sRGB にしない）
 	};
-	// GBuffer.hlsli の cbuffer GBufferMaterial の番号（b3）。b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使う。
+	// GBuffer.hlsli の cbuffer GBufferMaterial の番号（b3）。b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使う
 	const int kSurfaceSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 2;
-	// デカールが書く描画先の数（RT0 色・RT1 法線。並びの先頭から）と、深度を読む番号（Decal.hlsl の t5）。
+	// デカールが書く描画先の数（RT0 色・RT1 法線。並びの先頭から）と、深度を読む番号（Decal.hlsl の t5）
 	const int kDecalTargetNumber = 2;
 	const int kDecalDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
-	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）。
+	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）
 	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
 
-	// 雨上がりの水たまり。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）。
+	// 雨上がりの水たまり。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）
 	const char* kPuddleMaskFile = "Resource/Texture/Map/puddle_mask.dds";
 	const int kPuddleMaskSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 10;
 	const int kPassSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 3;
-	// 動きの種類を RT1 の a に書く数（MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）。
+	// 動きの種類を RT1 の a に書く数（MotionKind の順。TAA・表示の Motion が読む。GBuffer.hlsli と揃える）
 	const float kMotionValues[] = { 0.f, 0.5f, 1.f };
 	const float kNoCoverage = 0.f;
 	const float kWhole = 1.f;
 	// 水たまりを書かないときのしきい値。模様の値（0〜1）が届かないので、水たまりも濡れた縁もできない
-	// （1 − 0 = 1 だと、模様の一番白い画素だけ濡れた縁が残る）。
+	// （1 − 0 = 1 だと、模様の一番白い画素だけ濡れた縁が残る）
 	const float kUnreachableThreshold = 2.f;
-	// GBuffer.hlsli の cbuffer GBufferPassConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// GBuffer.hlsli の cbuffer GBufferPassConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct PassConstants{
 		float threshold;       // 模様の値がこれより大きい所が水たまり（1 − 面積の割合）
 		float wetBand;
@@ -55,7 +55,7 @@ namespace{
 		float unusedMotion[ 3 ];
 	};
 
-	// 材質の画像（ORM）が無い材質に付ける白 1 画素（AO 1・粗さ 1・金属 1。シェーダは数値に掛けるので、数値がそのまま使われる）。
+	// 材質の画像（ORM）が無い材質に付ける白 1 画素（AO 1・粗さ 1・金属 1。シェーダは数値に掛けるので、数値がそのまま使われる）
 	const unsigned kWhitePixel = 0xffffffff;
 	Graphics::Texture createWhiteTexture() {
 		Graphics::Texture texture = Graphics::Texture::create( 1, 1, false );
@@ -99,10 +99,10 @@ void GBuffer::begin( Graphics::DepthTarget depth ) {
 	for ( int i = 0; i < kTargetNumber; ++i ) {
 		gm.clear( mTargets[ i ], kClearValue );
 	}
-	// G-Buffer のアルファは色の透明度ではなくデータ（RT0・RT1 は予備の 0、RT2 は発光の強さ）なので、混ぜずにそのまま書く。
-	// 前に描いた物（半透明の板・UI）のブレンドが残っていると、アルファ 0 の RT0 は何も書かれない。
+	// G-Buffer のアルファは色の透明度ではなくデータ（RT0・RT1 は予備の 0、RT2 は発光の強さ）なので、混ぜずにそのまま書く
+	// 前に描いた物（半透明の板・UI）のブレンドが残っていると、アルファ 0 の RT0 は何も書かれない
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
-	// 材質値の入れ物は描く間ずっと付けておき、中身だけ MeshMaterial::apply（RenderPass::setSurface）が物ごとに書き換える。
+	// 材質値の入れ物は描く間ずっと付けておき、中身だけ MeshMaterial::apply（RenderPass::setSurface）が物ごとに書き換える
 	gm.setConstantBuffer( kSurfaceSlot, mSurfaceConstants );
 	mMotion = MotionKind::Static;
 	setPassConstants();
@@ -126,15 +126,15 @@ void GBuffer::endDecals( Graphics::DepthTarget depth ) {
 	gm.setRenderTargets( mTargets, kTargetNumber, depth );
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // begin と同じ（G-Buffer のアルファはデータなので混ぜない）
 	setPassConstants(); // 描画先の付け直しで外れた水たまりの模様を付け直す
-	// 材質の画像（t11）も外れている。RenderPass は「前と同じ画像なら付けない」ので、忘れさせて次の物で付け直させる。
+	// 材質の画像（t11）も外れている。RenderPass は「前と同じ画像なら付けない」ので、忘れさせて次の物で付け直させる
 	// 忘れないと、後から描く自キャラ・銃・ゾンビは画像の無い t11 を読み、粗さ 0（つるつる）・AO 0 になる
-	// （街灯のハイライトが小さく強く出て、金色に光って見えた）。
+	// （街灯のハイライトが小さく強く出て、金色に光って見えた）
 	RenderPass::forgetSentSurface();
 }
 
 void GBuffer::end() {
 	RenderPass::endGBuffer();
-	// 後から描く物（固定パイプライン）に残さない。
+	// 後から描く物（固定パイプライン）に残さない
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setShader( Graphics::Shader() );
 	gm.setConstantBuffer( kSurfaceSlot, Graphics::ConstantBuffer() );
@@ -144,7 +144,7 @@ void GBuffer::end() {
 
 void GBuffer::setPassConstants() {
 	Graphics::Manager gm = Graphics::Manager::instance();
-	// 模様の読み込みが終わるまでは、面積 0（どこも水たまりにならない）として書く。isReady は読み込みを進めるので毎回呼ぶ。
+	// 模様の読み込みが終わるまでは、面積 0（どこも水たまりにならない）として書く。isReady は読み込みを進めるので毎回呼ぶ
 	const bool maskReady = mPuddleMask.isReady();
 	const PuddleParams& params = puddleParams();
 	const float coverage = ( puddlesEnabled() && maskReady ) ? params.coverage : kNoCoverage;

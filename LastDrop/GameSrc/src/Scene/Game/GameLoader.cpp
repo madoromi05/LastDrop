@@ -5,10 +5,10 @@
 #include "GameLib/GameLib.h"
 
 namespace{
-	// 段階の数（Done は数えない）。形と絵を読む段階は、読み終えたファイルの割合で棒を進める。
+	// 段階の数（Done は数えない）。形と絵を読む段階は、読み終えたファイルの割合で棒を進める
 	const int kStageCount = 5;
 
-	// 段階の名前（Stage の順。最後は Done）。
+	// 段階の名前（Stage の順。最後は Done）
 	const char* const kStageLabels[] = {
 		"形と絵を読み込んでいます",
 		"町を組み立てています",

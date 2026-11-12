@@ -19,41 +19,41 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── 床の形を作る細かさ（Recast の rcConfig） ──
-	// 床を区切るますの大きさ（m）。体の半径（0.4m）を 2 ますで表せる細かさ。町（約 130m 四方）で 650 ます四方になる。
+	// 床を区切るますの大きさ（m）。体の半径（0.4m）を 2 ますで表せる細かさ。町（約 130m 四方）で 650 ます四方になる
 	const float kCellSize = 0.2f;
-	// 高さのますの大きさ（m）。越えられる段差（0.3m）をちょうど 3 ますで表せる。
+	// 高さのますの大きさ（m）。越えられる段差（0.3m）をちょうど 3 ますで表せる
 	const float kCellHeight = 0.1f;
-	// 体の高さ・越えられる段差は、移動の当たり判定と同じ値にする（床の形と実際の歩き方が食い違わないように）。
+	// 体の高さ・越えられる段差は、移動の当たり判定と同じ値にする（床の形と実際の歩き方が食い違わないように）
 	const float kAgentHeight = MoveHeight::kBodyTop;
 	const float kAgentClimb = MoveHeight::kStepOver;
-	// 床の縁を壁から離す長さ（m）。ゾンビの体を真上から囲む長方形（幅の半分 約 0.3m）が斜めを向いても壁にこすらない長さ。
+	// 床の縁を壁から離す長さ（m）。ゾンビの体を真上から囲む長方形（幅の半分 約 0.3m）が斜めを向いても壁にこすらない長さ
 	const float kAgentRadius = 0.4f;
 	const float kMaxSlopeDegree = 45.f; // 床は平らなので効かないが、Recast が求める値
-	// 小さすぎる床の切れはし（ます数）は捨てる。建物の柱の間などの、歩いて入れない隙間を残さない。
+	// 小さすぎる床の切れはし（ます数）は捨てる。建物の柱の間などの、歩いて入れない隙間を残さない
 	const int kMinRegionSize = 8;
-	// これより小さい床の切れはしは隣とまとめる（多角形の数を減らし、道探しを軽くする）。
+	// これより小さい床の切れはしは隣とまとめる（多角形の数を減らし、道探しを軽くする）
 	const int kMergeRegionSize = 20;
-	// 床の縁の線をまっすぐにするときの、元の形からのずれの上限（ます数）と、1 本の辺の長さの上限（m）。
+	// 床の縁の線をまっすぐにするときの、元の形からのずれの上限（ます数）と、1 本の辺の長さの上限（m）
 	const float kEdgeMaxError = 1.3f;
 	const float kEdgeMaxLength = 12.f;
-	// 多角形 1 つの角の数（Detour の上限 DT_VERTS_PER_POLYGON と同じ）。
+	// 多角形 1 つの角の数（Detour の上限 DT_VERTS_PER_POLYGON と同じ）
 	const int kVertsPerPoly = 6;
-	// 床の高さを細かく測る間隔（ます数）と、そのずれの上限（高さのます数）。床は平らなので、粗くてよい。
+	// 床の高さを細かく測る間隔（ます数）と、そのずれの上限（高さのます数）。床は平らなので、粗くてよい
 	const float kDetailSampleCells = 6.f;
 	const float kDetailSampleMaxErrorCells = 1.f;
-	// 床の形を作る範囲の上下（m）。床（0）の下と、体の高さより上に余裕を持たせる。
+	// 床の形を作る範囲の上下（m）。床（0）の下と、体の高さより上に余裕を持たせる
 	const float kBoundsBelowGround = 0.5f;
 	const float kBoundsAboveBody = 0.5f;
 	const float kGroundHeight = 0.f;
-	// 歩ける多角形に付ける印（Detour の道探しは、印が合う多角形だけを通る。印の無い多角形は通らない）。
+	// 歩ける多角形に付ける印（Detour の道探しは、印が合う多角形だけを通る。印の無い多角形は通らない）
 	const unsigned short kWalkableFlag = 1;
-	// 箱の角を回る順（ローカルの X・Z の向きの符号）。隣どうしが箱の辺になる。
+	// 箱の角を回る順（ローカルの X・Z の向きの符号）。隣どうしが箱の辺になる
 	const int kBoxCornerNumber = 4;
 	const float kCornerSignX[ kBoxCornerNumber ] = { -1.f, 1.f, 1.f, -1.f };
 	const float kCornerSignZ[ kBoxCornerNumber ] = { -1.f, -1.f, 1.f, 1.f };
 	const int kCoordinates = 3;
 
-	// Recast へ渡す三角形の集まり（頂点の座標を並べた配列と、三角形ごとの頂点の番号と床の種類）。
+	// Recast へ渡す三角形の集まり（頂点の座標を並べた配列と、三角形ごとの頂点の番号と床の種類）
 	struct TriangleSoup{
 		std::vector< float > vertices;
 		std::vector< int > triangles;
@@ -85,8 +85,8 @@ namespace{
 		out[ 2 ] = v.z;
 	}
 
-	// 壁のかけら（体の高さで切った形）を、立った板の三角形として足す。床の種類は「歩けない」。
-	// かけらは真上から見ると線なので、Recast はその線が通るますに、かけらの高さの柱を立てる（下の床は頭がつかえて歩けなくなる）。
+	// 壁のかけら（体の高さで切った形）を、立った板の三角形として足す。床の種類は「歩けない」
+	// かけらは真上から見ると線なので、Recast はその線が通るますに、かけらの高さの柱を立てる（下の床は頭がつかえて歩けなくなる）
 	void addWallPiece( const WallPiece& piece, TriangleSoup* soup ) {
 		int first = soup->addVertex( piece.corner[ 0 ] );
 		int previous = soup->addVertex( piece.corner[ 1 ] );
@@ -97,9 +97,9 @@ namespace{
 		}
 	}
 
-	// 動かない箱（車）を、床から体の高さまでの柱の 4 つの側面として足す。床の種類は「歩けない」。
+	// 動かない箱（車）を、床から体の高さまでの柱の 4 つの側面として足す。床の種類は「歩けない」
 	void addBox( const BoxCollider& box, TriangleSoup* soup ) {
-		// 箱のローカルの X 軸・Z 軸がワールドで向く向き（SweepMath の boxAxes と同じ。Matrix34::rotateY と同じ回転の向き）。
+		// 箱のローカルの X 軸・Z 軸がワールドで向く向き（SweepMath の boxAxes と同じ。Matrix34::rotateY と同じ回転の向き）
 		float c = GameLib::Math::cos( box.angleY );
 		float s = GameLib::Math::sin( box.angleY );
 		Vector3 axisX( c, 0.f, -s );
@@ -121,7 +121,7 @@ namespace{
 		}
 	}
 
-	// 壁の囲む範囲（真上から見た四角）を広げる。
+	// 壁の囲む範囲（真上から見た四角）を広げる
 	void growBounds( const Vector3& min, const Vector3& max, Vector3* boundsMin, Vector3* boundsMax ) {
 		boundsMin->x = std::min( boundsMin->x, min.x );
 		boundsMin->z = std::min( boundsMin->z, min.z );
@@ -129,7 +129,7 @@ namespace{
 		boundsMax->z = std::max( boundsMax->z, max.z );
 	}
 
-	// 壁を囲む範囲いっぱいに、高さ 0 の歩ける床を 2 枚の三角形で敷く。
+	// 壁を囲む範囲いっぱいに、高さ 0 の歩ける床を 2 枚の三角形で敷く
 	void addGround( const Vector3& boundsMin, const Vector3& boundsMax, TriangleSoup* soup ) {
 		int a = soup->addVertex( Vector3( boundsMin.x, kGroundHeight, boundsMin.z ) );
 		int b = soup->addVertex( Vector3( boundsMax.x, kGroundHeight, boundsMin.z ) );
@@ -139,7 +139,7 @@ namespace{
 		soup->addTriangle( a, c, d, RC_WALKABLE_AREA );
 	}
 
-	// Recast の途中の物を、関数を抜けるときに Recast の関数で消す。
+	// Recast の途中の物を、関数を抜けるときに Recast の関数で消す
 	struct HeightfieldDeleter{ void operator()( rcHeightfield* p ) const { rcFreeHeightField( p ); } };
 	struct CompactDeleter{ void operator()( rcCompactHeightfield* p ) const { rcFreeCompactHeightfield( p ); } };
 	struct ContourDeleter{ void operator()( rcContourSet* p ) const { rcFreeContourSet( p ); } };
@@ -150,8 +150,8 @@ namespace{
 		GameLib::cout << "NavMesh: failed to " << step << GameLib::endl;
 	}
 
-	// 材料の三角形を soup へ集め、それを囲む範囲を boundsMin / boundsMax へ書く。床は壁を囲む範囲いっぱいに敷く（町を囲む建物の内側が町）。
-	// 壁が 1 つも無ければ false（建物を置く前に呼んだ）。
+	// 材料の三角形を soup へ集め、それを囲む範囲を boundsMin / boundsMax へ書く。床は壁を囲む範囲いっぱいに敷く（町を囲む建物の内側が町）
+	// 壁が 1 つも無ければ false（建物を置く前に呼んだ）
 	bool gatherTriangles( const CollisionWorld& world, TriangleSoup* soup, Vector3* boundsMin, Vector3* boundsMax ) {
 		*boundsMin = Vector3( FLT_MAX, kGroundHeight - kBoundsBelowGround, FLT_MAX );
 		*boundsMax = Vector3( -FLT_MAX, kAgentHeight + kBoundsAboveBody, -FLT_MAX );
@@ -175,7 +175,7 @@ namespace{
 		return true;
 	}
 
-	// Recast の設定（細かさ・体の大きさ・範囲）。値の理由は上の定数。
+	// Recast の設定（細かさ・体の大きさ・範囲）。値の理由は上の定数
 	rcConfig makeConfig( const Vector3& boundsMin, const Vector3& boundsMax ) {
 		rcConfig config{};
 		config.cs = kCellSize;
@@ -198,7 +198,7 @@ namespace{
 	}
 
 	// Recast の手順（公式の Sample_SoloMesh と同じ順）：ますに三角形を描く → 歩けない所を除く → 体の半径だけ縁を削る →
-	// 床を切れはしに分ける → 縁の線を作る → 多角形にする → 高さを細かく測る。どこかで失敗したら false（理由はログ）。
+	// 床を切れはしに分ける → 縁の線を作る → 多角形にする → 高さを細かく測る。どこかで失敗したら false（理由はログ）
 	bool buildPolygons( const rcConfig& config, const TriangleSoup& soup, rcPolyMesh* polyMesh, rcPolyMeshDetail* detail ) {
 		rcContext context( false ); // ログ・計時は使わない（かかった時間は NavMesh が測る）
 		std::unique_ptr< rcHeightfield, HeightfieldDeleter > heightfield( rcAllocHeightfield() );
@@ -249,7 +249,7 @@ namespace{
 		return true;
 	}
 
-	// Detour が道探しに使う形へ詰め直す（町全体を 1 枚のタイルにする。町の形は変わらないので分けない）。失敗したら nullptr。
+	// Detour が道探しに使う形へ詰め直す（町全体を 1 枚のタイルにする。町の形は変わらないので分けない）。失敗したら nullptr
 	dtNavMesh* packForDetour( const rcConfig& config, const rcPolyMesh& polyMesh, const rcPolyMeshDetail& detail ) {
 		dtNavMeshCreateParams params{};
 		params.verts = polyMesh.verts;
@@ -284,7 +284,7 @@ namespace{
 			logFailure( "allocate the detour mesh" );
 			return nullptr;
 		}
-		// DT_TILE_FREE_DATA: navData は navMesh が持ち、navMesh を消すときに一緒に消える。
+		// DT_TILE_FREE_DATA: navData は navMesh が持ち、navMesh を消すときに一緒に消える
 		if ( dtStatusFailed( navMesh->init( navData, navDataSize, DT_TILE_FREE_DATA ) ) ) {
 			dtFree( navData );
 			dtFreeNavMesh( navMesh );

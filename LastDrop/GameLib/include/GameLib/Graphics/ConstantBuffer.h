@@ -4,8 +4,8 @@
 namespace GameLib{
 namespace Graphics{
 
-///シェーダへ渡す定数の入れ物。Manager::setConstantBuffer で b1 以降に付ける（頂点・ピクセルの両方から読める）。
-///中身の並びは HLSL の cbuffer と揃えること（float4 単位＝16バイト境界に詰められる規則に注意）。
+///シェーダへ渡す定数の入れ物。Manager::setConstantBuffer で b1 以降に付ける（頂点・ピクセルの両方から読める）
+///中身の並びは HLSL の cbuffer と揃えること（float4 単位＝16バイト境界に詰められる規則に注意）
 class ConstantBuffer{
 public:
 	///byteSize: 中身の大きさ。16の倍数に切り上げて作る

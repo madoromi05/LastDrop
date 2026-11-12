@@ -30,7 +30,7 @@ void SceneManager::start( SceneId first ) {
 }
 
 std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
-	// シーンを増やすときは SceneId(SceneManager.h) とこの分岐の2箇所だけ直せばよい。
+	// シーンを増やすときは SceneId(SceneManager.h) とこの分岐の2箇所だけ直せばよい
 	switch ( id ) {
 	case SCENE_TITLE:
 		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::title() );
@@ -55,9 +55,9 @@ const char* SceneManager::loadName( SceneId id ) {
 
 void SceneManager::change( SceneId id ) {
 	ASSERT( mResources && "SceneManager::change : call start first." );
-	// 切り替えからシーンの最初の絵までを、1 回のロードとして測る（起動中なら起動のロードに含める）。
+	// 切り替えからシーンの最初の絵までを、1 回のロードとして測る（起動中なら起動のロードに含める）
 	GameLib::Profiling::beginLoad( loadName( id ) );
-	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）。
+	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）
 	std::unique_ptr< IScene > next = createScene( id );
 	mCurrent = std::move( next );
 	mClock.reset(); // 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
@@ -72,12 +72,12 @@ void SceneManager::update() {
 	if ( !mCurrent ) {
 		return;
 	}
-	// 入力は1回の描画につき1回だけ、どのシーンでもここで読む（update の回数に左右されないよう、beginFrame の前）。
+	// 入力は1回の描画につき1回だけ、どのシーンでもここで読む（update の回数に左右されないよう、beginFrame の前）
 	{
 		PROFILE_SCOPE( "Pad" );
 		Pad::instance()->update();
 	}
-	// 計測の CSV の記録を始める／止めるのは F6 の Perf タブのボタン。
+	// 計測の CSV の記録を始める／止めるのは F6 の Perf タブのボタン
 	{
 		PROFILE_SCOPE( "Scene.beginFrame" );
 		mCurrent->beginFrame();
@@ -92,11 +92,11 @@ void SceneManager::update() {
 		PROFILE_SCOPE( "Scene.draw" );
 		mCurrent->draw();
 	}
-	// 操作できる絵を描いたら、ロードを閉じる（閉じるのはこのフレームの Present の後）。
+	// 操作できる絵を描いたら、ロードを閉じる（閉じるのはこのフレームの Present の後）
 	if ( !mCurrent->isLoading() ) {
 		GameLib::Profiling::endLoad();
 	}
-	// 予約された切り替えは、今のシーンの処理が全部終わってから行う（シーンの途中で自分自身を消さないように）。
+	// 予約された切り替えは、今のシーンの処理が全部終わってから行う（シーンの途中で自分自身を消さないように）
 	if ( mHasRequest ) {
 		mHasRequest = false;
 		change( mRequestedId );
@@ -108,7 +108,7 @@ FixedStepClock& SceneManager::clock() {
 }
 
 void SceneManager::destroy() {
-	// シーンが借りている物を先に消さないよう、シーン → 使い回す物 の順に消す。
+	// シーンが借りている物を先に消さないよう、シーン → 使い回す物 の順に消す
 	mCurrent.reset();
 	mResources.reset();
 }

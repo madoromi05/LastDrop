@@ -192,7 +192,7 @@ public:
 			}
 			//変換本体
 			a[ i ] = strtol( p, &endP, 10 );
-			if ( endP == p ){ //進んでない。失敗した。
+			if ( endP == p ){ //進んでない。失敗した
 				return c;
 			}
 			p = endP;
@@ -231,7 +231,7 @@ public:
 			}
 			//変換本体
 			a[ i ] = static_cast< float >( strtod( p, &endP ) );
-			if ( endP == p ){ //進んでない。失敗した。
+			if ( endP == p ){ //進んでない。失敗した
 				return c;
 			}
 			p = endP;
@@ -261,7 +261,7 @@ public:
 			}
 			//変換本体
 			a[ i ] = strtod( p, &endP );
-			if ( endP == p ){ //進んでない。失敗した。
+			if ( endP == p ){ //進んでない。失敗した
 				return c;
 			}
 			p = endP;

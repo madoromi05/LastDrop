@@ -7,16 +7,16 @@
 #include "GameLib/Math/Vector2.h"
 #include <string>
 
-// 文字を表示するだけの部品（画面の見出し・HUD の文字）。文字は後から変えられる（HUD の「Fuel 1/3」など）。
+// 文字を表示するだけの部品（画面の見出し・HUD の文字）。文字は後から変えられる（HUD の「Fuel 1/3」など）
 class UiLabel : public IUiElement{
 public:
-	// anchor / offset: 文字を置く位置。x は anchor からのずれ、y は画面の上端から（画素）。
-	// align: offset が文字のどこを指すか（UiAlign）。color: VertexColor::pack の並び。
-	// letterSpacing: 字と字の間に足す幅（画素。UiRenderer::addText）。0 で詰めたまま。
+	// anchor / offset: 文字を置く位置。x は anchor からのずれ、y は画面の上端から（画素）
+	// align: offset が文字のどこを指すか（UiAlign）。color: VertexColor::pack の並び
+	// letterSpacing: 字と字の間に足す幅（画素。UiRenderer::addText）。0 で詰めたまま
 	UiLabel( const char* text, UiAnchor anchor, const GameLib::Math::Vector2& offset, UiTextSize size, UiAlign align, unsigned color, float letterSpacing = 0.f );
 
 	void setText( const char* text );
-	// 置き場所を変える（作ったときの anchor から見たずれ。動く照準など）。
+	// 置き場所を変える（作ったときの anchor から見たずれ。動く照準など）
 	void setOffset( const GameLib::Math::Vector2& offset );
 	virtual void draw( UiRenderer& renderer ) const;
 

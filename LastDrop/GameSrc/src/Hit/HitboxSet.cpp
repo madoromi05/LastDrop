@@ -54,7 +54,7 @@ void HitboxSet::removePart( BodyPart part ) {
 }
 
 bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult* hit ) const {
-	// 部位の箱へ線分を移す前に、全部を囲む箱で 1 回ふるう（外れる体は箱 1 つの判定で済む）。
+	// 部位の箱へ線分を移す前に、全部を囲む箱で 1 回ふるう（外れる体は箱 1 つの判定で済む）
 	if ( !mHasBounds || !HitMath::segmentTouchesBox( origin, delta, mBoundsMin, mBoundsMax ) ) {
 		return false;
 	}
@@ -66,7 +66,7 @@ bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult*
 		if ( !placement.placed ) {
 			continue;
 		}
-		// 線分を箱の空間へ移す（始点は移動込み、向きは移動なし）。
+		// 線分を箱の空間へ移す（始点は移動込み、向きは移動なし）
 		Vector3 localOrigin;
 		Vector3 localDelta;
 		placement.toLocal.mul( &localOrigin, origin );
@@ -85,7 +85,7 @@ bool HitboxSet::raycast( const Vector3& origin, const Vector3& delta, HitResult*
 		if ( localNormal.squareLength() > 0.f ) {
 			HitMath::normalToWorld( placement.toLocal, localNormal, &hit->normal );
 		} else {
-			// 始点が箱の中で、入った面が無い。弾が来た向きへ返す。
+			// 始点が箱の中で、入った面が無い。弾が来た向きへ返す
 			hit->normal.setNeg( delta );
 			hit->normal.normalize();
 		}
@@ -140,7 +140,7 @@ void HitboxSet::updateBounds() {
 		if ( !boxMatrix( i, &box ) ) {
 			continue;
 		}
-		// -1〜1 の立方体を行列で置いた箱を、軸に沿って囲む：中心は移動の列、半分の幅は各行の 3 つの係数の絶対値の和。
+		// -1〜1 の立方体を行列で置いた箱を、軸に沿って囲む：中心は移動の列、半分の幅は各行の 3 つの係数の絶対値の和
 		Vector3 center( box.m03, box.m13, box.m23 );
 		Vector3 half(
 			Math::abs( box.m00 ) + Math::abs( box.m01 ) + Math::abs( box.m02 ),

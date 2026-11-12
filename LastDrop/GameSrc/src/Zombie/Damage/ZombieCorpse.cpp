@@ -6,9 +6,9 @@
 using namespace GameLib;
 
 namespace{
-	// 倒れ終わってから沈み始めるまで（秒）。
+	// 倒れ終わってから沈み始めるまで（秒）
 	const float kCorpseSeconds = 10.f;
-	// 沈むのにかける時間（秒）と深さ（m）。体の厚み（倒れた胴の高さ）より深くして、沈み終わりに何も見えないようにする。
+	// 沈むのにかける時間（秒）と深さ（m）。体の厚み（倒れた胴の高さ）より深くして、沈み終わりに何も見えないようにする
 	const float kSinkSeconds = 1.5f;
 	const float kSinkDepth = 0.5f;
 

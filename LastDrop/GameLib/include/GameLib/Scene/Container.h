@@ -14,15 +14,15 @@ class Model;
 class Tree;
 class Animation;
 
-///描画データを入れるコンテナ。
+///描画データを入れるコンテナ
 /*!
-createModel()して、Model::draw()すればいい。2行で絵が出る。
+createModel()して、Model::draw()すればいい。2行で絵が出る
 */
 class Container{
 public:
 	///ニセxmlから生成。追加データパスは省略されればexeの場所になる
 	static Container create( PseudoXml::ConstElement, const char* extraDataPath = 0 );
-	///ファイルから直接生成。追加データパスがなければファイルと同じ場所を使う。
+	///ファイルから直接生成。追加データパスがなければファイルと同じ場所を使う
 	static Container create( const char* filename, const char* extraDataPath = 0 );
 	///バッチ名を指定してモデルを作る
 	Model createModel( const char* batchName ) const;
@@ -33,18 +33,18 @@ public:
 	///ツリーの番号を指定してツリーを作る
 	Tree createTree( int treeId ) const;
 
-	///ロード終了検知。必ず呼んでtrueが返ることを確認してから使うこと。
+	///ロード終了検知。必ず呼んでtrueが返ることを確認してから使うこと
 	bool isReady();
 
 	Batch batch( const char* batchName ) const;
 	Batch batch( int batchIndex ) const;
 	Animation animation( const char* animationName ) const;
 	Animation animation( int animationIndex ) const;
-	//Batch数がわかる。入っている全部のものを出したい時にはこれとgetBatch(int)を併用すれば良い。
+	//Batch数がわかる。入っている全部のものを出したい時にはこれとgetBatch(int)を併用すれば良い
 	int batchNumber() const;
-	//Tree数がわかる。入っている全部のものを出したい時にはこれとcreateTree(int)を併用すれば良い。
+	//Tree数がわかる。入っている全部のものを出したい時にはこれとcreateTree(int)を併用すれば良い
 	int treeNumber() const;
-	//アニメーション数がわかる。
+	//アニメーション数がわかる
 	int animationNumber() const;
 
 	//以下ユーザは意識しなくていい

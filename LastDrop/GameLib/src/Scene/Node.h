@@ -30,8 +30,8 @@ public:
 		mChildren = children;
 		mChildNumber = childNumber;
 	}
-	//現在のポーズから自分と子孫のワールド行列を計算して保持する（描画はしない）。
-	//スキニング等でボーン行列を外から読むため、行列計算を draw() から分離した。
+	//現在のポーズから自分と子孫のワールド行列を計算して保持する（描画はしない）
+	//スキニング等でボーン行列を外から読むため、行列計算を draw() から分離した
 	void updateWorldMatrix( const Matrix34& parentMatrix ){
 		mWorldMatrix.setMul( parentMatrix, mTemplate->mTransform ); //デフォルト変換をかけて、
 		mWorldMatrix.translate( mTranslation );
@@ -43,7 +43,7 @@ public:
 			mChildren[ i ]->updateWorldMatrix( mWorldMatrix );
 		}
 	}
-	//updateWorldMatrix() で計算済みのワールド行列を使って描画する。
+	//updateWorldMatrix() で計算済みのワールド行列を使って描画する
 	void draw( const Vector3& color, float transparency ) const {
 		if ( mTemplate->mBatch ){
 			Graphics::Manager().setWorldMatrix( mWorldMatrix );
@@ -53,7 +53,7 @@ public:
 			mChildren[ i ]->draw( color, transparency );
 		}
 	}
-	//直近の updateWorldMatrix() で計算したワールド行列を返す。
+	//直近の updateWorldMatrix() で計算したワールド行列を返す
 	const Matrix34& worldMatrix() const {
 		return mWorldMatrix;
 	}

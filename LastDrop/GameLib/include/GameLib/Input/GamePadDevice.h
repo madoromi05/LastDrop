@@ -8,8 +8,8 @@ using namespace GameLib::Input;
 // ────────────────────────────────────────────────
 // パッド（GamePad）のボタン用フォーマット
 //
-// a_keyCode = GamePad::Button の番号。
-// 読むパッドは差し口 0 番（JoystickButtonFormat と同じく、プレイヤーごとの差し口の指定は今後の拡張ポイント）。
+// a_keyCode = GamePad::Button の番号
+// 読むパッドは差し口 0 番（JoystickButtonFormat と同じく、プレイヤーごとの差し口の指定は今後の拡張ポイント）
 // ────────────────────────────────────────────────
 class GamePadButtonFormat : public InputButtonFormatBase<int>
 {
@@ -30,8 +30,8 @@ private:
 // ────────────────────────────────────────────────
 // パッド（GamePad）の軸用フォーマット
 //
-// a_keyCode = GamePadAxisKind（左スティック・右スティック）。
-// 値は -1〜1（右・下が正）。遊び（デッドゾーン）は GamePad 側で取ってある。
+// a_keyCode = GamePadAxisKind（左スティック・右スティック）
+// 値は -1〜1（右・下が正）。遊び（デッドゾーン）は GamePad 側で取ってある
 // ────────────────────────────────────────────────
 class GamePadAxisFormat : public InputAxisFormatBase<int>
 {

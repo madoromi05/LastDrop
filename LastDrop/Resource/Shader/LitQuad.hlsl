@@ -1,9 +1,9 @@
-// 半透明の板（弾痕・着弾の砂ぼこり・血しぶき）を、壁や地面と同じライトの一覧（LightList.hlsli）で照らす（LitQuadBatch の MODE_LIT）。
-// PbrNightLighting_Plan.txt 10 章。板は粗さ 1・金属 0 の面として照らす（粉や穴は光らないため。段階 2 まではツヤ 0 だった）。
-// 色と不透明度は「頂点の色 × 材質の色（明るさの倍率） × 絵」。アルファで後ろと混ぜるのは LitQuadBatch が決める（BLEND_LINEAR）。
-// 頂点の計算は StaticMeshGBuffer.hlsl と同じ（固定パイプラインの「ピクセルごとのライティング」と同じ）。
-// 板は霧のパス（Fog.hlsl）の後に描くので、照らした色に自分で同じ式の霧を掛ける（遠くの壁の弾痕だけが霧の中で黒く浮かないように）。
-// 壁・地面に刺さった所では不透明度を下げて、板の縁が線にならないようにする（SoftQuad.hlsli。弾痕は薄くしない）。
+// 半透明の板（弾痕・着弾の砂ぼこり・血しぶき）を、壁や地面と同じライトの一覧（LightList.hlsli）で照らす（LitQuadBatch の MODE_LIT）
+// PbrNightLighting_Plan.txt 10 章。板は粗さ 1・金属 0 の面として照らす（粉や穴は光らないため。段階 2 まではツヤ 0 だった）
+// 色と不透明度は「頂点の色 × 材質の色（明るさの倍率） × 絵」。アルファで後ろと混ぜるのは LitQuadBatch が決める（BLEND_LINEAR）
+// 頂点の計算は StaticMeshGBuffer.hlsl と同じ（固定パイプラインの「ピクセルごとのライティング」と同じ）
+// 板は霧のパス（Fog.hlsl）の後に描くので、照らした色に自分で同じ式の霧を掛ける（遠くの壁の弾痕だけが霧の中で黒く浮かないように）
+// 壁・地面に刺さった所では不透明度を下げて、板の縁が線にならないようにする（SoftQuad.hlsli。弾痕は薄くしない）
 #include "Pbr.hlsli"
 #include "Fog.hlsli"
 #include "SoftQuad.hlsli"

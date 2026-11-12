@@ -136,12 +136,12 @@ GridPairPicker::Exit GridPairPicker::moveSelection( bool up, bool down, bool lef
 		row = std::min( row + 1, current.rows() - 1 );
 	}
 	if ( left && column == 0 && mFocus == Side::Right ) {
-		// 右のマス目の左端から、左のマス目の右端へ（同じ行に収める）。
+		// 右のマス目の左端から、左のマス目の右端へ（同じ行に収める）
 		select( Side::Left, std::min( row, leftGrid.rows() - 1 ) * leftGrid.columns() + leftGrid.columns() - 1 );
 		return Exit::None;
 	}
 	if ( right && column == current.columns() - 1 && mFocus == Side::Left ) {
-		// 左のマス目の右端から、右のマス目の左端へ。
+		// 左のマス目の右端から、右のマス目の左端へ
 		select( Side::Right, std::min( row, rightGrid.rows() - 1 ) * rightGrid.columns() );
 		return Exit::None;
 	}
@@ -219,7 +219,7 @@ void GridPairPicker::draw( const ItemGrid& left, const ItemGrid& right, bool sho
 	const ItemGrid& current = gridOf( left, right, mFocus );
 	ItemGridView& view = viewOf( mFocus );
 	if ( mMoving ) {
-		// 置く所に、持ち上げている物の大きさの枠。入らない所は赤。
+		// 置く所に、持ち上げている物の大きさの枠。入らない所は赤
 		ItemId item = gridOf( left, right, mMovingSide ).stackAt( mMovingFrom ).item;
 		int target = current.placementCell( item, mSelected );
 		view.addFrame( view.spanRect( current, target, itemSpec( item ).cellSize ), kFrameThickness,

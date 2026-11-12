@@ -9,30 +9,30 @@
 
 class ZombieSeverLayout;
 
-// ゾンビ1体ぶんの「失った部位」。切った部位を覚え、描く直前に、無くなった骨を切り口の関節の1点へ潰す（BonePoseModifier）。
-// 骨ごとに自分の原点へ潰すと、手と前腕の間の三角形が線や面として残るので、無くなる骨は全部同じ1点へ集める。
-// 親の骨と混ざって付いている頂点（肩・肘のまわり）は関節へ向かってすぼまるので、切り口に穴は空かない（蓋は作らない）。
-// 潰すのは見せる姿勢だけ。部位の当たり判定（HitboxSet）は持ち主（Zombie）が部位ごとに外す。
-// どの関節で切り、どの骨と部位が無くなるかは ZombieSeverLayout（種類ごとに共有）を借りる。
+// ゾンビ1体ぶんの「失った部位」。切った部位を覚え、描く直前に、無くなった骨を切り口の関節の1点へ潰す（BonePoseModifier）
+// 骨ごとに自分の原点へ潰すと、手と前腕の間の三角形が線や面として残るので、無くなる骨は全部同じ1点へ集める
+// 親の骨と混ざって付いている頂点（肩・肘のまわり）は関節へ向かってすぼまるので、切り口に穴は空かない（蓋は作らない）
+// 潰すのは見せる姿勢だけ。部位の当たり判定（HitboxSet）は持ち主（Zombie）が部位ごとに外す
+// どの関節で切り、どの骨と部位が無くなるかは ZombieSeverLayout（種類ごとに共有）を借りる
 class ZombieDismemberment : public BonePoseModifier{
 public:
-	// layout: 切り方の設計図。所有権は受け取らない。nullptr 不可。この部位欠損より長く生きていること（ZombieModel が持つ）。
+	// layout: 切り方の設計図。所有権は受け取らない。nullptr 不可。この部位欠損より長く生きていること（ZombieModel が持つ）
 	explicit ZombieDismemberment( const ZombieSeverLayout* layout );
 
-	// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。切れたら severedThisHit へ足す。
+	// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。切れたら severedThisHit へ足す
 	bool sever( BodyPart part );
-	// 1 発ごとに切れた部位の一覧（持ち主が千切れた部位を飛ばすのに読む）。弾が当たるたびに、持ち主が先に空にする。
+	// 1 発ごとに切れた部位の一覧（持ち主が千切れた部位を飛ばすのに読む）。弾が当たるたびに、持ち主が先に空にする
 	void clearSeveredThisHit();
 	const std::vector< BodyPart >& severedThisHit() const;
-	// part がもう無いか（切った部位の先の部位も、無い）。
+	// part がもう無いか（切った部位の先の部位も、無い）
 	bool isLost( BodyPart part ) const;
-	// 立っていられない部位（脚）を失ったか。
+	// 立っていられない部位（脚）を失ったか
 	bool hasLostFooting() const;
-	// 切った部位の骨を、切った順に関節の1点へ潰す（BonePoseModifier）。
-	// のけぞり（ZombieFlinch）の後に掛ける（のけぞった肩の位置で切り口を作るため）。
+	// 切った部位の骨を、切った順に関節の1点へ潰す（BonePoseModifier）
+	// のけぞり（ZombieFlinch）の後に掛ける（のけぞった肩の位置で切り口を作るため）
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
-	// 頂点を全部 point の1点へ集める骨の姿勢（縮尺 0・位置 point）。千切れた部位（SeveredLimb）が、残った体の側を潰すのにも使う。
+	// 頂点を全部 point の1点へ集める骨の姿勢（縮尺 0・位置 point）。千切れた部位（SeveredLimb）が、残った体の側を潰すのにも使う
 	static GameLib::Math::Matrix34 collapsedAt( const GameLib::Math::Vector3& point );
 
 private:

@@ -35,7 +35,7 @@ void ZombieHearing::hearNoise( const Vector3& position ) {
 }
 
 void ZombieHearing::hearFootsteps( const Vector3& feet, float range ) {
-	// 雨の日は届きにくい（今日の条件の倍率）。
+	// 雨の日は届きにくい（今日の条件の倍率）
 	float scaled = range * mDay->footstepHearingScale;
 	if ( scaled <= 0.f ) {
 		return; // 止まっている（つかまれている間も止まっている）

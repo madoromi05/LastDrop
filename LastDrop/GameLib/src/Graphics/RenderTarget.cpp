@@ -50,7 +50,7 @@ void RenderTarget::writeTga( const char* filename ) const {
 	ASSERT( mImpl && "Graphics::RenderTarget : This is empty object." );
 	ASSERT( ( mImpl->mFormat == RENDER_TARGET_RGBA8 || mImpl->mFormat == RENDER_TARGET_RGBA8_SRGB ) &&
 		"RenderTarget : writeTga needs an 8-bit RGBA target." );
-	// 描画先は GPU だけが読み書きできるので、CPU が読める写し（staging）へ移してから読む（Manager::capture と同じ）。
+	// 描画先は GPU だけが読み書きできるので、CPU が読める写し（staging）へ移してから読む（Manager::capture と同じ）
 	D3D11_TEXTURE2D_DESC desc;
 	mImpl->mTexture->GetDesc( &desc );
 	desc.Usage          = D3D11_USAGE_STAGING;
@@ -65,7 +65,7 @@ void RenderTarget::writeTga( const char* filename ) const {
 	context->CopyResource( staging, mImpl->mTexture );
 	D3D11_MAPPED_SUBRESOURCE mapped = {};
 	if ( SUCCEEDED( context->Map( staging, 0, D3D11_MAP_READ, 0, &mapped ) ) ){
-		// 描画先は R が下位の並び（RGBA）、TGA の書き出しは B が下位の並び（BGRA）なので入れ替える。
+		// 描画先は R が下位の並び（RGBA）、TGA の書き出しは B が下位の並び（BGRA）なので入れ替える
 		const int w = mImpl->mWidth;
 		const int h = mImpl->mHeight;
 		std::vector< unsigned > pixels( static_cast< size_t >( w ) * h );

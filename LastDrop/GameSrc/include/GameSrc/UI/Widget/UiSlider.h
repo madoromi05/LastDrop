@@ -9,24 +9,24 @@
 #include <functional>
 #include <string>
 
-// 名前・バー・数字を横に並べた 1 行（設定画面の音量・感度）。値は整数で、最小〜最大を刻みで動かす。
+// 名前・バー・数字を横に並べた 1 行（設定画面の音量・感度）。値は整数で、最小〜最大を刻みで動かす
 // 値の持ち主は作る側（GameSettings など）で、ここは getter / setter の関数で読み書きするだけ
-// （どの設定を変えるかを知らないので、項目が増えてもこのクラスは変わらない。UiButton の onActivate と同じ考え方）。
-// 板は描かない。選ばれている間はメニューの行と同じ印（SelectionMarks）を出す。バーは細い線とひし形、色は MenuPalette。
-// 左右キー・バーのクリックとドラッグで値を変える（いつ変えるかは UiCanvas）。MenuRestyle_Plan.txt。
+// （どの設定を変えるかを知らないので、項目が増えてもこのクラスは変わらない。UiButton の onActivate と同じ考え方）
+// 板は描かない。選ばれている間はメニューの行と同じ印（SelectionMarks）を出す。バーは細い線とひし形、色は MenuPalette
+// 左右キー・バーのクリックとドラッグで値を変える（いつ変えるかは UiCanvas）。MenuRestyle_Plan.txt
 class UiSlider : public IUiElement, public IUiSelectable, public IUiAdjustable{
 public:
-	// 値の範囲と刻み。
+	// 値の範囲と刻み
 	struct Range{
 		int minValue;
 		int maxValue;
 		int step;
 	};
 
-	// anchor / rect: 行の範囲（画素。rect.left は anchor からのずれ、rect.top は画面の上端から）。
-	// label: 左に書く名前。range: 値の範囲（minValue < maxValue、step > 0）。
-	// getValue: 今の値を返す。setValue: 新しい値（範囲に収めて刻みに揃えた物）を受け取る。
-	// formatValue: 右に書く数字の文字を作る（音量なら "80"、感度なら "1.00"）。どれも空は不可。
+	// anchor / rect: 行の範囲（画素。rect.left は anchor からのずれ、rect.top は画面の上端から）
+	// label: 左に書く名前。range: 値の範囲（minValue < maxValue、step > 0）
+	// getValue: 今の値を返す。setValue: 新しい値（範囲に収めて刻みに揃えた物）を受け取る
+	// formatValue: 右に書く数字の文字を作る（音量なら "80"、感度なら "1.00"）。どれも空は不可
 	UiSlider( UiAnchor anchor, const UiRect& rect, const char* label, const Range& range,
 		std::function< int() > getValue, std::function< void( int ) > setValue, std::function< std::string( int ) > formatValue );
 

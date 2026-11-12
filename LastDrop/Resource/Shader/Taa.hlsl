@@ -1,6 +1,6 @@
-// TAA（時間をまたいだアンチエイリアス。TemporalAntiAliasing::resolve。SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 7 章）。
-// 今のシーンの色（毎フレーム 1 画素より細かくずらして描いた物。TemporalJitter）と、前のフレームまでに混ぜた履歴を混ぜて、新しい履歴を書く。
-// 何フレームかの色が混ざるので、1 画素の中を細かく調べたのと同じになり、縁のギザギザと、細い物のちらつきが消える。
+// TAA（時間をまたいだアンチエイリアス。TemporalAntiAliasing::resolve。SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 7 章）
+// 今のシーンの色（毎フレーム 1 画素より細かくずらして描いた物。TemporalJitter）と、前のフレームまでに混ぜた履歴を混ぜて、新しい履歴を書く
+// 何フレームかの色が混ざるので、1 画素の中を細かく調べたのと同じになり、縁のギザギザと、細い物のちらつきが消える
 //   前のフレームのどこを読むか：G-Buffer の RT1 の a（動きの種類。Taa_Plan.txt 6 章）で分ける
 //     動かない物・動く物 … 深度から位置を戻し、前のフレームの「ずらしていない射影×ビュー」で画面へ戻した所
 //     手元（自キャラ・銃・弾）… カメラと一緒に動くので、同じ画素
@@ -12,7 +12,7 @@
 Texture2D gCurrent : register(t6); // 今のシーンの色（TemporalAntiAliasing.cpp の kCurrentSlot。霧の後・半透明の板の前）
 Texture2D gHistory : register(t7); // 前の履歴（同 kHistorySlot）
 
-// TemporalAntiAliasing.cpp の TaaConstants と同じ並び。
+// TemporalAntiAliasing.cpp の TaaConstants と同じ並び
 cbuffer TaaConstants : register(b1)
 {
     float4 gTaaInverseProjectionView[4];  // 今の（ずらした）射影×ビューの逆行列（行ごと）。深度から位置を戻す
@@ -42,8 +42,8 @@ float3 yCoCgToRgb(float3 c)
     return float3(c.x + c.y - c.z, c.x + c.z, c.x - c.y - c.z);
 }
 
-// 前の履歴を Catmull-Rom（なめらかな 3 次の補間）で読む。双線形で読むと、読み直すたびに 1 段ずつぼけていくため。
-// 4×4 の 16 画素を、双線形の読み込み 5 回で近似する（四隅の 4 つは重みが小さいので読まない。Jimenez・Pettineo の方法）。
+// 前の履歴を Catmull-Rom（なめらかな 3 次の補間）で読む。双線形で読むと、読み直すたびに 1 段ずつぼけていくため
+// 4×4 の 16 画素を、双線形の読み込み 5 回で近似する（四隅の 4 つは重みが小さいので読まない。Jimenez・Pettineo の方法）
 float3 sampleHistoryCatmullRom(float2 uv, float2 size)
 {
     float2 position = uv * size;
@@ -66,7 +66,7 @@ float3 sampleHistoryCatmullRom(float2 uv, float2 size)
     return max(sum / weight, 0.0); // 3 次の補間は負の重みがあるので、0 より下へ行かないよう止める
 }
 
-// 履歴の色 history を、箱（中心 center・半分の幅 extent）の中へ、中心へ向かって寄せる（箱の外なら、箱の面との交わりまで）。
+// 履歴の色 history を、箱（中心 center・半分の幅 extent）の中へ、中心へ向かって寄せる（箱の外なら、箱の面との交わりまで）
 float3 clipToBox(float3 history, float3 center, float3 extent)
 {
     float3 offset = history - center;
@@ -86,14 +86,14 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     float3 result = current;
     if (gTaaHistoryWeight.w < 0.5)
     {
-        // 動きの種類ごとの、履歴を混ぜる割合と箱の広さ。
+        // 動きの種類ごとの、履歴を混ぜる割合と箱の広さ
         float motion = gGBufferNormal.Load(int3(pixel, 0)).a;
         bool firstPerson = motion > kMotionFirstPersonThreshold;
         bool moving = !firstPerson && motion > kMotionMovingThreshold;
         float historyWeight = firstPerson ? gTaaHistoryWeight.z : (moving ? gTaaHistoryWeight.y : gTaaHistoryWeight.x);
         float gamma = firstPerson ? gTaaClipGamma.z : (moving ? gTaaClipGamma.y : gTaaClipGamma.x);
 
-        // 前のフレームの位置。手元は同じ画素（カメラと一緒に動く）。それ以外は深度から戻した位置を前の画面へ戻す。
+        // 前のフレームの位置。手元は同じ画素（カメラと一緒に動く）。それ以外は深度から戻した位置を前の画面へ戻す
         float2 uv = (pixel + 0.5) / size;
         float2 previousUv = uv;
         if (!firstPerson)
@@ -106,10 +106,10 @@ float4 PSMain(FullScreenVertex p) : SV_Target
             float2 ndc = clip.xy / clip.w;
             previousUv = float2(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5);
         }
-        // 前の位置が画面の外（今のフレームで初めて見えた所）は、今の色だけ。
+        // 前の位置が画面の外（今のフレームで初めて見えた所）は、今の色だけ
         if (all(previousUv >= 0.0) && all(previousUv < 1.0))
         {
-            // 周り 3×3 の色の平均と広がり（YCoCg）。
+            // 周り 3×3 の色の平均と広がり（YCoCg）
             float3 sum = 0.0;
             float3 sumSquared = 0.0;
             [unroll]
@@ -127,7 +127,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
             float3 deviation = sqrt(abs(sumSquared / kNeighborCount - mean * mean));
             float3 history = sampleHistoryCatmullRom(previousUv, size);
             history = yCoCgToRgb(clipToBox(rgbToYCoCg(history), mean, deviation * gamma));
-            // 明るさで割り戻した重みで混ぜる。
+            // 明るさで割り戻した重みで混ぜる
             float currentWeight = (1.0 - historyWeight) / (1.0 + dot(current, kLumaWeights));
             float historyWeighted = historyWeight / (1.0 + dot(history, kLumaWeights));
             result = (current * currentWeight + history * historyWeighted) / (currentWeight + historyWeighted);

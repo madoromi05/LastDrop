@@ -12,25 +12,25 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 感度と視野角は LookParams（起動中に F6 で動かせる）。
+	// 感度と視野角は LookParams（起動中に F6 で動かせる）
 	LookParams gLookParams;
 
-	// 覗き具合に合わせた縦の視野角（度）。
+	// 覗き具合に合わせた縦の視野角（度）
 	float fieldOfView( float aimWeight ) {
 		return gLookParams.hipFieldOfView + ( gLookParams.aimFieldOfView - gLookParams.hipFieldOfView ) * aimWeight;
 	}
 
-	// スティックで回す量に使う、1 回の描画の長さの上限（秒）。一時停止や読み込みで空いた時間を、1 度に回さないため。
+	// スティックで回す量に使う、1 回の描画の長さの上限（秒）。一時停止や読み込みで空いた時間を、1 度に回さないため
 	const float kMaxStickLookSeconds = 0.1f;
 	const float kMillisecondsPerSecond = 1000.f;
 
-	// 前の描画からの秒数（スティックの「傾き＝速さ」を回す角度にするため）。
+	// 前の描画からの秒数（スティックの「傾き＝速さ」を回す角度にするため）
 	float stickLookSeconds() {
 		float seconds = static_cast< float >( Framework::instance().previousFrameInterval() ) / kMillisecondsPerSecond;
 		return Math::min( seconds, kMaxStickLookSeconds );
 	}
 
-	// スティックの傾き（-1〜1）を、回る速さの割合（-1〜1）にする。向きは残して大きさだけ累乗する。
+	// スティックの傾き（-1〜1）を、回る速さの割合（-1〜1）にする。向きは残して大きさだけ累乗する
 	float stickLookRate( float tilt ) {
 		float rate = Math::pow( Math::abs( tilt ), gLookParams.stickLookExponent );
 		return ( tilt < 0.f ) ? -rate : rate;
@@ -74,23 +74,23 @@ void FirstPersonControl::readInput( float aimWeight ) {
 	if ( input.isCursorLocked() ) {
 		AxisStatus look = InputLook();
 		AxisStatus stick = InputLookStick();
-		// ズーム中は視野角の比で感度を下げる。同じだけマウスを動かしたとき、画面上で動く量を揃えるため。
-		// 設定画面の感度（倍率）は、その上から掛ける（覗いたときの遅くなり方の比は変わらない）。スティックにも同じ倍率を掛ける。
+		// ズーム中は視野角の比で感度を下げる。同じだけマウスを動かしたとき、画面上で動く量を揃えるため
+		// 設定画面の感度（倍率）は、その上から掛ける（覗いたときの遅くなり方の比は変わらない）。スティックにも同じ倍率を掛ける
 		float sensitivity = mSettings->lookSensitivityScale() * fieldOfView( aimWeight ) / gLookParams.hipFieldOfView;
 		float degreesPerPixel = gLookParams.lookDegreesPerPixel * sensitivity;
-		// スティックは傾き＝回る速さなので、この描画の秒数を掛けて角度にする（マウスは動かした量そのものが角度になる）。
+		// スティックは傾き＝回る速さなので、この描画の秒数を掛けて角度にする（マウスは動かした量そのものが角度になる）
 		float stickSeconds = stickLookSeconds() * sensitivity;
 		float stickYaw = stickLookRate( stick.m_width ) * gLookParams.stickYawDegreesPerSecond * stickSeconds;
 		float stickPitch = stickLookRate( stick.m_height ) * gLookParams.stickPitchDegreesPerSecond * stickSeconds;
-		// マウス（スティック）を右へ動かすと右を向く＝ヨーは減る（ヨーは上から見て反時計回りが正）。
-		// マウス（スティック）を下へ動かすと下を向く＝ピッチ（見下ろしが正）は増える。
+		// マウス（スティック）を右へ動かすと右を向く＝ヨーは減る（ヨーは上から見て反時計回りが正）
+		// マウス（スティック）を下へ動かすと下を向く＝ピッチ（見下ろしが正）は増える
 		float yawDelta = -look.m_width * degreesPerPixel - stickYaw;
 		float pitchDelta = look.m_height * degreesPerPixel + stickPitch;
 		mCamera.rotate( yawDelta, pitchDelta );
 		mEffects.addLook( yawDelta, pitchDelta );
 	}
 
-	// 押されている間の入力は今の状態で上書きし、押した瞬間の入力は使われるまで残す（consumePressed で消す）。
+	// 押されている間の入力は今の状態で上書きし、押した瞬間の入力は使われるまで残す（consumePressed で消す）
 	mCommands.read( input.isCursorLocked() );
 }
 
@@ -106,7 +106,7 @@ void FirstPersonControl::clearInput() {
 void FirstPersonControl::updateCursorLock() {
 	GameLib::Input::Manager input = GameLib::Input::Manager::instance();
 	if ( InputFire() && !input.isCursorLocked() ) {
-		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す。
+		// 解除中のクリックは「ゲームに戻る」操作として扱い、ロックし直す
 		input.setCursorLocked( true );
 		mCommands.suppressFire();
 	}

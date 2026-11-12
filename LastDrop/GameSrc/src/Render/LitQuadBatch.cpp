@@ -20,7 +20,7 @@ namespace{
 
 	const int kMatrixFloats = 16;
 	const int kRowFloats = 4;
-	// SoftQuad.hlsli の cbuffer SoftQuadConstants と同じ並び（16 バイトずつの区切りに合わせる）。
+	// SoftQuad.hlsli の cbuffer SoftQuadConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct SoftQuadConstants{
 		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
 		float viewDepthRow[ kRowFloats ];             // 射影×ビューの 4 行目（m30..m33）
@@ -29,23 +29,23 @@ namespace{
 	};
 	static_assert( sizeof( SoftQuadConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * 2 ), "SoftQuadConstants : keep the HLSL layout." );
 
-	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか。
-	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）。
+	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか
+	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）
 	const int kQuadCorners = 4;
 	const float kCornerSign[ kQuadCorners ][ 2 ] = { { -1.f, -1.f }, { 1.f, -1.f }, { 1.f, 1.f }, { -1.f, 1.f } };
-	// 4隅を三角形2つに分ける並び（隅の番号）。
+	// 4隅を三角形2つに分ける並び（隅の番号）
 	const int kVerticesPerQuad = 6;
 	const int kQuadTriangleOrder[ kVerticesPerQuad ] = { 0, 1, 2, 0, 2, 3 };
 	const int kVerticesPerTriangle = 3;
 
-	// 材質の設定（MeshMaterial::apply と同じ項目）。色と不透明度は絵と頂点の色で決めるので、ここは素通しにする。
+	// 材質の設定（MeshMaterial::apply と同じ項目）。色と不透明度は絵と頂点の色で決めるので、ここは素通しにする
 	const Vector3 kWhite( 1.f, 1.f, 1.f );      // 拡散色（絵の色をそのまま使う。明るさの倍率を掛けて渡す）
 	const float kDefaultBrightness = 1.f;       // 明るさの倍率の初期値（絵と頂点の色のまま）
 	const Vector3 kNoSpecular( 0.f, 0.f, 0.f ); // 反射のツヤを付けない
 	const Vector3 kNoEmission( 0.f, 0.f, 0.f ); // 自分では光らない
 	const float kOpaque = 1.f;                  // 材質としての透明度（MeshMaterial と同じ。不透明度はアルファで決める）
 
-	// 隅 index の UV。
+	// 隅 index の UV
 	Vector2 cornerUv( int index, const QuadUv& uv ) {
 		return Vector2( ( kCornerSign[ index ][ 0 ] < 0.f ) ? uv.left : uv.right, ( kCornerSign[ index ][ 1 ] < 0.f ) ? uv.bottom : uv.top );
 	}
@@ -110,7 +110,7 @@ void LitQuadBatch::copySortedFromBack( const Vector3& eye, Graphics::Vertex* loc
 	for ( int i = 0; i < static_cast< int >( mCenters.size() ); ++i ) {
 		mOrder.push_back( i );
 	}
-	// 遠い板から描く（手前の板が後から重なる）。同じ距離なら、ためた順のまま（毎フレーム並びが入れ替わってちらつかないように）。
+	// 遠い板から描く（手前の板が後から重なる）。同じ距離なら、ためた順のまま（毎フレーム並びが入れ替わってちらつかないように）
 	std::stable_sort( mOrder.begin(), mOrder.end(), [ this, &eye ]( int a, int b ) {
 		return squaredDistance( mCenters[ a ], eye ) > squaredDistance( mCenters[ b ], eye );
 	} );
@@ -138,9 +138,9 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.setProjectionViewMatrix( projectionView );
 	m.setWorldMatrix( world );
 	m.setTexture( texture ); // 法線マップも外れる（setTexture の決まり）
-	// MODE_LIT は壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）。MODE_GLOW は自分で光るのでライト無し（GlowQuad.hlsl）。
+	// MODE_LIT は壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）。MODE_GLOW は自分で光るのでライト無し（GlowQuad.hlsl）
 	m.setShader( mShader );
-	// MODE_GLOW は後ろの色に絵の色×アルファを足し、MODE_LIT は絵のアルファで後ろと混ぜる。
+	// MODE_GLOW は後ろの色に絵の色×アルファを足し、MODE_LIT は絵のアルファで後ろと混ぜる
 	m.setBlendMode( ( mMode == MODE_GLOW ) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_LINEAR );
 	setSoftConstants( projectionView );
 	Vector3 diffuse;
@@ -155,7 +155,7 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 	m.setVertexBuffer( mVertexBuffer );
 	m.draw( 0, static_cast< int >( mVertices.size() ) / kVerticesPerTriangle );
 
-	// 物を描くときの設定へ戻す（GameScene::setupLights と同じ）。
+	// 物を描くときの設定へ戻す（GameScene::setupLights と同じ）
 	m.setShader( Graphics::Shader() ); // 後から描く物（固定パイプライン）に残さない
 	m.setConstantBuffer( kSoftConstantSlot, Graphics::ConstantBuffer() );
 	m.setBlendMode( Graphics::BLEND_OPAQUE );

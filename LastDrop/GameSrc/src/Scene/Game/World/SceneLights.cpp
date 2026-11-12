@@ -62,10 +62,10 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.enableDepthTest( true );
 	gm.enableDepthWrite( true );
-	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てるので、これが効くのはそれ以外の物だけ。
+	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てるので、これが効くのはそれ以外の物だけ
 	gm.setCullMode( Graphics::CULL_NONE );
-	// GameLib の 4 灯と環境光（固定パイプライン）は使わない。照らすのはライトの一覧だけ（ライティングのパスと半透明の板が b2 から読む）。
-	// 月・補助光・空・環境光は調整値（LightingParams。初期値は夜）から毎フレーム作る（F6 ですぐ効くように）。
+	// GameLib の 4 灯と環境光（固定パイプライン）は使わない。照らすのはライトの一覧だけ（ライティングのパスと半透明の板が b2 から読む）
+	// 月・補助光・空・環境光は調整値（LightingParams。初期値は夜）から毎フレーム作る（F6 ですぐ効くように）
 	const LightingParams& params = lightingParams();
 	mLights.clear();
 	const ShadowParams& shadow = shadowParams();
@@ -74,15 +74,15 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	if ( params.fillIntensity > 0.f ) {
 		mLights.add( directionalLight( lightDirectionFrom( params.fillElevation, params.fillAzimuth ), params.fillColor, params.fillIntensity ) );
 	}
-	// 自分の手元の光（懐中電灯・マズルフラッシュ）は、街灯より先に足す（16 個を選ぶとき、目からの距離が同じなら足した順で残るため）。
+	// 自分の手元の光（懐中電灯・マズルフラッシュ）は、街灯より先に足す（16 個を選ぶとき、目からの距離が同じなら足した順で残るため）
 	addFlashlight( params );
 	LightSource muzzle;
 	if ( mRenderer->muzzleLight( &muzzle ) ) {
 		mLights.add( muzzle );
 	}
-	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す。
-	// 外れた柱もガラスは光ったまま（模型の発光）。
-	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）。
+	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す
+	// 外れた柱もガラスは光ったまま（模型の発光）
+	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）
 	float streetLightIntensity = params.streetLightIntensity * mWorld->dayCondition().streetLightScale;
 	if ( streetLightIntensity > 0.f ) {
 		for ( const TownPlacement& spot : mWorld->town().map().streetLights() ) {
@@ -96,13 +96,13 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	environment.groundColor = params.groundColor;
 	environment.skyIntensity = params.skyIntensity;
 	environment.ambientIntensity = params.ambientIntensity;
-	// 霧を切っている間は 0 のまま（霧なし）。半透明の板もライトの一覧の霧の値を読むので、板の霧も一緒に消える。
+	// 霧を切っている間は 0 のまま（霧なし）。半透明の板もライトの一覧の霧の値を読むので、板の霧も一緒に消える
 	if ( fogEnabled() ) {
 		environment.fogHalfDistance = fogHalfDistance(); // 霧の日は短い
 		environment.fogGroundDensity = params.fogGroundDensity;
 		environment.fogHeightHalf = params.fogHeightHalf;
 	}
-	// 月の絵。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない。
+	// 月の絵。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない
 	if ( skyDetailEnabled() ) {
 		environment.moonDirection.setNeg( lightDirectionFrom( params.moonElevation, params.moonAzimuth ) ); // 光の進む向きの逆が、月のある方
 		environment.moonColor = params.moonColor;
@@ -121,7 +121,7 @@ void SceneLights::addMoon( const LightingParams& params, const FirstPersonCamera
 	LightSource moon = directionalLight( direction, params.moonColor, params.moonIntensity );
 	mMoonCastsShadow = shadowsEnabled() && ( params.moonIntensity > 0.f );
 	if ( mMoonCastsShadow ) {
-		// 枚の受け持ちの端。F6 で逆に並べても範囲が 0 にならないよう、前の端より奥へ揃える。
+		// 枚の受け持ちの端。F6 で逆に並べても範囲が 0 にならないよう、前の端より奥へ揃える
 		const ShadowParams& shadow = shadowParams();
 		float ends[ CascadedShadowMap::kCascadeCount ] = { shadow.moonCascadeEnd0, shadow.moonCascadeEnd1, shadow.moonCascadeEnd2 };
 		for ( int i = 1; i < CascadedShadowMap::kCascadeCount; ++i ) {
@@ -129,7 +129,7 @@ void SceneLights::addMoon( const LightingParams& params, const FirstPersonCamera
 		}
 		Graphics::Manager gm = Graphics::Manager::instance();
 		float aspect = static_cast< float >( gm.width() ) / static_cast< float >( gm.height() );
-		// 遠い枚ほど間を空けて描き直す。手前の枚は毎フレーム、間隔は調整値を整数に丸める。
+		// 遠い枚ほど間を空けて描き直す。手前の枚は毎フレーム、間隔は調整値を整数に丸める
 		CascadedShadowMap::Refresh refresh;
 		refresh.intervals[ 0 ] = kEveryFrame;
 		refresh.intervals[ 1 ] = static_cast< int >( shadow.moonCascadeInterval1 + kRoundToNearest );
@@ -158,18 +158,18 @@ void SceneLights::addFlashlight( const LightingParams& params ) {
 	const LightComponent* light = hold ? hold->light() : nullptr; // 銃に付いたライト（素手なら無い）
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
-	// 銃をしまっている間は銃口が無い（muzzle が false）ので照らさない。付けた状態は自キャラが覚えている。
+	// 銃をしまっている間は銃口が無い（muzzle が false）ので照らさない。付けた状態は自キャラが覚えている
 	if ( !light || !light->isOn() || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
 		return;
 	}
 	Vector3 position;
 	position.setMadd( muzzlePosition, muzzleDirection, params.flashlightOffset );
-	// F6 で内側を外側より大きくしても止まらないよう、内側は外側までに抑える。
+	// F6 で内側を外側より大きくしても止まらないよう、内側は外側までに抑える
 	float innerAngle = min( params.flashlightInnerAngle, params.flashlightOuterAngle );
 	LightSource flashlight = spotLight( position, muzzleDirection, params.flashlightColor, params.flashlightIntensity, params.flashlightRange,
 		innerAngle, params.flashlightOuterAngle );
 	flashlight.nearDistance = params.flashlightNearDistance;
-	// 影。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない。
+	// 影。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない
 	if ( shadowsEnabled() ) {
 		mFlashlightShadowMatrix = spotShadowProjectionView( position, muzzleDirection, params.flashlightOuterAngle,
 			shadowParams().flashlightNearClip, params.flashlightRange );
@@ -194,16 +194,16 @@ void SceneLights::drawShadowMaps( const FirstPersonCamera& camera ) {
 			}
 			const Matrix44& matrix = mMoonShadow.projectionView( i );
 			mMoonShadow.map( i ).begin( matrix );
-			// 2 枚目からは置物を一番粗い段で描く（遠い枚は 1 画素が大きく、形の差が影に出ない）。
+			// 2 枚目からは置物を一番粗い段で描く（遠い枚は 1 画素が大きく、形の差が影に出ない）
 			mRenderer->drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ), i >= kFirstCoarseLodCascade ),
 				kWithPlayer );
 			mMoonShadow.map( i ).end();
 			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
 	}
-	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す。
+	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す
 	Graphics::Manager::instance().setProjectionViewMatrix( camera.projectionViewMatrix() );
-	// GPU の時間の区切り。ここまでが影のマップ（懐中電灯と月の 3 枚）。
+	// GPU の時間の区切り。ここまでが影のマップ（懐中電灯と月の 3 枚）
 	Profiling::gpuMark( "Shadow" );
 }
 

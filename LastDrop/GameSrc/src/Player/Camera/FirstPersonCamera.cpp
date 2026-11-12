@@ -11,19 +11,19 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── 向き（度）──
-	// 上下限は背骨の曲げで体が付いてこられる範囲。これより先は腰から折れたように見える。
+	// 上下限は背骨の曲げで体が付いてこられる範囲。これより先は腰から折れたように見える
 	const float kBodyPitchLimit = 70.f; // 見上げる・見下ろす限界
 
 	// ── 射影 ──
 	const float kDefaultFieldOfView = 60.f; // setFieldOfView を呼ぶまでの縦の視野角（度）
-	// 自分の肩・腕・銃が目のすぐ前にあるので、TPS より近くまで描く（遠いと銃口や手が欠ける）。
+	// 自分の肩・腕・銃が目のすぐ前にあるので、TPS より近くまで描く（遠いと銃口や手が欠ける）
 	const float kNearClip     = 0.05f;
 	const float kFarClip      = 1000.f;
 
 	const float kFullTurn = 360.f;
 	const Vector3 kUp( 0.f, 1.f, 0.f );
 
-	// ヨー・ピッチ（度）から向き（長さ1）。ヨー0で +Z、ピッチは正で見下ろす。
+	// ヨー・ピッチ（度）から向き（長さ1）。ヨー0で +Z、ピッチは正で見下ろす
 	Vector3 directionOf( float yaw, float pitch ) {
 		return Vector3(
 			Math::sin( yaw ) * Math::cos( pitch ),
@@ -53,7 +53,7 @@ FirstPersonCamera::FirstPersonCamera( float pitchLimit ) :
 
 void FirstPersonCamera::rotate( float yawDelta, float pitchDelta ) {
 	mYaw += yawDelta;
-	// ヨーは回し続けても桁あふれで精度が落ちないよう、1周で折り返す。
+	// ヨーは回し続けても桁あふれで精度が落ちないよう、1周で折り返す
 	if ( mYaw >= kFullTurn ) {
 		mYaw -= kFullTurn;
 	} else if ( mYaw < 0.f ) {
@@ -93,8 +93,8 @@ void FirstPersonCamera::apply() const {
 }
 
 Matrix44 FirstPersonCamera::projectionViewMatrix() const {
-	// 揺れは描く行列にだけ入れる（狙いの向き viewDirection は揺らさない）。
-	// 揺れたピッチは上下限で止めない（限界の所で撃っても揺れが消えないように。揺れは 1° 程度なので体には影響しない）。
+	// 揺れは描く行列にだけ入れる（狙いの向き viewDirection は揺らさない）
+	// 揺れたピッチは上下限で止めない（限界の所で撃っても揺れが消えないように。揺れは 1° 程度なので体には影響しない）
 	Vector3 lookAt;
 	lookAt.setAdd( mEyePosition, directionOf( yaw() + mShakeYaw, pitch() + mShakePitch ) );
 
@@ -106,7 +106,7 @@ Matrix44 FirstPersonCamera::projectionViewMatrix() const {
 		kNearClip, kFarClip );
 	Matrix34 view;
 	view.setViewTransform( mEyePosition, lookAt, kUp );
-	// ロールは視点から見た奥行きの軸（Z）の周りに回す。ビュー変換の後に掛けるので、視線の向きは変わらない。
+	// ロールは視点から見た奥行きの軸（Z）の周りに回す。ビュー変換の後に掛けるので、視線の向きは変わらない
 	Matrix34 roll;
 	roll.setRotationZ( mShakeRoll );
 	Matrix34 rolledView;
@@ -120,7 +120,7 @@ float FirstPersonCamera::yaw() const {
 }
 
 float FirstPersonCamera::pitch() const {
-	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）。
+	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
 	return Math::max( -mPitchLimit, Math::min( mPitchLimit, mPitch + mPitchOffset ) );
 }
 
@@ -129,7 +129,7 @@ Vector3 FirstPersonCamera::viewDirection() const {
 }
 
 Vector3 FirstPersonCamera::weaponDirection() const {
-	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）。
+	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）
 	return directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );
 }
 

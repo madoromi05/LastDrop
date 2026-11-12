@@ -166,8 +166,8 @@ public:
 
 		createRTVandDSV( w, h );
 
-		// DXGI が alt+enter を横取りして排他フルスクリーンへ切り替えないようにする。
-		// フルスクリーンは WindowCreator がボーダーレス（枠なしウィンドウをモニター全体へ）で行う。
+		// DXGI が alt+enter を横取りして排他フルスクリーンへ切り替えないようにする
+		// フルスクリーンは WindowCreator がボーダーレス（枠なしウィンドウをモニター全体へ）で行う
 		{
 			IDXGIFactory* factory = nullptr;
 			if ( SUCCEEDED( mSwapChain->GetParent( __uuidof( IDXGIFactory ), reinterpret_cast< void** >( &factory ) ) ) ){
@@ -277,7 +277,7 @@ public:
 
 		// --- Create rasterizer states ---
 		// [0]=CULL_NONE, [1]=CULL_BACK, [2]=CULL_FRONT
-		// ステートの作成に失敗すると null が残り、D3D11 の既定値（ブレンドなし等）で黙って描かれてしまうので、すべて結果を確かめる。
+		// ステートの作成に失敗すると null が残り、D3D11 の既定値（ブレンドなし等）で黙って描かれてしまうので、すべて結果を確かめる
 		D3D11_RASTERIZER_DESC rsDesc = {};
 		rsDesc.FillMode              = D3D11_FILL_SOLID;
 		rsDesc.FrontCounterClockwise = TRUE;  // match DX9 CCW = front face
@@ -302,7 +302,7 @@ public:
 		// --- Create blend states ---
 		// [0]=Opaque, [1]=Linear, [2]=Add, [3]=Linear（描画先のアルファを残す）
 		// 0 番の設定を 8 枚分すべてに入れる。IndependentBlendEnable が FALSE なら 1〜7 番は使われないはずだが、
-		// 0 埋めのままだと SrcBlend などが不正な値（0）になるので、ドライバーに不正な設定を渡さないようにしておく。
+		// 0 埋めのままだと SrcBlend などが不正な値（0）になるので、ドライバーに不正な設定を渡さないようにしておく
 		D3D11_RENDER_TARGET_BLEND_DESC rtBlend = {};
 		rtBlend.RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 		rtBlend.SrcBlend       = D3D11_BLEND_ONE;
@@ -354,7 +354,7 @@ public:
 		hr = mDevice->CreateSamplerState( &clampDesc, &mClampSampler );
 		STRONG_ASSERT( SUCCEEDED( hr ) );
 		// 自作シェーダ用（s2: 影の比較。SampleCmp で「比べる深度 <= マップの深度」の割合を4画素の線形補間で返す）
-		// マップの外は深度1（一番奥）として扱い、影にならないようにする。
+		// マップの外は深度1（一番奥）として扱い、影にならないようにする
 		D3D11_SAMPLER_DESC shadowDesc = {};
 		shadowDesc.Filter         = D3D11_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
 		shadowDesc.AddressU       = D3D11_TEXTURE_ADDRESS_BORDER;
@@ -448,7 +448,7 @@ public:
 	}
 
 	// ---- State creation helpers ----
-	// 作成に失敗したら、何が失敗したかを出力ウィンドウへ出してから止める（Release でも止まる）。
+	// 作成に失敗したら、何が失敗したかを出力ウィンドウへ出してから止める（Release でも止まる）
 	static void checkCreated( HRESULT hr, const char* what ){
 		if ( FAILED( hr ) ){
 			char code[ 16 ];
@@ -457,7 +457,7 @@ public:
 		}
 		STRONG_ASSERT( SUCCEEDED( hr ) && "Graphics::Manager : failed to create a pipeline state. See the output window." );
 	}
-	// 1 枚分のブレンド設定を 8 枚すべてに入れて作る。
+	// 1 枚分のブレンド設定を 8 枚すべてに入れて作る
 	void createBlendState( const D3D11_RENDER_TARGET_BLEND_DESC& rtBlend, ID3D11BlendState** state, const char* what ){
 		D3D11_BLEND_DESC desc = {};
 		desc.AlphaToCoverageEnable  = FALSE;
@@ -467,7 +467,7 @@ public:
 		}
 		checkCreated( mDevice->CreateBlendState( &desc, state ), what );
 	}
-	// 実際に使われている GPU と機能レベルを出す（GPU が2つあるノートPCでは内蔵 GPU が選ばれることがある）。
+	// 実際に使われている GPU と機能レベルを出す（GPU が2つあるノートPCでは内蔵 GPU が選ばれることがある）
 	void logAdapter( D3D_FEATURE_LEVEL level ){
 		IDXGIDevice* dxgiDevice = nullptr;
 		IDXGIAdapter* adapter = nullptr;
@@ -574,7 +574,7 @@ public:
 
 	void applyShader(){
 		PROFILE_COUNT( "Gfx.shader", 1 );
-		// 自作シェーダが付いていればそれを使う（ライティングの種類・法線マップの有無より優先）。
+		// 自作シェーダが付いていればそれを使う（ライティングの種類・法線マップの有無より優先）
 		if ( mCurrentShader && mCurrentShader->isValid() ){
 			mContext->IASetInputLayout( mCurrentShader->mLayout );
 			mContext->VSSetShader( mCurrentShader->mVS, nullptr, 0 );
@@ -590,7 +590,7 @@ public:
 			mContext->PSSetShader( mNoLightingPS, nullptr, 0 );
 		}else{
 			mContext->VSSetShader( mPixelLightingVS, nullptr, 0 );
-			// 法線マップが設定されていればノーマルマップ用PSを使う。
+			// 法線マップが設定されていればノーマルマップ用PSを使う
 			mContext->PSSetShader( mCurrentNormalMap ? mNormalMapPS : mPixelLightingPS, nullptr, 0 );
 		}
 	}
@@ -609,9 +609,9 @@ public:
 		mContext->PSSetSamplers( 0, 1, &mSamplerStates[ mCurrentSampler ] );
 	}
 
-	// バックバッファをウィンドウの描画領域と同じ大きさに作り直す（最大化・端のドラッグ・フルスクリーンの後）。
-	// ゲームの座標は高さ（mHeight）を固定し、幅（mWidth）だけをウィンドウの縦横比に合わせて変える。
-	// 高さを固定するのは、2D（文字など）の大きさが画面の高さに対して一定になり、横長の画面では左右に広く見えるだけにするため。
+	// バックバッファをウィンドウの描画領域と同じ大きさに作り直す（最大化・端のドラッグ・フルスクリーンの後）
+	// ゲームの座標は高さ（mHeight）を固定し、幅（mWidth）だけをウィンドウの縦横比に合わせて変える
+	// 高さを固定するのは、2D（文字など）の大きさが画面の高さに対して一定になり、横長の画面では左右に広く見えるだけにするため
 	void fitBackBufferToWindow(){
 		RECT client;
 		GetClientRect( mWindowHandle, &client );
@@ -641,8 +641,8 @@ public:
 		fitLogicalWidthToBackBuffer();
 	}
 
-	// ゲームの座標の幅を、バックバッファと同じ縦横比になるよう求め直す（左右に黒帯が出ないようにする）。
-	// 画面全体の描画範囲（mViewport）も新しい幅に広げる。部分的な描画範囲を設定していても、大きさが変わったら全体に戻る。
+	// ゲームの座標の幅を、バックバッファと同じ縦横比になるよう求め直す（左右に黒帯が出ないようにする）
+	// 画面全体の描画範囲（mViewport）も新しい幅に広げる。部分的な描画範囲を設定していても、大きさが変わったら全体に戻る
 	void fitLogicalWidthToBackBuffer(){
 		float aspect = static_cast< float >( mBackBufferWidth ) / static_cast< float >( mBackBufferHeight );
 		mWidth = static_cast< int >( static_cast< float >( mHeight ) * aspect + 0.5f );
@@ -669,7 +669,7 @@ public:
 		if ( mCaptureRequest && !mCaptureFilename.empty() ){
 			capture();
 		}
-		// Present の呼び出しだけを測る（capture も GPU を待つが、頼んだときだけなので混ぜない）。
+		// Present の呼び出しだけを測る（capture も GPU を待つが、頼んだときだけなので混ぜない）
 		Profiling::beginPresent();
 		HRESULT hr = mSwapChain->Present( mVSync ? 1 : 0, 0 );
 		Profiling::endPresent();
@@ -762,7 +762,7 @@ public:
 		cout << "Graphics::restore() : succeeded" << endl;
 	}
 
-	// スロット slot の画像を o に替える（*current が今付いている物）。同じなら何もせず false。
+	// スロット slot の画像を o に替える（*current が今付いている物）。同じなら何もせず false
 	bool replaceTexture( Texture::Impl** current, Texture::Impl* o, UINT slot ){
 		if ( *current == o ) return false;
 		if ( *current ){
@@ -781,11 +781,11 @@ public:
 		}
 		return true;
 	}
-	// 法線マップを解除して通常PSへ戻す（設定されていなければ何もしない）。
+	// 法線マップを解除して通常PSへ戻す（設定されていなければ何もしない）
 	void clearNormalMap(){
 		if ( replaceTexture( &mCurrentNormalMap, 0, 1 ) ) applyShader();
 	}
-	// スロット t1 に法線マップをバインドし、ノーマルマップ用PSへ切り替える。
+	// スロット t1 に法線マップをバインドし、ノーマルマップ用PSへ切り替える
 	void setNormalMap( Texture::Impl* o ){
 		if ( replaceTexture( &mCurrentNormalMap, o, 1 ) ) applyShader();
 	}
@@ -794,9 +794,9 @@ public:
 		clearNormalMap(); // 既定で法線マップを解除。必要なら直後に setNormalMap する
 		replaceTexture( &mCurrentTexture, o, 0 );
 	}
-	// 色の画像（t0）と法線マップ（t1。0 なら無し）を一度に替える。どちらも、今と同じなら付け直さない。
-	// シェーダを選び直すのは、法線マップの有無が変わったときだけ（有無でノーマルマップ用PSかどうかが決まるため）。
-	// setTexture → setNormalMap の順で呼ぶと、同じ材質でも毎回「外して付け直す」が 2 回起きるので、材質はこちらを使う。
+	// 色の画像（t0）と法線マップ（t1。0 なら無し）を一度に替える。どちらも、今と同じなら付け直さない
+	// シェーダを選び直すのは、法線マップの有無が変わったときだけ（有無でノーマルマップ用PSかどうかが決まるため）
+	// setTexture → setNormalMap の順で呼ぶと、同じ材質でも毎回「外して付け直す」が 2 回起きるので、材質はこちらを使う
 	void setTextures( Texture::Impl* texture, Texture::Impl* normalMap ){
 		bool hadNormalMap = ( mCurrentNormalMap != 0 );
 		replaceTexture( &mCurrentTexture, texture, 0 );
@@ -909,7 +909,7 @@ public:
 		mMatricesChanged = false;
 	}
 
-	// enableLinearColor の間は、選んだ色（画面の色）をリニアへ直して渡す。アルファ・鋭さ（w）は色ではないのでそのまま。
+	// enableLinearColor の間は、選んだ色（画面の色）をリニアへ直して渡す。アルファ・鋭さ（w）は色ではないのでそのまま
 	Vector4 toSceneColor( const Vector4& c ) const {
 		if ( !mLinearColor ) return c;
 		Vector3 linear = ColorSpace::srgbToLinear( Vector3( c.x, c.y, c.z ) );
@@ -920,7 +920,7 @@ public:
 	}
 
 	void sendLightingParameters(){
-		// 色だけを直してから強さを掛ける（強さ込みで直すと、強さの意味が変わるため）。
+		// 色だけを直してから強さを掛ける（強さ込みで直すと、強さの意味が変わるため）
 		Vector4 lc[4];
 		for ( int i = 0; i < 4; ++i ){
 			Vector3 color = toSceneColor( mLightColors[ i ] );
@@ -990,7 +990,7 @@ public:
 	void draw( int offset, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
 		drawFromVertex( offset * vertsPerPrim( prim ), primitiveNumber, prim );
 	}
-	// 始まりを頂点の番号で受ける draw。三角形・線・点が混ざった頂点バッファ（PrimitiveRenderer）は、始まりを三角形の番号に直せないため。
+	// 始まりを頂点の番号で受ける draw。三角形・線・点が混ざった頂点バッファ（PrimitiveRenderer）は、始まりを三角形の番号に直せないため
 	void drawFromVertex( int firstVertex, int primitiveNumber, PrimitiveType prim = PRIMITIVE_TRIANGLE ){
 		if ( mLightChanged )    sendLightingParameters();
 		if ( mMatricesChanged ) sendMatrices();
@@ -1015,8 +1015,8 @@ public:
 		mContext->DrawIndexedInstanced( primitiveNumber * vpp, instanceNumber, offset * vpp, 0, 0 );
 	}
 
-	// インデックス付きの描画の前の準備（定数を送る・形を決める・回数の印）。1 つの三角形などの頂点の数を返す。
-	// drawIndexed と drawIndexedInstanced が同じ準備を通るよう、ここ 1 か所にまとめる。
+	// インデックス付きの描画の前の準備（定数を送る・形を決める・回数の印）。1 つの三角形などの頂点の数を返す
+	// drawIndexed と drawIndexedInstanced が同じ準備を通るよう、ここ 1 か所にまとめる
 	int prepareIndexedDraw( PrimitiveType prim ){
 		if ( mLightChanged )    sendLightingParameters();
 		if ( mMatricesChanged ) sendMatrices();
@@ -1056,7 +1056,7 @@ public:
 		mViewport.MaxDepth = 1.f;
 
 		// Scale viewport to the current target (letterbox / pillarbox)
-		// 今の描画先（普段はバックバッファ、setRenderTargets 中はその描画先）の大きさへ写す。
+		// 今の描画先（普段はバックバッファ、setRenderTargets 中はその描画先）の大きさへ写す
 		float dw = static_cast< float >( mTargetWidth );
 		float dh = static_cast< float >( mTargetHeight );
 		float rw = static_cast< float >( mWidth );
@@ -1151,7 +1151,7 @@ public:
 		mEyePosition.z = position.z;
 		mLightChanged = true;
 	}
-	// 材質の色・強さは、パーツを描くたびに MeshMaterial が設定し直す。値が同じなら定数を送り直さないよう、変わったときだけ印を立てる。
+	// 材質の色・強さは、パーツを描くたびに MeshMaterial が設定し直す。値が同じなら定数を送り直さないよう、変わったときだけ印を立てる
 	void setDiffuseColor( const Vector3& c ){
 		setColorIfChanged( &mDiffuseColor, c );
 	}
@@ -1173,7 +1173,7 @@ public:
 	void setNormalMapStrength( float s ){
 		setValueIfChanged( &mNormalMapStrength, s ); // PS定数バッファは sendLightingParameters でまとめて詰める
 	}
-	// color の xyz を c にする。違ったときだけ mLightChanged を立てる（w はそのまま）。
+	// color の xyz を c にする。違ったときだけ mLightChanged を立てる（w はそのまま）
 	void setColorIfChanged( Vector4* color, const Vector3& c ){
 		if ( color->x == c.x && color->y == c.y && color->z == c.z ) return;
 		color->x = c.x; color->y = c.y; color->z = c.z;
@@ -1200,23 +1200,23 @@ public:
 
 	// ---- 描画先・自作シェーダ（A-1 で追加）----
 
-	// バックバッファへ描く状態に戻す（描画範囲の写し先もバックバッファの大きさにする）。
+	// バックバッファへ描く状態に戻す（描画範囲の写し先もバックバッファの大きさにする）
 	void bindBackBuffer(){
 		mContext->OMSetRenderTargets( 1, &mRTV, mDSV );
 		mTargetWidth  = mBackBufferWidth;
 		mTargetHeight = mBackBufferHeight;
 	}
 
-	// 自作のテクスチャ番号（t2〜）を全部外す。描画先を切り替える前に呼ぶ。
-	// 外さずに、読み込み中の物を描画先にすると、GPU が読み込み側を勝手に外して警告を出すため。
+	// 自作のテクスチャ番号（t2〜）を全部外す。描画先を切り替える前に呼ぶ
+	// 外さずに、読み込み中の物を描画先にすると、GPU が読み込み側を勝手に外して警告を出すため
 	void unbindUserShaderResources(){
 		ID3D11ShaderResourceView* nulls[ Manager::MAX_TEXTURE_SLOT ] = {};
 		int n = Manager::MAX_TEXTURE_SLOT - Manager::FIRST_USER_TEXTURE_SLOT;
 		mContext->PSSetShaderResources( Manager::FIRST_USER_TEXTURE_SLOT, static_cast< UINT >( n ), nulls );
 	}
 
-	// colors（count 枚、0枚可）と depth（nullptr 可）へ描く。描画範囲は描画先の全体にする。
-	// readOnlyDepth が true なら、depth は奥行きの判定だけに使い書き込まない（その間も depth をシェーダから読める）。
+	// colors（count 枚、0枚可）と depth（nullptr 可）へ描く。描画範囲は描画先の全体にする
+	// readOnlyDepth が true なら、depth は奥行きの判定だけに使い書き込まない（その間も depth をシェーダから読める）
 	void setRenderTargets( RenderTarget::Impl* const* colors, int count, DepthTarget::Impl* depth, bool readOnlyDepth ){
 		ASSERT( count >= 0 && count <= Manager::MAX_RENDER_TARGET && "Graphics::Manager : too many render targets." );
 		ASSERT( ( count > 0 || depth ) && "Graphics::Manager : no render target." );
@@ -1254,7 +1254,7 @@ public:
 		mContext->RSSetViewports( 1, &vp );
 	}
 
-	// t の段 mip だけへ描く（深度なし）。描画範囲はその段の大きさ。
+	// t の段 mip だけへ描く（深度なし）。描画範囲はその段の大きさ
 	void setRenderTargetMip( RenderTarget::Impl* t, int mip ){
 		ASSERT( t && "Graphics::Manager : empty RenderTarget." );
 		unbindUserShaderResources();
@@ -1271,7 +1271,7 @@ public:
 		mContext->RSSetViewports( 1, &vp );
 	}
 
-	// バックバッファへ戻し、描画範囲を setViewport で決めた範囲（論理座標）に戻す。
+	// バックバッファへ戻し、描画範囲を setViewport で決めた範囲（論理座標）に戻す
 	void resetRenderTargets(){
 		bindBackBuffer();
 		setViewport(
@@ -1331,7 +1331,7 @@ public:
 		mContext->PSSetConstantBuffers( static_cast< UINT >( slot ), 1, &buffer );
 	}
 
-	// 自作シェーダを付ける（0 で固定パイプラインへ戻る）。Debug ビルドでは、ここでファイルの変更を見て作り直す。
+	// 自作シェーダを付ける（0 で固定パイプラインへ戻る）。Debug ビルドでは、ここでファイルの変更を見て作り直す
 	void setShader( Shader::Impl* o ){
 #ifdef _DEBUG
 		if ( o ){
@@ -1350,14 +1350,14 @@ public:
 		}
 		applyShader();
 	}
-	// Shader::reload の後に呼ばれる。今付いているシェーダなら、作り直した物を付け直す。
+	// Shader::reload の後に呼ばれる。今付いているシェーダなら、作り直した物を付け直す
 	void onShaderRebuilt( Shader::Impl* o ){
 		if ( mCurrentShader == o ){
 			applyShader();
 		}
 	}
 	void reloadIfSourceChanged( Shader::Impl* o ){
-		// ファイルの時刻を見るのは数フレームに1回にする（毎回 OS に問い合わせると、描画1回に何度も呼ぶとき重い）。
+		// ファイルの時刻を見るのは数フレームに1回にする（毎回 OS に問い合わせると、描画1回に何度も呼ぶとき重い）
 		const unsigned kCheckIntervalFrames = 30;
 		if ( mFrameId - o->mLastCheckFrame < kCheckIntervalFrames ){
 			return;
@@ -1368,8 +1368,8 @@ public:
 		}
 	}
 
-	// 頂点バッファを使わず、画面（今の描画範囲）全体を三角形1枚で描く。今付いている自作シェーダで描く。
-	// VSMain は SV_VertexID（0,1,2）から位置を作ること。深度テスト・書き込みと裏面カリングはこの描画の間だけ切る。
+	// 頂点バッファを使わず、画面（今の描画範囲）全体を三角形1枚で描く。今付いている自作シェーダで描く
+	// VSMain は SV_VertexID（0,1,2）から位置を作ること。深度テスト・書き込みと裏面カリングはこの描画の間だけ切る
 	void drawFullScreen(){
 		ASSERT( mCurrentShader && "Graphics::Manager : drawFullScreen needs a Shader." );
 		if ( !mCurrentShader || !mCurrentShader->isValid() ){

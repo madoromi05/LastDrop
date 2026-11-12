@@ -13,10 +13,10 @@
 using namespace GameLib::Math;
 
 namespace{
-	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）。
+	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）
 	const float kMarkAboveTop = 0.15f;
 
-	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱）と、脱出の車。無ければ nullptr。
+	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱）と、脱出の車。無ければ nullptr
 	IInteractable* interactableOf( GameObject* object ) {
 		if ( PickupComponent* pickup = object->getComponent< PickupComponent >() ) {
 			return pickup;
@@ -36,7 +36,7 @@ InteractionSystem::InteractionSystem( const HitWorld* hitWorld, GameObjectWorld*
 }
 
 IInteractable* InteractionSystem::findInteractable( const Vector3& origin, const Vector3& delta, const IHittable* viewer ) {
-	// 弾と同じ名簿で一番手前の物を探す（壁の向こうは見えない・死体にも当たる）。自分の体には当てない（目が体の中にあるため）。
+	// 弾と同じ名簿で一番手前の物を探す（壁の向こうは見えない・死体にも当たる）。自分の体には当てない（目が体の中にあるため）
 	float nearest = 1.f;
 	IInteractable* found = nullptr;
 	HitWorld::Hit hit;
@@ -44,7 +44,7 @@ IInteractable* InteractionSystem::findInteractable( const Vector3& origin, const
 		nearest = hit.time;
 		found = resolveInteractable( hit );
 	}
-	// 落ちている物の見る箱は名簿に無いので、ここで調べる。見た目より大きいので、手前に当たった物より近ければ見る箱を選ぶ。
+	// 落ちている物の見る箱は名簿に無いので、ここで調べる。見た目より大きいので、手前に当たった物より近ければ見る箱を選ぶ
 	mObjects->forEach< PickupComponent >( [ &origin, &delta, &nearest, &found ]( PickupComponent& pickup ) {
 		float time;
 		if ( pickup.lookRaycast( origin, delta, &time ) && time <= nearest ) {
@@ -57,14 +57,14 @@ IInteractable* InteractionSystem::findInteractable( const Vector3& origin, const
 
 void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const {
 	ASSERT( out && "InteractionSystem::collectNearby : out is null." );
-	// 使える物はどれも見た目の部品（StaticModelComponent）を持つので、見た目から使える部品をたどる（findInteractable と同じたどり方）。
+	// 使える物はどれも見た目の部品（StaticModelComponent）を持つので、見た目から使える部品をたどる（findInteractable と同じたどり方）
 	mObjects->forEach< StaticModelComponent >( [ this, &eye, radius, out ]( StaticModelComponent& model ) {
 		const IInteractable* interactable = interactableOf( model.gameObject() );
 		const PickupComponent* pickup = model.getComponent< PickupComponent >();
 		if ( !interactable || ( pickup && pickup->isTaken() ) ) {
 			return;
 		}
-		// 箱は見た目の頂点から作る（移動の当たり判定と同じ箱。高さは地面 Y=0 から）。
+		// 箱は見た目の頂点から作る（移動の当たり判定と同じ箱。高さは地面 Y=0 から）
 		BoxCollider box = MeshBoundsBox::make( model.mesh() );
 		Vector3 mark( box.center.x, box.height + kMarkAboveTop, box.center.z );
 		Vector3 toMark;
@@ -72,14 +72,14 @@ void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::ve
 		if ( toMark.length() > radius ) {
 			return;
 		}
-		// 目とマークの間に弾を止める物があれば隠れている。ただし、その物自身に当たったなら見えている（車の屋根の上のマークを横から見たとき）。
+		// 目とマークの間に弾を止める物があれば隠れている。ただし、その物自身に当たったなら見えている（車の屋根の上のマークを横から見たとき）
 		HitWorld::Hit hit;
 		if ( mHitWorld->raycastBlockers( eye, toMark, &hit ) && mObjects->find< StaticModelComponent >( hit.blocker ) != &model ) {
 			return;
 		}
 		out->push_back( NearbyInteractable{ interactable, mark } );
 	} );
-	// ゾンビの死体は漁れないので、マークも出さない。
+	// ゾンビの死体は漁れないので、マークも出さない
 }
 
 void InteractionSystem::rerollLoot( int seed ) {
@@ -117,10 +117,10 @@ EscapeCarComponent* InteractionSystem::findEscapeCar( const IInteractable* inter
 
 IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit ) const {
 	if ( hit.target ) {
-		// キャラ（ゾンビ・その死体）は使えない。視線はキャラで止まる。
+		// キャラ（ゾンビ・その死体）は使えない。視線はキャラで止まる
 		return nullptr;
 	}
-	// 落ちている物・漁れる置物（弾を止める見た目の部品から、その物の使える部品をたどる）。
+	// 落ちている物・漁れる置物（弾を止める見た目の部品から、その物の使える部品をたどる）
 	if ( StaticModelComponent* model = mObjects->find< StaticModelComponent >( hit.blocker ) ) {
 		return interactableOf( model->gameObject() );
 	}
@@ -128,7 +128,7 @@ IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit 
 }
 
 void InteractionSystem::removeTakenPickups() {
-	// ガソリンも弾も同じ手順（どちらも PickupComponent を持つ物）。
+	// ガソリンも弾も同じ手順（どちらも PickupComponent を持つ物）
 	mObjects->forEach< PickupComponent >( [ this ]( PickupComponent& pickup ) {
 		if ( pickup.isTaken() ) {
 			mEffects->detach( pickup.getComponent< StaticModelComponent >() ); // 物が消える前に外す
@@ -138,7 +138,7 @@ void InteractionSystem::removeTakenPickups() {
 }
 
 void InteractionSystem::appendPickupColliders( std::vector< BoxCollider >* out ) const {
-	// 見せるのはガソリンだけ（落ちた弾は足元に小さく落ちているだけで、運ぶ物ではない）。
+	// 見せるのはガソリンだけ（落ちた弾は足元に小さく落ちているだけで、運ぶ物ではない）
 	mObjects->forEach< PickupComponent >( [ out ]( const PickupComponent& pickup ) {
 		if ( pickup.gameObject()->tag() == GameObjectTag::Fuel && !pickup.isTaken() ) {
 			out->push_back( pickup.getComponent< BoxColliderComponent >()->collider() );

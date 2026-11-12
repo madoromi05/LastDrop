@@ -14,16 +14,16 @@ using namespace GameLib::Math;
 
 namespace{
 	const int kVerticesPerTriangle = 3;
-	// 残す側の向き（clipByHeight の keepSign）。
+	// 残す側の向き（clipByHeight の keepSign）
 	const float kKeepAbove = 1.f;
 	const float kKeepBelow = -1.f;
-	// 真上から見てこれより短い辺（m）からは法線を作らない（まっすぐ立った壁の縦の辺は長さ 0 になる）。
+	// 真上から見てこれより短い辺（m）からは法線を作らない（まっすぐ立った壁の縦の辺は長さ 0 になる）
 	const float kMinEdgeLength = 0.0001f;
-	// 2本の法線の内積の絶対値がこれ以上なら、同じ向き（または逆向き）とみなして1本にまとめる（約 0.8 度）。
+	// 2本の法線の内積の絶対値がこれ以上なら、同じ向き（または逆向き）とみなして1本にまとめる（約 0.8 度）
 	const float kSameDirectionDot = 0.9999f;
 
-	// 凸な多角形 in（inNumber 隅）のうち、高さ height より上（keepSign=kKeepAbove）／下（kKeepBelow）の部分だけを out に書き、隅の数を返す。
-	// 境目をまたぐ辺は、境目との交点で切る（Sutherland-Hodgman 法）。隅は最大で1つ増える。全部が外なら 0。
+	// 凸な多角形 in（inNumber 隅）のうち、高さ height より上（keepSign=kKeepAbove）／下（kKeepBelow）の部分だけを out に書き、隅の数を返す
+	// 境目をまたぐ辺は、境目との交点で切る（Sutherland-Hodgman 法）。隅は最大で1つ増える。全部が外なら 0
 	int clipByHeight( const Vector3* in, int inNumber, float height, float keepSign, Vector3* out ) {
 		int outNumber = 0;
 		for ( int i = 0; i < inNumber; ++i ) {
@@ -36,7 +36,7 @@ namespace{
 				++outNumber;
 			}
 			if ( ( currentSide >= 0.f ) != ( nextSide >= 0.f ) ) {
-				// 境目をまたぐ。currentSide と nextSide は符号が違うので、分母は 0 にならない。
+				// 境目をまたぐ。currentSide と nextSide は符号が違うので、分母は 0 にならない
 				Vector3 edge;
 				edge.setSub( next, current );
 				out[ outNumber ].setMadd( current, edge, currentSide / ( currentSide - nextSide ) );
@@ -46,7 +46,7 @@ namespace{
 		return outNumber;
 	}
 
-	// かけらの隅から、真上から見た辺の法線を作る（同じ向き・逆向きは1本にまとめる）。
+	// かけらの隅から、真上から見た辺の法線を作る（同じ向き・逆向きは1本にまとめる）
 	void setEdgeNormals( WallPiece* piece ) {
 		piece->edgeNormalNumber = 0;
 		for ( int i = 0; i < piece->cornerNumber; ++i ) {
@@ -71,7 +71,7 @@ namespace{
 		}
 	}
 
-	// ワールドに置いた三角形1枚を体の高さの範囲で切り取り、かけらにする。範囲に入らない・真上から見て点にしかならないなら false。
+	// ワールドに置いた三角形1枚を体の高さの範囲で切り取り、かけらにする。範囲に入らない・真上から見て点にしかならないなら false
 	bool makePiece( const Vector3 triangle[ kVerticesPerTriangle ], WallPiece* piece ) {
 		Vector3 aboveStep[ WallPiece::kMaxCorners ];
 		int number = clipByHeight( triangle, kVerticesPerTriangle, MoveHeight::kStepOver, kKeepAbove, aboveStep );

@@ -10,23 +10,23 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// LightList.hlsli の cbuffer LightConstants の番号（b2）。b1 は全画面のパス・キャラの骨、b3 は G-Buffer の材質値が使う。
+	// LightList.hlsli の cbuffer LightConstants の番号（b2）。b1 は全画面のパス・キャラの骨、b3 は G-Buffer の材質値が使う
 	const int kLightSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 1;
-	// 影のマップの最初の番号（t6）。t2〜t5 は G-Buffer と深度（DeferredLighting.cpp）。LightList.hlsli と揃える。
+	// 影のマップの最初の番号（t6）。t2〜t5 は G-Buffer と深度（DeferredLighting.cpp）。LightList.hlsli と揃える
 	const int kFirstShadowSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
 	const int kMatrixFloats = 16;
-	// 影のずらしと濃さの初期値（setShadowSettings を呼ぶまで。ShadowParams の初期値と同じ）。
+	// 影のずらしと濃さの初期値（setShadowSettings を呼ぶまで。ShadowParams の初期値と同じ）
 	const float kDefaultNormalOffsetTexels = 1.5f;
 	const float kDefaultLightOffsetTexels = 1.f;
 	const float kDefaultShadowStrength = 1.f;
 	const float kPerspectiveFlag = 1.f;
 	const float kOrthographicFlag = 0.f;
 
-	// スポットの角度の幅が 0 のとき（inner == outer）の 0 割りよけ。
+	// スポットの角度の幅が 0 のとき（inner == outer）の 0 割りよけ
 	const float kMinSpotCosineWidth = 0.0001f;
 
 	const int kVectorFloats = 4;
-	// LightList.hlsli の LightData と同じ並び（float4 を 4 つ）。
+	// LightList.hlsli の LightData と同じ並び（float4 を 4 つ）
 	struct LightData{
 		float positionRange[ kVectorFloats ];   // xyz 位置  w 届く距離
 		float directionKind[ kVectorFloats ];   // xyz 光の進む向き  w 種類（LightKind の番号）
@@ -34,7 +34,7 @@ namespace{
 		float spotScaleOffset[ kVectorFloats ]; // x 角度の倍率  y 角度のずらし（Frostbite の式。LightList.hlsli）  z 影のマップの番号（無ければ −1）  w 影のマップの枚数
 		float nearDistance[ kVectorFloats ];    // x 近さの下限（m）  yzw 使わない
 	};
-	// LightList.hlsli の cbuffer LightConstants と同じ並び。
+	// LightList.hlsli の cbuffer LightConstants と同じ並び
 	struct LightConstants{
 		float count[ kVectorFloats ];           // x 照らすライトの数  yzw 使わない
 		float skyZenith[ kVectorFloats ];       // xyz 天頂の色（sRGB）  w 描く空の明るさ
@@ -60,11 +60,11 @@ namespace{
 		out[ 3 ] = w;
 	}
 
-	// 霧の値を、シェーダ（Fog.hlsli）がそのまま掛けられる係数へ直す。
+	// 霧の値を、シェーダ（Fog.hlsli）がそのまま掛けられる係数へ直す
 	//   x：距離 d に掛けて 2 乗すると濃さの合計になる係数 k = √(ln 2) / 半分の距離（半分の距離で exp(−1 × ln 2) = 0.5）
 	//   z：高さ y に掛けて exp( −z × y ) が高さの霧の薄まり方になる係数 b = ln 2 / 半分の高さ
 	const float kLn2 = 0.693147f;
-	// 月の半径・1 画素の角度は、シェーダが acos の角度と比べるのでラジアンで渡す（GameLib の三角関数は度）。
+	// 月の半径・1 画素の角度は、シェーダが acos の角度と比べるのでラジアンで渡す（GameLib の三角関数は度）
 	const float kRadiansPerDegree = 3.14159265f / 180.f;
 	Vector3 fogConstants( const EnvironmentLight& environment ) {
 		float distanceScale = ( environment.fogHalfDistance > 0.f ) ? sqrt( kLn2 ) / environment.fogHalfDistance : 0.f;
@@ -72,10 +72,10 @@ namespace{
 		return Vector3( distanceScale, environment.fogGroundDensity, heightFalloff );
 	}
 
-	// 平行光は、ほかのライトより先に必ず選ぶ（町全体を照らす月なので、消えると全部が暗くなる）。
+	// 平行光は、ほかのライトより先に必ず選ぶ（町全体を照らす月なので、消えると全部が暗くなる）
 	const float kDirectionalPriority = -1.f;
 
-	// 選ぶ順番の値（小さいほど先）。目からライトの届く範囲のふちまでの距離（範囲の中にいれば 0）。
+	// 選ぶ順番の値（小さいほど先）。目からライトの届く範囲のふちまでの距離（範囲の中にいれば 0）
 	float reachDistance( const LightSource& light, const Vector3& eye ) {
 		if ( light.kind == LightKind::Directional ) {
 			return kDirectionalPriority;
@@ -91,7 +91,7 @@ namespace{
 		setVector( data.directionKind, light.direction, static_cast< float >( light.kind ) );
 		setVector( data.colorIntensity, light.color, light.intensity );
 		if ( light.kind == LightKind::Spot ) {
-			// 中心からの角度の cos を、外側で 0・内側で 1 になる直線へ写す（saturate( cos × 倍率 + ずらし )）。
+			// 中心からの角度の cos を、外側で 0・内側で 1 になる直線へ写す（saturate( cos × 倍率 + ずらし )）
 			float cosOuter = cos( light.outerAngleDegree );
 			float cosInner = cos( light.innerAngleDegree );
 			float scale = 1.f / max( cosInner - cosOuter, kMinSpotCosineWidth );
@@ -200,7 +200,7 @@ void LightList::select( const Vector3& eye ) {
 	for ( int i = 0; i < static_cast< int >( mLights.size() ); ++i ) {
 		mSelected.push_back( i );
 	}
-	// 平行光 → 届く範囲のふちが目に近い順。同じなら足した順のまま（毎フレーム入れ替わってちらつかないように）。
+	// 平行光 → 届く範囲のふちが目に近い順。同じなら足した順のまま（毎フレーム入れ替わってちらつかないように）
 	std::stable_sort( mSelected.begin(), mSelected.end(), [ this, &eye ]( int a, int b ) {
 		return reachDistance( mLights[ a ], eye ) < reachDistance( mLights[ b ], eye );
 	} );

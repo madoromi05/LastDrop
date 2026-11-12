@@ -24,7 +24,7 @@ using namespace GameLib::Math;
 namespace{
 	const float kSearchSoundVolume = 0.6f; // 開けている間の音の大きさ（自分の手元の音。服の擦れと同じくらい）
 	const float kNoMove = 0.f;             // 移動の量がこれなら動いていない（PlayerCommand::forward / strafe）
-	// 脱出の車のエンジン。掛かったら、銃声と同じくゾンビが寄ってくる。
+	// 脱出の車のエンジン。掛かったら、銃声と同じくゾンビが寄ってくる
 	const float kEngineStartVolume = 1.f;
 	const float kEngineIdleVolume = 0.7f;
 	const char* kFuelPortTitle = "給油口"; // 脱出の車を開けた画面の右の見出し
@@ -65,7 +65,7 @@ void LootController::beginLoot( IInteractable* opened ) {
 	mSearch.start( container->gameObject(), seconds );
 	const GameObject* player = mWorld->player();
 	if ( player ) {
-		// 音は自分の手元から鳴らす（探る手の音。開けている間は動けないので、ループの位置は動かさない）。
+		// 音は自分の手元から鳴らす（探る手の音。開けている間は動けないので、ループの位置は動かさない）
 		mSearchSound = mAudio->startLoopAt( LootTable::searchSound( container->table() ), AudioEngine::BUS_EFFECT,
 			player->getComponent< TransformComponent >()->position(), kSearchSoundVolume );
 	}
@@ -77,7 +77,7 @@ void LootController::beginRefuel( EscapeCarComponent* car ) {
 	mSearch.start( car->gameObject(), raidParams().refuelSeconds );
 	const GameObject* player = mWorld->player();
 	if ( player ) {
-		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない）。
+		// 給油の間は、缶からガソリンを注ぐ音を手元から鳴らす（漁る音は使わない）
 		mSearchSound = mAudio->startLoopAt( SOUND_REFUEL_POUR, AudioEngine::BUS_EFFECT,
 			player->getComponent< TransformComponent >()->position(), kSearchSoundVolume );
 	}
@@ -89,7 +89,7 @@ void LootController::finishRefuel( EscapeCarComponent* car ) {
 	}
 	car->startEngine();
 	mSession->openEscape();
-	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す）。
+	// エンジンが掛かる。音は車から鳴らし、銃声と同じくゾンビが寄ってくる（逃げる直前の 5 秒に迷いを出す）
 	const Vector3& carPosition = car->getComponent< TransformComponent >()->position();
 	AudioEngine& audio = *mAudio;
 	audio.play( SOUND_CAR_ENGINE_START, AudioEngine::BUS_EFFECT, carPosition, kEngineStartVolume );
@@ -153,18 +153,18 @@ void LootController::update( bool commandInterrupts, bool raidFinished ) {
 void LootController::openLoot( GameObject* target, GridRule lootRule ) {
 	ASSERT( target && "LootController::openLoot : target is null." );
 	mTarget = GameObjectHandle( target );
-	// 銃のマスの「弾倉の数/大きさ」を今の数にする（場所へ置いていった銃も、その数のまま残る。カバンを開くときと同じ）。
+	// 銃のマスの「弾倉の数/大きさ」を今の数にする（場所へ置いていった銃も、その数のまま残る。カバンを開くときと同じ）
 	storeMagazineRounds( *mInventory, *mWorld );
 	mScreen.open( lootRule );
 	mModals->enter( ModalController::Mode::Loot ); // 一時停止と同じ遷移（音を止め、入力を放し、カーソルを外す）
 }
 
 void LootController::closeLoot() {
-	// 給油口に要る数を入れて閉じたら給油し始める（閉じるまでは入れ直せる）。
+	// 給油口に要る数を入れて閉じたら給油し始める（閉じるまでは入れ直せる）
 	EscapeCarComponent* car = fuelPortTarget();
 	bool refuel = car && car->isTankFull();
 	mTarget = GameObjectHandle();
-	// カバンへ入れた銃（場所から拾った銃）の弾倉の数を、銃の物へ入れる（場所の中の銃は込めた数を持つ。木箱のライフルは 0）。
+	// カバンへ入れた銃（場所から拾った銃）の弾倉の数を、銃の物へ入れる（場所の中の銃は込めた数を持つ。木箱のライフルは 0）
 	restoreMagazineRounds( *mInventory, *mWorld );
 	mModals->exit(); // 注ぐ音を鳴らす前に音を戻す（exit が setPaused(false)）
 	if ( refuel ) {
@@ -178,7 +178,7 @@ void LootController::handleInput() {
 		closeLoot(); // 起きない（世界は止まっている）が、消えた物を指したままにしない
 		return;
 	}
-	// ESC は、持ち上げている途中ならまずそれを取りやめる。E・Tab はすぐ閉じる（持ち上げていた物は元の所に残る）。
+	// ESC は、持ち上げている途中ならまずそれを取りやめる。E・Tab はすぐ閉じる（持ち上げていた物は元の所に残る）
 	if ( InputMenu() ) {
 		if ( !mScreen.back() ) {
 			closeLoot();

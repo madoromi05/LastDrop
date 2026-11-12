@@ -55,7 +55,7 @@ void StaticMeshInstancing::begin() {
 
 void StaticMeshInstancing::setPlacements( const Matrix34* placements, int number ) {
 	ASSERT( placements && number > 0 && number <= kMaxInstances && "StaticMeshInstancing : bad placements." );
-	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す。
+	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す
 	for ( int i = 0; i < number; ++i ) {
 		const Matrix34& m = placements[ i ];
 		float* row = &mPlacementRows[ i * kFloatsPerInstance ];
@@ -63,7 +63,7 @@ void StaticMeshInstancing::setPlacements( const Matrix34* placements, int number
 		row[ 4 ] = m.m10; row[ 5 ] = m.m11; row[ 6 ]  = m.m12; row[ 7 ]  = m.m13;
 		row[ 8 ] = m.m20; row[ 9 ] = m.m21; row[ 10 ] = m.m22; row[ 11 ] = m.m23;
 	}
-	// 使う数のぶんだけ送る。残りの中身は不定になるが、SV_InstanceID は描く数より小さいので読まれない。
+	// 使う数のぶんだけ送る。残りの中身は不定になるが、SV_InstanceID は描く数より小さいので読まれない
 	mPlacementBuffer.set( mPlacementRows.data(), number * kFloatsPerInstance * static_cast< int >( sizeof( float ) ) );
 }
 

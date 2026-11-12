@@ -27,6 +27,6 @@ float ScalarMath::smoothStep( float t ) {
 
 float ScalarMath::wrapUnit( float phase ) {
 	float wrapped = phase - std::floor( phase );
-	// 0 のすぐ下（-0.00000001 など）は、引いた所で丸められてちょうど 1 になることがある。範囲の外なので 0 にする。
+	// 0 のすぐ下（-0.00000001 など）は、引いた所で丸められてちょうど 1 になることがある。範囲の外なので 0 にする
 	return ( wrapped >= kFullCycle ) ? 0.f : wrapped;
 }

@@ -19,20 +19,20 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ。
+	// 置き場所はどれも TownMap が決める。ここにあるのは、何を置くか（ファイル）と、置き場所以外の決めごとだけ
 	// 建物・置物は TownEnvironment（WorldBuilder）・PropFactory、ゾンビは ZombieDirector、血の量は EffectManager、
-	// 倒したゾンビを漁れる場所にするのは CombatResolver が持つ。
+	// 倒したゾンビを漁れる場所にするのは CombatResolver が持つ
 	const char* kBulletFile = "Resource/Model/Weapon/bullet_tip.txt";
 
-	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）。
-	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所。
+	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）
+	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所
 	const float kDropForward = 0.8f;
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );
 	}
 
-	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形）。
+	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形）
 	bool lampsLit( const DayConditionEffect& day ) {
 		const float kLightsOut = 0.f;
 		return day.streetLightScale > kLightsOut;
@@ -54,12 +54,12 @@ GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition
 	mPlayer( nullptr ),
 	mPlayerControl( nullptr ) {
 	ASSERT( meshes && town && "GameWorld : an argument is null." );
-	// ゾンビの部品が共有の棚から引く物（TickContext・道探しの回数・音を知らせる係）を置く。
-	// 歩ける床（NavMesh）は buildNavMesh で TownCache から借りたときに置く（ゾンビを置くのはその後の placeActors）。
+	// ゾンビの部品が共有の棚から引く物（TickContext・道探しの回数・音を知らせる係）を置く
+	// 歩ける床（NavMesh）は buildNavMesh で TownCache から借りたときに置く（ゾンビを置くのはその後の placeActors）
 	mZombies.provideShared();
 }
 
-// 係の定義が見える所で破棄する。
+// 係の定義が見える所で破棄する
 GameWorld::~GameWorld() {
 }
 
@@ -94,7 +94,7 @@ void GameWorld::placePlayer( int escapeCarSpot ) {
 }
 
 void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3& eye ) {
-	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）。
+	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）
 	mZombies.setAnimationView( projectionView, eye, mTown.visibilityIfEnabled() );
 }
 
@@ -116,9 +116,9 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	Inventory* inventory ) {
 	{
 		PROFILE_SCOPE( "World.prepare" );
-		// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）。
+		// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）
 		mCollisionWorld.refreshBodies();
-		// このティックに道を探してよい回数を戻す。
+		// このティックに道を探してよい回数を戻す
 		mZombies.beginTick();
 	}
 	{
@@ -126,20 +126,20 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 		if ( mPlayerControl ) {
 			mPlayerControl->setInput( command, cameraYaw, cameraPitch, inventory );
 		}
-		// 自キャラが動いて撃ち、その後に足音・銃声をゾンビへ知らせる（PlayerNoiseComponent。同じ段の中で PlayerComponent の後）。
+		// 自キャラが動いて撃ち、その後に足音・銃声をゾンビへ知らせる（PlayerNoiseComponent。同じ段の中で PlayerComponent の後）
 		mObjects.update( UpdatePhase::Input );
 	}
-	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため。
+	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため
 	{
 		PROFILE_SCOPE( "World.alert" ); // 弾を出す所（撃ったティックだけ。計測の名前は、前の計測の CSV と列を揃えるため alert のまま）
 		const GunComponent* gun = HoldComponent::heldGun( mPlayer ); // 素手なら nullptr
 		if ( gun && gun->firedThisTick() ) {
-			// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）。
+			// 計測の印。押した瞬間（Fire）ではなく、実際に弾が出たティック（連射の 2 発目以降も）
 			PROFILE_EVENT( "Shot" );
 			mBullets.fire( mPlayer->getComponent< FirstPersonBodyComponent >()->eyePosition(), viewDirection, gun->spec().damage );
 		}
 	}
-	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）。
+	// 撃ったティックのうちに1回進める（出たばかりの弾が、目の前に止まって見えないように）
 	mImpacts.clear();
 	mCombat.beginTick();
 	{
@@ -157,10 +157,10 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	{
 		PROFILE_SCOPE( "World.zombies" );
 		if ( zombiesFrozen() ) {
-			// F6 でゾンビを止めている間は、考える・動く・アニメ・攻撃を全部飛ばす（Think の段はゾンビだけ）。
+			// F6 でゾンビを止めている間は、考える・動く・アニメ・攻撃を全部飛ばす（Think の段はゾンビだけ）
 			mZombies.releaseTarget( mPlayer );
 		} else {
-			// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）。
+			// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）
 			mZombies.prepareThink( mPlayer );
 			mObjects.update( UpdatePhase::Think );
 			mCombat.resolveZombieAttacks( mPlayer );
@@ -169,14 +169,14 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.late" );
-		// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）。
+		// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）
 		mObjects.update( UpdatePhase::Late );
-		// このティックで消す印の付いたもの（沈み終えた死体も）を、全員の更新が済んでから消す（名簿からも外れる）。
+		// このティックで消す印の付いたもの（沈み終えた死体も）を、全員の更新が済んでから消す（名簿からも外れる）
 		mObjects.flush();
 	}
 	{
 		PROFILE_SCOPE( "World.spawn" );
-		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。ゾンビを止めている間は湧かせない。
+		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。ゾンビを止めている間は湧かせない
 		if ( !zombiesFrozen() ) {
 			mZombies.spawnFromSpawner( mPlayer, cameraYaw );
 		}

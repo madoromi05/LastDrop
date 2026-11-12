@@ -5,7 +5,7 @@ namespace GameLib{
 namespace Input{
 
 namespace{
-	// DIJOYSTATE2 の軸。
+	// DIJOYSTATE2 の軸
 	enum DirectInputAxis{
 		AXIS_X,
 		AXIS_Y,
@@ -14,11 +14,11 @@ namespace{
 		AXIS_RY,
 		AXIS_RZ,
 	};
-	// 対応表のボタンの欄に入れる、ボタン番号ではない値。
+	// 対応表のボタンの欄に入れる、ボタン番号ではない値
 	const int kNoButton = -1; // このパッドには無い
 	const int kPovButton = -2; // 十字キー（POV の向きから決める）
 
-	// POV の向き（1/100 度。上が 0 で時計回り）。斜めは両方の向きを押したことにする。
+	// POV の向き（1/100 度。上が 0 で時計回り）。斜めは両方の向きを押したことにする
 	const DWORD kPovCentered = 0xffff; // 下位 16 ビットがこれなら、何も押していない
 	const DWORD kPovUpRightEdge = 4500;
 	const DWORD kPovDownRightEdge = 13500;
@@ -35,10 +35,10 @@ struct GamePadLayout{
 };
 
 namespace{
-	// Sony のパッド（DualSense・DualShock 4）。どちらも DirectInput では同じ並び。
-	// DualSense（Bluetooth）は、ボタン 14・軸 6（X Y Z Rx Ry Rz）・POV 1 として見える。
-	// ボタンの番号は DualShock 4 / DualSense の一般的な並び（実機で押して確かめる。F6 の Pad の欄）。
-	// PS ボタン（12）とタッチパッドの押し込み（13）は使わない。L2/R2 は押し込むとオンになるボタン（6・7）で読み、軸（Rx・Ry）は使わない。
+	// Sony のパッド（DualSense・DualShock 4）。どちらも DirectInput では同じ並び
+	// DualSense（Bluetooth）は、ボタン 14・軸 6（X Y Z Rx Ry Rz）・POV 1 として見える
+	// ボタンの番号は DualShock 4 / DualSense の一般的な並び（実機で押して確かめる。F6 の Pad の欄）
+	// PS ボタン（12）とタッチパッドの押し込み（13）は使わない。L2/R2 は押し込むとオンになるボタン（6・7）で読み、軸（Rx・Ry）は使わない
 	const GamePadLayout kSonyLayout = {
 		"Sony (DualSense / DualShock 4)",
 		{
@@ -88,7 +88,7 @@ namespace{
 		return 0.f;
 	}
 
-	// 十字キーの 1 つの向きが押されているか（POV の角度から）。
+	// 十字キーの 1 つの向きが押されているか（POV の角度から）
 	bool isPovOn( DWORD pov, GamePad::Button button ){
 		if ( ( pov & kPovCentered ) == kPovCentered ){
 			return false;

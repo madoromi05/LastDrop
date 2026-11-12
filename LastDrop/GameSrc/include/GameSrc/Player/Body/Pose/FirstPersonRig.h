@@ -8,11 +8,11 @@
 class SkinnedMeshData;
 
 // 一人称の体の書き換えの段（Player/Body/Pose/ の BonePoseModifier たち）が、みんなで読む物
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5-1）。
-// 持ち主は FirstPersonBody。段は借りて読むだけ（目の位置だけは EyePoint が書く）。
-// 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。骨は Mixamo の名前で探し、見つからない骨は飛ばす（その部分が動かないだけで落ちない）。
+// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5-1）
+// 持ち主は FirstPersonBody。段は借りて読むだけ（目の位置だけは EyePoint が書く）
+// 座標はすべて骨格の根の空間（前方 +Z・上 +Y・単位 m）。骨は Mixamo の名前で探し、見つからない骨は飛ばす（その部分が動かないだけで落ちない）
 struct FirstPersonRig{
-	// 背骨1本ぶん。この関節を中心に、自分と先にある骨（上半身）をまとめて回す。
+	// 背骨1本ぶん。この関節を中心に、自分と先にある骨（上半身）をまとめて回す
 	struct SpineJoint{
 		int bone;
 		std::vector< int > followers; // 一緒に回す骨（自分を含む）
@@ -41,14 +41,14 @@ struct FirstPersonRig{
 	// ── 段が書く物 ──
 	GameLib::Math::Vector3 eyePosition; // 目の位置（EyePoint が背骨を曲げた後に決める。銃を目へ寄せる段・ぶれの段が読む）
 
-	// data の骨の番号を引いて作る（覚えない）。data: nullptr 不可、isReady() 済みであること。
+	// data の骨の番号を引いて作る（覚えない）。data: nullptr 不可、isReady() 済みであること
 	explicit FirstPersonRig( const SkinnedMeshData* data );
 
-	// 銃を持っているか（銃に合わせる段は、持っていなければ何もしない）。
+	// 銃を持っているか（銃に合わせる段は、持っていなければ何もしない）
 	bool hasWeapon() const;
-	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）。hasWeapon のときだけ呼ぶ。
+	// 今のポーズでの銃の置き場所（HeldItem が描くのと同じ「手の骨 * 持ち方」）。hasWeapon のときだけ呼ぶ
 	GameLib::Math::Matrix34 weaponPlacement( const std::vector< GameLib::Math::Matrix34 >& pose ) const;
-	// 視線の向き（前方 +Z をピッチぶん下へ傾けた回転）。目・胸・銃の向きをそろえる基準。
+	// 視線の向き（前方 +Z をピッチぶん下へ傾けた回転）。目・胸・銃の向きをそろえる基準
 	GameLib::Math::Matrix34 viewRotation() const;
 };
 

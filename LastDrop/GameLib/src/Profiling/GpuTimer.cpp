@@ -128,7 +128,7 @@ bool GpuTimer::endFrame( Result* result ){
 	ctx->End( slot.disjoint );
 	slot.issued = true;
 	mInFrame = false;
-	// 一番古いフレーム（次のフレームで使い直す Slot）を読む。
+	// 一番古いフレーム（次のフレームで使い直す Slot）を読む
 	Slot& oldest = mSlots[ ( mCurrent + 1 ) % kLatency ];
 	if ( !oldest.issued ){
 		return false;
@@ -139,7 +139,7 @@ bool GpuTimer::endFrame( Result* result ){
 
 bool GpuTimer::read( Slot& slot, Result* result ){
 	ID3D11DeviceContext* ctx = context();
-	// 待たずに聞く（まだなら捨てる）。DONOTFLUSH は、聞くために GPU へ命令を押し出さないため。
+	// 待たずに聞く（まだなら捨てる）。DONOTFLUSH は、聞くために GPU へ命令を押し出さないため
 	D3D11_QUERY_DATA_TIMESTAMP_DISJOINT disjoint;
 	if ( ctx->GetData( slot.disjoint, &disjoint, sizeof( disjoint ), D3D11_ASYNC_GETDATA_DONOTFLUSH ) != S_OK ){
 		return false;

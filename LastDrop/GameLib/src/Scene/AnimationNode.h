@@ -15,7 +15,7 @@ namespace Scene{
 
 class AnimationNode{
 public:
-	//この関数はコンテナを使うので、インクルードループを避けるためにAnimationNode.cppにおいてある。
+	//この関数はコンテナを使うので、インクルードループを避けるためにAnimationNode.cppにおいてある
 	AnimationNode( PseudoXml::ConstElement&, Container::Impl& );
 	~AnimationNode(){
 		mName = 0; //コンテナが持っているので参照を外すだけ
@@ -30,7 +30,7 @@ public:
 	int curveNumber() const {
 		return mCurveNumber;
 	}
-	//このノードのカーブのうち最も長い周期。
+	//このノードのカーブのうち最も長い周期
 	float period() const {
 		float r = 0.f;
 		for ( int i = 0; i < mCurveNumber; ++i ){

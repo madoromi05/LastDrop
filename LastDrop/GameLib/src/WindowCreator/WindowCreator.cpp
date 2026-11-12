@@ -23,16 +23,16 @@ namespace GameLib{
 
 namespace{
 
-//ウィンドウ表示のときのスタイル。WS_THICKFRAME で端をドラッグして大きさを変えられ、最大化ボタンで画面いっぱいになる。
+//ウィンドウ表示のときのスタイル。WS_THICKFRAME で端をドラッグして大きさを変えられ、最大化ボタンで画面いっぱいになる
 const LONG kWindowedStyle = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME;
-//フルスクリーン（ボーダーレス）のときのスタイル。枠なしのウィンドウをモニター全体に広げる。
-//画面モードを切り替える排他フルスクリーンにしないのは、切り替えの暗転が無く、Alt+Tab でも描画が止まらないため。
+//フルスクリーン（ボーダーレス）のときのスタイル。枠なしのウィンドウをモニター全体に広げる
+//画面モードを切り替える排他フルスクリーンにしないのは、切り替えの暗転が無く、Alt+Tab でも描画が止まらないため
 const LONG kFullScreenStyle = WS_POPUP;
-//WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット。
+//WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット
 const LPARAM kKeyWasDownBit = 1 << 30;
 
-//メインモニターの全体（rcMonitor）と、タスクバーを除いた作業領域（rcWork）を返す。
-//メインモニターの左上は、仮想スクリーン座標で必ず (0,0) になる。
+//メインモニターの全体（rcMonitor）と、タスクバーを除いた作業領域（rcWork）を返す
+//メインモニターの左上は、仮想スクリーン座標で必ず (0,0) になる
 MONITORINFO primaryMonitorInfo() {
 	const POINT origin = {0, 0};
 	MONITORINFO monitor = {};
@@ -66,7 +66,7 @@ public:
 		//getTime()用バイアス値計算
 		unsigned time = timeGetTime();
 		mTimeBias = 0xffffffff - time;
-		mTimeBias -= 60000; //60秒の余裕を持たせる。
+		mTimeBias -= 60000; //60秒の余裕を持たせる
 
 		//スレッドID取得
 		mThreadId = GetCurrentThreadId();
@@ -286,7 +286,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: ここにコードを挿入してください。
+ 	// TODO: ここにコードを挿入してください
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -319,13 +319,13 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	try{
 		wc.start( windowHandle );
 	}
-	catch ( ... ){ //起動時の例外は無視できない。
+	catch ( ... ){ //起動時の例外は無視できない
 		MessageBoxA( 
 			windowHandle, 
 			"致命的な問題が発生したため、起動できません。ご迷惑をおかけしますが終了させていただきます",
 			"致命的なエラー",
 			MB_OK | MB_ICONERROR );
-		wc.requestEnd(); //終了。
+		wc.requestEnd(); //終了
 		wc.update(); //ここで終了処理
 		SAFE_DELETE( gImpl );
 		timeEndPeriod( 1 );
@@ -343,12 +343,12 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	gImpl->mStarted = true; //ループ開始合図
 	bool quitRequested = false;
 	while ( true ){
-		//溜まっているメッセージは、更新の前に全部処理する。
+		//溜まっているメッセージは、更新の前に全部処理する
 		//1フレームに1件だけだと、キーの自動リピート(WM_KEYDOWN/WM_CHAR)やマウス移動のメッセージが溜まり続け、
-		//後から押したキー(押している間だけ走る Shift など)の反映が大きく遅れる。
+		//後から押したキー(押している間だけ走る Shift など)の反映が大きく遅れる
 		while ( PeekMessage( &msg, NULL, 0, 0, PM_REMOVE ) ){
 			if ( msg.message == WM_QUIT ){
-				quitRequested = true; //WM_QUITが来ました。ループを抜けます。
+				quitRequested = true; //WM_QUITが来ました。ループを抜けます
 				break;
 			}
 			if ( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) ){
@@ -390,13 +390,13 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
 //  関数: MyRegisterClass()
 //
-//  目的: ウィンドウ クラスを登録します。
+//  目的: ウィンドウ クラスを登録します
 //
 //    この関数およびその使用方法は、'RegisterClassEx' 関数が追加された
-//    Windows 95 より前の Win32 システムと互換性を保つ場合にのみ必要です。
+//    Windows 95 より前の Win32 システムと互換性を保つ場合にのみ必要です
 //    アプリケーションに、関連付けられた
 //    正しい形式のウィンドウ クラスとアイコンを取得できるようにするには、
-//    この関数を呼び出してください。
+//    この関数を呼び出してください
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
@@ -422,18 +422,18 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 //   関数: InitInstance(HINSTANCE, int)
 //
-//   目的: インスタンス ハンドルを保存して、メイン ウィンドウを作成します。
+//   目的: インスタンス ハンドルを保存して、メイン ウィンドウを作成します
 //
 //   コメント:
 //
 //        この関数で、グローバル変数にインスタンス ハンドルを保存し、
-//        メイン プログラム ウィンドウを作成および表示します。
+//        メイン プログラム ウィンドウを作成および表示します
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	HWND hWnd;
 
-	hInst = hInstance; // グローバル変数にインスタンスを格納します。
+	hInst = hInstance; // グローバル変数にインスタンスを格納します
 //----
 	DWORD style = gImpl->mFullScreen ? kFullScreenStyle : kWindowedStyle;
 	RECT rect = {0, 0,gImpl->mWidth,gImpl->mHeight};
@@ -473,7 +473,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //  関数: WndProc(HWND, UINT, WPARAM, LPARAM)
 //
-//  目的:  メイン ウィンドウのメッセージを処理します。
+//  目的:  メイン ウィンドウのメッセージを処理します
 //
 //  WM_COMMAND	- アプリケーション メニューの処理
 //  WM_PAINT	- メイン ウィンドウの描画
@@ -482,7 +482,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	// 開発用のエディタ（ImGui）に、マウス・キー・文字の知らせを先に渡す（Release では何もしない）。
+	// 開発用のエディタ（ImGui）に、マウス・キー・文字の知らせを先に渡す（Release では何もしない）
 	if ( DebugUi::handleWindowMessage( hWnd, message, wParam, lParam ) ){
 		return 1;
 	}
@@ -513,10 +513,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_SYSCOMMAND:
-		//最大化（SC_MAXIMIZE）は通常のウィンドウの最大化にするので DefWindowProc に任せる。
-		//フルスクリーンは alt+enter で切り替える。
-		//Alt だけを押して離すと（lParam が 0）、メニューを選ぶ状態に入り、次のキーでビープが鳴ってゲームに届かない。
-		//エディタ（F6）は Alt を押している間だけ触るので、ここで止める（Alt+Space のシステムメニューは残す）。
+		//最大化（SC_MAXIMIZE）は通常のウィンドウの最大化にするので DefWindowProc に任せる
+		//フルスクリーンは alt+enter で切り替える
+		//Alt だけを押して離すと（lParam が 0）、メニューを選ぶ状態に入り、次のキーでビープが鳴ってゲームに届かない
+		//エディタ（F6）は Alt を押している間だけ触るので、ここで止める（Alt+Space のシステムメニューは残す）
 		if ( ( wParam & 0xfff0 ) == SC_KEYMENU && lParam == 0 ){
 			break;
 		}
@@ -535,8 +535,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 		gImpl->mMouseWheel = ( static_cast< short >( HIWORD( wParam ) ) > 0 ) ? 1 : -1;
 		break;
-	//押した知らせを覚えておく（1 フレームの間に押して離した短いクリックを、Input::Manager が落とさないように。
-	//GetAsyncKeyState は読んだ瞬間に押しているかしか分からないため）。
+	//押した知らせを覚えておく（1 フレームの間に押して離した短いクリックを、Input::Manager が落とさないように
+	//GetAsyncKeyState は読んだ瞬間に押しているかしか分からないため）
 	case WM_LBUTTONDOWN:
 	case WM_LBUTTONDBLCLK:
 		gImpl->mMouseButtonPresses |= WindowCreator::MOUSE_PRESS_LEFT;

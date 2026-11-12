@@ -9,12 +9,12 @@
 // ・実行時の付け替え（add / remove / rebind）… キーコンフィグの土台
 // ・ファイルへの保存／読込（save / load）
 //
-// 実行時の入力状態そのもの（Free/Press/…）は持たない。
-// 「どのキーが何に割り当たっているか」という設定だけを扱う。
-// 設定を実際の Input に反映するのは InputBuilder::Bind の役目。
+// 実行時の入力状態そのもの（Free/Press/…）は持たない
+// 「どのキーが何に割り当たっているか」という設定だけを扱う
+// 設定を実際の Input に反映するのは InputBuilder::Bind の役目
 //
 // 保存形式は PseudoXml（人が読める）。ディスク I/O は std::fstream で行い、
-// GameLib::FileIO を通さない（設定ファイル欠如で Halt しないようにするため）。
+// GameLib::FileIO を通さない（設定ファイル欠如で Halt しないようにするため）
 // ────────────────────────────────────────────────
 namespace GameLib {
 namespace Input {
@@ -34,8 +34,8 @@ public:
     void rebind(CollectorId a_collector, WorkId a_work, DeviceKind a_device,
                 int a_oldCode, int a_newCode);
 
-    // 既定の表にある操作のうち、今の表に 1 つも割り当てが無い操作へ、既定の行を足す。
-    // 保存した後に操作（WorkId）を足しても、古いファイルを読んだまま新しい操作が効くようにする（load の後に呼ぶ）。
+    // 既定の表にある操作のうち、今の表に 1 つも割り当てが無い操作へ、既定の行を足す
+    // 保存した後に操作（WorkId）を足しても、古いファイルを読んだまま新しい操作が効くようにする（load の後に呼ぶ）
     void addMissingWorks(const BindingRecord* a_defaults, int a_count);
 
     // 永続化。load はファイルが無ければ false（呼び側が loadDefaults にフォールバックする）

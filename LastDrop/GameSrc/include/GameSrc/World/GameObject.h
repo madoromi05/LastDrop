@@ -14,26 +14,26 @@
 
 class GameObjectWorld;
 
-// 世界に置く物 1 つ（Unity の GameObject と同じ考え方。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt・ComponentSystem3_Plan.txt）。
-// 何の物かを表す種類（タグ）と名前と、付けた部品（Component）を持つ。振る舞いは部品が持ち、物そのものは何もしない。
+// 世界に置く物 1 つ（Unity の GameObject と同じ考え方。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt・ComponentSystem3_Plan.txt）
+// 何の物かを表す種類（タグ）と名前と、付けた部品（Component）を持つ。振る舞いは部品が持ち、物そのものは何もしない
 // ・作るのは GameObjectWorld::create。部品を addComponent で付け終えてから GameObjectWorld::spawn で動かし始める
 // ・同じ種類の部品は 1 つまで。付ける順は自由（Component の awake・start の約束）
-// ・途中で付けてもよい（すぐ awake・start して動き出す。GameObjectWorld がたどっている最中は付けない）。
-//   外すのは removeComponentLater で印を付けるだけで、実際に外れるのは GameObjectWorld::flush の中（消える物と同じ約束）。
+// ・途中で付けてもよい（すぐ awake・start して動き出す。GameObjectWorld がたどっている最中は付けない）
+//   外すのは removeComponentLater で印を付けるだけで、実際に外れるのは GameObjectWorld::flush の中（消える物と同じ約束）
 //   ほかの部品が requireComponent した部品は外せない（外すとその部品が成り立たないため）
 // ・部品の並びを動かす関数（eraseAt・markSpawned など）は private で、持ち主（friend の GameObjectWorld）だけが呼ぶ
-// ・持ち主は GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ）。
+// ・持ち主は GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ）
 //   消えたかを知りたいときは GameObjectHandle で持つ
 // ・名前は確認用（F6 のエディタの物の一覧・デバッグ出力）。ゲームの判断にはタグを使う
 class GameObject{
 public:
-	// world: 持ち主。id: 持ち主が振る番号（GameObjectHandle が引く）。作るのは GameObjectWorld::create だけ。
+	// world: 持ち主。id: 持ち主が振る番号（GameObjectHandle が引く）。作るのは GameObjectWorld::create だけ
 	GameObject( GameObjectWorld* world, GameObjectTag tag, const char* name, unsigned id );
 	GameObject( const GameObject& ) = delete;
 	GameObject& operator=( const GameObject& ) = delete;
 
-	// T の部品を args で作って付け、借りるポインタを返す（画像の AddComponent< ModelComponent >()）。同じ種類の部品はもう付いていないこと。
-	// spawn した後に付けたなら、すぐ awake・start し、名簿・段の並びへ載せる。spawn の中（部品の awake・start）では付けないこと（ASSERT）。
+	// T の部品を args で作って付け、借りるポインタを返す（画像の AddComponent< ModelComponent >()）。同じ種類の部品はもう付いていないこと
+	// spawn した後に付けたなら、すぐ awake・start し、名簿・段の並びへ載せる。spawn の中（部品の awake・start）では付けないこと（ASSERT）
 	template< class T, class... Args >
 	T* addComponent( Args&&... args ){
 		static_assert( std::is_base_of< Component, T >::value, "GameObject : T must be a Component." );
@@ -55,7 +55,7 @@ public:
 		return raw;
 	}
 
-	// T の部品（付いていなければ nullptr。外す印が付いていても、外れるまでは返す）。
+	// T の部品（付いていなければ nullptr。外す印が付いていても、外れるまでは返す）
 	template< class T >
 	T* getComponent() const {
 		int id = componentTypeId< T >();
@@ -67,8 +67,8 @@ public:
 		return nullptr;
 	}
 
-	// ほかの部品が要る T の部品（無ければ ASSERT で止める）。要る印を付け、removeComponentLater で外せなくする。
-	// 印は、要った側の部品を外しても残す（どの部品が要ったかまでは覚えない）。
+	// ほかの部品が要る T の部品（無ければ ASSERT で止める）。要る印を付け、removeComponentLater で外せなくする
+	// 印は、要った側の部品を外しても残す（どの部品が要ったかまでは覚えない）
 	template< class T >
 	T* requireComponent(){
 		int id = componentTypeId< T >();
@@ -82,9 +82,9 @@ public:
 		return nullptr;
 	}
 
-	// 次の GameObjectWorld::flush で T の部品を外す印を付ける（付いていなければ何もしない）。外す前に onDestroy を呼ぶ。
+	// 次の GameObjectWorld::flush で T の部品を外す印を付ける（付いていなければ何もしない）。外す前に onDestroy を呼ぶ
 	// ほかの部品が requireComponent した部品は外せない（ASSERT で止める）。外せるのは、隣の部品が getComponent で
-	// 使う所ごとに引いている任意の部品だけ（覚えたポインタが残らないので、外れた後も落ちない）。
+	// 使う所ごとに引いている任意の部品だけ（覚えたポインタが残らないので、外れた後も落ちない）
 	template< class T >
 	void removeComponentLater(){
 		int id = componentTypeId< T >();
@@ -103,21 +103,21 @@ public:
 	unsigned id() const { return mId; }
 	bool isSpawned() const { return mSpawned; }
 	GameObjectWorld* world() const { return mWorld; }
-	// 付いている部品の数（F6 のエディタの物の一覧が読む）。
+	// 付いている部品の数（F6 のエディタの物の一覧が読む）
 	int componentNumber() const { return static_cast< int >( mComponents.size() ); }
 
 private:
-	// ここから下の部品の並びを動かす関数は、持ち主だけが呼ぶ（名簿・段の並びと一緒に動かさないと、消えた部品を指したままになるため）。
+	// ここから下の部品の並びを動かす関数は、持ち主だけが呼ぶ（名簿・段の並びと一緒に動かさないと、消えた部品を指したままになるため）
 	friend class GameObjectWorld;
 
 	Component* componentAt( int index ) const { return mComponents[ index ].component.get(); }
 	int componentTypeIdAt( int index ) const { return mComponents[ index ].typeId; }
-	// index 番目の部品が名簿へ載る部品（IWorldMember）なら、その窓口。載らない部品なら nullptr。
+	// index 番目の部品が名簿へ載る部品（IWorldMember）なら、その窓口。載らない部品なら nullptr
 	IWorldMember* worldMemberAt( int index ) const { return mComponents[ index ].member; }
 	bool isRemovingAt( int index ) const { return mComponents[ index ].removing; }
-	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す。
+	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す
 	UpdatePhase updatePhaseAt( int index ) const { return mComponents[ index ].phase; }
-	// index 番目の部品を外して捨てる（onDestroy と名簿から外すのは GameObjectWorld が済ませてから呼ぶ）。
+	// index 番目の部品を外して捨てる（onDestroy と名簿から外すのは GameObjectWorld が済ませてから呼ぶ）
 	void eraseAt( int index );
 	void markSpawned(){ mSpawned = true; }
 
@@ -128,11 +128,11 @@ private:
 		bool required;        // ほかの部品が requireComponent した（外せない）
 		bool removing;        // 次の flush で外す
 		// 付けたときの updatePhase の答え。載せるときも外すときもこれを使う
-		// （途中で updatePhase の答えが変わっても、段の並びに消えた部品が残らないように）。
+		// （途中で updatePhase の答えが変わっても、段の並びに消えた部品が残らないように）
 		UpdatePhase phase;
 	};
 
-	// T が IWorldMember も実装していれば、その窓口を返す（していなければ nullptr）。
+	// T が IWorldMember も実装していれば、その窓口を返す（していなければ nullptr）
 	template< class T >
 	static IWorldMember* worldMemberOf( T* component ){
 		if constexpr ( std::is_base_of< IWorldMember, T >::value ){
@@ -141,9 +141,9 @@ private:
 			return nullptr;
 		}
 	}
-	// spawn した後に付けた index 番目の部品を、持ち主に start させ・載せてもらう。
+	// spawn した後に付けた index 番目の部品を、持ち主に start させ・載せてもらう
 	void attachLate( int index );
-	// 外す印を付けたことを持ち主に知らせる（flush で外してもらう）。
+	// 外す印を付けたことを持ち主に知らせる（flush で外してもらう）
 	void requestRemoval();
 
 	GameObjectWorld* mWorld;

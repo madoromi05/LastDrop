@@ -14,8 +14,8 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kTimeStep = 1.f; // update 1回で進めるアニメ時刻（アニメのキー時刻はゲームのフレーム数）
-	// PLAY_ONCE で止める時刻を、最後のキーからどれだけ手前にするか（フレーム）。
-	// ちょうど最後のキーの時刻だと始めへ折り返してしまうが、見た目では区別できないほど小さくする。
+	// PLAY_ONCE で止める時刻を、最後のキーからどれだけ手前にするか（フレーム）
+	// ちょうど最後のキーの時刻だと始めへ折り返してしまうが、見た目では区別できないほど小さくする
 	const float kLastFrameMargin = 0.001f;
 }
 
@@ -37,7 +37,7 @@ AnimationPlayer::AnimationPlayer( const SkinnedMeshData* data ) :
 void AnimationPlayer::setAnimation( const char* name, float startTime, PlayMode mode ) {
 	Scene::Animation animation = mData->animation( name );
 	if ( !animation ) {
-		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる。
+		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる
 		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;
 	}
 	setAnimation( animation, startTime, mode );
@@ -54,9 +54,9 @@ void AnimationPlayer::setAnimation( Scene::Animation animation, float startTime,
 }
 
 void AnimationPlayer::crossFadeTo( Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode ) {
-	// 混ぜる元は「切り替え直前に実際に見えていたポーズ」を写し取ったもの。
+	// 混ぜる元は「切り替え直前に実際に見えていたポーズ」を写し取ったもの
 	// 前のアニメを動かし続けて混ぜる方法だと、フェード中にもう一度切り替えたとき（歩き始めてすぐ止まる等）
-	// 混ざっていた分が一瞬で消えてポーズが飛ぶ。見えていたポーズから始めれば、何度切り替えても飛ばない。
+	// 混ざっていた分が一瞬で消えてポーズが飛ぶ。見えていたポーズから始めれば、何度切り替えても飛ばない
 	bool canFade = mHasPose && fadeFrames > 0.f;
 	if ( canFade ) {
 		mFadeFromPose = mBonePose;
@@ -95,7 +95,7 @@ float AnimationPlayer::lastFrameTime() const {
 }
 
 float AnimationPlayer::advanceClock() {
-	// 1回だけのアニメは、最後のフレームを超えたらそこで止める（時刻を戻すので、止まった後も増え続けない）。
+	// 1回だけのアニメは、最後のフレームを超えたらそこで止める（時刻を戻すので、止まった後も増え続けない）
 	if ( mPlayMode == PLAY_ONCE && mTime > lastFrameTime() ) {
 		mTime = lastFrameTime();
 	}
@@ -128,8 +128,8 @@ void AnimationPlayer::blendFadingPose() {
 		return;
 	}
 	float t = mFadeElapsed / mFadeFrames; // 進みは advanceClock が数える（終われば mFadeFrames が 0 になっている）
-	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする。
-	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため。
+	// 混ぜる割合を、始めと終わりがゆっくりになる曲線（smoothstep）にする
+	// 直線だと、フェードの始まりと終わりで動きの速さがカクッと変わって見えるため
 	float weight = ScalarMath::smoothStep( t );
 	for ( size_t b = 0; b < mBonePose.size(); ++b ) {
 		MatrixBlend::blend( mFadeFromPose[ b ], mBonePose[ b ], weight, &mBonePose[ b ] );

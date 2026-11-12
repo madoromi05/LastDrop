@@ -18,7 +18,7 @@ bool ScreenProjection::worldToScreen( const Matrix44& projectionView, const Vect
 	if ( clip.w <= 0.f ) {
 		return false;
 	}
-	// -1〜1（上が +1）の正規化した位置を、画素（下が +）へ。
+	// -1〜1（上が +1）の正規化した位置を、画素（下が +）へ
 	float ndcX = clip.x / clip.w;
 	float ndcY = clip.y / clip.w;
 	out->x = ( ndcX * kHalf + kHalf ) * static_cast< float >( Framework::instance().width() );

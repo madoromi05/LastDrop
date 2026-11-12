@@ -6,11 +6,11 @@
 #include <algorithm>
 
 namespace{
-	// 弾が当たった音は 1 つ・1 つの大きさ（重さで音も音量も変えない）。
-	// 銃声（PlayerFoley）と同じく素材そのままの大きさで鳴らし、遠さによる小ささは目録の聞こえる距離に任せる。
+	// 弾が当たった音は 1 つ・1 つの大きさ（重さで音も音量も変えない）
+	// 銃声（PlayerFoley）と同じく素材そのままの大きさで鳴らし、遠さによる小ささは目録の聞こえる距離に任せる
 	const float kHitVolume = 1.f;
 	const float kBodyFallVolume = 1.f;
-	// 倒してから体が地面に着くまで（秒。death1/death2 を見て合わせる初期値）。
+	// 倒してから体が地面に着くまで（秒。death1/death2 を見て合わせる初期値）
 	const float kBodyFallDelaySeconds = 0.6f;
 	const int kBodyFallDelayTicks = GameTime::secondsToTicks( kBodyFallDelaySeconds );
 }

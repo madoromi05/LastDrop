@@ -75,7 +75,7 @@ public:
 	mContext( context ){
 		createDxObject();
 	}
-	// 標準の Vertex 以外の形（VertexFormat）の頂点バッファ。stride: 1頂点のバイト数。
+	// 標準の Vertex 以外の形（VertexFormat）の頂点バッファ。stride: 1頂点のバイト数
 	Impl( int vertexNumber, int stride, ID3D11Device* device, ID3D11DeviceContext* context ) :
 	mDxObject( 0 ),
 	mVertexNumber( vertexNumber ),
@@ -101,7 +101,7 @@ public:
 		HRESULT hr = mDevice->CreateBuffer( &desc, nullptr, &mDxObject );
 		ASSERT( SUCCEEDED( hr ) && "VertexBuffer CreateBuffer failed" );
 	}
-	// 頂点の形を問わずに書く（中身の並びは呼び出し側が VertexFormat どおりに詰める）。
+	// 頂点の形を問わずに書く（中身の並びは呼び出し側が VertexFormat どおりに詰める）
 	void* lockData(){
 		D3D11_MAPPED_SUBRESOURCE ms = {};
 		HRESULT hr = mContext->Map( mDxObject, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms );

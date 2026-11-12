@@ -8,7 +8,7 @@ namespace{
 	const float kOpaque = 1.f;
 	const float kHidden = 0.f;
 
-	// 0 から 1 まで seconds で動くときの、1 ティックの量。
+	// 0 から 1 まで seconds で動くときの、1 ティックの量
 	float stepPerTick( float seconds ) {
 		return kOpaque / static_cast< float >( GameTime::secondsToTicks( seconds ) );
 	}
@@ -21,7 +21,7 @@ AmmoHudVisibility::AmmoHudVisibility() :
 
 void AmmoHudVisibility::update( bool wanted ) {
 	if ( wanted ) {
-		// 条件がある間は、切れたときに残す長さを数え直しておく。
+		// 条件がある間は、切れたときに残す長さを数え直しておく
 		mLingerTicks = GameTime::secondsToTicks( kLingerSeconds );
 	} else if ( mLingerTicks > 0 ) {
 		--mLingerTicks;

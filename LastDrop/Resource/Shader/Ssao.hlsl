@@ -1,14 +1,14 @@
-// SSAO（物の隙間の暗がり）を、画面の半分の大きさの描画先（RG16F）へ作る（AmbientOcclusion::draw。SsaoTranslucent_Plan.txt 5 章）。
-// 式は法線の向きの半球で調べる SSAO（Crytek の SSAO を法線の半球にした物。John Chapman・LearnOpenGL の形）。
-//   画素の位置から法線の側の半球に点をいくつか置き、その点が深度より奥（物の中）に入っていれば「遮られた」と数える。
+// SSAO（物の隙間の暗がり）を、画面の半分の大きさの描画先（RG16F）へ作る（AmbientOcclusion::draw。SsaoTranslucent_Plan.txt 5 章）
+// 式は法線の向きの半球で調べる SSAO（Crytek の SSAO を法線の半球にした物。John Chapman・LearnOpenGL の形）
+//   画素の位置から法線の側の半球に点をいくつか置き、その点が深度より奥（物の中）に入っていれば「遮られた」と数える
 // 出力：r に AO（1 で遮られていない）、g に目からの奥行き（m。カメラの向きに沿った距離）。g は後のぼかしと拡大が、
-// 輪郭（奥行きが大きく違う所）をまたいで混ぜないために使う（6 章）。
-// 半分の大きさの 1 画素は、元の画面の 2×2 の左上の画素の深度と法線で代表する。
+// 輪郭（奥行きが大きく違う所）をまたいで混ぜないために使う（6 章）
+// 半分の大きさの 1 画素は、元の画面の 2×2 の左上の画素の深度と法線で代表する
 #include "GBuffer.hlsli"
 #include "DepthPosition.hlsli"
 #include "Noise.hlsli"
 
-// AmbientOcclusion.cpp の SsaoConstants と同じ並び。
+// AmbientOcclusion.cpp の SsaoConstants と同じ並び
 cbuffer SsaoConstants : register(b1)
 {
     float4 gSsaoInverseProjectionView[4]; // 射影×ビューの逆行列（行ごと）。深度から位置を戻す
@@ -31,7 +31,7 @@ FullScreenVertex VSMain(uint id : SV_VertexID)
     return fullScreenVertex(id);
 }
 
-// ワールドの位置を、射影×ビューで画面の uv と奥行き（w）へ。w が 0 以下（目の後ろ）なら uv は使えない。
+// ワールドの位置を、射影×ビューで画面の uv と奥行き（w）へ。w が 0 以下（目の後ろ）なら uv は使えない
 float3 projectToScreen(float3 world)
 {
     float4 p = float4(world, 1.0);
@@ -41,27 +41,27 @@ float3 projectToScreen(float3 world)
     return float3(ndc.x * 0.5 + 0.5, 0.5 - ndc.y * 0.5, clip.w);
 }
 
-// 目からの奥行き（射影×ビューの 4 行目。透視ならカメラの向きに沿った距離）。
+// 目からの奥行き（射影×ビューの 4 行目。透視ならカメラの向きに沿った距離）
 float viewDepthOf(float3 world)
 {
     return dot(gSsaoProjectionView[3], float4(world, 1.0));
 }
 
-// 位置 p・法線 n の面が、周りの物にどれだけ遮られているか（0〜1。1 で全部遮られた）。
-// angle：点の並びを法線の周りに回す角度（画素ごとに違う。ざらつきは 6 章のぼかしで均す）。
-// 式を替えるとき（GTAO など）は、この関数だけを差し替える。
+// 位置 p・法線 n の面が、周りの物にどれだけ遮られているか（0〜1。1 で全部遮られた）
+// angle：点の並びを法線の周りに回す角度（画素ごとに違う。ざらつきは 6 章のぼかしで均す）
+// 式を替えるとき（GTAO など）は、この関数だけを差し替える
 float occlusionAt(float3 p, float3 n, float angle, uint2 depthSize)
 {
     float radius = gSsaoShape.x;
     float bias = gSsaoShape.y;
     uint count = max((uint)gSsaoCount.x, 1u);
     float depthP = viewDepthOf(p);
-    // 画面の上の半径の上限（5-3）。射影の縦の倍率（2 行目の長さ）から、奥行き depthP で画面の高さの割合 y になる半径を出す。
-    // 手元の銃・腕で点が画面の端まで飛び、読む所がばらけて重くなるのを防ぐ。
+    // 画面の上の半径の上限（5-3）。射影の縦の倍率（2 行目の長さ）から、奥行き depthP で画面の高さの割合 y になる半径を出す
+    // 手元の銃・腕で点が画面の端まで飛び、読む所がばらけて重くなるのを防ぐ
     float projectionScale = length(gSsaoProjectionView[1].xyz);
     radius = min(radius, gSsaoCount.y * 2.0 * depthP / projectionScale);
 
-    // 法線を z にした向き。接線を angle だけ法線の周りに回しておく。
+    // 法線を z にした向き。接線を angle だけ法線の周りに回しておく
     float3 helper = (abs(n.y) < kNearlyVertical) ? float3(0.0, 1.0, 0.0) : float3(1.0, 0.0, 0.0);
     float3 tangent0 = normalize(cross(helper, n));
     float3 bitangent0 = cross(n, tangent0);
@@ -73,7 +73,7 @@ float occlusionAt(float3 p, float3 n, float angle, uint2 depthSize)
     float occluded = 0.0;
     for (uint i = 0; i < count; ++i)
     {
-        // 半球の向き：方位は黄金角のらせん、高さはコサインの重み（法線に近い向きほど多く。AO の積分の重みと同じ）。
+        // 半球の向き：方位は黄金角のらせん、高さはコサインの重み（法線に近い向きほど多く。AO の積分の重みと同じ）
         float azimuth = i * kGoldenAngle;
         float u = frac(0.5 + i * kR2Step);
         float sinTheta = sqrt(u);
@@ -95,8 +95,8 @@ float occlusionAt(float3 p, float3 n, float angle, uint2 depthSize)
             continue; // 空は遮らない
         }
         float depthQ = viewDepthOf(worldPositionFromDepth(gSsaoInverseProjectionView, screen.xy, depth));
-        // 点より手前に物の面がある（点が物の中に入っている）なら遮られた。
-        // 範囲の確かめ：p から奥行きが半径より大きく離れた物（ゾンビの後ろの壁を手前の物が、など）は少なく数える。
+        // 点より手前に物の面がある（点が物の中に入っている）なら遮られた
+        // 範囲の確かめ：p から奥行きが半径より大きく離れた物（ゾンビの後ろの壁を手前の物が、など）は少なく数える
         float rangeWeight = smoothstep(0.0, 1.0, radius / max(abs(depthP - depthQ), bias));
         occluded += (depthQ < screen.z - bias) ? rangeWeight : 0.0;
     }

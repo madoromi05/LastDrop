@@ -5,12 +5,12 @@
 using GameLib::Math::Vector3;
 
 namespace{
-	// 押し終えるまでの最短（ティック）。秒が短すぎても 0 で割らないように。
+	// 押し終えるまでの最短（ティック）。秒が短すぎても 0 で割らないように
 	const int kMinTicks = 1;
 
 	ZombieStaggerParams gParams;
 
-	// 押し始めてから t（0〜1）まで進んだときに、押し終えた割合（0〜1）。初めが速く、だんだん遅くなる（2 次の ease-out）。
+	// 押し始めてから t（0〜1）まで進んだときに、押し終えた割合（0〜1）。初めが速く、だんだん遅くなる（2 次の ease-out）
 	float pushedFraction( float t ) {
 		float rest = 1.f - t;
 		return 1.f - rest * rest;

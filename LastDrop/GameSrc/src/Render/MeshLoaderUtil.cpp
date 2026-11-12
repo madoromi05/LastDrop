@@ -12,12 +12,12 @@ using namespace GameLib::Math;
 namespace{
 	const int kRgb = 3; // 色属性の要素数
 
-	// 値が空文字でない属性か。パス属性の「書いてあるが空」を未設定と同じに扱うため。
+	// 値が空文字でない属性か。パス属性の「書いてあるが空」を未設定と同じに扱うため
 	bool hasValue( const ConstAttribute& a ) {
 		return a && a.value() && a.value()[ 0 ] != '\0';
 	}
 
-	// RGB属性を読む。無ければ何もせず false。
+	// RGB属性を読む。無ければ何もせず false
 	bool readColor( const ConstElement& e, const char* name, Vector3* out ) {
 		ConstAttribute a = MeshLoaderUtil::findAttribute( e, name );
 		if ( !a ) {
@@ -31,7 +31,7 @@ namespace{
 }
 
 ConstAttribute MeshLoaderUtil::findAttribute( const ConstElement& e, const char* name ) {
-	// Element には名前引きの属性APIが無いので、名前で線形探索する。
+	// Element には名前引きの属性APIが無いので、名前で線形探索する
 	for ( int i = 0; i < e.attributeNumber(); ++i ) {
 		ConstAttribute a = e.attribute( i );
 		if ( RefString( name ) == a.name() ) {
@@ -69,7 +69,7 @@ void MeshLoaderUtil::loadMaterial( MeshMaterial* material, const ConstElement& m
 	if ( hasValue( a = findAttribute( meshElement, "ormmap" ) ) ) {
 		material->setOrmMap( textures->load( a.value(), Graphics::TEXTURE_COLOR_SPACE_LINEAR ) ); // AO・粗さ・金属（色ではない）
 	}
-	// 材質値は書いてあるものだけ上書きする（無ければ MeshMaterial の既定値）。
+	// 材質値は書いてあるものだけ上書きする（無ければ MeshMaterial の既定値）
 	Vector3 color;
 	if ( readColor( meshElement, "diffuse", &color ) ) {
 		material->setDiffuseColor( color );
@@ -112,8 +112,8 @@ Vector2* uvOut ) {
 	if ( ( a = findAttribute( vertexElement, "position" ) ) ) { a.getFloatValues( position, 3 ); }
 	if ( ( a = findAttribute( vertexElement, "normal" ) ) )   { a.getFloatValues( normal, 3 ); }
 	if ( ( a = findAttribute( vertexElement, "uv" ) ) )       { a.getFloatValues( uv, 2 ); }
-	// V反転：TGAは上原点／BlenderのVは下原点なので合わせる。
-	// どのメッシュ形式もこの1か所を通すので、規則を変えるときはここだけ直せばよい。
+	// V反転：TGAは上原点／BlenderのVは下原点なので合わせる
+	// どのメッシュ形式もこの1か所を通すので、規則を変えるときはここだけ直せばよい
 	uv[ 1 ] = 1.0f - uv[ 1 ];
 	positionOut->set( position[ 0 ], position[ 1 ], position[ 2 ] );
 	normalOut->set( normal[ 0 ], normal[ 1 ], normal[ 2 ] );

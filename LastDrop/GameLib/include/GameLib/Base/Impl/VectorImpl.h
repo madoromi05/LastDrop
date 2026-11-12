@@ -38,11 +38,11 @@ template< class T > inline Vector< T >::~Vector(){
 }
 
 template< class T > inline void Vector< T >::operator=( const Vector& a ){ 
-	//operator=()を書く時には自分を代入するケースに気をつけよう。
+	//operator=()を書く時には自分を代入するケースに気をつけよう
 	if ( this == &a ){
 		return;
 	}
-	//まず丸ごと削除。十分広い領域があっても、無駄になる可能性があるので削除する。
+	//まず丸ごと削除。十分広い領域があっても、無駄になる可能性があるので削除する
 	clear();
 
 	mSize = a.size;
@@ -57,8 +57,8 @@ template< class T > inline void Vector< T >::operator=( const Vector& a ){
 
 
 template< class T > inline void Vector< T >::push( const T& a ){
-	if ( mSize == mCapacity ){ //場所がない。引越しを行う。
-		//1.5倍+1サイズの領域を確保。+1は2未満でも増えるようにするため。
+	if ( mSize == mCapacity ){ //場所がない。引越しを行う
+		//1.5倍+1サイズの領域を確保。+1は2未満でも増えるようにするため
 		mCapacity = ( mCapacity * 3 / 2 ) + 1;
 		T* newElements = static_cast< T* >( OPERATOR_NEW( sizeof( T ) * mCapacity ) );
 		//全コピーおよび古い要素の破棄
@@ -78,8 +78,8 @@ template< class T > inline void Vector< T >::push( const T& a ){
 }
 
 template< class T > inline T* Vector< T >::push(){
-	if ( mSize == mCapacity ){ //場所がない。引越しを行う。
-		//1.5倍+1サイズの領域を確保。+1は2未満でも増えるようにするため。
+	if ( mSize == mCapacity ){ //場所がない。引越しを行う
+		//1.5倍+1サイズの領域を確保。+1は2未満でも増えるようにするため
 		mCapacity = ( mCapacity * 3 / 2 ) + 1;
 		T* newElements = static_cast< T* >( OPERATOR_NEW( sizeof( T ) * mCapacity ) );
 		//全コピーおよび古い要素の破棄

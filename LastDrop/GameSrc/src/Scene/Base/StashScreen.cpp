@@ -21,7 +21,7 @@ namespace{
 
 	const float kHalf = 0.5f;
 
-	// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ。
+	// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ
 	const float kCellSize = 40.f;
 	const float kGridTop = 70.f;        // マス目の上端
 	const float kGridGap = 60.f;        // 倉庫とカバンの間
@@ -64,7 +64,7 @@ namespace{
 
 StashScreen::StashScreen( UiRenderer* renderer ) :
 	mRenderer( renderer ),
-	// 倉庫は何丁でも、カバンは銃 1 種類 1 丁。
+	// 倉庫は何丁でも、カバンは銃 1 種類 1 丁
 	mPicker( renderer, &mIcons, GridRule::Free, GridRule::CarryLimit ),
 	mOnDeploy( false ),
 	mPreviousCursor( 0.f, 0.f ) {
@@ -110,10 +110,10 @@ StashScreen::Request StashScreen::handleInput( ItemGrid* stash, ItemGrid* bag ) 
 	layout( *stash, *bag );
 	UiInput input = UiInput::read( mPreviousCursor );
 	mPreviousCursor = input.cursor;
-	// F6 で中身が変わっても、消えた物を持ち上げたままにしない。
+	// F6 で中身が変わっても、消えた物を持ち上げたままにしない
 	mPicker.forgetStale( *stash, *bag );
 
-	// マウス：カーソルの下を選ぶ。
+	// マウス：カーソルの下を選ぶ
 	bool onDeploy = deployRect( *bag ).contains( input.cursor );
 	bool onCell = false;
 	if ( input.cursorMoved ) {
@@ -175,7 +175,7 @@ void StashScreen::drawDeploy( const ItemGrid& bag ) {
 	UiRect rect = deployRect( bag );
 	mRenderer->addRect( rect, mOnDeploy ? kButtonSelectedColor : kButtonColor );
 	mRenderer->addText( kDeployLabel, rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, mOnDeploy ? kButtonSelectedTextColor : kTextColor );
-	// カバンに銃が無ければ知らせる（止めはしない）。
+	// カバンに銃が無ければ知らせる（止めはしない）
 	if ( !hasWeapon( bag ) ) {
 		Vector2 line( rect.center().x, rect.bottom() + kWarningGap );
 		mRenderer->addText( kNoWeaponWarning, line, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kWarningColor );

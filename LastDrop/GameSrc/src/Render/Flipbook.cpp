@@ -17,7 +17,7 @@ int Flipbook::frameNumber() const {
 }
 
 int Flipbook::frameAt( float progress ) const {
-	// 最後のコマも同じ長さだけ見せる（progress × コマの数 を切り捨て、1 のときだけ最後のコマへ寄せる）。
+	// 最後のコマも同じ長さだけ見せる（progress × コマの数 を切り捨て、1 のときだけ最後のコマへ寄せる）
 	int frame = static_cast< int >( progress * static_cast< float >( mFrameNumber ) );
 	return std::min( std::max( frame, 0 ), mFrameNumber - 1 );
 }

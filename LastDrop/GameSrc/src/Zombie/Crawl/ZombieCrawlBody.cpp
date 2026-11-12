@@ -26,7 +26,7 @@ bool ZombieCrawlBody::start( const SkinnedMeshInstance& mesh, const ZombieCrawlL
 		!mesh.animatedBoneMatrix( layout.neck(), &neck ) ) {
 		return false; // まだ update していない（倒れ終わってから呼ぶので起きない）
 	}
-	// 骨の位置を、置き場所と向きを掛ける前（骨格の根の空間）へ戻して測る。
+	// 骨の位置を、置き場所と向きを掛ける前（骨格の根の空間）へ戻して測る
 	Matrix34 worldToRoot;
 	worldToRoot.setInverse( mesh.rootMatrix() );
 	Vector3 hipsRoot;
@@ -39,7 +39,7 @@ bool ZombieCrawlBody::start( const SkinnedMeshInstance& mesh, const ZombieCrawlL
 	bodyDirection.setSub( neckRoot, hipsRoot );
 	mYawOffset = AngleMath::headingOf( bodyDirection );
 	mChestOffset.set( chestRoot.x, 0.f, chestRoot.z );
-	// 見た目の向き（今の angleY）は変えず、進む向きを体の向きへ。胸の位置も今の見た目から求める（どちらも見た目は飛ばない）。
+	// 見た目の向き（今の angleY）は変えず、進む向きを体の向きへ。胸の位置も今の見た目から求める（どちらも見た目は飛ばない）
 	Vector3 chestOffset;
 	mesh.rootMatrix().mul33( &chestOffset, mChestOffset );
 	mCenter.setAdd( footing, chestOffset );
@@ -55,7 +55,7 @@ void ZombieCrawlBody::place( float angleY, const CharacterMover& mover, SkinnedM
 	ASSERT( mesh && footing && "ZombieCrawlBody : mesh or footing is null." );
 	mesh->setAngleY( AngleMath::wrapSigned( angleY - mYawOffset ) );
 	mCenter.y = mover.followGround( mCenter );
-	// 足元は、胸から見た目の向きで戻した所（胸を中心に向きを変えるので、向きを変えると足元が回る）。
+	// 足元は、胸から見た目の向きで戻した所（胸を中心に向きを変えるので、向きを変えると足元が回る）
 	Vector3 chestOffset;
 	mesh->rootMatrix().mul33( &chestOffset, mChestOffset );
 	footing->setSub( mCenter, chestOffset );

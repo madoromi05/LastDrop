@@ -12,13 +12,13 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 向きを変える速さ（度/ティック）。立っている体は 1 秒に 180°（急に振り向かない）。
-	// 這っている体は 1 秒に 60°（立っている時の 1/3。寝た体は大きく回せない）。
+	// 向きを変える速さ（度/ティック）。立っている体は 1 秒に 180°（急に振り向かない）
+	// 這っている体は 1 秒に 60°（立っている時の 1/3。寝た体は大きく回せない）
 	const float kTurnPerTick = 180.f / GameTime::kTicksPerSecond;
 	const float kCrawlTurnPerTick = 60.f / GameTime::kTicksPerSecond;
-	// 行き先との向きの差がこれより大きい間は、その場で向きを変えるだけで進まない（横歩き・後ろ歩きに見えないように）。
+	// 行き先との向きの差がこれより大きい間は、その場で向きを変えるだけで進まない（横歩き・後ろ歩きに見えないように）
 	const float kTurnInPlaceDegree = 60.f;
-	// 行き先がこれより近ければ、向きを決めない（真上に居るときに向きが定まらず回り続けないように。m）。
+	// 行き先がこれより近ければ、向きを決めない（真上に居るときに向きが定まらず回り続けないように。m）
 	const float kMinTurnDistance = 0.05f;
 }
 
@@ -52,7 +52,7 @@ const HitWorld& hitWorld, const ZombieCrowd* crowd, float weaveDegree, float* an
 	intent.walking = mChase.wantsToWalk();
 	intent.facing = false;
 	intent.wandering = ( mChase.mode() == ZombieChase::Mode::Wander );
-	// 走る体は、自キャラを追う間（Chase）も、音を聞いて寄る間（Search）も走る。うろつく間は歩く。
+	// 走る体は、自キャラを追う間（Chase）も、音を聞いて寄る間（Search）も走る。うろつく間は歩く
 	intent.running = mRunner && intent.walking && !intent.wandering;
 	if ( intent.wandering ) {
 		mPath.clear(); // うろつく先は近く（ZombieChase が通れる所を選ぶ）なので、通り道は使わない
@@ -62,9 +62,9 @@ const HitWorld& hitWorld, const ZombieCrowd* crowd, float weaveDegree, float* an
 		}
 		return intent;
 	}
-	// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）。
-	// 歩いている間は、近くの仲間から離れる向きを混ぜる（前の仲間を避けて横へ回り込む）。
-	// 揺れている間は、倒れている側へ少し流れる（追っている間だけ揺れるので、探す間は weaveDegree が 0）。
+	// 追う・探す間は、まっすぐ通れなければ通り道の次の点を向く（止まる距離・攻撃の間合いは行き先との距離のまま）
+	// 歩いている間は、近くの仲間から離れる向きを混ぜる（前の仲間を避けて横へ回り込む）
+	// 揺れている間は、倒れている側へ少し流れる（追っている間だけ揺れるので、探す間は weaveDegree が 0）
 	const Vector3& point = mPath.steer( center, mChase.destination(), *mNavMesh, intent.walking );
 	Vector3 facingPoint = intent.walking ? weave( center, avoidCrowd( center, point, crowd ), weaveDegree ) : point;
 	intent.facing = turnToward( center, facingPoint, Posture::Standing, angleY );
@@ -92,7 +92,7 @@ const HitWorld& hitWorld, float* angleY ) {
 	if ( mChase.mode() == ZombieChase::Mode::Search && mPath.isStuck() ) {
 		mChase.giveUpSearch();
 	}
-	// 歩きたいかは、あきらめた後で読む（今までの這う追い方と同じ順）。
+	// 歩きたいかは、あきらめた後で読む（今までの這う追い方と同じ順）
 	intent.walking = mChase.wantsToWalk();
 	return intent;
 }
@@ -105,7 +105,7 @@ bool ZombieLocomotion::turnToward( const Vector3& center, const Vector3& destina
 	if ( toDestination.length() < kMinTurnDistance ) {
 		return true;
 	}
-	// 向き 0 が +Z、90 が +X（AngleMath）。
+	// 向き 0 が +Z、90 が +X（AngleMath）
 	float difference = AngleMath::difference( AngleMath::headingOf( toDestination ), *angleY );
 	float turnLimit = ( posture == Posture::Crawling ) ? kCrawlTurnPerTick : kTurnPerTick;
 	float turn = Math::max( -turnLimit, Math::min( turnLimit, difference ) );
@@ -115,7 +115,7 @@ bool ZombieLocomotion::turnToward( const Vector3& center, const Vector3& destina
 
 Vector3 ZombieLocomotion::walkStep( float distance, float angleY ) const {
 	Vector3 step( Math::sin( angleY ) * distance, 0.f, Math::cos( angleY ) * distance );
-	// 壁・車・ほかの体に当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）。
+	// 壁・車・ほかの体に当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）
 	return mMover->move( step );
 }
 
@@ -130,7 +130,7 @@ void ZombieLocomotion::standAside( const Vector3& center, const ZombieCrowd* cro
 	if ( length <= 0.f ) {
 		return;
 	}
-	// 向きは変えず（相手の方を向いたまま）、決まった速さで横へずれる。壁・ほかの体に当たったら沿って滑る。
+	// 向きは変えず（相手の方を向いたまま）、決まった速さで横へずれる。壁・ほかの体に当たったら沿って滑る
 	Vector3 step;
 	step.setMul( aside, params.standAsideSpeed / GameTime::kTicksPerSecond / length );
 	*footing += mMover->move( step );
@@ -147,7 +147,7 @@ Vector3 ZombieLocomotion::avoidCrowd( const Vector3& center, const Vector3& poin
 	if ( distance < kMinTurnDistance ) {
 		return point; // 着いている。向きを決めない（turnToward と同じ）
 	}
-	// 行き先への向き（長さ 1）に、仲間から離れる向き（長さ 0〜1）× 強さを足す。向く点は、その向きの 1m 先。
+	// 行き先への向き（長さ 1）に、仲間から離れる向き（長さ 0〜1）× 強さを足す。向く点は、その向きの 1m 先
 	mSeparation = crowd->separation( mSelf, center, params.separationRadius );
 	mSeparation *= params.separationStrength;
 	Vector3 direction;
@@ -166,7 +166,7 @@ Vector3 ZombieLocomotion::weave( const Vector3& center, const Vector3& point, fl
 	if ( degree == 0.f ) {
 		return point;
 	}
-	// 体の向きを正に回すと前は +X（骨格の根の空間の横）へ寄る。傾きが正の側＝倒れている側へ向く点を回す。
+	// 体の向きを正に回すと前は +X（骨格の根の空間の横）へ寄る。傾きが正の側＝倒れている側へ向く点を回す
 	float x = point.x - center.x;
 	float z = point.z - center.z;
 	float c = Math::cos( degree );

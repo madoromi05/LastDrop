@@ -10,7 +10,7 @@ namespace Graphics{
 
 class DepthTarget::Impl : public ReferenceType{
 public:
-	// screenScale の意味は RenderTarget::Impl と同じ。
+	// screenScale の意味は RenderTarget::Impl と同じ
 	Impl( int width, int height, float screenScale, ID3D11Device* device ) :
 	mTexture( 0 ),
 	mDSV( 0 ),
@@ -53,7 +53,7 @@ public:
 	float mScreenScale;
 private:
 	void createDxObjects( int w, int h ){
-		// 深度として書き、float として読むため、テクスチャは型を決めずに作り、ビューごとに読み方を決める。
+		// 深度として書き、float として読むため、テクスチャは型を決めずに作り、ビューごとに読み方を決める
 		D3D11_TEXTURE2D_DESC desc = {};
 		desc.Width            = static_cast< UINT >( w );
 		desc.Height           = static_cast< UINT >( h );
@@ -71,7 +71,7 @@ private:
 		dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mDSV );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView failed" );
-		// 読み取り専用の付け方（半透明の板が、奥行きで隠れながら同じ深度を読む）。
+		// 読み取り専用の付け方（半透明の板が、奥行きで隠れながら同じ深度を読む）
 		dsvDesc.Flags = D3D11_DSV_READ_ONLY_DEPTH;
 		hr = mDevice->CreateDepthStencilView( mTexture, &dsvDesc, &mReadOnlyDSV );
 		STRONG_ASSERT( SUCCEEDED( hr ) && "DepthTarget : CreateDepthStencilView (read only) failed" );

@@ -17,11 +17,11 @@ public:
 	void set( const char* name, const double* values, int number ); //double配列
 	const char* value() const;
 	const char* name() const;
-	///失敗すると0を返すが、もともと0が入っていたのとは区別がつかない。
+	///失敗すると0を返すが、もともと0が入っていたのとは区別がつかない
 	int getIntValue() const;
-	///失敗すると0.fを返すが、もともと0.fが入っていたのとは区別がつかない。
+	///失敗すると0.fを返すが、もともと0.fが入っていたのとは区別がつかない
 	float getFloatValue() const;
-	///失敗すると0.0を返すが、もともと0.0が入っていたのとは区別がつかない。
+	///失敗すると0.0を返すが、もともと0.0が入っていたのとは区別がつかない
 	double getDoubleValue() const;
 	///戻り値は実際に読めた要素数
 	int getIntValues( int* out, int number ) const;
@@ -54,11 +54,11 @@ class ConstAttribute{
 public:
 	const char* value() const;
 	const char* name() const;
-	///失敗すると0を返すが、もともと0が入っていたのとは区別がつかない。
+	///失敗すると0を返すが、もともと0が入っていたのとは区別がつかない
 	int getIntValue() const;
-	///失敗すると0.fを返すが、もともと0.fが入っていたのとは区別がつかない。
+	///失敗すると0.fを返すが、もともと0.fが入っていたのとは区別がつかない
 	float getFloatValue() const;
-	///失敗すると0.0を返すが、もともと0.0が入っていたのとは区別がつかない。
+	///失敗すると0.0を返すが、もともと0.0が入っていたのとは区別がつかない
 	double getDoubleValue() const;
 	///戻り値は実際に読めた要素数
 	int getIntValues( int* out, int number ) const;

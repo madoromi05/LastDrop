@@ -7,7 +7,7 @@ LoadingPhase::LoadingPhase( GameWorld* world, const MeshCache* meshes, int escap
 }
 
 bool LoadingPhase::advance( bool meshesReady ) {
-	// ロードは 1 回の描画に 1 段階ずつ（間にロード画面を描き、窓のメッセージを回す）。
+	// ロードは 1 回の描画に 1 段階ずつ（間にロード画面を描き、窓のメッセージを回す）
 	if ( !mLoader.advance( meshesReady ) ) {
 		return false; // まだロード中
 	}

@@ -10,13 +10,13 @@ namespace{
 	const float kMinScale = 1e-8f;           // 軸の長さがこれ未満なら潰れた行列とみなし、割り算しない
 	const float kNlerpThreshold = 0.9995f;   // 2つの回転がこれ以上近いと slerp の sin が0に近づくので、正規化線形補間で代用
 
-	// 回転を表す単位四元数。このファイルの中だけで使う（GameLib に四元数が無いため）。
+	// 回転を表す単位四元数。このファイルの中だけで使う（GameLib に四元数が無いため）
 	struct Quaternion{
 		float x, y, z, w;
 	};
 
-	// 行列の列ベクトル（＝ローカルの x/y/z 軸がワールドでどちらを向くか）。
-	// Matrix34 は「列ベクトルに右から掛ける」形で、m03/m13/m23 が移動。
+	// 行列の列ベクトル（＝ローカルの x/y/z 軸がワールドでどちらを向くか）
+	// Matrix34 は「列ベクトルに右から掛ける」形で、m03/m13/m23 が移動
 	float element( const Matrix34& m, int row, int column ) {
 		return m( row, column );
 	}
@@ -28,8 +28,8 @@ namespace{
 		return std::sqrt( x * x + y * y + z * z );
 	}
 
-	// 拡大を取り除いた回転行列（3x3 部分）から四元数を作る。
-	// 対角成分の大きいものを基準にして、sqrt の中身が小さくなって精度が落ちるのを避ける（定番の方法）。
+	// 拡大を取り除いた回転行列（3x3 部分）から四元数を作る
+	// 対角成分の大きいものを基準にして、sqrt の中身が小さくなって精度が落ちるのを避ける（定番の方法）
 	Quaternion toQuaternion( const float r[ kAxisNumber ][ kAxisNumber ] ) {
 		Quaternion q;
 		float trace = r[ 0 ][ 0 ] + r[ 1 ][ 1 ] + r[ 2 ][ 2 ];
@@ -61,7 +61,7 @@ namespace{
 		return q;
 	}
 
-	// 行列を 移動・回転（四元数）・軸ごとの拡大 に分ける。
+	// 行列を 移動・回転（四元数）・軸ごとの拡大 に分ける
 	void decompose( const Matrix34& m, float translation[ kAxisNumber ], Quaternion* rotation, float scale[ kAxisNumber ] ) {
 		float r[ kAxisNumber ][ kAxisNumber ];
 		for ( int column = 0; column < kAxisNumber; ++column ) {
@@ -77,10 +77,10 @@ namespace{
 		*rotation = toQuaternion( r );
 	}
 
-	// 球面線形補間。回転の角速度が一定になるので、途中で速さが変わらず、軸も縮まない。
+	// 球面線形補間。回転の角速度が一定になるので、途中で速さが変わらず、軸も縮まない
 	Quaternion slerp( const Quaternion& a, Quaternion b, float t ) {
 		float dot = a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
-		// q と -q は同じ回転。内積が負なら b を裏返して、近い回り方（180度以内）で補間する。
+		// q と -q は同じ回転。内積が負なら b を裏返して、近い回り方（180度以内）で補間する
 		if ( dot < 0.f ) {
 			b.x = -b.x; b.y = -b.y; b.z = -b.z; b.w = -b.w;
 			dot = -dot;
@@ -101,7 +101,7 @@ namespace{
 		q.y = a.y * wa + b.y * wb;
 		q.z = a.z * wa + b.z * wb;
 		q.w = a.w * wa + b.w * wb;
-		// 近い回転の代用（正規化線形補間）では長さが1からずれるので、正規化する。
+		// 近い回転の代用（正規化線形補間）では長さが1からずれるので、正規化する
 		float length = std::sqrt( q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w );
 		q.x /= length; q.y /= length; q.z /= length; q.w /= length;
 		return q;
@@ -124,7 +124,7 @@ void MatrixBlend::blend( const Matrix34& from, const Matrix34& to, float t, Matr
 		s[ i ] = ScalarMath::lerp( fromScale[ i ], toScale[ i ], t );
 	}
 
-	// 回転行列 × 拡大（列ごとに軸の長さを掛ける）＋移動 で組み立て直す。
+	// 回転行列 × 拡大（列ごとに軸の長さを掛ける）＋移動 で組み立て直す
 	float xx = q.x * q.x, yy = q.y * q.y, zz = q.z * q.z;
 	float xy = q.x * q.y, xz = q.x * q.z, yz = q.y * q.z;
 	float wx = q.w * q.x, wy = q.w * q.y, wz = q.w * q.z;

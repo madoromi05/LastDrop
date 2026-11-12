@@ -8,9 +8,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 骨格は cm（根に 0.01 倍が入っている）、銃は m なので、骨の空間では銃を100倍して等倍に戻す。
+	// 骨格は cm（根に 0.01 倍が入っている）、銃は m なので、骨の空間では銃を100倍して等倍に戻す
 	const float kWeaponScaleInBone = 100.f;
-	// 銃のモデルの銃口の向き（+Z）。どの銃も +Z を前にして変換する（tools/configs/*.json）。
+	// 銃のモデルの銃口の向き（+Z）。どの銃も +Z を前にして変換する（tools/configs/*.json）
 	const Vector3 kMuzzleAxis( 0.f, 0.f, 1.f );
 }
 
@@ -30,7 +30,7 @@ const StaticMeshData* WeaponModelComponent::magazine() const {
 }
 
 Matrix34 WeaponModelComponent::gripInHand() const {
-	// 握りの中心を原点へ動かし、大きさ・向きを合わせてから手の位置へ置く。
+	// 握りの中心を原点へ動かし、大きさ・向きを合わせてから手の位置へ置く
 	Matrix34 grip;
 	grip.setTranslation( mGrip->gripInHand );
 	grip.rotateY( mGrip->rotationY );
@@ -49,7 +49,7 @@ void WeaponModelComponent::bounds( Vector3* boundsMin, Vector3* boundsMax ) cons
 	ASSERT( boundsMin && boundsMax && "WeaponModelComponent::bounds : out is null." );
 	*boundsMin = mWeapon->boundsMin();
 	*boundsMax = mWeapon->boundsMax();
-	// 弾倉も含める（弾倉を分ける前と同じ大きさにする）。
+	// 弾倉も含める（弾倉を分ける前と同じ大きさにする）
 	if ( mMagazine ) {
 		const Vector3& low = mMagazine->boundsMin();
 		const Vector3& high = mMagazine->boundsMax();

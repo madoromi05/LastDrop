@@ -11,14 +11,14 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 
 #ifndef NDEBUG
-	// 確かめる線分の数。三角形の多いメッシュ（車）でも、総当たりで読み込みが目に見えて遅くならない程度。
+	// 確かめる線分の数。三角形の多いメッシュ（車）でも、総当たりで読み込みが目に見えて遅くならない程度
 	const int kVerifyRayCount = 200;
-	// 木と総当たりで、当たった時刻がこれ以上違えば別の答えとみなす（計算の順番の違いで出る誤差より十分大きい）。
+	// 木と総当たりで、当たった時刻がこれ以上違えば別の答えとみなす（計算の順番の違いで出る誤差より十分大きい）
 	const float kVerifyTimeTolerance = 1e-4f;
-	// 線分の端を選ぶ範囲を、メッシュを囲む箱より外へ広げる割合（外から入る線分・外れる線分も試すため）。
+	// 線分の端を選ぶ範囲を、メッシュを囲む箱より外へ広げる割合（外から入る線分・外れる線分も試すため）
 	const float kVerifyBoundsSpread = 0.2f;
 
-	// 決まった並びの乱数（毎回同じ線分で確かめる。0〜1）。
+	// 決まった並びの乱数（毎回同じ線分で確かめる。0〜1）
 	class VerifyRandom{
 	public:
 		VerifyRandom() : mState( 12345u ){}
@@ -80,7 +80,7 @@ void TriangleMesh::verifyTree() const {
 	if ( isEmpty() ) {
 		return;
 	}
-	// 囲む箱を少し広げた範囲から、始点と終点を選ぶ。
+	// 囲む箱を少し広げた範囲から、始点と終点を選ぶ
 	Vector3 size;
 	size.setSub( mTree.boundsMax(), mTree.boundsMin() );
 	Vector3 low;

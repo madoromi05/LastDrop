@@ -18,10 +18,10 @@ public:
 	mStream( 0 ),
 	mDummy( false ){
 		if ( !name ){
-			mDummy = true; //ダミーアーカイブ。直接ファイルから読み込みます。
+			mDummy = true; //ダミーアーカイブ。直接ファイルから読み込みます
 			return;
 		}
-		//ファイルを開けてメンバに持っておく。
+		//ファイルを開けてメンバに持っておく
 		setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
 		mStream = NEW ifstream( name, ifstream::binary );
 		if ( !mStream->good() ){
@@ -30,7 +30,7 @@ public:
 			return;
 		}
 		//末尾から4バイト前へ移動
-		//ファイルサイズを一回測ろうか。エラーチェックのためにな。
+		//ファイルサイズを一回測ろうか。エラーチェックのためにな
 		mStream->seekg( 0, ifstream::end );
 		streamsize fileSize = mStream->tellg();
 		if ( fileSize < 8 ){ //まずありえん
@@ -57,7 +57,7 @@ public:
 		}
 		//ハッシュマップサイズ確保
 		mEntries.setCapacity( mFileNumber );
-		//後はループで回しながら読んでいく。
+		//後はループで回しながら読んでいく
 		for ( int i = 0; i < mFileNumber; ++i ){
 			Entry e;
 			e.mPosition = getUnsigned();
@@ -65,7 +65,7 @@ public:
 			e.mOriginalSize = getUnsigned();
 			e.mNecessaryBufferSize = getUnsigned();
 			int nameLength = getUnsigned();
-			//名前は一旦一時配列にいれる。すぐdeleteするが。
+			//名前は一旦一時配列にいれる。すぐdeleteするが
 			char* name = NEW char[ nameLength + 1 ]; //終端NULLで+1
 			mStream->read( name, nameLength );
 			name[ nameLength ] = '\0'; //終端NULL
@@ -132,11 +132,11 @@ public:
 	void allocate( char** dataOut, int size, int entryIndex ){
 		if ( mDummy ){
 			STRONG_ASSERT( entryIndex == -1 );
-			*dataOut = NEW char[ size + 1 ]; //親切設計NULL終端。
+			*dataOut = NEW char[ size + 1 ]; //親切設計NULL終端
 		}else{
 			STRONG_ASSERT( entryIndex >= 0 );
 			const Entry& e = *mEntries.value( entryIndex );
-			int allocSize = max( e.mNecessaryBufferSize, e.mOriginalSize + 1 ); //展開に必要なバッファサイズがあるならそれも書く。
+			int allocSize = max( e.mNecessaryBufferSize, e.mOriginalSize + 1 ); //展開に必要なバッファサイズがあるならそれも書く
 			*dataOut = NEW char[ allocSize ];
 		}
 	}
@@ -162,7 +162,7 @@ public:
 		}
 		int readOffset = 0;
 		if ( compressed ){
-			readOffset = necessaryBufferSize - size; //後ろにロード。展開に余分に必要な場合があるのでoriginalSizeではない。
+			readOffset = necessaryBufferSize - size; //後ろにロード。展開に余分に必要な場合があるのでoriginalSizeではない
 		}
 		stream->read( data + readOffset, size );
 		if ( stream->gcount() != size ){ //エラーか

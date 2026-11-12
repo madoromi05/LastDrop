@@ -3,10 +3,10 @@
 
 #include "GameLib/Scene/Animation.h"
 
-// キャラクターのアニメーション状態遷移を司るクラス（状態遷移マシン単体）。
-// 「今どの状態か」「状態→アニメの対応」「遷移してよいか」だけを持つ。
-// 時刻更新(updateAnimation)や描画は Scene::Tree の責務とし、ここには持たない（単一責任）。
-// Scene::Animation は Container から借用するだけで所有しない。
+// キャラクターのアニメーション状態遷移を司るクラス（状態遷移マシン単体）
+// 「今どの状態か」「状態→アニメの対応」「遷移してよいか」だけを持つ
+// 時刻更新(updateAnimation)や描画は Scene::Tree の責務とし、ここには持たない（単一責任）
+// Scene::Animation は Container から借用するだけで所有しない
 class Animator{
 public:
 	enum State{
@@ -23,8 +23,8 @@ public:
 	Animator();
 	// State に対応するアニメを登録する（借用。所有しない）
 	void setAnimation( State, GameLib::Scene::Animation );
-	// 指定 State への遷移を要求する。実際に遷移したら true を返す。
-	// true は「呼び出し側が Tree::setAnimation( animation() ) を呼ぶべき合図」。
+	// 指定 State への遷移を要求する。実際に遷移したら true を返す
+	// true は「呼び出し側が Tree::setAnimation( animation() ) を呼ぶべき合図」
 	bool request( State next );
 	// 現在の State を取得する
 	State state() const;
