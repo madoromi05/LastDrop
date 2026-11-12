@@ -10,6 +10,7 @@ namespace GameLib {
 			void setWidth( int width );
 			void setHeight( int height );
 			void setTitle( const char* title );
+			void setCursorFile( const char* path ); //窓の中のカーソル（.cur）。読めなければ Windows の標準の矢印
 			void forbidFullScreen( bool = true ); //これを呼んでおくとalt-enterが無視される
 			void enableFullScreen( bool = true );
 			void enableDragAndDrop( bool = true );

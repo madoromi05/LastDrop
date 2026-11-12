@@ -24,7 +24,6 @@ public:
 
 	// ── 並べる位置（画素）──
 	// x は基準（UiAnchor）からのずれで返す。括弧の中の基準と組にして部品へ渡すこと（理由は UiAnchor.h）
-	// ── RE:2 風の左寄せのメニュー（どれも UI_ANCHOR_LEFT）──
 	static GameLib::Math::Vector2 sideTitlePosition();				// 題名の左上（UI_ALIGN_LEFT で使う）
 	static UiRect sideRuleRect();									// 題名の下の赤い短い線の範囲
 	static GameLib::Math::Vector2 sideTaglinePosition();			// 赤い線の下のひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う）
@@ -32,13 +31,14 @@ public:
 	// 縦に並べる count 行のうち、index 番目（0 が一番上）の範囲
 	// 一番下の行の位置は行の数によらず同じで、行が多いほど上へ伸びる
 	static UiRect sideMenuItemRect( int index, int count );
-	static GameLib::Math::Vector2 sideHeadingPosition();			// 設定・操作の一覧の見出しの左上（UI_ALIGN_LEFT で使う）
+	static GameLib::Math::Vector2 sideHeadingPosition();			// 設定の見出しの左上（UI_ALIGN_LEFT で使う）
 	static UiRect sideHeadingRuleRect();							// 見出しの下の赤い短い線の範囲
-	static UiRect sideSettingRowRect( int index );					// 設定のスライダーの index 行目（0 が一番上）の範囲
-	static UiRect sideSettingLinkRect( int rowCount, int index );	// rowCount 行のスライダーの下に、少し空けて並べるページを開く行（操作の一覧・戻る）の index 番目の範囲
+	static UiRect sideTabBarRect();									// 見出しの下のタブの行（音声・感度・操作）の範囲
+	static UiRect sideSubTabBarRect();								// タブの中の一番上の、小さい切り替えの行（操作のタブのキーボード・マウス／パッド）の範囲
+	static UiRect sideSettingRowRect( int index );					// タブの中のスライダーの index 行目（0 が一番上）の範囲
 	static UiColumn controlsColumn( int index, int count );			// 操作の一覧のまとまりを置く列（count 列のうち、左から index 番目）。画面の左右の余白の間を等分する
-	static float controlsGroupTop();								// 操作の一覧のまとまりの名前の上端（画面の上端から）
-	static UiRect sideBackItemRect();								// 中身の下に 1 つだけ置く行（操作の一覧の「戻る」・脱出成功の「タイトルへ」）の範囲
+	static float controlsGroupTop();								// 操作の一覧のまとまりの名前の上端（画面の上端から。小さい切り替えの行の下）
+	static UiRect sideBackItemRect();								// 中身の下に 1 つだけ置く行（設定の「戻る」・脱出成功の「タイトルへ」）の範囲
 	static UiRect sideTableRowRect();								// 結果の表の 1 行目の範囲。2 行目からは同じ高さで下へ続ける（UiStatTable）
 	static GameLib::Math::Vector2 keyHintPosition();				// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）
 	// ── 真ん中に寄せる画面（ゲームオーバー。どれも UI_ANCHOR_CENTER）──

@@ -33,7 +33,7 @@ public:
 	// update から 1 ティック進める。commandInterrupts: このティックの操作が取りやめか。raidFinished: 1 日が終わったか
 	// 攻撃された・死んだも取りやめ。開け終わったら中を見る画面を開く（脱出の車なら、ガソリンを入れる）
 	void update( bool commandInterrupts, bool raidFinished );
-	static bool interrupts( const PlayerCommand& command );																							// 操作 command が開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器出し入れ）
+	static bool interrupts( const PlayerCommand& command );																							// 操作 command が開けている途中の取りやめになるか（動く・撃つ・構える・リロード）
 	void handleInput();																																// 中を見る画面の入力（ESC・E・Tab で閉じる・マス操作）。ほかの入力は読まない
 	void draw( ItemId equippedWeapon );																												// 中を見る画面を描く。equippedWeapon: 手に持っている銃（マスの印に使う。GameScene が持つ）
 	bool hasOpenGrid() const;																														// 中を見る画面が開いていて、中身のマス目があるか（draw の前提。消えた物を指していれば false）

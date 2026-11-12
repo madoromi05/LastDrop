@@ -14,13 +14,12 @@ using namespace GameLib::Math;
 
 namespace{
 	// 速さは「毎秒」で決め、1フレーム（1ティック。GameTime.h）ぶんに直して使う（update は1ティックに1回）
-	// 歩き・走りの速さ（m/フレーム）は、アニメの足運びに合わせる（合わないと足が地面を滑って見える）
+	// 歩き・走りの速さ（m/フレーム）は、銃を持ったアニメの足運びに合わせる（合わないと足が地面を滑って見える）
 	// 値は元アニメ（In Place にする前）が1周で進む距離から測った
-	const float kWalkSpeed      = 1.4f / GameTime::kTicksPerSecond;		// Walking（素手）
-	const float kRunSpeed       = 3.2f / GameTime::kTicksPerSecond;		// Slow Run（素手）
-	const float kArmedWalkSpeed = 1.0f / GameTime::kTicksPerSecond;		// walking（Shooter Pack）: 1.36m / 1.37秒
-	const float kArmedRunSpeed  = 3.1f / GameTime::kTicksPerSecond;		// rifle run（Shooter Pack）: 2.30m / 0.73秒
-	const float kStopSpeed      = 0.f;
+	// 素手でも同じ速さにする（銃の有無で動く速さを変えない）。素手のアニメは歩き 1.4m/秒・走り 3.2m/秒の足運びなので、少し滑って見える
+	const float kWalkSpeed = 1.0f / GameTime::kTicksPerSecond;	// walking（Shooter Pack）: 1.36m / 1.37秒
+	const float kRunSpeed  = 3.1f / GameTime::kTicksPerSecond;	// rifle run（Shooter Pack）: 2.30m / 0.73秒
+	const float kStopSpeed = 0.f;
 	// 加速・減速（m/フレーム²）。毎秒²の値をフレーム²に直す
 	// 止まる→走るは約0.4秒、走る→止まるは約0.27秒。減速を強めにしているのは、止まりたいときに滑り続けると操作が重く感じるため
 	const float kAcceleration = 8.f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
@@ -31,7 +30,7 @@ namespace{
 	// 状態ごとの決まりごとの表。状態について知りたいこと（アニメ名・速さ・歩き方・武器を持っているか）は、すべてここから引く
 	// 状態を足すときは、Animator::State に1つ足し、この表に1行足すだけでよい（状態を並べた switch や if は他に無い）
 	// アニメ名は tools/configs/player.json の extra_animations の name
-	// 武器をしまっている間は素手のアニメ、持っている間は銃を肩の高さに持つアニメ（Basic Shooter Pack）
+	// 銃を手に持っていない間は素手のアニメ、持っている間は銃を肩の高さに持つアニメ（Basic Shooter Pack）
 	// 覗く（ADS）は専用のアニメを持たず、持っているアニメのまま FirstPersonBody が腕と銃を目の前へ寄せる
 	// 先頭は、アニメが見つからない状態・表に無い状態の代わりに使う静止の行
 	const bool kBareHands = false;
@@ -45,12 +44,12 @@ namespace{
 		bool drawn;   // 武器を持っている状態か
 	};
 	const StateAnimation kStateAnimations[] = {
-		{ Animator::STATE_IDLE,       "idle",       kStopSpeed,      GAIT_STILL, kBareHands   },
-		{ Animator::STATE_WALK,       "walk",       kWalkSpeed,      GAIT_WALK,  kBareHands   },
-		{ Animator::STATE_RUN,        "run",        kRunSpeed,       GAIT_RUN,   kBareHands   },
-		{ Animator::STATE_ARMED_IDLE, "rifle_idle", kStopSpeed,      GAIT_STILL, kWeaponDrawn },
-		{ Animator::STATE_ARMED_WALK, "rifle_walk", kArmedWalkSpeed, GAIT_WALK,  kWeaponDrawn },
-		{ Animator::STATE_ARMED_RUN,  "rifle_run",  kArmedRunSpeed,  GAIT_RUN,   kWeaponDrawn },
+		{ Animator::STATE_IDLE,       "idle",       kStopSpeed, GAIT_STILL, kBareHands   },
+		{ Animator::STATE_WALK,       "walk",       kWalkSpeed, GAIT_WALK,  kBareHands   },
+		{ Animator::STATE_RUN,        "run",        kRunSpeed,  GAIT_RUN,   kBareHands   },
+		{ Animator::STATE_ARMED_IDLE, "rifle_idle", kStopSpeed, GAIT_STILL, kWeaponDrawn },
+		{ Animator::STATE_ARMED_WALK, "rifle_walk", kWalkSpeed, GAIT_WALK,  kWeaponDrawn },
+		{ Animator::STATE_ARMED_RUN,  "rifle_run",  kRunSpeed,  GAIT_RUN,   kWeaponDrawn },
 	};
 
 	// 状態の行。表に無い状態は、先頭（素手の静止）の行を返す
@@ -95,10 +94,11 @@ void PlayerLocomotionComponent::awake() {
 
 void PlayerLocomotionComponent::start() {
 	// Animator は静止状態から始まる（request は同じ状態への遷移を無視する）ので、最初のアニメはここで付ける
-	// 武器を持って始まるなら、最初から持った静止のアニメにする（1フレーム目から素手→銃のフェードを見せない）
+	// 持つ部品があれば、最初から銃を持った静止のアニメにする（1フレーム目から素手→銃のフェードを見せない）
+	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、出撃には銃が要る（StashScreen）ので持つと決めてよい
 	// 持つ部品は外せる（無ければ素手）
-	const HoldComponent* hold = getComponent< HoldComponent >();
-	mAnimator.request( chooseState( false, false, hold && hold->isDrawn() ) );
+	bool armed = getComponent< HoldComponent >() != nullptr;
+	mAnimator.request( chooseState( false, false, armed ) );
 	mModel->mesh().setAnimation( mAnimator.animation(), 0.f );
 }
 
@@ -179,5 +179,5 @@ float PlayerLocomotionComponent::gaitPhase() const {
 }
 
 float PlayerLocomotionComponent::walkRate() const {
-	return mSpeed / kArmedWalkSpeed;	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）
+	return mSpeed / kWalkSpeed;	// 速さの割合は歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）
 }

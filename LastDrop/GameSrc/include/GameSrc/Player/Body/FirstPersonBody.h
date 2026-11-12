@@ -48,7 +48,7 @@ public:
 		int supportHandBone, const GameLib::Math::Vector3& supportHandOnWeapon,
 		const GameLib::Math::Vector3& weaponMin, const GameLib::Math::Vector3& weaponMax );
 	void clearWeapon();									// 銃を持たない（素手）に戻す。銃に合わせる補正（両手持ち・覗く・反動・ぶれ・胸元への寄せ）が効かなくなる
-	void setHoldWeight( float weight );					// 両手持ちの効き具合（0 = 右手首を曲げない、1 = 銃の先が左手を向く）。武器をしまっている間は 0 にする
+	void setHoldWeight( float weight );					// 両手持ちの効き具合（0 = 右手首を曲げない、1 = 銃の先が左手を向く）。素手の間は 0 にする
 	void setAimWeight( float weight );					// 覗き具合（0 = アニメのまま、1 = サイト線が目と視線にぴったり重なる）
 	void setCarryWeight( float weight );				// 胸元への寄せ具合（0 = アニメのまま、1 = 銃を胸元に抱える）。走っている間だけ 1 にする
 	void setRecoil( float kick );						// 反動の量（0 = 反動なし、1 = 撃った瞬間。WeaponRecoil::kick）
@@ -66,7 +66,7 @@ public:
 	const GameLib::Math::Vector3& eyePosition() const;	// 最後に apply したポーズでの目の位置（骨格の根の空間）。apply 前・頭の骨が無いときは足元から一定の高さ
 	// 最後に apply したポーズ（反動で跳ねた後）での銃の頂点の範囲を囲む箱（骨格の根の空間）を low / high へ書く
 	// 銃の8隅を移してから囲むので、銃が斜めを向いていても銃全体が入る。銃が無い・まだ apply していなければ false
-	// 武器をしまっているかは知らない（銃の箱を使うかは持ち主が決める）
+	// 銃を手に持っているかは知らない（銃の箱を使うかは持ち主が決める）
 	bool weaponBounds( GameLib::Math::Vector3* low, GameLib::Math::Vector3* high ) const;
 
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;

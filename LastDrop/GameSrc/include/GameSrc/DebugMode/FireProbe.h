@@ -22,7 +22,7 @@ public:
 	// 持っている銃の状態（銃が無ければ hasGun = false で、ほかは読まない）
 	struct GunState{
 		bool hasGun;
-		bool inHand;     // しまっていない
+		bool inHand;     // 銃を手に持っている
 		bool aiming;
 		bool reloading;
 		bool running;    // 走る入力

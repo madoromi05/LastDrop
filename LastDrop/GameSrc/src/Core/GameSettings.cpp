@@ -19,7 +19,8 @@ namespace{
 	const char* kAttrMasterVolume = "masterVolume";
 	const char* kAttrEffectVolume = "effectVolume";
 	const char* kAttrMouseSensitivity = "mouseSensitivity";
-	const int kAttributeNumber = 3;
+	const char* kAttrPadSensitivity = "padSensitivity";
+	const int kAttributeNumber = 4;
 	const float kPercent = 100.f;
 
 	int clampValue( int value, int minValue, int maxValue ) {
@@ -37,10 +38,11 @@ namespace{
 GameSettings::GameSettings() :
 	masterVolume( kVolumeMax ),
 	effectVolume( kVolumeMax ),
-	mouseSensitivity( static_cast< int >( kPercent ) ) {
+	mouseSensitivity( static_cast< int >( kPercent ) ),
+	padSensitivity( static_cast< int >( kPercent ) ) {
 }
 
-//   <Settings masterVolume="80" effectVolume="100" mouseSensitivity="125"/>
+//   <Settings masterVolume="80" effectVolume="100" mouseSensitivity="125" padSensitivity="100"/>
 bool GameSettings::save() const {
 	PseudoXml::Document doc = PseudoXml::Document::create();
 	PseudoXml::Element root = doc.root();
@@ -51,6 +53,7 @@ bool GameSettings::save() const {
 	e.attribute( 0 ).set( kAttrMasterVolume, masterVolume );
 	e.attribute( 1 ).set( kAttrEffectVolume, effectVolume );
 	e.attribute( 2 ).set( kAttrMouseSensitivity, mouseSensitivity );
+	e.attribute( 3 ).set( kAttrPadSensitivity, padSensitivity );
 
 	std::string text;
 	doc.convertToString( &text );
@@ -94,6 +97,8 @@ bool GameSettings::load() {
 				effectVolume = clampValue( a.getIntValue(), kVolumeMin, kVolumeMax );
 			} else if ( std::strcmp( name, kAttrMouseSensitivity ) == 0 ) {
 				mouseSensitivity = clampValue( a.getIntValue(), kSensitivityMin, kSensitivityMax );
+			} else if ( std::strcmp( name, kAttrPadSensitivity ) == 0 ) {
+				padSensitivity = clampValue( a.getIntValue(), kSensitivityMin, kSensitivityMax );
 			}
 		}
 		return true;
@@ -106,6 +111,10 @@ void GameSettings::applyAudio( AudioEngine& audio ) const {
 	audio.setBusVolume( AudioEngine::BUS_EFFECT, volumeGain( effectVolume ) );
 }
 
-float GameSettings::lookSensitivityScale() const {
+float GameSettings::mouseSensitivityScale() const {
 	return static_cast< float >( mouseSensitivity ) / kPercent;
+}
+
+float GameSettings::padSensitivityScale() const {
+	return static_cast< float >( padSensitivity ) / kPercent;
 }

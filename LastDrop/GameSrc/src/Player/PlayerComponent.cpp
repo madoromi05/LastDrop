@@ -73,7 +73,7 @@ void PlayerComponent::update() {
 	// リロード中も走らない（弾倉を替えながら歩くだけ。バイオハザードと同じ）
 	bool reloading = gun && gun->isReloading();
 	bool running = wantsRun && !( hold && hold->isAiming() ) && !reloading;
-	Animator::State next = PlayerLocomotionComponent::chooseState( moving, running, hold && hold->isDrawn() );
+	Animator::State next = PlayerLocomotionComponent::chooseState( moving, running, hold && hold->isWeaponInHand() );
 	// 撃てるのは、銃を手に持っていて、走っていない間だけ（走りでは銃口を下げて胸元に抱えている）
 	// リロード中も撃てない（銃を下げて弾倉を替えている）
 	fire( gun, hold && hold->isWeaponInHand() && !running && !reloading, command.fireHeld );
@@ -98,9 +98,9 @@ void PlayerComponent::updateHands( HoldComponent* hold, const PlayerCommand& com
 	GunComponent* gun = hold->gun();
 	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）
 	bool reloading = gun && gun->isReloading();
-	hold->updateStance( command.holsterPressed, command.aimHeld && !reloading, wantsRun );
+	hold->updateStance( command.aimHeld && !reloading, wantsRun );
 	hold->updateReload( command.reloadPressed, mInventory );
-	// 懐中電灯は銃に付いているので、銃を持っていれば（しまっていても・リロード中でも）付け外しできる
+	// 懐中電灯は銃に付いているので、銃を持っていれば（リロード中でも）付け外しできる
 	if ( LightComponent* light = hold->light() ) {
 		light->update( command.flashlightPressed );
 	}
@@ -149,7 +149,6 @@ PlayerCommand PlayerComponent::allowedCommand( const PlayerCommand& command ) co
 		allowed.forward = 0.f;
 		allowed.strafe = 0.f;
 		allowed.run = false;
-		allowed.holsterPressed = false;
 		allowed.aimHeld = false;
 		allowed.fireHeld = false;
 		allowed.reloadPressed = false;

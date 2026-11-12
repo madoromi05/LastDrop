@@ -21,14 +21,17 @@ namespace{
 	const float kSideMenuItemWidth = 253.f;
 	const float kSideMenuItemHeight = 35.f;
 	const float kSideMenuItemSpacing = 3.f;     // 行と行の間
-	// 設定・操作の一覧の見出しと、設定の行
+	// 設定の見出しと、タブと、タブの中身
 	const float kSideHeadingTopRatio = 0.19f;   // 見出しの上端（画面の上から）
 	const float kSideHeadingToRule = 44.f;      // 見出しの上端から赤い線まで（見出しの文字の高さ 32 ＋ 間 12）
 	const float kSideHeadingRuleWidth = 37.f;
-	const float kSideContentTopRatio = 0.35f;   // 見出しの下の中身の上端（画面の上から）。設定の最初の行・操作の一覧のまとまり
+	const float kSideRuleToTabBar = 10.f;       // 見出しの下の赤い線から、タブの行の上端まで
+	const float kSideTabBarHeight = 28.f;       // タブの行（メニューの行の文字 18 ＋ 下の赤い線の分）
+	const float kSideTabBarToContent = 12.f;    // タブの行の下端から、タブの中身の上端まで
+	const float kSideSubTabBarHeight = 22.f;    // タブの中の小さい切り替えの行（案内と同じ大きさの文字 12 ＋ 下の赤い線の分）
+	const float kSideSubTabBarToGroups = 10.f;  // 小さい切り替えの行の下端から、操作の一覧のまとまりの名前の上端まで
 	const float kSideSettingRowWidth = 507.f;   // 名前・バー・数字が並ぶ幅
 	const float kSideSettingRowHeight = 40.f;   // スライダーの行（メニューの行より高く、バーを触りやすく）
-	const float kSideSettingLinkGap = 19.f;     // 最後のスライダーの行から、ページを開く行までの間
 	const float kControlsColumnGap = 37.f;      // 操作の一覧の列と列の間
 	const float kSideBackBottomRatio = 0.867f;  // 中身の下に 1 つだけ置く行の下端（画面の上から）
 	// 結果の表（脱出成功）
@@ -116,23 +119,31 @@ UiRect UiScreen::sideHeadingRuleRect() {
 	return rect;
 }
 
+UiRect UiScreen::sideTabBarRect() {
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = sideHeadingRuleRect().bottom() + kSideRuleToTabBar;
+	rect.width = kSideSettingRowWidth;
+	rect.height = kSideTabBarHeight;
+	return rect;
+}
+
+UiRect UiScreen::sideSubTabBarRect() {
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = sideTabBarRect().bottom() + kSideTabBarToContent;
+	rect.width = kSideSettingRowWidth;
+	rect.height = kSideSubTabBarHeight;
+	return rect;
+}
+
 UiRect UiScreen::sideSettingRowRect( int index ) {
 	ASSERT( index >= 0 && "UiScreen : bad side setting row index." );
 	UiRect rect;
 	rect.left = kSideMenuItemLeft;
-	rect.top = Framework::instance().height() * kSideContentTopRatio + index * ( kSideSettingRowHeight + kSideMenuItemSpacing );
+	rect.top = sideTabBarRect().bottom() + kSideTabBarToContent + index * ( kSideSettingRowHeight + kSideMenuItemSpacing );
 	rect.width = kSideSettingRowWidth;
 	rect.height = kSideSettingRowHeight;
-	return rect;
-}
-
-UiRect UiScreen::sideSettingLinkRect( int rowCount, int index ) {
-	ASSERT( rowCount > 0 && index >= 0 && "UiScreen : bad side setting link index." );
-	UiRect rect;
-	rect.left = kSideMenuItemLeft;
-	rect.top = sideSettingRowRect( rowCount - 1 ).bottom() + kSideSettingLinkGap + index * ( kSideMenuItemHeight + kSideMenuItemSpacing );
-	rect.width = kSideSettingRowWidth;
-	rect.height = kSideMenuItemHeight;
 	return rect;
 }
 
@@ -147,7 +158,7 @@ UiColumn UiScreen::controlsColumn( int index, int count ) {
 }
 
 float UiScreen::controlsGroupTop() {
-	return Framework::instance().height() * kSideContentTopRatio;
+	return sideSubTabBarRect().bottom() + kSideSubTabBarToGroups;
 }
 
 UiRect UiScreen::sideBackItemRect() {

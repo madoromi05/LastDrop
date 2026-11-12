@@ -34,7 +34,7 @@ void PlayerBodySounds::update( const GameObject& player ) {
 	PlayerFoley::FoleyState foley;
 	foley.bodyPosition.set( feet.x, feet.y + kBodySoundHeight, feet.z );
 	foley.gait = locomotion->gait();
-	foley.weaponDrawn = hold && hold->isDrawn();
+	foley.weaponDrawn = hold && hold->isWeaponInHand();
 	foley.aiming = hold && hold->isAiming();
 	foley.fired = gun && gun->firedThisTick();
 	foley.shotSound = gun ? gun->spec().shotSound : kNoShotSound;

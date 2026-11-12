@@ -17,7 +17,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 自キャラが手に持って出している銃の、銃口が光る部品と銃口の位置・向き。素手・銃をしまった後（銃口が無い）なら nullptr
+	// 自キャラが手に持っている銃の、銃口が光る部品と銃口の位置・向き。素手（銃口が無い）なら nullptr
 	MuzzleFlashComponent* heldMuzzleFlash( const GameObject* player, Vector3* muzzlePosition, Vector3* muzzleDirection ) {
 		if ( !player ) {
 			return nullptr;
@@ -82,7 +82,7 @@ void WorldRenderer::drawPlayer() const {
 	}
 	player->getComponent< SkinnedModelComponent >()->draw();
 	if ( const HoldComponent* hold = player->getComponent< HoldComponent >() ) {
-		hold->draw(); // しまった武器は描かない
+		hold->draw(); // 素手なら何も描かない
 	}
 }
 
@@ -158,7 +158,7 @@ void WorldRenderer::drawBloodSpray( const Matrix44& projectionView, const Vector
 void WorldRenderer::drawMuzzleFlash( const Matrix44& projectionView, const Vector3& viewDirection ) const {
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
-	// 撃った後に銃をしまったら、銃口が無いので描かない
+	// 撃った後に銃を手放したら、銃口が無いので描かない
 	MuzzleFlashComponent* flash = heldMuzzleFlash( mWorld->player(), &muzzlePosition, &muzzleDirection );
 	if ( !flash ) {
 		return;

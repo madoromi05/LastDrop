@@ -9,7 +9,6 @@ struct PlayerCommand{
 	float forward;       // 前後の移動量（-1〜1。前が正）
 	float strafe;        // 横の移動量（-1〜1。右が正）
 	bool run;            // 走る（押されている間）
-	bool holsterPressed; // 武器を出す／しまう（押した瞬間）
 	bool aimHeld;        // 覗く（押されている間。短押し・長押しの判定は WeaponStance）
 	bool fireHeld;       // 撃つ（押されている間。連射の間隔は FireControl）
 	bool reloadPressed;  // 弾を込める（押した瞬間。込める時間は WeaponReload）

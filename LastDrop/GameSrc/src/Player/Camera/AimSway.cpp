@@ -94,7 +94,7 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 	yaw += mLagYaw;
 	pitch += mLagPitch;
 
-	// 腰だめは大きく（覗き具合で 1 倍との間を取る）、腕が壊れていれば大きく、抱えている間・しまっている間は 0
+	// 腰だめは大きく（覗き具合で 1 倍との間を取る）、腕が壊れていれば大きく、抱えている間・素手の間は 0
 	float scale = gParams.hipScale + ( 1.f - gParams.hipScale ) * body.aimWeight;
 	scale *= conditionScale( body.danger ) * ( 1.f - body.carryWeight );
 	if ( !body.weaponDrawn ) {

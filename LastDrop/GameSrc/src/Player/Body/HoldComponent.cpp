@@ -178,12 +178,11 @@ GameObject* HoldComponent::heldObject() const {
 	return mHeld.get();
 }
 
-void HoldComponent::updateStance( bool holsterPressed, bool aimHeld, bool runHeld ) {
-	mStance.update( holsterPressed, aimHeld, runHeld );
-}
-
-bool HoldComponent::isDrawn() const {
-	return mStance.isDrawn();
+void HoldComponent::updateStance( bool aimHeld, bool runHeld ) {
+	mStance.update( aimHeld, runHeld );
+	if ( !mGun ) {
+		mStance.stopAiming();	// 素手では覗かない。銃を手放したら、覗いたままもやめる
+	}
 }
 
 bool HoldComponent::isAiming() const {
@@ -195,16 +194,14 @@ float HoldComponent::aimWeight() const {
 }
 
 bool HoldComponent::isWeaponInHand() const {
-	return mGun && mStance.isDrawn();
+	return mGun != nullptr;
 }
 
 void HoldComponent::updateReload( bool reloadPressed, Inventory* inventory ) {
 	if ( !mGun ) {
 		return;
 	}
-	if ( !mStance.isDrawn() ) {
-		mGun->cancelReload();	// しまったらやめる（替えている途中の銃は手から消えるので、弾は込めない）
-	} else if ( reloadPressed && mGun->canStartReload( *inventory ) ) {
+	if ( reloadPressed && mGun->canStartReload( *inventory ) ) {
 		mGun->startReload();
 		mStance.stopAiming(); // 覗いていたら銃を下ろしてから替える
 	}
@@ -239,7 +236,7 @@ bool HoldComponent::muzzle( Vector3* position, Vector3* direction ) const {
 }
 
 void HoldComponent::draw() const {
-	if ( !mHeldItem || !mStance.isDrawn() ) {
+	if ( !mHeldItem ) {
 		return;
 	}
 	mHeldItem->draw( mModel->mesh() );

@@ -59,7 +59,8 @@ public:
 	mTimeBias( 0 ),
 	mThreadId( 0 ),
 	mWindowHandle( NULL ),
-	mWindowPlacement(){
+	mWindowPlacement(),
+	mCursor( NULL ){
 		mWindowPlacement.length = sizeof( mWindowPlacement );
 		//getTime()用バイアス値計算
 		unsigned time = timeGetTime();
@@ -69,6 +70,16 @@ public:
 		mThreadId = GetCurrentThreadId();	//スレッドID取得
 	}
 	~Impl(){
+		if ( mCursor ){
+			DestroyCursor( mCursor );
+		}
+	}
+	//setCursorFile で指定された .cur を、画面の拡大率に合う大きさで読む。指定が無い・読めないときは標準の矢印
+	HCURSOR loadCursor(){
+		if ( !mCursorFile.empty() ){
+			mCursor = static_cast< HCURSOR >( LoadImageA( NULL, mCursorFile.c_str(), IMAGE_CURSOR, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE ) );
+		}
+		return mCursor ? mCursor : LoadCursor( NULL, IDC_ARROW );
 	}
 	void enableFullScreen( bool f ){
 		if ( mFullScreen != f ){
@@ -129,6 +140,8 @@ public:
 	Array< string > mDroppedItems;
 	HWND mWindowHandle;
 	WINDOWPLACEMENT mWindowPlacement; //フルスクリーンからウィンドウへ戻すときの位置・大きさ・最大化の有無
+	string mCursorFile;
+	HCURSOR mCursor; //ファイルから読んだカーソル。標準の矢印のときは NULL（共有の物なので消さない）
 };
 
 Impl* gImpl = 0; //唯一のインスタンス
@@ -238,6 +251,10 @@ void WindowCreator::Configuration::setHeight( int h ){
 
 void WindowCreator::Configuration::setTitle( const char* title ){
 	gImpl->mTitle = title;
+}
+
+void WindowCreator::Configuration::setCursorFile( const char* path ){
+	gImpl->mCursorFile = path;
 }
 
 void WindowCreator::Configuration::enableFullScreen( bool f ){
@@ -404,7 +421,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.cbWndExtra		= 0;
 	wcex.hInstance		= hInstance;
 	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWCREATOR));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
+	wcex.hCursor		= gImpl->loadCursor();
 	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
 	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_WINDOWCREATOR);
 	wcex.lpszClassName	= szWindowClass;

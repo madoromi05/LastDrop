@@ -175,7 +175,6 @@ AxisStatus InputMove (int playerId) { return Pad::instance()->getAxisWorkState(W
 AxisStatus InputLookStick(int playerId) { return Pad::instance()->getAxisWorkState(WorkId::LookStick, playerId); }
 bool InputMenu       (int playerId) { return Pad::instance()->isTriggered(WorkId::Menu, playerId); }
 bool InputAim        (int playerId) { return Pad::instance()->isOn(WorkId::Aim, playerId); }
-bool InputHolster    (int playerId) { return Pad::instance()->isTriggered(WorkId::Holster, playerId); }
 bool InputDebugCameraUp(int playerId)   { return Pad::instance()->isOn(WorkId::DebugCameraUp, playerId); }
 bool InputDebugCameraDown(int playerId) { return Pad::instance()->isOn(WorkId::DebugCameraDown, playerId); }
 bool InputUiUp(int playerId)     { return Pad::instance()->isTriggered(WorkId::UiUp, playerId); }

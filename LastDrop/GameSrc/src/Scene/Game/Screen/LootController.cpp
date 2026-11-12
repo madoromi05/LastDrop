@@ -119,7 +119,7 @@ RaidHud::ProgressKind LootController::waitingKind() const {
 
 bool LootController::interrupts( const PlayerCommand& command ) {
 	return command.forward != kNoMove || command.strafe != kNoMove || command.aimHeld || command.fireHeld
-		|| command.reloadPressed || command.holsterPressed;
+		|| command.reloadPressed;
 }
 
 void LootController::update( bool commandInterrupts, bool raidFinished ) {

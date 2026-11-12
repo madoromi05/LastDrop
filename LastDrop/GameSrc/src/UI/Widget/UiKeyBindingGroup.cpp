@@ -38,6 +38,11 @@ void UiKeyBindingGroup::draw( UiRenderer& renderer ) const {
 	}
 }
 
+void UiKeyBindingGroup::setRows( const std::vector< Row >& rows ) {
+	ASSERT( !rows.empty() && "UiKeyBindingGroup : rows is empty." );
+	mRows = rows;
+}
+
 void UiKeyBindingGroup::drawRow( UiRenderer& renderer, const Row& row, const UiRect& rect ) const {
 	UiRect line = rect;
 	line.height = kLineThickness;

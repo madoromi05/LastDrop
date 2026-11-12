@@ -2,6 +2,7 @@
 #define INCLUDED_MENU_PAGES_H
 
 #include "GameSrc/Scene/Menu/MenuLayout.h"
+#include "GameSrc/Scene/Menu/OptionsPage.h"
 #include <memory>
 
 class UiScreen;
@@ -9,9 +10,9 @@ class UiRenderer;
 class AudioEngine;
 struct GameSettings;
 
-// メニューの「今のページ」（最初のページ・設定・操作の一覧）を持ち、ページを切り替えて出す
+// メニューの「今のページ」（最初のページ・設定）と、設定のどのタブを見せているかを持ち、ページを切り替えて出す
 // タイトル（MenuScene）と本編の一時停止（PauseMenu）が同じ物を持つので、設定画面への行き方・戻り方は 1 か所
-// ・ページは 1 枚ずつ作り直す（UiCanvas は部品を外せないので、切り替えるたびに UiScreen ごと作る）
+// ・ページは 1 枚ずつ作り直す（UiCanvas は部品を外せないので、切り替えるたびに UiScreen ごと作る）。設定のタブを変えたときも作り直す
 // ・切り替えは予約にして、次の handleInput の頭で行う。押したボタンを持っている画面を、その処理の途中で消さないため
 //   （SceneManager::requestChange と同じ考え方）
 // ・設定のページを閉じて最初のページへ戻るとき、設定をファイルへ書く
@@ -33,6 +34,7 @@ public:
 
 private:
 	void request( MenuPageId page );
+	void selectOptionsTab( OptionsTab tab );	// 設定のタブを tab にして、設定のページを作り直す（予約）
 	void open( MenuPageId page ); // 今のページを捨てて page を作る
 
 	UiRenderer* mRenderer;  // 借りているだけ
@@ -42,6 +44,7 @@ private:
 	std::unique_ptr< UiScreen > mScreen;
 	MenuPageId mPage;       // 今のページ（MENU_PAGE_NONE にはならない）
 	MenuPageId mRequested;  // 予約されたページ。予約が無ければ MENU_PAGE_NONE
+	OptionsTab mOptionsTab; // 設定のページで見せるタブ。最初のページから開くたびに左のタブへ戻す
 };
 
 #endif

@@ -915,6 +915,9 @@
     <ClCompile Include="GameSrc\src\UI\Widget\UiSlider.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\UI\Widget\UiTabBar.cpp">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp">
       <Filter>GameSrc\UI</Filter>
     </ClCompile>
@@ -1323,7 +1326,7 @@
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsPage.cpp">
+    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsTab.cpp">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Menu\OptionsPage.cpp">
@@ -2096,6 +2099,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiSlider.h">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiTabBar.h">
+      <Filter>GameSrc\UI\Widget</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h">
       <Filter>GameSrc\UI</Filter>
     </ClInclude>
@@ -2606,7 +2612,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsPage.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsTab.h">
       <Filter>GameSrc\Scene\Menu</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\OptionsPage.h">

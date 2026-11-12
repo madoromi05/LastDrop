@@ -100,7 +100,6 @@ AxisStatus InputMove (int playerId = 0);   // パッドのスティックの移�
 AxisStatus InputLookStick(int playerId = 0); // パッドのスティックの視点操作（-1〜1。横=右が正、縦=下が正）。傾き＝回る速さ
 bool InputMenu       (int playerId = 0);   // メニュー／中断（押した瞬間）
 bool InputAim        (int playerId = 0);   // 構える（押されている間）
-bool InputHolster    (int playerId = 0);   // 武器を出す／しまう（押した瞬間）
 // 確認用の切り替え（当たり判定・ゾンビの体力・観察用カメラ・無敵・ゾンビを出す・計測の CSV）はキーではなく F6 のボタン（DebugSwitches）
 bool InputDebugCameraUp(int playerId = 0);     // 観察用カメラを上げる（押されている間）
 bool InputDebugCameraDown(int playerId = 0);   // 観察用カメラを下げる（押されている間）

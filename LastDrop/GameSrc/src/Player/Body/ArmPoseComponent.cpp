@@ -54,9 +54,10 @@ void ArmPoseComponent::awake() {
 
 void ArmPoseComponent::start() {
 	mBody = requireComponent< FirstPersonBodyComponent >();
-	// 始めの構えの段階から始める（出した状態で始まるなら、両手持ちは効いた所から）
-	const HoldComponent* hold = getComponent< HoldComponent >();
-	mHoldWeight = ( hold && hold->isDrawn() ) ? kFullWeight : kNoWeight;
+	// 持つ部品があれば、両手持ちは効いた所から始める
+	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、出撃には銃が要る（StashScreen）ので持つと決めてよい
+	bool armed = getComponent< HoldComponent >() != nullptr;
+	mHoldWeight = armed ? kFullWeight : kNoWeight;
 }
 
 void ArmPoseComponent::blendPoses( const std::vector< Matrix34 >& from, const std::vector< Matrix34 >& to, float weight, std::vector< Matrix34 >* out ) {
@@ -108,14 +109,14 @@ void ArmPoseComponent::update( Animator::State next ) {
 		sampleStancePoses( gun, hold->handBone() );
 	}
 	FirstPersonBody& body = mBody->body();
-	mHoldWeight = approachWeight( mHoldWeight, hold->isDrawn() ? kFullWeight : kNoWeight );
+	mHoldWeight = approachWeight( mHoldWeight, hold->isWeaponInHand() ? kFullWeight : kNoWeight );
 	mCarryWeight = approachWeight( mCarryWeight, PlayerLocomotionComponent::isCarryState( next ) ? kFullWeight : kNoWeight );
 	// リロード中は腕をアニメへ差し替える。アニメでは左手が銃を離れるので、その間は両手持ちの補正（右手首を左手へ向ける）を弱める
 	bool reloadPosed = gun && gun->isReloading()
 		&& armSampler( gun->reload().animationName() )->sample( gun->reload().animationFrame(), &mReloadPose );
 	float reloadWeight = reloadPosed ? gun->reload().armWeight() : kNoWeight;
 	if ( mHasHoldPose ) {
-		// 腕のポーズを持つ銃（拳銃）：いつも腕を差し替える（出す・しまうのに合わせて mHoldWeight で効かせる）
+		// 腕のポーズを持つ銃（拳銃）：いつも腕を差し替える（手に取る・手放すのに合わせて mHoldWeight で効かせる）
 		// 覗いていない間は覗いていない間の構え（リロード中はリロードのアニメ）、覗くと構えへ上げる（覗き具合で混ぜる）
 		// 覗かずに撃っても腕は上げない（ライフルと同じく、構えたまま撃つ）
 		// リロードのアニメは覗いていない間の構えから始まってそこで終わるので、差し替える物を替えても腕は跳ばない

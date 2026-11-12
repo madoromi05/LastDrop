@@ -12,10 +12,10 @@ namespace{
 	const float kWeaponHolsterVolume = 0.45f;
 	const float kAimInVolume = 0.35f;
 	const float kAimOutVolume = 0.25f;
-	// 銃の音（出し入れ・覗く。今はどれもスリングと袖が擦れる音だけ）は元の WAV より低く鳴らす（0.85 倍 ≈ 3 半音下）
+	// 銃の音（手に取る・手放す・覗く。今はどれもスリングと袖が擦れる音だけ）は元の WAV より低く鳴らす（0.85 倍 ≈ 3 半音下）
 	// 低くすると厚手の布の重さが出る。そのぶん音は少し長くなる（1 / 0.85 倍）
 	const float kWeaponPitch = 0.85f;
-	// 銃の出し入れ・覗く／やめるときに、腕を動かした服の擦れを重ねる
+	// 銃を手に取る・手放す・覗く／やめるときに、腕を動かした服の擦れを重ねる
 	// 銃の音（スリングの擦れ）が主役なので、それより小さくする。音程は下げない（下げると服の軽さが消える）
 	const float kClothDrawVolume = 0.2f;
 	const float kClothHolsterVolume = 0.2f;
@@ -23,7 +23,7 @@ namespace{
 	const float kClothAimOutVolume = 0.1f;
 
 	// ── 空撃ち・リロードの大きさ ──
-	// 自分の手元の金属音。素材の一番大きい所が 0.9 前後と大きいので、出し入れの音（0.5）と同じくらいに抑える
+	// 自分の手元の金属音。素材の一番大きい所が 0.9 前後と大きいので、手に取る音（0.5）と同じくらいに抑える
 	// 空撃ちは弾切れに気付かせる音なので、リロードより少し大きくする
 	const float kDryFireVolume = 0.6f;
 	const float kMagazineOutVolume = 0.45f;

@@ -331,6 +331,7 @@
     <ClCompile Include="GameSrc\src\UI\Widget\UiBar.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiKeyHintRow.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiSlider.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiTabBar.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiCanvas.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiScreen.cpp" />
     <ClCompile Include="GameSrc\src\UI\ScreenProjection.cpp" />
@@ -610,7 +611,7 @@
     <ClCompile Include="GameSrc\src\Render\Culling\ViewFrustum.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuLayout.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsPage.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Menu\ControlsTab.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\OptionsPage.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuPages.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Menu\MenuCatalog.cpp" />
@@ -972,6 +973,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\MenuPalette.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiAdjustable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiSlider.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiTabBar.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiCanvas.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\ScreenProjection.h" />
@@ -1147,7 +1149,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\Culling\ViewFrustum.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuLayout.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsPage.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\ControlsTab.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\OptionsPage.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuPages.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h" />

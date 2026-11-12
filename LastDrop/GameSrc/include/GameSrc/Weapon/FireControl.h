@@ -12,7 +12,7 @@ public:
 	FireControl( float roundsPerMinute, bool fullAuto );
 
 	// 1ティック進める。このティックに1発撃つなら true
-	// triggerHeld: 引き金を引いているか（押されている間）。撃てない状態（武器をしまっている等）のときは、呼び出し側が false を渡す
+	// triggerHeld: 引き金を引いているか（押されている間）。撃てない状態（走っている・リロード中など）のときは、呼び出し側が false を渡す
 	// 引き金を離しても次の1発までの間隔は進むので、連打しても連射より速くは撃てない
 	bool update( bool triggerHeld );
 

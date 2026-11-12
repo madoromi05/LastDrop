@@ -10,8 +10,7 @@ class UiCanvas;
 enum MenuPageId{
 	MENU_PAGE_NONE,     // ページを開かない（ボタンの onActivate を呼ぶ）
 	MENU_PAGE_MAIN,     // 最初のページ（MenuDefinition の見出しとボタン）
-	MENU_PAGE_OPTIONS,  // 設定（音量・感度）。OptionsPage
-	MENU_PAGE_CONTROLS, // 操作の一覧。ControlsPage
+	MENU_PAGE_OPTIONS,  // 設定（音声・感度・操作のタブ）。OptionsPage
 };
 
 // メニュー1枚の中身（見出しと、縦に並べるボタン）。何を並べるかだけを書いたデータで、作るのは MenuCatalog
@@ -36,7 +35,7 @@ namespace MenuLayout{
 	// definition の見出しとボタンを canvas に足す。canvas: nullptr 不可
 	// openPage: ページを開くボタン（opens が MENU_PAGE_NONE 以外）が押されたときに呼ぶ。そのボタンがあるなら空は不可
 	void build( UiCanvas* canvas, const MenuDefinition& definition, std::function< void( MenuPageId ) > openPage );
-	void buildSideHeading( UiCanvas* canvas, const char* heading );	// 左上に見出しと赤い線を足す（設定・操作の一覧のページ。最初のページと同じ見た目）。canvas: nullptr 不可。heading: 書く文字
+	void buildSideHeading( UiCanvas* canvas, const char* heading );	// 左上に見出しと赤い線を足す（設定のページ。最初のページと同じ見た目）。canvas: nullptr 不可。heading: 書く文字
 }
 
 #endif

@@ -74,11 +74,11 @@ void FirstPersonControl::readInput( float aimWeight ) {
 		AxisStatus look = InputLook();
 		AxisStatus stick = InputLookStick();
 		// ズーム中は視野角の比で感度を下げる。同じだけマウスを動かしたとき、画面上で動く量を揃えるため
-		// 設定画面の感度（倍率）は、その上から掛ける（覗いたときの遅くなり方の比は変わらない）。スティックにも同じ倍率を掛ける
-		float sensitivity = mSettings->lookSensitivityScale() * fieldOfView( aimWeight ) / gLookParams.hipFieldOfView;
-		float degreesPerPixel = gLookParams.lookDegreesPerPixel * sensitivity;
+		// 設定画面の感度（倍率）は、その上から掛ける（覗いたときの遅くなり方の比は変わらない）。マウスとスティックは別々の倍率
+		float zoomScale = fieldOfView( aimWeight ) / gLookParams.hipFieldOfView;
+		float degreesPerPixel = gLookParams.lookDegreesPerPixel * mSettings->mouseSensitivityScale() * zoomScale;
 		// スティックは傾き＝回る速さなので、この描画の秒数を掛けて角度にする（マウスは動かした量そのものが角度になる）
-		float stickSeconds = stickLookSeconds() * sensitivity;
+		float stickSeconds = stickLookSeconds() * mSettings->padSensitivityScale() * zoomScale;
 		float stickYaw = stickLookRate( stick.m_width ) * gLookParams.stickYawDegreesPerSecond * stickSeconds;
 		float stickPitch = stickLookRate( stick.m_height ) * gLookParams.stickPitchDegreesPerSecond * stickSeconds;
 		// マウス（スティック）を右へ動かすと右を向く＝ヨーは減る（ヨーは上から見て反時計回りが正）

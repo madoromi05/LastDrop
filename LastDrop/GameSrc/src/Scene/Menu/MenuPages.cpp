@@ -1,6 +1,4 @@
 #include "GameSrc/Scene/Menu/MenuPages.h"
-#include "GameSrc/Scene/Menu/OptionsPage.h"
-#include "GameSrc/Scene/Menu/ControlsPage.h"
 #include "GameSrc/Core/GameSettings.h"
 #include "GameSrc/UI/UiScreen.h"
 
@@ -12,7 +10,8 @@ MenuPages::MenuPages( UiRenderer* renderer, GameSettings* settings, AudioEngine*
 	mAudio( audio ),
 	mMain( main ),
 	mPage( MENU_PAGE_MAIN ),
-	mRequested( MENU_PAGE_NONE ) {
+	mRequested( MENU_PAGE_NONE ),
+	mOptionsTab( OPTIONS_TAB_AUDIO ) {
 	ASSERT( mRenderer && mSettings && mAudio && "MenuPages : renderer, settings or audio is null." );
 	open( MENU_PAGE_MAIN );
 }
@@ -39,9 +38,6 @@ bool MenuPages::back() {
 	// 予約がまだ済んでいなければ、予約したページから 1 つ上へ（ESC を続けて押したとき）
 	MenuPageId current = ( mRequested != MENU_PAGE_NONE ) ? mRequested : mPage;
 	switch ( current ) {
-	case MENU_PAGE_CONTROLS:
-		request( MENU_PAGE_OPTIONS ); // 操作の一覧は設定から開くので、設定へ戻る
-		return true;
 	case MENU_PAGE_OPTIONS:
 		request( MENU_PAGE_MAIN );
 		return true;
@@ -61,10 +57,18 @@ void MenuPages::request( MenuPageId page ) {
 	mRequested = page;
 }
 
+void MenuPages::selectOptionsTab( OptionsTab tab ) {
+	mOptionsTab = tab;
+	request( MENU_PAGE_OPTIONS );
+}
+
 void MenuPages::open( MenuPageId page ) {
 	// 設定のページから最初のページへ戻るときに書く（値を変えるたびに書くと、ドラッグの間に何度も書くことになる）
 	if ( mPage != MENU_PAGE_MAIN && page == MENU_PAGE_MAIN ) {
 		mSettings->save();
+	}
+	if ( mPage == MENU_PAGE_MAIN && page == MENU_PAGE_OPTIONS ) {
+		mOptionsTab = OPTIONS_TAB_AUDIO;
 	}
 	mPage = page;
 	mScreen = std::make_unique< UiScreen >( mRenderer );
@@ -72,10 +76,8 @@ void MenuPages::open( MenuPageId page ) {
 	auto goBack = [ this ]() { back(); };
 	switch ( page ) {
 	case MENU_PAGE_OPTIONS:
-		OptionsPage::build( &mScreen->canvas(), mSettings, mAudio, openPage, goBack );
-		break;
-	case MENU_PAGE_CONTROLS:
-		ControlsPage::build( &mScreen->canvas(), goBack );
+		OptionsPage::build( &mScreen->canvas(), mSettings, mAudio, mOptionsTab,
+			[ this ]( OptionsTab tab ) { selectOptionsTab( tab ); }, goBack );
 		break;
 	default:
 		MenuLayout::build( &mScreen->canvas(), mMain, openPage );

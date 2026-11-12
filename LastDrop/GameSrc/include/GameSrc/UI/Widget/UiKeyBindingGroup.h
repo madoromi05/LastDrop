@@ -22,6 +22,7 @@ public:
 	UiKeyBindingGroup( const UiColumn& column, float top, const char* name, const std::vector< Row >& rows );
 
 	virtual void draw( UiRenderer& renderer ) const;
+	void setRows( const std::vector< Row >& rows );	// 並べる行を差し替える（操作のタブでキーボード・マウスとパッドを切り替えたとき）。空は不可
 
 private:
 	void drawRow( UiRenderer& renderer, const Row& row, const UiRect& rect ) const;	// 行 1 つを rect の範囲に描く

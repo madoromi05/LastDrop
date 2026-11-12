@@ -20,10 +20,10 @@ enum SoundId{
 	SOUND_FOOTSTEP_WATER,
 	SOUND_FOOTSTEP_GLASS,
 	// ── 装備・動作音（フォーリー）──
-	SOUND_CLOTH_RUSTLE,			// 服の擦れ（銃を出す／しまう／覗く／やめるとき）
+	SOUND_CLOTH_RUSTLE,			// 服の擦れ（銃を手に取る／手放す／覗く／やめるとき）
 	SOUND_GEAR_RATTLE,			// 装備の揺れ（銃を持っている間の一歩ごと）
-	SOUND_WEAPON_DRAW,			// 武器を出す
-	SOUND_WEAPON_HOLSTER,		// 武器をしまう
+	SOUND_WEAPON_DRAW,			// 銃を手に取る（素手のときに銃を拾った）
+	SOUND_WEAPON_HOLSTER,		// 銃を手放す（持っている銃をカバンから捨てた）
 	SOUND_AIM_IN,				// 覗く
 	SOUND_AIM_OUT,				// 覗くのをやめる
 	// ── 銃 ──

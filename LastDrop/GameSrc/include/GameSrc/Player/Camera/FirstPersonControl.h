@@ -50,7 +50,7 @@ public:
 	// command を「何もしない」にし、撃つ入力を一度離すまで止める（readInputIdle の後半。カーソルロックには触らない）
 	// 一時停止した瞬間に呼ぶ（メニューを押したクリックで、戻った瞬間に撃ち出さないように）
 	void clearInput();
-	// 自キャラへの操作。押した瞬間の入力（holsterPressed）は、consumePressed で消すまで貯めてある
+	// 自キャラへの操作。押した瞬間の入力（reloadPressed など）は、consumePressed で消すまで貯めてある
 	// 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため
 	const PlayerCommand& command() const;
 	void consumePressed();				// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ

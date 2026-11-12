@@ -8,13 +8,13 @@
 class AudioEngine;
 
 // キャラの装備・動作音（フォーリー）を鳴らす係
-//  ・武器を出す／しまう、覗く／やめる: 状態が切り替わったフレームに1回鳴らす
+//  ・銃を手に取る／手放す、覗く／やめる: 状態が切り替わったフレームに1回鳴らす
 //  ・装備の揺れ: 一歩ごとに鳴らす（足音と同じ瞬間。FootstepEmitter::update の戻り値を受け取る）
 //  ・銃声: 撃ったフレームに1回鳴らす（連射ならその数だけ重なる）
 //  ・空撃ち・リロード（弾倉を抜く・挿す・槓桿を引く）: その合図が来たフレームに1回鳴らす
 // 装備の揺れは銃を持っている間だけ鳴らす（銃と装備を抱えて動くと音が増えるため
 // タルコフでも銃を持って動く方が相手に聞こえやすい）。服の擦れは足音に被るので一歩ごとには鳴らさず、
-// 銃を出す／しまう／覗く／やめるときにだけ銃の音に重ねる
+// 銃を手に取る／手放す／覗く／やめるときにだけ銃の音に重ねる
 //
 // キャラのクラスは知らない（状態を FoleyState で受け取る）ので、敵や他のプレイヤーにもそのまま使える
 class PlayerFoley{
@@ -40,7 +40,7 @@ public:
 	void update( const FoleyState& state, bool stepped );	// 1フレーム進める。stepped: このフレームに足が着いたか（FootstepEmitter::update の戻り値）
 
 private:
-	void playTransitions( const FoleyState& state );	// 状態の切り替わりで鳴らす音（出し入れ・覗く）
+	void playTransitions( const FoleyState& state );	// 状態の切り替わりで鳴らす音（手に取る・手放す・覗く）
 	void playWeaponHandling( const FoleyState& state );	// 空撃ち・リロード・懐中電灯のスイッチの音（合図の来たフレームに1回）
 	void playStep( const FoleyState& state );			// 一歩ごとの音（装備）
 

@@ -157,7 +157,7 @@ void SceneLights::addFlashlight( const LightingParams& params ) {
 	const LightComponent* light = hold ? hold->light() : nullptr; // 銃に付いたライト（素手なら無い）
 	Vector3 muzzlePosition;
 	Vector3 muzzleDirection;
-	// 銃をしまっている間は銃口が無い（muzzle が false）ので照らさない。付けた状態は自キャラが覚えている
+	// 素手・まだポーズが無い間は銃口が無い（muzzle が false）ので照らさない。付けた状態は銃のライトが覚えている
 	if ( !light || !light->isOn() || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
 		return;
 	}

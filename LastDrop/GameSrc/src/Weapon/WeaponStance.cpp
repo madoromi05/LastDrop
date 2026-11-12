@@ -30,7 +30,6 @@ WeaponStanceParams& weaponStanceParams() {
 }
 
 WeaponStance::WeaponStance() :
-	mDrawn( true ), // 始めから武器を持って出る（Tarkov と同じ）
 	mAimMode( AIM_OFF ),
 	mAimWasHeld( false ),
 	mRunWasHeld( false ),
@@ -38,10 +37,7 @@ WeaponStance::WeaponStance() :
 	mAimProgress( 0.f ) {
 }
 
-void WeaponStance::update( bool holsterPressed, bool aimHeld, bool runHeld ) {
-	if ( holsterPressed ) {
-		mDrawn = !mDrawn;
-	}
+void WeaponStance::update( bool aimHeld, bool runHeld ) {
 	updateAimMode( aimHeld );
 	// 走り出そうとした瞬間だけ、覗いたままをやめる。押し続けている走る入力でやめないのは、
 	// 走りながら覗いた（＝歩きに落とした）直後に、押したままの走る入力で覗きが消えないようにするため
@@ -49,9 +45,6 @@ void WeaponStance::update( bool holsterPressed, bool aimHeld, bool runHeld ) {
 	bool runPressed = runHeld && !mRunWasHeld;
 	mRunWasHeld = runHeld;
 	if ( runPressed && mAimMode == AIM_TOGGLE ) {
-		mAimMode = AIM_OFF;
-	}
-	if ( !mDrawn ) {
 		mAimMode = AIM_OFF;
 	}
 
@@ -70,7 +63,6 @@ void WeaponStance::updateAimMode( bool aimHeld ) {
 
 	switch ( mAimMode ) {
 	case AIM_OFF:
-		// しまっている間に押しても、update が直後に AIM_OFF へ戻す
 		// 走っている間に押せば覗き始める（走りは呼び出し側が歩きに落とす）
 		if ( pressed ) {
 			mAimMode = AIM_HOLD;
@@ -96,12 +88,8 @@ void WeaponStance::stopAiming() {
 	mAimMode = AIM_OFF;
 }
 
-bool WeaponStance::isDrawn() const {
-	return mDrawn;
-}
-
 bool WeaponStance::isAiming() const {
-	return mDrawn && mAimMode != AIM_OFF;
+	return mAimMode != AIM_OFF;
 }
 
 float WeaponStance::aimWeight() const {

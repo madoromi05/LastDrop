@@ -126,6 +126,10 @@ const char* WorkIdName(WorkId a_work);
 // キーの名前も InputBuilder.cpp 側で一元管理し、ゲーム側は割り当て（BindingRecord）を渡すだけにする
 std::string BindingDisplayName(const BindingRecord& a_record);
 
+// パッドの割り当て 1 件を、PlayStation の表記で画面に見せる名前にする（例："R2"・"×"・"左スティック"）。設定画面のパッドの操作の一覧で使う
+// 遊ぶパッドに DualSense を想定しているので PlayStation の表記にする。パッドの割り当て（GamePadButton・GamePadAxis）でなければ空
+std::string GamePadBindingDisplayName(const BindingRecord& a_record);
+
 // プレイヤー番号 → デフォルト割当表（先頭ポインタ）。要素数は a_outCount に返す
 // 「どのキーを何に割り当てるか」という入力データも GameLib 側が持ち、
 // ゲーム側（Pad.cpp）はキーコードも char も一切書かず番号で呼ぶだけにする

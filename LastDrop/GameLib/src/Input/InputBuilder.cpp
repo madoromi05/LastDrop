@@ -182,6 +182,41 @@ namespace
         }
     }
 
+    // 画面に見せるパッドのボタンの名前（PlayStation の表記）。GamePad::Button は Xbox の並びなので、同じ位置にある PlayStation のボタンの名前にする
+    std::string PlayStationButtonName(int a_buttonCode)
+    {
+        switch (a_buttonCode)
+        {
+        case GamePad::BUTTON_A:           return "×";
+        case GamePad::BUTTON_B:           return "○";
+        case GamePad::BUTTON_X:           return "□";
+        case GamePad::BUTTON_Y:           return "△";
+        case GamePad::BUTTON_LB:          return "L1";
+        case GamePad::BUTTON_RB:          return "R1";
+        case GamePad::BUTTON_BACK:        return "Create";
+        case GamePad::BUTTON_START:       return "Options";
+        case GamePad::BUTTON_LEFT_THUMB:  return "L3";
+        case GamePad::BUTTON_RIGHT_THUMB: return "R3";
+        case GamePad::BUTTON_DPAD_UP:     return "↑";
+        case GamePad::BUTTON_DPAD_DOWN:   return "↓";
+        case GamePad::BUTTON_DPAD_LEFT:   return "←";
+        case GamePad::BUTTON_DPAD_RIGHT:  return "→";
+        case GamePad::BUTTON_LT:          return "L2";
+        case GamePad::BUTTON_RT:          return "R2";
+        default:                            return "";
+        }
+    }
+
+    std::string PlayStationAxisName(GamePadAxisKind a_axis)
+    {
+        switch (a_axis)
+        {
+        case GamePadAxisKind::LeftStick:  return "左スティック";
+        case GamePadAxisKind::RightStick: return "右スティック";
+        default:                         return "";
+        }
+    }
+
     // 入力設定ファイル名（プレイヤー番号で引く）
     const char* kInputConfigPaths[] = { "input_p0.xml", "input_p1.xml" };
     const int   kInputConfigPathCount = static_cast<int>(sizeof(kInputConfigPaths) / sizeof(kInputConfigPaths[0]));
@@ -208,7 +243,6 @@ namespace
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
-        { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },	// 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）
         { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },	// R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },	// T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）
         // 開発中の確認用の切り替えにはキーを割り当てない（F6 のエディタのボタンで切り替える）
@@ -241,13 +275,12 @@ namespace
         { CollectorId::InGame, WorkId::Run,        DeviceKind::GamePadButton, GamePad::BUTTON_LEFT_THUMB },
         { CollectorId::InGame, WorkId::Fire,       DeviceKind::GamePadButton, GamePad::BUTTON_RT },
         { CollectorId::InGame, WorkId::Aim,        DeviceKind::GamePadButton, GamePad::BUTTON_LT },
-        { CollectorId::InGame, WorkId::Holster,    DeviceKind::GamePadButton, GamePad::BUTTON_Y },
         { CollectorId::InGame, WorkId::Reload,     DeviceKind::GamePadButton, GamePad::BUTTON_X },
         { CollectorId::InGame, WorkId::Interact,   DeviceKind::GamePadButton, GamePad::BUTTON_A },
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
         { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
-        { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_BACK },
-        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_Y },	// Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）
+        { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_Y },
+        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_X },	// X は Reload と共有（おまかせはカバン・中を見る画面の間だけ読み、その間は自キャラの入力を読まないので重ならない）
         // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
         { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },
@@ -284,6 +317,16 @@ std::string GameLib::Input::BindingDisplayName(const BindingRecord& a_record)
     case DeviceKind::GamePadButton: return "Pad " + GamePadButtonName(a_record.code);
     case DeviceKind::GamePadAxis:   return "Pad " + GamePadAxisName(static_cast<GamePadAxisKind>(a_record.code));
     default:                    return "";
+    }
+}
+
+std::string GameLib::Input::GamePadBindingDisplayName(const BindingRecord& a_record)
+{
+    switch (a_record.device)
+    {
+    case DeviceKind::GamePadButton: return PlayStationButtonName(a_record.code);
+    case DeviceKind::GamePadAxis:   return PlayStationAxisName(static_cast<GamePadAxisKind>(a_record.code));
+    default:                        return "";
     }
 }
 

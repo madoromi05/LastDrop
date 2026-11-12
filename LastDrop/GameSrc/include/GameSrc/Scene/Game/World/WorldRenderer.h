@@ -65,7 +65,7 @@ public:
 
 private:
 	void drawZombies( const DrawCulling& culling ) const;	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
-	void drawPlayer() const;								// 自キャラの体と、手に持って出している銃を描く（drawFirstPerson・drawShadowCasters から）
+	void drawPlayer() const;								// 自キャラの体と、手に持っている銃を描く（drawFirstPerson・drawShadowCasters から）
 	void beginBuildings();									// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
 	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ
 	// 隠れ（PVS）も culling に聞く（目から見る絵の culling だけが表を持つ）
