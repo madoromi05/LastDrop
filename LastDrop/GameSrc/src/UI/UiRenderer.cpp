@@ -115,10 +115,9 @@ void UiRenderer::addDisc( const Vector2& center, float radius, unsigned color ) 
 	if (radius <= 0.f) {
 		return;
 	}
-	// 中心から放射状に三角形を並べた扇で、塗りつぶした丸を作る（折れ線のつなぎ目を丸くつないで隙間を消す）
-	const float kTwoPi = 6.2831853f;
-	mPrimitives.setTexture( Graphics::Texture() ); // 絵なし（長方形・線と同じ扱い）
-	Vector2 prev( center.x + radius, center.y ); // 角度 0 の点
+	const float kTwoPi = 6.2831853f;				// 中心から放射状に三角形を並べた扇で、塗りつぶした丸を作る（折れ線のつなぎ目を丸くつないで隙間を消す）
+	mPrimitives.setTexture( Graphics::Texture() );	// 絵なし（長方形・線と同じ扱い）
+	Vector2 prev( center.x + radius, center.y );	// 角度 0 の点
 	for ( int i = 1; i <= kDiscSegments; ++i ) {
 		const float angle = kTwoPi * static_cast< float >( i ) / static_cast< float >( kDiscSegments );
 		const Vector2 cur( center.x + radius * cosf( angle ), center.y + radius * sinf( angle ) );

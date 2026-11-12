@@ -21,16 +21,14 @@ class CollisionWorld{
 public:
 	CollisionWorld();
 
-	// 動かない形を登録する。値をコピーして持つ（動かないので、登録した後に元の持ち主が消えても困らない）
-	void addBox( const BoxCollider& box );
+	void addBox( const BoxCollider& box );			// 動かない形を登録する。値をコピーして持つ（動かないので、登録した後に元の持ち主が消えても困らない）
 	// 動かない、メッシュの形に沿った当たり判定（建物）を登録する。受け取って持つ（addBox と同じ理由）
 	// かけらの数が多いので、作った物をそのまま渡せば写しを作らずに済む（一時オブジェクトか std::move で渡す）
 	void addWallMesh( WallMesh walls );
 	// 動くもの（キャラ）や、途中で消える物（拾える物）を登録する。形は問い合わせのたびに collider() で読む。所有権は受け取らない。nullptr 不可
 	// この世界に問い合わせる間は生きていること（シーンでは、この世界をキャラより先に宣言する＝キャラより後に破棄される）
 	void addBody( const ICollisionBody* body );
-	// 登録した動くものを外す（消す前に呼ぶ）。登録されていなければ何もしない
-	void removeBody( const ICollisionBody* body );
+	void removeBody( const ICollisionBody* body );	// 登録した動くものを外す（消す前に呼ぶ）。登録されていなければ何もしない
 	// キャラが乗る地面を登録する（1つだけ。登録し直すと置き換わる）。所有権は受け取らない。nullptr なら地面なし（高さは変えない）
 	// この世界に問い合わせる間は生きていること（シーンでは、地面をこの世界より先に宣言する）
 	void setGround( const IGroundHeight* ground );
@@ -65,10 +63,8 @@ public:
 	const std::vector< const ICollisionBody* >& bodies() const;
 
 private:
-	// 変わっていれば、ますを作り直す（問い合わせの始めに呼ぶ）。動かない物の登録が変わったら全部、動く体だけなら体のますだけ
-	void updateGrids() const;
-	// 動く体を、今の置き場所でますへ入れ直す
-	void fillBodyGrid() const;
+	void updateGrids() const;	// 変わっていれば、ますを作り直す（問い合わせの始めに呼ぶ）。動かない物の登録が変わったら全部、動く体だけなら体のますだけ
+	void fillBodyGrid() const;	// 動く体を、今の置き場所でますへ入れ直す
 
 	std::vector< BoxCollider > mBoxes;
 	std::vector< WallMesh > mWallMeshes;

@@ -23,8 +23,7 @@ cbuffer FxaaConstants : register(b1) // PostProcess.cpp の FxaaConstants と同
 // 輪郭に沿って探す回数と、回ごとの歩幅（画素。FXAA 3.11 の FXAA_QUALITY__PRESET 12 と同じ。先へ行くほど広げて、長い輪郭も 5 回で探す）
 static const int kSearchSteps = 5;
 static const float kSearchStride[kSearchSteps] = { 1.0, 1.5, 2.0, 4.0, 12.0 };
-// 輪郭の端とみなす、輝度の離れ方（真ん中と隣の差のうち大きい方の、この割合）
-static const float kEndGradientRatio = 0.25;
+static const float kEndGradientRatio = 0.25;	// 輪郭の端とみなす、輝度の離れ方（真ん中と隣の差のうち大きい方の、この割合）
 // 周りの平均の重み（上下左右 2・斜め 1 の合計 12 で割る）
 static const float kNeighborWeight = 2.0;
 static const float kNeighborTotal = 12.0;

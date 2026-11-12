@@ -94,8 +94,7 @@ void GameWorld::placePlayer( int escapeCarSpot ) {
 }
 
 void GameWorld::setAnimationView( const Matrix44& projectionView, const Vector3& eye ) {
-	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）
-	mZombies.setAnimationView( projectionView, eye, mTown.visibilityIfEnabled() );
+	mZombies.setAnimationView( projectionView, eye, mTown.visibilityIfEnabled() );	// 隠れの表は F6 の PVS を切っている間は渡さない（描く側と同じ。描かない体を「映らない」にそろえる）
 }
 
 bool GameWorld::spawnZombie( const Vector3& position, float yawDegree ) {
@@ -116,18 +115,15 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	Inventory* inventory ) {
 	{
 		PROFILE_SCOPE( "World.prepare" );
-		// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）
-		mCollisionWorld.refreshBodies();
-		// このティックに道を探してよい回数を戻す
-		mZombies.beginTick();
+		mCollisionWorld.refreshBodies();	// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）
+		mZombies.beginTick();				// このティックに道を探してよい回数を戻す
 	}
 	{
 		PROFILE_SCOPE( "World.player" );
 		if ( mPlayerControl ) {
 			mPlayerControl->setInput( command, cameraYaw, cameraPitch, inventory );
 		}
-		// 自キャラが動いて撃ち、その後に足音・銃声をゾンビへ知らせる（PlayerNoiseComponent。同じ段の中で PlayerComponent の後）
-		mObjects.update( UpdatePhase::Input );
+		mObjects.update( UpdatePhase::Input );	// 自キャラが動いて撃ち、その後に足音・銃声をゾンビへ知らせる（PlayerNoiseComponent。同じ段の中で PlayerComponent の後）
 	}
 	// 弾は銃口ではなく目から出す。画面の中央（照準）へ飛び、銃口が壁にめり込んでいても壁の向こうへ撃てないようにするため
 	{
@@ -157,8 +153,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	{
 		PROFILE_SCOPE( "World.zombies" );
 		if ( zombiesFrozen() ) {
-			// F6 でゾンビを止めている間は、考える・動く・アニメ・攻撃を全部飛ばす（Think の段はゾンビだけ）
-			mZombies.releaseTarget( mPlayer );
+			mZombies.releaseTarget( mPlayer );	// F6 でゾンビを止めている間は、考える・動く・アニメ・攻撃を全部飛ばす（Think の段はゾンビだけ）
 		} else {
 			// 攻撃に行けるのは一度に 1 体だけ（ZombieBrainComponent::TickContext::attacker）
 			mZombies.prepareThink( mPlayer );
@@ -169,10 +164,8 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.late" );
-		// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）
-		mObjects.update( UpdatePhase::Late );
-		// このティックで消す印の付いたもの（沈み終えた死体も）を、全員の更新が済んでから消す（名簿からも外れる）
-		mObjects.flush();
+		mObjects.update( UpdatePhase::Late );	// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）
+		mObjects.flush();						// このティックで消す印の付いたもの（沈み終えた死体も）を、全員の更新が済んでから消す（名簿からも外れる）
 	}
 	{
 		PROFILE_SCOPE( "World.spawn" );

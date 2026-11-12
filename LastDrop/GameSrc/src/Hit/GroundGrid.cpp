@@ -130,8 +130,7 @@ void GroundGrid::collect( const Vector3& origin, const Vector3& delta, std::vect
 		}
 		collectCell( cellX, cellZ, items );
 	}
-	// 小数の誤差で角をずれて進んだときも、線分の終わりのますは必ず入れる（入れ済みなら印で飛ばされる）
-	collectCell( lastX, lastZ, items );
+	collectCell( lastX, lastZ, items );	// 小数の誤差で角をずれて進んだときも、線分の終わりのますは必ず入れる（入れ済みなら印で飛ばされる）
 }
 
 void GroundGrid::collectArea( const Vector3& boundsMin, const Vector3& boundsMax, std::vector< int >* items ) const {

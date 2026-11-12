@@ -16,15 +16,13 @@ class ZombieStateComponent;
 // 世界もゾンビも読むだけで、変えない。ゾンビは表示のことを知らない（体力を読む入口を出すだけ）
 class ZombieHealthBars{
 public:
-	// world の全ゾンビの体力を renderer に積む。1回の描画につき1回、HUD を描く前に呼ぶ。renderer: nullptr 不可
-	void add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
+	void add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;	// world の全ゾンビの体力を renderer に積む。1回の描画につき1回、HUD を描く前に呼ぶ。renderer: nullptr 不可
 
 private:
 	// 1体ぶんを積む。見えない（後ろ・遠い・壁の向こう）なら何もしない
 	void addZombie( const ZombieStateComponent& zombie, const GameWorld& world, const FirstPersonCamera& camera,
 		const GameLib::Math::Matrix44& projectionView, UiRenderer* renderer ) const;
-	// 部位の箱の中心に、部位の体力の数字を積む
-	void addPartLabels( const ZombieStateComponent& zombie, const GameLib::Math::Matrix44& projectionView, UiRenderer* renderer ) const;
+	void addPartLabels( const ZombieStateComponent& zombie, const GameLib::Math::Matrix44& projectionView, UiRenderer* renderer ) const;	// 部位の箱の中心に、部位の体力の数字を積む
 };
 
 #endif

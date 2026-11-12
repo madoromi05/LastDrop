@@ -8,8 +8,7 @@ class UiRenderer;
 class IUiElement{
 public:
 	virtual ~IUiElement(){}
-	// 描く内容を renderer へ積む（実際に描くのは UiRenderer::draw）。何回呼んでも同じ絵になること
-	virtual void draw( UiRenderer& renderer ) const = 0;
+	virtual void draw( UiRenderer& renderer ) const = 0;	// 描く内容を renderer へ積む（実際に描くのは UiRenderer::draw）。何回呼んでも同じ絵になること
 };
 
 #endif

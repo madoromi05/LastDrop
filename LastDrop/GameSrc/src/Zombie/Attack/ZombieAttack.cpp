@@ -2,13 +2,11 @@
 #include "GameSrc/Core/GameTime.h"
 
 namespace{
-	// 攻撃のアニメ（atack1・atack3）は頭から再生する（変換で 0 起点になっている。Blender の 2 フレーム目が 0）
-	const float kStartTime = 0.f;
+	const float kStartTime = 0.f;	// 攻撃のアニメ（atack1・atack3）は頭から再生する（変換で 0 起点になっている。Blender の 2 フレーム目が 0）
 	// ── つかみ：攻撃のアニメ（atack3）の時刻（フレーム）──
 	// 両手を伸ばし切る時刻。ここでつかめるかを決める（Blender で手が一番前へ出た 47 フレーム目）
 	const float kGrabTime = 45.f;
-	// 噛む時刻。つかんで止まっている区間（Blender の 56〜92）の終わり近く。この後は元の姿勢へ戻っていく
-	const float kBiteTime = 88.f;
+	const float kBiteTime = 88.f;	// 噛む時刻。つかんで止まっている区間（Blender の 56〜92）の終わり近く。この後は元の姿勢へ戻っていく
 	// つかんでから噛むまでの長さ（秒）。相手が撃って振りほどく時間。アニメのままだと 0.7 秒しか無いので、この区間だけゆっくり流す
 	const float kHoldSeconds = 1.2f;
 	const float kHoldPlaybackRate = ( kBiteTime - kGrabTime ) / ( kHoldSeconds * GameTime::kTicksPerSecond );
@@ -20,13 +18,10 @@ namespace{
 	// 腕を戻し終える時刻（約 1 秒。体を引きずる体の時計だけが使う。立っている体はアニメの終わりで戻し終える）
 	const float kSwingHitTime = 28.f;
 	const float kSwingPeriod = 60.f;
-	// 時計の 1 ティックに進む時刻（フレーム）。アニメと同じく 1 ティックに 1 フレーム
-	const float kClockStep = 1.f;
+	const float kClockStep = 1.f;	// 時計の 1 ティックに進む時刻（フレーム）。アニメと同じく 1 ティックに 1 フレーム
 
-	// 1回噛んだ・腕が当たったときのダメージ。満タンから 5 回で死ぬ（PlayerHealth の最大の体力 100 から）
-	const float kHitDamage = 20.f;
-	// つかんでいる間にこれだけダメージ（倍率を掛けた後）を受けたら離す。胴なら 2 発、頭なら 1 発（Bullet の 40 × 倍率）
-	const float kShakeOffDamage = 60.f;
+	const float kHitDamage = 20.f;		// 1回噛んだ・腕が当たったときのダメージ。満タンから 5 回で死ぬ（PlayerHealth の最大の体力 100 から）
+	const float kShakeOffDamage = 60.f;	// つかんでいる間にこれだけダメージ（倍率を掛けた後）を受けたら離す。胴なら 2 発、頭なら 1 発（Bullet の 40 × 倍率）
 	// 攻撃が終わって（噛み終えて・振りほどかれて・倒れかけて）から、次の攻撃を始めるまで（秒）
 	const float kCooldownSeconds = 2.f;
 	const int kCooldownTicks = GameTime::secondsToTicks( kCooldownSeconds );

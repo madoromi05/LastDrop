@@ -103,20 +103,17 @@ public:
 	unsigned id() const { return mId; }
 	bool isSpawned() const { return mSpawned; }
 	GameObjectWorld* world() const { return mWorld; }
-	// 付いている部品の数（F6 のエディタの物の一覧が読む）
-	int componentNumber() const { return static_cast< int >( mComponents.size() ); }
+	int componentNumber() const { return static_cast< int >( mComponents.size() ); }	// 付いている部品の数（F6 のエディタの物の一覧が読む）
 
 private:
-	// ここから下の部品の並びを動かす関数は、持ち主だけが呼ぶ（名簿・段の並びと一緒に動かさないと、消えた部品を指したままになるため）
-	friend class GameObjectWorld;
+	friend class GameObjectWorld;	// ここから下の部品の並びを動かす関数は、持ち主だけが呼ぶ（名簿・段の並びと一緒に動かさないと、消えた部品を指したままになるため）
 
 	Component* componentAt( int index ) const { return mComponents[ index ].component.get(); }
 	int componentTypeIdAt( int index ) const { return mComponents[ index ].typeId; }
 	// index 番目の部品が名簿へ載る部品（IWorldMember）なら、その窓口。載らない部品なら nullptr
 	IWorldMember* worldMemberAt( int index ) const { return mComponents[ index ].member; }
 	bool isRemovingAt( int index ) const { return mComponents[ index ].removing; }
-	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す
-	UpdatePhase updatePhaseAt( int index ) const { return mComponents[ index ].phase; }
+	UpdatePhase updatePhaseAt( int index ) const { return mComponents[ index ].phase; }	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す
 	// index 番目の部品を外して捨てる（onDestroy と名簿から外すのは GameObjectWorld が済ませてから呼ぶ）
 	void eraseAt( int index );
 	void markSpawned(){ mSpawned = true; }
@@ -141,10 +138,8 @@ private:
 			return nullptr;
 		}
 	}
-	// spawn した後に付けた index 番目の部品を、持ち主に start させ・載せてもらう
-	void attachLate( int index );
-	// 外す印を付けたことを持ち主に知らせる（flush で外してもらう）
-	void requestRemoval();
+	void attachLate( int index );	// spawn した後に付けた index 番目の部品を、持ち主に start させ・載せてもらう
+	void requestRemoval();			// 外す印を付けたことを持ち主に知らせる（flush で外してもらう）
 
 	GameObjectWorld* mWorld;
 	GameObjectTag mTag;

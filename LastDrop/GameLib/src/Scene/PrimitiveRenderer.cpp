@@ -368,12 +368,9 @@ public:
 		unsigned fid = Manager().frameId();
 		ASSERT( mPreviousFrameId != fid && "PrimitiveRenderer::draw() : you can't draw() twice in a frame!" );
 		mPreviousFrameId = fid;
-		//頂点バッファアンロック
-		mVertexBuffer.unlock( &mLockedVertexBuffer );
-		//よくつかうので別名
-		Manager m;
-		//頂点バッファをセット
-		m.setVertexBuffer( mVertexBuffer );
+		mVertexBuffer.unlock( &mLockedVertexBuffer );	//頂点バッファアンロック
+		Manager m;										//よくつかうので別名
+		m.setVertexBuffer( mVertexBuffer );				//頂点バッファをセット
 		//初期値をセットして回る。無駄ではあるが
 		Matrix44 transform;
 		transform.setIdentity();
@@ -405,8 +402,7 @@ public:
 		//単位行列
 		Matrix44 identityTransform;
 		identityTransform.setIdentity();
-		//特別な行列を入れた直後か
-		bool specialTransform = false;
+		bool specialTransform = false;	//特別な行列を入れた直後か
 
 		//バッチを一個づつ処理していく。ダミーは無視するので1番から
 		for ( int i = 1; i <= mBatchPosition; ++i ){
@@ -472,17 +468,15 @@ public:
 				//draw に渡すと、2つ目以降のバッチが3倍ずれた所から描かれる（文字の絵が2枚以上になると崩れる）
 				m.drawFromVertex( b.mStart, b.mPrimitiveNumber, prim );
 			}
-			//バッチが持ってるテクスチャハンドルを全部捨てる
-			b.mTexture.release();
+			b.mTexture.release();	//バッチが持ってるテクスチャハンドルを全部捨てる
 		}
 		//頂点バッファ次のためにロック
-		m.setVertexBuffer( 0 ); //はずして
+		m.setVertexBuffer( 0 );	//はずして
 		mLockedVertexBuffer = mVertexBuffer.lock();
 		//後は後始末
 		mVertexPosition = 0;
 		mBatchPosition = 0;
-		//テクスチャ後始末(やらないと破棄できぬ)
-		m.setTexture( 0 );
+		m.setTexture( 0 );		//テクスチャ後始末(やらないと破棄できぬ)
 	}
 private:
 	void operator=( const Impl& ); //禁止

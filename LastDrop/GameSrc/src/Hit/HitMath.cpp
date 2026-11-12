@@ -6,15 +6,14 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const float kCubeHalf = 1.f;           // 立方体の幅の半分（-1〜1）
-	const float kMinMove = 0.000001f;      // これより小さい移動は、その軸には動かないとみなす（0 割りを避ける）
+	const float kCubeHalf = 1.f;			// 立方体の幅の半分（-1〜1）
+	const float kMinMove = 0.000001f;		// これより小さい移動は、その軸には動かないとみなす（0 割りを避ける）
 	const float kStartTime = 0.f;
 	const float kEndTime = 1.f;
 	const int kAxisNumber = 3;
-	const int kNoAxis = -1;                // 入った面が無い（始点が中）
+	const int kNoAxis = -1;					// 入った面が無い（始点が中）
 	const float kOutward = 1.f;
-	// 三角形と線分がほぼ平行・三角形の面積がほぼ0とみなす大きさ（行列式）
-	const float kParallelEpsilon = 1e-12f;
+	const float kParallelEpsilon = 1e-12f;	// 三角形と線分がほぼ平行・三角形の面積がほぼ0とみなす大きさ（行列式）
 
 	// 軸ごとの「入る時刻・出る時刻」を重ねていく（スラブ法）。重なりが無くなれば外れ
 	// low/high: その軸の幅。enterAxis: 一番遅く入った軸（面の法線に使う）。nullptr なら記録しない
@@ -31,8 +30,7 @@ namespace{
 			*enterTime = enter;
 			if ( enterAxis ) {
 				*enterAxis = axis;
-				// 正の向きに進んで入ったなら、入った面は低い側（外向きの法線は負）
-				*enterSign = ( move > 0.f ) ? -kOutward : kOutward;
+				*enterSign = ( move > 0.f ) ? -kOutward : kOutward;	// 正の向きに進んで入ったなら、入った面は低い側（外向きの法線は負）
 			}
 		}
 		*exitTime = Math::min( *exitTime, exit );

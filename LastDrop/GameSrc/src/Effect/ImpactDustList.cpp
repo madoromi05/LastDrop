@@ -15,9 +15,8 @@ namespace{
 	const int kFrameRows = 4;
 	const int kFrameNumber = kFrameColumns * kFrameRows;
 
-	// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.5 秒で消えるので、ふだんは 5 回分ほど）
-	const int kCapacity = 16;
-	const unsigned kRandomSeed = 7622u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
+	const int kCapacity = 16;			// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.5 秒で消えるので、ふだんは 5 回分ほど）
+	const unsigned kRandomSeed = 7622u;	// 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
 	// 粉の色（明るい砂の色）。ライトが掛かる前の色。材質では分けない。見た目を確かめる前の初期値
 	const float kDustRed = 0.78f;
@@ -29,8 +28,7 @@ namespace{
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
 
-	// 壁・地面に刺さった所で粒を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値
-	const float kSoftDistance = 0.3f;
+	const float kSoftDistance = 0.3f;	// 壁・地面に刺さった所で粒を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値
 }
 
 ImpactDustList::ImpactDustList() :

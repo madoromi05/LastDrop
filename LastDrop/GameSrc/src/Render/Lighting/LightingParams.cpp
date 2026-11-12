@@ -56,6 +56,5 @@ bool& skyDetailEnabled() {
 
 Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree ) {
 	float horizontal = cos( elevationDegree );
-	// 光の来る方の逆が、光の進む向き
-	return Vector3( -horizontal * sin( azimuthDegree ), -sin( elevationDegree ), -horizontal * cos( azimuthDegree ) );
+	return Vector3( -horizontal * sin( azimuthDegree ), -sin( elevationDegree ), -horizontal * cos( azimuthDegree ) );	// 光の来る方の逆が、光の進む向き
 }

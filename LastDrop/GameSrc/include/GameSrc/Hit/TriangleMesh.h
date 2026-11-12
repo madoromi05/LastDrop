@@ -25,8 +25,7 @@ public:
 
 private:
 #ifndef NDEBUG
-	// 木の答えが、三角形を全部調べた答えと同じかを、乱数の線分で確かめる（Debug だけ。違えば ASSERT）
-	void verifyTree() const;
+	void verifyTree() const;	// 木の答えが、三角形を全部調べた答えと同じかを、乱数の線分で確かめる（Debug だけ。違えば ASSERT）
 	// 三角形を全部調べる、木を使わない判定（verifyTree の手本）
 	bool raycastAll( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;

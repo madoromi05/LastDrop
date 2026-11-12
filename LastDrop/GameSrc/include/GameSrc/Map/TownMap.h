@@ -67,10 +67,8 @@ public:
 	// 地面にはガソリンとライフルを置かない（ガソリンはゴミ箱・木箱の中、ライフルは木箱から出る）
 	const std::vector< TownPlacement >& dumpsters() const;			// ゴミ箱（車道の端。向きは、正面〈+Z〉が道の真ん中を向く）
 	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
-	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）と、その日の自キャラの始めの位置。毎日どれに置くかは RaidSession が選ぶ
-	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;
-	// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）
-	const std::vector< TownPlacement >& fireHydrants() const;
+	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）と、その日の自キャラの始めの位置。毎日どれに置くかは RaidSession が選ぶ
+	const std::vector< TownPlacement >& fireHydrants() const;		// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中
 	// 柱は WorldBuilder が置き、光は柱の頭（足元 + LightingParams::streetLightHeight）からシーンが出す。届く距離・色・強さも LightingParams

@@ -16,19 +16,15 @@ class FirstPersonCamera;
 //   照準のぶれ … AimSway（銃と弾の向きだけ。画面の中央は動かさない）
 class ViewEffects{
 public:
-	// 揺れ方・ぶれ方を遊ぶたびに変える（起動からの時間を種にする）
-	ViewEffects();
+	ViewEffects();	// 揺れ方・ぶれ方を遊ぶたびに変える（起動からの時間を種にする）
 
-	// マウス・スティックで回した角度（度）を足す（描画ごと）。照準のぶれ（振り向きの遅れ）が、次の update でまとめて使う
-	void addLook( float yawDegree, float pitchDegree );
+	void addLook( float yawDegree, float pitchDegree );	// マウス・スティックで回した角度（度）を足す（描画ごと）。照準のぶれ（振り向きの遅れ）が、次の update でまとめて使う
 	// 1ティック進めて、camera へ渡す（キャラを動かした後。flinch・shakeOnGrab の後）
 	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0
 	// body: 自キャラの今の状態（PlayerAimSwaySource::read。自キャラがいなければ既定のまま＝ぶれない）。camera: nullptr 不可
 	void update( float shotRecoil, const AimSwayBody& body, FirstPersonCamera* camera );
-	// 噛まれた（這うゾンビの腕が当たった）瞬間。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす
-	void flinch();
-	// つかまれた瞬間。絵だけを揺らす（狙いは LookPull で相手の顔へ向けるので、跳ねさせない）
-	void shakeOnGrab();
+	void flinch();										// 噛まれた（這うゾンビの腕が当たった）瞬間。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす
+	void shakeOnGrab();									// つかまれた瞬間。絵だけを揺らす（狙いは LookPull で相手の顔へ向けるので、跳ねさせない）
 	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間。絵だけを少し揺らす（弾道は動かさない）
 	// headBurst: 頭が弾けた（部位が飛んだより少し大きく揺らす）
 	void shakeOnHeavyHit( bool headBurst );

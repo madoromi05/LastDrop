@@ -12,8 +12,7 @@ class StaticMeshInstance;
 // 箱1つで囲む MeshBoundsBox と違い、へこんだ入口や斜めの壁もそのままの形で当たる
 class MeshWallBuilder{
 public:
-	// mesh: 置いた見た目。その形（三角形）と置き場所の行列から作るので、見た目を回しても拡大しても当たり判定が付いてくる
-	static WallMesh make( const StaticMeshInstance& mesh );
+	static WallMesh make( const StaticMeshInstance& mesh );	// mesh: 置いた見た目。その形（三角形）と置き場所の行列から作るので、見た目を回しても拡大しても当たり判定が付いてくる
 };
 
 #endif

@@ -23,8 +23,7 @@ public:
 	GameEditorBridge( const GameEditorBridge& ) = delete;
 	GameEditorBridge& operator=( const GameEditorBridge& ) = delete;
 
-	// 出撃のロードが終わった（FireProbe が、そこから記録を始める）
-	void markReady();
+	void markReady();							// 出撃のロードが終わった（FireProbe が、そこから記録を始める）
 	// 描画ごとに、F6 で頼まれた自キャラの無敵の切り替え（DebugSwitches::toggleInvincible）を行い、F6 のエディタへ今の物を渡す（エディタの欄が読む・書く）
 	// 世界・カバン・出撃・出撃の間で受け渡す物はどれも借りるだけ（このシーンの間だけ指す）。freeCamera: 観察用カメラを使っているか（F6 に出す）
 	void publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera );
@@ -34,8 +33,7 @@ public:
 	// 撃つボタンを押した・離した描画を FireProbe へ渡す（1 発目が出ない件の仮の記録）
 	// freeCamera: 観察用カメラを使っているか
 	void probeFrame( const GameWorld& world, const FirstPersonControl& control, const ModalController& modals, bool freeCamera );
-	// このティックに撃った・空撃ちしたかを FireProbe へ渡す（GameWorld::update の後）
-	void probeTick( const GameWorld& world );
+	void probeTick( const GameWorld& world );	// このティックに撃った・空撃ちしたかを FireProbe へ渡す（GameWorld::update の後）
 
 private:
 	FireProbe mFireProbe; // 1 発目が出ない件の仮の記録（原因が決まったら消す）

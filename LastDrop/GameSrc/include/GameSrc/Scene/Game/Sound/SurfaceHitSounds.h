@@ -14,11 +14,9 @@ class AudioEngine;
 // どの素材を使うか・聞こえる距離・音程の揺らぎは音の目録（SoundCatalog）が持つ
 class SurfaceHitSounds{
 public:
-	// audio: 鳴らす先。所有権は受け取らない。nullptr 不可。この係より長く生きていること
-	explicit SurfaceHitSounds( AudioEngine* audio );
+	explicit SurfaceHitSounds( AudioEngine* audio );	// audio: 鳴らす先。所有権は受け取らない。nullptr 不可。この係より長く生きていること
 
-	// hits の着弾1つにつき1回鳴らす。1ティックに1回、GameWorld::update の後に呼ぶ（GameWorld::combat().surfaceHitsThisTick を渡す）
-	void play( const std::vector< CombatResolver::SurfaceHit >& hits );
+	void play( const std::vector< CombatResolver::SurfaceHit >& hits );	// hits の着弾1つにつき1回鳴らす。1ティックに1回、GameWorld::update の後に呼ぶ（GameWorld::combat().surfaceHitsThisTick を渡す）
 
 private:
 	AudioEngine* mAudio; // 借りているだけ

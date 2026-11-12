@@ -21,13 +21,11 @@ struct ZombieUncertaintyParams{
 	// 自キャラを追っている間、これより近いと揺れ始め（m）、fullDistance より近いと一番大きく揺れる（間はなめらかに増やす）
 	float swayStartDistance = 12.f;
 	float swayFullDistance = 6.f;
-	// 一番大きく揺れたときに胴を倒す角度（度）。背骨から頭まで約 0.6m なので、14°で頭が左右に約 15cm 動く
-	float swayMaxDegree = 14.f;
+	float swayMaxDegree = 14.f;	// 一番大きく揺れたときに胴を倒す角度（度）。背骨から頭まで約 0.6m なので、14°で頭が左右に約 15cm 動く
 	// 左右に 1 往復する長さ（秒）。湧くときにこの間から体ごとに選ぶ（変えたら次に湧く体から効く）
 	float swayPeriodMin = 1.2f;
 	float swayPeriodMax = 1.8f;
-	// 揺れに合わせて歩く向きを左右へずらす最大の角度（度）。倒れている側へ流れる
-	float weaveDegree = 8.f;
+	float weaveDegree = 8.f;	// 揺れに合わせて歩く向きを左右へずらす最大の角度（度）。倒れている側へ流れる
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（WeaponPoseParams と同じ約束）。丈夫さの下限を 0 にしないのは体力が 0 で始まるため
 	// 往復の長さの下限を 0 にしないのは割り算に使うため
@@ -49,7 +47,6 @@ struct ZombieUncertaintyParams{
 	float pickSwayPeriod( GameLib::Math::Random* random ) const;
 };
 
-// 起動中ずっと 1 つだけの調整値（ZombieUncertaintyParams.cpp が持つ）
-ZombieUncertaintyParams& zombieUncertaintyParams();
+ZombieUncertaintyParams& zombieUncertaintyParams();	// 起動中ずっと 1 つだけの調整値（ZombieUncertaintyParams.cpp が持つ）
 
 #endif

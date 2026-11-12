@@ -26,14 +26,10 @@ public:
 	MenuPages( const MenuPages& ) = delete;
 	MenuPages& operator=( const MenuPages& ) = delete;
 
-	// 予約されたページの切り替えをしてから、今のページの入力を読む。1回の描画につき1回
-	void handleInput();
-	// 今のページを描く。1回の描画につき1回。中で UiRenderer::draw まで行う
-	void draw();
-	// 1 つ上のページへ戻る（予約。ESC）。もう最初のページなら何もせず false を返す（呼ぶ側が一時停止を閉じるなど）
-	bool back();
-	// 最初のページへすぐ戻す（一時停止を開き直したとき）。ボタンの処理の中からは呼ばないこと（押したボタンが消える）
-	void showMain();
+	void handleInput();	// 予約されたページの切り替えをしてから、今のページの入力を読む。1回の描画につき1回
+	void draw();		// 今のページを描く。1回の描画につき1回。中で UiRenderer::draw まで行う
+	bool back();		// 1 つ上のページへ戻る（予約。ESC）。もう最初のページなら何もせず false を返す（呼ぶ側が一時停止を閉じるなど）
+	void showMain();	// 最初のページへすぐ戻す（一時停止を開き直したとき）。ボタンの処理の中からは呼ばないこと（押したボタンが消える）
 
 private:
 	void request( MenuPageId page );

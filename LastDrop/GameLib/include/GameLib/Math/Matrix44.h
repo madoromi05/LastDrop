@@ -41,12 +41,9 @@ public:
 	void mul( Vector4* out, const Vector3& in ) const;
 	void operator*=( const Matrix34& );
 	void setMul( const Matrix44&, const Matrix34& );
-	///逆行列（自分自身を渡してもよい）。逆が無い行列（行列式が 0）を渡すと ASSERT
-	void setInverse( const Matrix44& );
-	///完全に一致しているかチェック
-	bool operator==( const Matrix44& ) const;
-	///少しでも違うのかをチェック
-	bool operator!=( const Matrix44& ) const;
+	void setInverse( const Matrix44& );			///逆行列（自分自身を渡してもよい）。逆が無い行列（行列式が 0）を渡すと ASSERT
+	bool operator==( const Matrix44& ) const;	///完全に一致しているかチェック
+	bool operator!=( const Matrix44& ) const;	///少しでも違うのかをチェック
 
 	float& operator()( int row, int col );
 	float operator()( int row, int col ) const;

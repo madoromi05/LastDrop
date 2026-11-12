@@ -12,11 +12,8 @@ class GameObjectWorld;
 // カバン/漁りの画面を開くとき store、閉じるとき・出撃のロード直後に restore を呼ぶ
 // 銃の物を種類で引くのはここだけ（銃は 1 種類 1 丁なので、種類で引ける）
 
-// 世界の銃の物 item（ITEM_KIND_WEAPON）の弾倉に入っている弾の数（その銃が無ければ 0）
-int magazineRoundsOf( const GameObjectWorld& objects, ItemId item );
-// 世界の銃の物をカバンの対応するマスへ書き写す（画面を開く直前に）
-void storeMagazineRounds( Inventory& inventory, const GameWorld& world );
-// カバンのマスの弾倉数を、世界の銃の物へ入れる（画面を閉じたとき・銃の物を作った直後に。弾倉の大きさまでに収める）
-void restoreMagazineRounds( Inventory& inventory, GameWorld& world );
+int magazineRoundsOf( const GameObjectWorld& objects, ItemId item );		// 世界の銃の物 item（ITEM_KIND_WEAPON）の弾倉に入っている弾の数（その銃が無ければ 0）
+void storeMagazineRounds( Inventory& inventory, const GameWorld& world );	// 世界の銃の物をカバンの対応するマスへ書き写す（画面を開く直前に）
+void restoreMagazineRounds( Inventory& inventory, GameWorld& world );		// カバンのマスの弾倉数を、世界の銃の物へ入れる（画面を閉じたとき・銃の物を作った直後に。弾倉の大きさまでに収める）
 
 #endif

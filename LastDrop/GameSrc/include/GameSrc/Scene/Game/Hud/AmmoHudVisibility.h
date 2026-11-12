@@ -12,9 +12,8 @@ public:
 	// 1 ティック進める。wanted: このティックに出す条件があるか
 	// 条件がある間は濃くなり、切れてから 2 秒（kLingerSeconds）は出したまま、その後に薄くなって消える
 	void update( bool wanted );
-	// 今の濃さ（0 = 出さない、1 = 一番濃い）
-	float opacity() const;
-	bool isVisible() const; // 濃さが 0 より大きいか（描くかどうか）
+	float opacity() const;	// 今の濃さ（0 = 出さない、1 = 一番濃い）
+	bool isVisible() const;	// 濃さが 0 より大きいか（描くかどうか）
 
 private:
 	int mLingerTicks; // 条件が切れた後、あと何ティック出したままにするか

@@ -7,12 +7,9 @@ namespace Threading{
 ///決まった人数だけ同時にロックできるMutex
 class Semaphore{
 public:
-	///引数の初期値で生成。maxCountは0だとstartCountになる
-	static Semaphore create( int startCount, int maxCount = 0 );
-	///カウントを1減らそうとする。すでに0だと眠らされる
-	void decrease();
-	///カウントを増やす。引数を省略すれば1づつ
-	void increase( int value = 1 );
+	static Semaphore create( int startCount, int maxCount = 0 );	///引数の初期値で生成。maxCountは0だとstartCountになる
+	void decrease();												///カウントを1減らそうとする。すでに0だと眠らされる
+	void increase( int value = 1 );									///カウントを増やす。引数を省略すれば1づつ
 
 	Semaphore();
 	~Semaphore();

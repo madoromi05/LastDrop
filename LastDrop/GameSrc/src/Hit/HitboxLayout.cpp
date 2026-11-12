@@ -13,8 +13,7 @@ using namespace GameLib::Math;
 
 namespace{
 	const int kMaxBonesPerPart = 6;
-	// 箱の幅の半分の下限（骨の空間の単位）。頂点が平らに並んで幅が 0 になると逆行列が作れないため
-	const float kMinHalfExtent = 0.001f;
+	const float kMinHalfExtent = 0.001f;	// 箱の幅の半分の下限（骨の空間の単位）。頂点が平らに並んで幅が 0 になると逆行列が作れないため
 
 	// 部位ごとの「箱を付ける骨」「箱の長い辺の向き（関節 → 関節）」「頂点を集める骨」。名前は頭の共通部分を除いたもの
 	// 箱を付ける骨は、その部位の肉が一緒に動く骨（胴は腰〜胸が曲がるので、真ん中の Spine1 に付ける）

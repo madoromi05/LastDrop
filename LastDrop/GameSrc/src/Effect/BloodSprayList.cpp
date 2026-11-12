@@ -11,9 +11,8 @@ using namespace GameLib::Math;
 namespace{
 	const char* kTextureFile = "Resource/Texture/Effect/blood_drop.dds"; // tools/texgen/blood_gen.py で作る（TGA を作った後、tools/convert/texture_to_dds.ps1 で DDS にする）
 
-	// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.4 秒で消えるので、ふだんは 4 回分ほど）
-	const int kCapacity = 16;
-	const unsigned kRandomSeed = 7623u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
+	const int kCapacity = 16;			// 同時に出しておける回数。超えたら一番古い物から消す（フルオート毎秒 10 発・0.4 秒で消えるので、ふだんは 4 回分ほど）
+	const unsigned kRandomSeed = 7623u;	// 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
 	// 血の色（暗い赤）。ライトが掛かる前の色。見た目を確かめる前の初期値
 	const float kBloodRed = 0.35f;
@@ -25,8 +24,7 @@ namespace{
 	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
 	const float kParallelLimit = 0.99f;
 
-	// 壁・地面に刺さった所で滴を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値
-	const float kSoftDistance = 0.15f;
+	const float kSoftDistance = 0.15f;	// 壁・地面に刺さった所で滴を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値
 }
 
 BloodSprayList::BloodSprayList() :

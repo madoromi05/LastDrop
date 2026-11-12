@@ -78,36 +78,30 @@ public:
 
 	void clear();
 	void add( const LightSource& );
-	// 空と環境光。clear では消えない（最後に設定した値のまま。GameScene は毎フレーム調整値から設定し直す）
-	void setEnvironment( const EnvironmentLight& );
+	void setEnvironment( const EnvironmentLight& );	// 空と環境光。clear では消えない（最後に設定した値のまま。GameScene は毎フレーム調整値から設定し直す）
 	// 影のマップ。index：0〜kMaxShadowMaps−1（ライトの shadowMap に入れる番号。シェーダの t6 + index）
 	// projectionView：その影のマップを描いた光の側の射影×ビュー。texelSize：影のマップ 1 画素の大きさ（m）
 	// perspective：true なら透視（スポット。texelSize は光から 1m の所の大きさで、距離を掛けて使う）、false なら正射影（月）
 	// clear で全部外れる
 	void setShadowMap( int index, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView,
 		float texelSize, bool perspective );
-	// 影を読む位置のずらしと濃さ（ShadowParams の値）。clear では消えない
-	void setShadowSettings( float normalOffsetTexels, float lightOffsetTexels, float strength );
+	void setShadowSettings( float normalOffsetTexels, float lightOffsetTexels, float strength );	// 影を読む位置のずらしと濃さ（ShadowParams の値）。clear では消えない
 	// 月の CSM の枚の選び方。viewDirection：カメラの向き（長さ 1。奥行きはこの向きに沿って測る）
 	// cascadeEnds：各枚の受け持ちの奥の端（m）。blendRatio：各枚の受け持ちの奥の何割を、次の枚と混ぜるか（境目を目立たせない）
 	void setCascades( const GameLib::Math::Vector3& viewDirection, const float ( &cascadeEnds )[ kCascadeCount ], float blendRatio );
-	// 照らすライトを選んで定数を書き、b2 に付ける。eye：目の位置（選ぶ順番に使う）
-	void bind( const GameLib::Math::Vector3& eye );
+	void bind( const GameLib::Math::Vector3& eye );													// 照らすライトを選んで定数を書き、b2 に付ける。eye：目の位置（選ぶ順番に使う）
 	// 影のマップを t6〜 に付ける。描画先を変える（Manager::setRenderTargets）と t2 以降は外れるので、
 	// 影を読む物（ライティングのパス・半透明の板）を描く前に、そのつど呼ぶ
 	void bindShadowMaps() const;
-	// 最後に bind で書いた定数を、選び直さずにもう一度 b2 に付ける（unbind の後に、F6 の影の表示を描くとき）
-	void rebindConstants() const;
-	// b2 と影のマップを外す（後から描く物・ほかのシーンに残さない）
-	void unbind();
+	void rebindConstants() const;																	// 最後に bind で書いた定数を、選び直さずにもう一度 b2 に付ける（unbind の後に、F6 の影の表示を描くとき）
+	void unbind();																					// b2 と影のマップを外す（後から描く物・ほかのシーンに残さない）
 
 	// 足したライト（足した順）と、最後の bind で照らす物に選ばれたか（F6 の Zombie info の表示用。LightDebugDrawer）
 	const std::vector< LightSource >& lights() const;
 	bool isSelected( int index ) const;
 
 private:
-	// mLights から照らす物を選び、mSelected に番号を入れる（平行光 → 目に近い順）
-	void select( const GameLib::Math::Vector3& eye );
+	void select( const GameLib::Math::Vector3& eye );	// mLights から照らす物を選び、mSelected に番号を入れる（平行光 → 目に近い順）
 
 	std::vector< LightSource > mLights;
 	EnvironmentLight mEnvironment;

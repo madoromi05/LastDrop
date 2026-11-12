@@ -9,8 +9,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 区間を始めた直後の「最後に動かした時刻」。最初の apply で必ず当たり直す（アニメ時刻は 0 以上）
-	const float kNotAppliedTime = -1.f;
+	const float kNotAppliedTime = -1.f;	// 区間を始めた直後の「最後に動かした時刻」。最初の apply で必ず当たり直す（アニメ時刻は 0 以上）
 }
 
 ZombieRootMotionSpan::ZombieRootMotionSpan( SkinnedMeshInstance* mesh, const CharacterMover* mover ) :

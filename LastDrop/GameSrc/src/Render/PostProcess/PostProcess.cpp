@@ -21,8 +21,7 @@ namespace{
 	// 色の表（Grading.hlsli の gLut。t4）。表を読んでいるときだけ付ける
 	const int kLutSlot = kSceneColorSlot + 2;
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// Fxaa.hlsl の番号と揃える（t2 / b1）
-	const int kFxaaInputSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
+	const int kFxaaInputSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// Fxaa.hlsl の番号と揃える（t2 / b1）
 	// 半透明の板が読むシーンの深度（SoftQuad.hlsli の t5。G-Buffer の並びの深度と同じ番号）
 	const int kSoftQuadDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kFxaaConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
@@ -83,12 +82,9 @@ namespace{
 	const float kPainDarken = 0.5f;
 	const float kNoEffect = 0.f;
 
-	// 色温度 1 のときの、赤と青の倍率の変わり方（1 で赤 ×1.2・青 ×0.8。−1 でその逆）
-	const float kTemperatureScale = 0.2f;
-	// リニアの色の輝度の重み（Rec.709。Present.hlsl の kLuminanceWeights と同じ）
-	const Vector3 kLuminanceWeights( 0.2126f, 0.7152f, 0.0722f );
-	// ディザの幅：画面の色（8bit）の 1 段。シェーダはこの幅の ±半分のノイズを足す
-	const float kDitherStep = 1.f / 255.f;
+	const float kTemperatureScale = 0.2f;							// 色温度 1 のときの、赤と青の倍率の変わり方（1 で赤 ×1.2・青 ×0.8。−1 でその逆）
+	const Vector3 kLuminanceWeights( 0.2126f, 0.7152f, 0.0722f );	// リニアの色の輝度の重み（Rec.709。Present.hlsl の kLuminanceWeights と同じ）
+	const float kDitherStep = 1.f / 255.f;							// ディザの幅：画面の色（8bit）の 1 段。シェーダはこの幅の ±半分のノイズを足す
 
 	// 色温度 temperature（−1〜1）から、r・g・b に掛ける倍率を作る。輝度で割り戻して、明るさは変えない（色だけ変える）
 	Vector3 whiteBalance( float temperature ) {
@@ -186,8 +182,7 @@ void PostProcess::endScene() {
 	// この後に画面へ直接描く HUD・文字は、画像の色のまま出す（今までと同じ色）
 	gm.enableLinearColor( false );
 	updateColorLut();
-	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）
-	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );
+	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）
 	// FXAA を掛けるなら、写した結果をいったん 8bit の中間へ置く（Present.hlsl は a に輝度も書く）。掛けないなら画面へ直接
 	const bool usesFxaa = ( antiAliasingMode() == AntiAliasing::Fxaa );
 	if ( usesFxaa ) {

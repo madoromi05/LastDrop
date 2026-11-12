@@ -23,9 +23,8 @@ namespace{
 		LootEntry entries[ kMaxEntries ];
 	};
 
-	// 弾は、1 個でその弾の 1 マスの半分〜全部（7.62mm 15〜30 発・9mm 12〜24 発）
-	const int kAmmoMinDivisor = 2;
-	const int kSingleItem = 1; // 弾以外は 1 個ずつ（包帯も 1 つ。重なる数は拾ってから）
+	const int kAmmoMinDivisor = 2;	// 弾は、1 個でその弾の 1 マスの半分〜全部（7.62mm 15〜30 発・9mm 12〜24 発）
+	const int kSingleItem = 1;		// 弾以外は 1 個ずつ（包帯も 1 つ。重なる数は拾ってから）
 
 	// LootTableId の順
 	const LootSpec kSpecs[ static_cast< int >( LootTableId::Count ) ] = {

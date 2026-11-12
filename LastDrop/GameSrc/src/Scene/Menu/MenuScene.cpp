@@ -7,8 +7,7 @@
 
 MenuScene::MenuScene( GameResources* resources, const MenuDefinition& definition ) :
 	mPages( &resources->uiRenderer(), &resources->settings(), &resources->audio(), definition ) {
-	// 本編でロックしたカーソルを戻す（ボタンをマウスで押せるように）
-	GameLib::Input::Manager::instance().setCursorLocked( false );
+	GameLib::Input::Manager::instance().setCursorLocked( false );	// 本編でロックしたカーソルを戻す（ボタンをマウスで押せるように）
 }
 
 void MenuScene::beginFrame() {

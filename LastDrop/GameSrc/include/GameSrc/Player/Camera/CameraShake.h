@@ -8,14 +8,12 @@
 // 何で揺らすか（撃った・攻撃された）は知らない。足す量は呼ぶ側の定数、揺れ方は CameraShake.cpp の定数で直す
 class CameraShake{
 public:
-	// seed: ノイズの種（遊ぶたびに揺れ方を変える）
-	explicit CameraShake( int seed );
+	explicit CameraShake( int seed );	// seed: ノイズの種（遊ぶたびに揺れ方を変える）
 
 	// トラウマを amount だけ足す。ただし足した結果は limit より上げない（もう limit より上なら下げもしない）
 	// 弱い揺れ（射撃）を続けても強い揺れ（攻撃された）ほどにはならないようにするため。amount・limit は 0〜1
 	void addTrauma( float amount, float limit );
-	// 1ティック進める（トラウマを減らし、ノイズを読む位置を進める）
-	void update();
+	void update();	// 1ティック進める（トラウマを減らし、ノイズを読む位置を進める）
 
 	// 描く行列へ足す角度（度）。揺れていなければ 0。向きの約束は FirstPersonCamera と同じ（ピッチは正で見下ろす・ヨーは正で左）
 	float pitch() const;
@@ -24,8 +22,7 @@ public:
 	float trauma() const;
 
 private:
-	// channel 番目のノイズ（−1〜1）を今の位置で読む
-	float noise( int channel ) const;
+	float noise( int channel ) const;	// channel 番目のノイズ（−1〜1）を今の位置で読む
 
 	unsigned mSeed;
 	float mTrauma;    // 0〜1

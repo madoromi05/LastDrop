@@ -59,43 +59,37 @@ class EscapeCarComponent;
 // 環境音（脱出のサイレン）は鳴らさない
 class GameScene : public IScene{
 public:
-	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
-	explicit GameScene( GameResources* resources );
+	explicit GameScene( GameResources* resources );	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
 	// 一時停止のまま別のシーンへ移る（Retry・Title）ときに、止めた音を戻す（音の道具は次のシーンも使う）
 	virtual ~GameScene();
 	virtual void beginFrame();
 	virtual void update();
 	virtual void draw();
-	// メッシュの組み立てが終わって世界を並べるまでは読み込み中（draw は何も描かない）
-	virtual bool isLoading() const;
+	virtual bool isLoading() const;					// メッシュの組み立てが終わって世界を並べるまでは読み込み中（draw は何も描かない）
 private:
 	// 一時停止する・戻る。止める間は世界を進めず、音を止め、カーソルを外す。戻ったらカーソルをロックする
 	void pause();
 	void resume();
-	// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない
-	void handlePausedInput();
+	void handlePausedInput();			// 止めている間の入力（ESC で戻る・メニューの操作）。止めている間は、ほかの入力を読まない
 	// カバン（持ち物のマス目）は BagController、漁れる場所・給油は LootController、遊び中の画面表示は HudController が持つ
 	// カバンを開けるのは自キャラが生きていて観察用カメラを使っていない間だけ（handleFrameInput で判定）
 	// 自キャラが手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。各画面のマスの印に使う
 	ItemId equippedWeapon() const;
-	void updateInteraction();    // 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
-	void updateListener();       // 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
+	void updateInteraction();			// 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
+	void updateListener();				// 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
 	// 出撃を 1 ティック進め（RaidSession）、終わったら結果の画面へ移る（1ティックに1回、PlayerFeedback::reactToCombat の後）
 	// 脱出：すぐ。死んだ：暗くなり終わるのを待ってから
 	void updateRaid();
-	// 終わった出撃の結果を RaidRecord に置いて、結果の画面への切り替えを予約する（1 回だけ）
-	void finishRaid();
-	// ロードの後の、描画ごとの操作の読み取り（一時停止・カバン・中を見る画面・視点と移動）。beginFrame から
-	void handleFrameInput();
-	float aimWeight() const;     // 自キャラの覗き具合（0〜1。自キャラがいなければ 0）
+	void finishRaid();					// 終わった出撃の結果を RaidRecord に置いて、結果の画面への切り替えを予約する（1 回だけ）
+	void handleFrameInput();			// ロードの後の、描画ごとの操作の読み取り（一時停止・カバン・中を見る画面・視点と移動）。beginFrame から
+	float aimWeight() const;			// 自キャラの覗き具合（0〜1。自キャラがいなければ 0）
 	// 画を描き、音を聞くカメラ。観察用カメラ（FreeCamera）を使っている間はそちら、それ以外は自キャラの視点
 	// 自キャラを動かす向き・見ている物を使う視線・ゾンビの湧く場所には使わない（そちらは常に自キャラの視点）
 	const FirstPersonCamera& viewCamera() const;
-	bool isFreeCameraActive() const; // 観察用カメラを使っているか（Release では常に false）
+	bool isFreeCameraActive() const;	// 観察用カメラを使っているか（Release では常に false）
 
-	GameResources* mResources;   // 借りているだけ
-	// 世界。今回の条件（停電・霧など）も世界が持つ。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）
-	GameWorld mWorld;
+	GameResources* mResources;	// 借りているだけ
+	GameWorld mWorld;			// 世界。今回の条件（停電・霧など）も世界が持つ。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）
 	// 世界を画面へ写す（ディファードのパイプライン。View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）
 	SceneRenderer mSceneRenderer;
 	Inventory mInventory;
@@ -104,17 +98,13 @@ private:
 	// 選んだ車のそばの始めの向きを mControl が読むので、mControl より先に宣言する
 	RaidSession mSession;
 	FirstPersonControl mControl;
-	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）
-	PlayerFeedback mFeedback;
-	// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する
-	HudController mHud;
+	PlayerFeedback mFeedback;	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）
+	HudController mHud;			// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）
 	LoadingPhase mLoad;
 	PauseMenu mPauseMenu;
-	// 全画面のモーダル（一時停止・カバン・漁り）の状態と、開閉の共通遷移（音を止める・カーソル）。mControl と音を借りるので、その後に宣言する
-	ModalController mModals;
-	// カバン（持ち物のマス目）の開閉と操作。mInventory/mWorld/mControl/mModals を借りるので、その後に宣言する
-	BagController mBag;
+	ModalController mModals;	// 全画面のモーダル（一時停止・カバン・漁り）の状態と、開閉の共通遷移（音を止める・カーソル）。mControl と音を借りるので、その後に宣言する
+	BagController mBag;			// カバン（持ち物のマス目）の開閉と操作。mInventory/mWorld/mControl/mModals を借りるので、その後に宣言する
 	// 漁れる場所・給油の待ちと中を見る画面。mWorld/mInventory/音/mModals/mSession を借りるので、その後に宣言する
 	LootController mLoot;
 	GameDebugOverlay mDebug;

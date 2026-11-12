@@ -36,8 +36,7 @@ public:
 	};
 
 	LoadTracker();
-	// at からロードを始める。ロード中なら何もしない。name は文字列リテラル
-	void begin( const char* name, long long at );
+	void begin( const char* name, long long at );	// at からロードを始める。ロード中なら何もしない。name は文字列リテラル
 	// 次の Present の後でロードを閉じる
 	void requestEnd();
 	bool isLoading() const;
@@ -48,8 +47,7 @@ public:
 	const Summary& lastSummary() const;
 private:
 	void finish( long long at );
-	// 何回目の起動か（Profiling/launch_count.txt に数えておく）。2 回目以降は OS がファイルを覚えていて速い
-	static int countLaunch();
+	static int countLaunch();	// 何回目の起動か（Profiling/launch_count.txt に数えておく）。2 回目以降は OS がファイルを覚えていて速い
 
 	bool mActive;
 	bool mEndRequested;

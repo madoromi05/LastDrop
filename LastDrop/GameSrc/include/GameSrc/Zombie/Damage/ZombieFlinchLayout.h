@@ -33,10 +33,8 @@ public:
 	// 骨が見つからない関節は作らない（デバッグ出力で知らせる。そのまとまりは曲がらないだけ）
 	ZombieFlinchLayout( const SkinnedMeshData* data, const char* boneNamePrefix );
 
-	// まとまりの一覧。根に近いまとまり（胴）から曲げる順に並ぶ（胴を曲げた後の首・肩の位置で、頭・腕を曲げるため）
-	const std::vector< Group >& groups() const;
-	// part の当たったときに曲げるまとまりの番号（groups の添え字）
-	int groupOf( BodyPart part ) const;
+	const std::vector< Group >& groups() const;	// まとまりの一覧。根に近いまとまり（胴）から曲げる順に並ぶ（胴を曲げた後の首・肩の位置で、頭・腕を曲げるため）
+	int groupOf( BodyPart part ) const;			// part の当たったときに曲げるまとまりの番号（groups の添え字）
 	// group のまとまりを、根の側の関節から順に、direction（長さ 1。骨格の根の空間）へ degree 度だけ倒す
 	// 骨の向きが direction に近いほど少なく倒す（平行なら倒れない）。pose: 骨格の根から見た骨の姿勢。nullptr 不可
 	void bend( int group, const GameLib::Math::Vector3& direction, float degree, std::vector< GameLib::Math::Matrix34 >* pose ) const;

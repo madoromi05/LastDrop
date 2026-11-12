@@ -7,8 +7,7 @@
 using namespace GameLib;
 
 namespace{
-	// 攻撃された瞬間の赤みが消えるまで（秒）。攻撃された瞬間が一番赤く、まっすぐ薄くなる
-	const float kFlashSeconds = 0.6f;
+	const float kFlashSeconds = 0.6f;	// 攻撃された瞬間の赤みが消えるまで（秒）。攻撃された瞬間が一番赤く、まっすぐ薄くなる
 	// 体力が減ったときに残し続ける赤み（0〜1。攻撃された瞬間の 1 より薄く）
 	// 残りがこの割合以下で赤くし始め、その時は Min、0 の手前で Max。間はまっすぐ濃くなる
 	// 攻撃された赤みが薄くなってこれを下回ると、ここで止まる
@@ -16,13 +15,11 @@ namespace{
 	const float kHurtFlashMin = 0.15f;
 	const float kHurtFlashMax = 0.6f;
 	const float kNoFlash = 0.f;
-	// 攻撃された瞬間の痛み（周りのぼかし・暗さ）が消えるまで（秒）。赤みとは別に直せるよう分けておく
-	const float kPainSeconds = 0.6f;
+	const float kPainSeconds = 0.6f;	// 攻撃された瞬間の痛み（周りのぼかし・暗さ）が消えるまで（秒）。赤みとは別に直せるよう分けておく
 	// 死んだ後、視点が下がり切るまで（秒）と下げる長さ（m。立った目の高さ約 1.6m から、膝をついた高さまで）
 	const float kDropSeconds = 1.5f;
 	const float kDropMeters = 1.f;
-	// 死んだ後、真っ暗になるまで（秒）。視点が下がり切るより少し後に暗くなり終える
-	const float kFadeSeconds = 2.f;
+	const float kFadeSeconds = 2.f;		// 死んだ後、真っ暗になるまで（秒）。視点が下がり切るより少し後に暗くなり終える
 
 	const int kFlashTicks = GameTime::secondsToTicks( kFlashSeconds );
 	const int kPainTicks = GameTime::secondsToTicks( kPainSeconds );
@@ -81,8 +78,7 @@ float PlayerDamageView::pain() const {
 }
 
 float PlayerDamageView::eyeDrop() const {
-	// 始めと終わりがゆっくりになる曲線（smoothstep）にする。崩れ始め・崩れ終わりが急に見えないように
-	return kDropMeters * ScalarMath::smoothStep( progress( mDeadTicks, kDropTicks ) );
+	return kDropMeters * ScalarMath::smoothStep( progress( mDeadTicks, kDropTicks ) );	// 始めと終わりがゆっくりになる曲線（smoothstep）にする。崩れ始め・崩れ終わりが急に見えないように
 }
 
 float PlayerDamageView::fade() const {

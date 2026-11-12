@@ -13,26 +13,21 @@
 #include "LightList.hlsli"
 
 static const float kPi = 3.14159265;
-static const float3 kDielectricF0 = float3(0.04, 0.04, 0.04); // 金属でない物の正面の反射率（4%。水・プラスチック・石などの目安）
-// 粗さの下限。0 に近いと点光源のハイライトが 1 画素より小さくなり、ちらつく（Karis の資料でも下限を置く）
-static const float kMinRoughness = 0.045;
-// N・V に足す小さな数。真横から見た面で 0 割りにならないように（見た目に効く大きさではない）
-static const float kNoVBias = 1e-5;
-// 明るさの距離の下限はライトごと（LightData の nearDistance）。ここの値は、光の向きを作るときの 0 割りよけだけ（見た目に効く大きさではない）
-static const float kMinDirectionDistanceSquared = 1e-8;
+static const float3 kDielectricF0 = float3(0.04, 0.04, 0.04);	// 金属でない物の正面の反射率（4%。水・プラスチック・石などの目安）
+static const float kMinRoughness = 0.045;						// 粗さの下限。0 に近いと点光源のハイライトが 1 画素より小さくなり、ちらつく（Karis の資料でも下限を置く）
+static const float kNoVBias = 1e-5;								// N・V に足す小さな数。真横から見た面で 0 割りにならないように（見た目に効く大きさではない）
+static const float kMinDirectionDistanceSquared = 1e-8;			// 明るさの距離の下限はライトごと（LightData の nearDistance）。ここの値は、光の向きを作るときの 0 割りよけだけ（見た目に効く大きさではない）
 // 点光源・スポットの光る所の半径（m。全ライト共通）。光源を大きさ 0 の点として GGX の D を計算すると、ツヤの強い面（水たまり）の
 // ハイライトの芯が何万倍にもなり、ブルームでちらつく。球の光源として、近いほど α を広げる（Karis「Real Shading in Unreal Engine 4」の球ライト）
 // D は α を変えても全体の光の量が変わらないので、芯だけが下がりハイライトが少し大きくなる。平行光（月）は広げない
 static const float kLightSourceRadius = 0.05;
-static const float kSourceRadiusToAlpha = 0.5; // α' = saturate( α + 半径 / (2 × 距離) ) の 1/2
+static const float kSourceRadiusToAlpha = 0.5;					// α' = saturate( α + 半径 / (2 × 距離) ) の 1/2
 // Smith の Schlick-GGX 近似で、点光源用の k ＝ (粗さ + 1)² / 8（Karis「Real Shading in Unreal Engine 4」）
 static const float kSmithRemapOffset = 1.0;
 static const float kSmithRemapDivisor = 8.0;
 static const float kSchlickPower = 5.0;
-// Cook-Torrance の分母（4 × N・L × N・V）の 4
-static const float kCookTorranceDenominator = 4.0;
-// 拡散の環境光は、法線の側の半球全体をならした色（粗さ 1 と同じ引き方）
-static const float kFullyRough = 1.0;
+static const float kCookTorranceDenominator = 4.0;				// Cook-Torrance の分母（4 × N・L × N・V）の 4
+static const float kFullyRough = 1.0;							// 拡散の環境光は、法線の側の半球全体をならした色（粗さ 1 と同じ引き方）
 
 // 1 画素の面の情報（G-Buffer から読んだ物）
 struct Surface
@@ -105,8 +100,7 @@ float3 surfaceBrdf(Surface s, float3 l, float3 v, float3 radiance, float alphaWi
     float3 f = fresnelSchlick(f0Of(s), voh);
     float3 specular = distributionGgx(noh, alpha) * geometrySmith(nol, nov, roughness) * f
                     / (kCookTorranceDenominator * nol * nov);
-    // ライトは π を掛け済み（上の説明）なので、拡散は albedo のまま、鏡面に π を掛ける
-    return (diffuseColorOf(s) + kPi * specular) * radiance * nol;
+    return (diffuseColorOf(s) + kPi * specular) * radiance * nol;	// ライトは π を掛け済み（上の説明）なので、拡散は albedo のまま、鏡面に π を掛ける
 }
 
 // 空と地面に囲まれたときの色（拡散＋鏡面。LightList.hlsli の environmentLight）

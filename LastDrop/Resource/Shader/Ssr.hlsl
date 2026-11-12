@@ -23,20 +23,18 @@ cbuffer SsrConstants : register(b1)
     float4 gSsrHiZ;                      // x: Hi-Z の段の数  y: Hi-Z で進む回数の上限  z: Hi-Z で進むか（1 / 0）  w: 使わない
 };
 
-static const float kRoughnessFadeRange = 0.1; // 粗さの上限の手前この幅で、確からしさを 1 → 0 へ（つやの境目で映り込みがぷつっと切れない）
-static const uint kRefineSteps = 4;           // 当たった歩と前の歩の間を詰める二分探索の回数（直線）
-static const float kTowardEyeLimit = 0.5;     // 反射と「目への向き」の内積がこれより大きい（60° より目の方を向く）反射は計算しない
+static const float kRoughnessFadeRange = 0.1;					// 粗さの上限の手前この幅で、確からしさを 1 → 0 へ（つやの境目で映り込みがぷつっと切れない）
+static const uint kRefineSteps = 4;								// 当たった歩と前の歩の間を詰める二分探索の回数（直線）
+static const float kTowardEyeLimit = 0.5;						// 反射と「目への向き」の内積がこれより大きい（60° より目の方を向く）反射は計算しない
 static const float4 kNoReflection = float4(0.0, 0.0, 0.0, 0.0);
 static const float kNoHit = -1.0;
-// Hi-Z：光線の終わりが目の前のこの奥行き（m）より手前へ来ないように長さを切る（目の後ろへ出ると画面へ写せない）
-static const float kHiZMinViewDepth = 0.1;
-// Hi-Z：升目の境目を越えるときに、段 0 の 1 画素のこの割合だけ先へ出す（境目の上で止まって、同じ升目を見続けないように）
-static const float kHiZCrossOffset = 0.01;
-static const float kHiZFar = 1e30;            // 進む向きの成分が 0 の軸の「境目までの t」（いつまでも越えない）
+static const float kHiZMinViewDepth = 0.1;						// Hi-Z：光線の終わりが目の前のこの奥行き（m）より手前へ来ないように長さを切る（目の後ろへ出ると画面へ写せない）
+static const float kHiZCrossOffset = 0.01;						// Hi-Z：升目の境目を越えるときに、段 0 の 1 画素のこの割合だけ先へ出す（境目の上で止まって、同じ升目を見続けないように）
+static const float kHiZFar = 1e30;								// 進む向きの成分が 0 の軸の「境目までの t」（いつまでも越えない）
 // ぼけた映り込み
-static const float kStochasticMinRoughness = 0.05; // これよりなめらかな面（水たまり）は鏡の向きのまま（ばらしても見た目が変わらず、ざらつくだけ）
-static const float kRoughConfidence = 0.6;          // 粗さ kSsrSharpRoughness + kSsrRoughRange での確からしさ（ばらした 1 本が外れる分を空の色で埋める）
-static const float2 kSecondNoiseOffset = float2(37.0, 61.0); // 2 つ目の乱数の IGN を読む画素のずらし（1 つ目と同じ値にならないように）
+static const float kStochasticMinRoughness = 0.05;				// これよりなめらかな面（水たまり）は鏡の向きのまま（ばらしても見た目が変わらず、ざらつくだけ）
+static const float kRoughConfidence = 0.6;						// 粗さ kSsrSharpRoughness + kSsrRoughRange での確からしさ（ばらした 1 本が外れる分を空の色で埋める）
+static const float2 kSecondNoiseOffset = float2(37.0, 61.0);	// 2 つ目の乱数の IGN を読む画素のずらし（1 つ目と同じ値にならないように）
 static const float kTwoPi = 6.28318531;
 
 FullScreenVertex VSMain(uint id : SV_VertexID)
@@ -184,9 +182,8 @@ float hiZCellExit(float3 start, float3 direction, float2 cell, float2 cellCount,
 // 升目の中で一番手前に届く・もう奥にいるなら、1 段下へ。段 0 で届いたら当たり。最後に厚さを見る
 float marchHiZ(float3 position, float3 r, uint2 depthSize)
 {
-    // 光線の長さ：一番遠くまで。目の方へ向かう光線は、目の前 kHiZMinViewDepth に届く所で切る
-    float rayLength = gSsrMarch.z;
-    float viewDepthStep = dot(gSsrProjectionView[3].xyz, r); // 1m 進むと奥行きがどれだけ変わるか
+    float rayLength = gSsrMarch.z;								// 光線の長さ：一番遠くまで。目の方へ向かう光線は、目の前 kHiZMinViewDepth に届く所で切る
+    float viewDepthStep = dot(gSsrProjectionView[3].xyz, r);	// 1m 進むと奥行きがどれだけ変わるか
     if (viewDepthStep < 0.0)
     {
         rayLength = min(rayLength, (viewDepthOf(position) - kHiZMinViewDepth) / -viewDepthStep);

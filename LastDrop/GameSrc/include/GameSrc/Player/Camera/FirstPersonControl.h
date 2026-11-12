@@ -33,13 +33,11 @@ public:
 	FirstPersonControl( const FirstPersonControl& ) = delete;
 	FirstPersonControl& operator=( const FirstPersonControl& ) = delete;
 
-	// カーソルをロックして、視点を回せるようにする（世界を並べ終えて操作を始めるときに呼ぶ）
-	void lockCursor();
+	void lockCursor();				// カーソルをロックして、視点を回せるようにする（世界を並べ終えて操作を始めるときに呼ぶ）
 	// カーソルのロックを外す（一時停止でメニューを出すとき）
 	void unlockCursor();
 	bool isCursorLocked() const;
-	// 押しっぱなしの抑止の最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
-	bool isFireSuppressed() const;
+	bool isFireSuppressed() const;	// 押しっぱなしの抑止の最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
 
 	// 入力を読む。1回の描画につき1回、Pad::update の後に呼ぶ（update の回数に合わせると、2回進めた描画で視点が2倍回るため）
 	// カーソルロックの切り替え → ロック中ならマウスの移動量で視点を回す → 操作を command へまとめる
@@ -55,28 +53,23 @@ public:
 	// 自キャラへの操作。押した瞬間の入力（holsterPressed）は、consumePressed で消すまで貯めてある
 	// 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため
 	const PlayerCommand& command() const;
-	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ
-	void consumePressed();
+	void consumePressed();				// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ
 	// 狙いのずれ（1 発ごとに跳ねて戻る反動・連射でたまる弾道のずれ・噛まれた怯み）と、見える絵の揺れ、
 	// 照準のぶれ（銃と弾の向きだけ。AimSway）を進めてカメラへ渡す
 	// 1ティックに1回、キャラを動かした後（flinch・shakeOnGrab の後）に呼ぶ
 	// shotRecoil: このティックに1発撃ったなら、その銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）。撃っていなければ 0
 	// body: 自キャラの今の状態（PlayerAimSwaySource::read。自キャラがいなければ既定のまま＝ぶれない）
 	void updateViewEffects( float shotRecoil, const AimSwayBody& body );
-	// 噛まれた（這うゾンビの腕が当たった）瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く
-	void flinch();
-	// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）
-	void shakeOnGrab();
+	void flinch();						// 噛まれた（這うゾンビの腕が当たった）瞬間に呼ぶ。狙いを跳ねさせ（弾の向きも動く）、絵を大きく揺らす。次の updateViewEffects から効く
+	void shakeOnGrab();					// つかまれた瞬間に呼ぶ。絵だけを揺らす（狙いは lookToward で相手の顔へ向けるので、跳ねさせない）
 	// 撃ったゾンビの部位が飛んだ・頭が弾けた瞬間に呼ぶ。絵だけを少し揺らす（弾道は動かさない）
 	// headBurst: 頭が弾けた（部位が飛んだより少し大きく揺らす）
 	void shakeOnHeavyHit( bool headBurst );
 	// 視点を target（ワールド座標）の方へ、決まった時間をかけて向け始める（ゾンビにつかまれた瞬間に、その顔を見る）
 	// 向けている間もマウスで回せる（回した分はそのまま足される）。続けて呼ぶと、その時点の向きから向け直す
 	void lookToward( const GameLib::Math::Vector3& target );
-	// lookToward の向きへ1ティックぶん回す。1ティックに1回、キャラを動かした後に呼ぶ
-	void updateLookPull();
-	// 目の位置から下げる長さ（m。0 以上）。死んだ後に膝から崩れて見せるのに使う。placeCamera で渡された目の位置から引く
-	void setEyeDrop( float meters );
+	void updateLookPull();				// lookToward の向きへ1ティックぶん回す。1ティックに1回、キャラを動かした後に呼ぶ
+	void setEyeDrop( float meters );	// 目の位置から下げる長さ（m。0 以上）。死んだ後に膝から崩れて見せるのに使う。placeCamera で渡された目の位置から引く
 
 	// 視点を目へ置き、覗き具合に合わせた視野角にして、描画ステートへ反映する。描く前、キャラを動かした後に呼ぶ
 	// eye: 目の位置（ワールド座標。PlayerCharacter::eyePosition）。nullptr なら前に置いた位置のまま（キャラがいないとき）
@@ -85,8 +78,7 @@ public:
 	const FirstPersonCamera& camera() const;
 
 private:
-	// 解除中のクリックでロックし直す（readInput と readInputIdle で共通）。解除は一時停止が行う（ESC は一時停止のキー）
-	void updateCursorLock();
+	void updateCursorLock();	// 解除中のクリックでロックし直す（readInput と readInputIdle で共通）。解除は一時停止が行う（ESC は一時停止のキー）
 
 	const GameSettings* mSettings; // 借りているだけ（視点の感度）
 	FirstPersonCamera mCamera;

@@ -9,8 +9,7 @@ public:
 	Manager();
 	static Manager instance();
 
-	//コア数取得(論理コア数なので、実体とは違う可能性がある)
-	int getCoreNumber() const;
+	int getCoreNumber() const;	//コア数取得(論理コア数なので、実体とは違う可能性がある)
 
 	//以下ユーザが呼ぶことはない
 	static void create( int additionalThreadNumber );

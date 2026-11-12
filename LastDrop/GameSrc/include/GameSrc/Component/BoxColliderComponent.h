@@ -18,10 +18,8 @@ public:
 	};
 	explicit BoxColliderComponent( Mode mode );
 
-	// Component（StaticModelComponent が要る）
-	void start() override;
-	// ICollisionBody（置いた所から動かないので、start で求めた箱をそのまま返す）
-	BoxCollider collider() const override;
+	void start() override;					// Component（StaticModelComponent が要る）
+	BoxCollider collider() const override;	// ICollisionBody（置いた所から動かないので、start で求めた箱をそのまま返す）
 	// IWorldMember（移動の名簿にだけ載る。Fixed は外せないので removeFrom は何もしない）
 	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;

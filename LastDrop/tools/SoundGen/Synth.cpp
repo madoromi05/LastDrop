@@ -8,10 +8,8 @@ namespace Synth{
 namespace{
 	const float kPi = 3.14159265358979f;
 	const float kTwoPi = 2.f * kPi;
-	// 指数減衰は decay の何倍まで計算するか（e^-7 ≈ 0.0009。これより先は聞こえない）
-	const float kDecayTail = 7.f;
-	// setCenter で係数を計算し直す間隔（サンプル）。毎サンプルだと重く、耳ではこの細かさで十分
-	const int kSweepUpdateInterval = 32;
+	const float kDecayTail = 7.f;						// 指数減衰は decay の何倍まで計算するか（e^-7 ≈ 0.0009。これより先は聞こえない）
+	const int kSweepUpdateInterval = 32;				// setCenter で係数を計算し直す間隔（サンプル）。毎サンプルだと重く、耳ではこの細かさで十分
 	// 低い一打で、叩いた瞬間だけ音程を上げる量と長さ（打撃のアタック感）
 	const float kThumpPitchBend = 0.6f;
 	const float kThumpBendTime = 0.012f;
@@ -19,8 +17,8 @@ namespace{
 	// 粒のばらつき（中心周波数と大きさ）
 	const float kGrainPitchSpread = 0.3f;
 	const float kGrainMinGain = 0.3f;
-	const unsigned kRandomFallbackSeed = 0x9E3779B9u; // xorshift は種 0 だと 0 しか出ないため
-	const float kRandomScale = 1.f / 4294967296.f;    // 2^32 分の1
+	const unsigned kRandomFallbackSeed = 0x9E3779B9u;	// xorshift は種 0 だと 0 しか出ないため
+	const float kRandomScale = 1.f / 4294967296.f;		// 2^32 分の1
 	// ローパスを通したノイズは元のノイズよりずっと小さくなるので、他の部品と同じ gain で釣り合うよう持ち上げる
 	// （200Hz の1極ローパス2段は、白色ノイズの通る帯域が約 160Hz 分＝全帯域の約 1/140 なので、振幅はおよそ 1/12 になる）
 	const float kBoomMakeup = 10.f;

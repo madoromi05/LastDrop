@@ -4,8 +4,7 @@
 // ゾンビのアニメを間引く段の値（SummaryPlan/個別仕様/最適化と計測/OptimizationB_Plan.txt 9 章・Q8）。起動中に F6 のエディタで動かせる
 // 間隔はティックの数。F6 の欄は小数しか扱わないので小数で持ち、使う所で四捨五入する（1 より小さければ 1）
 struct AnimationThrottleParams{
-	// 前のフレームで目に映っていて、目からこれより遠い体は「遠い」段（m）。霧で輪郭がぼやけ始めるくらい
-	float farDistance = 20.f;
+	float farDistance = 20.f;	// 前のフレームで目に映っていて、目からこれより遠い体は「遠い」段（m）。霧で輪郭がぼやけ始めるくらい
 	// 「遠い」段・「映らない」段で、アニメの姿勢を求める間隔（ティック）
 	float farIntervalTicks = 2.f;
 	float hiddenIntervalTicks = 4.f;
@@ -18,7 +17,6 @@ struct AnimationThrottleParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（AnimationThrottle.cpp が持つ）
-AnimationThrottleParams& animationThrottleParams();
+AnimationThrottleParams& animationThrottleParams();	// 起動中ずっと 1 つだけの調整値（AnimationThrottle.cpp が持つ）
 
 #endif

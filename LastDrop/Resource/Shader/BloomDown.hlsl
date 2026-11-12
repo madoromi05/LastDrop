@@ -1,5 +1,4 @@
-// ブルームの縮小（Bloom::apply）。1 つ大きい段を、半分の大きさの段へ縮めながらぼかす
-#include "Common.hlsli"
+#include "Common.hlsli"	// ブルームの縮小（Bloom::apply）。1 つ大きい段を、半分の大きさの段へ縮めながらぼかす
 
 Texture2D gSource : register(t2); // Bloom.cpp の kSourceSlot（1 つ大きい段）
 

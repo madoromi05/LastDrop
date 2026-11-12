@@ -55,8 +55,7 @@ public:
 			SAFE_DELETE( mStream );
 			return;
 		}
-		//ハッシュマップサイズ確保
-		mEntries.setCapacity( mFileNumber );
+		mEntries.setCapacity( mFileNumber );	//ハッシュマップサイズ確保
 		//後はループで回しながら読んでいく
 		for ( int i = 0; i < mFileNumber; ++i ){
 			Entry e;
@@ -66,13 +65,12 @@ public:
 			e.mNecessaryBufferSize = getUnsigned();
 			int nameLength = getUnsigned();
 			//名前は一旦一時配列にいれる。すぐdeleteするが
-			char* name = NEW char[ nameLength + 1 ]; //終端NULLで+1
+			char* name = NEW char[ nameLength + 1 ];	//終端NULLで+1
 			mStream->read( name, nameLength );
-			name[ nameLength ] = '\0'; //終端NULL
+			name[ nameLength ] = '\0';					//終端NULL
 			//mEntriesはmap< char*, Entry >
-			mEntries.add( name, e ); //mapに格納
-			//情報を吐き出してみよう。正しいか？
-			SAFE_DELETE_ARRAY( name );
+			mEntries.add( name, e );					//mapに格納
+			SAFE_DELETE_ARRAY( name );					//情報を吐き出してみよう。正しいか？
 		}
 	}
 	~Archive(){

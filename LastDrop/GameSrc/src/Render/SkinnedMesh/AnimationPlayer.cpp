@@ -37,8 +37,7 @@ AnimationPlayer::AnimationPlayer( const SkinnedMeshData* data ) :
 void AnimationPlayer::setAnimation( const char* name, float startTime, PlayMode mode ) {
 	Scene::Animation animation = mData->animation( name );
 	if ( !animation ) {
-		// 名前違いでもエラーにならず静止したままになるので、ここで知らせる
-		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;
+		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;	// 名前違いでもエラーにならず静止したままになるので、ここで知らせる
 	}
 	setAnimation( animation, startTime, mode );
 }

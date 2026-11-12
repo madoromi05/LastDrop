@@ -29,19 +29,14 @@ public:
 		Deploy, // 出撃する
 	};
 
-	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
-	explicit StashScreen( UiRenderer* renderer );
+	explicit StashScreen( UiRenderer* renderer );	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
 
-	// ESC：持ち上げている途中なら取りやめて true。何もしていなければ false（呼ぶ側が画面を閉じる）
-	bool back();
-	// 入力を読んで選ぶ・動かす。1回の描画につき1回（シーンの beginFrame で）。stash・bag: 物を動かす先。nullptr 不可
-	Request handleInput( ItemGrid* stash, ItemGrid* bag );
-	// 描く（中で UiRenderer::draw まで行う）。1回の描画につき1回
-	void draw( const ItemGrid& stash, const ItemGrid& bag );
+	bool back();												// ESC：持ち上げている途中なら取りやめて true。何もしていなければ false（呼ぶ側が画面を閉じる）
+	Request handleInput( ItemGrid* stash, ItemGrid* bag );		// 入力を読んで選ぶ・動かす。1回の描画につき1回（シーンの beginFrame で）。stash・bag: 物を動かす先。nullptr 不可
+	void draw( const ItemGrid& stash, const ItemGrid& bag );	// 描く（中で UiRenderer::draw まで行う）。1回の描画につき1回
 
 private:
-	// 2 つのマス目を画面の横の真ん中に並べる（画面の幅は窓で変わるので、読む・描く前に毎回）
-	void layout( const ItemGrid& stash, const ItemGrid& bag );
+	void layout( const ItemGrid& stash, const ItemGrid& bag );	// 2 つのマス目を画面の横の真ん中に並べる（画面の幅は窓で変わるので、読む・描く前に毎回）
 	// Tab：倉庫 → カバン → Deploy の順に移る
 	void cycleFocus();
 	UiRect deployRect( const ItemGrid& bag ) const;

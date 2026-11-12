@@ -29,21 +29,15 @@ public:
 	// 移動の当たり判定を作って world へ渡す（以後は world が持つ）。建物1軒につき1回だけ呼ぶ（呼ぶたびに登録が増える）
 	// world: 所有権は受け取らない。nullptr 不可
 	void addCollidersTo( CollisionWorld* world ) const;
-	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
-	void draw( const DrawCulling& culling ) const;
-	// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く
-	bool shows( const DrawCulling& culling ) const;
-	// 見た目（元の形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む
-	const StaticMeshInstance& mesh() const;
-	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す
-	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;
-	// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う
-	const GameLib::Math::Vector3& position() const;
+	void draw( const DrawCulling& culling ) const;						// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
+	bool shows( const DrawCulling& culling ) const;						// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く
+	const StaticMeshInstance& mesh() const;								// 見た目（元の形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む
+	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す
+	const GameLib::Math::Vector3& position() const;						// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う
 	// 弾の当たり判定（見た目の三角形で判定する）
 	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
-	// 作るときに受け取った材質（どこに当たっても同じ）
-	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;
+	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;	// 作るときに受け取った材質（どこに当たっても同じ）
 
 private:
 	StaticMeshInstance mMesh;

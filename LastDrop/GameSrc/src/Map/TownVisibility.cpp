@@ -12,25 +12,19 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ
-	const float kCellSize = 4.f;
+	const float kCellSize = 4.f;		// ますの 1 辺（m）。道の幅（約 10.6m）の中に 2〜3 ます入る大きさ
 	// 建物を見る点の間隔：ますの 1 辺をこの数に分けた格子の点（ますの中に (kViewSteps+1)² 点）。1 なら四隅だけ
 	// 2（9 点）にしても Debug の確かめの見落としは 2 → 1 件にしか減らず、作る時間は 0.18 → 0.48 秒になったので 1 にした
 	const int kViewSteps = 1;
-	// 建物の辺の上に置く「見られる点」の間隔（m）
-	const float kTargetSpacing = 1.f;
-	// 見られる点を辺から外へずらす幅（m）。点が自分の長方形の上に乗って、線の端が触れた扱いにならないように
-	const float kTargetOffset = 0.05f;
-	// 遮る長方形を、体の高さの壁を囲む箱から縮める幅（m）。入口のへこみ・角の欠けの分（壁の外を通る線を遮らないように）
-	const float kOccluderInset = 0.5f;
-	// ゾンビ（ますどうし）を遮る建物の低さの下限（m）。ゾンビの背（約 1.8m）より高い建物だけが遮る
-	const float kCharacterHeight = 2.f;
+	const float kTargetSpacing = 1.f;	// 建物の辺の上に置く「見られる点」の間隔（m）
+	const float kTargetOffset = 0.05f;	// 見られる点を辺から外へずらす幅（m）。点が自分の長方形の上に乗って、線の端が触れた扱いにならないように
+	const float kOccluderInset = 0.5f;	// 遮る長方形を、体の高さの壁を囲む箱から縮める幅（m）。入口のへこみ・角の欠けの分（壁の外を通る線を遮らないように）
+	const float kCharacterHeight = 2.f;	// ゾンビ（ますどうし）を遮る建物の低さの下限（m）。ゾンビの背（約 1.8m）より高い建物だけが遮る
 	// 目がこれより低い建物の上に出たら PVS を使わない分の余裕（m）
 	const float kEyeHeightMargin = 0.5f;
 	const int kBitsPerWord = 32;
 	const float kHalf = 0.5f;
-	// ますどうしの線を引く点（四隅）の組の答えを、まだ求めていない印
-	const signed char kUnknown = -1;
+	const signed char kUnknown = -1;	// ますどうしの線を引く点（四隅）の組の答えを、まだ求めていない印
 
 	int wordsFor( int bitNumber ) {
 		return ( bitNumber + kBitsPerWord - 1 ) / kBitsPerWord;

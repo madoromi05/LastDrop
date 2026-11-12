@@ -14,32 +14,19 @@ class ConstElement;
 ///ファイルアクセス機能を持つニセxml根元クラス
 class Document{
 public:
-	///書き込み用に空で生成
-	static Document create();
-	///ファイルからコンストラクト(要FileIO初期化)
-	static Document create( const char* filename );
-	///ロード済み文字列からコンストラクト
-	static Document create( const char* data, int size );
-	///根Elementゲット
-	Element root();
-	///根Elementゲット
-	ConstElement root() const; 
-	///ロード済みか否か
-	bool isReady();
-	///読み込み中エラーが発生したか
-	bool isError() const;
-	///ニセxmlテキストを生成
-	void convertToString( string* out ) const;
-	///ニセxmlバイナリを生成
-	void convertToBinary( Array< char >* out ) const;
-	///ニセxmlファイルを生成(要FileIO初期化)
-	void write( const char* filename, bool isBinary = false ) const;
-	///子の数ゲット
-	int childNumber() const;
-	///子ゲット
-	Element child( int i );
-	///子ゲット
-	ConstElement child( int i ) const;
+	static Document create();											///書き込み用に空で生成
+	static Document create( const char* filename );						///ファイルからコンストラクト(要FileIO初期化)
+	static Document create( const char* data, int size );				///ロード済み文字列からコンストラクト
+	Element root();														///根Elementゲット
+	ConstElement root() const;											///根Elementゲット
+	bool isReady();														///ロード済みか否か
+	bool isError() const;												///読み込み中エラーが発生したか
+	void convertToString( string* out ) const;							///ニセxmlテキストを生成
+	void convertToBinary( Array< char >* out ) const;					///ニセxmlバイナリを生成
+	void write( const char* filename, bool isBinary = false ) const;	///ニセxmlファイルを生成(要FileIO初期化)
+	int childNumber() const;											///子の数ゲット
+	Element child( int i );												///子ゲット
+	ConstElement child( int i ) const;									///子ゲット
 
 	//以下意識しなくていい
 	Document();
@@ -59,20 +46,13 @@ private:
 //const版
 class ConstDocument{
 public:
-	///根Elementゲット
-	ConstElement root() const; 
-	///読み込み中エラーが発生したか
-	bool isError() const;
-	///ニセxmlテキストを生成
-	void convertToString( string* out ) const;
-	///ニセxmlバイナリを生成
-	void convertToBinary( Array< char >* out ) const;
-	///ニセxmlファイルを生成(要FileIO初期化)
-	void write( const char* filename, bool isBinary = false ) const;
-	///子の数ゲット
-	int childNumber() const;
-	///子ゲット
-	ConstElement child( int i ) const;
+	ConstElement root() const;											///根Elementゲット
+	bool isError() const;												///読み込み中エラーが発生したか
+	void convertToString( string* out ) const;							///ニセxmlテキストを生成
+	void convertToBinary( Array< char >* out ) const;					///ニセxmlバイナリを生成
+	void write( const char* filename, bool isBinary = false ) const;	///ニセxmlファイルを生成(要FileIO初期化)
+	int childNumber() const;											///子の数ゲット
+	ConstElement child( int i ) const;									///子ゲット
 
 	//以下知らなくていい
 	ConstDocument();

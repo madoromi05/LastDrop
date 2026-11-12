@@ -16,18 +16,16 @@ struct ZombieAnimationNames{
 	// nullptr ならアニメを付けず、レスト姿勢（T ポーズ）のまま立たせ、追ってもこない（当たり判定の確認用）
 	const char* move;
 	float moveStartTime;
-	const char* idle;    // 立ち止まっているときのアニメ。nullptr なら立ち止まっている間も歩くアニメのまま
-	// その場で走るアニメ（zombie@run）。nullptr ならどの体も走らない（走る体に選ばれても歩く）
-	const char* run;
+	const char* idle;		// 立ち止まっているときのアニメ。nullptr なら立ち止まっている間も歩くアニメのまま
+	const char* run;		// その場で走るアニメ（zombie@run）。nullptr ならどの体も走らない（走る体に選ばれても歩く）
 	// 倒れるときのアニメ（脚を失って倒れるときにも使う）。nullptr なら体力が 0 になっても・脚を失っても倒れない
 	// （確認用。体力は減って 0 で止まる）
 	const char* death;
 	// 脚を失って倒れるときのアニメ（前へ倒れてうつ伏せになる物。倒れ終わったら体を引きずる）。nullptr なら death で倒し、
 	// 倒れたまま動かない（仰向けに倒れるアニメでは引きずれないため）
 	const char* downed;
-	const char* stagger; // よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
-	// 立っている体の攻撃のアニメ（腕振りは atack1・つかみは atack3。ZombieAttackStyle）。nullptr なら攻撃しない（追いついても立って待つだけ）
-	const char* attack;
+	const char* stagger;	// よろけるときのアニメ。nullptr ならよろけない（のけぞりだけ）
+	const char* attack;		// 立っている体の攻撃のアニメ（腕振りは atack1・つかみは atack3。ZombieAttackStyle）。nullptr なら攻撃しない（追いついても立って待つだけ）
 };
 
 // ゾンビ1体のアニメの切り替え。どのアニメを・どの時刻から・何ティックかけて繋ぎ・どの根の動きの表で区間を始めるか、の組を持つ
@@ -52,24 +50,21 @@ public:
 	ZombieAnimationSet( const ZombieAnimationSet& ) = delete;
 	ZombieAnimationSet& operator=( const ZombieAnimationSet& ) = delete;
 
-	// 作った直後の姿勢にする（立つアニメ。無ければ歩くアニメ。どちらも無ければレスト姿勢＝T ポーズ）
-	void startStanding();
+	void startStanding();										// 作った直後の姿勢にする（立つアニメ。無ければ歩くアニメ。どちらも無ければレスト姿勢＝T ポーズ）
 	// 立つ・歩く・走るのアニメを gait に合わせる（変わったときだけ繋ぐ）。走る間は毎回、走りのアニメの倍率
 	// （ZombieRunParams::runPlaybackRate。F6 で動かすとすぐ効く）を掛け直す。走るアニメが無ければ歩く
 	void setGait( Gait gait );
 	// 攻撃・よろけ・倒れるアニメを PLAY_ONCE で流し始め、根の動きの区間を始める。footing: 足元。nullptr 不可
-	void playAttack( GameLib::Math::Vector3* footing );  // 相手だけを通り抜ける。終わったら、まず立つ（歩くかは持ち主が考え直す）
-	void playStagger( GameLib::Math::Vector3* footing ); // どれにも当たる
-	void playDeath( GameLib::Math::Vector3* footing );   // 全員を通り抜ける
-	void playDowned( GameLib::Math::Vector3* footing );  // 前へ倒れるアニメ（無ければ死亡アニメ）で。全員を通り抜ける
-	// 攻撃・よろけの終わり（と振りほどかれたとき）に、歩く・立つのアニメへ戻し、根の動きの区間を閉じる。footing: 足元。nullptr 不可
-	void returnToLocomotion( GameLib::Math::Vector3* footing );
+	void playAttack( GameLib::Math::Vector3* footing );			// 相手だけを通り抜ける。終わったら、まず立つ（歩くかは持ち主が考え直す）
+	void playStagger( GameLib::Math::Vector3* footing );		// どれにも当たる
+	void playDeath( GameLib::Math::Vector3* footing );			// 全員を通り抜ける
+	void playDowned( GameLib::Math::Vector3* footing );			// 前へ倒れるアニメ（無ければ死亡アニメ）で。全員を通り抜ける
+	void returnToLocomotion( GameLib::Math::Vector3* footing );	// 攻撃・よろけの終わり（と振りほどかれたとき）に、歩く・立つのアニメへ戻し、根の動きの区間を閉じる。footing: 足元。nullptr 不可
 
 	// このティックに歩いて（走って）進む長さ（m）。歩き・走りアニメの足の動きの表（ZombieModel::stride / runStride）から引く
 	// 走る間は、アニメを倍率の速さで流すので、進む長さにも同じ倍率を掛ける（足が地面を滑らない）
 	float walkDistanceThisTick() const;
-	// 前へ倒れるアニメ（playDowned）が倒れ終わったか（ここから後は腰が動かない）
-	bool hasFinishedDownedFall() const;
+	bool hasFinishedDownedFall() const;	// 前へ倒れるアニメ（playDowned）が倒れ終わったか（ここから後は腰が動かない）
 
 	// そのアニメがあるか（Names の nullptr・見つからなかった名前なら false）
 	bool canWalk() const;       // 歩くアニメがある（追ってくる体。T ポーズの確認用ではない）
@@ -80,10 +75,8 @@ public:
 	bool hasAttack() const;
 
 private:
-	// 足の運び gait に合ったアニメ（立つアニメが無ければ歩くアニメ、走るアニメが無ければ歩くアニメ）
-	GameLib::Scene::Animation locomotionAnimation( Gait gait ) const;
-	// 走っているなら、走りのアニメの倍率を掛ける（アニメを繋ぐと速さは 1 に戻るので、繋いだ後に呼ぶ）
-	void applyRunRate();
+	GameLib::Scene::Animation locomotionAnimation( Gait gait ) const;	// 足の運び gait に合ったアニメ（立つアニメが無ければ歩くアニメ、走るアニメが無ければ歩くアニメ）
+	void applyRunRate();												// 走っているなら、走りのアニメの倍率を掛ける（アニメを繋ぐと速さは 1 に戻るので、繋いだ後に呼ぶ）
 
 	const ZombieModel* mModel;           // 借りているだけ
 	SkinnedMeshInstance* mMesh;          // 借りているだけ

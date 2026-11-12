@@ -14,28 +14,23 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 撃たれた瞬間の姿勢から死亡アニメへ繋ぐ長さ（ティック）。短いほど撃たれた手応えが強いが、0 だと姿勢が飛ぶ
-	const float kDeathFadeTicks = 6.f;
-	const float kDeathStartTime = 0.f; // 死亡アニメは頭から再生する
+	const float kDeathFadeTicks = 6.f;	// 撃たれた瞬間の姿勢から死亡アニメへ繋ぐ長さ（ティック）。短いほど撃たれた手応えが強いが、0 だと姿勢が飛ぶ
+	const float kDeathStartTime = 0.f;	// 死亡アニメは頭から再生する
 
-	// 撃たれた瞬間の姿勢からよろけのアニメへ繋ぐ長さ（ティック）。死亡アニメと同じく短くして、手応えを早く出す
-	const float kStaggerFadeTicks = 6.f;
+	const float kStaggerFadeTicks = 6.f;	// 撃たれた瞬間の姿勢からよろけのアニメへ繋ぐ長さ（ティック）。死亡アニメと同じく短くして、手応えを早く出す
 	// よろけのアニメ（gethit）を再生し始める時刻（フレーム）。gethit には撃たれた反応が 2 回続けて入っていて
 	// （0〜30 フレームで 1 回目、30 フレームで立ち姿に戻り、30〜59 フレームで 2 回目）、頭から流すと
 	// 「反応 → 立ち姿 → もう一度よろける」と 2 回に見える。左脚と両腕が大きく動く 2 回目だけを使う
 	// 終わりはアニメの最後（59 フレーム）なので、PLAY_ONCE で止まったら歩きへ戻す
 	const float kStaggerStartTime = 30.f;
-	// よろけ終わりから歩きへ戻す長さ（ティック）。よろけの最後と歩きの始めの姿勢は大きく違う（最大 46°）ので、少し長めに混ぜる
-	const float kRecoverFadeTicks = 10.f;
-	const float kMoveRestartTime = 0.f; // 歩きは頭から再生し直す
+	const float kRecoverFadeTicks = 10.f;	// よろけ終わりから歩きへ戻す長さ（ティック）。よろけの最後と歩きの始めの姿勢は大きく違う（最大 46°）ので、少し長めに混ぜる
+	const float kMoveRestartTime = 0.f;		// 歩きは頭から再生し直す
 
 	// 歩く速さ（m/ティック）。ふだんは歩きアニメの足の動きから求めた表（ZombieStride）で進み、これは表が作れなかったときだけ使う
 	// 接地している足先が 1 周で左 0.45m・右 0.57m 後ろへ動くのを Blender で測った平均（1 周 1 秒で約 1.0m）
 	const float kFallbackWalkSpeed = 1.0f / GameTime::kTicksPerSecond;
-	// 歩く ⇔ 立つ のアニメを繋ぐ長さ（ティック）
-	const float kLocomotionFadeTicks = 10.f;
-	// 立つ・歩くから攻撃のアニメへ繋ぐ長さ（ティック）。始める時刻は ZombieAttack::startTime（段階の時刻と揃える）
-	const float kAttackFadeTicks = 6.f;
+	const float kLocomotionFadeTicks = 10.f;	// 歩く ⇔ 立つ のアニメを繋ぐ長さ（ティック）
+	const float kAttackFadeTicks = 6.f;			// 立つ・歩くから攻撃のアニメへ繋ぐ長さ（ティック）。始める時刻は ZombieAttack::startTime（段階の時刻と揃える）
 	// 前へ倒れるアニメ（death1）が倒れ終わる時刻（フレーム）。ここから後は腰が動かない（Resource/Model/Character/zombie.txt の腰のキーで確かめた）
 	// これより短いアニメなら、最後まで来たら倒れ終わったとみなす
 	const float kDownedFallEndTime = 160.f;
@@ -94,8 +89,7 @@ void ZombieAnimationSet::setGait( Gait gait ) {
 void ZombieAnimationSet::playAttack( Vector3* footing ) {
 	mMesh->crossFadeTo( mAttack, ZombieAttack::startTime(), kAttackFadeTicks, SkinnedMeshInstance::PLAY_ONCE );
 	mRootSpan->start( mAttackRootMotion, ZombieAttack::startTime(), ZombieRootMotionSpan::Pass::Target, footing );
-	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）
-	mGait = Gait::Stand;
+	mGait = Gait::Stand;	// 攻撃が終わったら、まず立つ（次の update で追う先を考え直し、離れていれば歩き出す）
 }
 
 void ZombieAnimationSet::playStagger( Vector3* footing ) {
@@ -125,8 +119,7 @@ void ZombieAnimationSet::returnToLocomotion( Vector3* footing ) {
 
 float ZombieAnimationSet::walkDistanceThisTick() const {
 	if ( mGait == Gait::Run && canRun() ) {
-		// 走りのアニメを倍率の速さで流すので、1 ティックに進むフレームも倍率の数だけ。表の 1 フレームぶんに倍率を掛ける
-		return mModel->runStride().distanceAt( mMesh->animationPhase() * mRun.period() ) * zombieRunParams().runPlaybackRate;
+		return mModel->runStride().distanceAt( mMesh->animationPhase() * mRun.period() ) * zombieRunParams().runPlaybackRate;	// 走りのアニメを倍率の速さで流すので、1 ティックに進むフレームも倍率の数だけ。表の 1 フレームぶんに倍率を掛ける
 	}
 	const ZombieStride& stride = mModel->stride();
 	if ( !stride.isValid() ) {

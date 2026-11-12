@@ -27,18 +27,16 @@ public:
     static void create();
     static void destroy();
 
-    // 1回の描画につき1回、入力を読む（SceneManager が、シーンの beginFrame の前に呼ぶ）
-    void update();
+    void update();	// 1回の描画につき1回、入力を読む（SceneManager が、シーンの beginFrame の前に呼ぶ）
 
     // ─────────────────────────────────────────
     // 操作（WorkId）の読み方。ショートカットが使う
     // ─────────────────────────────────────────
-    bool isOn(GameLib::Input::WorkId work, int playerId) const;         // 押されている間ずっと
-    bool isTriggered(GameLib::Input::WorkId work, int playerId) const;  // 押した瞬間だけ
-    bool isWorkRelease(GameLib::Input::WorkId work, int playerId) const; // 離した瞬間だけ
-    AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const; // 軸ワークの今フレームの量
-    // 今の割り当て（設定画面の操作の一覧が、どのキーかを見せるのに使う。キーの名前は GameLib::Input::BindingDisplayName）
-    const std::vector<GameLib::Input::BindingRecord>& bindings(int playerId) const;
+    bool isOn(GameLib::Input::WorkId work, int playerId) const;						// 押されている間ずっと
+    bool isTriggered(GameLib::Input::WorkId work, int playerId) const;				// 押した瞬間だけ
+    bool isWorkRelease(GameLib::Input::WorkId work, int playerId) const;			// 離した瞬間だけ
+    AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const;	// 軸ワークの今フレームの量
+    const std::vector<GameLib::Input::BindingRecord>& bindings(int playerId) const;	// 今の割り当て（設定画面の操作の一覧が、どのキーかを見せるのに使う。キーの名前は GameLib::Input::BindingDisplayName）
 
     // ─────────────────────────────────────────
     // キーコンフィグ：ワークへのボタン追加・削除
@@ -60,20 +58,16 @@ private:
 
     void setupDevicesAndBindings();
 
-    // 設定を読み込む（ファイルが無ければ GameLib のデフォルト表）→ Input へ反映
-    void loadOrDefault(int playerId);
-    // 現在の設定（m_configs）を builder 経由で Input に一括反映する
-    void applyConfig(int playerId);
+    void loadOrDefault(int playerId);	// 設定を読み込む（ファイルが無ければ GameLib のデフォルト表）→ Input へ反映
+    void applyConfig(int playerId);		// 現在の設定（m_configs）を builder 経由で Input に一括反映する
 
-    // プレイヤーごとに独立した Input インスタンスを持つ
-    ::Input m_inputs[MAX_PLAYERS];
+    ::Input m_inputs[MAX_PLAYERS];	// プレイヤーごとに独立した Input インスタンスを持つ
 
     // プレイヤーごとの組み立て役（デバイス生成・キー登録・割当を自己完結）
     // Input への参照を握るので生成後は破棄しない
     std::unique_ptr<InputBuilder> m_builders[MAX_PLAYERS];
 
-    // プレイヤーごとの割当設定（唯一の正。保存/読込・キーコンフィグの対象）
-    GameLib::Input::InputConfig m_configs[MAX_PLAYERS];
+    GameLib::Input::InputConfig m_configs[MAX_PLAYERS];	// プレイヤーごとの割当設定（唯一の正。保存/読込・キーコンフィグの対象）
 
     static Pad* mInstance;
 };

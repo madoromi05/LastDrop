@@ -16,8 +16,7 @@ public:
 	// つかまれている間も、撃つ・覗く・視点を回すはできる（撃って振りほどく）
 	void setHeld( bool held );
 	bool isHeld() const;
-	// つかんでよいか（つかまれていない・離されてから少したった）。続けてつかまれて抜け出せなくならないように。生きているかは呼ぶ側が見る
-	bool canBeGrabbed() const;
+	bool canBeGrabbed() const;	// つかんでよいか（つかまれていない・離されてから少したった）。続けてつかまれて抜け出せなくならないように。生きているかは呼ぶ側が見る
 
 private:
 	bool mHeld;             // ゾンビにつかまれているか（setHeld）

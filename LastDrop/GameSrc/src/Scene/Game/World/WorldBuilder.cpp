@@ -22,8 +22,7 @@ namespace{
 	// ブロックの中も町を囲むのも、足元の歩道の板を除いた同じ形
 	// 足元はどちらも TownMap が敷く床（歩道の高さ）が見える。板があると、隣の板や床と重なって面がちらつくため
 	const char* kBuildingFile = "Resource/Model/Map/building_noground.txt";
-	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす
-	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;
+	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす
 
 	Vector3 toPosition( const TownPlacement& placement ) {
 		return Vector3( placement.x, placement.y, placement.z );

@@ -35,23 +35,18 @@ public:
 	// まとめる元になる小さい部品だけに使う（全部のメッシュで残すと、頂点の数だけメモリを使い続ける）
 	void keepSourceVertices();
 
-	// 設定し終えた頂点とインデックスをGPUへ送る。以降 set 系は呼べない
-	void upload();
-	// 描画できる状態か（upload 済みか）
-	bool isReady() const;
+	void upload();			// 設定し終えた頂点とインデックスをGPUへ送る。以降 set 系は呼べない
+	bool isReady() const;	// 描画できる状態か（upload 済みか）
 
-	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。テクスチャが展開済みなら true
-	bool updateLoading();
-	// world の位置・向き・大きさで描画する。upload 前なら何もしない
-	void draw( const GameLib::Math::Matrix34& world ) const;
+	bool updateLoading();										// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。テクスチャが展開済みなら true
+	void draw( const GameLib::Math::Matrix34& world ) const;	// world の位置・向き・大きさで描画する。upload 前なら何もしない
 	// instanceNumber 個まとめて描画する（インスタンシング）。upload 前なら何もしない
 	// シェーダ・置き場所・ワールド行列は StaticMeshInstancing が付けておく（ここでは選ばない）
 	void drawInstanced( int instanceNumber ) const;
 	// 弾の当たり判定。座標はモデルの空間（置く前）。意味は TriangleMesh::raycast と同じ。upload 前なら当たらない
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
-	// 全部の三角形の隅を、3つずつ corners の後ろへ足す（モデルの空間）。upload 前なら何も足さない。corners: 出力先。nullptr 不可
-	void appendTriangles( std::vector< GameLib::Math::Vector3 >* corners ) const;
+	void appendTriangles( std::vector< GameLib::Math::Vector3 >* corners ) const;	// 全部の三角形の隅を、3つずつ corners の後ろへ足す（モデルの空間）。upload 前なら何も足さない。corners: 出力先。nullptr 不可
 
 	// ── まとめる元として読む（keepSourceVertices していなければ、upload の後は数が 0）──
 	int sourceVertexNumber() const;
@@ -60,8 +55,7 @@ public:
 	unsigned short sourceIndex( int i ) const;
 
 private:
-	// 材質（テクスチャ・材質値）・頂点・インデックスを付ける。draw と drawInstanced の共通の準備
-	void bindForDraw() const;
+	void bindForDraw() const;	// 材質（テクスチャ・材質値）・頂点・インデックスを付ける。draw と drawInstanced の共通の準備
 
 	// 構築中だけ使う作業用配列。upload 後は空になる（mKeepsSource なら残す）
 	GameLib::Array< GameLib::Graphics::Vertex > mStagingVertices;

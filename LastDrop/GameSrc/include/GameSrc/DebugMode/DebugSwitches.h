@@ -18,7 +18,6 @@ struct DebugSwitches{
 	bool spawnZombies = false;     // 自キャラの前にゾンビを出す（GameEditorBridge が読む）
 };
 
-// 起動中ずっと 1 つ
-DebugSwitches& debugSwitches();
+DebugSwitches& debugSwitches();	// 起動中ずっと 1 つ
 
 #endif

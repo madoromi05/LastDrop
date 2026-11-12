@@ -9,8 +9,7 @@
 // 順番に意味がある（後の書き換えは、前の書き換えの結果の上に掛かる）
 class BonePoseModifierChain : public BonePoseModifier{
 public:
-	// 書き換えを後ろへ足す。所有権は受け取らない。nullptr 不可。このチェーンより長く生きていること
-	void add( BonePoseModifier* modifier );
+	void add( BonePoseModifier* modifier );	// 書き換えを後ろへ足す。所有権は受け取らない。nullptr 不可。このチェーンより長く生きていること
 	// 足した書き換えを全部外す（組み直すとき。書き換えの持ち主が外れることがある物に使う）
 	void clear();
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;

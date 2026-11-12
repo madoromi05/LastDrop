@@ -8,8 +8,7 @@ enum class PlayerCondition{
 	Danger,  // 危ない（もっと遅くなり、照準のぶれが大きくなり、画面の周りが赤くなる）
 };
 
-// 状態の名前（確認用の表示）
-const char* playerConditionName( PlayerCondition condition );
+const char* playerConditionName( PlayerCondition condition );	// 状態の名前（確認用の表示）
 
 // 自キャラの体力。バイオハザードと同じく、体全体で 1 つだけ持つ（それまではタルコフの 7 部位）
 // ・0 になったら死ぬ
@@ -20,12 +19,9 @@ class PlayerHealth{
 public:
 	PlayerHealth(); // 満タンで始める
 
-	// amount のダメージを受ける。死んだ後は何もしない
-	void takeDamage( float amount );
-	// amount だけ戻す（最大で止める）。死んだ後は何もしない（死んでから包帯で起き上がらないように）
-	void heal( float amount );
-	// 最大より減っているか（減っていなければ、カバンの画面に「使う」を出さない）
-	bool isInjured() const;
+	void takeDamage( float amount );	// amount のダメージを受ける。死んだ後は何もしない
+	void heal( float amount );			// amount だけ戻す（最大で止める）。死んだ後は何もしない（死んでから包帯で起き上がらないように）
+	bool isInjured() const;				// 最大より減っているか（減っていなければ、カバンの画面に「使う」を出さない）
 
 	bool isDead() const;               // 体力が 0 になったか
 	float current() const;             // 残り（0 以上）

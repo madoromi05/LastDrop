@@ -49,8 +49,7 @@ public:
 							c[ k ] = static_cast< unsigned >( color[ k ] * 255.f + 0.5f );
 							c[ k ] = ( c[ k ] > 255 ) ? 255 : c[ k ];
 						}
-						// ARGB packing -> stored as BGRA bytes (B=byte0,G=byte1,R=byte2,A=byte3)
-						v.mColor = ( c[ 3 ] << 24 ) | ( c[ 0 ] << 16 ) | ( c[ 1 ] << 8 ) | c[ 2 ];
+						v.mColor = ( c[ 3 ] << 24 ) | ( c[ 0 ] << 16 ) | ( c[ 1 ] << 8 ) | c[ 2 ];	// ARGB packing -> stored as BGRA bytes (B=byte0,G=byte1,R=byte2,A=byte3)
 					}
 				}
 			}

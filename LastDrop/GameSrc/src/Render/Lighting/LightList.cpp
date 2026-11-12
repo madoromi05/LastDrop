@@ -10,8 +10,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// LightList.hlsli の cbuffer LightConstants の番号（b2）。b1 は全画面のパス・キャラの骨、b3 は G-Buffer の材質値が使う
-	const int kLightSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 1;
+	const int kLightSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 1;	// LightList.hlsli の cbuffer LightConstants の番号（b2）。b1 は全画面のパス・キャラの骨、b3 は G-Buffer の材質値が使う
 	// 影のマップの最初の番号（t6）。t2〜t5 は G-Buffer と深度（DeferredLighting.cpp）。LightList.hlsli と揃える
 	const int kFirstShadowSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
 	const int kMatrixFloats = 16;
@@ -22,8 +21,7 @@ namespace{
 	const float kPerspectiveFlag = 1.f;
 	const float kOrthographicFlag = 0.f;
 
-	// スポットの角度の幅が 0 のとき（inner == outer）の 0 割りよけ
-	const float kMinSpotCosineWidth = 0.0001f;
+	const float kMinSpotCosineWidth = 0.0001f;	// スポットの角度の幅が 0 のとき（inner == outer）の 0 割りよけ
 
 	const int kVectorFloats = 4;
 	// LightList.hlsli の LightData と同じ並び（float4 を 4 つ）
@@ -72,8 +70,7 @@ namespace{
 		return Vector3( distanceScale, environment.fogGroundDensity, heightFalloff );
 	}
 
-	// 平行光は、ほかのライトより先に必ず選ぶ（町全体を照らす月なので、消えると全部が暗くなる）
-	const float kDirectionalPriority = -1.f;
+	const float kDirectionalPriority = -1.f;	// 平行光は、ほかのライトより先に必ず選ぶ（町全体を照らす月なので、消えると全部が暗くなる）
 
 	// 選ぶ順番の値（小さいほど先）。目からライトの届く範囲のふちまでの距離（範囲の中にいれば 0）
 	float reachDistance( const LightSource& light, const Vector3& eye ) {

@@ -7,8 +7,7 @@
 #include "Framework.h"
 
 namespace{
-	// 止めた画を暗くする板の色。後ろの町がうっすら見え（どこで止めたかが分かる）、上に直接書く細い白い字が読める暗さ
-	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.74f );
+	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.74f );	// 止めた画を暗くする板の色。後ろの町がうっすら見え（どこで止めたかが分かる）、上に直接書く細い白い字が読める暗さ
 }
 
 PauseMenu::PauseMenu( UiRenderer* renderer, GameSettings* settings, AudioEngine* audio, std::function< void() > onResume ) :

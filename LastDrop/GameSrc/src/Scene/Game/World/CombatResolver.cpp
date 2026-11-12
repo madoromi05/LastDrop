@@ -25,11 +25,10 @@ using namespace GameLib::Math;
 
 namespace{
 	// 血の跡
-	const float kStainBehindDistance = 2.f; // 当たった所から弾の向きへ、血が飛ぶ所まで（m）
-	const float kStainDropDistance = 1.5f;  // 当たった所から真下へ、滴が落ちる所まで（m）
+	const float kStainBehindDistance = 2.f;	// 当たった所から弾の向きへ、血が飛ぶ所まで（m）
+	const float kStainDropDistance = 1.5f;	// 当たった所から真下へ、滴が落ちる所まで（m）
 	const Vector3 kDown( 0.f, -1.f, 0.f );
-	// 滴の跡を付ける面の法線の上向きの下限（cos。約 45°）。斜めの車の屋根などの上にだけ付け、横向きの面には付けない
-	const float kMinDripFacingUp = 0.7f;
+	const float kMinDripFacingUp = 0.7f;	// 滴の跡を付ける面の法線の上向きの下限（cos。約 45°）。斜めの車の屋根などの上にだけ付け、横向きの面には付けない
 
 	// 頭に当たったとき・部位が千切れたときは大きくする（一番多く血が出る所）
 	EffectManager::BloodStainSize bloodStainSize( BodyPart part, bool severed ) {
@@ -139,8 +138,7 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 	for ( BodyPart part : severed ) {
 		mEffects->spawnSeveredLimb( mesh, model, part, impact.direction );
 	}
-	// 千切れた部位がいくつあっても、血の跡は 1 発につき 1 組（切れたのはこの 1 発の当たった所なので）
-	stainAroundZombie( impact, bloodStainSize( hit.part, !severed.empty() ) );
+	stainAroundZombie( impact, bloodStainSize( hit.part, !severed.empty() ) );	// 千切れた部位がいくつあっても、血の跡は 1 発につき 1 組（切れたのはこの 1 発の当たった所なので）
 }
 
 void CombatResolver::stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size ) {

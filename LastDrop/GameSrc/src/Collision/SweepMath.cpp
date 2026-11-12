@@ -13,8 +13,7 @@ namespace{
 	const float kEndTime = 1.f;
 	const float kHalf = 0.5f;
 	const int kAxesPerBox = 2;
-	// 調べる軸の数の上限。長方形どうしなら 4 本（2 + 2）、長方形とかけらなら「長方形の 2 本＋かけらの辺の法線」
-	const int kMaxAxisNumber = kAxesPerBox + WallPiece::kMaxCorners;
+	const int kMaxAxisNumber = kAxesPerBox + WallPiece::kMaxCorners;	// 調べる軸の数の上限。長方形どうしなら 4 本（2 + 2）、長方形とかけらなら「長方形の 2 本＋かけらの辺の法線」
 
 	// 0 は正として扱う符号（押し出す向きを必ずどちらかに決めるため）
 	float signOf( float value ) {

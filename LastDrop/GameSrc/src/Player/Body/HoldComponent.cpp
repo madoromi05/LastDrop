@@ -17,13 +17,11 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 銃を持たせる手（右手の骨）。持ち方（手から見た銃の置き方）は銃の側（WeaponModelComponent::gripInHand）
-	const char* kWeaponBone = "mixamorig:RightHand";
-	// 銃を支える手。どのアニメでも、この手の骨が銃の上の決まった点に来るよう右手首を曲げる（FirstPersonBody）
-	const char* kSupportHandBone = "mixamorig:LeftHand";
+	const char* kWeaponBone = "mixamorig:RightHand";		// 銃を持たせる手（右手の骨）。持ち方（手から見た銃の置き方）は銃の側（WeaponModelComponent::gripInHand）
+	const char* kSupportHandBone = "mixamorig:LeftHand";	// 銃を支える手。どのアニメでも、この手の骨が銃の上の決まった点に来るよう右手首を曲げる（FirstPersonBody）
 	// 持ち方を合わせたアニメ（銃ごと。WeaponSpec::gripCalibrationAnimation）の時刻。このポーズで左手が銃のどこにあるかを「左手の来るべき点」にする
 	// 数値で持たずにアニメから求めるのは、持ち方を合わせ直したときに一緒に合わせ直す値を増やさないため
-	const float kGripCalibrationTime = 0.f; // 1フレーム目
+	const float kGripCalibrationTime = 0.f;					// 1フレーム目
 
 	const int kNoBone = -1; // 骨が無い（findBone の答えと同じ）
 
@@ -79,8 +77,7 @@ void HoldComponent::start() {
 	mBody = requireComponent< FirstPersonBodyComponent >();
 	mHandBone = mHolderData->findBone( kWeaponBone );
 	if ( mHandBone < 0 ) {
-		// 骨名違いでも落ちずに素手になるだけなので、ここで知らせる
-		GameLib::cout << "HoldComponent: weapon bone not found: " << kWeaponBone << GameLib::endl;
+		GameLib::cout << "HoldComponent: weapon bone not found: " << kWeaponBone << GameLib::endl;	// 骨名違いでも落ちずに素手になるだけなので、ここで知らせる
 	}
 	// 支える手が見つからなければ、右手だけで持つ（左手が銃から離れることがあるだけで落ちない）
 	mSupportHandBone = mHolderData->findBone( kSupportHandBone );
@@ -206,8 +203,7 @@ void HoldComponent::updateReload( bool reloadPressed, Inventory* inventory ) {
 		return;
 	}
 	if ( !mStance.isDrawn() ) {
-		// しまったらやめる（替えている途中の銃は手から消えるので、弾は込めない）
-		mGun->cancelReload();
+		mGun->cancelReload();	// しまったらやめる（替えている途中の銃は手から消えるので、弾は込めない）
 	} else if ( reloadPressed && mGun->canStartReload( *inventory ) ) {
 		mGun->startReload();
 		mStance.stopAiming(); // 覗いていたら銃を下ろしてから替える

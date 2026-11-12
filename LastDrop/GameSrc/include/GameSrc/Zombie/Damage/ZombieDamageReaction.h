@@ -28,8 +28,7 @@ public:
 		ShakeOff, // 振りほどかれた。よろけて手を放す
 	};
 
-	// 倒れるか。None のときだけ、持ち主が振りほどきを数えて chooseHit を呼ぶ
-	static Fall chooseFall( const Facts& facts );
+	static Fall chooseFall( const Facts& facts );	// 倒れるか。None のときだけ、持ち主が振りほどきを数えて chooseHit を呼ぶ
 	// 倒れないときの反応。shakenOff: ZombieAttack::takeShakeDamage の答え（振りほどかれた）
 	// つかむのは立っている体だけなので、振りほどかれるのも立っている体だけ
 	static Hit chooseHit( const Facts& facts, bool shakenOff );

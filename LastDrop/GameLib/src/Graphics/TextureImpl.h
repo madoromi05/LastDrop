@@ -753,11 +753,9 @@ public:
 	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）
 	long long                 mRequestedAt;
 	string                    mProfileName;
-	TextureColorSpace         mColorSpace; // 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
-	// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）
-	DdsReader::Image          mCompressed;
-	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる
-	bool                      mKeepsCpuPixels = false;
+	TextureColorSpace         mColorSpace;				// 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
+	DdsReader::Image          mCompressed;				// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）
+	bool                      mKeepsCpuPixels = false;	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる
 };
 
 } //namespace Graphics

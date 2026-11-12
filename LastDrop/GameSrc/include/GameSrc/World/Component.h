@@ -25,8 +25,7 @@ public:
 	Component( const Component& ) = delete;
 	Component& operator=( const Component& ) = delete;
 	virtual ~Component() = default;
-	// 付いている物（GameObject::addComponent の後から使える）
-	GameObject* gameObject() const { return mGameObject; }
+	GameObject* gameObject() const { return mGameObject; }	// 付いている物（GameObject::addComponent の後から使える）
 	// 同じ物に付いている T の部品（無ければ nullptr）。定義は GameObject.h（GameObject の中身が要るため）。任意の部品はこれで引く
 	template< class T >
 	T* getComponent() const;

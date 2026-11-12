@@ -13,18 +13,14 @@ namespace{
 	// まっすぐ通れるかを調べる間隔（秒）。角を曲がった後、これだけ古い向きで歩くことがある
 	const float kProbeIntervalSeconds = 0.5f;
 	const int kProbeIntervalTicks = GameTime::secondsToTicks( kProbeIntervalSeconds );
-	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）
-	const float kWaypointReachDistance = 1.f;
-	// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように
-	const float kReplanDistance = 3.f;
-	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m
-	const float kDestinationJumpDistance = 1.f;
+	const float kWaypointReachDistance = 1.f;	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）
+	const float kReplanDistance = 3.f;			// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように
+	const float kDestinationJumpDistance = 1.f;	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m
 	// 自分が向く点の向きへこの長さ（m）進むたびに「進めている」とみなす（うろつきと同じ値）
 	// 点との距離ではなく自分の動きで見るのは、逃げる自キャラ（ゾンビより速い）を追う間、まっすぐ歩けていても
 	// 距離が縮まらず詰まったとみなされ、横へよけてしまうため。向く点の向きだけを数えるので、壁に沿って滑るだけの動きは数えない
 	const float kProgressDistance = 0.3f;
-	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす
-	const float kMinDirectionLength = 0.001f;
+	const float kMinDirectionLength = 0.001f;	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす
 }
 
 ZombiePath::ZombiePath( int probePhase, PathBudget* budget ) :

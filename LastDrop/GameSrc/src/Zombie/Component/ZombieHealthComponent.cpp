@@ -63,26 +63,23 @@ void ZombieHealthComponent::applyDamage( const DamageInfo& damage ) {
 	if ( !mState->isAlive() ) {
 		return;
 	}
-	// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）
-	float totalBefore = mHealth.total();
-	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() ); // 頭は確率で弾ける（クリティカル）
+	float totalBefore = mHealth.total();										// 振りほどきには、部位の倍率を掛けた後の量を数える（全体の体力が減った分）
+	mHealth.takeDamage( damage.part, damage.baseAmount, mRandom.getFloat() );	// 頭は確率で弾ける（クリティカル）
 	float dealt = totalBefore - mHealth.total();
-	mLocomotion->alert(); // 撃たれたら、見えていなくても気付く
+	mLocomotion->alert();														// 撃たれたら、見えていなくても気付く
 	// 走る体は、脚が傷んだらもう走らない（歩きに落ちる。脚を撃って足止めできる）
 	if ( mHealth.weakestLegRatio() <= zombieRunParams().legSlowRatio ) {
 		mLocomotion->stopRunning();
 	}
-	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す
-	mFlinch->push( damage.part, mMesh->toRootDirection( damage.direction ) );
-	// 倒れる 1 発で部位も 0 になったら、切れてから倒れる（頭を撃って倒したときは、頭が飛ぶ）
-	severIfBroken( damage.part );
+	mFlinch->push( damage.part, mMesh->toRootDirection( damage.direction ) );	// のけぞりは骨格の根の空間で曲げるので、弾の向きを置き場所の向きの分だけ戻す
+	severIfBroken( damage.part );												// 倒れる 1 発で部位も 0 になったら、切れてから倒れる（頭を撃って倒したときは、頭が飛ぶ）
 	// どう反応するかを選び（ZombieDamageReaction）、ここで動かす
 	ZombieDamageReaction::Facts facts;
 	facts.canFall = mAnimations->hasDeath();
 	facts.isDead = mHealth.isDead();
 	facts.isStanding = ( mState->state() == ZombieStateComponent::State::Alive );
 	facts.hasLostFooting = mDismemberment->hasLostFooting();
-	ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >(); // 外せる部品なので、使うたびに引く
+	ZombieAttackComponent* attack = getComponent< ZombieAttackComponent >();	// 外せる部品なので、使うたびに引く
 	// isAttacking は振りほどきを数える前に読むが、数えて値が変わるのは振りほどかれたとき（よろけを選ばない）だけなので同じ答えになる
 	facts.isAttacking = attack && attack->isActive();
 	facts.canStagger = canStagger( damage.part );

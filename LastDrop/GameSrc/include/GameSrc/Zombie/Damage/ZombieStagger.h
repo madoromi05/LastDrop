@@ -12,13 +12,12 @@ class ZombieStagger{
 public:
 	ZombieStagger();
 
-	// part に当たったとき、よろけを始めてよいか（よろけていない、かつ間あけが済んだか頭）
-	bool canStart( BodyPart part ) const;
-	void start();  // よろけ始めた
-	void finish(); // よろけのアニメが終わった。ここから間あけを数える
-	void cancel(); // 倒れたので、よろけを打ち切る（間あけは数え直さない）
-	void tick();   // よろけていない間、間あけを 1 ティック進める（毎ティック呼ぶ）
-	bool isActive() const; // よろけの最中か
+	bool canStart( BodyPart part ) const;	// part に当たったとき、よろけを始めてよいか（よろけていない、かつ間あけが済んだか頭）
+	void start();							// よろけ始めた
+	void finish();							// よろけのアニメが終わった。ここから間あけを数える
+	void cancel();							// 倒れたので、よろけを打ち切る（間あけは数え直さない）
+	void tick();							// よろけていない間、間あけを 1 ティック進める（毎ティック呼ぶ）
+	bool isActive() const;					// よろけの最中か
 
 private:
 	bool mActive;       // よろけの最中か

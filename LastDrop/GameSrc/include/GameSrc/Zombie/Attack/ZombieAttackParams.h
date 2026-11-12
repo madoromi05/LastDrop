@@ -8,8 +8,7 @@ struct ZombieAttackParams{
 	// つかんでいる間の、自キャラの足元からゾンビの腰（足元）までの水平の距離（m）
 	// atack3 のつかんだ姿勢（Blender の 56〜92 フレーム）は手が腰の 0.35m 前・頭が 0.31m 前に出るので、
 	float grabDistance = 0.80f;
-	// つかんでから、その距離・正面へ寄せ終えるまでの長さ（秒）。その場で飛ぶと目立つので、手を伸ばし切る動きに紛らせる
-	float grabAlignSeconds = 0.1f;
+	float grabAlignSeconds = 0.1f;	// つかんでから、その距離・正面へ寄せ終えるまでの長さ（秒）。その場で飛ぶと目立つので、手を伸ばし切る動きに紛らせる
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（WeaponPoseParams と同じ約束）。時間の下限を 0 にしないのは割り算に使うため
 	template< class V > void visit( V& v ) {
@@ -18,7 +17,6 @@ struct ZombieAttackParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（ZombieAttackComponent.cpp が持つ）
-ZombieAttackParams& zombieAttackParams();
+ZombieAttackParams& zombieAttackParams();	// 起動中ずっと 1 つだけの調整値（ZombieAttackComponent.cpp が持つ）
 
 #endif

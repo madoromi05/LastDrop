@@ -38,6 +38,5 @@ float4 PSMain(FullScreenVertex p) : SV_Target
         weightSum += weight;
         sum += texel.r * weight;
     }
-    // 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上
-    return float4(sum / weightSum, center.g, 0.0, 1.0);
+    return float4(sum / weightSum, center.g, 0.0, 1.0);	// 真ん中の重みは 1（ガウスも奥行きの近さも 1）なので、weightSum は 1 以上
 }

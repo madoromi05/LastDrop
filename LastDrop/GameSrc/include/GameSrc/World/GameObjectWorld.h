@@ -27,8 +27,7 @@ class HitWorld;
 // 名簿（CollisionWorld・HitWorld）はこの持ち主より長く生きていること（シーンでは名簿を先に宣言する）
 class GameObjectWorld{
 public:
-	// collisionWorld / hitWorld: 載せる名簿。所有権は受け取らない。nullptr 不可
-	GameObjectWorld( CollisionWorld* collisionWorld, HitWorld* hitWorld );
+	GameObjectWorld( CollisionWorld* collisionWorld, HitWorld* hitWorld );	// collisionWorld / hitWorld: 載せる名簿。所有権は受け取らない。nullptr 不可
 	// 残っている物も onDestroy を呼び、名簿から外してから消す（名簿の方が長生きなので、外さないと消えた物を指し続ける）
 	~GameObjectWorld();
 	GameObjectWorld( const GameObjectWorld& ) = delete;
@@ -49,13 +48,11 @@ public:
 	// 物を作って持つ（画像の obj_manager.Register( "AK47" )）。返すポインタは flush で消えるまで使える
 	// name: 確認用の名前（写して持つ。nullptr 不可）。部品を付け終えたら spawn する
 	GameObject* create( GameObjectTag tag, const char* name );
-	// create した物を動かし始める。updatePhase の段の並びに、spawn した順で入る。たどっている最中には呼ばない（並びが動く）
-	void spawn( GameObject* object );
+	void spawn( GameObject* object );				// create した物を動かし始める。updatePhase の段の並びに、spawn した順で入る。たどっている最中には呼ばない（並びが動く）
 	// phase の段の部品の update を、spawn した順に呼ぶ。たどっている間に destroyLater・removeComponentLater はしてよい（印だけ）
 	// spawn・部品を付けることはしないこと
 	void update( UpdatePhase phase );
-	// 次の flush で消す印を付ける。同じ物に何回付けてもよい。この持ち主の物でなければ何もしない
-	void destroyLater( const GameObject* object );
+	void destroyLater( const GameObject* object );	// 次の flush で消す印を付ける。同じ物に何回付けてもよい。この持ち主の物でなければ何もしない
 	// 印の付いた部品を外し、物を消す。ティックの最後（全員の update が済んだ後）に1回呼ぶ
 	// onDestroy の中で destroyLater・removeComponentLater してよい（同じ flush の中で、印が無くなるまで片付ける）
 	// onDestroy の中で spawn・部品を付けることはしないこと（ASSERT で止める）
@@ -115,20 +112,14 @@ public:
 		}
 		return nullptr;
 	}
-	// tag の、spawn した物の数（消す印が付いていて、まだ flush していない物も数える）
-	int countTagged( GameObjectTag tag ) const;
-	// tag の、spawn した物のうち一番先に作った物（無ければ nullptr）。数の上限を超えたときに古い物から消すのに使う
-	GameObject* oldestTagged( GameObjectTag tag ) const;
-	// 番号の物（消えた・この持ち主の物でなければ nullptr）。GameObjectHandle が使う
-	GameObject* findById( unsigned id ) const;
+	int countTagged( GameObjectTag tag ) const;				// tag の、spawn した物の数（消す印が付いていて、まだ flush していない物も数える）
+	GameObject* oldestTagged( GameObjectTag tag ) const;	// tag の、spawn した物のうち一番先に作った物（無ければ nullptr）。数の上限を超えたときに古い物から消すのに使う
+	GameObject* findById( unsigned id ) const;				// 番号の物（消えた・この持ち主の物でなければ nullptr）。GameObjectHandle が使う
 
 private:
-	// 下の 2 つは GameObject（addComponent・removeComponentLater）だけが呼ぶ
-	friend class GameObject;
-	// spawn した後に付けた部品（object の index 番目）を awake・start させ、載せる
-	void attachLate( GameObject* object, int index );
-	// object に外す印の付いた部品がある（flush で外す）
-	void requestRemoval( GameObject* object );
+	friend class GameObject;							// 下の 2 つは GameObject（addComponent・removeComponentLater）だけが呼ぶ
+	void attachLate( GameObject* object, int index );	// spawn した後に付けた部品（object の index 番目）を awake・start させ、載せる
+	void requestRemoval( GameObject* object );			// object に外す印の付いた部品がある（flush で外す）
 
 	// たどっている間か（たどっている最中の spawn・部品を付けることを見つける）
 	class IterationGuard{
@@ -141,16 +132,11 @@ private:
 		GameObjectWorld* mWorld;
 	};
 
-	// typeId の部品を持つ物の並び（その種類の物を一度も持っていなければ nullptr）
-	const std::vector< GameObject* >* objectsWith( int typeId ) const;
-	// object の index 番目の部品を、名簿・種類ごとの並び・段の並びへ入れる（start は呼ぶ側が済ませる）
-	void attach( GameObject* object, int index );
-	// object の index 番目の部品の onDestroy を呼び、名簿・種類ごとの並び・段の並びから外す（捨てるのは呼ぶ側）
-	void detach( GameObject* object, int index );
-	// object の全部の部品を、付けたのと逆の順に detach する
-	void detachAll( GameObject* object );
-	// 外す印の付いた部品を外す（flush から）
-	void removeMarkedComponents();
+	const std::vector< GameObject* >* objectsWith( int typeId ) const;	// typeId の部品を持つ物の並び（その種類の物を一度も持っていなければ nullptr）
+	void attach( GameObject* object, int index );						// object の index 番目の部品を、名簿・種類ごとの並び・段の並びへ入れる（start は呼ぶ側が済ませる）
+	void detach( GameObject* object, int index );						// object の index 番目の部品の onDestroy を呼び、名簿・種類ごとの並び・段の並びから外す（捨てるのは呼ぶ側）
+	void detachAll( GameObject* object );								// object の全部の部品を、付けたのと逆の順に detach する
+	void removeMarkedComponents();										// 外す印の付いた部品を外す（flush から）
 
 	CollisionWorld* mCollisionWorld;
 	HitWorld* mHitWorld;

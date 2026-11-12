@@ -31,10 +31,9 @@ namespace UiLayout {
 	}
 	// column の今の幅（画素）
 	inline float columnWidth( const UiColumn& column ) {
-		const float kBothSides = 2.f; // 余白は左右の 2 か所
+		const float kBothSides = 2.f;											// 余白は左右の 2 か所
 		const float inner = GameLib::Framework::instance().width() - column.margin * kBothSides;
-		// 間は列と列のあいだにだけあるので、列の数より 1 つ少ない
-		return ( inner - column.gap * ( column.count - 1 ) ) / column.count;
+		return ( inner - column.gap * ( column.count - 1 ) ) / column.count;	// 間は列と列のあいだにだけあるので、列の数より 1 つ少ない
 	}
 	// column の今の左端の x（画素）
 	inline float columnLeft( const UiColumn& column ) {

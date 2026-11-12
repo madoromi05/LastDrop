@@ -54,10 +54,9 @@ void ZombieBrainComponent::start() {
 
 	mMesh->setPosition( *mPosition );
 	mMesh->setAngleY( transform->angleY() );
-	mMesh->setPoseModifier( &mPoseModifiers ); // 中身は update で毎ティック組み直す
-	mMesh->setBodyPoseModifier( &mChase->sway() ); // 揺れには部位の箱も付いてくる
-	// 気付く前は立っている（立つアニメが無ければ歩くアニメ。どちらも空ならレスト姿勢＝T ポーズ）
-	rootMotion->animations().startStanding();
+	mMesh->setPoseModifier( &mPoseModifiers );		// 中身は update で毎ティック組み直す
+	mMesh->setBodyPoseModifier( &mChase->sway() );	// 揺れには部位の箱も付いてくる
+	rootMotion->animations().startStanding();		// 気付く前は立っている（立つアニメが無ければ歩くアニメ。どちらも空ならレスト姿勢＝T ポーズ）
 }
 
 void ZombieBrainComponent::update() {
@@ -66,8 +65,7 @@ void ZombieBrainComponent::update() {
 	ZombieHealthComponent* health = getComponent< ZombieHealthComponent >();
 	ChaseTarget target;
 	const ChaseTarget* chaseTarget = targetForThisBody( &target );
-	// 状態はここで 1 回だけ読む（段の途中で部品が状態を進めても、このティックは読んだ時の状態で最後まで進める。分ける前と同じ）
-	ZombieStateComponent::State state = mState->state();
+	ZombieStateComponent::State state = mState->state();	// 状態はここで 1 回だけ読む（段の途中で部品が状態を進めても、このティックは読んだ時の状態で最後まで進める。分ける前と同じ）
 	// 動いた後の位置・向きでアニメと部位の箱を置くので、先に動く
 	bool standing = move( chaseTarget, state, attack, health );
 	settleOnGround( state );

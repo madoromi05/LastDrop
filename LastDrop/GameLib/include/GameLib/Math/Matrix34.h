@@ -41,10 +41,8 @@ public:
 	void setMul( const Matrix34&, const Matrix34& );
 	void setMul( const Matrix34&, const Matrix33& );
 
-	///完全に一致しているかチェック
-	bool operator==( const Matrix34& ) const;
-	///少しでも違うのかをチェック
-	bool operator!=( const Matrix34& ) const;
+	bool operator==( const Matrix34& ) const;	///完全に一致しているかチェック
+	bool operator!=( const Matrix34& ) const;	///少しでも違うのかをチェック
 
 	float& operator()( int row, int col );
 	float operator()( int row, int col ) const;

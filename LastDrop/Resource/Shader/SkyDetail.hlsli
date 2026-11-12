@@ -4,18 +4,14 @@
 #ifndef INCLUDED_SKY_DETAIL_HLSLI
 #define INCLUDED_SKY_DETAIL_HLSLI
 
-// 月の模様（Resource/Texture/Map/moon.dds。tools/texgen/moon_gen.py。rgb 面の明るさ・a 月の形）。DeferredLighting が空を描くパス（drawLighting）でだけ t14 に付ける
-Texture2D gMoonTexture : register(t14);
+Texture2D gMoonTexture : register(t14);	// 月の模様（Resource/Texture/Map/moon.dds。tools/texgen/moon_gen.py。rgb 面の明るさ・a 月の形）。DeferredLighting が空を描くパス（drawLighting）でだけ t14 に付ける
 
 // ── 月 ──
 // 模様を読む範囲（月の半径の何倍まで）。縁を 1 画素なめらかにした分だけ、半径の少し外まで読む
 static const float kMoonTextureReach = 1.1;
-// 月の模様の画像の、半径にあたる画素の数の割合（moon_gen.py は画像の半分から縁の 2 画素を引いた所を半径にしている）
-static const float kMoonTextureRadiusRatio = 0.5;
-// 水たまりなどに映す月は、粗さがこれより上で消える（ざらざらの面に小さな円板がくっきり映らないように）
-static const float kMoonReflectionMaxRoughness = 0.5;
-// 映す月の円板の縁をなめらかにする幅（半径に対する割合。映り込みの画素の大きさは分からないので一定の幅にする）
-static const float kMoonReflectionEdge = 0.15;
+static const float kMoonTextureRadiusRatio = 0.5;		// 月の模様の画像の、半径にあたる画素の数の割合（moon_gen.py は画像の半分から縁の 2 画素を引いた所を半径にしている）
+static const float kMoonReflectionMaxRoughness = 0.5;	// 水たまりなどに映す月は、粗さがこれより上で消える（ざらざらの面に小さな円板がくっきり映らないように）
+static const float kMoonReflectionEdge = 0.15;			// 映す月の円板の縁をなめらかにする幅（半径に対する割合。映り込みの画素の大きさは分からないので一定の幅にする）
 
 // 月の方への向きに垂直な 2 本の軸（右・上）。真上・真下に月があるときは横の軸を別に取る
 void moonAxes(out float3 right, out float3 up)

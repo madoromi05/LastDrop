@@ -4,8 +4,7 @@
 #include "GameLib/Math/Random.h"
 
 namespace{
-	// 走るゾンビの値（F6 で動かせる）
-	ZombieRunParams gRunParams;
+	ZombieRunParams gRunParams;	// 走るゾンビの値（F6 で動かせる）
 }
 
 bool ZombieRunParams::pickRunner( GameLib::Math::Random* random ) const {

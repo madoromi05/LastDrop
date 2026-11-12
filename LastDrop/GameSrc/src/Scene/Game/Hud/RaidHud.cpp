@@ -32,15 +32,14 @@ namespace{
 	const char* kExitsSeparator = " / ";
 	const char* kExtractFormat = "脱出中 %.1f";
 
-	// 漁れる場所を開けている間の進み具合（画面の真ん中の少し下。輪の代わりに横の棒）
-	const char* kSearchText = "探している";
-	const char* kRefuelText = "給油中"; // 脱出の車に給油している間
-	const float kSearchBarBelowCenter = 40.f; // 棒の真ん中の、画面の真ん中からの下がり
+	const char* kSearchText = "探している";										// 漁れる場所を開けている間の進み具合（画面の真ん中の少し下。輪の代わりに横の棒）
+	const char* kRefuelText = "給油中";											// 脱出の車に給油している間
+	const float kSearchBarBelowCenter = 40.f;									// 棒の真ん中の、画面の真ん中からの下がり
 	const float kSearchBarWidth = 120.f;
 	const float kSearchBarHeight = 6.f;
-	const float kSearchTextGap = 16.f;        // 棒の真ん中から、文字の真ん中まで（上へ）
+	const float kSearchTextGap = 16.f;											// 棒の真ん中から、文字の真ん中まで（上へ）
 	const unsigned kSearchBackColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
-	const unsigned kSearchFillColor = VertexColor::pack( 0.95f, 0.85f, 0.3f ); // 選んだ枠と同じ黄
+	const unsigned kSearchFillColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );	// 選んだ枠と同じ黄
 	const float kHalf = 0.5f;
 }
 

@@ -36,10 +36,8 @@ public:
 	// フレームの始め（Profiling::beginFrame）
 	void beginFrame( long long frameIndex );
 	void mark( const char* name );
-	// フレームの終わり（Present の直前）。一番古いフレームの結果が読めたら result に入れて true
-	bool endFrame( Result* result );
-	// クエリを捨てる（Graphics::Manager を消す前）
-	void release();
+	bool endFrame( Result* result );	// フレームの終わり（Present の直前）。一番古いフレームの結果が読めたら result に入れて true
+	void release();						// クエリを捨てる（Graphics::Manager を消す前）
 private:
 	struct Slot{
 		ID3D11Query* disjoint;

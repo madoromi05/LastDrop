@@ -62,8 +62,7 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.enableDepthTest( true );
 	gm.enableDepthWrite( true );
-	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てるので、これが効くのはそれ以外の物だけ
-	gm.setCullMode( Graphics::CULL_NONE );
+	gm.setCullMode( Graphics::CULL_NONE );	// 既定は両面描画。メッシュは MeshMaterial::apply が材質ごとに裏を捨てるので、これが効くのはそれ以外の物だけ
 	// GameLib の 4 灯と環境光（固定パイプライン）は使わない。照らすのはライトの一覧だけ（ライティングのパスと半透明の板が b2 から読む）
 	// 月・補助光・空・環境光は調整値（LightingParams。初期値は夜）から毎フレーム作る（F6 ですぐ効くように）
 	const LightingParams& params = lightingParams();
@@ -201,10 +200,8 @@ void SceneLights::drawShadowMaps( const FirstPersonCamera& camera ) {
 			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
 		}
 	}
-	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す
-	Graphics::Manager::instance().setProjectionViewMatrix( camera.projectionViewMatrix() );
-	// GPU の時間の区切り。ここまでが影のマップ（懐中電灯と月の 3 枚）
-	Profiling::gpuMark( "Shadow" );
+	Graphics::Manager::instance().setProjectionViewMatrix( camera.projectionViewMatrix() );	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す
+	Profiling::gpuMark( "Shadow" );															// GPU の時間の区切り。ここまでが影のマップ（懐中電灯と月の 3 枚）
 }
 
 float SceneLights::fogHalfDistance() const {

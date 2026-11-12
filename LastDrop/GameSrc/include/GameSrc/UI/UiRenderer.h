@@ -35,17 +35,13 @@ class UiRenderer{
 public:
 	UiRenderer();
 
-	// 塗りつぶした長方形を積む。color: VertexColor::pack の並び
-	void addRect( const UiRect& rect, unsigned color );
-	// 太さ thickness の線分を a→b に積む（回転した長方形＝三角形2枚）。斜めにも引ける（心電図などの折れ線）
-	void addLine( const GameLib::Math::Vector2& a, const GameLib::Math::Vector2& b, float thickness, unsigned color );
-	// 塗りつぶした丸（半径 radius）を center に積む。折れ線のつなぎ目に太さと同じ直径で置くと、角が丸くつながり隙間が消える
-	void addDisc( const GameLib::Math::Vector2& center, float radius, unsigned color );
+	void addRect( const UiRect& rect, unsigned color );																	// 塗りつぶした長方形を積む。color: VertexColor::pack の並び
+	void addLine( const GameLib::Math::Vector2& a, const GameLib::Math::Vector2& b, float thickness, unsigned color );	// 太さ thickness の線分を a→b に積む（回転した長方形＝三角形2枚）。斜めにも引ける（心電図などの折れ線）
+	void addDisc( const GameLib::Math::Vector2& center, float radius, unsigned color );									// 塗りつぶした丸（半径 radius）を center に積む。折れ線のつなぎ目に太さと同じ直径で置くと、角が丸くつながり隙間が消える
 	// 左端の色から右端の色へ横に移り変わる長方形を積む（メニューの選んでいる行の帯・背景の左の影）
 	// 色は VertexColor::pack の並び。a を 0 にした端は透明になる
 	void addGradientRect( const UiRect& rect, unsigned leftColor, unsigned rightColor );
-	// 塗りつぶしたひし形（中心から上下左右の角まで radius）を center に積む（メニューの選んでいる印）
-	void addDiamond( const GameLib::Math::Vector2& center, float radius, unsigned color );
+	void addDiamond( const GameLib::Math::Vector2& center, float radius, unsigned color );								// 塗りつぶしたひし形（中心から上下左右の角まで radius）を center に積む（メニューの選んでいる印）
 	// 絵を rect いっぱいに貼った長方形を積む（カバンの物の絵）
 	// texture: 読み終えた絵（isReady が true・isError が false）。画面は sRGB ではないので、絵は TEXTURE_COLOR_SPACE_LINEAR で読んだ物
 	// （色の変換をせずに、画像の色のまま出す）。color: 絵に掛ける色（白でそのまま。a で薄くする）
@@ -55,21 +51,16 @@ public:
 	// letterSpacing: 字と字の間に足す幅（画素）。0 なら字の間を詰めずにまとめて積む（今までと同じ）
 	// 0 より大きいときは 1 字ずつ置く（StringRenderer は字の間を広げられないため）。最後の字の後には足さない（中央揃えがずれないように）
 	void addText( const char* text, const GameLib::Math::Vector2& position, UiTextSize size, UiAlign align, unsigned color, float letterSpacing = 0.f );
-	// text を size の文字・字の間 letterSpacing で書いたときの幅（画素）。右揃え・枠の大きさを決めるのに使う
-	float textWidth( const char* text, UiTextSize size, float letterSpacing = 0.f );
-	// size の文字の 1 行の高さ（画素）。枠の大きさを決めるのに使う
-	float lineHeight( UiTextSize size );
-	// 積んだものを描いて空にする。1回の描画につき1回
-	void draw();
+	float textWidth( const char* text, UiTextSize size, float letterSpacing = 0.f );									// text を size の文字・字の間 letterSpacing で書いたときの幅（画素）。右揃え・枠の大きさを決めるのに使う
+	float lineHeight( UiTextSize size );																				// size の文字の 1 行の高さ（画素）。枠の大きさを決めるのに使う
+	void draw();																										// 積んだものを描いて空にする。1回の描画につき1回
 
 private:
 	// 長方形の描き方（半透明に混ぜる・奥行きを見ない・裏も描く）を、これから積む長方形に設定する
 	// PrimitiveRenderer の描き方の設定は「設定した後に積んだもの」にだけ効く（積み終えた後で設定すると、空のまとまりに掛かるだけ）
 	void prepareRectState();
-	// 実際の画面（バックバッファ）がゲームの座標の何倍の細かさかを求め、変わっていたらフォントをその細かさで作り直す
-	void fitFontsToScreen();
-	// 1 字（code）の幅（画素）。フォントに無い字は 0
-	float charWidth( int code, UiTextSize size );
+	void fitFontsToScreen();						// 実際の画面（バックバッファ）がゲームの座標の何倍の細かさかを求め、変わっていたらフォントをその細かさで作り直す
+	float charWidth( int code, UiTextSize size );	// 1 字（code）の幅（画素）。フォントに無い字は 0
 
 	GameLib::Scene::PrimitiveRenderer mPrimitives;
 	GameLib::Scene::Font mFonts[ UI_TEXT_SIZE_NUMBER ];

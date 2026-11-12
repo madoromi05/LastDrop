@@ -11,10 +11,8 @@ class LookPull{
 public:
 	LookPull();
 
-	// camera の今の向きから target（ワールド座標）の方へ向け始める。続けて呼ぶと、その時点の向きから向け直す
-	void start( const FirstPersonCamera& camera, const GameLib::Math::Vector3& target );
-	// 1ティックぶん camera を回す（キャラを動かした後）。向けていなければ何もしない。camera: nullptr 不可
-	void update( FirstPersonCamera* camera );
+	void start( const FirstPersonCamera& camera, const GameLib::Math::Vector3& target );	// camera の今の向きから target（ワールド座標）の方へ向け始める。続けて呼ぶと、その時点の向きから向け直す
+	void update( FirstPersonCamera* camera );												// 1ティックぶん camera を回す（キャラを動かした後）。向けていなければ何もしない。camera: nullptr 不可
 
 private:
 	// 残っている回す量（度）と、残りのティック数（0 なら向けていない）

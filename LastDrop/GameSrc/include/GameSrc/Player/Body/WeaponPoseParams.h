@@ -46,7 +46,6 @@ struct WeaponPoseParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（FirstPersonBody.cpp が持つ）。シーンを作り直しても（Retry）、調整した値はそのまま残る
-WeaponPoseParams& weaponPoseParams();
+WeaponPoseParams& weaponPoseParams();	// 起動中ずっと 1 つだけの調整値（FirstPersonBody.cpp が持つ）。シーンを作り直しても（Retry）、調整した値はそのまま残る
 
 #endif

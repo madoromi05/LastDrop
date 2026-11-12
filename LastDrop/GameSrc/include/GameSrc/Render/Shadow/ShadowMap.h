@@ -21,13 +21,11 @@ public:
 	// 描画先を影のマップ（深度だけ）にして消し、描く行列を lightProjectionView にする
 	// end の後は、描く行列が光の側のまま残るので、呼び出し側がカメラの行列へ戻すこと
 	void begin( const GameLib::Math::Matrix44& lightProjectionView );
-	// RenderPass を Forward へ戻し、深度だけのシェーダを外す。描画先はそのまま（次に描く所で付け直す）
-	void end();
+	void end();	// RenderPass を Forward へ戻し、深度だけのシェーダを外す。描画先はそのまま（次に描く所で付け直す）
 
 	GameLib::Graphics::DepthTarget depth() const;
 	int size() const;
-	// 静的メッシュの深度だけのシェーダのコンパイルエラー。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const char* errorMessage() const;	// 静的メッシュの深度だけのシェーダのコンパイルエラー。問題が無ければ空文字列
 
 private:
 	GameLib::Graphics::DepthTarget mDepth;
@@ -39,7 +37,6 @@ private:
 // position / direction：光の位置と照らす向き（長さ 1）。outerAngleDegree：光の外側の角度（半角）。nearClip / farClip：深度の範囲（m）
 GameLib::Math::Matrix44 spotShadowProjectionView( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& direction,
 	float outerAngleDegree, float nearClip, float farClip );
-// 上の行列で、光から 1m の所の影のマップ 1 画素の大きさ（m）。影を読む位置をずらす量の単位（距離を掛けて使う）
-float spotShadowTexelSizeAtOneMeter( float outerAngleDegree, int mapSize );
+float spotShadowTexelSizeAtOneMeter( float outerAngleDegree, int mapSize );	// 上の行列で、光から 1m の所の影のマップ 1 画素の大きさ（m）。影を読む位置をずらす量の単位（距離を掛けて使う）
 
 #endif

@@ -12,8 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 手首から見た2つの向きがこれより平行に近ければ、回転軸が決まらないので回さない（ほぼ回す必要も無い）
-	const float kMinAxisLength = 1e-6f;
+	const float kMinAxisLength = 1e-6f;	// 手首から見た2つの向きがこれより平行に近ければ、回転軸が決まらないので回さない（ほぼ回す必要も無い）
 }
 
 WeaponPlacePose::WeaponPlacePose( const FirstPersonRig* rig ) :
@@ -98,8 +97,7 @@ void WeaponPlacePose::alignSightToEye( std::vector< Matrix34 >* pose ) const {
 	if ( mAimWeight <= 0.f ) {
 		return;
 	}
-	// 今のポーズでの銃の置き場所
-	Matrix34 gun = mRig->weaponPlacement( *pose );
+	Matrix34 gun = mRig->weaponPlacement( *pose );	// 今のポーズでの銃の置き場所
 	// 視線の3軸。前方 +Z をピッチぶん下へ傾けたもの（FirstPersonCamera と同じ向き）
 	// 銃をこの向きに揃えると、銃の傾き（カント）も取れてサイトがまっすぐ立つ
 	// サイトの目の点を目の位置へ置く

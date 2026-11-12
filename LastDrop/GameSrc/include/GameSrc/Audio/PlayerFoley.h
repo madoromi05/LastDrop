@@ -35,19 +35,14 @@ public:
 		bool flashlightToggled;	// このフレームに銃の懐中電灯を付けた／消したか
 	};
 
-	// audio: 鳴らす先。所有権は受け取らない。この係より長く生きていること
-	explicit PlayerFoley( AudioEngine* audio );
+	explicit PlayerFoley( AudioEngine* audio );	// audio: 鳴らす先。所有権は受け取らない。この係より長く生きていること
 
-	// 1フレーム進める。stepped: このフレームに足が着いたか（FootstepEmitter::update の戻り値）
-	void update( const FoleyState& state, bool stepped );
+	void update( const FoleyState& state, bool stepped );	// 1フレーム進める。stepped: このフレームに足が着いたか（FootstepEmitter::update の戻り値）
 
 private:
-	// 状態の切り替わりで鳴らす音（出し入れ・覗く）
-	void playTransitions( const FoleyState& state );
-	// 空撃ち・リロード・懐中電灯のスイッチの音（合図の来たフレームに1回）
-	void playWeaponHandling( const FoleyState& state );
-	// 一歩ごとの音（装備）
-	void playStep( const FoleyState& state );
+	void playTransitions( const FoleyState& state );	// 状態の切り替わりで鳴らす音（出し入れ・覗く）
+	void playWeaponHandling( const FoleyState& state );	// 空撃ち・リロード・懐中電灯のスイッチの音（合図の来たフレームに1回）
+	void playStep( const FoleyState& state );			// 一歩ごとの音（装備）
 
 	AudioEngine* mAudio;
 	bool mHasPrevious;			// 前のフレームの状態を覚えているか（最初のフレームは切り替わりとみなさない）

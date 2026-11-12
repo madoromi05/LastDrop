@@ -104,8 +104,7 @@ void Element::convertToString( OStringStream* out ) const {
 	mImpl->convertToString( out, 0 );
 }
 
-//ConstElement
-#define TYPE Element
+#define TYPE Element	//ConstElement
 #define CONST_TYPE ConstElement
 #include "GameLib/Base/Impl/ConstantTypeTemplate.h"
 

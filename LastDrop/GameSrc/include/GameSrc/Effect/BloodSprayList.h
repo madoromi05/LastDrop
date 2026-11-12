@@ -20,10 +20,8 @@ public:
 	BloodSprayList( const BloodSprayList& ) = delete;
 	BloodSprayList& operator=( const BloodSprayList& ) = delete;
 
-	// 引数は BloodSpray のコンストラクタと同じ（random はこのリストが持つ物を使う）
-	void spawn( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, float scale );
-	// 全部を1ティック進め、終わった物を消す
-	void update();
+	void spawn( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& direction, float scale );	// 引数は BloodSpray のコンストラクタと同じ（random はこのリストが持つ物を使う）
+	void update();																								// 全部を1ティック進め、終わった物を消す
 	// 全部の滴を1回で描く。1フレームに1回まで。呼ぶ場所の決まりは LitQuadBatch::draw と同じ。絵の読み込みが終わるまでは描かない
 	// projectionView: カメラの射影×ビュー行列
 	// viewDirection: 視線の向き（長さ1）。板を画面に平行にするのと、照らす向き（その逆向き）に使う

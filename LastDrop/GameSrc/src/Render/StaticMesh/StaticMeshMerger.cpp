@@ -36,8 +36,7 @@ namespace{
 			}
 			const int indexOffset = instance * indexNumber;
 			for ( int i = 0; i < indexNumber; ++i ) {
-				// 1パーツの頂点数は上限以下になるよう count を決めてあるので、16bit に収まる
-				destination->setIndex( indexOffset + i, static_cast< unsigned short >( vertexOffset + sourcePart.sourceIndex( i ) ) );
+				destination->setIndex( indexOffset + i, static_cast< unsigned short >( vertexOffset + sourcePart.sourceIndex( i ) ) );	// 1パーツの頂点数は上限以下になるよう count を決めてあるので、16bit に収まる
 			}
 		}
 		destination->upload();

@@ -13,9 +13,8 @@
 #include <filesystem>
 
 namespace{
-	// 音ごとに種の範囲を離す（揺らぎ番号を足しても隣の音の種と重ならないように）
-	const unsigned kSeedStride = 1000;
-	const unsigned kSeedBase = 1;	// 種 0 を避ける（xorshift は 0 から進まない）
+	const unsigned kSeedStride = 1000;	// 音ごとに種の範囲を離す（揺らぎ番号を足しても隣の音の種と重ならないように）
+	const unsigned kSeedBase = 1;		// 種 0 を避ける（xorshift は 0 から進まない）
 
 	Synth::Buffer generate( SoundId id, Synth::Random* random ) {
 		switch ( id ) {

@@ -19,8 +19,7 @@ namespace{
 	// 対象の頂点が見つからないときの大きさ（m）。人の肩幅・胸の厚みの半分ほど
 	const float kFallbackHalfWidthX = 0.25f;
 	const float kFallbackHalfWidthZ = 0.15f;
-	// 当たり判定の表示（CollisionDebugDrawer）で描く柱の高さ（m）。人の背丈より少し高くし、ゾンビや自分の体に埋もれないようにする
-	const float kDisplayHeight = 2.f;
+	const float kDisplayHeight = 2.f;	// 当たり判定の表示（CollisionDebugDrawer）で描く柱の高さ（m）。人の背丈より少し高くし、ゾンビや自分の体に埋もれないようにする
 
 	// 囲む頂点の骨（頭の共通部分を除いた名前）。腰・胴・脚。腕・手・頭は含めない
 	// 鎖骨（Shoulder）は胴の一部として入れる（部位の当たり判定の「胴」と同じ範囲）

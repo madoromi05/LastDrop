@@ -18,21 +18,18 @@ public:
 	// seed: どこに置くかの乱数の種（出撃のたびに変わるよう、呼ぶ側が起動からの時間などを渡す）
 	RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed );
 
-	// この出撃の脱出の車を置く所（carSpots の番号）。町を組み立てる側が、ここに車を置く
-	int escapeCarSpot() const;
-	// 脱出の車へ要る数のガソリンを入れ終えた。ここから車のそばに居続けたら脱出（2 回目からは何もしない）
-	void openEscape();
+	int escapeCarSpot() const;	// この出撃の脱出の車を置く所（carSpots の番号）。町を組み立てる側が、ここに車を置く
+	void openEscape();			// 脱出の車へ要る数のガソリンを入れ終えた。ここから車のそばに居続けたら脱出（2 回目からは何もしない）
 	// 1 ティック進める（一時停止・カバンの間は呼ばない）。終わった後は何もしない
 	// feet: 自キャラの足元。playerDead: 自キャラが死んだか。kills: このティックに倒した数
 	// 終わり方の順：死んだ → 脱出した（同じティックに重なったら、先の物）
 	void tick( const GameLib::Math::Vector3& feet, bool playerDead, int kills );
 
-	RaidEnding ending() const;            // まだなら RaidEnding::None
+	RaidEnding ending() const;	// まだなら RaidEnding::None
 	const RaidClock& clock() const;
 	const ExtractionTracker& extraction() const;
-	int kills() const;                     // この出撃で倒した数
-	// 終わった出撃の結果（結果の画面が読む）
-	RaidResult result() const;
+	int kills() const;			// この出撃で倒した数
+	RaidResult result() const;	// 終わった出撃の結果（結果の画面が読む）
 
 	// ── F6（確認用。Debug・Profile だけで呼ぶ）──
 	void forceExtract();

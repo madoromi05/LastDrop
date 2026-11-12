@@ -62,30 +62,25 @@ public:
 	// ── 動く ──
 	// angleY の向きへ distance だけ進もうとして、壁・車・ほかの体に沿って滑った後の移動量を返す（足すのは持ち主）
 	GameLib::Math::Vector3 walkStep( float distance, float angleY ) const;
-	// 追いついて立ち止まっている間に、重なりそうな仲間から横へ半歩よける（向きは変えない）。footing を動かす。nullptr 不可
-	void standAside( const GameLib::Math::Vector3& center, const ZombieCrowd* crowd, GameLib::Math::Vector3* footing );
+	void standAside( const GameLib::Math::Vector3& center, const ZombieCrowd* crowd, GameLib::Math::Vector3* footing );	// 追いついて立ち止まっている間に、重なりそうな仲間から横へ半歩よける（向きは変えない）。footing を動かす。nullptr 不可
 
 	// ── 持ち主が使う ──
-	void beginTick();                                          // このティックの「仲間から離れる向き」を 0 に戻す（update の頭で呼ぶ）
-	void alert();                                              // 撃たれた。見えていなくても気付く
-	void hearNoise( const GameLib::Math::Vector3& position );  // position で銃声がした。少し遅れてから探しに来る
-	void clearPath();                                          // 通り道を捨てる（攻撃を始めた・這い始めた）
-	// 脚が傷んで、もう走らない（歩きに落ちる。戻らない）。走る体でなければ何もしない
-	void stopRunning();
-	bool isRunner() const;                                     // 走る体か（脚が傷んで走れなくなったら false）
-	ZombieChase::Mode mode() const;                            // 今の考え（Wander / Chase / Search）
-	const ZombiePath& path() const;                            // 建物を回り込む通り道（確認用の表示）
-	// 最後に向く点へ混ぜた・横へよけた、仲間から離れる向き（水平。確認用の表示）
-	const GameLib::Math::Vector3& separation() const;
+	void beginTick();											// このティックの「仲間から離れる向き」を 0 に戻す（update の頭で呼ぶ）
+	void alert();												// 撃たれた。見えていなくても気付く
+	void hearNoise( const GameLib::Math::Vector3& position );	// position で銃声がした。少し遅れてから探しに来る
+	void clearPath();											// 通り道を捨てる（攻撃を始めた・這い始めた）
+	void stopRunning();											// 脚が傷んで、もう走らない（歩きに落ちる。戻らない）。走る体でなければ何もしない
+	bool isRunner() const;										// 走る体か（脚が傷んで走れなくなったら false）
+	ZombieChase::Mode mode() const;								// 今の考え（Wander / Chase / Search）
+	const ZombiePath& path() const;								// 建物を回り込む通り道（確認用の表示）
+	const GameLib::Math::Vector3& separation() const;			// 最後に向く点へ混ぜた・横へよけた、仲間から離れる向き（水平。確認用の表示）
 
 private:
 	// 見て行き先を決め、探し始めたら「着けるか」を数え直す（立つ・這う共通の頭）
 	void look( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& eye, float angleY, const ChaseTarget* target,
 		const HitWorld& hitWorld );
-	// point（向かいたい点）へ、近くの仲間から離れる向きを混ぜた「向く点」を返し、混ぜた向きを mSeparation へ覚える
-	GameLib::Math::Vector3 avoidCrowd( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& point, const ZombieCrowd* crowd );
-	// point を、center のまわりに degree だけ回した点（倒れている側へ流れて歩く）。degree が 0 なら point のまま
-	GameLib::Math::Vector3 weave( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& point, float degree ) const;
+	GameLib::Math::Vector3 avoidCrowd( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& point, const ZombieCrowd* crowd );	// point（向かいたい点）へ、近くの仲間から離れる向きを混ぜた「向く点」を返し、混ぜた向きを mSeparation へ覚える
+	GameLib::Math::Vector3 weave( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& point, float degree ) const;				// point を、center のまわりに degree だけ回した点（倒れている側へ流れて歩く）。degree が 0 なら point のまま
 
 	const GameObject* mSelf;                // 名乗るだけ
 	const NavMesh* mNavMesh;             // 借りているだけ

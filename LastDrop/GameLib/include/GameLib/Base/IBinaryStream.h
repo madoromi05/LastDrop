@@ -17,8 +17,7 @@ public:
 	IBinaryStream( const char*, int size );
 	IBinaryStream( const RefString& );
 	~IBinaryStream();
-	///戻り値は読めたバイト数
-	int read( char*, int size );
+	int read( char*, int size );	///戻り値は読めたバイト数
 	///各種組み込み整数型用のバージョン。成功失敗は引数に返るが、渡さなければ何もしない
 	int readInt( bool* succeeded = 0 );
 	unsigned readUnsigned( bool* succeeded = 0 );

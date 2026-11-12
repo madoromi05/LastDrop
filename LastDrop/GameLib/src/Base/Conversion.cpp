@@ -219,8 +219,7 @@ int toString( char* out, float a, int precision ){
 	e10 -= zeroEnd; //上にずらした分桁減少
 	e10 += 9; //10億の位を1にするので9ケタeにプラス
 
-	//出力桁数
-	int n = ( precision < 9 ) ? precision : 9;
+	int n = ( precision < 9 ) ? precision : 9;	//出力桁数
 	//四捨五入
 	bool carry = ( s[ n ] >= 5 );
 	s[ n ] = 0;
@@ -274,8 +273,7 @@ int toString( char* out, float a, int precision ){
 			}
 		}
 	}else{ //e記法
-		//一桁出力
-		*p++ = '0' + s[ 0 ];
+		*p++ = '0' + s[ 0 ];	//一桁出力
 		//小数点出力
 		*p++ = '.';
 		for ( int i = 1; i < n; ++i ){

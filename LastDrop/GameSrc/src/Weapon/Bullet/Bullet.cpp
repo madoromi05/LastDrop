@@ -10,10 +10,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 弾の速さ（m/ティック）。7.62×51mm NATO（M80）の初速 約830m/秒
-	const float kSpeed = 830.f / GameTime::kTicksPerSecond;
-	// 届く距離（m）。これだけ飛んだら消す。空へ撃った弾は何にも当たらないので、飛び続ける弾が溜まらないようにするための上限
-	const float kMaxRange = 300.f;
+	const float kSpeed = 830.f / GameTime::kTicksPerSecond;	// 弾の速さ（m/ティック）。7.62×51mm NATO（M80）の初速 約830m/秒
+	const float kMaxRange = 300.f;							// 届く距離（m）。これだけ飛んだら消す。空へ撃った弾は何にも当たらないので、飛び続ける弾が溜まらないようにするための上限
 
 	// 弾の向きを作るときの仮の「横」を決める軸。飛ぶ向きとほぼ平行だと外積が 0 に近づくので、そのときはもう一方を使う
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );

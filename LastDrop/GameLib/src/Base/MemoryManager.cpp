@@ -32,12 +32,11 @@ typedef unsigned U4; //バイト無符号別名
 typedef unsigned short U2; //2バイト無符号別名
 
 //設定定数群
-const U4 MAX_NORMAL_BLOCK_SIZE = 128 * 1024; //これ以上はVirtualAllocで直接確保
-const U4 HEAP_REGION_SIZE_BIT = 24; //OSから一気にせしめる領域サイズ(例えば20で1MB, 24で16MB)
-const U4 ALIGN = 8; //アラインサイズ4,8,16あたりから選ぼう。4を選ぶ時はdoubleがないことを保障すること
-//導出定数群
-const U4 HEAP_REGION_SIZE = ( 1 << HEAP_REGION_SIZE_BIT );
-const U4 TABLE_NUMBER = ( HEAP_REGION_SIZE_BIT - 3 ) * 4; //空きリスト箱の数(4ごとに倍になるのでサイズビット数の4倍だが、4,8,12,16と始まるため、いろいろあって-3)
+const U4 MAX_NORMAL_BLOCK_SIZE = 128 * 1024;				//これ以上はVirtualAllocで直接確保
+const U4 HEAP_REGION_SIZE_BIT = 24;							//OSから一気にせしめる領域サイズ(例えば20で1MB, 24で16MB)
+const U4 ALIGN = 8;											//アラインサイズ4,8,16あたりから選ぼう。4を選ぶ時はdoubleがないことを保障すること
+const U4 HEAP_REGION_SIZE = ( 1 << HEAP_REGION_SIZE_BIT );	//導出定数群
+const U4 TABLE_NUMBER = ( HEAP_REGION_SIZE_BIT - 3 ) * 4;	//空きリスト箱の数(4ごとに倍になるのでサイズビット数の4倍だが、4,8,12,16と始まるため、いろいろあって-3)
 
 //ブロックフラグ
 /*
@@ -193,8 +192,7 @@ U4 getBitNumber( U4 a ){
 			first = last = middle;
 		}
 	}
-	//差が0か1になっているので、lastを返す
-	return last;
+	return last;	//差が0か1になっているので、lastを返す
 }
 
 inline U4 getHeadIndex( U4 size ){
@@ -205,8 +203,7 @@ inline U4 getHeadIndex( U4 size ){
 	if ( size <= 32 ){	//32バイトまでは線形。4,8,12...と並ぶ
 		r = size >> 2;
 	}else{
-		//まずsizeが何ビットの数なのかを確定させる
-		U4 bits = getBitNumber( size );
+		U4 bits = getBitNumber( size );	//まずsizeが何ビットの数なのかを確定させる
 		//4bitの数なら、[2bit*5, 2bit*8)の範囲にある
 		//8-9,10-11,12-13,14-15のどの範囲かは、12ビット目、つまり2と4の位を見ればいい
 		//4bitの数なら1bit右シフトして0-7にし、この下位2bitを見る
@@ -223,9 +220,8 @@ public:
 	mReserved( reserved ),
 	mNext( 0 ),
 	mLock( false ){
-		//最初のでかいブロックを作る。-4はprevSize分ケチってる。最初のブロックより前なんてないからだ
-		U4 body = align( sizeof( Heap ) + VACANT_HEADER_SIZE - 4, ALIGN ) - VACANT_HEADER_SIZE;
-		U4 bodySize = HEAP_REGION_SIZE - body - 8; //8バイト減らすのは、次のブロックに無理やり書き込む4バイトと、フラグをセットする次の4倍バイトの分
+		U4 body = align( sizeof( Heap ) + VACANT_HEADER_SIZE - 4, ALIGN ) - VACANT_HEADER_SIZE;	//最初のでかいブロックを作る。-4はprevSize分ケチってる。最初のブロックより前なんてないからだ
+		U4 bodySize = HEAP_REGION_SIZE - body - 8;												//8バイト減らすのは、次のブロックに無理やり書き込む4バイトと、フラグをセットする次の4倍バイトの分
 
 		//リンク初期化
 		for ( int i = 0; i < TABLE_NUMBER; ++i ){
@@ -289,21 +285,16 @@ check();
 				U4 currentSizeWithFlag = getSize( current );
 				U4 currentSize = currentSizeWithFlag & SIZE_MASK;
 				U4 next = current + currentSize;
-				//8バイトアラインした戻りアドレスを計算(+4は次のヘッダの最初4バイトを破壊する気だから)
-				U4 user = ( next + 4 - size ) & ~( ALIGN - 1 );
-				//そこから使用中ヘッダサイズを引いたのがブロック先頭アドレス
-				U4 newBlock = user - OCCUPYED_HEADER_SIZE;
+				U4 user = ( next + 4 - size ) & ~( ALIGN - 1 );	//8バイトアラインした戻りアドレスを計算(+4は次のヘッダの最初4バイトを破壊する気だから)
+				U4 newBlock = user - OCCUPYED_HEADER_SIZE;		//そこから使用中ヘッダサイズを引いたのがブロック先頭アドレス
 				//このブロックのヘッダ分以上のこるのであれば、分割
 				if ( newBlock >= current + VACANT_HEADER_SIZE ){
-					//まずリストから外す
-					removeFromList( current );
+					removeFromList( current );				//まずリストから外す
 					//自分のサイズを再設定
 					currentSize = newBlock - current;
 					setEmptySize( current, currentSize );
-					//再設定したサイズでリストに再登録
-					insertToList( current, currentSize );
-					//新ブロック設定
-					setSize( newBlock, next - newBlock );
+					insertToList( current, currentSize );	//再設定したサイズでリストに再登録
+					setSize( newBlock, next - newBlock );	//新ブロック設定
 #ifdef USE_DEBUG_INFO
 					setDebugInfo( newBlock, debugInfo );
 #endif
@@ -319,10 +310,9 @@ check();
 					setDebugInfo( current, debugInfo );
 #endif
 					//フラグ設定
-					resetEmptyFlag( current ); //空いてない
-					resetPrevEmptyFlag( next ); //空いてないことを伝える
-					//返却アドレス
-					user = current + OCCUPYED_HEADER_SIZE;
+					resetEmptyFlag( current );				//空いてない
+					resetPrevEmptyFlag( next );				//空いてないことを伝える
+					user = current + OCCUPYED_HEADER_SIZE;	//返却アドレス
 #ifdef STRONG_DEBUG
 check();
 #endif
@@ -394,8 +384,7 @@ check();
 				prevSize += size;
 				setEmptySize( prev, prevSize );
 				insertToList( prev, prevSize );
-				//次のブロックに空いていることを伝える
-				setPrevEmptyFlag( next, prevSize );
+				setPrevEmptyFlag( next, prevSize );	//次のブロックに空いていることを伝える
 #ifdef STRONG_DEBUG
 check();
 #endif
@@ -418,8 +407,7 @@ check();
 					insertToList( addr, size );
 				}
 				setEmptyFlag( addr );
-				//次のブロックに空いていることを伝える
-				setPrevEmptyFlag( next, size );
+				setPrevEmptyFlag( next, size );	//次のブロックに空いていることを伝える
 #ifdef STRONG_DEBUG
 check();
 #endif
@@ -604,9 +592,8 @@ public:
 #ifdef _WIN64
 		STRONG_ASSERT( sizeOrig <= 0xffffffff && "allocation over 4GB is forbidden" );
 #endif
-		U4 size = static_cast< U4 >( sizeOrig ); //4GB以上の
-		//戻り値
-		void* r = 0;
+		U4 size = static_cast< U4 >( sizeOrig );	//4GB以上の
+		void* r = 0;								//戻り値
 		//sizeが限界を超えている。専用ブロックを用意
 		if ( size > MAX_NORMAL_BLOCK_SIZE ){
 #ifdef USE_DEBUG_INFO
@@ -633,8 +620,7 @@ public:
 			}
 
 			if ( !r ){
-				//空きがない。ヒープを足さないといけません
-				Heap* newHeap = Heap::create();
+				Heap* newHeap = Heap::create();	//空きがない。ヒープを足さないといけません
 #ifdef USE_DEBUG_INFO
 				r = newHeap->allocate( size, debugInfo );
 #else
@@ -785,8 +771,7 @@ private:
 #ifdef STRONG_DEBUG
 checkLb();
 #endif
-		//サイズの下位2ビットを0にするためにアライン
-		size = align( size, 8 );
+		size = align( size, 8 );	//サイズの下位2ビットを0にするためにアライン
 		//ヘッダサイズ計算。ポインタ三つとU4二つ
 		U4 alignedHeaderSize = align( LB_HEADER_SIZE, ALIGN );
 		void* p = allocateMemory( size + alignedHeaderSize );
@@ -901,15 +886,12 @@ checkLb();
 		*cast< void* >( p, -NEXT ) = next;
 	}
 
-	//ヒープ先頭
-	Heap* mHead;
-	//大ブロック先頭
-	void* mLbHead;
+	Heap* mHead;	//ヒープ先頭
+	void* mLbHead;	//大ブロック先頭
 	//ロック
 	Lock mLbLock;
 	Lock mHeapLock;
-	//全サイズ
-	int mTotalSize;
+	int mTotalSize;	//全サイズ
 };
 Impl gImpl;
 

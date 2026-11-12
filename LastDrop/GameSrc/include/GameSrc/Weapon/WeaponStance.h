@@ -21,10 +21,9 @@ public:
 	// リロードを始めたときに呼ぶ（リロード中は呼び出し側が aimHeld を false で渡し、覗き直さないようにする）
 	void stopAiming();
 
-	bool isDrawn() const;	// 武器を持っているか（しまっていれば false）
-	bool isAiming() const;	// 覗いているか（覗き具合が 1 へ向かっている途中も true）
-	// 覗き具合（0 = 持っているだけ、1 = サイトが目の前）。構え始め・終わりがゆっくりになる曲線を掛けた値
-	float aimWeight() const;
+	bool isDrawn() const;		// 武器を持っているか（しまっていれば false）
+	bool isAiming() const;		// 覗いているか（覗き具合が 1 へ向かっている途中も true）
+	float aimWeight() const;	// 覗き具合（0 = 持っているだけ、1 = サイトが目の前）。構え始め・終わりがゆっくりになる曲線を掛けた値
 
 private:
 	enum AimMode{
@@ -32,8 +31,7 @@ private:
 		AIM_HOLD,	// 押している最中（離したときの長さで、覗いたままにするか決める）
 		AIM_TOGGLE,	// 短押しで覗いたまま
 	};
-	// 覗く入力の押した瞬間・離した瞬間から覗き方を決める
-	void updateAimMode( bool aimHeld );
+	void updateAimMode( bool aimHeld );	// 覗く入力の押した瞬間・離した瞬間から覗き方を決める
 
 	bool mDrawn;
 	AimMode mAimMode;

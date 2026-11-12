@@ -26,12 +26,9 @@ public:
 	// attachedTo: 跡が付いた物。物が消えるとき removeAttachedTo で一緒に消すための目印で、中身は読まない。nullptr 不可
 	void addSplatter( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, const GameLib::Math::Vector3& direction,
 		float halfSize, const IRayBlocker* attachedTo );
-	// 落ちた滴の跡を足す。向きはばらす。引数は addSplatter と同じ
-	void addDrip( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, float halfSize, const IRayBlocker* attachedTo );
-	// 1ティック古くし、残す時間を過ぎた跡を消す
-	void update();
-	// attachedTo に付いた跡を全部消す。物を消す前に呼ぶ（BulletHoleList::removeAttachedTo と同じ理由）
-	void removeAttachedTo( const IRayBlocker* attachedTo );
+	void addDrip( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, float halfSize, const IRayBlocker* attachedTo );	// 落ちた滴の跡を足す。向きはばらす。引数は addSplatter と同じ
+	void update();																																// 1ティック古くし、残す時間を過ぎた跡を消す
+	void removeAttachedTo( const IRayBlocker* attachedTo );																						// attachedTo に付いた跡を全部消す。物を消す前に呼ぶ（BulletHoleList::removeAttachedTo と同じ理由）
 	// 全部の跡を描く。1フレームに1回まで。GBuffer::beginDecals〜endDecals の間で、弾痕の後に呼ぶ（血が穴の上に乗る）
 	// 絵の読み込みが終わるまでは描かない。F6 の Decals を切っている間も描かない。projectionView: カメラの射影×ビュー行列
 	void draw( const GameLib::Math::Matrix44& projectionView );
@@ -49,8 +46,7 @@ private:
 	// 絵の右の向き（面に沿う。長さ1）・大きさ・絵の番号で 1 つ足す。数を超えたら一番古い物を消す
 	void add( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, const GameLib::Math::Vector3& rightDirection,
 		float halfSize, int cell, const IRayBlocker* attachedTo );
-	// 面の上で、次の回す角度の向き（長さ1）を作り、角度を進める（向きをばらすとき）
-	GameLib::Math::Vector3 nextTurnedDirection( const GameLib::Math::Vector3& normal );
+	GameLib::Math::Vector3 nextTurnedDirection( const GameLib::Math::Vector3& normal );	// 面の上で、次の回す角度の向き（長さ1）を作り、角度を進める（向きをばらすとき）
 
 	std::vector< Stain > mStains;          // 古い順
 	float mNextTurnDegree;                 // 向きをばらすときに次に使う角度（度）

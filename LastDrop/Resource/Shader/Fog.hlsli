@@ -10,8 +10,7 @@
 #include "Lighting.hlsli"
 #include "LightList.hlsli"
 
-// 目と位置の高さの差（× b）がこれより小さい線は水平として扱う（足し合わせの式の割り算が 0 割りに近づくため）
-static const float kFlatRayLimit = 1e-4;
+static const float kFlatRayLimit = 1e-4;	// 目と位置の高さの差（× b）がこれより小さい線は水平として扱う（足し合わせの式の割り算が 0 割りに近づくため）
 
 // 位置 position（ワールド）が、目から見てどれだけ霧に埋もれるか（0 で霧なし、1 で霧の色だけ）
 float fogAmount(float3 position)

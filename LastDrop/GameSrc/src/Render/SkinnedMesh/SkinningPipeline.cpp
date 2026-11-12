@@ -76,8 +76,7 @@ void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
 		row[ 4 ] = m.m10; row[ 5 ] = m.m11; row[ 6 ]  = m.m12; row[ 7 ]  = m.m13;
 		row[ 8 ] = m.m20; row[ 9 ] = m.m21; row[ 10 ] = m.m22; row[ 11 ] = m.m23;
 	}
-	// 使う骨のぶんだけ送る。残りの中身は不定になるが、頂点は骨の数より大きい番号を指さないので読まれない
-	mBonePalette.set( mBoneRows.data(), boneNumber * kFloatsPerBone * static_cast< int >( sizeof( float ) ) );
+	mBonePalette.set( mBoneRows.data(), boneNumber * kFloatsPerBone * static_cast< int >( sizeof( float ) ) );	// 使う骨のぶんだけ送る。残りの中身は不定になるが、頂点は骨の数より大きい番号を指さないので読まれない
 
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setShader( currentShader() );

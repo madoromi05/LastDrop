@@ -6,8 +6,7 @@ namespace{
 	// 連射でも1発ごとに「跳ねる → 戻る」がはっきり見える（視点の ViewRecoil と同じ速さに揃えてある）
 	// 大きくすると戻りが遅くなり、連射で銃が引かれたままに見える
 	const float kRemainPerTick = 0.5f;
-	// これより小さくなったら 0 にする（いつまでも小さな値で銃を動かし続けないため）
-	const float kMinKick = 0.001f;
+	const float kMinKick = 0.001f;	// これより小さくなったら 0 にする（いつまでも小さな値で銃を動かし続けないため）
 }
 
 WeaponRecoil::WeaponRecoil() :

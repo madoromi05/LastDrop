@@ -134,23 +134,22 @@ void LitQuadBatch::draw( Graphics::Texture texture, const Matrix44& projectionVi
 
 	Graphics::Manager m = Graphics::Manager::instance();
 	Matrix34 world;
-	world.setIdentity(); // 頂点はワールド座標で書いてある
+	world.setIdentity();					// 頂点はワールド座標で書いてある
 	m.setProjectionViewMatrix( projectionView );
 	m.setWorldMatrix( world );
-	m.setTexture( texture ); // 法線マップも外れる（setTexture の決まり）
-	// MODE_LIT は壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）。MODE_GLOW は自分で光るのでライト無し（GlowQuad.hlsl）
-	m.setShader( mShader );
+	m.setTexture( texture );				// 法線マップも外れる（setTexture の決まり）
+	m.setShader( mShader );					// MODE_LIT は壁や地面と同じライトの一覧で照らす（LitQuad.hlsl）。MODE_GLOW は自分で光るのでライト無し（GlowQuad.hlsl）
 	// MODE_GLOW は後ろの色に絵の色×アルファを足し、MODE_LIT は絵のアルファで後ろと混ぜる
 	m.setBlendMode( ( mMode == MODE_GLOW ) ? Graphics::BLEND_ADDITIVE : Graphics::BLEND_LINEAR );
 	setSoftConstants( projectionView );
 	Vector3 diffuse;
-	diffuse.setMul( kWhite, mBrightness ); // 頂点の色に掛かる（1 を超えると、1 より明るく描ける）
+	diffuse.setMul( kWhite, mBrightness );	// 頂点の色に掛かる（1 を超えると、1 より明るく描ける）
 	m.setDiffuseColor( diffuse );
 	m.setSpecularColor( kNoSpecular );
 	m.setEmissionColor( kNoEmission );
 	m.setTransparency( kOpaque );
-	m.enableDepthTest( true );                // 壁の向こうの板は隠す
-	m.enableDepthWrite( false );              // 板どうし・後から描く物を隠さない
+	m.enableDepthTest( true );				// 壁の向こうの板は隠す
+	m.enableDepthWrite( false );			// 板どうし・後から描く物を隠さない
 	m.setCullMode( Graphics::CULL_NONE );
 	m.setVertexBuffer( mVertexBuffer );
 	m.draw( 0, static_cast< int >( mVertices.size() ) / kVerticesPerTriangle );

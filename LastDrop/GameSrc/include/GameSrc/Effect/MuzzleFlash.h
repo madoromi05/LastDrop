@@ -29,10 +29,8 @@ public:
 	// 撃った。光り始めからやり直し、芯の大きさを乱数で決め直す
 	// 同じティックの update（このクラスの）の後に呼ぶ（撃ったティックの描画で光るように）
 	void fire();
-	// 1ティック進める。消えている間に呼んでも何もしない
-	void update();
-	// 光っているか
-	bool isLit() const;
+	void update();		// 1ティック進める。消えている間に呼んでも何もしない
+	bool isLit() const;	// 光っているか
 
 	// 点光源（LightList に足すライト）。消えていれば false（out は変えない）
 	// muzzlePosition / muzzleDirection: 銃口の今の位置（ワールド）と向き（長さ1）。PlayerCharacter::muzzle の値。out: nullptr 不可

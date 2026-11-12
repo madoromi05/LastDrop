@@ -69,10 +69,8 @@ public:
 		const GameLib::Math::Vector3* eye = nullptr );
 
 private:
-	// mVertices を、目から遠い板が先になる順に locked へ写す
-	void copySortedFromBack( const GameLib::Math::Vector3& eye, GameLib::Graphics::Vertex* locked );
-	// 薄くする距離と、深度から位置を戻す行列を定数に入れて b1 に付ける（SoftQuad.hlsli）
-	void setSoftConstants( const GameLib::Math::Matrix44& projectionView );
+	void copySortedFromBack( const GameLib::Math::Vector3& eye, GameLib::Graphics::Vertex* locked );	// mVertices を、目から遠い板が先になる順に locked へ写す
+	void setSoftConstants( const GameLib::Math::Matrix44& projectionView );								// 薄くする距離と、深度から位置を戻す行列を定数に入れて b1 に付ける（SoftQuad.hlsli）
 
 	GameLib::Graphics::VertexBuffer mVertexBuffer;       // 描くときに mVertices を写す先（毎フレーム中身を入れ替える）
 	GameLib::Graphics::Shader mShader;                   // MODE_LIT は LitQuad.hlsl、MODE_GLOW は GlowQuad.hlsl

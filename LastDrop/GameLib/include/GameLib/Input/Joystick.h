@@ -14,13 +14,12 @@ namespace GameLib {
 			};
 
 			int analogNumber() const;
-			int analog(int) const; //アナログスティック値取得
+			int analog(int) const;	//アナログスティック値取得
 			//上下左右は上の列挙で取れます。ほかのボタンは0からの数字で
 			bool isOn(int) const;
 			bool isTriggered(int) const;
 			int buttonNumber() const;
-			//有効か？
-			bool isEnabled() const;
+			bool isEnabled() const;	//有効か？
 
 			Joystick();
 			~Joystick();

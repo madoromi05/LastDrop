@@ -129,8 +129,7 @@ public:
 
                     for (auto&& button : deviceToButtons.second)
                     {
-                        // OR で合成：どれか1つでも Press/Hold なら反映される
-                        m_umWorkToButtonResult[work.first] |= device->GetButtonState(button);
+                        m_umWorkToButtonResult[work.first] |= device->GetButtonState(button);	// OR で合成：どれか1つでも Press/Hold なら反映される
                     }
                 }
             }

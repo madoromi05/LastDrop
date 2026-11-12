@@ -38,24 +38,19 @@ public:
 	};
 
 #ifdef ZF_EDITOR
-	// 表示中のもの（当たり判定・落ちている物の箱・ゾンビの通り道）を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ
-	void drawCollision( const GameWorld& world, const FirstPersonCamera& camera );
-	// 表示中なら（F3）、点光源の置き場所と届く範囲を描く。lights：このフレームに bind した一覧。呼ぶ場所の決まりは drawCollision と同じ
-	void drawLights( const LightList& lights, const FirstPersonCamera& camera );
+	void drawCollision( const GameWorld& world, const FirstPersonCamera& camera );									// 表示中のもの（当たり判定・落ちている物の箱・ゾンビの通り道）を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ
+	void drawLights( const LightList& lights, const FirstPersonCamera& camera );									// 表示中なら（F3）、点光源の置き場所と届く範囲を描く。lights：このフレームに bind した一覧。呼ぶ場所の決まりは drawCollision と同じ
 	// 表示中なら（F3）、ゾンビの体力を renderer に積む。PostProcess::endScene の後、HUD を描く前に呼ぶ
 	// （積むだけ。HUD の描画の UiRenderer::draw でまとめて描かれ、HUD の文字の下になる）。renderer: nullptr 不可
 	void addZombieHealth( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
 	// 表示中なら（F3）、画面の左上に、自キャラの体力の数字と状態（Fine など）を renderer に積む
 	// 呼ぶ場所の決まりは addZombieHealth と同じ。renderer: nullptr 不可
 	void addPlayerHealth( const GameWorld& world, UiRenderer* renderer ) const;
-	// 表示中なら（F3）、漁れる場所の上に中身の名前を壁越しに積む。呼ぶ場所の決まりは addZombieHealth と同じ
-	void addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;
+	void addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const;	// 表示中なら（F3）、漁れる場所の上に中身の名前を壁越しに積む。呼ぶ場所の決まりは addZombieHealth と同じ
 
 private:
-	// 画面中央（視線）へ確認用の線分を撃つ。自キャラには当てない（目の位置は自分の頭の箱の中にあるため）
-	bool raycast( const GameWorld& world, const FirstPersonCamera& camera, HitWorld::Hit* hit ) const;
-	// 線分を撃ち、当たった所を当たり判定の表示に足し、相手を文字で出す（弾の当たり判定の確認用）
-	void castRay( const GameWorld& world, const FirstPersonCamera& camera );
+	bool raycast( const GameWorld& world, const FirstPersonCamera& camera, HitWorld::Hit* hit ) const;	// 画面中央（視線）へ確認用の線分を撃つ。自キャラには当てない（目の位置は自分の頭の箱の中にあるため）
+	void castRay( const GameWorld& world, const FirstPersonCamera& camera );							// 線分を撃ち、当たった所を当たり判定の表示に足し、相手を文字で出す（弾の当たり判定の確認用）
 
 	CollisionDebugDrawer mCollisionDrawer;
 	ZombiePathDrawer mZombiePathDrawer;

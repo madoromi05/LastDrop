@@ -19,20 +19,18 @@ class PickupComponent : public Component, public IInteractable{
 public:
 	PickupComponent();
 
-	// 拾われたか（拾われた物は、持ち主が消す）
-	bool isTaken() const;
+	bool isTaken() const;	// 拾われたか（拾われた物は、持ち主が消す）
 	// 視線が見る箱（頂点を囲む箱を少し広げた物）に入る時刻（0〜1）を time に書いて true
 	// origin から delta だけ進む線分で調べる。拾われた物には当たらない。time: 出力先。nullptr 不可
 	bool lookRaycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, float* time ) const;
 
-	// Component（ItemComponent・StaticModelComponent が要る）
-	void start() override;
+	void start() override;								// Component（ItemComponent・StaticModelComponent が要る）
 	// IInteractable
 	bool canInteract( const Inventory& inventory ) const override;
 	void interact( Inventory* inventory ) override;
 	bool offeredStack( ItemStack* out ) const override;
 	void takeOffered( int count ) override;
-	ItemGrid* lootGrid() override { return nullptr; } // 拾う物は中を見せない
+	ItemGrid* lootGrid() override { return nullptr; }	// 拾う物は中を見せない
 
 private:
 	ItemComponent* mItem;

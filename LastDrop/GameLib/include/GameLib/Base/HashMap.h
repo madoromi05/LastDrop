@@ -15,46 +15,29 @@ namespace GameLib{
 */
 template< class Key, class Value, class H = Hash< Key > > class HashMap{
 public:
-	///デフォルト。setCapacityを呼ばないと動かない
-	HashMap();
+	HashMap();												///デフォルト。setCapacityを呼ばないと動かない
 	///最大容量を指定。テーブルサイズはデフォルトでcapacity以上の最小の素数
 	explicit HashMap( int capacity, int tableSize = 0 );
 	~HashMap();
-	///再確保。中身がある状態で呼ぶとassert。clear()しろ
-	void setCapacity( int capacity, int tableSize = 0 );
-	///最大容量取得
-	int capacity() const;
-	///現在の要素数取得
-	int size() const;
-	///全解放
-	void clear();
-	///追加。追加した場所を返す。同じものがすでにあれば無視して無効イテレータを返す
-	int add( const Key&, const Value& );
-	///追加。追加した場所を返す。同じものがすでにあれば無視して無効イテレータを返す。値はgetValueして後から書き込むこと
-	int add( const Key& );
-	///検索。返るのはイテレータ
-	int find( const Key& ) const;
-	///イテレータを指定して削除。削除すればtrueを返す
-	bool remove( int position );
-	///キー取得(書き換えは禁止なのでconstのみ)
-	const Key* key( int position ) const;
-	///値取得(const)
-	const Value* value( int position ) const;
-	///値取得(非const)
-	Value* value( int position );
-	///検索して値取得(const)
-	const Value* operator[]( const Key& ) const;
-	///検索して値取得(非const)
-	Value* operator[]( const Key& );
+	void setCapacity( int capacity, int tableSize = 0 );	///再確保。中身がある状態で呼ぶとassert。clear()しろ
+	int capacity() const;									///最大容量取得
+	int size() const;										///現在の要素数取得
+	void clear();											///全解放
+	int add( const Key&, const Value& );					///追加。追加した場所を返す。同じものがすでにあれば無視して無効イテレータを返す
+	int add( const Key& );									///追加。追加した場所を返す。同じものがすでにあれば無視して無効イテレータを返す。値はgetValueして後から書き込むこと
+	int find( const Key& ) const;							///検索。返るのはイテレータ
+	bool remove( int position );							///イテレータを指定して削除。削除すればtrueを返す
+	const Key* key( int position ) const;					///キー取得(書き換えは禁止なのでconstのみ)
+	const Value* value( int position ) const;				///値取得(const)
+	Value* value( int position );							///値取得(非const)
+	const Value* operator[]( const Key& ) const;			///検索して値取得(const)
+	Value* operator[]( const Key& );						///検索して値取得(非const)
 	//以下単純なリストとしてアクセスする際のインターフェイス。ただし片方向
 	int next( int position ) const;
 	int first() const;
-	///positionが末端か判定
-	bool isEnd( int position ) const;
-	///単なる配列にコピー。前もってsize()したサイズでnewした領域を渡すこと
-	void copyTo( Value* ) const;
-	///Arrayにコピー。空のものを渡せ
-	void copyTo( Array< Value >* ) const;
+	bool isEnd( int position ) const;						///positionが末端か判定
+	void copyTo( Value* ) const;							///単なる配列にコピー。前もってsize()したサイズでnewした領域を渡すこと
+	void copyTo( Array< Value >* ) const;					///Arrayにコピー。空のものを渡せ
 private:
 	void operator=( const HashMap& ); //代入禁止
 	HashMap( const HashMap& ); //コピーコンストラクタ禁止

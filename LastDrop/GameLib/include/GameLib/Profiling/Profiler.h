@@ -14,10 +14,8 @@ namespace Profiling{
 
 #ifdef ZF_EDITOR
 
-// 高精度の時刻（QueryPerformanceCounter の値）
-long long now();
-// 2つの時刻の差（秒）
-double secondsBetween( long long from, long long to );
+long long now();										// 高精度の時刻（QueryPerformanceCounter の値）
+double secondsBetween( long long from, long long to );	// 2つの時刻の差（秒）
 
 // ── フレームの区切り（GameLib の Framework と Graphics::Manager、SceneManager だけが呼ぶ）──
 void beginFrame();      // Framework::preUpdate の先頭。前のフレームを閉じ、新しいフレームを始める
@@ -51,8 +49,7 @@ void beginLoad( const char* name );
 // 操作できる最初の絵を描いた。次の Present の後でロードを閉じ、Profiling/<起動時刻>/load_*.json を書き出す。ロード中でなければ何もしない
 void endLoad();
 bool isLoading();
-// 別スレッドの読み込みを待った時間（requestedAt に頼んで、今届いたと分かった）。ファイルごとに 1 回呼ぶ
-void addLoadWait( const char* name, long long requestedAt );
+void addLoadWait( const char* name, long long requestedAt );	// 別スレッドの読み込みを待った時間（requestedAt に頼んで、今届いたと分かった）。ファイルごとに 1 回呼ぶ
 // メインスレッドで beganAt から今までかかった処理（読み終えた文書の解析など、終わってから分かるもの）
 // category は文字列リテラル。区間（PROFILE_SCOPE）としても残す
 void addLoadWork( const char* category, const char* name, long long beganAt );
@@ -138,16 +135,11 @@ inline void drawPerfPanel(){}
 #ifdef ZF_EDITOR
 #define GAMELIB_PROFILING_CONCAT_INNER( a, b ) a##b
 #define GAMELIB_PROFILING_CONCAT( a, b ) GAMELIB_PROFILING_CONCAT_INNER( a, b )
-// この行から括弧の終わりまでを、name の区間として測る
-#define PROFILE_SCOPE( name ) GameLib::Profiling::Scope GAMELIB_PROFILING_CONCAT( profilingScope, __LINE__ )( name )
-// この行から括弧の終わりまでを、ロードの処理（category の name）として測る
-#define LOAD_SCOPE( category, name ) GameLib::Profiling::LoadScope GAMELIB_PROFILING_CONCAT( profilingLoadScope, __LINE__ )( category, name )
-// 今のフレームに name の印を付ける
-#define PROFILE_EVENT( name ) GameLib::Profiling::markEvent( name )
-// この行から括弧の終わりまでのミリ秒を、回数の name に足す
-#define PROFILE_TOTAL( name ) GameLib::Profiling::TotalScope GAMELIB_PROFILING_CONCAT( profilingTotal, __LINE__ )( name )
-// 今のフレームの回数の name に amount を足す
-#define PROFILE_COUNT( name, amount ) GameLib::Profiling::addCount( name, amount )
+#define PROFILE_SCOPE( name ) GameLib::Profiling::Scope GAMELIB_PROFILING_CONCAT( profilingScope, __LINE__ )( name )							// この行から括弧の終わりまでを、name の区間として測る
+#define LOAD_SCOPE( category, name ) GameLib::Profiling::LoadScope GAMELIB_PROFILING_CONCAT( profilingLoadScope, __LINE__ )( category, name )	// この行から括弧の終わりまでを、ロードの処理（category の name）として測る
+#define PROFILE_EVENT( name ) GameLib::Profiling::markEvent( name )																				// 今のフレームに name の印を付ける
+#define PROFILE_TOTAL( name ) GameLib::Profiling::TotalScope GAMELIB_PROFILING_CONCAT( profilingTotal, __LINE__ )( name )						// この行から括弧の終わりまでのミリ秒を、回数の name に足す
+#define PROFILE_COUNT( name, amount ) GameLib::Profiling::addCount( name, amount )																// 今のフレームの回数の name に amount を足す
 #else
 #define PROFILE_SCOPE( name ) ( ( void )0 )
 #define LOAD_SCOPE( category, name ) ( ( void )0 )

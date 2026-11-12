@@ -13,8 +13,7 @@ public:
 	// direction の向き（ワールド。水平にして使う。長さは問わない）へ押し始める。押している途中なら、新しい向きで始め直す
 	// 水平の長さが 0（真上・真下から撃たれた）なら押さない
 	void start( const GameLib::Math::Vector3& direction );
-	// 押すのをやめる（倒れ始めた）
-	void cancel();
+	void cancel();	// 押すのをやめる（倒れ始めた）
 	// このティックに押す量（ワールド・水平）を返して 1 ティック進める。押していなければ 0
 	GameLib::Math::Vector3 step();
 	bool isActive() const;

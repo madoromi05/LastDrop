@@ -40,10 +40,8 @@ public:
 	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& viewDirection, float fieldOfViewY, float aspect,
 		const GameLib::Math::Vector3& lightDirection, const float ( &cascadeEnds )[ kCascadeCount ], float casterMargin,
 		const Refresh& refresh );
-	// 次の update で全部の枚を描き直す（影を描かなかったフレームに呼ぶ。止めていた間の古い影を使わないように）
-	void invalidate();
-	// 最後の update で、この枚を描き直すと決めたか（描き直す枚だけ影を描く）
-	bool isDue( int cascade ) const;
+	void invalidate();					// 次の update で全部の枚を描き直す（影を描かなかったフレームに呼ぶ。止めていた間の古い影を使わないように）
+	bool isDue( int cascade ) const;	// 最後の update で、この枚を描き直すと決めたか（描き直す枚だけ影を描く）
 
 	ShadowMap& map( int cascade );
 	const GameLib::Math::Matrix44& projectionView( int cascade ) const;

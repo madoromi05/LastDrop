@@ -40,11 +40,9 @@ public:
 	// 頼まれた全ファイルの構築と、それが貼るテクスチャの展開が終わっていれば true
 	// （構築・読み込みに失敗したものも「終わった」に含む）
 	bool update();
-	// 頼まれたファイルのうち、構築を終えた割合（0〜1。何も頼んでいなければ 1）。ロード画面の棒に使う（テクスチャの展開は数えない）
-	float progress() const;
+	float progress() const;	// 頼まれたファイルのうち、構築を終えた割合（0〜1。何も頼んでいなければ 1）。ロード画面の棒に使う（テクスチャの展開は数えない）
 
-	// スキンメッシュを描く道具（シェーダ）。エラー表示などで読むだけ
-	const SkinningPipeline& skinning() const;
+	const SkinningPipeline& skinning() const;	// スキンメッシュを描く道具（シェーダ）。エラー表示などで読むだけ
 
 private:
 	// 1ファイルぶん。構築が終わるまで文書を持ち、終われば解放する
@@ -54,9 +52,8 @@ private:
 		bool mBuilt = false;
 		long long mRequestedAt = 0; // 読み込みを頼んだ時刻（ロードの計測で、届くまで待った時間を出すため）
 	};
-	// スキンメッシュの描き方。データより先に宣言する（＝データより後に破棄される。データが借りて持つため）
-	std::unique_ptr< SkinningPipeline > mSkinning;
-	TextureCache mTextures; // メッシュが貼る絵。同じファイルは1枚（ローダへ貸す）
+	std::unique_ptr< SkinningPipeline > mSkinning;	// スキンメッシュの描き方。データより先に宣言する（＝データより後に破棄される。データが借りて持つため）
+	TextureCache mTextures;							// メッシュが貼る絵。同じファイルは1枚（ローダへ貸す）
 	using StaticEntry = Entry< StaticMeshData >;
 	using SkinnedEntry = Entry< SkinnedMeshData >;
 

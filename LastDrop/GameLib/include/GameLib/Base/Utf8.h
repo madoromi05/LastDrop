@@ -9,16 +9,14 @@
 namespace GameLib{
 
 namespace Utf8{
-	///読めないバイト（UTF-8 の決まりに合わない並び）のときに返す字（U+FFFD）。豆腐として描かれる
-	const int kReplacementChar = 0xFFFD;
+	const int kReplacementChar = 0xFFFD;	///読めないバイト（UTF-8 の決まりに合わない並び）のときに返す字（U+FFFD）。豆腐として描かれる
 
 	///text の先頭の 1 字を Unicode のコードポイントで返し、その字のバイト数を *byteCount に入れる
 	///text は '\0' で終わること。*text が '\0' なら 0 を返し、*byteCount は 0
 	///読めない並びは kReplacementChar を返す。進める量は、途中で切れた字ならそこまで読めたバイト数、先頭が字の始まりでなければ 1
 	inline int decode( const char* text, int* byteCount ){
-		// 先頭のバイトの形で、あと何バイト続くかが決まる（0xxxxxxx / 110xxxxx / 1110xxxx / 11110xxx）
-		const unsigned kContinuationMask = 0xC0;
-		const unsigned kContinuationMark = 0x80; // 続きのバイトは 10xxxxxx
+		const unsigned kContinuationMask = 0xC0;	// 先頭のバイトの形で、あと何バイト続くかが決まる（0xxxxxxx / 110xxxxx / 1110xxxx / 11110xxx）
+		const unsigned kContinuationMark = 0x80;	// 続きのバイトは 10xxxxxx
 		const unsigned kContinuationBits = 0x3F;
 		const int kBitsPerContinuation = 6;
 		struct Lead{ unsigned mask; unsigned mark; int length; };

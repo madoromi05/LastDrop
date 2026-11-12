@@ -34,15 +34,14 @@ public:
 	ZombieModel& operator=( const ZombieModel& ) = delete;
 
 	const SkinnedMeshData* data() const;
-	const HitboxLayout& hitboxLayout() const;	// 部位の箱の設計図
-	const BodyFootprint& footprint() const;		// 移動の当たり判定の大きさ（体を真上から囲む長方形）
-	const ZombieFlinchLayout& flinchLayout() const; // のけぞりで曲げる関節と骨
-	const ZombieSeverLayout& severLayout() const;   // 部位欠損で切る関節と、無くなる骨・部位
-	const ZombieStride& stride() const;             // 歩きアニメの1フレームごとに体を進める長さ
-	const ZombieStride& runStride() const;          // 走りアニメの1フレームごとに体を進める長さ（無ければ isValid が false）
-	const ZombieCrawlLayout& crawlLayout() const;   // 体を引きずるときに曲げる腕の骨
-	// name のアニメの根の動きの表。name が nullptr・構築で渡していない・表が作れなかったなら nullptr（根の動きを移さない）
-	const ZombieRootMotion* rootMotion( const char* name ) const;
+	const HitboxLayout& hitboxLayout() const;						// 部位の箱の設計図
+	const BodyFootprint& footprint() const;							// 移動の当たり判定の大きさ（体を真上から囲む長方形）
+	const ZombieFlinchLayout& flinchLayout() const;					// のけぞりで曲げる関節と骨
+	const ZombieSeverLayout& severLayout() const;					// 部位欠損で切る関節と、無くなる骨・部位
+	const ZombieStride& stride() const;								// 歩きアニメの1フレームごとに体を進める長さ
+	const ZombieStride& runStride() const;							// 走りアニメの1フレームごとに体を進める長さ（無ければ isValid が false）
+	const ZombieCrawlLayout& crawlLayout() const;					// 体を引きずるときに曲げる腕の骨
+	const ZombieRootMotion* rootMotion( const char* name ) const;	// name のアニメの根の動きの表。name が nullptr・構築で渡していない・表が作れなかったなら nullptr（根の動きを移さない）
 
 private:
 	// 根の動きの表と、そのアニメの名前

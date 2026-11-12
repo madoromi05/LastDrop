@@ -31,14 +31,10 @@ public:
 	// noiseFrame：歩き始めをずらすノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）
 	void draw( const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& sceneColor, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& projectionView, int noiseFrame );
-	// 映り込みを作らなかったフレーム（SSR を切っている間）に、結果を「映り込み無し」で消す（G-Buffer の表示が古い絵を出さないように）
-	void clear();
-	// 最後に draw した結果
-	const GameLib::Graphics::RenderTarget& result() const;
-	// 最後に作った Hi-Z（G-Buffer の表示の Hi-Z が読む。作っていない間は前に作った物のまま）
-	const GameLib::Graphics::RenderTarget& hiZ() const;
-	// シェーダのコンパイルエラー（作るシェーダ → ぼかしのシェーダ → Hi-Z のシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
-	const char* errorMessage() const;
+	void clear();											// 映り込みを作らなかったフレーム（SSR を切っている間）に、結果を「映り込み無し」で消す（G-Buffer の表示が古い絵を出さないように）
+	const GameLib::Graphics::RenderTarget& result() const;	// 最後に draw した結果
+	const GameLib::Graphics::RenderTarget& hiZ() const;		// 最後に作った Hi-Z（G-Buffer の表示の Hi-Z が読む。作っていない間は前に作った物のまま）
+	const char* errorMessage() const;						// シェーダのコンパイルエラー（作るシェーダ → ぼかしのシェーダ → Hi-Z のシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
 
 private:
 	// source を読んで destination へ、directionX・directionY（1 画素ずつ進む向き）にぼかす。粗さは gbuffer の材質から読む

@@ -29,22 +29,15 @@ public:
 	void setSub( const Vector3&, float );
 	void setMul( const Vector3&, const Vector3& );
 	void setMul( const Vector3&, float );
-	///マイナスにして格納
-	void setNeg( const Vector3& );
+	void setNeg( const Vector3& );	///マイナスにして格納
 
-	/// this = a + b * c
-	void setMadd( const Vector3& a, const Vector3& b, float c );
-	/// this = a - b * c
-	void setMsub( const Vector3& a, const Vector3& b, float c );
-	/// this += a * b
-	void madd( const Vector3& a, float b );
-	/// this -= a * b
-	void msub( const Vector3& a, float b );
+	void setMadd( const Vector3& a, const Vector3& b, float c );	/// this = a + b * c
+	void setMsub( const Vector3& a, const Vector3& b, float c );	/// this = a - b * c
+	void madd( const Vector3& a, float b );							/// this += a * b
+	void msub( const Vector3& a, float b );							/// this -= a * b
 
-	///dot product
-	float dot( const Vector3& ) const;
-	///this = crossProduct( a, b )
-	void setCross( const Vector3& a, const Vector3& b );
+	float dot( const Vector3& ) const;						///dot product
+	void setCross( const Vector3& a, const Vector3& b );	///this = crossProduct( a, b )
 	///normalize
 	void normalize();
 	float length() const;

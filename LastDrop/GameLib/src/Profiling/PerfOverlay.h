@@ -21,8 +21,7 @@ struct PerfSources;
 // drawDebugString ではなく ImGui で描く（明るい場面でも読めるよう背景を敷くため）
 namespace PerfOverlay{
 
-// DebugUi::beginFrame と render の間に呼ぶ
-void draw( const PerfSources& sources );
+void draw( const PerfSources& sources );	// DebugUi::beginFrame と render の間に呼ぶ
 
 } //namespace PerfOverlay
 

@@ -13,8 +13,7 @@ class JsonWriter;
 // Graphics::Manager ができた後に呼ぶ（GPU とバックバッファの大きさを読むため。できる前は GPU の項目を書かない）
 namespace SystemInfo{
 
-// key の名前で、情報のオブジェクトを 1 つ書く
-void write( const char* key, JsonWriter* json );
+void write( const char* key, JsonWriter* json );	// key の名前で、情報のオブジェクトを 1 つ書く
 
 } //namespace SystemInfo
 

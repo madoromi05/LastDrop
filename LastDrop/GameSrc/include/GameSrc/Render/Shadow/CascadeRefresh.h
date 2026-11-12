@@ -20,8 +20,7 @@ public:
 	// redrawDistance：前に描いた時から目がこれ以上（m）動いたら、すぐ描く。force：必ず描く（影の範囲の決め方が変わった・前のフレームに影が無い）
 	void decide( unsigned frame, int interval, int phase, const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& viewDirection,
 		float redrawCos, float redrawDistance, bool force );
-	// 最後の decide で、描き直すと決めたか
-	bool isDue() const;
+	bool isDue() const;	// 最後の decide で、描き直すと決めたか
 
 private:
 	bool mDue;

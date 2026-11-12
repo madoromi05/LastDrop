@@ -30,39 +30,28 @@ public:
 	// leftRule / rightRule: 左右のマス目に入れてよい物の決まり
 	GridPairPicker( UiRenderer* renderer, ItemIcons* icons, GridRule leftRule, GridRule rightRule );
 
-	// マスの背景の濃さ（ItemGridView::setCellAlpha。町の中の画面は後ろを透かす）
-	void setCellAlpha( float alpha );
-	// 右のマス目の決まりを変える（1 つの画面で、漁れる場所と脱出の車の給油口を見せ分けるため）
-	void setRightRule( GridRule rule );
+	void setCellAlpha( float alpha );	// マスの背景の濃さ（ItemGridView::setCellAlpha。町の中の画面は後ろを透かす）
+	void setRightRule( GridRule rule );	// 右のマス目の決まりを変える（1 つの画面で、漁れる場所と脱出の車の給油口を見せ分けるため）
 	// 2 つのマス目の左上とマスの一辺（画素）。読む・描く前に毎回（画面の幅は窓で変わる）
 	void layout( const GameLib::Math::Vector2& leftOrigin, const GameLib::Math::Vector2& rightOrigin, float cellSize );
 	const ItemGridView& view( Side side ) const;
-	// 使う側が印（手に持っている銃の「E」など）を積むときだけ使う
-	ItemGridView& view( Side side );
+	ItemGridView& view( Side side );	// 使う側が印（手に持っている銃の「E」など）を積むときだけ使う
 
-	// side の cell を選び、持ち上げていれば取りやめる（画面を開いたとき）
-	void reset( Side side, int cell );
-	// 選ぶ所だけを変える（持ち上げたまま。拠点の画面で Deploy から戻るとき）
-	void select( Side side, int cell );
+	void reset( Side side, int cell );	// side の cell を選び、持ち上げていれば取りやめる（画面を開いたとき）
+	void select( Side side, int cell );	// 選ぶ所だけを変える（持ち上げたまま。拠点の画面で Deploy から戻るとき）
 	// 持ち上げている途中なら取りやめて true。何もしていなければ false（使う側が画面を閉じる・戻る）
 	bool back();
 	bool isMoving() const;
 	Side focus() const;
 	int selected() const;
 
-	// 中身が外から変わった（F6・別の画面）ときに、無くなったマス・物を指していたら選び直す・取りやめる。毎回の入力の頭で呼ぶ
-	void forgetStale( const ItemGrid& left, const ItemGrid& right );
-	// cursor の下のマスを選ぶ。マスの上なら true（マウスが動いたときに使う側が呼ぶ）
-	bool point( const ItemGrid& left, const ItemGrid& right, const GameLib::Math::Vector2& cursor );
-	// 上下左右で選び直す。左右の端からは隣のマス目へ移る（同じ行。行の数が違えば収める）
-	Exit moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& leftGrid, const ItemGrid& rightGrid );
-	// 決定：持ち上げる（物があるマス）・置く（入らない所なら何もしない）・元の場所なら取りやめ
-	void decide( ItemGrid* left, ItemGrid* right );
-	// F：選んでいる物を、反対のマス目のおまかせの所へ移す（持ち上げている間は使わない）。動いたら true
-	bool quickMove( ItemGrid* left, ItemGrid* right );
+	void forgetStale( const ItemGrid& left, const ItemGrid& right );														// 中身が外から変わった（F6・別の画面）ときに、無くなったマス・物を指していたら選び直す・取りやめる。毎回の入力の頭で呼ぶ
+	bool point( const ItemGrid& left, const ItemGrid& right, const GameLib::Math::Vector2& cursor );						// cursor の下のマスを選ぶ。マスの上なら true（マウスが動いたときに使う側が呼ぶ）
+	Exit moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& leftGrid, const ItemGrid& rightGrid );	// 上下左右で選び直す。左右の端からは隣のマス目へ移る（同じ行。行の数が違えば収める）
+	void decide( ItemGrid* left, ItemGrid* right );																			// 決定：持ち上げる（物があるマス）・置く（入らない所なら何もしない）・元の場所なら取りやめ
+	bool quickMove( ItemGrid* left, ItemGrid* right );																		// F：選んでいる物を、反対のマス目のおまかせの所へ移す（持ち上げている間は使わない）。動いたら true
 
-	// 下の欄に名前を出す物（持ち上げている物、無ければ選んでいる物。空のマスなら nullptr）
-	const ItemStack* focusedStack( const ItemGrid& left, const ItemGrid& right ) const;
+	const ItemStack* focusedStack( const ItemGrid& left, const ItemGrid& right ) const;	// 下の欄に名前を出す物（持ち上げている物、無ければ選んでいる物。空のマスなら nullptr）
 	// 2 つのマス目と、選んでいる枠（持ち上げている間は置く所の枠。入らない所は赤）を積む
 	// showSelection: 枠を出すか（拠点の画面で Deploy を選んでいる間は出さない）
 	void draw( const ItemGrid& left, const ItemGrid& right, bool showSelection );

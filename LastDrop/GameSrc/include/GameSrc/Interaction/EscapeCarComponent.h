@@ -12,16 +12,12 @@
 // （シーンが isFueled を見て RaidSession::openEscape を呼ぶ）。見た目と箱は同じ物の StaticModelComponent・BoxColliderComponent
 class EscapeCarComponent : public Component, public IInteractable{
 public:
-	// requiredFuel: 走れるようになるまでに入れるガソリンの数（1 以上。RaidParams::requiredFuel）。給油口はこの数だけ行を持つ
-	explicit EscapeCarComponent( int requiredFuel );
+	explicit EscapeCarComponent( int requiredFuel );	// requiredFuel: 走れるようになるまでに入れるガソリンの数（1 以上。RaidParams::requiredFuel）。給油口はこの数だけ行を持つ
 
-	// 給油口に要る数のガソリンが入っているか（閉じたときに給油を始めてよいか）
-	bool isTankFull() const;
-	// 給油口のガソリンを使い切って走れるようにする。isTankFull のときだけ呼ぶこと
-	void startEngine();
-	bool isFueled() const; // 給油が済んだか
-	// 給油口のマス目（見るだけ。画面に描く）
-	const ItemGrid& tank() const;
+	bool isTankFull() const;		// 給油口に要る数のガソリンが入っているか（閉じたときに給油を始めてよいか）
+	void startEngine();				// 給油口のガソリンを使い切って走れるようにする。isTankFull のときだけ呼ぶこと
+	bool isFueled() const;			// 給油が済んだか
+	const ItemGrid& tank() const;	// 給油口のマス目（見るだけ。画面に描く）
 
 	// IInteractable
 	bool canInteract( const Inventory& inventory ) const override; // 給油が済むまではいつでも開ける（ガソリンが無くても、要る数が見える）

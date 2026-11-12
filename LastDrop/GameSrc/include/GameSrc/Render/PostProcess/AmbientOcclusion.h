@@ -26,10 +26,8 @@ public:
 	// SSAO を切っている間（ssaoEnabled が false）は、結果を AO 1（遮られていない）で消すだけ
 	// noiseFrame：点の並びを回すノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）
 	void draw( const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView, int noiseFrame );
-	// 最後に draw した結果（r に AO、g に目からの奥行き m）
-	const GameLib::Graphics::RenderTarget& result() const;
-	// シェーダのコンパイルエラー（作るシェーダ → ぼかしのシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const GameLib::Graphics::RenderTarget& result() const;	// 最後に draw した結果（r に AO、g に目からの奥行き m）
+	const char* errorMessage() const;						// シェーダのコンパイルエラー（作るシェーダ → ぼかしのシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
 
 private:
 	// source を読んで destination へ、direction（1 画素ずつ進む向き）にぼかす

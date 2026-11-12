@@ -16,18 +16,13 @@ public:
 	HiZBuffer( const HiZBuffer& ) = delete;
 	HiZBuffer& operator=( const HiZBuffer& ) = delete;
 
-	// depth（G-Buffer と一緒に描いた深度）から全部の段を作る。描画先を自分の描画先へ切り替える（終わった後の描画先は呼んだ側で付け直す）
-	void draw( GameLib::Graphics::DepthTarget depth );
-	// 作った段（全部の段を読む。シェーダは Load( int3( 画素, 段 ) ) で段を選ぶ）
-	const GameLib::Graphics::RenderTarget& result() const;
-	// 段の数
-	int mipLevels() const;
-	// シェーダのコンパイルエラー。問題が無ければ空文字列
-	const char* errorMessage() const;
+	void draw( GameLib::Graphics::DepthTarget depth );		// depth（G-Buffer と一緒に描いた深度）から全部の段を作る。描画先を自分の描画先へ切り替える（終わった後の描画先は呼んだ側で付け直す）
+	const GameLib::Graphics::RenderTarget& result() const;	// 作った段（全部の段を読む。シェーダは Load( int3( 画素, 段 ) ) で段を選ぶ）
+	int mipLevels() const;									// 段の数
+	const char* errorMessage() const;						// シェーダのコンパイルエラー。問題が無ければ空文字列
 
 private:
-	// 段 mip の大きさを定数に書いて付ける（シェーダが、描く先の 1 画素に重なる元の画素の範囲を出すのに使う）
-	void setTargetSize( int mip );
+	void setTargetSize( int mip );	// 段 mip の大きさを定数に書いて付ける（シェーダが、描く先の 1 画素に重なる元の画素の範囲を出すのに使う）
 
 	GameLib::Graphics::RenderTarget mHiZ;       // 半分の大きさ・全部の段
 	GameLib::Graphics::Shader mShader;          // Resource/Shader/HiZBuild.hlsl

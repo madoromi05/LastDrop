@@ -47,18 +47,15 @@ namespace{
 	// 面を上から探せるよう、足元より上から下ろす。下の端は、車道より少し低く敷いてある町の外の土まで届かせる
 	const float kProbeTop = 1.f;
 	const float kProbeBottom = -1.f;
-	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ
-	const float kHeightProbeTop = MoveHeight::kStepOver;
+	const float kHeightProbeTop = MoveHeight::kStepOver;	// 乗る面の高さを調べる縦の線分の上の端。歩いて越えられる段差の高さまで（それより高い面には乗らない）。下の端は材質と同じ
 
-	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい
-	const float kGridCellSize = 4.f;
+	const float kGridCellSize = 4.f;	// 当たり判定のますの 1 辺（m）。体の数倍・道の部品と同じくらい
 }
 
 TownGround::TownGround( MeshCache* cache ) {
 	ASSERT( cache && "TownGround : cache is null." );
 	for ( int i = 0; i < TOWN_PIECE_NUM; ++i ) {
-		// 置いた後に1つへまとめるので、頂点を CPU に残す形で借りる（どれも数個〜数十個の頂点しか無い小さい部品）
-		mPieceData[ i ] = cache->staticMeshForMerging( kPieceFiles[ i ] );
+		mPieceData[ i ] = cache->staticMeshForMerging( kPieceFiles[ i ] );	// 置いた後に1つへまとめるので、頂点を CPU に残す形で借りる（どれも数個〜数十個の頂点しか無い小さい部品）
 	}
 }
 

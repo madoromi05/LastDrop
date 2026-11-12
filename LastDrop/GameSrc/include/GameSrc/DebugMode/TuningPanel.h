@@ -7,8 +7,7 @@
 // 値を変えるとすぐ効く（どの値も使う所が毎フレーム読んでいる）。起動中だけで、自動では保存も読み込みもしない
 namespace TuningPanel{
 
-// エディタの欄が開いているときに、1 回の描画につき 1 回呼ぶ。Release では何もしない
-void draw();
+void draw();	// エディタの欄が開いているときに、1 回の描画につき 1 回呼ぶ。Release では何もしない
 
 } //namespace TuningPanel
 

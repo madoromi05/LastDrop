@@ -12,11 +12,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ
-	const float kMarkDistance = 4.f;
+	const float kMarkDistance = 4.f;	// マークを出す距離（m）。手が届く 2.5m（GameScene の kInteractReach）より少し遠くから、近づくと物があると気づける長さ
 
-	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）
-	const char* kMarkTexture = "Resource/UI/ui_interact_mark.tga";
+	const char* kMarkTexture = "Resource/UI/ui_interact_mark.tga";	// 絵（tools/texgen/interact_mark_gen.py で作る白いひし形。UI の絵なので LINEAR で読む）
 
 	// 画面の上の大きさ（画素）。遠くても見えるよう、距離では縮めない（ゾンビの頭上の体力のバーと同じ）
 	const float kSmallSize = 14.f;  // 近くの物

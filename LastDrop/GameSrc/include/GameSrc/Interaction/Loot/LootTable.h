@@ -22,12 +22,9 @@ namespace LootTable{
 	const int kColumns = 2;
 	const int kRows = 3;
 
-	// 画面に出す名前（中を見る画面の見出し。日本語）
-	const char* displayName( LootTableId id );
-	// 開けるのにかかる秒（LootParams。0 ならすぐ開く）
-	float searchSeconds( LootTableId id );
-	// 開けている間に鳴らす音（ループ。金属・木）
-	SoundId searchSound( LootTableId id );
+	const char* displayName( LootTableId id );	// 画面に出す名前（中を見る画面の見出し。日本語）
+	float searchSeconds( LootTableId id );		// 開けるのにかかる秒（LootParams。0 ならすぐ開く）
+	SoundId searchSound( LootTableId id );		// 開けている間に鳴らす音（ループ。金属・木）
 	// 表から中身を決めて out へおまかせで入れる（out は先に空にする）。空になることもある（LootParams の確率）
 	// 入りきらない物は出さない。random: 呼ぶ側が種を決めた乱数（同じ種なら同じ中身。nullptr 不可）。out: nullptr 不可
 	// guaranteed: 必ず入れる物（空なら無し。町のガソリン・ライフル）。先に入れてから残りのマスに振り、

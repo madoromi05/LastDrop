@@ -32,26 +32,20 @@ public:
 
 	State state() const;
 	void setState( State state );
-	bool isAlive() const;    // 生きているか（Alive か Downed）
-	// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）
-	bool isCrawling() const;
+	bool isAlive() const;							// 生きているか（Alive か Downed）
+	bool isCrawling() const;						// 脚を失って倒れ終わり、腕で体を引きずっているか（Downed の間だけ true になりうる）
 	// 追ってくる体か（歩くアニメがある＝T ポーズの確認用ではない）
 	bool canChase() const;
 	ZombieLocomotion::Posture posture() const;
-	// 足元の位置（ワールド）。攻撃・よろけ・倒れる間は腰に付いて動く（倒れた後は死体の腰の下）
-	const GameLib::Math::Vector3& position() const;
+	const GameLib::Math::Vector3& position() const;	// 足元の位置（ワールド）。攻撃・よろけ・倒れる間は腰に付いて動く（倒れた後は死体の腰の下）
 	// 体の中心（ワールド）。立っている間は足元、体を引きずっている間は胸。追う・回り込む・壁に当たるのはこの位置
 	// 攻撃・よろけ・倒れるアニメの間は、始めた所（根の動きのアンカー。腕が届く距離もここから測る）
 	GameLib::Math::Vector3 bodyCenter() const;
-	// 立っているときの目の位置（足元から目の高さ）。ここから自キャラの目が見えているかを調べる
-	GameLib::Math::Vector3 eyePosition() const;
-	// 頭の位置（ワールド。頭の部位の箱の中心）。攻撃の音を鳴らす所。頭を失っていれば目の位置
-	GameLib::Math::Vector3 headPosition() const;
+	GameLib::Math::Vector3 eyePosition() const;		// 立っているときの目の位置（足元から目の高さ）。ここから自キャラの目が見えているかを調べる
+	GameLib::Math::Vector3 headPosition() const;	// 頭の位置（ワールド。頭の部位の箱の中心）。攻撃の音を鳴らす所。頭を失っていれば目の位置
 
-	// Component（ZombieModel・Transform・Hitbox・CharacterCollider・ZombieDismember・ZombieRootMotion が要る）
-	void start() override;
-	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る。体を引きずっている間は胸に置く）
-	BoxCollider collider() const override;
+	void start() override;					// Component（ZombieModel・Transform・Hitbox・CharacterCollider・ZombieDismember・ZombieRootMotion が要る）
+	BoxCollider collider() const override;	// 移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る。体を引きずっている間は胸に置く）
 
 private:
 	State mState;

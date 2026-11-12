@@ -11,10 +11,8 @@ class ViewRecoil{
 public:
 	ViewRecoil();
 
-	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0
-	void update( float shotRecoil );
-	// 視点の上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き。反動が無ければ 0）
-	float pitchOffset() const;
+	void update( float shotRecoil );	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0
+	float pitchOffset() const;			// 視点の上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き。反動が無ければ 0）
 
 private:
 	float mRise; // 跳ね上がっている角度（度。0 以上）

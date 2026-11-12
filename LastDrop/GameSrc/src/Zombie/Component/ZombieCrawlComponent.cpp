@@ -59,8 +59,7 @@ void ZombieCrawlComponent::update( const ChaseTarget* target, const HitWorld& hi
 	bool moving = false;
 	if ( attacking ) {
 		if ( target ) {
-			// 腕を振っている間は、相手の方を向くだけ（寄らない）
-			mLocomotion->turnToward( mState->bodyCenter(), target->position, mState->posture(), mAngleY );
+			mLocomotion->turnToward( mState->bodyCenter(), target->position, mState->posture(), mAngleY );	// 腕を振っている間は、相手の方を向くだけ（寄らない）
 		}
 	} else {
 		effort = chase( target, hitWorld, attack, &moving );

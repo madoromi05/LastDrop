@@ -68,8 +68,7 @@ void PlayerComponent::update() {
 		mLocomotion->setMoveDirection( direction );
 	}
 	updateHands( hold, command, wantsRun );
-	// 手に持つ銃が替わるのは updateHands の中（カバンとの同期）だけなので、ここで読めばこのティックの銃
-	GunComponent* gun = hold ? hold->gun() : nullptr;
+	GunComponent* gun = hold ? hold->gun() : nullptr;	// 手に持つ銃が替わるのは updateHands の中（カバンとの同期）だけなので、ここで読めばこのティックの銃
 	// 覗いている間は走らない（覗く方を優先して歩きに落とす）。覗くのをやめれば、走る入力が続いている限り走りに戻る
 	// リロード中も走らない（弾倉を替えながら歩くだけ。バイオハザードと同じ）
 	bool reloading = gun && gun->isReloading();

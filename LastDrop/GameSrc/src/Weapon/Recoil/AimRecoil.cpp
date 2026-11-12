@@ -26,10 +26,8 @@ namespace{
 	// 最後の 1 発からこれだけ撃たなければ「撃ちやめた」とする。連射の間隔（FireControl の 600 発/分＝6 ティック）より 1 長く、
 	// 連射の途中で戻り始めないようにする
 	const int kSettleTicks = 7;
-	// 撃ちやめた後、1 ティックごとに残る割合。0.9 で約 0.4 秒（24 ティックで 1/12）まで戻る
-	const float kReturnPerTick = 0.9f;
-	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）
-	const float kMinOffset = 0.001f;
+	const float kReturnPerTick = 0.9f;	// 撃ちやめた後、1 ティックごとに残る割合。0.9 で約 0.4 秒（24 ティックで 1/12）まで戻る
+	const float kMinOffset = 0.001f;	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）
 
 	float settle( float value ) {
 		value *= kReturnPerTick;

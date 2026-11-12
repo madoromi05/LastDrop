@@ -8,8 +8,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 出てから消えるまで（ティック）。見た目を確かめる前の初期値
-	const int kLifeTicks = GameTime::secondsToTicks( 0.4f );
+	const int kLifeTicks = GameTime::secondsToTicks( 0.4f );	// 出てから消えるまで（ティック）。見た目を確かめる前の初期値
 
 	// 体に当たったときの滴の数。弾の抜ける側（体の向こう）へ多く、撃った側（こちら）へ少し
 	// 頭など scale が大きいときは、どちらも scale 倍にする（合計が kMaxDropNumber を超えないこと）
@@ -27,16 +26,13 @@ namespace{
 	const float kExitSpread = 0.5f;
 	const float kEntrySpread = 0.6f;
 
-	// 毎ティック速さに掛ける割合。滴は重いので、砂ぼこり（0.85）より減速しない
-	const float kDragPerTick = 0.95f;
-	// 落ちる加速度（m/ティック²）。本当の重力（9.8m/秒²）。滴は弧を描いて落ちる
-	const float kGravityPerTick = 9.8f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
+	const float kDragPerTick = 0.95f;																// 毎ティック速さに掛ける割合。滴は重いので、砂ぼこり（0.85）より減速しない
+	const float kGravityPerTick = 9.8f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );	// 落ちる加速度（m/ティック²）。本当の重力（9.8m/秒²）。滴は弧を描いて落ちる
 
 	// 板の幅の半分（m）。出た時 → 消える時（直径 4cm → 15cm。scale 倍する）
 	const float kStartRadius = 0.02f;
 	const float kEndRadius = 0.075f;
-	// 出た時の不透明度。液体なので濃く始め、終わりにかけて薄くする
-	const float kStartOpacity = 0.9f;
+	const float kStartOpacity = 0.9f;	// 出た時の不透明度。液体なので濃く始め、終わりにかけて薄くする
 
 	// direction へ、各軸に ±spread のばらつきを足した向き（長さ1）へ、minSpeed〜maxSpeed の速さで飛ぶ速度
 	Vector3 randomVelocity( const Vector3& direction, float spread, float minSpeed, float maxSpeed, std::mt19937* random ) {

@@ -78,8 +78,7 @@ void ZombieChaseComponent::walk( const ZombieLocomotion::Intent& intent, const Z
 	if ( intent.walking && intent.facing ) {
 		*mPosition += mLocomotion->walkStep( mAnimations->walkDistanceThisTick(), *mAngleY );
 	} else if ( !intent.walking && mLocomotion->mode() == ZombieChase::Mode::Chase ) {
-		// 追いついて立ち止まっている。仲間の後ろに重なったまま止まり続けないように
-		mLocomotion->standAside( mState->bodyCenter(), crowd, mPosition );
+		mLocomotion->standAside( mState->bodyCenter(), crowd, mPosition );	// 追いついて立ち止まっている。仲間の後ろに重なったまま止まり続けないように
 	}
 	mMesh->setPosition( *mPosition );
 	mMesh->setAngleY( *mAngleY );

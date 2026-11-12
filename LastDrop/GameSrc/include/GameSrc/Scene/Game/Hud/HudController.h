@@ -20,22 +20,17 @@ namespace GameLib{ namespace Math{ class Vector3; } }
 // 攻撃された赤み・暗転（PlayerDamageView）や観察用の表示（GameDebugOverlay）は別系統
 class HudController{
 public:
-	// world/inventory: 借りるだけ。ui: 描画に使う。どれも nullptr 不可・この Controller より長く生きていること
-	HudController( GameWorld* world, Inventory* inventory, UiRenderer* ui );
-	// 右下の弾数を出す時間と濃さを進める。wanted: 今出したいか（覗いている・リロード中）。update のビューの段で 1 回
-	void updateAmmoVisibility( bool wanted );
-	// 使える物の上のマークを更新する（見ている物・持ち物で色が変わる）。eye: 目の位置。target: 今見ている使える物
-	void updateMarkers( const GameLib::Math::Vector3& eye, const IInteractable* target );
-	// マークを消す（自キャラがいない・死んだとき）
-	void clearMarkers();
+	HudController( GameWorld* world, Inventory* inventory, UiRenderer* ui );				// world/inventory: 借りるだけ。ui: 描画に使う。どれも nullptr 不可・この Controller より長く生きていること
+	void updateAmmoVisibility( bool wanted );												// 右下の弾数を出す時間と濃さを進める。wanted: 今出したいか（覗いている・リロード中）。update のビューの段で 1 回
+	void updateMarkers( const GameLib::Math::Vector3& eye, const IInteractable* target );	// 使える物の上のマークを更新する（見ている物・持ち物で色が変わる）。eye: 目の位置。target: 今見ている使える物
+	void clearMarkers();																	// マークを消す（自キャラがいない・死んだとき）
 	// 遊んでいる間の HUD を積む（マーク → 弾数 → 始めの知らせと棒の順。1 回の描画で UiRenderer::draw がまとめて描く）
 	// searchProgress: 漁り/給油の棒（出さないなら負。RaidHud 既定）。waitingKind: その文字（漁る/給油）
 	void draw( const FirstPersonCamera& camera, const RaidSession& session, const DayConditionEffect& dayCondition,
 		float searchProgress, RaidHud::ProgressKind waitingKind );
 
 private:
-	// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）
-	void addAmmo();
+	void addAmmo();	// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）
 
 	GameWorld* mWorld;     // 借りているだけ
 	Inventory* mInventory; // 借りているだけ

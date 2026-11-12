@@ -10,10 +10,8 @@
 // 「色 → 色」の関数 1 つにまとめておく。LutBake.hlsl がこの関数を色の表に焼く
 // リニアの色の輝度の重み（Rec.709。PostProcess.cpp の kLuminanceWeights と同じ）
 static const float3 kLuminanceWeights = float3(0.2126, 0.7152, 0.0722);
-// コントラストの中心。0〜1 の真ん中 0.5 ではなく、リニアの中間の灰色（暗い夜の絵がまとめてつぶれないように）
-static const float kMiddleGray = 0.18;
-// この画面の明るさより暗い所ほど、gNightDesaturation の分だけ彩度を下げる
-static const float kNightLuminance = 0.25;
+static const float kMiddleGray = 0.18;		// コントラストの中心。0〜1 の真ん中 0.5 ではなく、リニアの中間の灰色（暗い夜の絵がまとめてつぶれないように）
+static const float kNightLuminance = 0.25;	// この画面の明るさより暗い所ほど、gNightDesaturation の分だけ彩度を下げる
 // 中間の重みの境目（Unity URP の Shadows Midtones Highlights と同じく、明部の重みは明るさ 1 で 1 になる）
 static const float kShadowsStart = 0.0;
 static const float kHighlightsEnd = 1.0;

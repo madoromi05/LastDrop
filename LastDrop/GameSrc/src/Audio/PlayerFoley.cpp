@@ -53,8 +53,7 @@ void PlayerFoley::update( const FoleyState& state, bool stepped ) {
 		playStep( state );
 	}
 	if ( state.fired ) {
-		// 銃声の素材と大きさは銃ごと（WeaponCatalog）。ライフルは元の WAV のまま（足音・装備の音よりはっきり大きく、連射で重なっても割れにくい）
-		mAudio->play( state.shotSound, AudioEngine::BUS_EFFECT, state.bodyPosition, state.shotVolume );
+		mAudio->play( state.shotSound, AudioEngine::BUS_EFFECT, state.bodyPosition, state.shotVolume );	// 銃声の素材と大きさは銃ごと（WeaponCatalog）。ライフルは元の WAV のまま（足音・装備の音よりはっきり大きく、連射で重なっても割れにくい）
 	}
 	playWeaponHandling( state );
 	mHasPrevious = true;

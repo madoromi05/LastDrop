@@ -8,10 +8,8 @@ using namespace GameLib::Math;
 namespace{
 	const int kAxisNumber = 3;
 	const float kHalf = 0.5f;
-	// これより短い向きは「向きが無い」とみなす（0 で割らない・向きの決まらない軸を使わないため）
-	const float kMinAxisLength = 0.000001f;
-	// 広がりが一番大きい向きを求める反復（べき乗法）の回数。体の部位の点なら十分に収束する
-	const int kPowerIterations = 32;
+	const float kMinAxisLength = 0.000001f;	// これより短い向きは「向きが無い」とみなす（0 で割らない・向きの決まらない軸を使わないため）
+	const int kPowerIterations = 32;		// 広がりが一番大きい向きを求める反復（べき乗法）の回数。体の部位の点なら十分に収束する
 	// 長い辺に直交する面の基準を作るときの補助の向き。長い辺とほぼ平行なら、もう一方を使う
 	const Vector3 kHelperUp( 0.f, 1.f, 0.f );
 	const Vector3 kHelperSide( 1.f, 0.f, 0.f );

@@ -9,14 +9,11 @@
 // コマとコマの間はなめらかにつながない（2 コマを重ねて描かない。重ねると板が 2 倍になり、半透明の順番も崩れる）
 class Flipbook{
 public:
-	// columns / rows: ます目の数（1 以上）。frameNumber: 使うコマの数（1 以上、columns × rows 以下）
-	Flipbook( int columns, int rows, int frameNumber );
+	Flipbook( int columns, int rows, int frameNumber );	// columns / rows: ます目の数（1 以上）。frameNumber: 使うコマの数（1 以上、columns × rows 以下）
 
 	int frameNumber() const;
-	// 進み具合 progress（0 で最初のコマ、1 で最後のコマ）のコマの番号。範囲の外は端のコマ
-	int frameAt( float progress ) const;
-	// frame 番目のコマの UV の範囲（0〜frameNumber-1。範囲の外は端のコマ）
-	QuadUv frameUv( int frame ) const;
+	int frameAt( float progress ) const;	// 進み具合 progress（0 で最初のコマ、1 で最後のコマ）のコマの番号。範囲の外は端のコマ
+	QuadUv frameUv( int frame ) const;		// frame 番目のコマの UV の範囲（0〜frameNumber-1。範囲の外は端のコマ）
 
 private:
 	int mColumns;

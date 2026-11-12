@@ -17,8 +17,7 @@ namespace{
 	const char* kGlowTextureFile = "Resource/Texture/Effect/muzzle_glow.dds";
 	const unsigned kRandomSeed = 5630u; // 見た目のばらつきに使うだけなので、毎回同じ種でよい
 
-	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる
-	const int kLifeTicks = 5;
+	const int kLifeTicks = 5;	// 光る長さ（ティック）。本物の発砲炎は 1/60 秒よりずっと短いので、撃ったティックだけ光らせる
 
 	// ── 光の芯 ── 見た目を確かめる前の初期値
 	const float kFlashOffset = 0.02f;   // 銃口の先端から少し前に置く（銃身の先に半分埋まって見えないように）

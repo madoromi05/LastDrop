@@ -11,11 +11,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 同時に鳴らせる数。一歩で足音・服・装備の3つ鳴るので、走りながら連続で鳴っても足りる数にする
-	const int kMaxOneShots = 32;
-	// 同時に鳴らせるループの数（環境音3つ・発電機・飛行機 ＋ 余裕）
-	const int kMaxLoops = 8;
-	const ma_uint32 kListener = 0; // miniaudio は聞き手を複数持てるが、一人称なので1人だけ使う
+	const int kMaxOneShots = 32;	// 同時に鳴らせる数。一歩で足音・服・装備の3つ鳴るので、走りながら連続で鳴っても足りる数にする
+	const int kMaxLoops = 8;		// 同時に鳴らせるループの数（環境音3つ・発電機・飛行機 ＋ 余裕）
+	const ma_uint32 kListener = 0;	// miniaudio は聞き手を複数持てるが、一人称なので1人だけ使う
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
 }
 
@@ -30,14 +28,12 @@ public:
 	Impl();
 	~Impl();
 
-	// id の揺らぎを1つ選ぶ。直前と同じものは避ける（続けて同じ音が鳴ると機械的に聞こえるため）。読めた揺らぎが無ければ nullptr
-	ma_sound* chooseSource( SoundId id );
+	ma_sound* chooseSource( SoundId id );														// id の揺らぎを1つ選ぶ。直前と同じものは避ける（続けて同じ音が鳴ると機械的に聞こえるため）。読めた揺らぎが無ければ nullptr
 	// voice に id の音を用意して鳴らし始める。position が nullptr なら 2D
 	bool startVoice( Voice* voice, SoundId id, Bus bus, const Vector3* position, float volume, float pitch, bool looping );
 	void releaseVoice( Voice* voice );
 	Voice* findFreeOneShot();
-	// 空いているループの枠で id を鳴らし始め、その枠の番号を返す。position が nullptr なら 2D
-	LoopHandle startLoopVoice( SoundId id, Bus bus, const Vector3* position, float volume );
+	LoopHandle startLoopVoice( SoundId id, Bus bus, const Vector3* position, float volume );	// 空いているループの枠で id を鳴らし始め、その枠の番号を返す。position が nullptr なら 2D
 
 	ma_engine mEngine;
 	bool mEngineReady;

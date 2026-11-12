@@ -18,10 +18,8 @@ using namespace GameLib;
 using GameLib::Math::Vector3;
 
 namespace{
-	// 噛むときに首・背骨を突き出す向き（骨格の根の空間で前。押し方は ZombieFlinch::lunge）。噛むアニメが無いので顔を相手へ近づける
-	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );
-	// 寄せ終えた後の残りティック。1 なら毎ティック、ずれた分をそのまま詰める（根の動きの小さな揺れで手が離れないように）
-	const int kAlignedTicks = 1;
+	const Vector3 kBiteLungeDirection( 0.f, 0.f, 1.f );	// 噛むときに首・背骨を突き出す向き（骨格の根の空間で前。押し方は ZombieFlinch::lunge）。噛むアニメが無いので顔を相手へ近づける
+	const int kAlignedTicks = 1;						// 寄せ終えた後の残りティック。1 なら毎ティック、ずれた分をそのまま詰める（根の動きの小さな揺れで手が離れないように）
 
 	ZombieAttackParams gParams;
 }

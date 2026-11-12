@@ -24,7 +24,6 @@ struct LootParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値
-LootParams& lootParams();
+LootParams& lootParams();	// 起動中ずっと 1 つだけの調整値
 
 #endif

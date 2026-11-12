@@ -16,10 +16,8 @@ namespace{
 	// 這っている体は 1 秒に 60°（立っている時の 1/3。寝た体は大きく回せない）
 	const float kTurnPerTick = 180.f / GameTime::kTicksPerSecond;
 	const float kCrawlTurnPerTick = 60.f / GameTime::kTicksPerSecond;
-	// 行き先との向きの差がこれより大きい間は、その場で向きを変えるだけで進まない（横歩き・後ろ歩きに見えないように）
-	const float kTurnInPlaceDegree = 60.f;
-	// 行き先がこれより近ければ、向きを決めない（真上に居るときに向きが定まらず回り続けないように。m）
-	const float kMinTurnDistance = 0.05f;
+	const float kTurnInPlaceDegree = 60.f;	// 行き先との向きの差がこれより大きい間は、その場で向きを変えるだけで進まない（横歩き・後ろ歩きに見えないように）
+	const float kMinTurnDistance = 0.05f;	// 行き先がこれより近ければ、向きを決めない（真上に居るときに向きが定まらず回り続けないように。m）
 }
 
 ZombieLocomotion::ZombieLocomotion( const GameObject* self, const NavMesh* navMesh, PathBudget* pathBudget, const CharacterMover* mover,
@@ -115,8 +113,7 @@ bool ZombieLocomotion::turnToward( const Vector3& center, const Vector3& destina
 
 Vector3 ZombieLocomotion::walkStep( float distance, float angleY ) const {
 	Vector3 step( Math::sin( angleY ) * distance, 0.f, Math::cos( angleY ) * distance );
-	// 壁・車・ほかの体に当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）
-	return mMover->move( step );
+	return mMover->move( step );	// 壁・車・ほかの体に当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）
 }
 
 void ZombieLocomotion::standAside( const Vector3& center, const ZombieCrowd* crowd, Vector3* footing ) {

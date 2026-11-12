@@ -23,23 +23,17 @@ public:
 	SceneLights( const SceneLights& ) = delete;
 	SceneLights& operator=( const SceneLights& ) = delete;
 
-	// 描画の設定と、今のフレームのライトの一覧を作って付ける（G-Buffer の前）。月の影の 3 枚の行列もここで決める
-	void setup( const FirstPersonCamera& camera );
-	// 影のマップを描く（懐中電灯・月の 3 枚）。setup の後、G-Buffer の前。終わったら描く行列を camera へ戻す
-	void drawShadowMaps( const FirstPersonCamera& camera );
+	void setup( const FirstPersonCamera& camera );			// 描画の設定と、今のフレームのライトの一覧を作って付ける（G-Buffer の前）。月の影の 3 枚の行列もここで決める
+	void drawShadowMaps( const FirstPersonCamera& camera );	// 影のマップを描く（懐中電灯・月の 3 枚）。setup の後、G-Buffer の前。終わったら描く行列を camera へ戻す
 	// 今のフレームのライトの一覧（ライティングのパスと半透明の板が b2 から読む。付け直し・外すのは描く手順の側）
 	LightList& lights();
 	const LightList& lights() const;
-	// 今日の霧が半分になる距離（調整値 × 今日の条件）。描く距離を霧で縮めるのにも使う
-	float fogHalfDistance() const;
-	// 影のシェーダの誤り（懐中電灯 → 月の順に、最初に見つけた物。無ければ ""）
-	const char* shadowErrorMessage() const;
+	float fogHalfDistance() const;							// 今日の霧が半分になる距離（調整値 × 今日の条件）。描く距離を霧で縮めるのにも使う
+	const char* shadowErrorMessage() const;					// 影のシェーダの誤り（懐中電灯 → 月の順に、最初に見つけた物。無ければ ""）
 
 private:
-	// 月（平行光）を一覧へ足す。強さがあれば、影の 3 枚（CSM）の行列を決めて影のマップを付ける
-	void addMoon( const LightingParams& params, const FirstPersonCamera& camera );
-	// 懐中電灯が付いていて銃を持っていれば、銃口の前から照らすスポットを一覧へ足す
-	void addFlashlight( const LightingParams& params );
+	void addMoon( const LightingParams& params, const FirstPersonCamera& camera );	// 月（平行光）を一覧へ足す。強さがあれば、影の 3 枚（CSM）の行列を決めて影のマップを付ける
+	void addFlashlight( const LightingParams& params );								// 懐中電灯が付いていて銃を持っていれば、銃口の前から照らすスポットを一覧へ足す
 
 	const GameWorld* mWorld;   // 借りているだけ
 	WorldRenderer* mRenderer;  // 借りているだけ

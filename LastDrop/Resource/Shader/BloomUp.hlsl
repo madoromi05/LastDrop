@@ -1,5 +1,4 @@
-// ブルームの足し戻し（Bloom::apply）。1 つ小さい段をぼかしながら広げ、1 つ大きい段へ加算で描く
-#include "Common.hlsli"
+#include "Common.hlsli"	// ブルームの足し戻し（Bloom::apply）。1 つ小さい段をぼかしながら広げ、1 つ大きい段へ加算で描く
 
 Texture2D gSource : register(t2); // Bloom.cpp の kSourceSlot（1 つ小さい段）
 
@@ -31,6 +30,5 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     {
         sum += gSource.Sample(gClampSampler, v.uv + kTaps[i].xy * texel).rgb * kTaps[i].z;
     }
-    // α は 1 で出す（BLEND_ADDITIVE は「元の色 ＋ 描く色 × α」）
-    return float4(sum / kTotalWeight, 1.0);
+    return float4(sum / kTotalWeight, 1.0);	// α は 1 で出す（BLEND_ADDITIVE は「元の色 ＋ 描く色 × α」）
 }

@@ -16,33 +16,23 @@ class SkinnedModelComponent;
 // どの状態にするか（動いているか・走るか・銃を出しているか）は PlayerComponent が決めて渡す
 class PlayerLocomotionComponent : public Component{
 public:
-	// アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）は、同じ物の SkinnedModelComponent の形から awake で引く
-	PlayerLocomotionComponent();
+	PlayerLocomotionComponent();	// アニメ（素手の "idle" / "walk" / "run"、銃の "rifle_idle" / "rifle_walk" / "rifle_run"）は、同じ物の SkinnedModelComponent の形から awake で引く
 
-	// 次の状態を選ぶ。武器を持っているか × 静止／歩き／走り の組み合わせを表から探す
-	static Animator::State chooseState( bool moving, bool running, bool drawn );
-	// 状態の速さ（m/フレーム）
-	static float speedOf( Animator::State state );
-	// 銃を持って走る状態か（胸元へ抱える）
-	static bool isCarryState( Animator::State state );
+	static Animator::State chooseState( bool moving, bool running, bool drawn );	// 次の状態を選ぶ。武器を持っているか × 静止／歩き／走り の組み合わせを表から探す
+	static float speedOf( Animator::State state );									// 状態の速さ（m/フレーム）
+	static bool isCarryState( Animator::State state );								// 銃を持って走る状態か（胸元へ抱える）
 
 	// 操作の前後・横の量から移動方向（水平・長さ1）を求める。移動の操作が無ければ false
 	// cameraYaw: カメラの水平の向き（度）。W がこの向きへの前進になる
 	bool readMoveDirection( const PlayerCommand& command, float cameraYaw, GameLib::Math::Vector3* direction ) const;
-	// 進む向き（水平・長さ1）を変える。入力を離した後の減速中も、最後の向きへ進む
-	void setMoveDirection( const GameLib::Math::Vector3& direction );
-	// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける
-	void approachSpeed( float targetSpeed );
-	// このティックに進む量（向き × 速さ）
-	GameLib::Math::Vector3 step() const;
-	// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ
-	void changeState( Animator::State next );
+	void setMoveDirection( const GameLib::Math::Vector3& direction );	// 進む向き（水平・長さ1）を変える。入力を離した後の減速中も、最後の向きへ進む
+	void approachSpeed( float targetSpeed );							// 移動の速さを targetSpeed へ、1フレームの加速・減速の上限まで近づける
+	GameLib::Math::Vector3 step() const;								// このティックに進む量（向き × 速さ）
+	void changeState( Animator::State next );							// アニメの状態を切り替える（同じ状態なら何もしない）。前のポーズからクロスフェードでつなぐ
 
-	Gait gait() const;          // 今の歩き方（アニメの状態から。素手か銃かは含まない）
-	// 歩き・走りのアニメが1周の何割まで進んだか（0〜1。見せたポーズの位相）。足音を足の動きに合わせるのに使う
-	float gaitPhase() const;
-	// 今の速さ ÷ 銃を持った歩きの速さ（照準のぶれの歩きの強さ。AimSway が 1 で止める）
-	float walkRate() const;
+	Gait gait() const;			// 今の歩き方（アニメの状態から。素手か銃かは含まない）
+	float gaitPhase() const;	// 歩き・走りのアニメが1周の何割まで進んだか（0〜1。見せたポーズの位相）。足音を足の動きに合わせるのに使う
+	float walkRate() const;		// 今の速さ ÷ 銃を持った歩きの速さ（照準のぶれの歩きの強さ。AimSway が 1 で止める）
 
 	// Component（SkinnedModelComponent が要る。HoldComponent は任意＝付いていて銃を出していれば、銃を持った姿で始める）
 	// awake：状態にアニメを登録する。start：最初のアニメを付ける

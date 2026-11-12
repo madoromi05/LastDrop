@@ -11,10 +11,8 @@ namespace RaidStart{
 	const int kBagColumns = 2; // カバンは 2 × 4（8 マス）
 	const int kBagRows = 4;
 
-	// 始めのカバン：弾倉いっぱいの拳銃と 9mm の弾 48 発（1 マス 24 発 × 2 マス）
-	ItemGrid startBag();
-	// 今回の条件を、ふつう・停電・霧・雨・群れから等しく 1 つ選ぶ。seed: 乱数の種（起動からの時間など）
-	DayCondition rollCondition( unsigned seed );
+	ItemGrid startBag();							// 始めのカバン：弾倉いっぱいの拳銃と 9mm の弾 48 発（1 マス 24 発 × 2 マス）
+	DayCondition rollCondition( unsigned seed );	// 今回の条件を、ふつう・停電・霧・雨・群れから等しく 1 つ選ぶ。seed: 乱数の種（起動からの時間など）
 }
 
 #endif

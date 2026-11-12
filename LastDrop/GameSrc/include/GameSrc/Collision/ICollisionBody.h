@@ -8,8 +8,7 @@
 class ICollisionBody{
 public:
 	virtual ~ICollisionBody(){}
-	// 今の移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る。ワールド座標）
-	virtual BoxCollider collider() const = 0;
+	virtual BoxCollider collider() const = 0;	// 今の移動の当たり判定（体を真上から囲む長方形。体の向きに合わせて回る。ワールド座標）
 };
 
 #endif

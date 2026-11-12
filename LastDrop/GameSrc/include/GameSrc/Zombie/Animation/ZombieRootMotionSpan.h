@@ -38,27 +38,23 @@ public:
 	// メッシュの update の後、部位の箱を置く前に呼ぶ。区間の外なら何もしない
 	// passThrough: Pass::Target のとき通り抜ける体（nullptr 可）。footing: 足元。nullptr 不可
 	void apply( const ICollisionBody* passThrough, GameLib::Math::Vector3* footing );
-	// 区間を閉じる（アニメが歩き・立つへ戻った・体を引きずり始める）。足元を絵の根へ戻す。区間の外なら何もしない
-	void end( GameLib::Math::Vector3* footing );
-	// 区間を閉じ、足元と絵の根のずれはそのまま残す（倒れ終わった死体。もう動かない）
-	void freeze();
-	// 攻撃中に寄るなど、足元そのものを moved だけ動かした（区間の間はアンカーも同じだけ動かす）
-	void moveFooting( const GameLib::Math::Vector3& moved, GameLib::Math::Vector3* footing );
+	void end( GameLib::Math::Vector3* footing );												// 区間を閉じる（アニメが歩き・立つへ戻った・体を引きずり始める）。足元を絵の根へ戻す。区間の外なら何もしない
+	void freeze();																				// 区間を閉じ、足元と絵の根のずれはそのまま残す（倒れ終わった死体。もう動かない）
+	void moveFooting( const GameLib::Math::Vector3& moved, GameLib::Math::Vector3* footing );	// 攻撃中に寄るなど、足元そのものを moved だけ動かした（区間の間はアンカーも同じだけ動かす）
 
 	bool isActive() const;                        // 区間の中か
 	const GameLib::Math::Vector3& anchor() const; // 区間を始めた所（ワールド）。区間の中だけ意味がある
 	GameLib::Math::Vector3 meshRoot( const GameLib::Math::Vector3& footing ) const;
 
 private:
-	SkinnedMeshInstance* mMesh;          // 借りているだけ
-	const CharacterMover* mMover;        // 借りているだけ
-	const ZombieRootMotion* mTable;      // 今の区間の表。nullptr なら区間の外
-	Pass mPass;                          // 今の区間で通り抜ける相手
-	GameLib::Math::Vector3 mAnchor;      // 区間を始めた所（ワールド）。移動の箱と bodyCenter はここ
-	GameLib::Math::Vector3 mStartOffset; // 区間を始めた時刻の根の水平の位置（骨格の根の空間）
-	float mLastTime;                     // 最後に足元を動かしたアニメ時刻（同じなら当たり直さない。止まった死体）
-	// 絵の根 − 足元（ワールド。水平だけ。区間の間は −根の動き）。区間の外は 0。ただし倒れ終わった死体は最後の値のまま
-	GameLib::Math::Vector3 mMeshOffset;
+	SkinnedMeshInstance* mMesh;				// 借りているだけ
+	const CharacterMover* mMover;			// 借りているだけ
+	const ZombieRootMotion* mTable;			// 今の区間の表。nullptr なら区間の外
+	Pass mPass;								// 今の区間で通り抜ける相手
+	GameLib::Math::Vector3 mAnchor;			// 区間を始めた所（ワールド）。移動の箱と bodyCenter はここ
+	GameLib::Math::Vector3 mStartOffset;	// 区間を始めた時刻の根の水平の位置（骨格の根の空間）
+	float mLastTime;						// 最後に足元を動かしたアニメ時刻（同じなら当たり直さない。止まった死体）
+	GameLib::Math::Vector3 mMeshOffset;		// 絵の根 − 足元（ワールド。水平だけ。区間の間は −根の動き）。区間の外は 0。ただし倒れ終わった死体は最後の値のまま
 };
 
 #endif

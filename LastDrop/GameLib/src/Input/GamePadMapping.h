@@ -22,19 +22,15 @@ struct GamePadRawState{
 	float stickY[ GamePad::STICK_MAX ];
 };
 
-// スティックを倒しきった値（XInput の SHORT の最大。DirectInput の軸の範囲もこれにそろえる）
-const float kStickRawMax = 32767.f;
+const float kStickRawMax = 32767.f;	// スティックを倒しきった値（XInput の SHORT の最大。DirectInput の軸の範囲もこれにそろえる）
 
-// DirectInput のパッドのボタンと軸の並び（製品ごとの対応表の中身）
-struct GamePadLayout;
+struct GamePadLayout;	// DirectInput のパッドのボタンと軸の並び（製品ごとの対応表の中身）
 
 // 製品（DIDEVICEINSTANCE::guidProduct.Data1。下位 16 ビットが VID・上位が PID）から対応表を引く
 // 対応表に無ければ nullptr（そのパッドは GamePad では読まない）
 const GamePadLayout* findGamePadLayout( DWORD productGuidData1 );
-// 対応表の名前（F6 のエディタで、どの対応表で読んでいるかを見せる）。文字列リテラルなので持ち続けてよい
-const char* gamePadLayoutName( const GamePadLayout* layout );
-// DirectInput の 1 回分の入力を、対応表で Xbox の並びに置き換える
-void applyGamePadLayout( const GamePadLayout* layout, const DIJOYSTATE2& state, GamePadRawState* out );
+const char* gamePadLayoutName( const GamePadLayout* layout );											// 対応表の名前（F6 のエディタで、どの対応表で読んでいるかを見せる）。文字列リテラルなので持ち続けてよい
+void applyGamePadLayout( const GamePadLayout* layout, const DIJOYSTATE2& state, GamePadRawState* out );	// DirectInput の 1 回分の入力を、対応表で Xbox の並びに置き換える
 
 } //namespace Input
 } //namespace GameLib

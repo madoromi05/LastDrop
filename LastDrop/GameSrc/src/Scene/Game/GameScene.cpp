@@ -50,20 +50,19 @@ GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）
 	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
-	mSceneRenderer( &mWorld ), // 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
-	mInventory( RaidStart::startBag() ), // 毎回同じ始めのカバン（拳銃と 9mm の弾）
+	mSceneRenderer( &mWorld ),														// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
+	mInventory( RaidStart::startBag() ),											// 毎回同じ始めのカバン（拳銃と 9mm の弾）
 	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
-	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
-	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),
+	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
 	// キャラの向いている方（その日の車の方）を見始める
 	mControl( mWorld.town().map().escapeCarSpots()[ mSession.escapeCarSpot() ].playerStart.yawDegree, &resources->settings() ),
-	mFeedback( &resources->audio(), &mWorld.town() ), // 出来事を自キャラの視点・音・画面へ返す
-	mHud( &mWorld, &mInventory, &resources->uiRenderer() ), // 遊び中の画面表示（棒・弾数・マーク）
+	mFeedback( &resources->audio(), &mWorld.town() ),								// 出来事を自キャラの視点・音・画面へ返す
+	mHud( &mWorld, &mInventory, &resources->uiRenderer() ),							// 遊び中の画面表示（棒・弾数・マーク）
 	// 出撃のロード段階（mSession が選んだ脱出の車の置き場所を使うので、その後に並べる）
 	mLoad( &mWorld, &resources->meshes(), mSession.escapeCarSpot(), &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
-	mModals( &resources->audio(), &mControl ), // 音とカーソルを借りて、モーダルの開閉の共通遷移を受け持つ
-	mBag( &mInventory, &mWorld, &mControl, &mModals, &resources->uiRenderer() ), // カバンの開閉と操作
+	mModals( &resources->audio(), &mControl ),										// 音とカーソルを借りて、モーダルの開閉の共通遷移を受け持つ
+	mBag( &mInventory, &mWorld, &mControl, &mModals, &resources->uiRenderer() ),	// カバンの開閉と操作
 	// 漁れる場所・給油（mWorld の脱出の車の候補を使う mSession を借りるので、その後に並べる）
 	mLoot( &mWorld, &mInventory, &resources->audio(), &mModals, &mSession, &resources->uiRenderer() ),
 	mRaidFinished( false ) {
@@ -161,10 +160,8 @@ void GameScene::handleFrameInput() {
 		return;
 	}
 #ifdef ZF_EDITOR
-	// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）
-	mFreeCamera.handleToggle( mControl.camera() );
-	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
-	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord(), isFreeCameraActive() );
+	mFreeCamera.handleToggle( mControl.camera() );															// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）
+	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord(), isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
 #endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう
 	if ( isFreeCameraActive() ) {
@@ -185,14 +182,13 @@ void GameScene::update() {
 	if ( !mLoad.isReady() || mModals.isOpen() || mRaidFinished ) {
 		return; // 出撃を終えた後と、止めている間（一時停止・カバン・中を見る画面）は世界を進めない（ティックの数は数えられるが、何もしないので戻った瞬間に早送りにならない）
 	}
-	// 開けている途中の取りやめは、このティックの操作で決める（押した瞬間の操作は、世界を進めた後に消えるので先に読む）
-	bool commandInterruptsSearch = LootController::interrupts( mControl.command() );
+	bool commandInterruptsSearch = LootController::interrupts( mControl.command() );	// 開けている途中の取りやめは、このティックの操作で決める（押した瞬間の操作は、世界を進めた後に消えるので先に読む）
 	// 順番に意味がある: 向きを決める（beginFrame）→ その向きでキャラを動かし体を曲げる → 動いた後の頭の位置へ視点を置く（draw）
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える
 	const FirstPersonCamera& camera = mControl.camera();
 	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる
 	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
-	mControl.consumePressed(); // 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
+	mControl.consumePressed();															// 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	// 撃った手応え（当たった音・強い命中の揺れ）と、攻撃された反応（顔を向ける・怯み・音・赤み）。計測の印は中で Game.hitFeedback・Game.damage
 	mFeedback.reactToCombat( mWorld, &mControl );
 	{
@@ -210,8 +206,7 @@ void GameScene::update() {
 #ifdef ZF_EDITOR
 	mEditor.probeTick( mWorld ); // 撃った・空撃ちしたティック（FireProbe）
 #endif
-	// 反動とぶれをカメラと体へ・右下の弾数を出すか・体の音（反動・揺れ・ぶれは次のティックの絵から効く）
-	mFeedback.syncView( mWorld, &mControl, &mHud );
+	mFeedback.syncView( mWorld, &mControl, &mHud );	// 反動とぶれをカメラと体へ・右下の弾数を出すか・体の音（反動・揺れ・ぶれは次のティックの絵から効く）
 #ifdef ZF_EDITOR
 	mFreeCamera.move(); // 使っていなければ何もしない
 #endif
@@ -274,8 +269,7 @@ void GameScene::draw() {
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 		mDebug.addLootContents( mWorld, camera, &mResources->uiRenderer() );
 #endif
-		// 遊んでいる間の HUD（マーク・弾数・知らせと棒）。積むだけで、下の UiRenderer::draw がまとめて描く
-		mHud.draw( camera, mSession, mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );
+		mHud.draw( camera, mSession, mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );	// 遊んでいる間の HUD（マーク・弾数・知らせと棒）。積むだけで、下の UiRenderer::draw がまとめて描く
 	}
 
 	GameDebugOverlay::TextState text;
@@ -291,8 +285,7 @@ void GameScene::updateInteraction() {
 		mHud.clearMarkers();
 		return;
 	}
-	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）
-	const FirstPersonCamera& camera = mControl.camera();
+	const FirstPersonCamera& camera = mControl.camera();	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）
 	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す
 	bool interactPressed = InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead();
 	if ( interactPressed && mLoot.isSearching() ) {
@@ -308,8 +301,7 @@ void GameScene::updateInteraction() {
 	if ( IInteractable* opened = mInteractor.opened() ) {
 		mLoot.beginLoot( opened );
 	}
-	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）
-	mWorld.interaction().removeTakenPickups();
+	mWorld.interaction().removeTakenPickups();	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）
 	// マークは使った後の状態で決める（拾い切った物は出さない）。死んだ後は出さない
 	if ( mWorld.isPlayerDead() ) {
 		mHud.clearMarkers();

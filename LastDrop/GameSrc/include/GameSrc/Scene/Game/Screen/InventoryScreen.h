@@ -24,20 +24,14 @@ enum class PlayerCondition;
 // （PauseMenu と同じ分け方。画面から世界を触らない）。動かす（並べ替え）はカバンの中だけで済むので、ここから Inventory に頼む
 class InventoryScreen{
 public:
-	// 本編への頼み（中身は InventoryCursor::Request。BagController が InventoryScreen::Request の形で読む）
-	typedef InventoryCursor::Request Request;
+	typedef InventoryCursor::Request Request;	// 本編への頼み（中身は InventoryCursor::Request。BagController が InventoryScreen::Request の形で読む）
 
-	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
-	explicit InventoryScreen( UiRenderer* renderer );
+	explicit InventoryScreen( UiRenderer* renderer );	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
 
-	// 開くたびに、左上のマスを選んだ状態から見せる（本編が開いたときに呼ぶ）
-	void open();
-	// 拾った物 incoming を持った状態で始める（本編が open の後に呼ぶ）。入る所があれば、その最初のマスを選んでおく
-	void openForPlacing( const Inventory& inventory, const ItemStack& incoming );
-	// 拾った物を持っているか（ESC で取りやめたら false）
-	bool isPlacing() const;
-	// ESC：拾った物を持っている・メニュー・動かしている途中なら取りやめて true（拾うのをやめても画面は開いたまま）。何もしていなければ false（本編がカバンを閉じる）
-	bool back();
+	void open();																	// 開くたびに、左上のマスを選んだ状態から見せる（本編が開いたときに呼ぶ）
+	void openForPlacing( const Inventory& inventory, const ItemStack& incoming );	// 拾った物 incoming を持った状態で始める（本編が open の後に呼ぶ）。入る所があれば、その最初のマスを選んでおく
+	bool isPlacing() const;															// 拾った物を持っているか（ESC で取りやめたら false）
+	bool back();																	// ESC：拾った物を持っている・メニュー・動かしている途中なら取りやめて true（拾うのをやめても画面は開いたまま）。何もしていなければ false（本編がカバンを閉じる）
 	// 入力を読んで選ぶ・動かす。開いている間、1回の描画につき1回（本編の beginFrame で）
 	// 「Drop」「Equip」を選んだら、そのマス（物の中身を持つマス）を返す。取り出して足元に置く・持ち替えるのは本編
 	// inventory: 動かす先。nullptr 不可。equipped: 手に持っている銃の物（素手なら ITEM_NONE。Equip を出すかを決める）
@@ -52,12 +46,10 @@ public:
 	void draw( const Inventory& inventory, ItemId equipped, const char* exits, const ItemStack* incoming, PlayerCondition condition );
 
 private:
-	// マス目を画面の真ん中に置く（ItemGridView へ渡す。画面の幅は窓で変わるので、読む・描く前に毎回）
-	void layout( const ItemGrid& grid );
+	void layout( const ItemGrid& grid );											// マス目を画面の真ん中に置く（ItemGridView へ渡す。画面の幅は窓で変わるので、読む・描く前に毎回）
 	// ── 並べる位置（画素。画面上の位置。UiAnchor の中央を足し済み）──
 	UiRect menuRect( const ItemGrid& grid, int index ) const;
-	// point の下のメニューの項目。無ければ -1
-	int menuAt( const ItemGrid& grid, const GameLib::Math::Vector2& point ) const;
+	int menuAt( const ItemGrid& grid, const GameLib::Math::Vector2& point ) const;	// point の下のメニューの項目。無ければ -1
 
 	void drawSelection( const Inventory& inventory, const ItemStack* incoming );
 	void drawMenu( const ItemGrid& grid );

@@ -12,20 +12,17 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const float kFullTurn = 360.f; // 波の 1 往復（度。GameLib の sin は度で受ける）
-	// ゆっくりの波（よろめき）の長さは、ふだんの揺れの何倍か。整数の比にしないことで、2 つの波が重なる時がたまにしか来ない
-	const float kLurchPeriodRatio = 2.7f;
+	const float kFullTurn = 360.f;					// 波の 1 往復（度。GameLib の sin は度で受ける）
+	const float kLurchPeriodRatio = 2.7f;			// ゆっくりの波（よろめき）の長さは、ふだんの揺れの何倍か。整数の比にしないことで、2 つの波が重なる時がたまにしか来ない
 	// 2 つの波の割合（足すと 1）。ふだんは最大の 7 割ほどで揺れ、2 つが重なったときだけ最大まで傾く
 	const float kMainShare = 0.7f;
 	const float kLurchShare = 0.3f;
 	// 強さを 0 から 1 まで（1 から 0 まで）寄せ切る長さ（秒）。追うのをやめたら、これだけかけて揺れが収まる
 	const float kFadeSeconds = 0.5f;
 	const float kFadePerTick = 1.f / ( kFadeSeconds * GameTime::kTicksPerSecond );
-	// これより小さい角度（度）は曲げない（揺れていない体で毎回計算しないため）
-	const float kNegligibleDegree = 0.01f;
-	// 倒す向き（骨格の根の空間の横。体の向き 0 が +Z なので、横は +X）
-	const Vector3 kSideDirection( 1.f, 0.f, 0.f );
-	const float kLurchStartOffset = 0.5f; // ゆっくりの波は、ふだんの揺れと半周ずらして始める（始めからいきなり大きく傾かない）
+	const float kNegligibleDegree = 0.01f;			// これより小さい角度（度）は曲げない（揺れていない体で毎回計算しないため）
+	const Vector3 kSideDirection( 1.f, 0.f, 0.f );	// 倒す向き（骨格の根の空間の横。体の向き 0 が +Z なので、横は +X）
+	const float kLurchStartOffset = 0.5f;			// ゆっくりの波は、ふだんの揺れと半周ずらして始める（始めからいきなり大きく傾かない）
 }
 
 ZombieSway::ZombieSway( const ZombieFlinchLayout* layout, float periodSeconds, float startPhase ) :

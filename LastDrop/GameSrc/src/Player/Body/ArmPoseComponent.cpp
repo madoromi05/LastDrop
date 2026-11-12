@@ -128,8 +128,7 @@ void ArmPoseComponent::update( Animator::State next ) {
 		float follow = reference ? kFullWeight - raise : kNoWeight;
 		body.setArmOverride( &mArmPose, mHoldWeight, follow, reference );
 	} else {
-		// ライフル：体のアニメの腕のまま。リロードのアニメはライフルの体のアニメと同じ骨格で作られているので、寄せない
-		body.setArmOverride( reloadWeight > kNoWeight ? &mReloadPose : nullptr, reloadWeight, kNoWeight, nullptr );
+		body.setArmOverride( reloadWeight > kNoWeight ? &mReloadPose : nullptr, reloadWeight, kNoWeight, nullptr );	// ライフル：体のアニメの腕のまま。リロードのアニメはライフルの体のアニメと同じ骨格で作られているので、寄せない
 	}
 	body.setHoldWeight( mHoldWeight * ( kFullWeight - reloadWeight ) );
 	body.setCarryWeight( mCarryWeight );

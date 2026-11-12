@@ -24,8 +24,7 @@ public:
 	virtual void draw( UiRenderer& renderer ) const;
 
 private:
-	// 1 つの案内を x から描き、次の案内を始める x を返す
-	float drawHint( UiRenderer& renderer, const Hint& hint, float x, float middleY ) const;
+	float drawHint( UiRenderer& renderer, const Hint& hint, float x, float middleY ) const;	// 1 つの案内を x から描き、次の案内を始める x を返す
 
 	UiAnchor mAnchor;
 	GameLib::Math::Vector2 mLeftMiddle;

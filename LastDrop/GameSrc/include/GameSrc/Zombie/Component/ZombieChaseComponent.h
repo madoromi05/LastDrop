@@ -33,10 +33,8 @@ public:
 	// 立っている体が、追う先を見て行き先を決め、向きを変える（見た目の向きも合わせる）。歩くかどうかを返す
 	// target: 追う先（nullptr なら追わない）。crowd: 近くの仲間（nullptr なら避けない）
 	ZombieLocomotion::Intent think( const ChaseTarget* target, const HitWorld& hitWorld, const ZombieCrowd* crowd );
-	// think の結果どおりに歩く・走る（向き終わっていれば進む）。追いついて立ち止まっていれば、仲間の後ろから横へよける
-	void walk( const ZombieLocomotion::Intent& intent, const ZombieCrowd* crowd );
-	// このティックの揺れを決める（姿勢を求める前に呼ぶ）。pursuing: 立って追える体で、よろけ・攻撃の最中でないか
-	void updateSway( const ChaseTarget* target, bool pursuing );
+	void walk( const ZombieLocomotion::Intent& intent, const ZombieCrowd* crowd );	// think の結果どおりに歩く・走る（向き終わっていれば進む）。追いついて立ち止まっていれば、仲間の後ろから横へよける
+	void updateSway( const ChaseTarget* target, bool pursuing );					// このティックの揺れを決める（姿勢を求める前に呼ぶ）。pursuing: 立って追える体で、よろけ・攻撃の最中でないか
 
 	// ── 確認用の表示が読む ──
 	ZombieChase::Mode mode() const;                       // 追ってくる AI の今の考え（Wander / Chase / Search）
@@ -49,8 +47,7 @@ public:
 	void start() override;
 
 private:
-	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて、近いほど強い。それ以外は 0（走る体も 0）
-	float swayStrength( const ChaseTarget* target, bool pursuing ) const;
+	float swayStrength( const ChaseTarget* target, bool pursuing ) const;	// 今揺らしたい強さ（0〜1）。立って自キャラを追っていて、近いほど強い。それ以外は 0（走る体も 0）
 
 	int mSightPhase;
 	int mWanderSeed;

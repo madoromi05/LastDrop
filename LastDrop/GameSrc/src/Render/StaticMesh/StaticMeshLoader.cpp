@@ -19,8 +19,7 @@ namespace{
 	// <StaticMesh> 要素1つ（=パーツ1つ）を読み、GPUへ送るまでを行う
 	// 読んだ頂点で data の囲む箱を広げる（パーツは GPU へ送った後に頂点を捨てるので、読むときに測る）
 	bool loadPart( StaticMeshPart* part, StaticMeshData* data, const ConstElement& mesh, TextureCache* textures ) {
-		// テクスチャ・法線マップ・材質値（<StaticMesh texture="..." normalmap="..." ...>）
-		MeshLoaderUtil::loadMaterial( &part->material(), mesh, textures );
+		MeshLoaderUtil::loadMaterial( &part->material(), mesh, textures );	// テクスチャ・法線マップ・材質値（<StaticMesh texture="..." normalmap="..." ...>）
 
 		// まず Vertex/Index の数を数える
 		int vertexNumber = 0;
@@ -63,8 +62,7 @@ namespace{
 			} else if ( name == "Index" ) {
 				ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( child, "value" );
 				if ( valueAttr ) {
-					// 頂点数は checkVertexNumber 済みなので 16bit に収まる
-					part->setIndex( indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
+					part->setIndex( indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );	// 頂点数は checkVertexNumber 済みなので 16bit に収まる
 				}
 				++indexIndex;
 			}

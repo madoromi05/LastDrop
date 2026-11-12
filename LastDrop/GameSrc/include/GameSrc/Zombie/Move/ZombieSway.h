@@ -25,14 +25,12 @@ public:
 	// 今の傾き（-1〜1。強さ込み）。正は骨格の根の空間の +X（体の向きを正に回す側）へ倒れている
 	// 歩く向きを揺れに合わせてずらすのに使う
 	float lean() const;
-	// 今の傾きの分だけ、歩く向きをずらす角度（度。maxDegree × lean。倒れている側へ流れる）
-	float weaveDegree( float maxDegree ) const;
+	float weaveDegree( float maxDegree ) const;										// 今の傾きの分だけ、歩く向きをずらす角度（度。maxDegree × lean。倒れている側へ流れる）
 	// distance（m）に居る相手を追うときに揺らす強さ（0〜1）。startDistance より遠いと 0、fullDistance より近いと 1、
 	// 間はなめらかに増やす（遠くから頭を狙う楽しさは残す）。幅が 0 以下（F6 で逆にした）なら、fullDistance を境に 0 か 1
 	// どの状態で揺らすか（追っている・よろけていない等）は呼ぶ側が決める
 	static float strengthAt( float distance, float startDistance, float fullDistance );
-	// 今の傾きの分だけ、胴を左右に倒す（BonePoseModifier）
-	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
+	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;	// 今の傾きの分だけ、胴を左右に倒す（BonePoseModifier）
 
 private:
 	const ZombieFlinchLayout* mLayout; // 借りているだけ

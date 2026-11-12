@@ -14,16 +14,14 @@ class SkinnedMeshData;
 // 箱を今のポーズへ置き直す（update）のは、その物の動きを決める部品（アニメを進めた後に呼ぶ）
 class HitboxComponent : public Component, public IHittable, public IWorldMember{
 public:
-	// 部位の箱の設計図を借りる（ゾンビ。同じ種類の全員で共有する ZombieModel の物）。layout: nullptr 不可。この部品より長く生きていること
-	explicit HitboxComponent( const HitboxLayout* layout );
+	explicit HitboxComponent( const HitboxLayout* layout );	// 部位の箱の設計図を借りる（ゾンビ。同じ種類の全員で共有する ZombieModel の物）。layout: nullptr 不可。この部品より長く生きていること
 	// 部位の箱の設計図を data から作って自分で持つ（自キャラ。1 人だけなので共有しない）
 	// data: 骨を引く形。nullptr 不可。boneNamePrefix: 骨の名前の頭の共通部分（"mixamorig:"）
 	HitboxComponent( const SkinnedMeshData* data, const char* boneNamePrefix );
 
 	HitboxSet& boxes(){ return mHitboxes; }
 
-	// IHittable
-	const HitboxSet& hitboxes() const override;
+	const HitboxSet& hitboxes() const override;	// IHittable
 	// IWorldMember（命中の名簿にだけ載る）
 	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;

@@ -24,9 +24,7 @@ struct DayConditionEffect{
 	int zombieCount;            // 立っているゾンビの目標と、同時に居られる数（死体も数える）
 };
 
-// condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）
-const DayConditionEffect& dayConditionEffect( DayCondition condition );
-// 英字の名前から引く。知らない名前・nullptr はふつう（日の条件を保存し直すとき用に残す）
-DayCondition dayConditionFromSaveName( const char* name );
+const DayConditionEffect& dayConditionEffect( DayCondition condition );	// condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）
+DayCondition dayConditionFromSaveName( const char* name );				// 英字の名前から引く。知らない名前・nullptr はふつう（日の条件を保存し直すとき用に残す）
 
 #endif

@@ -8,10 +8,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 骨格は cm（根に 0.01 倍が入っている）、銃は m なので、骨の空間では銃を100倍して等倍に戻す
-	const float kWeaponScaleInBone = 100.f;
-	// 銃のモデルの銃口の向き（+Z）。どの銃も +Z を前にして変換する（tools/configs/*.json）
-	const Vector3 kMuzzleAxis( 0.f, 0.f, 1.f );
+	const float kWeaponScaleInBone = 100.f;		// 骨格は cm（根に 0.01 倍が入っている）、銃は m なので、骨の空間では銃を100倍して等倍に戻す
+	const Vector3 kMuzzleAxis( 0.f, 0.f, 1.f );	// 銃のモデルの銃口の向き（+Z）。どの銃も +Z を前にして変換する（tools/configs/*.json）
 }
 
 WeaponModelComponent::WeaponModelComponent( const StaticMeshData* weapon, const StaticMeshData* magazine, const WeaponGrip& grip ) :

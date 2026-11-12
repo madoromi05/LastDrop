@@ -14,12 +14,9 @@ enum class GridRule{
 // 動かし方（重ねる・入れ替え）は ItemGrid、守る決まりはここ、と分ける（ItemGrid を倉庫にもカバンにも使えるように）
 // 写しの上で動かしてみて、動いた後の中身が決まりを守っていれば動かせる（入れ替えで、どけた物が戻る側の決まりも調べる）
 namespace ItemTransfer{
-	// grid が rule を守っているか（CarryLimit なら、どの種類も carryLimit 以下か）
-	bool satisfies( const ItemGrid& grid, GridRule rule );
-	// 同じマス目の中で動かす・別のマス目へ動かす（source と target が同じなら中の並べ替え）
-	bool canMove( const ItemGrid& source, GridRule sourceRule, int from, const ItemGrid& target, GridRule targetRule, int to );
-	// canMove が true のときだけ呼ぶこと
-	void move( ItemGrid* source, int from, ItemGrid* target, int to );
+	bool satisfies( const ItemGrid& grid, GridRule rule );																		// grid が rule を守っているか（CarryLimit なら、どの種類も carryLimit 以下か）
+	bool canMove( const ItemGrid& source, GridRule sourceRule, int from, const ItemGrid& target, GridRule targetRule, int to );	// 同じマス目の中で動かす・別のマス目へ動かす（source と target が同じなら中の並べ替え）
+	void move( ItemGrid* source, int from, ItemGrid* target, int to );															// canMove が true のときだけ呼ぶこと
 	// source の from の物を、別のマス目 target のおまかせの所へ動かす（漁れる場所の画面の F）
 	// ①同じ物で重ねられるマス → ②上の行・左の列の空き、の順に入れる（入れ替えはしない）。重ねて入りきらない分は次のマスへ続け、
 	// それでも入らない分は source に残る。1 つでも動いたら true。source と target は別のマス目であること

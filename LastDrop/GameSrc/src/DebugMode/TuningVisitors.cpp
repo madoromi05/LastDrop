@@ -11,12 +11,9 @@ namespace{
 	const int kVectorCount = 3;
 	static_assert( sizeof( GameLib::Math::Vector3 ) == sizeof( float ) * kVectorCount, "Vector3 must be three floats in a row." );
 
-	// エディタで 1 画素ドラッグしたときに動く量を、範囲のこの割合にする（範囲の端から端まで 1000 画素）
-	const float kDragSpeedRatio = 0.001f;
-	// 値の入力欄の幅（欄の幅に対して。名前と「既定値に戻す」ボタンを同じ行に残す）
-	const float kItemWidthRatio = 0.55f;
-	// 既定値と違う項目の字の色（ImGui の既定の暗い配色で読める黄色）
-	const ImVec4 kChangedColor( 1.f, 0.8f, 0.3f, 1.f );
+	const float kDragSpeedRatio = 0.001f;				// エディタで 1 画素ドラッグしたときに動く量を、範囲のこの割合にする（範囲の端から端まで 1000 画素）
+	const float kItemWidthRatio = 0.55f;				// 値の入力欄の幅（欄の幅に対して。名前と「既定値に戻す」ボタンを同じ行に残す）
+	const ImVec4 kChangedColor( 1.f, 0.8f, 0.3f, 1.f );	// 既定値と違う項目の字の色（ImGui の既定の暗い配色で読める黄色）
 
 	// 小数を元の値へ戻る桁（float は有効数字 9 桁）で文字にする
 	std::string numberText( float value ) {

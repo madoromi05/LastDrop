@@ -18,8 +18,7 @@ class Inventory;
 // 弾倉が空で撃つ番が来たら、弾は出ずに空撃ちになる（dryFiredThisTick）。引き金を離すまで次の空撃ちはしない
 class GunComponent : public Component{
 public:
-	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）
-	explicit GunComponent( const WeaponSpec& spec );
+	explicit GunComponent( const WeaponSpec& spec );	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）
 
 	const WeaponSpec& spec() const;
 
@@ -27,9 +26,8 @@ public:
 	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）
 	// 撃てない間も呼ぶ（次の1発までの間隔を、撃てない間に止めないため）
 	void pullTrigger( bool pulling, bool triggerHeld );
-	// 反動を 1 ティック進める（pullTrigger の後に呼ぶ。撃ったティックに跳ねる）
-	void updateRecoil();
-	float recoilKick() const;  // 今の反動の量（FirstPersonBody::setRecoil へ渡す）
+	void updateRecoil();		// 反動を 1 ティック進める（pullTrigger の後に呼ぶ。撃ったティックに跳ねる）
+	float recoilKick() const;	// 今の反動の量（FirstPersonBody::setRecoil へ渡す）
 
 	// ── リロード ──
 	bool canStartReload( const Inventory& inventory ) const; // リロード中でない・弾倉が満タンでない・予備がある
@@ -39,13 +37,12 @@ public:
 	void updateReload( Inventory* inventory );
 	const WeaponReload& reload() const;
 
-	bool firedThisTick() const;     // 直前の pullTrigger で1発撃ったか
-	bool dryFiredThisTick() const;  // 直前の pullTrigger で、弾倉が空のまま引き金を引いたか
+	bool firedThisTick() const;						// 直前の pullTrigger で1発撃ったか
+	bool dryFiredThisTick() const;					// 直前の pullTrigger で、弾倉が空のまま引き金を引いたか
 	bool isReloading() const;
-	WeaponReload::Cue reloadCueThisTick() const; // 直前の updateReload で来たリロードの合図（弾倉を抜く・挿す・槓桿）
-	int magazineRounds() const;     // 弾倉に入っている弾の数
-	// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき
-	void setMagazineRounds( int rounds );
+	WeaponReload::Cue reloadCueThisTick() const;	// 直前の updateReload で来たリロードの合図（弾倉を抜く・挿す・槓桿）
+	int magazineRounds() const;						// 弾倉に入っている弾の数
+	void setMagazineRounds( int rounds );			// 弾倉の弾の数を入れる（0〜弾倉の大きさに収める）。出撃の始めに、拠点で覚えた数を戻すとき
 
 private:
 	const WeaponSpec* mSpec;   // 表の行（借りているだけ）

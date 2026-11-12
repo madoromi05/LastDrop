@@ -15,14 +15,12 @@ class ItemGrid;
 // 持つのは画面の入力と描画と「今どこを選んでいるか」だけ。世界と音を止める・閉じるのは本編（GameScene。カバンの画面と同じ分け方）
 class LootScreen{
 public:
-	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
-	explicit LootScreen( UiRenderer* renderer );
+	explicit LootScreen( UiRenderer* renderer );	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
 
 	// 開くたびに、場所の中身の左上を選んだ状態から見せる（F を押せばすぐカバンへ移せるように）
 	// lootRule: 右のマス目に入れてよい物（漁れる場所は Free・脱出の車の給油口は FuelOnly）
 	void open( GridRule lootRule );
-	// ESC：持ち上げている途中なら取りやめて true。何もしていなければ false（本編が閉じる）
-	bool back();
+	bool back();	// ESC：持ち上げている途中なら取りやめて true。何もしていなければ false（本編が閉じる）
 	// 入力を読んで選ぶ・動かす。開いている間、1回の描画につき1回（本編の beginFrame で）。どれも nullptr 不可
 	// bag: カバンのマス目（Inventory::gridForTransfer）。loot: 場所の中身（LootContainerComponent::lootGrid）
 	void handleInput( ItemGrid* bag, ItemGrid* loot );

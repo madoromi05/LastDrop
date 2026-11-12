@@ -12,11 +12,9 @@ enum class PlayerCondition;
 // UiRenderer::draw は呼ばない（積むだけ。使う側＝InventoryScreen が最後に 1 回）
 class EcgView{
 public:
-	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この部品より長く生きていること
-	explicit EcgView( UiRenderer* renderer );
+	explicit EcgView( UiRenderer* renderer );	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この部品より長く生きていること
 
-	// area の中に、condition の色・波形で波線を積む。開いている間、1 回の描画につき 1 回
-	void draw( const UiRect& area, PlayerCondition condition );
+	void draw( const UiRect& area, PlayerCondition condition );	// area の中に、condition の色・波形で波線を積む。開いている間、1 回の描画につき 1 回
 
 private:
 	UiRenderer* mRenderer; // 借りているだけ

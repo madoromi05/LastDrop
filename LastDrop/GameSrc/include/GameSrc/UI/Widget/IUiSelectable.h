@@ -8,12 +8,9 @@
 class IUiSelectable{
 public:
 	virtual ~IUiSelectable(){}
-	// point（画素）が部品の範囲に入っているか（マウスで選ぶため）
-	virtual bool contains( const GameLib::Math::Vector2& point ) const = 0;
-	// 選ばれている／いないを切り替える（見た目を変えるため）
-	virtual void setSelected( bool selected ) = 0;
-	// 決定された
-	virtual void activate() = 0;
+	virtual bool contains( const GameLib::Math::Vector2& point ) const = 0;	// point（画素）が部品の範囲に入っているか（マウスで選ぶため）
+	virtual void setSelected( bool selected ) = 0;							// 選ばれている／いないを切り替える（見た目を変えるため）
+	virtual void activate() = 0;											// 決定された
 };
 
 #endif

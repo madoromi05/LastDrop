@@ -9,17 +9,16 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 既定の材質値。ゾンビ（暗めの肌テクスチャ）で見え方を調整した値
-	const float kDefaultDiffuse           = 1.0f;
-	const float kDefaultSpecular          = 0.01f; // ほぼツヤなし
+	const float kDefaultDiffuse           = 1.0f;	// 既定の材質値。ゾンビ（暗めの肌テクスチャ）で見え方を調整した値
+	const float kDefaultSpecular          = 0.01f;	// ほぼツヤなし
 	const float kDefaultSpecularSharpness = 8.f;
-	const float kDefaultNormalMapStrength = 0.3f;  // 標準(1)より弱めに調整した値
-	const float kOpaque                   = 1.f;   // 透明度（不透明）
+	const float kDefaultNormalMapStrength = 0.3f;	// 標準(1)より弱めに調整した値
+	const float kOpaque                   = 1.f;	// 透明度（不透明）
 	// PBR の既定値。書いていない材質は、つやの無い金属でない物（ゾンビの肌・服など）
 	const float kDefaultRoughness         = 0.8f;
 	const float kDefaultMetallic          = 0.f;
 	const float kDefaultEmission          = 0.f;
-	const float kNoPuddle                 = 0.f; // 水たまりは道路だけ（材質の txt に puddle="1"）
+	const float kNoPuddle                 = 0.f;	// 水たまりは道路だけ（材質の txt に puddle="1"）
 	const float kPuddle                   = 1.f;
 }
 
@@ -113,8 +112,7 @@ void MeshMaterial::apply() const {
 	m.setEmissionColor( Vector3( 0.f, 0.f, 0.f ) );
 	m.setSpecularSharpness( mSpecularSharpness );
 	m.setTransparency( kOpaque );
-	// 全部のメッシュの三角形の向きを調べると、99.9% 以上が法線と同じ側を向いていた（表が反時計回り）ので、既定で裏を捨てる
-	m.setCullMode( mDoubleSided ? Graphics::CULL_NONE : Graphics::CULL_BACK );
+	m.setCullMode( mDoubleSided ? Graphics::CULL_NONE : Graphics::CULL_BACK );	// 全部のメッシュの三角形の向きを調べると、99.9% 以上が法線と同じ側を向いていた（表が反時計回り）ので、既定で裏を捨てる
 	// G-Buffer へ描く間は、PBR の材質値を G-Buffer のシェーダへ渡す（静的メッシュもキャラもここを通る）
 	if ( RenderPass::current() == RenderPassKind::GBuffer ) {
 		RenderPass::setSurface( SurfaceParams{ mRoughness, mMetallic, mEmission, mPuddle }, mOrmMap );

@@ -58,7 +58,6 @@ struct AimSwayParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（AimSway.cpp が持つ）
-AimSwayParams& aimSwayParams();
+AimSwayParams& aimSwayParams();	// 起動中ずっと 1 つだけの調整値（AimSway.cpp が持つ）
 
 #endif

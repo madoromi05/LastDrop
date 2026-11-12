@@ -7,12 +7,11 @@
 // 箱の広さを下げるほど残像は消えるが、細い物のちらつきが戻る
 struct TaaParams{
 	// 履歴を混ぜる割合（0〜1。0.9 なら新しい色は 1 割ずつ入る）。動きの種類ごと
-	float historyWeight = 0.9f;            // 動かない物（建物・車・置物・地面）
-	float movingHistoryWeight = 0.8f;      // 動く物（ゾンビ・千切れた手足）。前の位置が正確でないので、新しい色を多めに入れる
-	float firstPersonHistoryWeight = 0.85f; // 手元（自キャラ・銃・弾）。画面の上で少し揺れる（照準のぶれ・歩きの揺れ）分だけ新しい色を多めに
-	// 履歴を寄せる箱の広さ（周り 3×3 の色の標準偏差の何倍か）。動きの種類ごと
-	float clipGamma = 1.f;
-	float movingClipGamma = 0.75f;          // 動く物は狭く（通った後ろに残像を残さない）
+	float historyWeight = 0.9f;				// 動かない物（建物・車・置物・地面）
+	float movingHistoryWeight = 0.8f;		// 動く物（ゾンビ・千切れた手足）。前の位置が正確でないので、新しい色を多めに入れる
+	float firstPersonHistoryWeight = 0.85f;	// 手元（自キャラ・銃・弾）。画面の上で少し揺れる（照準のぶれ・歩きの揺れ）分だけ新しい色を多めに
+	float clipGamma = 1.f;					// 履歴を寄せる箱の広さ（周り 3×3 の色の標準偏差の何倍か）。動きの種類ごと
+	float movingClipGamma = 0.75f;			// 動く物は狭く（通った後ろに残像を残さない）
 	float firstPersonClipGamma = 1.f;
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）
@@ -26,7 +25,6 @@ struct TaaParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（TemporalAntiAliasing.cpp が持つ）
-TaaParams& taaParams();
+TaaParams& taaParams();	// 起動中ずっと 1 つだけの調整値（TemporalAntiAliasing.cpp が持つ）
 
 #endif

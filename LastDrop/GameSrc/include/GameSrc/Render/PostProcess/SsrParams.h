@@ -8,18 +8,12 @@ struct SsrParams{
 	// これより粗い面は計算しない（空と地面の色の映り込みのまま）。水たまり 0.05・車 は画像の値・道路 0.6〜0.7
 	// 0.4 より粗い面は向きをばらしたぼけた映り込み（段階12-b で 0.4 → 0.7）
 	float maxRoughness = 0.7f;
-	// 反射の向きへ進む歩数（整数に丸めて使う）。多いほど細い物も当たるが、その分だけ重い
-	float steps = 24.f;
-	// 一番遠くまで進む長さ（m）。町の交差点の間は 33m
-	float maxDistance = 30.f;
-	// 点が物の奥へこれより深く入ったら、当たりとみなさない（m。薄い物の裏まで当たったことにしない）
-	float thickness = 0.5f;
-	// 画面の端で薄くする幅（画面に対する割合）。端で映り込みがぷつっと切れないように
-	float edgeFade = 0.1f;
-	// 全体の強さ（1 で計算どおり。見比べ用）
-	float intensity = 1.f;
-	// Hi-Z で進む回数の上限（整数に丸めて使う）。足りないと遠くの映り込みが途切れる。直線の進み方では使わない
-	float hiZMaxIterations = 48.f;
+	float steps = 24.f;				// 反射の向きへ進む歩数（整数に丸めて使う）。多いほど細い物も当たるが、その分だけ重い
+	float maxDistance = 30.f;		// 一番遠くまで進む長さ（m）。町の交差点の間は 33m
+	float thickness = 0.5f;			// 点が物の奥へこれより深く入ったら、当たりとみなさない（m。薄い物の裏まで当たったことにしない）
+	float edgeFade = 0.1f;			// 画面の端で薄くする幅（画面に対する割合）。端で映り込みがぷつっと切れないように
+	float intensity = 1.f;			// 全体の強さ（1 で計算どおり。見比べ用）
+	float hiZMaxIterations = 48.f;	// Hi-Z で進む回数の上限（整数に丸めて使う）。足りないと遠くの映り込みが途切れる。直線の進み方では使わない
 
 	// 項目ごとに v( 名前, 値, 下限, 上限, 単位 ) を呼ぶ（AimSwayParams と同じ約束）
 	template< class V > void visit( V& v ) {
@@ -33,8 +27,7 @@ struct SsrParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（ScreenSpaceReflection.cpp が持つ）
-SsrParams& ssrParams();
+SsrParams& ssrParams();	// 起動中ずっと 1 つだけの調整値（ScreenSpaceReflection.cpp が持つ）
 // 映り込みを作るか（F6 → Render の SSR。見比べと計測用）。false の間は作らず、混ぜるパスも描かない（空と地面の色の映り込みのまま）
 // 起動中ずっと 1 つ（ScreenSpaceReflection.cpp が持つ。初期値 true。Release では true のまま）
 bool& ssrEnabled();

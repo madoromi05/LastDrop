@@ -280,8 +280,7 @@ bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
 		return false; // 同じ所（動かさない。画面では取りやめとして扱う）
 	}
 
-	// 置く先のマスを使っている、動かす物とは別の物（2 マスの物を置く先に 1 マスの物が 2 つあることもある）
-	std::vector< int > others = ownersIn( *cells, target, spec.cellSize, source );
+	std::vector< int > others = ownersIn( *cells, target, spec.cellSize, source );	// 置く先のマスを使っている、動かす物とは別の物（2 マスの物を置く先に 1 マスの物が 2 つあることもある）
 
 	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）
 	if ( others.size() == 1 ) {
@@ -347,8 +346,7 @@ bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& t
 	if ( !target.isInside( placed / target.mColumns, placed % target.mColumns, spec.cellSize ) ) {
 		return false; // 列が足りない（1 列のマス目に 2 マスの物）
 	}
-	// 置く先を使っている物（別のマス目なので、動かす物自身は入っていない）
-	std::vector< int > others = ownersIn( *targetCells, placed, spec.cellSize, kEmpty );
+	std::vector< int > others = ownersIn( *targetCells, placed, spec.cellSize, kEmpty );	// 置く先を使っている物（別のマス目なので、動かす物自身は入っていない）
 
 	// ① 同じ物で重ねられるなら、入る分だけ足す（入りきらない分は元のマスに残る）
 	if ( others.size() == 1 ) {

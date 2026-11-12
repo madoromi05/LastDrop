@@ -20,8 +20,7 @@ public:
 	// data: 形と見た目。所有権は受け取らない。nullptr 不可。isReady() 済みであること。この部品より長く生きていること（MeshCache が持つ）
 	// material: 表面の材質（着弾音に使う）。cullTarget: 何として間引くか（車は Large、缶は Small）
 	StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget );
-	// 細かさの段（LOD）を持つ置物（車・缶）。shapes.full() が上の data にあたる（当たり判定・箱は元の形で作る）
-	StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget );
+	StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget );	// 細かさの段（LOD）を持つ置物（車・缶）。shapes.full() が上の data にあたる（当たり判定・箱は元の形で作る）
 
 	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
 	void draw( const DrawCulling& culling ) const;
@@ -30,8 +29,7 @@ public:
 	// shapes は今の形と同じ頂点の物（材質だけ違う）であること。弾・視線の当たりと箱は元の形のまま
 	void setShapes( const StaticMeshLods& shapes );
 
-	// Component（TransformComponent が要る）
-	void awake() override;
+	void awake() override;	// Component（TransformComponent が要る）
 	// IRayBlocker
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const override;

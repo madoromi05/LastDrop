@@ -52,8 +52,7 @@ namespace{
 	}
 
 	std::function< void() > changeTo( SceneManager::SceneId id ) {
-		// ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）
-		return [ id ]() { SceneManager::instance().requestChange( id ); };
+		return [ id ]() { SceneManager::instance().requestChange( id ); };	// ボタンの処理の途中でシーンを消さないよう、予約にする（SceneManager::requestChange）
 	}
 }
 

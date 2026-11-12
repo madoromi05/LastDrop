@@ -36,8 +36,7 @@ public:
 	// progressKind: 棒の上に出す文字の種類（progress が負なら読まない）
 	void draw( const RaidSession& session, const DayConditionEffect& condition, float progress, ProgressKind progressKind );
 
-	// 脱出の車の場所の名前を separator でつないだ文字（カバンの画面の見出しの下にも使う）
-	static std::string exitNames( const ExtractionTracker& extraction, const char* separator );
+	static std::string exitNames( const ExtractionTracker& extraction, const char* separator );	// 脱出の車の場所の名前を separator でつないだ文字（カバンの画面の見出しの下にも使う）
 
 private:
 	UiRenderer* mRenderer; // 借りているだけ

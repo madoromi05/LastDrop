@@ -28,18 +28,12 @@ namespace GameLib {
 		bool isMinimized() const;
 		bool isActive() const;
 		void enableFullScreen( bool );
-		///コマンドライン文字列取得
-		const char* commandLineString() const;
-		///ドラッグアンドドロップは有効ですか？
-		bool isDragAndDropEnabled() const;
-		///ドラッグアンドドロップ数取得
-		int droppedItemNumber() const;
-		///ドラッグアンドドロップ取得
-		const char* droppedItem( int index ) const;
-		///ドラッグアンドドロップクリア
-		void clearDroppedItem();
-		///ミリ秒単位時刻を返す
-		unsigned time() const;
+		const char* commandLineString() const;		///コマンドライン文字列取得
+		bool isDragAndDropEnabled() const;			///ドラッグアンドドロップは有効ですか？
+		int droppedItemNumber() const;				///ドラッグアンドドロップ数取得
+		const char* droppedItem( int index ) const;	///ドラッグアンドドロップ取得
+		void clearDroppedItem();					///ドラッグアンドドロップクリア
+		unsigned time() const;						///ミリ秒単位時刻を返す
 
 		static bool isMainThread();
 		static WindowCreator instance();

@@ -27,8 +27,7 @@ public:
 	// escapeCarSpot（TownMap::escapeCarSpots の番号）に車を置いた町の歩ける床。まだ無ければ world の動かない形から作る
 	// 返す床はこの持ち主が生きている間使える（作るのに失敗した床も返す。isReady が false で、ゾンビはまっすぐ寄るだけになる）
 	NavMesh* navMesh( int escapeCarSpot, const CollisionWorld& world );
-	// 建物の隠れの表。まだ無ければ buildings から作る（Debug では、作った後に hitWorld で一度だけ確かめる）
-	const TownVisibility* visibility( const std::vector< Building >& buildings, const HitWorld& hitWorld );
+	const TownVisibility* visibility( const std::vector< Building >& buildings, const HitWorld& hitWorld );	// 建物の隠れの表。まだ無ければ buildings から作る（Debug では、作った後に hitWorld で一度だけ確かめる）
 
 private:
 	std::map< int, std::unique_ptr< NavMesh > > mNavMeshes;

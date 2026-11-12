@@ -21,8 +21,7 @@ public:
 	// 渡す前に動かさないこと
 	explicit CharacterMover( const ICollisionBody* self );
 
-	// world: 問い合わせ先。所有権は受け取らない。nullptr 不可。この Mover より長く生きていること。1 回だけ呼ぶ
-	void setWorld( const CollisionWorld* world );
+	void setWorld( const CollisionWorld* world );	// world: 問い合わせ先。所有権は受け取らない。nullptr 不可。この Mover より長く生きていること。1 回だけ呼ぶ
 
 	// 本人を今の位置から delta だけ動かそうとして、実際に動いた量を返す（めり込みを外へ出した分も含む）
 	// 本人の位置は書き換えない（返した量を持ち主が自分の位置へ足す）。delta の y は無視する（地面を歩く）
@@ -40,10 +39,8 @@ public:
 	float followGround( const GameLib::Math::Vector3& position ) const;
 
 private:
-	// move の本体。filter に除かれた相手には当たらない
-	GameLib::Math::Vector3 move( const GameLib::Math::Vector3& delta, const CollisionWorld::BodyFilter& filter ) const;
-	// box がめり込んでいれば、外へ出るまで box の位置を動かす
-	void depenetrate( BoxCollider* box, const CollisionWorld::BodyFilter& filter ) const;
+	GameLib::Math::Vector3 move( const GameLib::Math::Vector3& delta, const CollisionWorld::BodyFilter& filter ) const;	// move の本体。filter に除かれた相手には当たらない
+	void depenetrate( BoxCollider* box, const CollisionWorld::BodyFilter& filter ) const;								// box がめり込んでいれば、外へ出るまで box の位置を動かす
 
 	const CollisionWorld* mWorld;
 	const ICollisionBody* mSelf;

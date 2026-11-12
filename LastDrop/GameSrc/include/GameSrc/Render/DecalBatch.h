@@ -40,8 +40,7 @@ public:
 	// どちらも読み込み済み（isReady）であること。projectionView: カメラの射影×ビュー行列
 	// 描き終えたら、変えた設定（混ぜ方・奥行きの判定と書き込み・裏表）を、物を描くときの設定へ戻す
 	void draw( GameLib::Graphics::Texture albedo, GameLib::Graphics::Texture normalMap, const GameLib::Math::Matrix44& projectionView );
-	// シェーダのコンパイルエラー。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const char* errorMessage() const;	// シェーダのコンパイルエラー。問題が無ければ空文字列
 
 private:
 	struct Decal{
@@ -53,8 +52,7 @@ private:
 		float opacity;
 		UvRect uvRect;
 	};
-	// decal の箱の行列と、箱の中の座標へ戻す定数を書く（1 つ描くたび）
-	void setDecalConstants( const Decal& decal, const GameLib::Math::Matrix44& inverseProjectionView );
+	void setDecalConstants( const Decal& decal, const GameLib::Math::Matrix44& inverseProjectionView );	// decal の箱の行列と、箱の中の座標へ戻す定数を書く（1 つ描くたび）
 
 	GameLib::Graphics::VertexBuffer mBox;      // 1 辺 1 の立方体（三角形 12 枚。中心が原点）
 	GameLib::Graphics::Shader mShader;         // Resource/Shader/Decal.hlsl

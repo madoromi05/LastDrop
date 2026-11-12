@@ -10,19 +10,14 @@
 // 上がる量・ぶれる量・戻る速さを変えるときは AimRecoil.cpp の定数だけを直す
 class AimRecoil{
 public:
-	// seed: 左右のぶれの乱数の種
-	explicit AimRecoil( int seed );
+	explicit AimRecoil( int seed );	// seed: 左右のぶれの乱数の種
 
-	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0
-	void update( float shotRecoil );
-	// 狙いの上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き）
-	float pitchOffset() const;
-	// 狙いの左右へ足す角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）
-	float yawOffset() const;
+	void update( float shotRecoil );	// 1ティック進める。shotRecoil: このティックに1発撃ったならその銃の反動の大きさ（WeaponSpec::recoilScale。ライフルが 1）、撃っていなければ 0
+	float pitchOffset() const;			// 狙いの上下へ足す角度（度。FirstPersonCamera のピッチと同じ約束で、負が見上げる向き）
+	float yawOffset() const;			// 狙いの左右へ足す角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）
 
 private:
-	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。scale: 足す量に掛ける反動の大きさ
-	void kick( float scale );
+	void kick( float scale );	// 撃ったティックに、連射の何発目かに合わせて上下・左右へ足す。scale: 足す量に掛ける反動の大きさ
 
 	GameLib::Math::Random mRandom;
 	float mRise;       // 上がっている角度（度。正が上）

@@ -17,18 +17,12 @@ using namespace Math;
 ///階層構造モデル
 class Tree{
 public:
-	///描画
-	void draw() const;
-	///アニメーション設定
-	void setAnimation( Animation );
-	///アニメーション更新(引数は時刻。マイナスなら中で勝手に進める)
-	void updateAnimation( float time = -1.f );
-	///アニメ速度設定
-	void setAnimationSpeed( float );
-	///描画せずにボーン(ノード)のワールド行列だけ更新する。スキニング用
-	void updateWorldMatrix();
-	///名前で指定したノード(ボーン)の現在ワールド行列を返す。無ければ0
-	const Matrix34* nodeMatrix( const char* name ) const;
+	void draw() const;										///描画
+	void setAnimation( Animation );							///アニメーション設定
+	void updateAnimation( float time = -1.f );				///アニメーション更新(引数は時刻。マイナスなら中で勝手に進める)
+	void setAnimationSpeed( float );						///アニメ速度設定
+	void updateWorldMatrix();								///描画せずにボーン(ノード)のワールド行列だけ更新する。スキニング用
+	const Matrix34* nodeMatrix( const char* name ) const;	///名前で指定したノード(ボーン)の現在ワールド行列を返す。無ければ0
 	///名前で指定したノード(ボーン)の番号を返す。無ければ-1
 	///番号は同じ Container の同じ番目から作った Tree すべてで共通なので、一度引いて覚えておける
 	int nodeIndex( const char* name ) const;

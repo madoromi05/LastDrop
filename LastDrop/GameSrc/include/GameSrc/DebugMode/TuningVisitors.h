@@ -36,16 +36,11 @@ private:
 
 namespace TuningVisitors{
 
-// 今の値と既定値が違うか（同じ構造体の同じ項目どうしで呼ぶ）
-bool differs( const TuningItem& live, const TuningItem& defaults );
-// from の値を to へ写す（既定値へ戻すときに使う）
-void copyValues( const TuningItem& from, const TuningItem& to );
-// 1 項目を ImGui で描く。既定値と違えば字の色を変え、横に既定値へ戻すボタンを出す。値を変えたら true
-bool draw( const TuningItem& live, const TuningItem& defaults );
-// ファイルに書く値の文字列（"1.5" や "-0.12, -0.1, 0.28"）。元の値へ戻る桁（%.9g）で書く
-std::string fileText( const TuningItem& item );
-// 構造体の初期値の形の 1 行（"float carryCant = 15.f;  // deg"）
-std::string cppLine( const TuningItem& item );
+bool differs( const TuningItem& live, const TuningItem& defaults );	// 今の値と既定値が違うか（同じ構造体の同じ項目どうしで呼ぶ）
+void copyValues( const TuningItem& from, const TuningItem& to );	// from の値を to へ写す（既定値へ戻すときに使う）
+bool draw( const TuningItem& live, const TuningItem& defaults );	// 1 項目を ImGui で描く。既定値と違えば字の色を変え、横に既定値へ戻すボタンを出す。値を変えたら true
+std::string fileText( const TuningItem& item );						// ファイルに書く値の文字列（"1.5" や "-0.12, -0.1, 0.28"）。元の値へ戻る桁（%.9g）で書く
+std::string cppLine( const TuningItem& item );						// 構造体の初期値の形の 1 行（"float carryCant = 15.f;  // deg"）
 
 } //namespace TuningVisitors
 

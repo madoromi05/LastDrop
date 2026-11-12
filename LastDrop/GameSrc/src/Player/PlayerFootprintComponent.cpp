@@ -13,9 +13,8 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 骨の名前の頭の共通部分（移動の当たり判定で骨を引くのに使う）
-	const char* kBoneNamePrefix = "mixamorig:";
-	const float kFootprintPadding = 0.f; // 移動の当たり判定は体ぴったり（狭い所を通れるように）
+	const char* kBoneNamePrefix = "mixamorig:";	// 骨の名前の頭の共通部分（移動の当たり判定で骨を引くのに使う）
+	const float kFootprintPadding = 0.f;		// 移動の当たり判定は体ぴったり（狭い所を通れるように）
 	// 目から、移動の当たり判定の前の辺までの余白（m）。これより近くに壁が来ないので、視点が壁を越えて建物の中が見えることが無い
 	// カメラは目の前 5cm（FirstPersonCamera の kNearClip）より近くを描かず、その面の隅は目から約 7.7cm 離れている
 	// （縦の視野角 60 度・16:9）。斜めに壁を見ても隅が壁に入らないよう、それより少し大きくする

@@ -37,8 +37,7 @@ public:
 		Hidden, // 映っていない：AnimationThrottleParams::hiddenIntervalTicks ごと
 	};
 
-	// phase：体ごとに違う数（湧いた順の番号など）。姿勢を求めるティックを体ごとにずらし、全員が同じティックに重ならないようにする
-	explicit AnimationThrottle( unsigned phase );
+	explicit AnimationThrottle( unsigned phase );	// phase：体ごとに違う数（湧いた順の番号など）。姿勢を求めるティックを体ごとにずらし、全員が同じティックに重ならないようにする
 
 	// 段を決める。view：前のフレームのカメラ（nullptr ならまだ描いていないので「近い」＝間引かない）
 	// hitboxes：部位の箱（全部を囲む箱で映るかを見る。DrawCulling と同じ箱）。position：足元（目からの距離に使う）
@@ -46,8 +45,7 @@ public:
 	// 1 ティック進め、このティックに姿勢を求めるか。初めての呼び出しは必ず true（湧いた体が T ポーズで見えないように）
 	// mustPose：間引いてはいけない間（攻撃・根の動き・ひるみ・這う）なら true
 	bool shouldPose( Level level, bool mustPose );
-	// 最後の shouldPose の段（F6 の Zombie info の表示に使う）
-	Level level() const;
+	Level level() const;	// 最後の shouldPose の段（F6 の Zombie info の表示に使う）
 
 private:
 	unsigned mPhase;

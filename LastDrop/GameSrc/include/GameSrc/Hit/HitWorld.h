@@ -27,8 +27,7 @@ public:
 	// 当たりうるキャラを登録する。所有権は受け取らない。nullptr 不可
 	// この名簿に問い合わせる間は生きていること（シーンでは、この名簿をキャラより先に宣言する＝キャラより後に破棄される）
 	void addTarget( const IHittable* target );
-	// 弾を止める物を登録する。所有権は受け取らない。nullptr 不可。寿命の決まりは addTarget と同じ
-	void addBlocker( const IRayBlocker* blocker );
+	void addBlocker( const IRayBlocker* blocker );	// 弾を止める物を登録する。所有権は受け取らない。nullptr 不可。寿命の決まりは addTarget と同じ
 	// 登録したものを外す（消す前に呼ぶ）。登録されていなければ何もしない
 	void removeTarget( const IHittable* target );
 	void removeBlocker( const IRayBlocker* blocker );
@@ -50,8 +49,7 @@ public:
 	const std::vector< const IRayBlocker* >& blockers() const;
 
 private:
-	// 弾を止める物のうち、hit より手前（found が false なら一番手前）に当たる物があれば hit に書く。何か書いてあれば true
-	bool findNearerBlocker( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, bool found, Hit* hit ) const;
+	bool findNearerBlocker( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, bool found, Hit* hit ) const;	// 弾を止める物のうち、hit より手前（found が false なら一番手前）に当たる物があれば hit に書く。何か書いてあれば true
 
 	std::vector< const IHittable* > mTargets;    // 借りているだけ
 	std::vector< const IRayBlocker* > mBlockers; // 借りているだけ

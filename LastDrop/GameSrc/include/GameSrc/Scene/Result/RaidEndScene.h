@@ -19,8 +19,7 @@ public:
 	virtual void draw();
 
 private:
-	// index 行目に、名前と値の 1 行を足す
-	void addLine( int index, const char* name, const char* value );
+	void addLine( int index, const char* name, const char* value );	// index 行目に、名前と値の 1 行を足す
 
 	UiScreen mScreen;
 };

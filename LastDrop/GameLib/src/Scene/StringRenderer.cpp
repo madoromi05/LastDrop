@@ -34,10 +34,9 @@ public:
 	mCharCapacity( charCapacity ),
 	mRequests( requestCapacity ), //リクエスト確保
 	mGlyphScale( 1.f ){
-		//TODO:ステート変更命令の最大数はとりあえず文字数分。過剰すぎる
-		mPrimitiveRenderer = PrimitiveRenderer::create( charCapacity * 2, charCapacity + 4 );
+		mPrimitiveRenderer = PrimitiveRenderer::create( charCapacity * 2, charCapacity + 4 );	//TODO:ステート変更命令の最大数はとりあえず文字数分。過剰すぎる
 		//draw二回呼ぶのに対処するための変数
-		mPreviousFrameId = Manager().frameId() - 1; //過ぎ去った値に
+		mPreviousFrameId = Manager().frameId() - 1;												//過ぎ去った値に
 	}
 	~Impl(){
 	}
@@ -86,9 +85,8 @@ public:
 			const char* s = r.mString.c_str();
 			int byteCount = 0;
 			for ( ; *s != '\0'; s += byteCount ){
-				//Char準備
-				int code = Utf8::decode( s, &byteCount );
-				if ( code == '\n' ){ //改行文字ですな
+				int code = Utf8::decode( s, &byteCount );	//Char準備
+				if ( code == '\n' ){						//改行文字ですな
 					pos.x = r.mPosition.x;
 					pos.y += charHeight;
 					continue;
@@ -101,8 +99,7 @@ public:
 					&c.mUv1,
 					code );
 				if ( found ){ //文字あった
-					//現在位置にピクセルを加えていく
-					c.mSize.setSub( c.mUv1, c.mUv0 );
+					c.mSize.setSub( c.mUv1, c.mUv0 );	//現在位置にピクセルを加えていく
 					//テクスチャから幅と高さをもらって、ピクセルに直す比を求める
 					c.mSize.x *= static_cast< float >( c.mTexture.width() ) / mGlyphScale;
 					c.mSize.y *= static_cast< float >( c.mTexture.height() ) / mGlyphScale;
@@ -129,8 +126,7 @@ public:
 				c.mColor = r.mColor;
 				c.mPosition.set( pos.x, pos.y, r.mDepth );
 				++charPosition;
-				//文字送り
-				pos.x += c.mSize.x;
+				pos.x += c.mSize.x;	//文字送り
 			}
 			mRequests.pop();
 		}
@@ -152,12 +148,11 @@ public:
 				mPrimitiveRenderer.setTexture( c.mTexture );
 				lastTexture = c.mTexture;
 			}
-			//頂点を作って四角形を描画
-			Vector2 p[ 2 ];
-			p[ 0 ].set( c.mPosition.x, c.mPosition.y ); //左上点
-			p[ 1 ].set( c.mPosition.x + c.mSize.x, c.mPosition.y + c.mSize.y ); //右下
+			Vector2 p[ 2 ];														//頂点を作って四角形を描画
+			p[ 0 ].set( c.mPosition.x, c.mPosition.y );							//左上点
+			p[ 1 ].set( c.mPosition.x + c.mSize.x, c.mPosition.y + c.mSize.y );	//右下
 			//描画
-			if ( c.mTexture ){ //テクスチャあれば
+			if ( c.mTexture ){													//テクスチャあれば
 				mPrimitiveRenderer.addRectangle( 
 					p[ 0 ], p[ 1 ],
 					c.mUv0, c.mUv1,
@@ -168,8 +163,7 @@ public:
 					c.mColor );
 			}
 		}
-		//全部終わったのでTriangleRendererを描画
-		mPrimitiveRenderer.draw();
+		mPrimitiveRenderer.draw();	//全部終わったのでTriangleRendererを描画
 	}
 	void setFont( Font& font ){
 		mCurrentFont = font;

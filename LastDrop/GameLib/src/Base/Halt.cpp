@@ -16,10 +16,8 @@ void halt( const char* filename, int line, const char* message ){
 		::OutputDebugStringA( "\n" );
 		throw EXCEPTION_IGNORE; //基本は無視
 	}else{
-		//メッセージボックスを出して
-		MessageBoxA( 0, buf, "Critical Error!", MB_OK | MB_ICONERROR );
-		//即死
-		*reinterpret_cast< int* >( 0 ) = 0;
+		MessageBoxA( 0, buf, "Critical Error!", MB_OK | MB_ICONERROR );	//メッセージボックスを出して
+		*reinterpret_cast< int* >( 0 ) = 0;								//即死
 	}
 }
 

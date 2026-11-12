@@ -8,8 +8,7 @@ namespace Graphics{
 ///中身の並びは HLSL の cbuffer と揃えること（float4 単位＝16バイト境界に詰められる規則に注意）
 class ConstantBuffer{
 public:
-	///byteSize: 中身の大きさ。16の倍数に切り上げて作る
-	static ConstantBuffer create( int byteSize );
+	static ConstantBuffer create( int byteSize );	///byteSize: 中身の大きさ。16の倍数に切り上げて作る
 	///中身を書き換える。byteSize は create で渡した大きさ以下。次の描画から使われる
 	void set( const void* data, int byteSize );
 	int size() const;

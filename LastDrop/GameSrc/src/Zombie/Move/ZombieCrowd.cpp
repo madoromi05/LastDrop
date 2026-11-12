@@ -8,8 +8,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 分離の値（F6 で動かせる）
-	ZombieCrowdParams gParams;
+	ZombieCrowdParams gParams;	// 分離の値（F6 で動かせる）
 
 	// これより近い（ほぼ重なっている）仲間は、離れる向きが決まらないので数えない（m）
 	// 重なりは CharacterMover が掃引の頭で外へ出す
@@ -42,8 +41,7 @@ Vector3 ZombieCrowd::separation( const GameObject* self, const Vector3& position
 		if ( distance >= radius || distance < kMinSeparationDistance ) {
 			continue;
 		}
-		// 自分への向き（長さ 1）に、近いほど大きい重みを掛ける
-		sum.madd( away, ( 1.f - distance / radius ) / distance );
+		sum.madd( away, ( 1.f - distance / radius ) / distance );	// 自分への向き（長さ 1）に、近いほど大きい重みを掛ける
 	}
 	float length = sum.length();
 	if ( length > 1.f ) {

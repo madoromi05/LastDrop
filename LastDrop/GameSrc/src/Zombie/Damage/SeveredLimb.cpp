@@ -22,15 +22,13 @@ namespace{
 	// 回る速さの範囲（度/秒）。軸はでたらめ
 	const float kMinSpinSpeed = 360.f / GameTime::kTicksPerSecond;
 	const float kMaxSpinSpeed = 720.f / GameTime::kTicksPerSecond;
-	// 落ちる加速度（m/ティック²）。本当の重力（9.8m/秒²）
-	const float kGravityPerTick = 9.8f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
+	const float kGravityPerTick = 9.8f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );	// 落ちる加速度（m/ティック²）。本当の重力（9.8m/秒²）
 
-	// 止まったときの、地面から部位の中心までの高さ（m）。腕・脚の太さの半分くらい
-	const float kRestHeight = 0.08f;
+	const float kRestHeight = 0.08f;			// 止まったときの、地面から部位の中心までの高さ（m）。腕・脚の太さの半分くらい
 	// 地面の高さを聞く縦の線（中心の少し上から下まで。m）。歩道の段差（15cm）より長く上から始める
 	const float kGroundRayAbove = 0.5f;
 	const float kGroundRayBelow = 3.f;
-	const float kFallbackGroundHeight = 0.f; // 地面が無い・見つからないときの高さ（町の地面は Y=0）
+	const float kFallbackGroundHeight = 0.f;	// 地面が無い・見つからないときの高さ（町の地面は Y=0）
 
 	// 止まってから沈み始めるまで（秒）と、沈むのにかける時間（秒）・深さ（m）。ゾンビの死体と同じ流れ
 	// 深さは腕・脚の太さより深くして、沈み終わりに何も見えないようにする（胴より細いのでゾンビの 0.5m より浅い）

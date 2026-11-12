@@ -10,8 +10,7 @@ namespace Graphics{
 ///奥行きの判定に使いながら読める）
 class DepthTarget{
 public:
-	///大きさを画素で決めて作る（影のマップなど）
-	static DepthTarget create( int width, int height );
+	static DepthTarget create( int width, int height );	///大きさを画素で決めて作る（影のマップなど）
 	///画面（バックバッファ）の scale 倍の大きさで作る。作り直しの決まりは RenderTarget と同じ
 	static DepthTarget createScreenSized( float scale );
 	int width() const;

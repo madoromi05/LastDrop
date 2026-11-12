@@ -20,10 +20,8 @@ public:
 	// requester（頼む物を見分ける印。中身は読まない）が今探してよいか。よければ列から外して true
 	// だめなら列の後ろに並べて（並んでいればそのまま）false。false なら次のティックにもう一度頼むこと
 	bool tryAcquire( const void* requester );
-	// 頼みを取り下げる（探す必要が無くなった・頼んだ物が消える）。並んでいなければ何もしない
-	void cancel( const void* requester );
-	// requester が順番を待っているか（確認用の表示）
-	bool isWaiting( const void* requester ) const;
+	void cancel( const void* requester );			// 頼みを取り下げる（探す必要が無くなった・頼んだ物が消える）。並んでいなければ何もしない
+	bool isWaiting( const void* requester ) const;	// requester が順番を待っているか（確認用の表示）
 
 private:
 	// 待っている頼み 1 つ

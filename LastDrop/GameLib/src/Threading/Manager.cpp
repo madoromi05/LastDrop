@@ -10,8 +10,7 @@ namespace Threading{
 ManagerImpl* gManagerImpl = 0; //Implの実体
 
 Manager::Manager(){
-	//別スレッドからの呼び出しは許さない
-	ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );
+	ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );	//別スレッドからの呼び出しは許さない
 }
 
 void Manager::create( int additionalThreadNumber ){

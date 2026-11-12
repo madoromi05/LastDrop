@@ -10,8 +10,7 @@ struct FirstPersonRig;
 // 両手持ち・胸元への寄せより先に決める（あの 2 つが動かすのは腕と右手だけで、頭は動かないので答えは同じ。HighPrioritySplit_Plan.txt 5-4）
 class EyePoint : public BonePoseModifier{
 public:
-	// rig: 骨の番号とピッチを読み、目の位置を書く。所有権は受け取らない。nullptr 不可。この段より長く生きていること
-	explicit EyePoint( FirstPersonRig* rig );
+	explicit EyePoint( FirstPersonRig* rig );	// rig: 骨の番号とピッチを読み、目の位置を書く。所有権は受け取らない。nullptr 不可。この段より長く生きていること
 
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 

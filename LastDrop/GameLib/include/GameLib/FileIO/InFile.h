@@ -7,16 +7,11 @@ namespace FileIO{
 ///読み込みファイルハンドル
 class InFile{
 public:
-	///ファイルロードを開始する
-	static InFile create( const char* filename );
-	///ロード容量ゲット
-	int size() const;
-	///ロード内容ゲット
-	const char* data() const; 
-	///ロード終わった？
-	bool isFinished() const;
-	///エラー出てます？
-	bool isError() const;
+	static InFile create( const char* filename );	///ファイルロードを開始する
+	int size() const;								///ロード容量ゲット
+	const char* data() const;						///ロード内容ゲット
+	bool isFinished() const;						///ロード終わった？
+	bool isError() const;							///エラー出てます？
 	//値ゲット関数群
 	int getInt( int position ) const;
 	unsigned getUnsigned( int position ) const;

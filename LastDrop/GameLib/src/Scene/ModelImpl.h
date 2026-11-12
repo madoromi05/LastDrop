@@ -46,8 +46,7 @@ public:
 		w.rotateZ( mAngle.z );
 		w.scale( mScale );
 		Graphics::Manager().setWorldMatrix( w );
-		//描画
-		mBatch->draw( mColor, mTransparency );
+		mBatch->draw( mColor, mTransparency );	//描画
 	}
 	Batch::Impl* mBatch;
 	Vector3 mPosition;

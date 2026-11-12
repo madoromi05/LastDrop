@@ -16,30 +16,18 @@ template< class T > class Tank{
 public:
 	explicit Tank( int blockSize = 16 );
 	~Tank();
-	///再確保。中身がある状態で呼ぶとassert。clear()しろ
-	void setBlockSize( int blockSize );
-	///現在の要素数取得
-	int size() const;
-	///全解放
-	void clear();
-	///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと
-	T* add();
-	///末尾に追加
-	void add( const T& );
-	///次へ
-	void toNext();
-	///終わりです
-	bool isEnd() const;
-	///現在の要素を取得(非const)
-	T* get();
-	///現在の要素を取得(const)
-	const T* get() const;
-	///最初の要素にポインタを戻す
-	void rewind();
-	///単なる配列に変換。前もってsize()したサイズでnewした領域を渡すこと
-	void copyTo( T* ) const;
-	///Arrayにコピー。空でないと怒られる
-	void copyTo( Array< T >* ) const;
+	void setBlockSize( int blockSize );	///再確保。中身がある状態で呼ぶとassert。clear()しろ
+	int size() const;					///現在の要素数取得
+	void clear();						///全解放
+	T* add();							///末尾に空で追加。足したものへのポインタを返すので、初期設定はこれを使うこと
+	void add( const T& );				///末尾に追加
+	void toNext();						///次へ
+	bool isEnd() const;					///終わりです
+	T* get();							///現在の要素を取得(非const)
+	const T* get() const;				///現在の要素を取得(const)
+	void rewind();						///最初の要素にポインタを戻す
+	void copyTo( T* ) const;			///単なる配列に変換。前もってsize()したサイズでnewした領域を渡すこと
+	void copyTo( Array< T >* ) const;	///Arrayにコピー。空でないと怒られる
 private:
 	struct Block{
 		Block* mNext; //次のノード

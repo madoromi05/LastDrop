@@ -15,16 +15,11 @@ class Inventory;
 class IInteractable{
 public:
 	virtual ~IInteractable(){}
-	// 今の持ち物で使えるか（使えなければマークを灰色にする。カバンが一杯・ガソリンを持っていない・満タン など）
-	virtual bool canInteract( const Inventory& inventory ) const = 0;
-	// 使う。canInteract が true のときだけ呼ばれる。拾う物では、置く所を選ばずにおまかせで入れる（QuickPlace）
-	virtual void interact( Inventory* inventory ) = 0;
-	// 拾う物なら、拾える物と数を out に書いて true（置く所を選ぶ画面へ回す）。拾う物でなければ false（Interactor がすぐ interact する）
-	virtual bool offeredStack( ItemStack* out ) const = 0;
-	// offeredStack の物を count 個、持ち物へ入れた（入れるのは呼ぶ側）。count は 1〜差し出した数。全部入ったら、もう差し出さない
-	virtual void takeOffered( int count ) = 0;
-	// 漁れる場所・脱出の車の給油口なら、中身のマス目（Interactor は開ける物として呼ぶ側へ回す）。どちらでもなければ nullptr
-	virtual ItemGrid* lootGrid() = 0;
+	virtual bool canInteract( const Inventory& inventory ) const = 0;	// 今の持ち物で使えるか（使えなければマークを灰色にする。カバンが一杯・ガソリンを持っていない・満タン など）
+	virtual void interact( Inventory* inventory ) = 0;					// 使う。canInteract が true のときだけ呼ばれる。拾う物では、置く所を選ばずにおまかせで入れる（QuickPlace）
+	virtual bool offeredStack( ItemStack* out ) const = 0;				// 拾う物なら、拾える物と数を out に書いて true（置く所を選ぶ画面へ回す）。拾う物でなければ false（Interactor がすぐ interact する）
+	virtual void takeOffered( int count ) = 0;							// offeredStack の物を count 個、持ち物へ入れた（入れるのは呼ぶ側）。count は 1〜差し出した数。全部入ったら、もう差し出さない
+	virtual ItemGrid* lootGrid() = 0;									// 漁れる場所・脱出の車の給油口なら、中身のマス目（Interactor は開ける物として呼ぶ側へ回す）。どちらでもなければ nullptr
 };
 
 #endif

@@ -60,11 +60,9 @@ public:
 	// model: 切り口の決まりと形を読む。借りるだけ。千切れた部位が消えるまで生きていること（GameWorld が持つ）
 	void spawnSeveredLimb( const SkinnedMeshInstance& zombieMesh, const ZombieModel& model, BodyPart part,
 		const GameLib::Math::Vector3& direction );
-	// blocker に付いた弾痕・血の跡を消す。物が消える前（destroyLater で印を付けるとき）に呼ぶ
-	void detach( const IRayBlocker* blocker );
+	void detach( const IRayBlocker* blocker );	// blocker に付いた弾痕・血の跡を消す。物が消える前（destroyLater で印を付けるとき）に呼ぶ
 
-	// 1ティック進める（古くする・落とす・消す）。ground: 千切れた部位が落ちる先（建物・車の上には乗らず、抜ける）。nullptr 不可
-	void update( const IRayBlocker* ground );
+	void update( const IRayBlocker* ground );	// 1ティック進める（古くする・落とす・消す）。ground: 千切れた部位が落ちる先（建物・車の上には乗らず、抜ける）。nullptr 不可
 
 	// 弾痕と血の跡（弾痕の上に乗る）を G-Buffer へデカールとして描く。GBuffer::beginDecals〜endDecals の間で、1フレームに1回まで
 	// projectionView: カメラの射影×ビュー行列
@@ -75,17 +73,15 @@ public:
 		const GameLib::Math::Vector3& eye );
 	void drawBloodSpray( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection,
 		const GameLib::Math::Vector3& eye );
-	// 千切れた部位を描く（不透明。G-Buffer へ・影のマップへ）。culling: 描くかどうか
-	void drawSeveredLimbs( const DrawCulling& culling ) const;
+	void drawSeveredLimbs( const DrawCulling& culling ) const;	// 千切れた部位を描く（不透明。G-Buffer へ・影のマップへ）。culling: 描くかどうか
 
 private:
-	BulletHoleList mBulletHoles;   // 弾が物に当たった跡
-	ImpactDustList mImpactDust;    // 弾が物に当たった瞬間の砂ぼこり（遠くの着弾を見えるようにする）
-	BloodSprayList mBloodSpray;    // 弾がゾンビに当たった瞬間・部位が切れた瞬間の血しぶき
-	BloodStainList mBloodStains;   // 撃たれたゾンビの後ろの壁・足元に付いた血の跡
-	SeveredLimbList mSeveredLimbs; // ゾンビから千切れた部位
-	// 切れた瞬間の骨の姿勢（spawnSeveredLimb の作業領域。毎回確保し直さないために持つ）
-	std::vector< GameLib::Math::Matrix34 > mSeverPose;
+	BulletHoleList mBulletHoles;						// 弾が物に当たった跡
+	ImpactDustList mImpactDust;							// 弾が物に当たった瞬間の砂ぼこり（遠くの着弾を見えるようにする）
+	BloodSprayList mBloodSpray;							// 弾がゾンビに当たった瞬間・部位が切れた瞬間の血しぶき
+	BloodStainList mBloodStains;						// 撃たれたゾンビの後ろの壁・足元に付いた血の跡
+	SeveredLimbList mSeveredLimbs;						// ゾンビから千切れた部位
+	std::vector< GameLib::Math::Matrix34 > mSeverPose;	// 切れた瞬間の骨の姿勢（spawnSeveredLimb の作業領域。毎回確保し直さないために持つ）
 };
 
 #endif

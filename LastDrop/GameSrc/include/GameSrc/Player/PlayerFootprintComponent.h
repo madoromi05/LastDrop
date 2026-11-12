@@ -24,8 +24,7 @@ public:
 	// Component（awake で見た目の形から大きさを求め、start で CharacterCollider へ自分を形として渡す）
 	void awake() override;
 	void start() override;
-	// ICollisionBody（移動の当たり判定の形）
-	BoxCollider collider() const override;
+	BoxCollider collider() const override;	// ICollisionBody（移動の当たり判定の形）
 
 private:
 	std::unique_ptr< BodyFootprint > mFootprint; // 移動の当たり判定の大きさ（見た目の形の骨から awake で求める）

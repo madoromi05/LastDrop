@@ -8,13 +8,10 @@
 // 何で傷ついたかは知らない（呼ぶのは持ち主の FirstPersonControl）。跳ねる量・戻る速さは AimPunch.cpp の定数で直す
 class AimPunch{
 public:
-	// seed: 左右の向きの乱数の種
-	explicit AimPunch( int seed );
+	explicit AimPunch( int seed );	// seed: 左右の向きの乱数の種
 
-	// 狙いを跳ねさせる。戻りきる前に呼ぶと、今のずれに足す
-	void punch();
-	// 1ティック進める（0 へ戻す）
-	void update();
+	void punch();	// 狙いを跳ねさせる。戻りきる前に呼ぶと、今のずれに足す
+	void update();	// 1ティック進める（0 へ戻す）
 	// 狙いへ足す角度（度。FirstPersonCamera と同じ約束で、ピッチは負が見上げる・ヨーは正が左）
 	float pitchOffset() const;
 	float yawOffset() const;

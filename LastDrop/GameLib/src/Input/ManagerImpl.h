@@ -55,8 +55,7 @@ public:
 		}
 		hr = mDirectInput->EnumDevices( DI8DEVCLASS_ALL, createCallback, this, DIEDFL_ATTACHEDONLY );
 		STRONG_ASSERT( SUCCEEDED( hr ) );
-		//作れなかったジョイスティックは飛ばしたので、作れた数にそろえる（作っていない Impl を読んだり壊したりしない）
-		mJoystickNumber = mEnumeratedJoystick;
+		mJoystickNumber = mEnumeratedJoystick;	//作れなかったジョイスティックは飛ばしたので、作れた数にそろえる（作っていない Impl を読んだり壊したりしない）
 		//マウスボタン初期化
 		for ( int i = 0; i < BUTTON_MAX; ++i ){
 			mButtons[ 0 ][ i ] = false;

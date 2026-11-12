@@ -18,10 +18,8 @@ drawすれば絵が出る。動かさなくていい物はこれで足りる
 */
 class Batch{
 public:
-	///描画
-	void draw() const;
-	///描画(修正色付き)
-	void draw( const Vector3& color, float transparency ) const;
+	void draw() const;												///描画
+	void draw( const Vector3& color, float transparency ) const;	///描画(修正色付き)
 
 	Batch();
 	~Batch();

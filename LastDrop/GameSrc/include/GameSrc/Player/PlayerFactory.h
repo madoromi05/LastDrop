@@ -21,15 +21,13 @@ public:
 	// 作った自キャラより長く生きていること（形を借りるため）
 	explicit PlayerFactory( MeshCache* meshes );
 
-	// 自キャラの形の構築が済んだか（失敗した・まだなら false。銃の形は無くても素手で出せるので見ない）
-	bool isReady() const;
+	bool isReady() const;	// 自キャラの形の構築が済んだか（失敗した・まだなら false。銃の形は無くても素手で出せるので見ない）
 	// 銃と自キャラを組み立てて world へ spawn し、自キャラの物を返す（形の構築に失敗した銃は作らない＝持てない）。isReady の後に呼ぶ
 	// position / yawDegree: 足元の位置と向き（度。0 は +Z）
 	GameObject* spawn( GameObjectWorld* world, const GameLib::Math::Vector3& position, float yawDegree ) const;
 
 private:
-	// id の銃を組み立てて world へ spawn し、返す（spawn から）。形の構築に失敗していたら置かずに nullptr
-	GameObject* spawnWeapon( GameObjectWorld* world, WeaponId id ) const;
+	GameObject* spawnWeapon( GameObjectWorld* world, WeaponId id ) const;	// id の銃を組み立てて world へ spawn し、返す（spawn から）。形の構築に失敗していたら置かずに nullptr
 
 	const SkinnedMeshData* mPlayerData;   // どれも MeshCache から借りる
 	const StaticMeshData* mWeaponData[ WEAPON_NUMBER ];   // 銃ごとの、右手に持つ形（弾倉を除いた形）

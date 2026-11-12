@@ -29,17 +29,12 @@ public:
 	void setSub( const Vector2&, float );
 	void setMul( const Vector2&, const Vector2& );
 	void setMul( const Vector2&, float );
-	///マイナスにして格納
-	void setNeg( const Vector2& );
+	void setNeg( const Vector2& );	///マイナスにして格納
 
-	/// this = a + b * c
-	void setMadd( const Vector2& a, const Vector2& b, float c );
-	/// this = a - b * c
-	void setMsub( const Vector2& a, const Vector2& b, float c );
-	/// this += a * b
-	void madd( const Vector2& a, float b );
-	/// this -= a * b
-	void msub( const Vector2& a, float b );
+	void setMadd( const Vector2& a, const Vector2& b, float c );	/// this = a + b * c
+	void setMsub( const Vector2& a, const Vector2& b, float c );	/// this = a - b * c
+	void madd( const Vector2& a, float b );							/// this += a * b
+	void msub( const Vector2& a, float b );							/// this -= a * b
 	/// normalize
 	void normalize();
 	float length() const;

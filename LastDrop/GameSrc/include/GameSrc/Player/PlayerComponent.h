@@ -44,17 +44,13 @@ public:
 	void update() override;
 
 private:
-	// 今できない操作を外した操作（死んだら何もしない・つかまれていたら動かない）
-	PlayerCommand allowedCommand( const PlayerCommand& command ) const;
-	// 体の向きと上下を、カメラの向きへ即座に合わせる
-	void faceCamera();
-	// 持つ物（銃の持ち替え・構え・リロード・懐中電灯）を進める。hold: 持つ部品（外されていれば nullptr。何もしない）
-	void updateHands( HoldComponent* hold, const PlayerCommand& command, bool wantsRun );
+	PlayerCommand allowedCommand( const PlayerCommand& command ) const;						// 今できない操作を外した操作（死んだら何もしない・つかまれていたら動かない）
+	void faceCamera();																		// 体の向きと上下を、カメラの向きへ即座に合わせる
+	void updateHands( HoldComponent* hold, const PlayerCommand& command, bool wantsRun );	// 持つ物（銃の持ち替え・構え・リロード・懐中電灯）を進める。hold: 持つ部品（外されていれば nullptr。何もしない）
 	// 撃てる状態で引き金を引いているかを、手に持った銃へ伝え、反動を体へ渡す（画像の PlayerComponent::Fire）
 	// gun: 手に持った銃（素手なら nullptr。反動 0 を渡すだけ）
 	void fire( GunComponent* gun, bool canFire, bool triggerHeld );
-	// next の歩き方で体を進める：腕 → 速さ → アニメ → 滑る移動 → 地面 → 部位の箱。health: 体力の部品（外されていれば nullptr）
-	void moveBody( Animator::State next, const PlayerHealthComponent* health );
+	void moveBody( Animator::State next, const PlayerHealthComponent* health );				// next の歩き方で体を進める：腕 → 速さ → アニメ → 滑る移動 → 地面 → 部位の箱。health: 体力の部品（外されていれば nullptr）
 
 	PlayerCommand mCommand;
 	float mCameraYaw;

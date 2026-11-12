@@ -19,12 +19,9 @@ public:
 	StaticMeshBatch( const StaticMeshBatch& ) = delete;
 	StaticMeshBatch& operator=( const StaticMeshBatch& ) = delete;
 
-	// 集めた物を忘れる（形ごとの入れ物は残し、毎フレーム確保し直さない）
-	void clear();
-	// instance の形と置き場所を足す。instance の寿命は draw までで足りる（行列は写して持つ）
-	void add( const StaticMeshInstance& instance );
-	// 形だけ shape に替えて足す（細かさの段 LOD。段ごとに別の形としてまとまる）。shape: nullptr 不可
-	void add( const StaticMeshInstance& instance, const StaticMeshData* shape );
+	void clear();																	// 集めた物を忘れる（形ごとの入れ物は残し、毎フレーム確保し直さない）
+	void add( const StaticMeshInstance& instance );									// instance の形と置き場所を足す。instance の寿命は draw までで足りる（行列は写して持つ）
+	void add( const StaticMeshInstance& instance, const StaticMeshData* shape );	// 形だけ shape に替えて足す（細かさの段 LOD。段ごとに別の形としてまとまる）。shape: nullptr 不可
 	// 集めた物を描く。instancing: 描く道具（begin〜end は中で呼ぶ）。nullptr 不可。isReady() であること
 	// 1 つの形を kMaxInstances より多く置いていれば、分けて描く
 	void draw( StaticMeshInstancing* instancing ) const;
@@ -35,8 +32,7 @@ private:
 		const StaticMeshData* data;					// 借りているだけ
 		std::vector< GameLib::Math::Matrix34 > placements;	// このフレームに足した置き場所（足した順）
 	};
-	// data の入れ物の番号。まだ無ければ作る
-	int groupIndexOf( const StaticMeshData* data );
+	int groupIndexOf( const StaticMeshData* data );	// data の入れ物の番号。まだ無ければ作る
 
 	std::vector< Group > mGroups;	// 一度でも足された形（中身の無い物も残す）
 	std::vector< int > mDrawOrder;	// このフレームに最初に足された順の mGroups の番号

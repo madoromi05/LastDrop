@@ -208,12 +208,9 @@ namespace
         { CollectorId::InGame, WorkId::Look,  DeviceKind::MouseAxis, static_cast<int>(MouseAxisKind::Move) },
         { CollectorId::InGame, WorkId::Menu,  DeviceKind::Keyboard, Keyboard::KEY_ESC },
         { CollectorId::InGame, WorkId::Aim,   DeviceKind::Mouse,    Mouse::BUTTON_RIGHT },
-        // 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）
-        { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },
-        // R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）
-        { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },
-        // T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）
-        { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },
+        { CollectorId::InGame, WorkId::Holster, DeviceKind::Keyboard, '1' },	// 数字キーで主武器を出し入れする（Escape from Tarkov と同じ）
+        { CollectorId::InGame, WorkId::Reload,  DeviceKind::Keyboard, 'r' },	// R で弾を込める（FPS でよくある割り当て。Escape from Tarkov・バイオハザードと同じ）
+        { CollectorId::InGame, WorkId::Flashlight, DeviceKind::Keyboard, 't' },	// T で銃の懐中電灯を付ける／消す（Escape from Tarkov のタクティカルデバイスと同じ）
         // 開発中の確認用の切り替えにはキーを割り当てない（F6 のエディタのボタンで切り替える）
         // 観察用カメラの上下は Space・Ctrl（Space は Jump/Dodge と共有。観察用カメラの間は自キャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::DebugCameraUp,   DeviceKind::Keyboard, ' ' },
@@ -232,12 +229,9 @@ namespace
         { CollectorId::InGame, WorkId::UiLeft,   DeviceKind::Keyboard, 'a' },
         { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, Keyboard::KEY_RIGHT },
         { CollectorId::InGame, WorkId::UiRight,  DeviceKind::Keyboard, 'd' },
-        // 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）
-        { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },
-        // Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）
-        { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },
-        // 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない）
-        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },
+        { CollectorId::InGame, WorkId::Interact, DeviceKind::Keyboard, 'e' },					// 見ている物を使う（Escape from Tarkov と同じ F キーではなく、よくある E キー）
+        { CollectorId::InGame, WorkId::Inventory, DeviceKind::Keyboard, Keyboard::KEY_TAB },	// Tab でカバンを開く／閉じる（Escape from Tarkov と同じ）
+        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::Keyboard, 'f' },					// 拾った物をおまかせで入れる（タルコフの Ctrl＋クリックの「すぐ移す」に近い。F はどの操作にも使っていない）
 
         // ── パッド（ボタンは Xbox の並び。DualSense なども対応表で同じ並びに置き換えて読む） ──
         // タルコフは PC 版にパッド対応が無いので、よくある FPS の配置（LT 構える・RT 撃つ）に合わせる
@@ -253,8 +247,7 @@ namespace
         { CollectorId::InGame, WorkId::Flashlight, DeviceKind::GamePadButton, GamePad::BUTTON_LB },
         { CollectorId::InGame, WorkId::Menu,       DeviceKind::GamePadButton, GamePad::BUTTON_START },
         { CollectorId::InGame, WorkId::Inventory,  DeviceKind::GamePadButton, GamePad::BUTTON_BACK },
-        // Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）
-        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_Y },
+        { CollectorId::InGame, WorkId::QuickPlace, DeviceKind::GamePadButton, GamePad::BUTTON_Y },	// Y は Holster と共有（おまかせはカバンの画面の間だけ読み、その間は自キャラを動かさないので重ならない）
         // 画面の部品は十字キーで選び A で決める（A は Interact と共有。ボタンの画面ではキャラを動かさないので重ならない）
         { CollectorId::InGame, WorkId::UiUp,       DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_UP },
         { CollectorId::InGame, WorkId::UiDown,     DeviceKind::GamePadButton, GamePad::BUTTON_DPAD_DOWN },
@@ -287,8 +280,7 @@ std::string GameLib::Input::BindingDisplayName(const BindingRecord& a_record)
     case DeviceKind::Mouse:     return "Mouse " + MouseButtonName(static_cast<Mouse::Button>(a_record.code));
     case DeviceKind::Joystick:  return "Pad " + JoystickButtonName(a_record.code);
     case DeviceKind::MouseAxis:
-        // 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる
-        return static_cast<MouseAxisKind>(a_record.code) == MouseAxisKind::Move ? "Mouse" : "Mouse " + MouseAxisName(static_cast<MouseAxisKind>(a_record.code));
+        return static_cast<MouseAxisKind>(a_record.code) == MouseAxisKind::Move ? "Mouse" : "Mouse " + MouseAxisName(static_cast<MouseAxisKind>(a_record.code));	// 視点はマウスを動かすことなので、軸の名前（Move）ではなくただ「Mouse」と見せる
     case DeviceKind::GamePadButton: return "Pad " + GamePadButtonName(a_record.code);
     case DeviceKind::GamePadAxis:   return "Pad " + GamePadAxisName(static_cast<GamePadAxisKind>(a_record.code));
     default:                    return "";

@@ -15,16 +15,11 @@ start()すれば実行が始まる
 */
 class Thread{
 public:
-	///これを自分で作る
-	virtual void operator()() = 0;
-	///実行開始。実行中なら終了を待って再実行
-	void start();
-	///終了を待つ
-	void wait();
-	///終わったか聞く
-	bool isFinished();
-	///直接呼びはしないコンストラクタ
-	Thread();
+	virtual void operator()() = 0;	///これを自分で作る
+	void start();					///実行開始。実行中なら終了を待って再実行
+	void wait();					///終了を待つ
+	bool isFinished();				///終わったか聞く
+	Thread();						///直接呼びはしないコンストラクタ
 protected: //基底は直接deleteできません。派生をdeleteしましょう
 	~Thread();
 private:

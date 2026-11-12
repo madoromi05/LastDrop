@@ -13,12 +13,9 @@ class CombatResolver;
 // カメラの揺れ・攻撃された見せ方（赤み/暗転）・足音は別系統（GameScene の shakeOnHeavyHits・PlayerDamageView・PlayerBodySounds）
 class CombatSounds{
 public:
-	// audio: 借りるだけ（所有しない）。この CombatSounds より長く生きていること。nullptr 不可
-	explicit CombatSounds( AudioEngine* audio );
-	// 撃った結果の命中音（ゾンビ・物）。update の命中フィードバックで、世界を進めた直後に 1 回（次の update で出来事が入れ替わる前）
-	void playHits( const CombatResolver& combat );
-	// 攻撃された音（つかむ・噛む・引っかく）。updatePlayerDamage で、世界を進めた後に 1 回
-	void playAttacks( const CombatResolver& combat );
+	explicit CombatSounds( AudioEngine* audio );		// audio: 借りるだけ（所有しない）。この CombatSounds より長く生きていること。nullptr 不可
+	void playHits( const CombatResolver& combat );		// 撃った結果の命中音（ゾンビ・物）。update の命中フィードバックで、世界を進めた直後に 1 回（次の update で出来事が入れ替わる前）
+	void playAttacks( const CombatResolver& combat );	// 攻撃された音（つかむ・噛む・引っかく）。updatePlayerDamage で、世界を進めた後に 1 回
 
 private:
 	ZombieHitSounds mZombieHits;   // 弾がゾンビに当たった音

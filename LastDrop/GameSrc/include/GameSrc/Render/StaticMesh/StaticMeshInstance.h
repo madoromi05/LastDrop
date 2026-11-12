@@ -20,8 +20,7 @@ public:
 	//       このインスタンスより長く生きていること（MeshCache が持つ）
 	// 原点・向き 0・等倍に置く
 	explicit StaticMeshInstance( const StaticMeshData* data );
-	// position / angleY: 置き場所（ワールド座標）と向き（度）。等倍で置く
-	StaticMeshInstance( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY );
+	StaticMeshInstance( const StaticMeshData* data, const GameLib::Math::Vector3& position, float angleY );	// position / angleY: 置き場所（ワールド座標）と向き（度）。等倍で置く
 
 	void setPosition( const GameLib::Math::Vector3& );	// 置き場所（ワールド座標）
 	void setAngleY( float degree );						// Y軸まわりの向き（度）
@@ -31,16 +30,13 @@ public:
 	const GameLib::Math::Vector3& position() const;		// 置き場所（ワールド座標）
 	float angleY() const;								// 向き（度）
 	float scale() const;								// 拡大率
-	// 置き場所・向き・大きさの行列（モデルの空間 → ワールド）。描画・raycast・当たり判定づくりが同じものを使う
-	const GameLib::Math::Matrix34& worldMatrix() const;
+	const GameLib::Math::Matrix34& worldMatrix() const;	// 置き場所・向き・大きさの行列（モデルの空間 → ワールド）。描画・raycast・当たり判定づくりが同じものを使う
 	// 全頂点をワールドで囲む、軸に沿った箱（少し広げてある）。ますに分けて絞り込む側（TownGround）が使う
 	const GameLib::Math::Vector3& boundsMin() const;
 	const GameLib::Math::Vector3& boundsMax() const;
 
-	// 置き場所・向き・大きさを反映して描く
-	void draw() const;
-	// 形だけ shape に替えて、同じ置き場所で描く（細かさの段 LOD。shape は data と同じモデルの空間で作った物）。nullptr 不可
-	void draw( const StaticMeshData* shape ) const;
+	void draw() const;								// 置き場所・向き・大きさを反映して描く
+	void draw( const StaticMeshData* shape ) const;	// 形だけ shape に替えて、同じ置き場所で描く（細かさの段 LOD。shape は data と同じモデルの空間で作った物）。nullptr 不可
 	// 上と同じだが、囲む箱が frustum（カメラに映る範囲）に少しも入らなければ描かない
 	// 町のように、置いた物の多くが画面の外にある所で使う
 	void draw( const ViewFrustum& frustum ) const;
@@ -50,8 +46,7 @@ public:
 		float* time, GameLib::Math::Vector3* normal ) const;
 
 private:
-	// 置き場所・向き・大きさから、行列・逆行列・囲む箱を求め直す（置き場所を変えるたびに呼ぶ）
-	void updatePlacement();
+	void updatePlacement();	// 置き場所・向き・大きさから、行列・逆行列・囲む箱を求め直す（置き場所を変えるたびに呼ぶ）
 
 	const StaticMeshData* mData;
 	GameLib::Math::Vector3 mPosition;

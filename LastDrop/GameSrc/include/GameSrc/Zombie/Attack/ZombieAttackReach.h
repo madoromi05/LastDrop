@@ -16,10 +16,8 @@ public:
 		bool crawling;                    // 体を引きずっているか（始める距離・届く距離が短い）
 	};
 
-	// 追いついた相手へ攻撃を始めてよい間合いか（近い・前に居る）
-	static bool canStart( const Origin& origin, const GameLib::Math::Vector3& target );
-	// 腕を振り下ろしたときに、届く所に相手が居るか（近い・前に居る）
-	static bool canHit( const Origin& origin, const GameLib::Math::Vector3& target );
+	static bool canStart( const Origin& origin, const GameLib::Math::Vector3& target );	// 追いついた相手へ攻撃を始めてよい間合いか（近い・前に居る）
+	static bool canHit( const Origin& origin, const GameLib::Math::Vector3& target );	// 腕を振り下ろしたときに、届く所に相手が居るか（近い・前に居る）
 	// 手を伸ばしている間に、このティックに寄る長さ（m）。十分近くて寄らなくてよければ 0
 	// center: 体の中心（踏み込む前の足元＝根の動きのアンカー）
 	static float approachStep( const GameLib::Math::Vector3& center, const GameLib::Math::Vector3& target );

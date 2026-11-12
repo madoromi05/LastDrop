@@ -15,8 +15,7 @@ class FrameRecorder;
 class LoadTracker;
 class EventLog;
 
-// 画面の数字は 1 フレームごとだとばらついて読めないので、この数だけならす（0.5 秒ほど）。右上の表示・Perf 欄・律速の判定で同じ数を使う
-const int kAveragedFrames = 30;
+const int kAveragedFrames = 30;	// 画面の数字は 1 フレームごとだとばらついて読めないので、この数だけならす（0.5 秒ほど）。右上の表示・Perf 欄・律速の判定で同じ数を使う
 
 // 直近のフレームの平均（秒）。止まっていたフレームは入れない
 struct FrameAverages{
@@ -36,10 +35,8 @@ public:
 	static const int kHistory = 240;
 	GpuHistory();
 	void add( const GpuTimer::Result& result );
-	// 新しい方から（ago = 0 が一番新しい）。無ければ nullptr
-	const GpuTimer::Result* latest( int ago ) const;
-	// 直近 frames 個の、フレーム全体の GPU の時間の平均（秒）。1 つも無ければ負
-	double averageTotal( int frames ) const;
+	const GpuTimer::Result* latest( int ago ) const;	// 新しい方から（ago = 0 が一番新しい）。無ければ nullptr
+	double averageTotal( int frames ) const;			// 直近 frames 個の、フレーム全体の GPU の時間の平均（秒）。1 つも無ければ負
 private:
 	std::vector< GpuTimer::Result > mRing;
 	int mCount; // これまでに足した数

@@ -42,8 +42,7 @@ template< class T > inline void Vector< T >::operator=( const Vector& a ){
 	if ( this == &a ){
 		return;
 	}
-	//まず丸ごと削除。十分広い領域があっても、無駄になる可能性があるので削除する
-	clear();
+	clear();	//まず丸ごと削除。十分広い領域があっても、無駄になる可能性があるので削除する
 
 	mSize = a.size;
 	mCapacity = a.mCapacity;
@@ -66,15 +65,11 @@ template< class T > inline void Vector< T >::push( const T& a ){
 			new ( &newElements[ i ] ) T( mElements[ i ] );
 			mElements[ i ].~T();
 		}
-		//旧領域の破棄
-		OPERATOR_DELETE( mElements );
-		//差し替え
-		mElements = newElements;
+		OPERATOR_DELETE( mElements );	//旧領域の破棄
+		mElements = newElements;		//差し替え
 	}
-	//新要素の追加
-	new ( &mElements[ mSize ] ) T( a );
-	//サイズ更新
-	++mSize;
+	new ( &mElements[ mSize ] ) T( a );	//新要素の追加
+	++mSize;							//サイズ更新
 }
 
 template< class T > inline T* Vector< T >::push(){
@@ -87,18 +82,14 @@ template< class T > inline T* Vector< T >::push(){
 			new ( &newElements[ i ] ) T( mElements[ i ] );
 			mElements[ i ].~T();
 		}
-		//旧領域の破棄
-		OPERATOR_DELETE( mElements );
+		OPERATOR_DELETE( mElements );	//旧領域の破棄
 		//差し替え
 		mElements = newElements;
 		newElements = 0;
 	}
-	//新要素の追加
-	new ( &mElements[ mSize ] ) T;
-	//サイズ更新
-	++mSize;
-	//新要素のポインタを返す
-	return &mElements[ mSize - 1 ];
+	new ( &mElements[ mSize ] ) T;	//新要素の追加
+	++mSize;						//サイズ更新
+	return &mElements[ mSize - 1 ];	//新要素のポインタを返す
 }
 
 template< class T > inline void Vector< T >::clear(){
@@ -129,8 +120,7 @@ template< class T > inline void Vector< T >::setSize( int n ){
 			new ( &newElements[ i ] ) T( mElements[ i ] );
 			mElements[ i ].~T();
 		}
-		//旧領域の破棄
-		OPERATOR_DELETE( mElements );
+		OPERATOR_DELETE( mElements );	//旧領域の破棄
 		//差し替え
 		mElements = newElements;
 		newElements = 0;

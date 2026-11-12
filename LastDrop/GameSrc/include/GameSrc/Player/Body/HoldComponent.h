@@ -41,15 +41,12 @@ public:
 	explicit HoldComponent( const std::vector< const GameObject* >& weapons );
 	~HoldComponent();
 
-	// 手に持っている銃（持っていない・手の骨が無くて持てなかったら nullptr）。しまっていても返す
-	GunComponent* gun() const;
+	GunComponent* gun() const;		// 手に持っている銃（持っていない・手の骨が無くて持てなかったら nullptr）。しまっていても返す
 	// holder（自キャラなど）が手に持っている銃。holder が nullptr・この部品が付いていない（外せる部品）・素手なら nullptr
 	// 物の外から銃を読む所（GameScene・GameWorld・CombatResolver・PlayerBodySounds）が、同じ 3 行を書かずに済むようにする
 	static GunComponent* heldGun( const GameObject* holder );
-	// 手に持っている銃のライト（無ければ nullptr）
-	LightComponent* light() const;
-	// 手に持っている物（無ければ nullptr）。銃口の光（MuzzleFlashComponent）など、物の部品を読むのに使う
-	GameObject* heldObject() const;
+	LightComponent* light() const;	// 手に持っている銃のライト（無ければ nullptr）
+	GameObject* heldObject() const;	// 手に持っている物（無ければ nullptr）。銃口の光（MuzzleFlashComponent）など、物の部品を読むのに使う
 
 	// ── 持ち替え ──
 	// カバンの銃 item を手に持つ（持っていた銃のリロードはやめる）。item の銃が無い・もう持っていたら何もしない。持てたら true
@@ -60,23 +57,17 @@ public:
 
 	// ── 構え（WeaponStance）──
 	void updateStance( bool holsterPressed, bool aimHeld, bool runHeld );
-	bool isDrawn() const;   // 武器を出しているか（銃を持っていなくても構えの段階は進む）
-	bool isAiming() const;  // 覗いているか（覗き始め・終わりの途中も true）
-	float aimWeight() const; // 覗き具合（0〜1）
-	// 銃を手に持って出しているか（撃てる・ぶれる・移動の当たり判定を銃の先まで伸ばす）
-	bool isWeaponInHand() const;
+	bool isDrawn() const;			// 武器を出しているか（銃を持っていなくても構えの段階は進む）
+	bool isAiming() const;			// 覗いているか（覗き始め・終わりの途中も true）
+	float aimWeight() const;		// 覗き具合（0〜1）
+	bool isWeaponInHand() const;	// 銃を手に持って出しているか（撃てる・ぶれる・移動の当たり判定を銃の先まで伸ばす）
 
-	// R でリロードを始め・しまったらやめ、時間割を進め、込め終えたら予備（inventory）の弾を弾倉へ移す（構えの段階を決めた後）
-	void updateReload( bool reloadPressed, Inventory* inventory );
-	// 弾倉を抜く合図のティックなら、弾倉を銃から外して左手に持たせる（このティックのポーズ・置き場所が決まった後に呼ぶ）
-	void takeOutMagazineIfCued();
-	// 銃を持たせる手の骨（start で決まる。見つからなければ -1）。腕のポーズ（ArmPoseComponent）が右手を基準にするのに読む
-	int handBone() const;
+	void updateReload( bool reloadPressed, Inventory* inventory );	// R でリロードを始め・しまったらやめ、時間割を進め、込め終えたら予備（inventory）の弾を弾倉へ移す（構えの段階を決めた後）
+	void takeOutMagazineIfCued();									// 弾倉を抜く合図のティックなら、弾倉を銃から外して左手に持たせる（このティックのポーズ・置き場所が決まった後に呼ぶ）
+	int handBone() const;											// 銃を持たせる手の骨（start で決まる。見つからなければ -1）。腕のポーズ（ArmPoseComponent）が右手を基準にするのに読む
 
-	// 銃口の今の位置（ワールド）と向き（長さ1）。銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）
-	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
-	// 手に持って出している銃と弾倉を描く（持つ側の見た目を描いた後に呼ぶ）
-	void draw() const;
+	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;	// 銃口の今の位置（ワールド）と向き（長さ1）。銃を持っていない・しまっている・まだポーズが無ければ false（out は変えない）
+	void draw() const;																			// 手に持って出している銃と弾倉を描く（持つ側の見た目を描いた後に呼ぶ）
 
 	// Component（SkinnedModelComponent・FirstPersonBodyComponent が要る）
 	// awake：持つ側の形を借りる。start：手の骨を引く（銃を持たせるのは最初の syncWithInventory）
@@ -84,12 +75,9 @@ public:
 	void start() override;
 
 private:
-	// held を手に持たせる（nullptr なら素手）。銃の部品を借り直し、一人称の体へ持ち方を渡す
-	void bindWeapon( GameObject* held );
-	// 持てる銃のうち、カバンの物 item の銃（無ければ nullptr）
-	GameObject* findWeapon( ItemId item ) const;
-	// 銃の今の置き場所（銃のモデル座標 → ワールド）。持っていない・まだポーズが無ければ false
-	bool weaponPlacement( GameLib::Math::Matrix34* out ) const;
+	void bindWeapon( GameObject* held );						// held を手に持たせる（nullptr なら素手）。銃の部品を借り直し、一人称の体へ持ち方を渡す
+	GameObject* findWeapon( ItemId item ) const;				// 持てる銃のうち、カバンの物 item の銃（無ければ nullptr）
+	bool weaponPlacement( GameLib::Math::Matrix34* out ) const;	// 銃の今の置き場所（銃のモデル座標 → ワールド）。持っていない・まだポーズが無ければ false
 
 	const SkinnedMeshData* mHolderData;
 	std::vector< GameObjectHandle > mWeapons; // 持てる銃（借りているだけ）

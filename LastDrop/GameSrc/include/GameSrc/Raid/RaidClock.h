@@ -8,10 +8,8 @@ class RaidClock{
 public:
 	RaidClock();
 
-	// 1 ティック進める
-	void tick();
-	// 始まってからの秒
-	float elapsedSeconds() const;
+	void tick();					// 1 ティック進める
+	float elapsedSeconds() const;	// 始まってからの秒
 
 private:
 	int mElapsedTicks;

@@ -10,8 +10,7 @@ namespace{
 	// 強くすると歪んでざらつく（1.8 では強すぎた）
 	const float kFoleyDrive = 1.3f;
 
-	// 布の擦れ「シュッ」
-	struct SwishRecipe{ float start, duration, fromHz, toHz, q, gain; };
+	struct SwishRecipe{ float start, duration, fromHz, toHz, q, gain; };	// 布の擦れ「シュッ」
 
 	// ── 服の擦れ（一歩ごと）──
 	const float kRustleLength = 0.35f;

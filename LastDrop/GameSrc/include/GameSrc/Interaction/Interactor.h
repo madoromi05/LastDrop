@@ -13,11 +13,9 @@ class Inventory;
 // ここは「手が届く距離まで視線を伸ばす」「押されたら使う」「見ている物を覚える」だけを受け持つ（マークを出すのは InteractMarkers）
 class Interactor{
 public:
-	// origin から delta だけ進む視線の先の、一番手前の使える物を探す。無ければ nullptr を返すこと
-	typedef std::function< IInteractable*( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta ) > Finder;
+	typedef std::function< IInteractable*( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta ) > Finder;	// origin から delta だけ進む視線の先の、一番手前の使える物を探す。無ければ nullptr を返すこと
 
-	// reach: 手が届く距離（m）。これより遠い物は使えない。finder: 空は不可
-	Interactor( float reach, Finder finder );
+	Interactor( float reach, Finder finder );	// reach: 手が届く距離（m）。これより遠い物は使えない。finder: 空は不可
 
 	// 目 eye から向き direction（長さ1）へ視線を撃って、見ている使える物を探す。interactPressed なら使う
 	// （拾う物は使わずに offer に残す。置く所を選ぶのは呼ぶ側
@@ -26,13 +24,11 @@ public:
 	// inventory: 使うときに増やしたり減らしたりする持ち物。nullptr 不可
 	void update( const GameLib::Math::Vector3& eye, const GameLib::Math::Vector3& direction,
 		Inventory* inventory, bool interactPressed );
-	// 今見ている使える物（無ければ nullptr）。update の直後に読む（拾われた物は次の世界の update で消えるので、それより後には使わない）
-	const IInteractable* target() const;
+	const IInteractable* target() const;	// 今見ている使える物（無ければ nullptr）。update の直後に読む（拾われた物は次の世界の update で消えるので、それより後には使わない）
 	// 最後の update で E を押した拾う物（無ければ nullptr）。update の直後に読む。世界を進める前に使い終えること
 	// （拾い終えた物は世界の update で消える）
 	IInteractable* offer() const;
-	// 最後の update で E を押した漁れる場所・脱出の車（lootGrid がある物。無ければ nullptr）。読む決まりは offer と同じ
-	IInteractable* opened() const;
+	IInteractable* opened() const;			// 最後の update で E を押した漁れる場所・脱出の車（lootGrid がある物。無ければ nullptr）。読む決まりは offer と同じ
 
 private:
 	float mReach;

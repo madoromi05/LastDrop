@@ -39,16 +39,11 @@ RenderPassKind current();
 // defaultOrm：材質の画像が無い材質に付ける白 1 画素の画像（掛けても値が変わらない）。どれも GBuffer が持ち、end まで生きていること
 void beginGBuffer( const GameLib::Graphics::Shader& staticMeshShader, GameLib::Graphics::ConstantBuffer* surfaceConstants,
 	const GameLib::Graphics::Texture* defaultOrm );
-// Forward へ戻す
-void endGBuffer();
-// 影のマップへ描き始める。staticMeshShader：静的メッシュの深度だけを描くシェーダ（ShadowMap が持ち、end まで生きていること）
-void beginShadow( const GameLib::Graphics::Shader& staticMeshShader );
-// Forward へ戻す
-void endShadow();
-// beginGBuffer・beginShadow で渡されたシェーダ。GBuffer・Shadow の間だけ呼べる
-const GameLib::Graphics::Shader& staticMeshShader();
-// 次に描く物の材質値と材質の画像（ORM。空なら白 1 画素）を G-Buffer のシェーダへ渡す。GBuffer の間だけ呼べる
-void setSurface( const SurfaceParams&, GameLib::Graphics::Texture orm );
+void endGBuffer();															// Forward へ戻す
+void beginShadow( const GameLib::Graphics::Shader& staticMeshShader );		// 影のマップへ描き始める。staticMeshShader：静的メッシュの深度だけを描くシェーダ（ShadowMap が持ち、end まで生きていること）
+void endShadow();															// Forward へ戻す
+const GameLib::Graphics::Shader& staticMeshShader();						// beginGBuffer・beginShadow で渡されたシェーダ。GBuffer・Shadow の間だけ呼べる
+void setSurface( const SurfaceParams&, GameLib::Graphics::Texture orm );	// 次に描く物の材質値と材質の画像（ORM。空なら白 1 画素）を G-Buffer のシェーダへ渡す。GBuffer の間だけ呼べる
 // 直前に送った材質値と画像を忘れ、次の setSurface で必ず送り直させる。GBuffer の間だけ呼べる
 // G-Buffer の途中で描画先を付け直したとき（デカール）に呼ぶ。付け直すと t2 以降の画像が全部外れ、材質の画像（t11）も外れるため
 void forgetSentSurface();

@@ -25,14 +25,10 @@ public:
 	StaticMeshPart& part( int index );
 	const StaticMeshPart& part( int index ) const;
 
-	// 全パーツが描画できる状態か（upload 済みか）。パーツが無ければ false
-	bool isReady() const;
-	// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true
-	bool updateLoading();
-	// world の位置・向き・大きさで全パーツを描く
-	void draw( const GameLib::Math::Matrix34& world ) const;
-	// 全パーツを instanceNumber 個まとめて描く（インスタンシング）。置き場所は StaticMeshInstancing::setPlacements で先に渡しておく
-	void drawInstanced( int instanceNumber ) const;
+	bool isReady() const;										// 全パーツが描画できる状態か（upload 済みか）。パーツが無ければ false
+	bool updateLoading();										// 非同期ロード中のテクスチャの読み込みを進める。描画するフレームごとに1回呼ぶ。全パーツのテクスチャが展開済みなら true
+	void draw( const GameLib::Math::Matrix34& world ) const;	// world の位置・向き・大きさで全パーツを描く
+	void drawInstanced( int instanceNumber ) const;				// 全パーツを instanceNumber 個まとめて描く（インスタンシング）。置き場所は StaticMeshInstancing::setPlacements で先に渡しておく
 	// 全パーツのうち、線分が一番早く当たる所の時刻と法線。座標はモデルの空間（置く前）。当たらなければ false
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const;
@@ -52,8 +48,7 @@ public:
 	const GameLib::Math::Vector3& blockingBoundsMax() const;
 
 private:
-	// 歩いて越えられない高さの頂点が1つでもあったか
-	bool hasBlockingBounds() const;
+	bool hasBlockingBounds() const;	// 歩いて越えられない高さの頂点が1つでもあったか
 
 	GameLib::Array< StaticMeshPart > mParts;
 	GameLib::Math::Vector3 mBoundsMin;

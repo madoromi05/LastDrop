@@ -19,8 +19,7 @@ class Batch;
 */
 class Model{
 public:
-	///描画
-	void draw() const;
+	void draw() const;	///描画
 
 	const Vector3* position() const;
 	const Vector3* angle() const; //単位は度

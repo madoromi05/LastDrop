@@ -4,8 +4,7 @@
 using namespace GameLib::Input;
 
 namespace {
-    // 計測の印を付ける操作の持ち主（自キャラを動かすのは 0 番だけ）
-    const int kProfiledPlayer = 0;
+    const int kProfiledPlayer = 0;	// 計測の印を付ける操作の持ち主（自キャラを動かすのは 0 番だけ）
 }
 
 Pad* Pad::mInstance = nullptr;

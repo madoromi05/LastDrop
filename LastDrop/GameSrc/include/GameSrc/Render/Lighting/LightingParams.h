@@ -100,17 +100,14 @@ struct LightingParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（LightingParams.cpp が持つ。初期値は夜）
-LightingParams& lightingParams();
-// 昼の値（段階 3-b までの太陽・補助光・環境光 0.4 と同じ明るさ。空は青）。見比べ用で、遊びの中では使わない
-LightingParams dayLightingParams();
+LightingParams& lightingParams();															// 起動中ずっと 1 つだけの調整値（LightingParams.cpp が持つ。初期値は夜）
+LightingParams dayLightingParams();															// 昼の値（段階 3-b までの太陽・補助光・環境光 0.4 と同じ明るさ。空は青）。見比べ用で、遊びの中では使わない
 // 霧を掛けるか（F6 → Render の Fog。見比べと計測用）。false の間は霧のパスを描かず、半透明の板にも掛けない
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
 bool& fogEnabled();
 // 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用）。false の間は今までの空のグラデーションだけ
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
 bool& skyDetailEnabled();
-// 高さと方位（度）から、その方から来る光の進む向き（長さ 1。LightList の平行光に渡す形）
-GameLib::Math::Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree );
+GameLib::Math::Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree );	// 高さと方位（度）から、その方から来る光の進む向き（長さ 1。LightList の平行光に渡す形）
 
 #endif

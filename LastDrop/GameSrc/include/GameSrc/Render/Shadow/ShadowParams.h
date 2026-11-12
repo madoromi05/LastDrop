@@ -6,23 +6,17 @@
 // どれも見た目を確かめる前の初期値。にきび（面に自分の影が縞で落ちる）が消える所までだけ、ずらしを上げる
 // （上げすぎると、物の根元で影が離れる・壁の裏に光が回る）
 struct ShadowParams{
-	// 影を読む位置を、面の法線の向きへずらす量（影のマップ 1 画素の大きさの何倍か）。にきびの主な対策（Normal Offset）
-	float normalOffsetTexels = 1.5f;
-	// 影を読む位置を、光の方へずらす量（同じく画素の何倍か）。比べる深度を手前にするのと同じ（深度のバイアス）
-	float lightOffsetTexels = 1.f;
-	// 影の濃さ。1 で影の中は真っ暗（その光が全く届かない）。下げると影の中にもその光が少し残る
-	float strength = 1.f;
-	// 懐中電灯の影のマップの、近い面（m。光から）。小さすぎると遠くの深度の細かさが落ちる
-	float flashlightNearClip = 0.1f;
+	float normalOffsetTexels = 1.5f;	// 影を読む位置を、面の法線の向きへずらす量（影のマップ 1 画素の大きさの何倍か）。にきびの主な対策（Normal Offset）
+	float lightOffsetTexels = 1.f;		// 影を読む位置を、光の方へずらす量（同じく画素の何倍か）。比べる深度を手前にするのと同じ（深度のバイアス）
+	float strength = 1.f;				// 影の濃さ。1 で影の中は真っ暗（その光が全く届かない）。下げると影の中にもその光が少し残る
+	float flashlightNearClip = 0.1f;	// 懐中電灯の影のマップの、近い面（m。光から）。小さすぎると遠くの深度の細かさが落ちる
 
 	// ── 月の影（CSM 3 枚） ── 各枚の受け持ちの奥の端（m。カメラの向きに沿った距離。小さい順）
 	float moonCascadeEnd0 = 8.f;
 	float moonCascadeEnd1 = 25.f;
-	float moonCascadeEnd2 = 80.f;  // これより先は月の影を付けない（町は端から端まで約 115m）
-	// 各枚の受け持ちの奥の何割を、次の枚と混ぜるか（境目で影の細かさが急に変わって見えないように）
-	float moonCascadeBlend = 0.1f;
-	// 枚の範囲より月の側へ、影を落とす物を拾う長さ（m）。枚の外にある高い建物の影も落ちるように
-	float moonCasterMargin = 40.f;
+	float moonCascadeEnd2 = 80.f;	// これより先は月の影を付けない（町は端から端まで約 115m）
+	float moonCascadeBlend = 0.1f;	// 各枚の受け持ちの奥の何割を、次の枚と混ぜるか（境目で影の細かさが急に変わって見えないように）
+	float moonCasterMargin = 40.f;	// 枚の範囲より月の側へ、影を落とす物を拾う長さ（m）。枚の外にある高い建物の影も落ちるように
 	// ── 月の影の描き直しの間引き ── 手前の枚は毎フレーム描く
 	// 2 枚目・3 枚目を何フレームに 1 回描き直すか（整数に丸めて使う。1 で毎フレーム）。2・4 なら同じフレームに重ならない
 	float moonCascadeInterval1 = 2.f;
@@ -51,8 +45,7 @@ struct ShadowParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（ShadowMap.cpp が持つ）
-ShadowParams& shadowParams();
+ShadowParams& shadowParams();	// 起動中ずっと 1 つだけの調整値（ShadowMap.cpp が持つ）
 // 影を描くか（F6 → Render の Shadows。見比べと計測用）。false の間は影のパスごと描かず、ライトも影を読まない
 // 起動中ずっと 1 つ（ShadowMap.cpp が持つ。初期値 true。Release では true のまま）
 bool& shadowsEnabled();

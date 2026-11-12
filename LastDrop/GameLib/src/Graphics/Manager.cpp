@@ -25,8 +25,7 @@ namespace Graphics{
 ManagerImpl* gManagerImpl = 0;
 
 Manager::Manager(){
-	//別スレッドからの呼び出しは許されない
-	ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );
+	ASSERT( WindowCreator::isMainThread() && "you must call from MAIN thread" );	//別スレッドからの呼び出しは許されない
 }
 
 void Manager::create( 

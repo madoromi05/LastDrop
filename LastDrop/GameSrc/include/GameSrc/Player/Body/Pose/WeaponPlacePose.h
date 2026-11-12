@@ -18,8 +18,7 @@ struct FirstPersonRig;
 // 目の位置は前の段（EyePoint）が決めたものを読む
 class WeaponPlacePose : public BonePoseModifier{
 public:
-	// rig: 骨の番号・持ち方・ピッチ・目の位置を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
-	explicit WeaponPlacePose( const FirstPersonRig* rig );
+	explicit WeaponPlacePose( const FirstPersonRig* rig );	// rig: 骨の番号・持ち方・ピッチ・目の位置を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
 
 	void setHoldWeight( float weight );  // 両手持ちの効き具合（FirstPersonBody::setHoldWeight）
 	void setCarryWeight( float weight ); // 胸元への寄せ具合（FirstPersonBody::setCarryWeight）

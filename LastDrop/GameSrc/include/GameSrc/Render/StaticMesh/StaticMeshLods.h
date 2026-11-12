@@ -12,15 +12,11 @@ class StaticMeshLods{
 public:
 	static const int kLevelNumber = 3; // 元の形＋粗い形 2 つ
 
-	// full だけの 1 段（粗い形を持たない置物）。full: nullptr 不可
-	explicit StaticMeshLods( const StaticMeshData* full );
-	// filename の形と、粗い形（<名前>_lod1.txt・_lod2.txt）を meshes に頼む。粗い形のファイルは在ること。meshes: nullptr 不可
-	static StaticMeshLods request( MeshCache* meshes, const char* filename );
+	explicit StaticMeshLods( const StaticMeshData* full );						// full だけの 1 段（粗い形を持たない置物）。full: nullptr 不可
+	static StaticMeshLods request( MeshCache* meshes, const char* filename );	// filename の形と、粗い形（<名前>_lod1.txt・_lod2.txt）を meshes に頼む。粗い形のファイルは在ること。meshes: nullptr 不可
 
-	// 元の細かい形（当たり判定・囲む箱はこれで作る）
-	const StaticMeshData* full() const;
-	// level 段の形。その段が無い・読み込み前なら、その段より細かい段で使える物
-	const StaticMeshData* level( int level ) const;
+	const StaticMeshData* full() const;				// 元の細かい形（当たり判定・囲む箱はこれで作る）
+	const StaticMeshData* level( int level ) const;	// level 段の形。その段が無い・読み込み前なら、その段より細かい段で使える物
 
 private:
 	const StaticMeshData* mLevels[ kLevelNumber ]; // 借りているだけ。無い段は nullptr

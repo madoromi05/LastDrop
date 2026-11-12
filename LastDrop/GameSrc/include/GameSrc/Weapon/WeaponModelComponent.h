@@ -20,15 +20,11 @@ public:
 	WeaponModelComponent( const StaticMeshData* weapon, const StaticMeshData* magazine, const WeaponGrip& grip );
 
 	const StaticMeshData* weapon() const;
-	const StaticMeshData* magazine() const; // 無ければ nullptr
-	// 銃のモデル座標 → 右手の骨の空間 の行列（握りの中心を手に合わせる）
-	GameLib::Math::Matrix34 gripInHand() const;
-	// 覗いたときに目を置く点（銃のモデル座標）
-	const GameLib::Math::Vector3& sightEye() const;
-	// 銃と弾倉を合わせて囲む箱（銃のモデル座標）。持つ側の移動の当たり判定を、銃口の先まで伸ばすのに使う
-	void bounds( GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;
-	// placement（銃のモデル座標 → ワールド。HeldItem::placement）に置いたときの、銃口の位置（ワールド）と向き（長さ1）
-	void muzzle( const GameLib::Math::Matrix34& placement, GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;
+	const StaticMeshData* magazine() const;																								// 無ければ nullptr
+	GameLib::Math::Matrix34 gripInHand() const;																							// 銃のモデル座標 → 右手の骨の空間 の行列（握りの中心を手に合わせる）
+	const GameLib::Math::Vector3& sightEye() const;																						// 覗いたときに目を置く点（銃のモデル座標）
+	void bounds( GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;											// 銃と弾倉を合わせて囲む箱（銃のモデル座標）。持つ側の移動の当たり判定を、銃口の先まで伸ばすのに使う
+	void muzzle( const GameLib::Math::Matrix34& placement, GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;	// placement（銃のモデル座標 → ワールド。HeldItem::placement）に置いたときの、銃口の位置（ワールド）と向き（長さ1）
 
 private:
 	const StaticMeshData* mWeapon;

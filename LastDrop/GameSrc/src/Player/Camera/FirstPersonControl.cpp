@@ -12,8 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 感度と視野角は LookParams（起動中に F6 で動かせる）
-	LookParams gLookParams;
+	LookParams gLookParams;	// 感度と視野角は LookParams（起動中に F6 で動かせる）
 
 	// 覗き具合に合わせた縦の視野角（度）
 	float fieldOfView( float aimWeight ) {
@@ -90,8 +89,7 @@ void FirstPersonControl::readInput( float aimWeight ) {
 		mEffects.addLook( yawDelta, pitchDelta );
 	}
 
-	// 押されている間の入力は今の状態で上書きし、押した瞬間の入力は使われるまで残す（consumePressed で消す）
-	mCommands.read( input.isCursorLocked() );
+	mCommands.read( input.isCursorLocked() );	// 押されている間の入力は今の状態で上書きし、押した瞬間の入力は使われるまで残す（consumePressed で消す）
 }
 
 void FirstPersonControl::readInputIdle() {

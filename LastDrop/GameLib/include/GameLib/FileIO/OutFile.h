@@ -7,10 +7,8 @@ namespace FileIO{
 class OutFile{
 public:
 	static OutFile create( const char* filename, const char* data, int size );
-	///セーブ終わった？
-	bool isFinished() const;
-	///エラー出てます？
-	bool isError() const;
+	bool isFinished() const;	///セーブ終わった？
+	bool isError() const;		///エラー出てます？
 
 	//以下ユーザは意識しない関数群
 	OutFile();

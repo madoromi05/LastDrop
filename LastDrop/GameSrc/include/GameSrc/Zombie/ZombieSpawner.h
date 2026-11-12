@@ -43,8 +43,7 @@ public:
 	// 最初の 1 回は、目標の数まで（湧いてよい場所が足りる分だけ）まとめて足す。それ以降は多くても 1 か所
 	// 持ち主は、全員の update と flush が済んだ後（名簿をたどっていない所）で呼び、足された所へ出す。out: nullptr 不可
 	void update( const View& view, std::vector< Order >* out );
-	// 目標の数を替える（F6 で今日の条件を切り替えたとき）。1 以上。多い分のゾンビは消さない（減るのを待つ）
-	void setTargetCount( int targetCount );
+	void setTargetCount( int targetCount );	// 目標の数を替える（F6 で今日の条件を切り替えたとき）。1 以上。多い分のゾンビは消さない（減るのを待つ）
 
 	// ── 確認用の表示（F3）が読む ──
 	int targetCount() const;          // 目標の数（作るときに受け取った値か、setTargetCount で替えた値）
@@ -52,14 +51,10 @@ public:
 	float secondsUntilNext() const;   // 次の補充までの残り（秒。補充を待っていない間は補充の間隔そのもの）
 
 private:
-	// 始めに置く分を out へ足す（候補を混ぜて、湧いてよい所から順に）
-	void planInitial( const View& view, std::vector< Order >* out );
-	// 補充の残りを数え、0 なら候補を何か所か調べ、湧いてよい所が見つかれば out へ足す
-	void planRefill( const View& view, std::vector< Order >* out );
-	// position に yawDegree で出してよいか（離れている・見えない・重ならない。軽い順に調べる）
-	bool canSpawnAt( const View& view, const GameLib::Math::Vector3& position, float yawDegree ) const;
-	// 自キャラから head（ゾンビの頭）が見えるか（画面の内で、間に何も無い）
-	bool isVisible( const View& view, const GameLib::Math::Vector3& head ) const;
+	void planInitial( const View& view, std::vector< Order >* out );									// 始めに置く分を out へ足す（候補を混ぜて、湧いてよい所から順に）
+	void planRefill( const View& view, std::vector< Order >* out );										// 補充の残りを数え、0 なら候補を何か所か調べ、湧いてよい所が見つかれば out へ足す
+	bool canSpawnAt( const View& view, const GameLib::Math::Vector3& position, float yawDegree ) const;	// position に yawDegree で出してよいか（離れている・見えない・重ならない。軽い順に調べる）
+	bool isVisible( const View& view, const GameLib::Math::Vector3& head ) const;						// 自キャラから head（ゾンビの頭）が見えるか（画面の内で、間に何も無い）
 
 	std::vector< GameLib::Math::Vector3 > mCandidates;
 	const HitWorld* mHitWorld;

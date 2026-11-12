@@ -25,12 +25,10 @@ public:
 	const char* get() const;
 	int size() const;
 	void setSize( int );
-	///lastは最後の文字そのもの。+1するな。last==-1だと始点だけ変える
-	void clamp( int first, int last = -1 ); 
-	int find( char ) const; //前から文字を探して位置を返す。見つからないと-1
-	int rfind( char ) const; //後から文字を探して位置を返す。見つからないと-1
-	///参照先文字列をコピーしてポインタを返す。自前でdeleteすること
-	char* copyOriginal() const;
+	void clamp( int first, int last = -1 );	///lastは最後の文字そのもの。+1するな。last==-1だと始点だけ変える
+	int find( char ) const;					//前から文字を探して位置を返す。見つからないと-1
+	int rfind( char ) const;				//後から文字を探して位置を返す。見つからないと-1
+	char* copyOriginal() const;				///参照先文字列をコピーしてポインタを返す。自前でdeleteすること
 
 	bool operator==( const RefString& ) const;
 	bool operator==( const char* ) const;

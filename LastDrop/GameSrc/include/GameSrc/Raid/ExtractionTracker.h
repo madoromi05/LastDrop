@@ -16,16 +16,13 @@ struct ExtractZone{
 // 円の大きさと何秒かは作るときに受け取る（RaidParams）。どこにするかは知らない（RaidSession が選んで渡す）
 class ExtractionTracker{
 public:
-	// zones: 脱出できる所（写して持つ）。radius: 円の半径（m。水平だけで測る）。seconds: 居続ける長さ（秒）。どちらも 0 より大きいこと
-	ExtractionTracker( const std::vector< ExtractZone >& zones, float radius, float seconds );
+	ExtractionTracker( const std::vector< ExtractZone >& zones, float radius, float seconds );	// zones: 脱出できる所（写して持つ）。radius: 円の半径（m。水平だけで測る）。seconds: 居続ける長さ（秒）。どちらも 0 より大きいこと
 
 	// 数え始める（給油し終えた）。2 回目からは何もしない
 	void open();
 	bool isOpen() const;
-	// 1 ティック進める。feet: 自キャラの足元（ワールド）。開いていて円の中なら数え、外なら 0 に戻す。脱出した後は何もしない
-	void tick( const GameLib::Math::Vector3& feet );
-	// 円の中にいるか（最後の tick。開く前は false）
-	bool isInside() const;
+	void tick( const GameLib::Math::Vector3& feet );	// 1 ティック進める。feet: 自キャラの足元（ワールド）。開いていて円の中なら数え、外なら 0 に戻す。脱出した後は何もしない
+	bool isInside() const;								// 円の中にいるか（最後の tick。開く前は false）
 	// 脱出し終えるまでの残り（秒。円の外では居続ける長さそのもの）
 	float remainingSeconds() const;
 	bool hasExtracted() const;

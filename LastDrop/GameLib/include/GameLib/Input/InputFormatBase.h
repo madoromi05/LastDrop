@@ -29,8 +29,7 @@ public:
         m_umButtonNameToKeyCode.erase(a_buttonName.data());
     }
 
-    // 「このキーコードは今押されているか」 ← デバイスごとに実装する
-    virtual bool CheckButtonState(KeyCodeType a_keyCode) = 0;
+    virtual bool CheckButtonState(KeyCodeType a_keyCode) = 0;	// 「このキーコードは今押されているか」 ← デバイスごとに実装する
 
     // テンプレートクラスごとに一意な型 ID を返す（InputDeviceBase が使う）
     static inputTypeID GetTypeID()
@@ -76,8 +75,7 @@ public:
         m_umAxisNameToKeyCode.erase(a_axisName.data());
     }
 
-    // 「この軸コードの現在値を AxisStatus で返す」 ← デバイスごとに実装する
-    virtual AxisStatus CheckAxisState(KeyCodeType a_keyCode) = 0;
+    virtual AxisStatus CheckAxisState(KeyCodeType a_keyCode) = 0;	// 「この軸コードの現在値を AxisStatus で返す」 ← デバイスごとに実装する
 
     static inputTypeID GetTypeID()
     {

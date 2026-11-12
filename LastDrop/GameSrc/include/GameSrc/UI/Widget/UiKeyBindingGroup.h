@@ -24,8 +24,7 @@ public:
 	virtual void draw( UiRenderer& renderer ) const;
 
 private:
-	// 行 1 つを rect の範囲に描く
-	void drawRow( UiRenderer& renderer, const Row& row, const UiRect& rect ) const;
+	void drawRow( UiRenderer& renderer, const Row& row, const UiRect& rect ) const;	// 行 1 つを rect の範囲に描く
 
 	UiColumn mColumn;
 	float mTop;

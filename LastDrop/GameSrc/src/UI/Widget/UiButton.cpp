@@ -7,9 +7,8 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 板の色。選ばれているかどうかが一目で分かるよう、明るさと不透明度を大きく変える
-	const unsigned kPlateColor = VertexColor::pack( 0.15f, 0.15f, 0.15f, 0.8f );
-	const unsigned kSelectedPlateColor = VertexColor::pack( 0.85f, 0.65f, 0.15f, 0.95f ); // 燃料の色（黄）
+	const unsigned kPlateColor = VertexColor::pack( 0.15f, 0.15f, 0.15f, 0.8f );			// 板の色。選ばれているかどうかが一目で分かるよう、明るさと不透明度を大きく変える
+	const unsigned kSelectedPlateColor = VertexColor::pack( 0.85f, 0.65f, 0.15f, 0.95f );	// 燃料の色（黄）
 	const unsigned kLabelColor = VertexColor::pack( 0.9f, 0.9f, 0.9f );
 	const unsigned kSelectedLabelColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );
 }

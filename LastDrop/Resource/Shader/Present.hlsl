@@ -13,8 +13,7 @@
 Texture2D gSceneColor : register(t2); // PostProcess.cpp の kSceneColorSlot
 Texture2D gBloom      : register(t3); // PostProcess.cpp の kBloomSlot（画面の 1/2 の大きさ）
 
-// ぼかすときに読む回数。多いほどなめらかだが重い（痛みのある 0.6 秒だけ読む）
-static const int kPainBlurTaps = 8;
+static const int kPainBlurTaps = 8;	// ぼかすときに読む回数。多いほどなめらかだが重い（痛みのある 0.6 秒だけ読む）
 
 // 画面の中心へ向かう線の上を kPainBlurTaps 回読んで平均する（放射状のぼかし）。強さ 0 なら 1 回だけ読む
 float3 sampleScene(float2 uv, float distance)
@@ -49,8 +48,7 @@ float3 toneMapAces(float3 x)
     return saturate((x * (kAcesA * x + kAcesB)) / (x * (kAcesC * x + kAcesD) + kAcesE));
 }
 
-// 画面の色（sRGB の数）の輝度の重み（Rec.601。FXAA 3.11 と同じく、見た目の明るさの差で輪郭を探すため）
-static const float3 kScreenLumaWeights = float3(0.299, 0.587, 0.114);
+static const float3 kScreenLumaWeights = float3(0.299, 0.587, 0.114);	// 画面の色（sRGB の数）の輝度の重み（Rec.601。FXAA 3.11 と同じく、見た目の明るさの差で輪郭を探すため）
 
 // ── ディザ ──
 FullScreenVertex VSMain(uint id : SV_VertexID)

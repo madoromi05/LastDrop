@@ -8,8 +8,7 @@ namespace{
 		return on ? 1.f : 0.f;
 	}
 
-	// 移動の軸の上限（キーとスティックを同時に入れても PlayerCommand の -1〜1 に収める）
-	const float kMoveAxisLimit = 1.f;
+	const float kMoveAxisLimit = 1.f;	// 移動の軸の上限（キーとスティックを同時に入れても PlayerCommand の -1〜1 に収める）
 }
 
 CommandReader::CommandReader() :

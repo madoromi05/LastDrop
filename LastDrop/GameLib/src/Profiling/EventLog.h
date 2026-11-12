@@ -28,10 +28,8 @@ public:
 	static const int kFollowFrames = 10;     // 印のフレームを含めて、何フレーム見るか
 	static const size_t kRecentLimit = 64;   // 残す印の数
 
-	// 閉じたフレームを渡す。前の印の「後のフレーム」を更新し、このフレームの印を足す
-	void onFrameClosed( const FrameRecord& frame );
-	// 古い順
-	const std::deque< EventRecord >& recent() const;
+	void onFrameClosed( const FrameRecord& frame );		// 閉じたフレームを渡す。前の印の「後のフレーム」を更新し、このフレームの印を足す
+	const std::deque< EventRecord >& recent() const;	// 古い順
 private:
 	std::deque< EventRecord > mRecent;
 };

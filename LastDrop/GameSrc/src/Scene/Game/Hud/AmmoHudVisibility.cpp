@@ -21,8 +21,7 @@ AmmoHudVisibility::AmmoHudVisibility() :
 
 void AmmoHudVisibility::update( bool wanted ) {
 	if ( wanted ) {
-		// 条件がある間は、切れたときに残す長さを数え直しておく
-		mLingerTicks = GameTime::secondsToTicks( kLingerSeconds );
+		mLingerTicks = GameTime::secondsToTicks( kLingerSeconds );	// 条件がある間は、切れたときに残す長さを数え直しておく
 	} else if ( mLingerTicks > 0 ) {
 		--mLingerTicks;
 	}

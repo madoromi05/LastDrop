@@ -30,8 +30,7 @@ public:
 		Zombie, // ゾンビ：映る範囲と距離（間引いたら Cull.zombie にも数える）
 	};
 
-	// 骨に付けた箱・骨の位置から作った箱を広げる幅（m）。手・髪・構えた銃など、箱の外へ出る所の分
-	static const float kPoseMargin;
+	static const float kPoseMargin;	// 骨に付けた箱・骨の位置から作った箱を広げる幅（m）。手・髪・構えた銃など、箱の外へ出る所の分
 
 	// 映る範囲だけで決める（懐中電灯の影。近くしか照らさないので距離も小ささも見ない）
 	// projectionView：光の側の射影×ビュー
@@ -50,8 +49,7 @@ public:
 	// 高さの霧は足さない（足すと霧は濃くなるだけなので、距離の霧だけで決めれば見える物を消すことは無い）
 	static float drawDistanceForFog( float fogHalfDistance );
 
-	// boundsMin〜boundsMax の軸に沿った箱（ワールド）を描くか
-	bool shows( const GameLib::Math::Vector3& boundsMin, const GameLib::Math::Vector3& boundsMax, Target target ) const;
+	bool shows( const GameLib::Math::Vector3& boundsMin, const GameLib::Math::Vector3& boundsMax, Target target ) const;	// boundsMin〜boundsMax の軸に沿った箱（ワールド）を描くか
 	// 部位の箱（hitboxes）を全部囲む箱に kPoseMargin を足した物で shows。箱が 1 つも置かれていなければ描く（間引かない側）
 	// Target::Zombie なら、足元（囲む箱の底の真ん中）が目のいるますから見えうるかも見る（隠れ）
 	bool showsPosed( const HitboxSet& hitboxes, Target target ) const;
@@ -62,8 +60,7 @@ public:
 	// F6 の LOD を切っている間は元の形。selector：nullptr 不可
 	const StaticMeshData* chooseLod( const StaticMeshLods& shapes, LodSelector* selector, const GameLib::Math::Vector3& boundsMin,
 		const GameLib::Math::Vector3& boundsMax ) const;
-	// 映る範囲だけ（地面。まとめて描くので距離・小ささでは間引かない）
-	const ViewFrustum& frustum() const;
+	const ViewFrustum& frustum() const;	// 映る範囲だけ（地面。まとめて描くので距離・小ささでは間引かない）
 
 private:
 	// 置物の段の決め方
@@ -75,8 +72,7 @@ private:
 
 	DrawCulling( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye, float drawDistance,
 		float minRadiusPerDistance, float minDiameter, float pixelsPerRadiusPerDistance, LodPolicy lodPolicy );
-	// 間引いた理由を、回数の印に足す
-	static void count( const char* reason, Target target );
+	static void count( const char* reason, Target target );	// 間引いた理由を、回数の印に足す
 
 	ViewFrustum mFrustum;
 	const TownVisibility* mVisibility; // 借りているだけ（nullptr なら隠れでは間引かない）

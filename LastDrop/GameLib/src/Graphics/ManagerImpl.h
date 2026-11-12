@@ -590,8 +590,7 @@ public:
 			mContext->PSSetShader( mNoLightingPS, nullptr, 0 );
 		}else{
 			mContext->VSSetShader( mPixelLightingVS, nullptr, 0 );
-			// 法線マップが設定されていればノーマルマップ用PSを使う
-			mContext->PSSetShader( mCurrentNormalMap ? mNormalMapPS : mPixelLightingPS, nullptr, 0 );
+			mContext->PSSetShader( mCurrentNormalMap ? mNormalMapPS : mPixelLightingPS, nullptr, 0 );	// 法線マップが設定されていればノーマルマップ用PSを使う
 		}
 	}
 	void applyRasterizerState(){

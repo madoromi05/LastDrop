@@ -18,8 +18,7 @@ class IInputDeviceBase
 public:
     virtual ~IInputDeviceBase() = default;
 
-    // 毎フレーム呼ぶ更新処理。フォーマット層を通して物理デバイスを読む
-    virtual void Update() = 0;
+    virtual void Update() = 0;	// 毎フレーム呼ぶ更新処理。フォーマット層を通して物理デバイスを読む
 
     // ボタン名でビットフラグ (KeyStatus) を取得
     virtual short GetButtonState(std::string_view a_buttonName) = 0;
@@ -28,8 +27,7 @@ public:
     virtual bool IsButtonHold(std::string_view a_buttonName) = 0;
     virtual bool IsButtonRelease(std::string_view a_buttonName) = 0;
 
-    // 全ボタン結果の参照（InputCollector が走査するために使う）
-    virtual const std::unordered_map<std::string, short>& GetAllButtonResult() = 0;
+    virtual const std::unordered_map<std::string, short>& GetAllButtonResult() = 0;	// 全ボタン結果の参照（InputCollector が走査するために使う）
 
     // 軸名で AxisStatus を取得
     virtual AxisStatus GetAxisState(std::string_view a_axisName) = 0;
@@ -76,13 +74,11 @@ public:
                     // 押されている
                     if (result & KeyStatus::Free)
                     {
-                        // 前フレームが Free → 今フレームは Press
-                        result |= KeyStatus::Press;
+                        result |= KeyStatus::Press;	// 前フレームが Free → 今フレームは Press
                     }
                     else
                     {
-                        // 前フレームも押していた → Press を落として Hold を維持
-                        result &= ~KeyStatus::Press;
+                        result &= ~KeyStatus::Press;	// 前フレームも押していた → Press を落として Hold を維持
                     }
                     result &= ~KeyStatus::Free;
                     result |= KeyStatus::Hold;
@@ -92,13 +88,11 @@ public:
                     // 押されていない
                     if (result & KeyStatus::Hold)
                     {
-                        // 前フレームが Hold → 今フレームは Release
-                        result |= KeyStatus::Release;
+                        result |= KeyStatus::Release;	// 前フレームが Hold → 今フレームは Release
                     }
                     else
                     {
-                        // 前フレームも離していた → Release を落として Free を維持
-                        result &= ~KeyStatus::Release;
+                        result &= ~KeyStatus::Release;	// 前フレームも離していた → Release を落として Free を維持
                     }
                     result &= ~KeyStatus::Hold;
                     result |= KeyStatus::Free;

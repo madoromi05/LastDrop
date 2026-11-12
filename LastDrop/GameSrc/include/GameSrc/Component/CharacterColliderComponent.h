@@ -20,19 +20,15 @@ class CharacterColliderComponent : public Component, public ICollisionBody, publ
 public:
 	CharacterColliderComponent();
 
-	// 長方形の形を答える部品（同じ物の部品）。spawn の中の start で 1 回だけ渡す（名簿に載るのはその後）。nullptr 不可
-	void setShape( const ICollisionBody* shape );
+	void setShape( const ICollisionBody* shape );	// 長方形の形を答える部品（同じ物の部品）。spawn の中の start で 1 回だけ渡す（名簿に載るのはその後）。nullptr 不可
 
-	// 当たりながら滑って動く（自分の長方形は除いて調べる）
-	const CharacterMover& mover() const;
+	const CharacterMover& mover() const;	// 当たりながら滑って動く（自分の長方形は除いて調べる）
 	// 移動の名簿から外し、他のキャラの移動を止めなくなる（何回呼んでもよい。もう戻さない）
 	void stopBlocking();
 	bool isBlocking() const;
 
-	// Component（動くときに壁・他のキャラを聞く名簿を、共有の棚から引いて滑る移動へ渡す）
-	void awake() override;
-	// ICollisionBody（shape に聞く）
-	BoxCollider collider() const override;
+	void awake() override;					// Component（動くときに壁・他のキャラを聞く名簿を、共有の棚から引いて滑る移動へ渡す）
+	BoxCollider collider() const override;	// ICollisionBody（shape に聞く）
 	// IWorldMember（移動の名簿にだけ載る）
 	void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;
 	void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) override;

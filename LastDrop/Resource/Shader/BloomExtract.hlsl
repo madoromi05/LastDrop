@@ -10,8 +10,7 @@ cbuffer BloomConstants : register(b1) // Bloom.cpp の BloomConstants と同じ�
     float3 gPadding;
 };
 
-// 真っ黒な画素で 0 で割らないための下限。どのみち取り出す量は 0 になる
-static const float kMinBrightness = 1e-4;
+static const float kMinBrightness = 1e-4;	// 真っ黒な画素で 0 で割らないための下限。どのみち取り出す量は 0 になる
 
 FullScreenVertex VSMain(uint id : SV_VertexID)
 {

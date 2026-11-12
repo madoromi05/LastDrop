@@ -16,8 +16,7 @@ public:
 	// boneMask: boneNumber() 個ぶん。対象の骨なら true。anchorBone: 箱を置く骨の番号。out: 出力先（前の中身は捨てる）。nullptr 不可
 	static void collectBoneSpaceVertices( const SkinnedMeshData& data, const std::vector< bool >& boneMask, int anchorBone,
 		std::vector< GameLib::Math::Vector3 >* out );
-	// bone の関節の位置（レスト姿勢）を、anchorBone の空間で返す。部位の箱の長い辺を、関節を結ぶ向きに合わせるのに使う
-	static GameLib::Math::Vector3 boneSpaceJointPosition( const SkinnedMeshData& data, int anchorBone, int bone );
+	static GameLib::Math::Vector3 boneSpaceJointPosition( const SkinnedMeshData& data, int anchorBone, int bone );	// bone の関節の位置（レスト姿勢）を、anchorBone の空間で返す。部位の箱の長い辺を、関節を結ぶ向きに合わせるのに使う
 	// 一番強く付いている骨が boneMask で true の頂点を、レスト姿勢のモデルの空間（置き場所・向きを掛ける前。単位は表示と同じ m）で囲む
 	// boundsMin / boundsMax: 出力先。nullptr 不可。対象の頂点が1つも無ければ false（出力は変えない）
 	static bool computeRestBounds( const SkinnedMeshData& data, const std::vector< bool >& boneMask,

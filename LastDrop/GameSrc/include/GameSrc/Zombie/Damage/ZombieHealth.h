@@ -14,26 +14,23 @@
 // 倒れた後どうするか（アニメ・名簿から外す）は知らない（Zombie が isDead を見て決める）
 class ZombieHealth{
 public:
-	// 全部満タンで始める。toughness: 最大の体力に掛ける値（1 で表のまま）。0 より大きいこと
-	explicit ZombieHealth( float toughness );
+	explicit ZombieHealth( float toughness );	// 全部満タンで始める。toughness: 最大の体力に掛ける値（1 で表のまま）。0 より大きいこと
 
 	// part に baseAmount（倍率を掛ける前の量）のダメージを受ける
 	// criticalRoll: 0 以上 1 未満の乱数。部位のクリティカルの確率（表。頭だけ 10%）より小さければ、その部位の体力を一気に 0 にする
 	// （頭が弾ける）。乱数を引くのは呼ぶ側（ここは乱数を持たない）
 	void takeDamage( BodyPart part, float baseAmount, float criticalRoll );
 
-	// 倒れる条件を満たしたか（全体が 0、または 0 で倒れる部位が 0）
-	bool isDead() const;
-	float total() const;    // 全体の残り（0 以上）
-	float maxTotal() const; // 全体の最大（丈夫さを掛けた後）
-	float part( BodyPart part ) const;    // 部位の残り（0 以上）
-	float maxPart( BodyPart part ) const; // 部位の最大（丈夫さを掛けた後）
-	// 部位の体力が 0 になったか（0 で倒れる部位も、0 なら true）
-	bool isBroken( BodyPart part ) const;
+	bool isDead() const;					// 倒れる条件を満たしたか（全体が 0、または 0 で倒れる部位が 0）
+	float total() const;					// 全体の残り（0 以上）
+	float maxTotal() const;					// 全体の最大（丈夫さを掛けた後）
+	float part( BodyPart part ) const;		// 部位の残り（0 以上）
+	float maxPart( BodyPart part ) const;	// 部位の最大（丈夫さを掛けた後）
+	bool isBroken( BodyPart part ) const;	// 部位の体力が 0 になったか（0 で倒れる部位も、0 なら true）
 	// 脚の 4 部位（左右の太もも・すね）のうち、一番傷んだ部位の残りの割合（0〜1。満タンで 1）
 	// 走る体が歩きに落ちるかを決めるのに使う
 	float weakestLegRatio() const;
-	float toughness() const; // 最大の体力に掛けている値（確認用の表示に使う）
+	float toughness() const;				// 最大の体力に掛けている値（確認用の表示に使う）
 
 private:
 	float mToughness;

@@ -38,20 +38,13 @@ public:
 	// 半透明の板（LitQuadBatch）を、物の近くで薄くしながら描く間に使う
 	// 深度を書く物（当たり判定の表示など）を描く前に resumeScene へ戻すこと
 	void resumeSceneReadOnlyDepth();
-	// 描画先をシーンの色だけにする（深度は外す）。深度をシェーダから読みながらシーンの色へ描くとき（ディファードのライティング）に呼ぶ
-	void bindSceneColor();
-	// シーンの深度。G-Buffer へ描くときに一緒に使い、ライティングと G-Buffer の中身を見るときに読む
-	GameLib::Graphics::DepthTarget sceneDepth() const;
-	// シーンの色（HDR・リニア）。照らした後の色を読むパス（映り込み。ScreenSpaceReflection）が、描画先から外した後に読む
-	const GameLib::Graphics::RenderTarget& sceneColor() const;
-	// 攻撃された瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く
-	void setDamageFlash( float amount );
-	// 攻撃された瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く
-	void setPain( float amount );
-	// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く
-	void setFade( float amount );
-	// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）。次の endScene から効く
-	void setNoiseFrame( int frame );
+	void bindSceneColor();										// 描画先をシーンの色だけにする（深度は外す）。深度をシェーダから読みながらシーンの色へ描くとき（ディファードのライティング）に呼ぶ
+	GameLib::Graphics::DepthTarget sceneDepth() const;			// シーンの深度。G-Buffer へ描くときに一緒に使い、ライティングと G-Buffer の中身を見るときに読む
+	const GameLib::Graphics::RenderTarget& sceneColor() const;	// シーンの色（HDR・リニア）。照らした後の色を読むパス（映り込み。ScreenSpaceReflection）が、描画先から外した後に読む
+	void setDamageFlash( float amount );						// 攻撃された瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く
+	void setPain( float amount );								// 攻撃された瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く
+	void setFade( float amount );								// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く
+	void setNoiseFrame( int frame );							// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）。次の endScene から効く
 	// 中間の描画先を画面へ写す。シーンを描き終わった後に呼ぶ。描画先は画面に戻る
 	// GPU の印を中で打つ：「PostProcess」（ブルームと写すまで）・「FXAA」（FXAA。OFF なら区間はほぼ 0）
 	void endScene();
@@ -63,10 +56,8 @@ private:
 	// 写すシェーダへ渡す値（ビネット・ブルーム・赤み・痛み・暗さ・グレーディング・色の表の強さ）を定数バッファへ書く（endScene のたび）
 	// gradingOn：false ならグレーディングに「何も変えない値」を入れる（F6 の Color grading を切った間）。表を焼くときは今の値を入れるため true
 	void updateConstants( bool gradingOn );
-	// F6 の色の表のボタン（colorLutControl）の要求を行い、表の読み込みを進める（endScene の始め）
-	void updateColorLut();
-	// 8bit の中間（mFxaaInput）を読み、FXAA を掛けて画面へ写す（endScene の最後。FXAA が ON のときだけ）
-	void drawFxaa();
+	void updateColorLut();	// F6 の色の表のボタン（colorLutControl）の要求を行い、表の読み込みを進める（endScene の始め）
+	void drawFxaa();		// 8bit の中間（mFxaaInput）を読み、FXAA を掛けて画面へ写す（endScene の最後。FXAA が ON のときだけ）
 
 	GameLib::Graphics::RenderTarget mSceneColor;   // シーンの色（1を超える明るさを持てる形式。後でトーンマップするため）
 	GameLib::Graphics::DepthTarget mSceneDepth;    // シーンの深度（後で位置の復元・霧などに読む）

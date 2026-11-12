@@ -137,8 +137,7 @@ bool  IsWorkFree(const ::Input& a_input, WorkId a_work);
 bool  IsWorkPress(const ::Input& a_input, WorkId a_work);
 bool  IsWorkHold(const ::Input& a_input, WorkId a_work);
 bool  IsWorkRelease(const ::Input& a_input, WorkId a_work);
-// 軸ワークの今フレームの量（横・縦。マウスなら移動した画素数）。割り当てが無ければ 0
-AxisStatus GetAxisWorkState(const ::Input& a_input, WorkId a_work);
+AxisStatus GetAxisWorkState(const ::Input& a_input, WorkId a_work);	// 軸ワークの今フレームの量（横・縦。マウスなら移動した画素数）。割り当てが無ければ 0
 
 }
 }

@@ -33,14 +33,10 @@ public:
 	// 毎ティック呼ぶ（間隔を数え、近づけているかを数えるため）
 	const GameLib::Math::Vector3& steer( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
 		const NavMesh& navMesh, bool walking );
-	// 通り道を捨てる（うろつきに戻った・攻撃を始めた）。次の steer ですぐ、まっすぐ通れるかを調べる
-	void clear();
-	// 一度よけても、まだ向く点へ近づけないか（見失った後、着けない所へ向かっているのを見分ける。あきらめるかは持ち主が決める）
-	bool isStuck() const;
-	// 道を探したいのに、順番を待っているか（確認用の表示）
-	bool isWaitingForSearch() const;
-	// 近づけているかを数え直す（探し始めたとき。追っている間に数えた分を持ち越さない）
-	void resetProgress();
+	void clear();						// 通り道を捨てる（うろつきに戻った・攻撃を始めた）。次の steer ですぐ、まっすぐ通れるかを調べる
+	bool isStuck() const;				// 一度よけても、まだ向く点へ近づけないか（見失った後、着けない所へ向かっているのを見分ける。あきらめるかは持ち主が決める）
+	bool isWaitingForSearch() const;	// 道を探したいのに、順番を待っているか（確認用の表示）
+	void resetProgress();				// 近づけているかを数え直す（探し始めたとき。追っている間に数えた分を持ち越さない）
 	// 残りの通り道（今向かっている点から最後＝行き先まで）。まっすぐ向かっている間は空。よけている間は、よける点が先頭に入る
 	// 確認用の表示に使う。out: nullptr 不可。前の中身は捨てる
 	void remainingRoute( std::vector< GameLib::Math::Vector3 >* out ) const;
@@ -50,13 +46,11 @@ private:
 	// どちらも通れなければ、少し後ろへ下がる点にする
 	void startSidestep( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& point,
 		const NavMesh& navMesh );
-	// 近づけているかを数え直す（よけた回数・詰まった印は残す。よけ終わった後に使う）
-	void restartProgress();
+	void restartProgress();	// 近づけているかを数え直す（よけた回数・詰まった印は残す。よけ終わった後に使う）
 	// 決まった間隔で、まっすぐ通れるか・探し直すか・点を飛ばせるかを決める
 	void probe( const GameLib::Math::Vector3& self, const GameLib::Math::Vector3& destination,
 		const NavMesh& navMesh );
-	// 今向かっている点（通り道が無ければ行き先）
-	const GameLib::Math::Vector3& currentPoint( const GameLib::Math::Vector3& destination ) const;
+	const GameLib::Math::Vector3& currentPoint( const GameLib::Math::Vector3& destination ) const;	// 今向かっている点（通り道が無ければ行き先）
 
 	PathBudget* mBudget;                          // 借りているだけ
 	std::vector< GameLib::Math::Vector3 > mRoute; // 通り道（最後は行き先）。空ならまっすぐ向かう

@@ -28,8 +28,7 @@ public:
 	void stop();
 	bool isRecording() const;
 	int frameCount() const;
-	// 閉じたフレームを 1 行足す
-	void add( const FrameRecord& frame );
+	void add( const FrameRecord& frame );	// 閉じたフレームを 1 行足す
 	// 数フレーム遅れて届いた GPU の時間を、その行に入れる（無い行なら何もしない）
 	// 全体（gpuMs 列）と、印（gpuMark）で分けた区間ごとの時間（"gpu.<区間の名前>" の列）の両方を入れる
 	void setGpu( const GpuTimer::Result& result );

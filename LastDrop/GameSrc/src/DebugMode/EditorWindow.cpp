@@ -38,21 +38,18 @@
 #include <string>
 
 namespace{
-	// 窓の幅は画面の幅に合わせる。照準（画面の中央）を隠さないよう半分より細くし、大きい画面でも広げすぎない
-	const float kWindowWidthRatio = 0.45f;
-	const float kMinWindowWidth = 260.f;  // これより細いと数字の行が読めない（画素）
+	const float kWindowWidthRatio = 0.45f;					// 窓の幅は画面の幅に合わせる。照準（画面の中央）を隠さないよう半分より細くし、大きい画面でも広げすぎない
+	const float kMinWindowWidth = 260.f;					// これより細いと数字の行が読めない（画素）
 	const float kMaxWindowWidth = 420.f;
-	const float kSliderWidthRatio = 0.5f; // 時間の倍率のスライダーの幅（欄の幅に対して。ラベルとボタンを同じ行に残す）
-	const float kMinTimeScale = 0.1f;     // 10 倍のスローまで
+	const float kSliderWidthRatio = 0.5f;					// 時間の倍率のスライダーの幅（欄の幅に対して。ラベルとボタンを同じ行に残す）
+	const float kMinTimeScale = 0.1f;						// 10 倍のスローまで
 	const float kMaxTimeScale = 2.f;
 	const float kNormalTimeScale = 1.f;
 	const char* const kTimeScaleFormat = "%.2f";
-	// G-Buffer の表示の Hi-Z で見る段のスライダー。上限は 4K の半分（1920）でも 1 画素まで届く段の数（それより上は一番粗い段に丸まる）
-	const int kMaxHiZViewLevel = 11;
-	const float kHiZLevelSliderWidth = 80.f; // チェックボックスと同じ行に並べる幅（画素）
-	// 無敵・ゾンビを止めている、の知らせ。見落とさないよう赤くする
-	const ImVec4 kWarningOnColor( 1.f, 0.3f, 0.3f, 1.f );
-	const int kShownGamePad = 0; // Pad の欄に出すパッド（自キャラを動かすのは 0 番だけ）
+	const int kMaxHiZViewLevel = 11;						// G-Buffer の表示の Hi-Z で見る段のスライダー。上限は 4K の半分（1920）でも 1 画素まで届く段の数（それより上は一番粗い段に丸まる）
+	const float kHiZLevelSliderWidth = 80.f;				// チェックボックスと同じ行に並べる幅（画素）
+	const ImVec4 kWarningOnColor( 1.f, 0.3f, 0.3f, 1.f );	// 無敵・ゾンビを止めている、の知らせ。見落とさないよう赤くする
+	const int kShownGamePad = 0;							// Pad の欄に出すパッド（自キャラを動かすのは 0 番だけ）
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
 	bool gFreeCameraActive = false; // GameScene から受け取った、観察用カメラを使っているか
@@ -529,10 +526,8 @@ void draw() {
 	const ImGuiWindowFlags kFlags = ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
 	if ( ImGui::Begin( "Editor (F6)", nullptr, kFlags ) ) {
-		// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）
-		ImGui::TextDisabled( "Hold Alt to use the mouse here." );
-		// どのタブを見ていても見えるよう、タブの外に置く
-		drawActiveCheats();
+		ImGui::TextDisabled( "Hold Alt to use the mouse here." );	// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）
+		drawActiveCheats();											// どのタブを見ていても見えるよう、タブの外に置く
 		// タブで欄を切り替える。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → パッド）
 		// 窓は毎回同じ名前で作るので、ImGui が選んでいるタブを覚えている（imgui.ini は書かないので、起動し直すと Debug に戻る）
 		if ( ImGui::BeginTabBar( "EditorTabs", ImGuiTabBarFlags_FittingPolicyScroll ) ) {

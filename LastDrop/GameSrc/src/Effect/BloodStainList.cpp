@@ -15,15 +15,13 @@ namespace{
 	const char* kTextureFile = "Resource/Texture/Effect/blood_stain.dds";
 	const char* kNormalMapFile = "Resource/Texture/Effect/blood_stain_normal.dds";
 
-	// 同時に残す数。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す
-	const int kCapacity = 32;
+	const int kCapacity = 32;								// 同時に残す数。飛び散った血と滴の跡を合わせて数える。超えたら一番古い物から消す
 	// 残す時間と、薄くし始めるまでの時間（ティック）。弾痕（10 秒）より長く残し、戦った跡を見せる
 	const int kLifeTicks = GameTime::secondsToTicks( 30.f );
 	const int kFadeStartTicks = GameTime::secondsToTicks( 20.f );
-	const int kFadeTicks = kLifeTicks - kFadeStartTicks; // 薄くしていく長さ
+	const int kFadeTicks = kLifeTicks - kFadeStartTicks;	// 薄くしていく長さ
 
-	// デカールの箱の厚さの半分（m）。弾痕と同じ（角の奥の別の面まで届かない薄さ）
-	const float kHalfDepth = 0.05f;
+	const float kHalfDepth = 0.05f;	// デカールの箱の厚さの半分（m）。弾痕と同じ（角の奥の別の面まで届かない薄さ）
 
 	// 絵の並び（tools/texgen/blood_stain_gen.py の main と合わせる）。2×2 で、左上・右上・左下が飛び散った血、右下が滴の跡
 	const int kCellsPerRow = 2;
@@ -34,8 +32,7 @@ namespace{
 	// 向きをばらすとき、1 つごとに回す角度（度。黄金角。BulletHoleList と同じ）
 	const float kTurnPerStainDegree = 137.5f;
 	const float kFullTurnDegree = 360.f;
-	// 弾の向きを面に写した長さがこれより短ければ、面にほぼ垂直に撃ったとみなし、絵の向きをばらす（筋の向きが決まらないため）
-	const float kMinAlongSurface = 0.2f;
+	const float kMinAlongSurface = 0.2f;	// 弾の向きを面に写した長さがこれより短ければ、面にほぼ垂直に撃ったとみなし、絵の向きをばらす（筋の向きが決まらないため）
 
 	// 絵の向きを作るときの仮の「上」（BulletHoleList と同じ）
 	const Vector3 kWorldUp( 0.f, 1.f, 0.f );

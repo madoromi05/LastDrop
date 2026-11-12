@@ -36,11 +36,9 @@ namespace{
 	int pillarVertexCost( int ringSize ) {
 		return ringSize * kPillarLinesPerCorner * kVerticesPerLine;
 	}
-	// 部位の箱1つ：線 12 本
-	const int kBoxVertexCost = kCubeEdges * kVerticesPerLine;
-	// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋置物 20 個ぶんに余裕を持たせた。足りなくなったら増やす
-	const int kVertexCapacity = 16000;
-	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
+	const int kBoxVertexCost = kCubeEdges * kVerticesPerLine;	// 部位の箱1つ：線 12 本
+	const int kVertexCapacity = 16000;							// キャラ 1 体で 柱 24 ＋ 部位の箱 12 個 288 頂点。キャラ 40 体＋置物 20 個ぶんに余裕を持たせた。足りなくなったら増やす
+	const int kBatchCapacity = 2;								// 線のまとまり 1 つ＋余裕
 
 	// ── 建物の面のかけら ──
 	// 線を壁の表面から浮かせる量（m）。表面とぴったり同じ奥行きだと、壁に隠れたり出たりしてちらつくため
@@ -91,10 +89,9 @@ namespace{
 	}
 
 	// ── 手前の物に隠れない柱（drawSeeThrough）──
-	const unsigned kSeeThroughColor = VertexColor::pack( 1.f, 0.85f, 0.2f, 1.f ); // 白い当たり判定の線と見分けられる黄（燃料の色）
-	// 一度に描ける箱の数。落ちている物（ガソリンの候補は 10 か所）に余裕を持たせた数。足りなくなったら増やす
-	const int kSeeThroughBoxCapacity = 64;
-	const int kSeeThroughBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
+	const unsigned kSeeThroughColor = VertexColor::pack( 1.f, 0.85f, 0.2f, 1.f );	// 白い当たり判定の線と見分けられる黄（燃料の色）
+	const int kSeeThroughBoxCapacity = 64;											// 一度に描ける箱の数。落ちている物（ガソリンの候補は 10 か所）に余裕を持たせた数。足りなくなったら増やす
+	const int kSeeThroughBatchCapacity = 2;											// 線のまとまり 1 つ＋余裕
 
 	Vector3 raised( const Vector3& ground, float height ) {
 		return Vector3( ground.x, height, ground.z );

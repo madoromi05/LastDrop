@@ -32,7 +32,6 @@ struct ZombieRunParams{
 	bool pickRunner( GameLib::Math::Random* random ) const;
 };
 
-// 起動中ずっと 1 つだけの調整値（ZombieRunParams.cpp が持つ）
-ZombieRunParams& zombieRunParams();
+ZombieRunParams& zombieRunParams();	// 起動中ずっと 1 つだけの調整値（ZombieRunParams.cpp が持つ）
 
 #endif

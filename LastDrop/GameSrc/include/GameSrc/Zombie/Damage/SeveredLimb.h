@@ -31,12 +31,9 @@ public:
 	SeveredLimb( const SeveredLimb& ) = delete;
 	SeveredLimb& operator=( const SeveredLimb& ) = delete;
 
-	// 1ティック進める。ground: 落ちる先の地面（下向きの線で高さを聞く）。nullptr なら高さ 0 の平らな地面とみなす
-	void update( const IRayBlocker* ground );
-	// culling で描くと決まった時だけ描く（小さい物として間引く）
-	void draw( const DrawCulling& culling ) const;
-	// 沈み終わって、消してよいか
-	bool isGone() const;
+	void update( const IRayBlocker* ground );		// 1ティック進める。ground: 落ちる先の地面（下向きの線で高さを聞く）。nullptr なら高さ 0 の平らな地面とみなす
+	void draw( const DrawCulling& culling ) const;	// culling で描くと決まった時だけ描く（小さい物として間引く）
+	bool isGone() const;							// 沈み終わって、消してよいか
 
 private:
 	enum class State{
@@ -45,11 +42,9 @@ private:
 		Sinking, // 地面へ沈んでいる
 	};
 
-	void fly( const IRayBlocker* ground ); // 重力で落とし、回し、地面に着いたら止める
-	// 今の動き（回した角度・中心の位置）を、固めた姿勢に掛ける行列へまとめる
-	void updateMotion( float sinkOffset );
-	// 固めた姿勢を今の動きの分だけ動かす（BonePoseModifier）
-	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
+	void fly( const IRayBlocker* ground );											// 重力で落とし、回し、地面に着いたら止める
+	void updateMotion( float sinkOffset );											// 今の動き（回した角度・中心の位置）を、固めた姿勢に掛ける行列へまとめる
+	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;	// 固めた姿勢を今の動きの分だけ動かす（BonePoseModifier）
 
 	SkinnedMeshInstance mMesh;
 	std::vector< GameLib::Math::Matrix34 > mBasePose; // 切れた瞬間の姿勢（ワールド）。残さない骨は切り口へ潰してある

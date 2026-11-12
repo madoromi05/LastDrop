@@ -7,8 +7,7 @@ using namespace GameLib;
 #include "GameLib/DebugUi/DebugUi.h"
 #include "GameLib/Profiling/Profiler.h"
 
-// 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照
-const SceneManager::SceneId kStartScene = SceneManager::SCENE_TITLE;
+const SceneManager::SceneId kStartScene = SceneManager::SCENE_TITLE;	// 起動時に開くシーン。種類の一覧は SceneManager::SceneId（SceneManager.h）を参照
 
 
 bool gInitialized = false;
@@ -22,8 +21,7 @@ void Framework::update(){
 		gInitialized = true;
 	}
 
-	// 入力を読み、今のシーンを更新して描く
-	SceneManager::instance().update();
+	SceneManager::instance().update();	// 入力を読み、今のシーンを更新して描く
 	// 開発用のエディタ（F6）。シーンを描いた後に積み、Framework::postUpdate で一番上に描かれる
 	if ( DebugUi::isOpen() ){
 		PROFILE_SCOPE( "Editor" );

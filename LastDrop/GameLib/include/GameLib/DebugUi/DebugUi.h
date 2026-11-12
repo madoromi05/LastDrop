@@ -20,19 +20,14 @@ namespace DebugUi{
 
 #ifdef ZF_EDITOR
 
-// Graphics::Manager を作った後に呼ぶ（D3D11 のデバイスを使うため）
-void create( void* windowHandle );
-// Graphics::Manager を消す前に呼ぶ
-void destroy();
+void create( void* windowHandle );	// Graphics::Manager を作った後に呼ぶ（D3D11 のデバイスを使うため）
+void destroy();						// Graphics::Manager を消す前に呼ぶ
 // 窓のメッセージを ImGui に渡す。WndProc の先頭で呼ぶ。ImGui が使い切ったら true（ゲーム側では扱わない）
 // 公開ヘッダを windows.h から切り離すため、型は整数で受ける（WPARAM / LPARAM と同じ大きさ）
 bool handleWindowMessage( void* window, unsigned message, std::uintptr_t wParam, std::intptr_t lParam );
-// 1 フレームの始め。Framework::preUpdate の、入力を読んだ直後に呼ぶ。ここから render までの間に ImGui で描ける
-void beginFrame();
-// ImGui の絵を描く。Framework::postUpdate の、Present の前に呼ぶ（ポストプロセスはかからない）
-void render();
-// エディタが開いているか（F6）
-bool isOpen();
+void beginFrame();					// 1 フレームの始め。Framework::preUpdate の、入力を読んだ直後に呼ぶ。ここから render までの間に ImGui で描ける
+void render();						// ImGui の絵を描く。Framework::postUpdate の、Present の前に呼ぶ（ポストプロセスはかからない）
+bool isOpen();						// エディタが開いているか（F6）
 
 #else // ZF_EDITOR
 

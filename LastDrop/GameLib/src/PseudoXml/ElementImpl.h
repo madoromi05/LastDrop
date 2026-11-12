@@ -30,8 +30,7 @@ public:
 		mDocument = 0;
 	}
 	void build( Tag* tag, const char** p, const char* e ){
-		//これは実質コンストラクタなので、二度目の呼び出しは不正
-		ASSERT( mAttributeNumber == 0 && mChildNumber == 0 );
+		ASSERT( mAttributeNumber == 0 && mChildNumber == 0 );	//これは実質コンストラクタなので、二度目の呼び出しは不正
 		//名前を移植
 
 		mName = mDocument->allocateString( *tag->name() );
@@ -46,8 +45,7 @@ public:
 			return;
 		}
 
-		//一時子エレメントリスト
-		Tank< Element::Impl > children;
+		Tank< Element::Impl > children;	//一時子エレメントリスト
 		//タグ探す
 		while ( *p < e ){
 			if ( **p == '<' ){ //発見
@@ -99,8 +97,7 @@ public:
 		for ( int i = 0; i < indent; ++i ){
 			*out << '\t';
 		}
-		//タグ開始とエレメント名
-		*out << '<' << mName;
+		*out << '<' << mName;	//タグ開始とエレメント名
 		//アトリビュート書き込み
 		//5個を境に出し方を変える
 		int an = mAttributeNumber;
@@ -144,8 +141,7 @@ public:
 			for ( int i = 0; i < indent; ++i ){
 				*out << '\t';
 			}
-			//終了タグ
-			*out << "</" << mName << ">\r\n";
+			*out << "</" << mName << ">\r\n";	//終了タグ
 		}else{ //子がいないなら空要素タグでよかろう
 			*out << "/>\r\n";
 		}

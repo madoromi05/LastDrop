@@ -22,11 +22,10 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── F6 の Spawn zombie でゾンビを出す（確認用。8m 前に 1 体） ──
-	const float kDebugSpawnDistance = 8.f; // 自キャラの足元から、向いている方へ（m）
+	const float kDebugSpawnDistance = 8.f;	// 自キャラの足元から、向いている方へ（m）
 	const int kDebugSpawnNumber = 1;
-	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする
-	const float kDebugSpawnSpacing = 1.2f;
-	const float kFaceBackDegree = 180.f; // 自キャラの方を向かせる
+	const float kDebugSpawnSpacing = 1.2f;	// 横並びの間（m）。体の当たり判定の幅（約 0.8m）より広くして、出た瞬間に重ならないようにする
+	const float kFaceBackDegree = 180.f;	// 自キャラの方を向かせる
 	const float kHalf = 0.5f;
 }
 

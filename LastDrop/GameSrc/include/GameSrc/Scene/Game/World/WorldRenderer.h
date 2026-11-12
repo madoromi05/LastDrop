@@ -64,28 +64,21 @@ public:
 	bool muzzleLight( LightSource* out ) const;
 
 private:
-	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
-	void drawZombies( const DrawCulling& culling ) const;
-	// 自キャラの体と、手に持って出している銃を描く（drawFirstPerson・drawShadowCasters から）
-	void drawPlayer() const;
-	// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
-	void beginBuildings();
+	void drawZombies( const DrawCulling& culling ) const;	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
+	void drawPlayer() const;								// 自キャラの体と、手に持って出している銃を描く（drawFirstPerson・drawShadowCasters から）
+	void beginBuildings();									// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
 	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ
 	// 隠れ（PVS）も culling に聞く（目から見る絵の culling だけが表を持つ）
 	void addBuilding( const Building& building, const DrawCulling& culling );
-	// building の GameWorld::buildings の並びでの番号（PVS の表の番号）
-	int buildingIndex( const Building& building ) const;
-	// 集めた建物を形ごとにまとめて描く（1 軒ずつ描いているときは何もしない）
-	void endBuildings();
+	int buildingIndex( const Building& building ) const;	// building の GameWorld::buildings の並びでの番号（PVS の表の番号）
+	void endBuildings();									// 集めた建物を形ごとにまとめて描く（1 軒ずつ描いているときは何もしない）
 
-	const GameWorld* mWorld;   // 借りているだけ
-	EffectManager* mEffects;   // 借りているだけ
-	// 建物をまとめて描く道具。シェーダは G-Buffer と影の両方で使う
-	StaticMeshInstancing mInstancing;
-	StaticMeshBatch mBuildingBatch; // 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物を集める作業領域
-	bool mBatchesBuildings;         // beginBuildings で決めた、今の建物をまとめて描くか
-	// 建物を目に近い順に描くための並び（目からの距離の 2 乗と建物）。drawStatic の作業領域（毎フレーム確保し直さないために持つ）
-	std::vector< std::pair< float, const Building* > > mBuildingDrawOrder;
+	const GameWorld* mWorld;												// 借りているだけ
+	EffectManager* mEffects;												// 借りているだけ
+	StaticMeshInstancing mInstancing;										// 建物をまとめて描く道具。シェーダは G-Buffer と影の両方で使う
+	StaticMeshBatch mBuildingBatch;											// 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物を集める作業領域
+	bool mBatchesBuildings;													// beginBuildings で決めた、今の建物をまとめて描くか
+	std::vector< std::pair< float, const Building* > > mBuildingDrawOrder;	// 建物を目に近い順に描くための並び（目からの距離の 2 乗と建物）。drawStatic の作業領域（毎フレーム確保し直さないために持つ）
 };
 
 #endif

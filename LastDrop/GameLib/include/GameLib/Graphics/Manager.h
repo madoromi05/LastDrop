@@ -43,8 +43,7 @@ public:
 	void setVertexBuffer( VertexBuffer );
 	void setIndexBuffer( IndexBuffer );
 	void setTexture( Texture );
-	///法線マップをセット（スロットt1）。セットするとノーマルマップ用シェーダで描く
-	void setNormalMap( Texture );
+	void setNormalMap( Texture );	///法線マップをセット（スロットt1）。セットするとノーマルマップ用シェーダで描く
 	///色の画像と法線マップ（空なら無し）を一度にセット。今と同じ物は付け直さない
 	///setTexture → setNormalMap は同じ材質でも毎回付け直すので、パーツごとに材質を設定する所はこちらを使う
 	void setTextures( Texture texture, Texture normalMap );
@@ -54,14 +53,10 @@ public:
 	void setBlendMode( BlendMode );
 	void setCullMode( CullMode );
 	void setTextureFilter( TextureFilter );
-	///透視変換ビュー変換行列セット
-	void setProjectionViewMatrix( const Matrix44& );
-	///ワールド変換行列セット
-	void setWorldMatrix( const Matrix34& );
-	///ビューポート設定
-	void setViewport( int x, int y, int width, int height );
-	///ビューポート取得(0でないものにだけ入れるので欲しいものだけポインタをセット)
-	void getViewport( int* xOut, int* yOut, int* widthOut, int* heightOut );
+	void setProjectionViewMatrix( const Matrix44& );							///透視変換ビュー変換行列セット
+	void setWorldMatrix( const Matrix34& );										///ワールド変換行列セット
+	void setViewport( int x, int y, int width, int height );					///ビューポート設定
+	void getViewport( int* xOut, int* yOut, int* widthOut, int* heightOut );	///ビューポート取得(0でないものにだけ入れるので欲しいものだけポインタをセット)
 
 	///設定したテクスチャ、頂点バッファ、インデクスバッファで描画
 	void drawIndexed(
@@ -86,55 +81,36 @@ public:
 		int firstVertex,
 		int primitiveNumber,
 		PrimitiveType = PRIMITIVE_TRIANGLE );
-	///全画面にテクスチャを貼り付け
-	void blendToScreen( Texture );
-	///フルスクリーン化
-	void enableFullScreen( bool );
-	///描画バッファ幅を返す
-	int width() const;
-	///描画バッファ高さを返す
-	int height() const;
+	void blendToScreen( Texture );				///全画面にテクスチャを貼り付け
+	void enableFullScreen( bool );				///フルスクリーン化
+	int width() const;							///描画バッファ幅を返す
+	int height() const;							///描画バッファ高さを返す
 	///バックバッファ（実際の画面）の高さを返す（画素）。height() はゲームの座標の高さで固定、こちらはウィンドウの大きさで変わる
 	///2D の絵（文字など）を実際の画面の細かさで作るときに、height() との比を使う
 	int backBufferHeight() const;
-	///フルスクリーン時のウィンドウ幅を返す
-	int fullScreenWindowWidth() const;
-	///フルスクリーン時のウィンドウ高さを返す
-	int fullScreenWindowHeight() const;
-	///フレーム番号を返す
-	unsigned frameId() const;
+	int fullScreenWindowWidth() const;			///フルスクリーン時のウィンドウ幅を返す
+	int fullScreenWindowHeight() const;			///フルスクリーン時のウィンドウ高さを返す
+	unsigned frameId() const;					///フレーム番号を返す
 	///画面の更新を待つか（VSync）を切り替える。次の Present から効く
 	///CPU と GPU のどちらが重いかを見分けるときに切る（VSync 中はどちらも画面の更新待ちに見えるため）
 	void setVSync( bool );
 	bool isVSync() const;
-	///スクリーンショットを取る(拡張子でDDS,TGA自動判別)。保存タイミングは描画終了後
-	void captureScreen( const char* filename );
+	void captureScreen( const char* filename );	///スクリーンショットを取る(拡張子でDDS,TGA自動判別)。保存タイミングは描画終了後
 
 	//ライティング関係
 	///ピクセルシェーダを有効化する
 	void setLightingMode( LightingMode );
-	///ライト位置
-	void setLightPosition( int index, const Vector3& position );
-	///ライト強度(100なら100mの距離で1の明るさになる。強度Iとして、明るさは「I/距離」で決まる)
-	void setLightIntensity( int index, float intensity );
-	///ライト色
-	void setLightColor( int index, const Vector3& );
-	///視点位置
-	void setEyePosition( const Vector3& position );
-	///ディフューズカラー
-	void setDiffuseColor( const Vector3& );
-	///スペキュラ色
-	void setSpecularColor( const Vector3& );
-	///発光色
-	void setEmissionColor( const Vector3& );
-	///アンビエント色
-	void setAmbientColor( const Vector3& );
-	///透明度設定
-	void setTransparency( float );
-	///スペキュラの鋭さ(大きいほど鋭い。数字の意味は別の本を読もう)
-	void setSpecularSharpness( float );
-	///法線マップの凹凸の強さ(0で無効、1で標準)。setNormalMap していない時は影響しない
-	void setNormalMapStrength( float );
+	void setLightPosition( int index, const Vector3& position );	///ライト位置
+	void setLightIntensity( int index, float intensity );			///ライト強度(100なら100mの距離で1の明るさになる。強度Iとして、明るさは「I/距離」で決まる)
+	void setLightColor( int index, const Vector3& );				///ライト色
+	void setEyePosition( const Vector3& position );					///視点位置
+	void setDiffuseColor( const Vector3& );							///ディフューズカラー
+	void setSpecularColor( const Vector3& );						///スペキュラ色
+	void setEmissionColor( const Vector3& );						///発光色
+	void setAmbientColor( const Vector3& );							///アンビエント色
+	void setTransparency( float );									///透明度設定
+	void setSpecularSharpness( float );								///スペキュラの鋭さ(大きいほど鋭い。数字の意味は別の本を読もう)
+	void setNormalMapStrength( float );								///法線マップの凹凸の強さ(0で無効、1で標準)。setNormalMap していない時は影響しない
 	///true の間は、ディフューズ・スペキュラ・発光・アンビエント・ライトの色と頂点色を、画面の色（sRGB）として
 	///リニアへ直してから計算する（自作シェーダの b0 にも直した値が入る）。1 を超える色は「1 以下の色×倍率」とみなし、倍率は直さない
 	///リニアの描画先へ 3D を描く間だけ true にし、画面へ直接描く HUD・文字の前に false へ戻す。既定は false
@@ -150,16 +126,11 @@ public:
 	///target の段 mip だけへ描く（深度なし。段が 2 つ以上の描画先。Hi-Z の縮小など）。描画範囲はその段の大きさになる
 	///t2 以降のテクスチャは setRenderTargets と同じく外れるので、読む段（setShaderResource の mip 付き）は後から付ける
 	void setRenderTargetMip( RenderTarget target, int mip );
-	///画面（バックバッファ）へ描く状態に戻す。描画範囲は setViewport で決めた範囲に戻る
-	void resetRenderTargets();
-	///描画先を色で塗りつぶす
-	void clear( RenderTarget, const Vector4& color );
-	///深度を一番奥（1）で埋める
-	void clear( DepthTarget );
-	///自作シェーダを付ける。空の Shader を渡すと固定パイプライン（setLightingMode 等）に戻る
-	void setShader( Shader );
-	///定数を b slot に付ける（頂点・ピクセルの両方）。slot は FIRST_USER_CONSTANT_SLOT 以上。空なら外す
-	void setConstantBuffer( int slot, ConstantBuffer );
+	void resetRenderTargets();							///画面（バックバッファ）へ描く状態に戻す。描画範囲は setViewport で決めた範囲に戻る
+	void clear( RenderTarget, const Vector4& color );	///描画先を色で塗りつぶす
+	void clear( DepthTarget );							///深度を一番奥（1）で埋める
+	void setShader( Shader );							///自作シェーダを付ける。空の Shader を渡すと固定パイプライン（setLightingMode 等）に戻る
+	void setConstantBuffer( int slot, ConstantBuffer );	///定数を b slot に付ける（頂点・ピクセルの両方）。slot は FIRST_USER_CONSTANT_SLOT 以上。空なら外す
 	///ピクセルシェーダの t slot から読めるようにする。slot は FIRST_USER_TEXTURE_SLOT 以上。空なら外す
 	void setShaderResource( int slot, RenderTarget );
 	void setShaderResource( int slot, DepthTarget );

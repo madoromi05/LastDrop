@@ -8,10 +8,9 @@
 struct RaidParams{
 	// ── ガソリンの数（数を変えるときはここだけ直す） ──
 	// 出撃の始めにしか効かないので F6 には出さない（Tuning は小数だけ）
-	int requiredFuel = 1;  // 脱出に要るガソリンの数（脱出の車 1 台に入れる数。1 以上）
-	int fuelCanCount = 2;  // 町に置くガソリンの数（漁れる場所の箱に 1 個ずつ入れる。箱の数より多くはできない＝ASSERT）
-	// 町に置くライフルの数（木箱に 1 丁ずつ・弾倉いっぱいで必ず入れる。木箱の数より多くはできない＝ASSERT）
-	int rifleCount = 1;
+	int requiredFuel = 1;	// 脱出に要るガソリンの数（脱出の車 1 台に入れる数。1 以上）
+	int fuelCanCount = 2;	// 町に置くガソリンの数（漁れる場所の箱に 1 個ずつ入れる。箱の数より多くはできない＝ASSERT）
+	int rifleCount = 1;		// 町に置くライフルの数（木箱に 1 丁ずつ・弾倉いっぱいで必ず入れる。木箱の数より多くはできない＝ASSERT）
 
 	// ── 1 回の出撃 ──
 	float exitNoticeSeconds = 5.f;   // 始めに今回の条件と脱出の車の場所（「脱出の車：北」）を出す長さ（秒）
@@ -29,7 +28,6 @@ struct RaidParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（RaidParams.cpp が持つ）
-RaidParams& raidParams();
+RaidParams& raidParams();	// 起動中ずっと 1 つだけの調整値（RaidParams.cpp が持つ）
 
 #endif

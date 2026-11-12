@@ -130,8 +130,7 @@ public:
 				}
 				last = i;
 			}
-			//tを越えない最小のtimeを持つデータを使う(補間なし)
-			return mKeys[ last ].mValue;
+			return mKeys[ last ].mValue;	//tを越えない最小のtimeを持つデータを使う(補間なし)
 		}else if ( mInterporation == INTERPORATION_LINEAR ){
 			int begin = 0;
 			int end = 0;
@@ -148,10 +147,8 @@ public:
 			float t1 = mKeys[ end ].mTime;
 			float p0 = mKeys[ begin ].mValue;
 			float p1 = mKeys[ end ].mValue;
-			//変数変換
-			t = ( t - t0 ) / ( t1 - t0 );
-			//線形補間
-			return p0 + ( p1 - p0 ) * t;
+			t = ( t - t0 ) / ( t1 - t0 );	//変数変換
+			return p0 + ( p1 - p0 ) * t;	//線形補間
 		}else if ( mInterporation == INTERPORATION_CUBIC ){
 			int begin = 0;
 			int end = 0;
@@ -168,21 +165,20 @@ public:
 			float t1 = mKeys[ end ].mTime;
 			float p0 = mKeys[ begin ].mValue;
 			float p1 = mKeys[ end ].mValue;
-			float v0 = mKeys[ begin ].mRightSlope; //始点の右傾き
-			float v1 = mKeys[ end ].mLeftSlope; //終点の左傾き
-			//変数変換
-			t = ( t - t0 ) / ( t1 - t0 );
+			float v0 = mKeys[ begin ].mRightSlope;	//始点の右傾き
+			float v1 = mKeys[ end ].mLeftSlope;		//終点の左傾き
+			t = ( t - t0 ) / ( t1 - t0 );			//変数変換
 			//at^3 + bt^2 + c + dで計算。c=v0、d=p0だ
 			float a = 2.f * ( p0 - p1 ) + ( v0 + v1 );
 			float b = 3.f * ( p1 - p0 ) - ( 2.f * v0 ) - v1;
 			//線形補間
-			float r = a; //a
-			r *= t; //at
-			r += b; //at+b
-			r *= t; //at^2+bt
-			r += v0; //at^2+bt+c
-			r *= t; //at^3+bt^2+ct
-			r += p0; //at^3+bt^2+ct+d
+			float r = a;							//a
+			r *= t;									//at
+			r += b;									//at+b
+			r *= t;									//at^2+bt
+			r += v0;								//at^2+bt+c
+			r *= t;									//at^3+bt^2+ct
+			r += p0;								//at^3+bt^2+ct+d
 			return r;
 		}else{
 			ASSERT( false ); //ありえん

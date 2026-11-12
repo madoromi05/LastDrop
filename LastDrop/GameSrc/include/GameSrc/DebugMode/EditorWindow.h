@@ -25,8 +25,7 @@ class GameWorld;
 
 namespace EditorWindow{
 
-// エディタが開いているときに、1 回の描画につき 1 回呼ぶ（SceneManager::update の後）。Release では何もしない
-void draw();
+void draw();	// エディタが開いているときに、1 回の描画につき 1 回呼ぶ（SceneManager::update の後）。Release では何もしない
 // 自キャラが無敵か・観察用カメラを使っているかを、Debug タブのチェックに出すために受け取る。窓は自キャラもカメラも知らないので、GameScene から渡す
 // GameScene が終わるときに false へ戻す（タイトルなどで ON のまま残さない）。Release では何もしない
 void setPlayerInvincible( bool invincible );

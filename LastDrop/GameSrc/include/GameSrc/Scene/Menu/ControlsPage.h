@@ -11,8 +11,7 @@ class UiCanvas;
 // 遊ぶ操作だけを見せる（開発用の F キーと、今は何も起こらない Jump / Dodge は出さない）
 // 見た目はタイトルと同じ RE:2 風（MenuLayout::buildSideHeading・UiKeyBindingGroup・UiMenuItem）。MenuRestyle_Plan.txt
 namespace ControlsPage{
-	// canvas に部品を足す。canvas: nullptr 不可。back: 「戻る」が押されたときに呼ぶ。空は不可
-	void build( UiCanvas* canvas, std::function< void() > back );
+	void build( UiCanvas* canvas, std::function< void() > back );	// canvas に部品を足す。canvas: nullptr 不可。back: 「戻る」が押されたときに呼ぶ。空は不可
 }
 
 #endif

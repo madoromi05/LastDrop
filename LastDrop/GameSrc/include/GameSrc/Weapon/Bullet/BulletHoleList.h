@@ -24,10 +24,8 @@ public:
 	// point: 当たった位置。normal: 当たった面の外向きの法線（長さ1）。どちらも HitWorld::Hit の値をそのまま渡す
 	// attachedTo: 跡が付いた物。物が消えるとき removeAttachedTo で一緒に消すための目印で、中身は読まない。nullptr 不可
 	void add( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal, const IRayBlocker* attachedTo );
-	// 1ティック古くし、残す時間を過ぎた跡を消す
-	void update();
-	// attachedTo に付いた跡を全部消す。物を消す前に呼ぶ（消した後だと、同じ場所に作られた別の物と見分けられないため）
-	void removeAttachedTo( const IRayBlocker* attachedTo );
+	void update();											// 1ティック古くし、残す時間を過ぎた跡を消す
+	void removeAttachedTo( const IRayBlocker* attachedTo );	// attachedTo に付いた跡を全部消す。物を消す前に呼ぶ（消した後だと、同じ場所に作られた別の物と見分けられないため）
 	// 全部の跡を描く。1フレームに1回まで。GBuffer::beginDecals〜endDecals の間に呼ぶ（動かない物を描いた後・動く物の前）
 	// 絵の読み込みが終わるまでは描かない。F6 の Decals を切っている間も描かない。projectionView: カメラの射影×ビュー行列
 	void draw( const GameLib::Math::Matrix44& projectionView );
@@ -41,8 +39,7 @@ private:
 		const IRayBlocker* attachedTo; // 目印だけ（読まない）
 		int age;                       // 付いてからのティック数
 	};
-	// 1 つを、古さに合わせた不透明度で mDecals へためる
-	void addDecal( const Hole& hole );
+	void addDecal( const Hole& hole );	// 1 つを、古さに合わせた不透明度で mDecals へためる
 
 	std::vector< Hole > mHoles;           // 古い順
 	float mNextTurnDegree;                // 次に足す板を、法線まわりに回す角度（度）

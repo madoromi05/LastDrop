@@ -18,8 +18,7 @@ class Font;
 ///文字列描画クラス。優先度指定あり。自動でソートします
 class StringRenderer{
 public:
-	///最大合計文字数、最大要求発行数を指定。超えるとassert
-	static StringRenderer create( int charCapacity, int requestCapacity );
+	static StringRenderer create( int charCapacity, int requestCapacity );	///最大合計文字数、最大要求発行数を指定。超えるとassert
 	///ピクセル座標で指定。zだけfloatで[0,1]であることに注意
 	void add( 
 		int x, 
@@ -35,10 +34,8 @@ public:
 		unsigned color = 0xffffffff, 
 		bool wrapAroung = false, 
 		float z = 0.f );
-	///溜め込んだ要求を一挙に描画
-	void draw();
-	///フォントをセット。最低一回はこれをやらないと字は書けない
-	void setFont( Font& );
+	void draw();			///溜め込んだ要求を一挙に描画
+	void setFont( Font& );	///フォントをセット。最低一回はこれをやらないと字は書けない
 	///文字の絵の画素を何で割って並べるか（初めは 1）。実際の画面の細かさで作ったフォントを、ゲームの座標の大きさで並べるときに使う
 	///例：画面が座標の 2 倍の細かさなら、2 倍の高さで作ったフォントと 2 を渡す。次の draw から効く。scale: 0 より大きいこと
 	void setGlyphScale( float scale );

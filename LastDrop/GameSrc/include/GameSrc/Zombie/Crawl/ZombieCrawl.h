@@ -18,8 +18,7 @@
 // どの骨で曲げるかは ZombieCrawlLayout（種類ごとに共有）を借りる。値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt の 3・4 章
 class ZombieCrawl : public BonePoseModifier{
 public:
-	// layout: 曲げる骨の設計図。所有権は受け取らない。nullptr 不可。この体より長く生きていること（ZombieModel が持つ）
-	explicit ZombieCrawl( const ZombieCrawlLayout* layout );
+	explicit ZombieCrawl( const ZombieCrawlLayout* layout );	// layout: 曲げる骨の設計図。所有権は受け取らない。nullptr 不可。この体より長く生きていること（ZombieModel が持つ）
 
 	// 動き始める（倒れ終わったとき）。体は決まった時間をかけて、倒れた姿勢から引きずる形へ移る
 	void start();
@@ -28,8 +27,7 @@ public:
 	// pace: 腕の往復の速さ（1 = 引きずって進む速さ。小さいほどゆっくりもがく。0 なら腕の往復を止める）
 	// reaching: 腕を振っている間（両腕とも前へ伸ばして足首の高さで手を止め、脚は伸ばして止める）
 	void update( float pace, bool reaching );
-	// 顔を向ける先（骨格の根の空間）。hasTarget が false なら前を見る。毎ティック、update と同じ頃に渡す（置き場所を決めた後）
-	void setLookTarget( bool hasTarget, const GameLib::Math::Vector3& rootPoint );
+	void setLookTarget( bool hasTarget, const GameLib::Math::Vector3& rootPoint );	// 顔を向ける先（骨格の根の空間）。hasTarget が false なら前を見る。毎ティック、update と同じ頃に渡す（置き場所を決めた後）
 	// 直前の update で、腕で引いて体が前へ進む長さ（m）。引いている腕の分だけ足す
 	// hasLeftArm / hasRightArm: その腕がまだあるか（無い腕では引けない）
 	float pullDistance( bool hasLeftArm, bool hasRightArm ) const;
@@ -38,8 +36,7 @@ public:
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
 private:
-	// 胸を反らせる。forward / up: 体の向きと上（骨格の根の空間。長さ1）
-	void liftChest( const GameLib::Math::Vector3& up, std::vector< GameLib::Math::Matrix34 >* pose ) const;
+	void liftChest( const GameLib::Math::Vector3& up, std::vector< GameLib::Math::Matrix34 >* pose ) const;	// 胸を反らせる。forward / up: 体の向きと上（骨格の根の空間。長さ1）
 	// 顔を相手（居なければ前）へ向ける。向きは少しずつ回す（mLookDirection を進める）
 	void turnHead( const GameLib::Math::Vector3& forward, const GameLib::Math::Vector3& up,
 		std::vector< GameLib::Math::Matrix34 >* pose );

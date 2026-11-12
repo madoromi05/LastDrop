@@ -24,19 +24,14 @@ public:
 	PlayerFeedback( const PlayerFeedback& ) = delete;
 	PlayerFeedback& operator=( const PlayerFeedback& ) = delete;
 
-	// 撃った手応えと、攻撃された反応を返す（GameWorld::update の直後）。視点を顔へ向けるのもここ（反動を渡す syncView より前）
-	void reactToCombat( const GameWorld& world, FirstPersonControl* control );
-	// 自キャラの今の状態を、カメラ・体・HUD・音へ渡す（このティックの最後。反動・揺れ・ぶれは次のティックの絵から効く）
-	void syncView( const GameWorld& world, FirstPersonControl* control, HudController* hud );
+	void reactToCombat( const GameWorld& world, FirstPersonControl* control );					// 撃った手応えと、攻撃された反応を返す（GameWorld::update の直後）。視点を顔へ向けるのもここ（反動を渡す syncView より前）
+	void syncView( const GameWorld& world, FirstPersonControl* control, HudController* hud );	// 自キャラの今の状態を、カメラ・体・HUD・音へ渡す（このティックの最後。反動・揺れ・ぶれは次のティックの絵から効く）
 
-	// 攻撃された・死んだ後の見せ方の量（描くときの赤み・暗さ・目の下がり、死んで暗くなり終わったか）
-	const PlayerDamageView& damageView() const;
+	const PlayerDamageView& damageView() const;	// 攻撃された・死んだ後の見せ方の量（描くときの赤み・暗さ・目の下がり、死んで暗くなり終わったか）
 
 private:
-	// このティックの命中のうち、部位が飛んだ・頭が弾けた物だけ画面を少し揺らす（ふつうと倒しただけは揺らさない）
-	void shakeOnHeavyHits( const GameWorld& world, FirstPersonControl* control ) const;
-	// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める
-	void reactToAttacks( const GameWorld& world, FirstPersonControl* control );
+	void shakeOnHeavyHits( const GameWorld& world, FirstPersonControl* control ) const;	// このティックの命中のうち、部位が飛んだ・頭が弾けた物だけ画面を少し揺らす（ふつうと倒しただけは揺らさない）
+	void reactToAttacks( const GameWorld& world, FirstPersonControl* control );			// ゾンビがつかんだ・噛んだ出来事を読み、顔を向け、音を鳴らし、怯ませ、攻撃された・死んだ後の見せ方を進める
 
 	PlayerBodySounds mBodySounds;
 	CombatSounds mCombatSounds; // 戦闘の結果の効果音（ゾンビ命中・物命中・攻撃された）

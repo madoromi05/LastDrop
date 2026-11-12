@@ -36,28 +36,25 @@ public:
 	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。build の後
 	// 借りた床を返す（ゾンビの部品が共有の棚から引くので、棚の持ち主が置く）
 	NavMesh* buildNavMesh( const CollisionWorld& collisionWorld );
-	// 建物の隠れの表を TownCache から借りる（同じ）。build の後
-	void buildVisibility( const HitWorld& hitWorld );
+	void buildVisibility( const HitWorld& hitWorld );	// 建物の隠れの表を TownCache から借りる（同じ）。build の後
 
 	// ── 読み取り口 ──
-	const TownMap& map() const;                       // 町のどこに何を置くか
-	const TownGround& ground() const;                 // 道路と歩道（足元の材質を聞ける）
-	const std::vector< Building >& buildings() const; // 建てた建物（build の後は増えない）
-	const NavMesh& navMesh() const;                   // 歩ける床（buildNavMesh の後）
-	const TownVisibility& visibility() const;         // 建物・ゾンビの隠れの表（buildVisibility の後）
-	// 隠れの表を使ってよいなら、その表。F6 の PVS を切っている・まだ無いなら nullptr（描く側・アニメの間引きが同じ決まりで読む）
-	const TownVisibility* visibilityIfEnabled() const;
+	const TownMap& map() const;							// 町のどこに何を置くか
+	const TownGround& ground() const;					// 道路と歩道（足元の材質を聞ける）
+	const std::vector< Building >& buildings() const;	// 建てた建物（build の後は増えない）
+	const NavMesh& navMesh() const;						// 歩ける床（buildNavMesh の後）
+	const TownVisibility& visibility() const;			// 建物・ゾンビの隠れの表（buildVisibility の後）
+	const TownVisibility* visibilityIfEnabled() const;	// 隠れの表を使ってよいなら、その表。F6 の PVS を切っている・まだ無いなら nullptr（描く側・アニメの間引きが同じ決まりで読む）
 
 private:
 	TownMap mMap;
-	TownCache* mTown;         // 借りているだけ
-	WorldBuilder mBuilder;    // 町を組み立てる（mMap を借りるので、その後に宣言する）
-	TownGround mGround;       // 道路と歩道（見た目・弾の当たり判定・足元の材質）
-	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）
-	std::vector< Building > mBuildings;
-	NavMesh* mNavMesh;                 // buildNavMesh で mTown から借りる（それまでは nullptr）
-	const TownVisibility* mVisibility; // buildVisibility で mTown から借りる（それまでは nullptr）
-	int mEscapeCarSpot;                // 今日の脱出の車の置き場所（build で受け取る。歩ける床を選ぶのに使う）
+	TownCache* mTown;					// 借りているだけ
+	WorldBuilder mBuilder;				// 町を組み立てる（mMap を借りるので、その後に宣言する）
+	TownGround mGround;					// 道路と歩道（見た目・弾の当たり判定・足元の材質）
+	std::vector< Building > mBuildings;	// 名簿が要素を指すので、並べ終えた後は増やさない（増やすと並べ直しで要素の場所が変わる）
+	NavMesh* mNavMesh;					// buildNavMesh で mTown から借りる（それまでは nullptr）
+	const TownVisibility* mVisibility;	// buildVisibility で mTown から借りる（それまでは nullptr）
+	int mEscapeCarSpot;					// 今日の脱出の車の置き場所（build で受け取る。歩ける床を選ぶのに使う）
 };
 
 #endif

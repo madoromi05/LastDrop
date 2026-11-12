@@ -48,10 +48,9 @@ static const float3 kNothingColor = float3(0.0, 0.0, 0.0);
 // ── 影の表示（ライトの一覧と影のマップを付けて描く。GameScene::draw） ──
 // 月の影の枚ごとの色（1 枚目 赤・2 枚目 緑・3 枚目 青）。下の絵の明るさに掛けて、どこが何枚目かを見る
 static const float3 kCascadeColors[3] = { float3(1.0, 0.25, 0.25), float3(0.25, 1.0, 0.25), float3(0.25, 0.5, 1.0) };
-static const float kCascadeBaseBrightness = 0.3; // 下の絵が真っ黒でも枚の色が見えるよう、明るさの下限
+static const float kCascadeBaseBrightness = 0.3;		// 下の絵が真っ黒でも枚の色が見えるよう、明るさの下限
 static const float kHalfScreen = 0.5;
-// 懐中電灯の影のマップは透視なので、深度がほとんど 1 の近くに集まる。累乗で広げて、近い物と遠い物の差を見えるようにする
-static const float kPerspectiveDepthContrast = 32.0;
+static const float kPerspectiveDepthContrast = 32.0;	// 懐中電灯の影のマップは透視なので、深度がほとんど 1 の近くに集まる。累乗で広げて、近い物と遠い物の差を見えるようにする
 
 // 画面を 4 つに分けて影のマップを写す（左上 懐中電灯・右上 月の 1 枚目・左下 2 枚目・右下 3 枚目）。付いていない影のマップは黒
 float3 shadowMapsView(float2 uv)
@@ -149,8 +148,7 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     }
     else if (view == kViewPosition)
     {
-        // 1m ごとの格子。位置の戻しが正しければ、カメラを動かしても格子は壁・地面に貼り付いたまま
-        c = frac(reconstructWorldPosition(p.uv, depth));
+        c = frac(reconstructWorldPosition(p.uv, depth));	// 1m ごとの格子。位置の戻しが正しければ、カメラを動かしても格子は壁・地面に貼り付いたまま
     }
     else if (view == kViewCascade)
     {
@@ -158,13 +156,11 @@ float4 PSMain(FullScreenVertex p) : SV_Target
     }
     else if (view == kViewFog)
     {
-        // 霧の量（0 黒〜1 白）。空の画素は上で黒にしている（霧のパスも空には掛けない）
-        c = fogAmount(reconstructWorldPosition(p.uv, depth));
+        c = fogAmount(reconstructWorldPosition(p.uv, depth));	// 霧の量（0 黒〜1 白）。空の画素は上で黒にしている（霧のパスも空には掛けない）
     }
     else if (view == kViewSsao)
     {
-        // SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）
-        c = upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(reconstructWorldPosition(p.uv, depth)));
+        c = upsampleOcclusion(gOcclusion, pixel.xy, viewDepthOf(reconstructWorldPosition(p.uv, depth)));	// SSAO（0 黒＝遮られた〜1 白）。ライティングと同じ拡大で読む（環境光に掛かっている物そのまま）
     }
     else if (view == kViewSsr || view == kViewSsrColor)
     {

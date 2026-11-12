@@ -9,8 +9,7 @@ struct FirstPersonRig;
 // 背骨3本（Spine / Spine1 / Spine2）に分けて曲げるのは、1本で曲げると腰から折れたように見えるため
 class SpineBendPose : public BonePoseModifier{
 public:
-	// rig: 骨の番号とピッチを読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
-	explicit SpineBendPose( const FirstPersonRig* rig );
+	explicit SpineBendPose( const FirstPersonRig* rig );	// rig: 骨の番号とピッチを読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
 
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 

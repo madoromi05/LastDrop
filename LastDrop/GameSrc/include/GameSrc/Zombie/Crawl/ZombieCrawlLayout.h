@@ -42,15 +42,14 @@ public:
 	bool isValid() const;
 	const Arm& arm( Side side ) const;
 	const Leg& leg( Side side ) const;
-	int hips() const;   // 体の向き（腰 → 首）を測る根元の骨
-	int spine() const;  // 胸を反らせる中心の骨（Spine1）
-	int chest() const;  // 胸（引きずる体の中心。向きを変える中心・壁に当たる所）
-	int neck() const;   // 体の向きを測る先の骨。頭を上げる中心
-	int head() const;   // 首 → ここを頭の向きとみなす
-	// あごの先の骨（頭 → ここで顔の向きを測る）。無ければ -1（顔を相手へ向けない。isValid には含めない）
-	int chin() const;
-	const std::vector< int >& chestFollowers() const; // 胸を反らせるときに一緒に回す骨（胸から上・両腕・首・頭）
-	const std::vector< int >& headFollowers() const;  // 頭を上げるときに一緒に回す骨（首・頭・あご）
+	int hips() const;									// 体の向き（腰 → 首）を測る根元の骨
+	int spine() const;									// 胸を反らせる中心の骨（Spine1）
+	int chest() const;									// 胸（引きずる体の中心。向きを変える中心・壁に当たる所）
+	int neck() const;									// 体の向きを測る先の骨。頭を上げる中心
+	int head() const;									// 首 → ここを頭の向きとみなす
+	int chin() const;									// あごの先の骨（頭 → ここで顔の向きを測る）。無ければ -1（顔を相手へ向けない。isValid には含めない）
+	const std::vector< int >& chestFollowers() const;	// 胸を反らせるときに一緒に回す骨（胸から上・両腕・首・頭）
+	const std::vector< int >& headFollowers() const;	// 頭を上げるときに一緒に回す骨（首・頭・あご）
 
 private:
 	Arm mArms[ SIDE_NUMBER ];

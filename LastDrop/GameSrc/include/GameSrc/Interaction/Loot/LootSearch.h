@@ -25,19 +25,14 @@ public:
 
 	LootSearch();
 
-	// target（漁れる場所・脱出の車の物）を待ち始める。seconds: かかる秒（0 より大きいこと。0 の物は待たずに使うので、呼ぶ側がここを通さない）
-	void start( const GameObject* target, float seconds );
+	void start( const GameObject* target, float seconds );	// target（漁れる場所・脱出の車の物）を待ち始める。seconds: かかる秒（0 より大きいこと。0 の物は待たずに使うので、呼ぶ側がここを通さない）
 	// 取りやめる（開けていなければ何もしない）
 	void cancel();
 	bool isSearching() const;
-	// 1 ティック進める。seconds: 1 ティックの秒。interrupted: このティックに取りやめになる操作・出来事があったか
-	Step tick( float seconds, bool interrupted );
-	// 開けている場所（Finished を返した直後まで読める。消えた・開けていなければ nullptr）
-	LootContainerComponent* container() const;
-	// 待っている物（Finished を返した直後まで読める。消えた・待っていなければ nullptr）
-	GameObject* target() const;
-	// 進み具合（0〜1。画面の輪に使う）。開けていなければ 0
-	float progress() const;
+	Step tick( float seconds, bool interrupted );			// 1 ティック進める。seconds: 1 ティックの秒。interrupted: このティックに取りやめになる操作・出来事があったか
+	LootContainerComponent* container() const;				// 開けている場所（Finished を返した直後まで読める。消えた・開けていなければ nullptr）
+	GameObject* target() const;								// 待っている物（Finished を返した直後まで読める。消えた・待っていなければ nullptr）
+	float progress() const;									// 進み具合（0〜1。画面の輪に使う）。開けていなければ 0
 
 private:
 	GameObjectHandle mTarget;

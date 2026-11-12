@@ -55,8 +55,7 @@ void ShadowMap::begin( const Matrix44& lightProjectionView ) {
 
 void ShadowMap::end() {
 	RenderPass::endShadow();
-	// 後から描く物（固定パイプライン）に残さない
-	Graphics::Manager::instance().setShader( Graphics::Shader() );
+	Graphics::Manager::instance().setShader( Graphics::Shader() );	// 後から描く物（固定パイプライン）に残さない
 }
 
 Graphics::DepthTarget ShadowMap::depth() const {
@@ -84,6 +83,5 @@ Matrix44 spotShadowProjectionView( const Vector3& position, const Vector3& direc
 }
 
 float spotShadowTexelSizeAtOneMeter( float outerAngleDegree, int mapSize ) {
-	// 光から 1m の所の、影のマップに入る幅は 2 × tan( 画角の半分 )。それを画素の数で割る
-	return 2.f * tan( spotFieldOfView( outerAngleDegree ) * kHalf ) / static_cast< float >( mapSize );
+	return 2.f * tan( spotFieldOfView( outerAngleDegree ) * kHalf ) / static_cast< float >( mapSize );	// 光から 1m の所の、影のマップに入る幅は 2 × tan( 画角の半分 )。それを画素の数で割る
 }

@@ -11,10 +11,8 @@ class HitWorld;
 class IWorldMember{
 public:
 	virtual ~IWorldMember(){}
-	// 自分を名簿へ載せる。どちらも nullptr 不可。所有権は受け取らない
-	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) = 0;
-	// addTo で載せたものを全部外す。消す前に必ず呼ぶ
-	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) = 0;
+	virtual void addTo( CollisionWorld* collisionWorld, HitWorld* hitWorld ) = 0;		// 自分を名簿へ載せる。どちらも nullptr 不可。所有権は受け取らない
+	virtual void removeFrom( CollisionWorld* collisionWorld, HitWorld* hitWorld ) = 0;	// addTo で載せたものを全部外す。消す前に必ず呼ぶ
 };
 
 #endif

@@ -13,13 +13,12 @@ namespace{
 	const int kVerifyPoints = 50;
 	const float kVerifyEyeHeight = 1.6f;
 	const float kVerifySpacing = 4.f;
-	// 面の上の点の高さ（建物の高さに対する割合）。屋根より上の点（建物ではない所）を見ないように、高さの中に収める
-	const float kVerifyHeightRatios[] = { 0.2f, 0.5f, 0.85f };
-	const int kVerifyReportedMisses = 5; // 出力へ詳しく書く見落としの数
-	const float kVerifyOffset = 0.1f; // 面の点を箱から外へずらす幅（m）
+	const float kVerifyHeightRatios[] = { 0.2f, 0.5f, 0.85f };	// 面の上の点の高さ（建物の高さに対する割合）。屋根より上の点（建物ではない所）を見ないように、高さの中に収める
+	const int kVerifyReportedMisses = 5;						// 出力へ詳しく書く見落としの数
+	const float kVerifyOffset = 0.1f;							// 面の点を箱から外へずらす幅（m）
 	const unsigned kVerifySeed = 12345u;
-	const int kAttemptsPerPoint = 100; // 建物の足元のますに当たったら引き直す回数の上限（点 1 つあたり）
-	const unsigned kRandomSteps = 1000u; // ますの中の位置を、1 辺をこの数に分けた所から選ぶ
+	const int kAttemptsPerPoint = 100;							// 建物の足元のますに当たったら引き直す回数の上限（点 1 つあたり）
+	const unsigned kRandomSteps = 1000u;						// ますの中の位置を、1 辺をこの数に分けた所から選ぶ
 }
 
 void TownVisibilityCheck::run( const TownVisibility& visibility, const std::vector< Building >& buildings, const HitWorld& hitWorld ) {

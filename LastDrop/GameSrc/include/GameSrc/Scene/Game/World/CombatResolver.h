@@ -58,26 +58,19 @@ public:
 	CombatResolver( const CombatResolver& ) = delete;
 	CombatResolver& operator=( const CombatResolver& ) = delete;
 
-	// このティックの出来事を空にする。ティックの頭（弾を進める前）に 1 回呼ぶ
-	void beginTick();
-	// 弾が当たった所を当たった順に解決する（BulletList::update の後）
-	void resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts );
+	void beginTick();																// このティックの出来事を空にする。ティックの頭（弾を進める前）に 1 回呼ぶ
+	void resolveBulletImpacts( const std::vector< BulletList::Impact >& impacts );	// 弾が当たった所を当たった順に解決する（BulletList::update の後）
 	// このティックにつかんだ・噛んだゾンビの分だけ出来事を残し、噛んだ分は自キャラの体力を減らす（ゾンビの Think の段の後）
 	// player: nullptr 可。自キャラが居なければ何も残さない。体力の部品を外した自キャラなら、噛まれた出来事も残さない（つかまれた方は残す）
 	void resolveZombieAttacks( GameObject* player );
 
-	// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる
-	const std::vector< ZombieHit >& zombieHitsThisTick() const;
-	// 最後の update で弾が物に当たった出来事（当たった順）。次の update で入れ替わる
-	const std::vector< SurfaceHit >& surfaceHitsThisTick() const;
-	// 最後の update でゾンビが自キャラをつかんだ・噛んだ出来事（起きた順）。次の update で入れ替わる
-	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;
-	// 最後の update で倒したゾンビの数（弾で止めを刺した数。脚を失って倒れただけ〈Downed〉は数えない）。1 日の倒した数・スコアに使う
-	int zombiesKilledThisTick() const;
+	const std::vector< ZombieHit >& zombieHitsThisTick() const;				// 最後の update でゾンビに当たった出来事（当たった順）。次の update で入れ替わる
+	const std::vector< SurfaceHit >& surfaceHitsThisTick() const;			// 最後の update で弾が物に当たった出来事（当たった順）。次の update で入れ替わる
+	const std::vector< ZombieAttackEvent >& zombieAttacksThisTick() const;	// 最後の update でゾンビが自キャラをつかんだ・噛んだ出来事（起きた順）。次の update で入れ替わる
+	int zombiesKilledThisTick() const;										// 最後の update で倒したゾンビの数（弾で止めを刺した数。脚を失って倒れただけ〈Downed〉は数えない）。1 日の倒した数・スコアに使う
 
 private:
-	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。部位が切れたら飛ばす
-	void hitZombie( const BulletList::Impact& impact );
+	void hitZombie( const BulletList::Impact& impact );	// 弾がキャラ（impact.hit.target）に当たったとき、ゾンビならダメージを渡し、血しぶきを出し、出来事を覚える。部位が切れたら飛ばす
 	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける
 	// 後ろは、先に別のゾンビに当たったら付けない（後ろのゾンビにも、その奥の壁にも）
 	void stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size );

@@ -15,18 +15,16 @@ namespace{
 	const char* kShaderFile = "Resource/Shader/Ssr.hlsl";
 	const char* kBlurShaderFile = "Resource/Shader/SsrBlur.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率）。SsrCommon.hlsli の kSsrHalfStep と揃える
-	const float kResolutionScale = 0.5f;
+	const float kResolutionScale = 0.5f;	// 描画先の大きさ（画面に対する倍率）。SsrCommon.hlsli の kSsrHalfStep と揃える
 
 	// Ssr.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t4 材質・t5 深度、t6 シーンの色 / b1）
 	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
 	const int kMaterialSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 2;
 	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kSceneColorSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
-	const int kHiZSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5; // Ssr.hlsl の t7
+	const int kHiZSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5;	// Ssr.hlsl の t7
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// SsrBlur.hlsl の番号（t2 ぼかす元・t5 深度 / b1）
-	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
+	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// SsrBlur.hlsl の番号（t2 ぼかす元・t5 深度 / b1）
 
 	// 映り込み無し（確からしさ 0）。SSR を切っている間の結果
 	const Vector4 kNoReflection( 0.f, 0.f, 0.f, 0.f );

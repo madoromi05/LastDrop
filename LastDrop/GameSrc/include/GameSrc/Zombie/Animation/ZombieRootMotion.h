@@ -19,13 +19,11 @@ public:
 	// rootBone: 根の骨（SkinnedMeshData::findBone の番号）。-1 なら表を作らない
 	ZombieRootMotion( const SkinnedMeshData* data, GameLib::Scene::Animation animation, int rootBone );
 
-	// 表があるか（無ければ、使う側が根の動きを移さない）
-	bool isValid() const;
+	bool isValid() const;			// 表があるか（無ければ、使う側が根の動きを移さない）
 	// アニメ時刻 time（フレーム）の根の水平の位置（骨格の根の空間＝置き場所と向きを掛ける前。m。y は 0）
 	// 時刻はアニメの長さの中に収める（1回だけ流すアニメなので折り返さない）
 	GameLib::Math::Vector3 offsetAt( float time ) const;
-	// 根が最初のフレームから一番遠くへ動いた長さ（m。水平だけ）。確認用
-	float farthestDistance() const;
+	float farthestDistance() const;	// 根が最初のフレームから一番遠くへ動いた長さ（m。水平だけ）。確認用
 
 private:
 	std::vector< GameLib::Math::Vector3 > mOffsets; // フレームごとの根の水平の位置。添え字はアニメ時刻（フレーム）

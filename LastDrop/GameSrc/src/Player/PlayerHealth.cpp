@@ -6,8 +6,7 @@
 using namespace GameLib;
 
 namespace{
-	// 最大の体力。ゾンビの攻撃 1 回が 20（ZombieAttack）なので、満タンから 5 回で死ぬ
-	const float kMaxHealth = 100.f;
+	const float kMaxHealth = 100.f;	// 最大の体力。ゾンビの攻撃 1 回が 20（ZombieAttack）なので、満タンから 5 回で死ぬ
 
 	// 状態の境目（残りの割合）
 	// これ以上なら Fine、Caution の境目以上なら Caution、それ未満は Danger

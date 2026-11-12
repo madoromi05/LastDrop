@@ -44,8 +44,7 @@ public:
 	// 入力で選ぶ部品を変え、決定されたら部品の activate を呼ぶ。1回の描画につき1回（押した瞬間を1回だけ拾うため）
 	// activate の中でシーンの切り替えを頼んでもよい（切り替えは SceneManager が後で行うので、この UiCanvas はまだ消えない）
 	void handleInput( const UiInput& input );
-	// 全部品を renderer へ積む（足した順に描く。後に足した部品が上に重なる）
-	void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const;	// 全部品を renderer へ積む（足した順に描く。後に足した部品が上に重なる）
 
 private:
 	void addSelectable( IUiSelectable* selectable, IUiAdjustable* adjustable ); // adjustable: 値を動かせない部品なら nullptr

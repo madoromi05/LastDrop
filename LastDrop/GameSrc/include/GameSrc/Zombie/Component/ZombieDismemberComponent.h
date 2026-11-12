@@ -15,15 +15,13 @@ class ZombieDismemberComponent : public Component{
 public:
 	ZombieDismemberComponent();
 
-	// どちらも awake で作る（隣の部品は start から借りる）
-	ZombieDismemberment& dismemberment(){ return *mDismemberment; }
+	ZombieDismemberment& dismemberment(){ return *mDismemberment; }	// どちらも awake で作る（隣の部品は start から借りる）
 	// 最後に撃たれたときに切れた部位（severedThisHit）は、持ち主が千切れた部位を飛ばすのに読む
 	const ZombieDismemberment& dismemberment() const { return *mDismemberment; }
 	ZombieCrawler& crawler(){ return *mCrawler; }
 	const ZombieCrawler& crawler() const { return *mCrawler; }
 
-	// Component（ZombieModelComponent が要る。切り口・引きずる腕の設計図を借りて作る）
-	void awake() override;
+	void awake() override;	// Component（ZombieModelComponent が要る。切り口・引きずる腕の設計図を借りて作る）
 
 private:
 	std::unique_ptr< ZombieDismemberment > mDismemberment;

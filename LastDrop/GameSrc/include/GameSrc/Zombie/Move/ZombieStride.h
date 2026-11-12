@@ -17,12 +17,9 @@ public:
 	// leftToe / rightToe: 左右の足先の骨（SkinnedMeshData::findBone の番号）。どちらかが -1 なら表を作らない
 	ZombieStride( const SkinnedMeshData* data, GameLib::Scene::Animation walk, int leftToe, int rightToe );
 
-	// 表があるか（無ければ、使う側が決まった速さで歩かせる）
-	bool isValid() const;
-	// アニメ時刻 time（フレーム。1周を超えてもよい）から次の1フレームの間に、体を前へ進める長さ（m）
-	float distanceAt( float time ) const;
-	// 1周で進む長さ（m）。確認用
-	float cycleLength() const;
+	bool isValid() const;					// 表があるか（無ければ、使う側が決まった速さで歩かせる）
+	float distanceAt( float time ) const;	// アニメ時刻 time（フレーム。1周を超えてもよい）から次の1フレームの間に、体を前へ進める長さ（m）
+	float cycleLength() const;				// 1周で進む長さ（m）。確認用
 
 private:
 	std::vector< float > mDistances; // フレームごとの進む長さ（m）。添え字はアニメ時刻（フレーム）

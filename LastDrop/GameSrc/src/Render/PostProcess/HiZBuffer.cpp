@@ -10,8 +10,7 @@ using namespace GameLib;
 namespace{
 	const char* kShaderFile = "Resource/Shader/HiZBuild.hlsl";
 
-	// 描画先の大きさ（画面に対する倍率）。SSR と同じ半分（SsrCommon.hlsli の kSsrHalfStep・ScreenSpaceReflection.cpp の kResolutionScale）
-	const float kResolutionScale = 0.5f;
+	const float kResolutionScale = 0.5f;	// 描画先の大きさ（画面に対する倍率）。SSR と同じ半分（SsrCommon.hlsli の kSsrHalfStep・ScreenSpaceReflection.cpp の kResolutionScale）
 
 	// HiZBuild.hlsl の t2（読み元）/ b1
 	const int kSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;

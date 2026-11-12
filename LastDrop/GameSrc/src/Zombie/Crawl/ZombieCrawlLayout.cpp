@@ -37,8 +37,7 @@ namespace{
 	const char* kChestBone = "Spine2";
 	const char* kNeckBone = "Neck";
 	const char* kHeadBone = "Head";
-	// あごの骨は low_jaw1 → 2 → 3 と前へ並ぶ。一番前（あごの先）で顔の向きを測る
-	const char* kChinBone = "low_jaw3";
+	const char* kChinBone = "low_jaw3";	// あごの骨は low_jaw1 → 2 → 3 と前へ並ぶ。一番前（あごの先）で顔の向きを測る
 	// 胸を反らせるときに一緒に回す骨（Spine2 から先。ZombieFlinchLayout の胴から先と同じ並び）
 	const char* const kChestFollowerNames[] = {
 		"Spine2", "LeftShoulder", "RightShoulder", "LeftArm", "LeftForeArm", "LeftHand*",

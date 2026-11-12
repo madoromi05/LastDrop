@@ -9,8 +9,7 @@
 // 骨を関節で曲げる処理（一人称の体の補正・ゾンビののけぞり）が同じ式を使う
 class AxisRotation{
 public:
-	// pivot を中心に、長さ1の軸 axis のまわりへ degree 度回す行列
-	static GameLib::Math::Matrix34 about( const GameLib::Math::Vector3& pivot, const GameLib::Math::Vector3& axis, float degree );
+	static GameLib::Math::Matrix34 about( const GameLib::Math::Vector3& pivot, const GameLib::Math::Vector3& axis, float degree );	// pivot を中心に、長さ1の軸 axis のまわりへ degree 度回す行列
 };
 
 #endif

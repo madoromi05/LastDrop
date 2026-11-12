@@ -47,11 +47,10 @@ namespace{
 	class ITuningGroup{
 	public:
 		virtual ~ITuningGroup() {}
-		virtual const char* elementName() const = 0; // ファイルの要素の名前
-		virtual const char* structName() const = 0;  // 見出しと C++ のコピーに出す名前
-		virtual const char* headerPath() const = 0;  // C++ のコピーに出す、構造体のヘッダの場所
-		// 今の値と既定値の項目を、同じ順に集める
-		virtual void collect( TuningCollector* live, TuningCollector* defaults ) = 0;
+		virtual const char* elementName() const = 0;									// ファイルの要素の名前
+		virtual const char* structName() const = 0;										// 見出しと C++ のコピーに出す名前
+		virtual const char* headerPath() const = 0;										// C++ のコピーに出す、構造体のヘッダの場所
+		virtual void collect( TuningCollector* live, TuningCollector* defaults ) = 0;	// 今の値と既定値の項目を、同じ順に集める
 	};
 
 	template< class Params >
@@ -242,8 +241,7 @@ bool save( const std::string& path, std::string* error ) {
 		element.setAttributeNumber( static_cast< int >( live.items().size() ) );
 		for ( size_t i = 0; i < live.items().size(); ++i ) {
 			const TuningItem& item = live.items()[ i ];
-			// 値は自分で文字にする（PseudoXml の float の配列は 4 桁で丸めるので、元の値へ戻らない）
-			element.attribute( static_cast< int >( i ) ).set( item.name, TuningVisitors::fileText( item ).c_str() );
+			element.attribute( static_cast< int >( i ) ).set( item.name, TuningVisitors::fileText( item ).c_str() );	// 値は自分で文字にする（PseudoXml の float の配列は 4 桁で丸めるので、元の値へ戻らない）
 		}
 	}
 	std::string text;

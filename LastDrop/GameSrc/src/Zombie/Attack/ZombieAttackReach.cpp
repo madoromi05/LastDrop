@@ -14,16 +14,13 @@ namespace{
 	// 自キャラの移動の当たり判定は、銃を持っている間は銃の先まで前へ伸びるので、正面から来たゾンビは 1.2m より手前で
 	// 銃の箱にぶつかって止まり、1.2m の内へ入れない
 	const float kAttackStartDistance = 1.6f;
-	// 攻撃を始める向きの差（度。左右それぞれ）。相手の方を向き終わってから腕を振る
-	const float kAttackStartHalfAngle = 30.f;
+	const float kAttackStartHalfAngle = 30.f;							// 攻撃を始める向きの差（度。左右それぞれ）。相手の方を向き終わってから腕を振る
 	// 腕を振り下ろしたときに、当たる距離（m）と向きの差（度）。振っている間に下がられたら空振りにする
 	// 距離は始める間合いと同じ（銃の箱にぶつかって寄れなかったときも、手は銃・腕に届いている）
 	const float kHitReachDistance = kAttackStartDistance;
 	const float kHitHalfAngle = 45.f;
-	// 手を伸ばしている間に寄る距離（m）。手は足元から 0.8m 前へ出るので、止まる距離（1.2m）のままだと相手に届かない
-	const float kHitCloseDistance = 0.9f;
-	// 寄る速さ（m/ティック）。0.3m を 0.5 秒で（振り下ろす約 0.47 秒の間にほぼ寄り終える）
-	const float kReachApproachSpeed = 0.6f / GameTime::kTicksPerSecond;
+	const float kHitCloseDistance = 0.9f;								// 手を伸ばしている間に寄る距離（m）。手は足元から 0.8m 前へ出るので、止まる距離（1.2m）のままだと相手に届かない
+	const float kReachApproachSpeed = 0.6f / GameTime::kTicksPerSecond;	// 寄る速さ（m/ティック）。0.3m を 0.5 秒で（振り下ろす約 0.47 秒の間にほぼ寄り終える）
 	// ── 脚を失って体を引きずる体 ──
 	// 攻撃を始める間合い（m。頭から相手の足元まで、水平だけ）と、腕を伸ばし切ったときに当たる距離
 	// 追いついて止まる距離（胸から 1.2m）で、頭は相手の足元の手前 0.7m 辺りに来るので、それより少し遠くする

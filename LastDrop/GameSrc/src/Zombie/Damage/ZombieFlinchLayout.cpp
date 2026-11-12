@@ -9,8 +9,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 骨の向きと倒す向きがほぼ平行（外積の長さがこれ未満）なら、回す軸が決まらないので曲げない
-	const float kParallelLimit = 0.001f;
+	const float kParallelLimit = 0.001f;	// 骨の向きと倒す向きがほぼ平行（外積の長さがこれ未満）なら、回す軸が決まらないので曲げない
 
 	const int kMaxFollowerNames = 16;
 	const int kMaxJointsPerGroup = 3;
@@ -59,8 +58,7 @@ namespace{
 			{ "Spine1", "Spine2", kSpineShare, kWithUpperBody, { "Spine1", "Spine2" } },
 			{ "Spine2", "Neck",   kSpineShare, kWithUpperBody, { "Spine2" } },
 		} },
-		// 頭：首で 20°
-		{ 20.f, { { "Neck", "Head", kWholeShare, kOwnBonesOnly, { "Neck", "Head", "low_jaw*" } } } },
+		{ 20.f, { { "Neck", "Head", kWholeShare, kOwnBonesOnly, { "Neck", "Head", "low_jaw*" } } } },	// 頭：首で 20°
 		// 腕：肩で 25°（上腕・前腕のどちらに当たっても腕ごと押す）
 		{ 25.f, { { "LeftArm",  "LeftForeArm",  kWholeShare, kOwnBonesOnly, { "LeftArm", "LeftForeArm", "LeftHand*" } } } },
 		{ 25.f, { { "RightArm", "RightForeArm", kWholeShare, kOwnBonesOnly, { "RightArm", "RightForeArm", "RightHand*" } } } },

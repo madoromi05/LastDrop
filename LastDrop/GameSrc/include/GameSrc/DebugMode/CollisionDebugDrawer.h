@@ -58,14 +58,10 @@ private:
 	// 容量を決まった数にしないのは、建物の数は町の作りで大きく変わり（1軒で約 6000 頂点）、
 	// 足りないぶんを黙って描かないと「表示が出ない」ように見えるため（町を 96 軒にしたときに起きた）
 	void reserveWallVertices( const CollisionWorld& collisionWorld );
-	// 建物の面のかけらの輪郭を積む（毎フレーム名簿から直接読む。数が多いので、頂点の並びを作り直さない）
-	void addWallLines( const CollisionWorld& collisionWorld );
-	// 柱1本の線を renderer へ積む。color: 線の色（VertexColor::pack の並び）
-	static void addPillarLines( GameLib::Scene::PrimitiveRenderer& renderer, const Pillar& pillar, unsigned color );
-	// 箱1つ（8 隅）の 12 辺を積む
-	void addBoxLines( const std::vector< GameLib::Math::Vector3 >& corners );
-	// 当たった点の十字と法線の線を積む（setRayHit されていれば）
-	void addRayHitLines();
+	void addWallLines( const CollisionWorld& collisionWorld );															// 建物の面のかけらの輪郭を積む（毎フレーム名簿から直接読む。数が多いので、頂点の並びを作り直さない）
+	static void addPillarLines( GameLib::Scene::PrimitiveRenderer& renderer, const Pillar& pillar, unsigned color );	// 柱1本の線を renderer へ積む。color: 線の色（VertexColor::pack の並び）
+	void addBoxLines( const std::vector< GameLib::Math::Vector3 >& corners );											// 箱1つ（8 隅）の 12 辺を積む
+	void addRayHitLines();																								// 当たった点の十字と法線の線を積む（setRayHit されていれば）
 
 	GameLib::Scene::PrimitiveRenderer mRenderer; // すべての線（手前の物に隠れる）。最初の draw で作る（それまでは空）
 	int mWallVertexCapacity;                     // mRenderer が建物の線のために持っている頂点の数

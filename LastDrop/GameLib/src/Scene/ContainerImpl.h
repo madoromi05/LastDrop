@@ -304,8 +304,7 @@ private:
 		}
 	}
 
-	//ファイルからロードする時用のDocument.InFileでいちいちやってもいいのだが、面倒なのでこれ
-	Document mDocument;
+	Document mDocument;	//ファイルからロードする時用のDocument.InFileでいちいちやってもいいのだが、面倒なのでこれ
 
 	//Graphicsのは参照型で格納
 	Array< VertexBuffer > mVertexBuffers;
@@ -323,11 +322,9 @@ private:
 	//これをしないと同じ名前のテクスチャとツリーがあった時に困るわけだ
 	HashMultiMap< const char*, int > mIndices;
 
-	//文字列格納用のプール。個々の型でnewしてると遅いからな
-	Pool< char > mStringPool;
+	Pool< char > mStringPool;	//文字列格納用のプール。個々の型でnewしてると遅いからな
 
-	//追加データ検索パス
-	const char* mExtraDataPath;
+	const char* mExtraDataPath;	//追加データ検索パス
 };
 
 } //namespace Scene

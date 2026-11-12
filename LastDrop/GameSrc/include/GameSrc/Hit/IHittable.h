@@ -8,8 +8,7 @@ class HitboxSet;
 class IHittable{
 public:
 	virtual ~IHittable(){}
-	// 部位ごとの当たり判定。返す参照の寿命はこのオブジェクトと同じ
-	virtual const HitboxSet& hitboxes() const = 0;
+	virtual const HitboxSet& hitboxes() const = 0;	// 部位ごとの当たり判定。返す参照の寿命はこのオブジェクトと同じ
 };
 
 #endif

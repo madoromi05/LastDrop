@@ -13,13 +13,10 @@ class TextureCache;
 // データ形式の「読み方の決まりごと」（UVのV反転など）はここにだけ書き、修正の入口を1つにする
 class MeshLoaderUtil{
 public:
-	// 頂点インデックスの上限。インデックスバッファが16bit(unsigned short)のため
-	static const int MAX_VERTEX_NUMBER = 65536;
+	static const int MAX_VERTEX_NUMBER = 65536;	// 頂点インデックスの上限。インデックスバッファが16bit(unsigned short)のため
 
-	// 属性を名前で探す。無ければ空の ConstAttribute（if( a ) で判定できる）
-	static GameLib::PseudoXml::ConstAttribute findAttribute( const GameLib::PseudoXml::ConstElement&, const char* name );
-	// 子要素を名前で探す（最初に見つかったもの）。無ければ空の ConstElement
-	static GameLib::PseudoXml::ConstElement findChild( const GameLib::PseudoXml::ConstElement&, const char* name );
+	static GameLib::PseudoXml::ConstAttribute findAttribute( const GameLib::PseudoXml::ConstElement&, const char* name );	// 属性を名前で探す。無ければ空の ConstAttribute（if( a ) で判定できる）
+	static GameLib::PseudoXml::ConstElement findChild( const GameLib::PseudoXml::ConstElement&, const char* name );			// 子要素を名前で探す（最初に見つかったもの）。無ければ空の ConstElement
 	// Document::root() から <Container> 要素まで降りる。root() は <Container> を包む文書ルートのことがあるため、
 	// GameLib の Container ローダと同じ規則（子が1つで自分が Container でなければ1段降りる）で揃える
 	static GameLib::PseudoXml::ConstElement containerRoot( const GameLib::PseudoXml::ConstElement& documentRoot );

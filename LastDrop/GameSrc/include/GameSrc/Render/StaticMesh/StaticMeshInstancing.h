@@ -14,8 +14,7 @@
 // 使い方: begin → ( setPlacements → StaticMeshData::drawInstanced ) を繰り返す → end
 class StaticMeshInstancing{
 public:
-	// 1 回の描画で置ける数の上限。StaticMeshInstancing.hlsli の MAX_INSTANCES と同じ値にする（定数バッファの大きさが決まる。128 × 48 バイト ＝ 6KB）
-	static const int kMaxInstances = 128;
+	static const int kMaxInstances = 128;	// 1 回の描画で置ける数の上限。StaticMeshInstancing.hlsli の MAX_INSTANCES と同じ値にする（定数バッファの大きさが決まる。128 × 48 バイト ＝ 6KB）
 
 	// Graphics::Manager ができた後に作る（シェーダをコンパイルするため）
 	StaticMeshInstancing();
@@ -25,19 +24,14 @@ public:
 	// 今の RenderPass で描けるか（G-Buffer か影の間で、そのシェーダがコンパイルできたか）
 	// 描けなければ、呼び出し側は 1 つずつの描き方（StaticMeshInstance::draw）で描く
 	bool isReady() const;
-	// シェーダ（G-Buffer の方が先）のコンパイルエラー。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const char* errorMessage() const;	// シェーダ（G-Buffer の方が先）のコンパイルエラー。問題が無ければ空文字列
 
-	// 今の RenderPass のシェーダと置き場所の定数バッファを付け、ワールド行列を単位行列にする（置き場所は b1 から読むため）。isReady() のときだけ呼ぶ
-	void begin();
-	// 次の描画の置き場所（モデルの空間 → ワールド）。number は 1〜kMaxInstances。begin〜end の間だけ呼ぶ。placements: nullptr 不可
-	void setPlacements( const GameLib::Math::Matrix34* placements, int number );
-	// シェーダと定数バッファを外す（後から描く物に残さない）
-	void end();
+	void begin();																	// 今の RenderPass のシェーダと置き場所の定数バッファを付け、ワールド行列を単位行列にする（置き場所は b1 から読むため）。isReady() のときだけ呼ぶ
+	void setPlacements( const GameLib::Math::Matrix34* placements, int number );	// 次の描画の置き場所（モデルの空間 → ワールド）。number は 1〜kMaxInstances。begin〜end の間だけ呼ぶ。placements: nullptr 不可
+	void end();																		// シェーダと定数バッファを外す（後から描く物に残さない）
 
 private:
-	// 今の RenderPass で使うシェーダ
-	const GameLib::Graphics::Shader& currentShader() const;
+	const GameLib::Graphics::Shader& currentShader() const;	// 今の RenderPass で使うシェーダ
 
 	GameLib::Graphics::Shader mGBufferShader; // G-Buffer へ描く（RenderPass が GBuffer のとき）
 	GameLib::Graphics::Shader mShadowShader;  // 影のマップへ深度だけ描く（RenderPass が Shadow のとき）

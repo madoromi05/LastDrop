@@ -13,8 +13,7 @@ class GameObject;
 // カメラの側（AimSway）は自キャラの部品を知らない。部品の中身を知るのは、この係だけにする
 class PlayerAimSwaySource{
 public:
-	// player の今の状態
-	static AimSwayBody read( const GameObject& player );
+	static AimSwayBody read( const GameObject& player );	// player の今の状態
 };
 
 #endif

@@ -8,12 +8,9 @@
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // どれもリニア化の直後の初期値。画面で見ながら、今までの絵より暗い所がつぶれないように合わせる
 struct PostProcessParams{
-	// シーンの色に掛けてから ACES に通す（固定値。自動露出は入れない：暗い所で勝手に明るくなり、夜の暗さが消えるため）
-	float exposure = 1.0f;
-	// 明るさ（r, g, b の一番大きい値。リニア）がこれを超えた分だけをにじませる
-	float bloomThreshold = 1.0f;
-	// にじませた絵を足す強さ。4 つの段を足した絵なので、1 だと超えた分の約 4 倍の光が足される
-	float bloomIntensity = 0.5f;
+	float exposure = 1.0f;			// シーンの色に掛けてから ACES に通す（固定値。自動露出は入れない：暗い所で勝手に明るくなり、夜の暗さが消えるため）
+	float bloomThreshold = 1.0f;	// 明るさ（r, g, b の一番大きい値。リニア）がこれを超えた分だけをにじませる
+	float bloomIntensity = 0.5f;	// にじませた絵を足す強さ。4 つの段を足した絵なので、1 だと超えた分の約 4 倍の光が足される
 
 	// ── カラーグレーディング ── ACES の後の 0〜1 の色に、上から順に掛ける
 	// 初期値はどれも「何も変えない」値。画面で決める順番も上から（全体を決めてから細部）。色は画像の色と同じ数（sRGB）
@@ -57,8 +54,7 @@ struct PostProcessParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（PostProcess.cpp が持つ）
-PostProcessParams& postProcessParams();
+PostProcessParams& postProcessParams();	// 起動中ずっと 1 つだけの調整値（PostProcess.cpp が持つ）
 // カラーグレーディング・ディザを掛けるか（F6 → Render。見比べと計測用）
 // false の間は「何も変えない」値をシェーダへ渡す。起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値 true。Release では true のまま）
 bool& colorGradingEnabled();
@@ -81,9 +77,7 @@ enum class AntiAliasing{
 	Taa,
 	Count,
 };
-// エディタ（F6 の Render）に出す名前
-const char* antiAliasingName( AntiAliasing );
-// 起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値は Taa。Release では初期値のまま）
-AntiAliasing& antiAliasingMode();
+const char* antiAliasingName( AntiAliasing );	// エディタ（F6 の Render）に出す名前
+AntiAliasing& antiAliasingMode();				// 起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値は Taa。Release では初期値のまま）
 
 #endif

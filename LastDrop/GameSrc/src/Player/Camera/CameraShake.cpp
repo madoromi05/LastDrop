@@ -18,8 +18,7 @@ namespace{
 	// 1 秒にノイズの格子をいくつ進むか（≒ 1 秒に向きが変わる回数）。大きいほど細かく震える
 	const float kNoisePerSecond = 18.f;
 	const float kNoisePerTick = kNoisePerSecond / GameTime::kTicksPerSecond;
-	// mPhase がこれを超えたら折り返す（float の精度が落ちる前に）
-	const int kPhaseWrap = 1024;
+	const int kPhaseWrap = 1024;	// mPhase がこれを超えたら折り返す（float の精度が落ちる前に）
 
 	// 上下・左右・ロールのノイズを別の列から読む（同じ列だと 3 つが同じ形で動いてしまう）
 	enum Channel{

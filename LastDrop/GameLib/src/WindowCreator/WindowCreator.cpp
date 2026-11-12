@@ -23,13 +23,11 @@ namespace GameLib{
 
 namespace{
 
-//ウィンドウ表示のときのスタイル。WS_THICKFRAME で端をドラッグして大きさを変えられ、最大化ボタンで画面いっぱいになる
-const LONG kWindowedStyle = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME;
+const LONG kWindowedStyle = WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_THICKFRAME;	//ウィンドウ表示のときのスタイル。WS_THICKFRAME で端をドラッグして大きさを変えられ、最大化ボタンで画面いっぱいになる
 //フルスクリーン（ボーダーレス）のときのスタイル。枠なしのウィンドウをモニター全体に広げる
 //画面モードを切り替える排他フルスクリーンにしないのは、切り替えの暗転が無く、Alt+Tab でも描画が止まらないため
 const LONG kFullScreenStyle = WS_POPUP;
-//WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット
-const LPARAM kKeyWasDownBit = 1 << 30;
+const LPARAM kKeyWasDownBit = 1 << 30;																	//WM_SYSKEYDOWN の lParam で「前から押されていた（キーリピート）」を表すビット
 
 //メインモニターの全体（rcMonitor）と、タスクバーを除いた作業領域（rcWork）を返す
 //メインモニターの左上は、仮想スクリーン座標で必ず (0,0) になる
@@ -68,8 +66,7 @@ public:
 		mTimeBias = 0xffffffff - time;
 		mTimeBias -= 60000; //60秒の余裕を持たせる
 
-		//スレッドID取得
-		mThreadId = GetCurrentThreadId();
+		mThreadId = GetCurrentThreadId();	//スレッドID取得
 	}
 	~Impl(){
 	}
@@ -77,8 +74,7 @@ public:
 		if ( mFullScreen != f ){
 			if ( mStarted ){
 				if ( f ){
-					//戻すときのために、位置・大きさ・最大化していたかをまとめて覚えておく
-					GetWindowPlacement( mWindowHandle, &mWindowPlacement );
+					GetWindowPlacement( mWindowHandle, &mWindowPlacement );	//戻すときのために、位置・大きさ・最大化していたかをまとめて覚えておく
 					//ウィンドウが今いるモニターの全体に広げる
 					MONITORINFO monitor = {};
 					monitor.cbSize = sizeof( monitor );
@@ -92,8 +88,7 @@ public:
 						SWP_FRAMECHANGED | SWP_SHOWWINDOW );
 				}else{
 					SetWindowLong( mWindowHandle, GWL_STYLE, kWindowedStyle | WS_VISIBLE );
-					//覚えておいた位置へ戻す（最大化していたなら最大化へ戻る）
-					SetWindowPlacement( mWindowHandle, &mWindowPlacement );
+					SetWindowPlacement( mWindowHandle, &mWindowPlacement );	//覚えておいた位置へ戻す（最大化していたなら最大化へ戻る）
 					//スタイルの変更（枠の有無）を反映させる
 					SetWindowPos( mWindowHandle, NULL, 0, 0, 0, 0,
 						SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED );
@@ -141,8 +136,7 @@ Impl* gImpl = 0; //唯一のインスタンス
 } //namespace{}
 
 WindowCreator::WindowCreator(){
-	//別スレッドからの呼び出しは許されない
-	ASSERT( isMainThread() && "you must call from MAIN thread" );
+	ASSERT( isMainThread() && "you must call from MAIN thread" );	//別スレッドからの呼び出しは許されない
 }
 
 const char* WindowCreator::title() const {

@@ -54,10 +54,8 @@ public:
 		Vector2* uvTopLeftOut,
 		Vector2* uvBottomRightOut,
 		int code );
-	///文字の最大高さ
-	int charHeight() const;
-	///ロード終わってる？
-	bool isReady();
+	int charHeight() const;	///文字の最大高さ
+	bool isReady();			///ロード終わってる？
 
 	//以下ユーザは意識しなくていい
 	Font();

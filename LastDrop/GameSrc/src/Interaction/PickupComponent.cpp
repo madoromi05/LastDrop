@@ -36,8 +36,7 @@ PickupComponent::PickupComponent() :
 
 void PickupComponent::start() {
 	mItem = requireComponent< ItemComponent >();
-	// 頂点を囲む箱は、見た目から求める（BoxColliderComponent と同じ箱。見た目は awake で置き場所へ動いている）
-	mLookBoxToLocal = makeLookBoxToLocal( MeshBoundsBox::make( requireComponent< StaticModelComponent >()->mesh() ) );
+	mLookBoxToLocal = makeLookBoxToLocal( MeshBoundsBox::make( requireComponent< StaticModelComponent >()->mesh() ) );	// 頂点を囲む箱は、見た目から求める（BoxColliderComponent と同じ箱。見た目は awake で置き場所へ動いている）
 }
 
 bool PickupComponent::isTaken() const {

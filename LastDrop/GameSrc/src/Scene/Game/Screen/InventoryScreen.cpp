@@ -39,10 +39,8 @@ namespace{
 	const float kEcgWidth = 210.f;
 	const float kEcgHeight = 56.f;
 
-	// メニューの項目の文字（InventoryCursor::MenuItem の順）
-	const char* const kMenuLabels[] = { "装備", "使う", "捨てる", "動かす", "やめる" };
-	// 手に持っている銃の印（マスの左上）
-	const char* kEquippedMark = "E";
+	const char* const kMenuLabels[] = { "装備", "使う", "捨てる", "動かす", "やめる" };	// メニューの項目の文字（InventoryCursor::MenuItem の順）
+	const char* kEquippedMark = "E";													// 手に持っている銃の印（マスの左上）
 
 	const char* kHeading = "カバン";
 	const char* kEmptyName = "空";

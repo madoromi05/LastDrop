@@ -8,8 +8,7 @@
 // だから「柱と三角形が当たるか」は、「長方形と、切り取った形を真上から見た多角形が当たるか」と同じになる（2D で解ける）
 // 作るのは MeshWallBuilder。SweepMath が判定に使い、CollisionDebugDrawer が線で描く
 struct WallPiece{
-	// 三角形（3 隅）を上と下の高さで切ると、切るたびに隅が1つ増える
-	static const int kMaxCorners = 5;
+	static const int kMaxCorners = 5;	// 三角形（3 隅）を上と下の高さで切ると、切るたびに隅が1つ増える
 
 	GameLib::Math::Vector3 corner[ kMaxCorners ];     // 切り取った形の隅（回りの順。判定は x・z だけを使い、y は表示のために残す）
 	int cornerNumber;

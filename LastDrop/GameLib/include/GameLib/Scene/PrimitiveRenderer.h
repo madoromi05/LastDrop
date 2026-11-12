@@ -117,8 +117,7 @@ public:
 		const Vector2& pos1,
 		unsigned color = 0xffffffff,
 		float depth = 0.f );
-	///描画
-	void draw();
+	void draw();	///描画
 
 	//以下ユーザは意識しない
 	PrimitiveRenderer();

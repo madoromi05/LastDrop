@@ -31,12 +31,9 @@ public:
 
 	FireProbe();
 
-	// ロードが終わった描画（数え始め）
-	void markReady();
-	// 描画ごと（ロード後）。押した・離した描画だけ書く
-	void onFrame( const FrameState& frame, const GunState& gun );
-	// ティックごと（世界を進めた後）。押してから決まったティックの間に撃てたかを書く
-	void onTick( bool fired, bool dryFired );
+	void markReady();												// ロードが終わった描画（数え始め）
+	void onFrame( const FrameState& frame, const GunState& gun );	// 描画ごと（ロード後）。押した・離した描画だけ書く
+	void onTick( bool fired, bool dryFired );						// ティックごと（世界を進めた後）。押してから決まったティックの間に撃てたかを書く
 
 private:
 	void write( const char* line ) const;

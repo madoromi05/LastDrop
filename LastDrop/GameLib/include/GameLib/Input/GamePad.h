@@ -40,8 +40,7 @@ namespace GameLib {
 
 				STICK_MAX,
 			};
-			// 同時に読めるパッドの数（XInput の差し口の数 XUSER_MAX_COUNT と同じ。DirectInput のパッドもこの数まで）
-			static const int PAD_MAX = 4;
+			static const int PAD_MAX = 4;	// 同時に読めるパッドの数（XInput の差し口の数 XUSER_MAX_COUNT と同じ。DirectInput のパッドもこの数まで）
 
 			bool isConnected() const;
 			bool isOn( Button ) const;
@@ -49,8 +48,7 @@ namespace GameLib {
 			// スティックの傾き（-1〜1。右・下が正）。真ん中付近の遊び（デッドゾーン）は 0 にしてある
 			float stickX( Stick ) const;
 			float stickY( Stick ) const;
-			// 今読んでいる元の名前（"XInput"・DirectInput の対応表の名前・つながっていなければ "None"）。確かめる表示用
-			const char* sourceName() const;
+			const char* sourceName() const;	// 今読んでいる元の名前（"XInput"・DirectInput の対応表の名前・つながっていなければ "None"）。確かめる表示用
 
 			GamePad();
 			~GamePad();

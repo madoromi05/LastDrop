@@ -19,14 +19,11 @@ public:
 	// 操作を「何もしない」にし（その場で立ち止まる・撃たない・覗かない）、撃つ入力を一度離すまで止める
 	// 押した瞬間の入力は read と同じく consumePressed に任せる（ここで消すと、切り替えた描画の入力が落ちる）
 	void clear();
-	// 撃つ入力を一度離すまで止める（解除中のクリックでロックし直したとき）
-	void suppressFire();
-	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ
-	void consumePressed();
+	void suppressFire();	// 撃つ入力を一度離すまで止める（解除中のクリックでロックし直したとき）
+	void consumePressed();	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ
 
 	const PlayerCommand& command() const;
-	// 撃つ入力を止めている最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
-	bool isFireSuppressed() const;
+	bool isFireSuppressed() const;	// 撃つ入力を止めている最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
 
 private:
 	PlayerCommand mCommand;

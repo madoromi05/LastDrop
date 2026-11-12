@@ -32,11 +32,10 @@ mContainer( &container ){
 		}
 	}
 	//まずノードを数えよう
-	ConstElement root = e.child( 0 ); //最初の子がルート
+	ConstElement root = e.child( 0 );	//最初の子がルート
 	mNodeNumber = countNode( root, 0 );
 	mNodes = NEW NodeTemplate[ mNodeNumber ];
-	//階層を構築
-	build( root, container, 0 );
+	build( root, container, 0 );		//階層を構築
 }
 
 //再帰

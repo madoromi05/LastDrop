@@ -24,8 +24,7 @@ struct HitResult{
 // ここが持つのは、1体ごとに違うもの（今のポーズで箱がワールドのどこにあるか）だけ
 class HitboxSet{
 public:
-	// layout: 箱の設計図。所有権は受け取らない。nullptr 不可。この当たり判定より長く生きていること
-	explicit HitboxSet( const HitboxLayout* layout );
+	explicit HitboxSet( const HitboxLayout* layout );	// layout: 箱の設計図。所有権は受け取らない。nullptr 不可。この当たり判定より長く生きていること
 
 	// 箱をどのポーズに合わせるか
 	enum PoseSource{
@@ -34,8 +33,7 @@ public:
 		POSE_ANIMATED,
 		POSE_SHOWN,    // 書き換えた後の、見えているポーズ（アニメ無しで骨を大きく動かす間。体を引きずるゾンビ）
 	};
-	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。ふだんはアニメどおりのポーズに合わせる
-	void update( const SkinnedMeshInstance& mesh, PoseSource source = POSE_ANIMATED );
+	void update( const SkinnedMeshInstance& mesh, PoseSource source = POSE_ANIMATED );	// 箱を今のポーズへ置き直す。mesh を update した後に、毎フレーム1回呼ぶ。ふだんはアニメどおりのポーズに合わせる
 	// part の箱を外す（部位欠損で部位が無くなったとき）。以後その箱には当たらず、置いていない箱として扱う（boxMatrix が false）
 	// 戻す入口は無い（無くなった部位は戻らない）。何回呼んでも安全
 	void removePart( BodyPart part );
@@ -46,10 +44,8 @@ public:
 
 	// ── 当たり判定の表示用 ──
 	int boxNumber() const;
-	// -1〜1 の立方体をワールドの箱へ置く行列。まだ置いていない箱（update 前）なら false
-	bool boxMatrix( int index, GameLib::Math::Matrix34* out ) const;
-	// 箱が受け持つ部位（体力の表示で、箱の所に部位の体力を出すのに使う）
-	BodyPart boxPart( int index ) const;
+	bool boxMatrix( int index, GameLib::Math::Matrix34* out ) const;	// -1〜1 の立方体をワールドの箱へ置く行列。まだ置いていない箱（update 前）なら false
+	BodyPart boxPart( int index ) const;								// 箱が受け持つ部位（体力の表示で、箱の所に部位の体力を出すのに使う）
 	// part の箱が置かれていれば、その中心（ワールド）を out へ書いて true。置いていない・外した部位なら false（out は変えない）
 	// part の箱が複数あれば、並びの先の物。ゾンビの頭の位置（攻撃の音を鳴らす所）に使う
 	// out: nullptr 不可
@@ -66,8 +62,7 @@ private:
 		bool placed;                      // update で置けたか
 		bool removed;                     // removePart で外したか（外した箱は置かない）
 	};
-	// 置いた箱を全部囲む箱を求め直す（update・removePart の後）。raycast のふるいと bounds に使う
-	void updateBounds();
+	void updateBounds();	// 置いた箱を全部囲む箱を求め直す（update・removePart の後）。raycast のふるいと bounds に使う
 
 	const HitboxLayout* mLayout; // 借りているだけ
 	std::vector< Placement > mPlacements;

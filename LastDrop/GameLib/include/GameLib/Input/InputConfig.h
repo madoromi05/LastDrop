@@ -22,11 +22,9 @@ namespace Input {
 class InputConfig
 {
 public:
-    // 全消去
-    void clear();
+    void clear();	// 全消去
 
-    // デフォルト表で置き換える（clear してからコピー）
-    void loadDefaults(const BindingRecord* a_records, int a_count);
+    void loadDefaults(const BindingRecord* a_records, int a_count);	// デフォルト表で置き換える（clear してからコピー）
 
     // 実行時の付け替え（キーコンフィグ用）
     void addBinding(const BindingRecord& a_record);     // 同一レコードは重複追加しない

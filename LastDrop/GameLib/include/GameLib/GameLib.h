@@ -27,8 +27,7 @@ namespace GameLib{
 #define ASSERT( exp ) 
 #endif //NDEBUG
 
-//ベースサービスヘッダ
-#include "Base/DebugStream.h"
+#include "Base/DebugStream.h"	//ベースサービスヘッダ
 #include "Base/Array.h"
 #include "Base/AutoPtr.h"
 #include "Base/SharedPtr.h"

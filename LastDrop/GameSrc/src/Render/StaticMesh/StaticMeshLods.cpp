@@ -7,8 +7,7 @@
 #include <string>
 
 namespace{
-	// 粗い形のファイル名の付け方（tools/convert/fbx_to_gamelib.py の lod_path と同じ）
-	const char* kLodSuffix = "_lod";
+	const char* kLodSuffix = "_lod";	// 粗い形のファイル名の付け方（tools/convert/fbx_to_gamelib.py の lod_path と同じ）
 }
 
 StaticMeshLods::StaticMeshLods( const StaticMeshData* full ) :

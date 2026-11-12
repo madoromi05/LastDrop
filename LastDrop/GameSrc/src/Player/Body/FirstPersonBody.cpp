@@ -6,8 +6,7 @@ using namespace GameLib::Math;
 namespace{
 	const int kNoBone = -1; // 銃を持つ手が無い（どの銃の段も、これで止まる）
 
-	// 抱え方・反動・目の位置の調整値（起動中に F6 で動かせる）。読むのは Pose/ の段（weaponPoseParams() で引く）
-	WeaponPoseParams gParams;
+	WeaponPoseParams gParams;	// 抱え方・反動・目の位置の調整値（起動中に F6 で動かせる）。読むのは Pose/ の段（weaponPoseParams() で引く）
 }
 
 WeaponPoseParams& weaponPoseParams() {

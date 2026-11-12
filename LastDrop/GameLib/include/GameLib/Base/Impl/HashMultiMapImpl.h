@@ -75,8 +75,7 @@ template< class K, class V, class H > inline void HashMultiMap< K, V, H >::setCa
 		tableSize = 3; //最低で3
 	}
 	mTableSize = tableSize;
-	//次配列 テーブルサイズ分だけダミーを足すことに注意
-	mNexts = NEW int[ mCapacity + mTableSize ];
+	mNexts = NEW int[ mCapacity + mTableSize ];	//次配列 テーブルサイズ分だけダミーを足すことに注意
 	//値配列確保。コンストラクタが不要なので生new
 	mKeys = static_cast< K* >( OPERATOR_NEW( sizeof( K ) * mCapacity ) );
 	mValues = static_cast< V* >( OPERATOR_NEW( sizeof( V ) * mCapacity ) );
@@ -97,8 +96,7 @@ template< class K, class V, class H > inline int HashMultiMap< K, V, H >::capaci
 
 template< class K, class V, class H > inline int HashMultiMap< K, V, H >::add( const K& k, const V& v ){
 	ASSERT( mSize < mCapacity );
-	//ハッシュ関数算出
-	int h = H().value( k, mTableSize );
+	int h = H().value( k, mTableSize );	//ハッシュ関数算出
 	//検索
 	int p = mNexts[ mCapacity + h ];
 	while ( p < mCapacity ){
@@ -112,10 +110,9 @@ template< class K, class V, class H > inline int HashMultiMap< K, V, H >::add( c
 	new ( &mKeys[ newPos ] ) K( k ); //コピーコンストラクタ呼び出し
 	new ( &mValues[ newPos ] ) V( v ); //コピーコンストラクタ呼び出し
 	if ( p >= mCapacity ){ //ない時は先頭に足す
-		//テーブル先頭に挿入
-		int head = mCapacity + h;
-		mNexts[ newPos ] = mNexts[ head ]; //頭ダミーの次をセット
-		mNexts[ head ] = newPos; //前のリンクを新ノードにつなぐ
+		int head = mCapacity + h;			//テーブル先頭に挿入
+		mNexts[ newPos ] = mNexts[ head ];	//頭ダミーの次をセット
+		mNexts[ head ] = newPos;			//前のリンクを新ノードにつなぐ
 	}else{ //ある時は直後に足す
 		mNexts[ newPos ] = mNexts[ p ];
 		mNexts[ p ] = newPos; //前のリンクを新ノードにつなぐ
@@ -126,8 +123,7 @@ template< class K, class V, class H > inline int HashMultiMap< K, V, H >::add( c
 
 template< class K, class V, class H > inline int HashMultiMap< K, V, H >::add( const K& k ){
 	ASSERT( mSize < mCapacity );
-	//ハッシュ関数算出
-	int h = H().value( k, mTableSize );
+	int h = H().value( k, mTableSize );	//ハッシュ関数算出
 	//検索
 	int p = mNexts[ mCapacity + h ];
 	while ( p < mCapacity ){
@@ -141,10 +137,9 @@ template< class K, class V, class H > inline int HashMultiMap< K, V, H >::add( c
 	new ( &mKeys[ newPos ] ) K( k ); //コピーコンストラクタ呼び出し
 	new ( &mValues[ newPos ] ) V;
 	if ( p >= mCapacity ){ //ない時は先頭に足す
-		//テーブル先頭に挿入
-		int head = mCapacity + h;
-		mNexts[ newPos ] = mNexts[ head ]; //頭ダミーの次をセット
-		mNexts[ head ] = newPos; //前のリンクを新ノードにつなぐ
+		int head = mCapacity + h;			//テーブル先頭に挿入
+		mNexts[ newPos ] = mNexts[ head ];	//頭ダミーの次をセット
+		mNexts[ head ] = newPos;			//前のリンクを新ノードにつなぐ
 	}else{ //ある時は直後に足す
 		mNexts[ newPos ] = mNexts[ p ];
 		mNexts[ p ] = newPos; //前のリンクを新ノードにつなぐ
@@ -173,12 +168,10 @@ template< class K, class V, class H > inline bool HashMultiMap< K, V, H >::remov
 	while ( h < mCapacity ){
 		h = mNexts[ h ];
 	}
-	//一旦範囲外に出た。ここからmCapacityを引くと次のハッシュ値がわかる
-	h -= mCapacity;
-	//-1すればこいつのハッシュ値だ
-	h -= 1;
+	h -= mCapacity;				//一旦範囲外に出た。ここからmCapacityを引くと次のハッシュ値がわかる
+	h -= 1;						//-1すればこいつのハッシュ値だ
 	//ハッシュ値がわかったので、テーブルの先頭から辿っていってpを見つける
-	int prev = mCapacity + h; //ヘッド
+	int prev = mCapacity + h;	//ヘッド
 	int p = mNexts[ prev ];
 	while ( p < mCapacity ){
 		if ( p == position ){ //発見。こいつを消す

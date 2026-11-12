@@ -16,15 +16,13 @@ namespace{
 	const float kHalf = 0.5f;
 	const int kNone = -1;
 
-	// マスどうしの間（画素）
-	const float kCellGap = 4.f;
-	const float kIconInset = 3.f;      // マスの縁から絵まで（選んだ枠の太さより広く、枠が絵に掛からないように）
-	const float kBothSides = 2.f;      // 左右（上下）の両側の余白の分
-	// 数（2 桁）を置く右下の板。板の真ん中に数を置く
-	const float kAmountPlateWidth = 26.f;
-	const float kAmountPlateHeight = 20.f; // 文字（UI_TEXT_NORMAL の 20）と同じ高さ
-	const float kAmountInset = 3.f;    // マスの右下の角から板まで
-	const float kMarkPlateSize = 20.f; // 印（文字 1 つ）の板。文字と同じ高さの正方形
+	const float kCellGap = 4.f;				// マスどうしの間（画素）
+	const float kIconInset = 3.f;			// マスの縁から絵まで（選んだ枠の太さより広く、枠が絵に掛からないように）
+	const float kBothSides = 2.f;			// 左右（上下）の両側の余白の分
+	const float kAmountPlateWidth = 26.f;	// 数（2 桁）を置く右下の板。板の真ん中に数を置く
+	const float kAmountPlateHeight = 20.f;	// 文字（UI_TEXT_NORMAL の 20）と同じ高さ
+	const float kAmountInset = 3.f;			// マスの右下の角から板まで
+	const float kMarkPlateSize = 20.f;		// 印（文字 1 つ）の板。文字と同じ高さの正方形
 
 	// 銃の弾倉の数（「12/12」）を置く左下の板。5 文字が入る幅（小さいマスでは、マスの幅に収める）
 	const float kRoundsPlateWidth = 50.f;
@@ -139,8 +137,7 @@ void ItemGridView::drawCells( const ItemGrid& grid, int lifted ) {
 		ItemId item = grid.stackAt( i ).item;
 		drawIcon( spanRect( grid, i, itemSpec( item ).cellSize ), item, ( i == lifted ) ? kLiftedAlpha : kOpaque );
 	}
-	// ③ 数（絵の上に重ねる）
-	drawAmounts( grid );
+	drawAmounts( grid );	// ③ 数（絵の上に重ねる）
 }
 
 void ItemGridView::drawGhost( const ItemGrid& grid, int owner, const ItemStack& stack ) {
@@ -179,13 +176,12 @@ void ItemGridView::drawAmounts( const ItemGrid& grid ) {
 
 void ItemGridView::drawCornerText( const UiRect& area, const char* text, bool right, float plateWidth, unsigned color ) {
 	UiRect plate;
-	plate.width = std::min( plateWidth, area.width - kAmountInset * kBothSides ); // 小さいマス（拠点の 40）からはみ出さない
+	plate.width = std::min( plateWidth, area.width - kAmountInset * kBothSides );		// 小さいマス（拠点の 40）からはみ出さない
 	plate.height = kAmountPlateHeight;
 	plate.left = right ? area.right() - kAmountInset - plate.width : area.left + kAmountInset;
 	plate.top = area.bottom() - kAmountInset - plate.height;
 	mRenderer->addRect( plate, kAmountPlateColor );
-	// 板の真ん中に置く（文字の幅は UiRenderer の外から測れないので、右揃えではなく板の中央揃えにする）
-	mRenderer->addText( text, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, color );
+	mRenderer->addText( text, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, color );	// 板の真ん中に置く（文字の幅は UiRenderer の外から測れないので、右揃えではなく板の中央揃えにする）
 }
 
 void ItemGridView::drawMark( const ItemGrid& grid, ItemId item, const char* mark ) {

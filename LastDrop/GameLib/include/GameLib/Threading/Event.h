@@ -7,14 +7,10 @@ namespace Threading{
 class Event{
 public:
 	static Event create( bool initialiState = false );
-	///trueにされるのを待つ
-	void wait() const;
-	///trueにする
-	void set();
-	///falseにする
-	void reset();
-	///true?それともfalse?
-	bool isSet() const;
+	void wait() const;	///trueにされるのを待つ
+	void set();			///trueにする
+	void reset();		///falseにする
+	bool isSet() const;	///true?それともfalse?
 
 	Event();
 	~Event();

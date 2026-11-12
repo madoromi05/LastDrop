@@ -20,12 +20,11 @@ namespace{
 	const int kFirstCell = 0;
 	const float kHalf = 0.5f;
 
-	// マス 1 つの一辺（画素）。町のカバンの画面と同じ大きさ（物の絵が同じに見えるように）
-	const float kCellSize = 64.f;
-	const float kGridTop = 96.f;       // マス目の上端（座標の高さ 480 に、見出し・カバンの 4 行・下の欄が入る所）
-	const float kGridGap = 72.f;       // カバンと場所の間
-	const float kGridLabelGap = 20.f;  // マス目の名前の真ん中から、マス目の上端まで
-	const float kFooterGap = 22.f;     // 高い方のマス目の下端から、選んだ物の名前の真ん中まで
+	const float kCellSize = 64.f;		// マス 1 つの一辺（画素）。町のカバンの画面と同じ大きさ（物の絵が同じに見えるように）
+	const float kGridTop = 96.f;		// マス目の上端（座標の高さ 480 に、見出し・カバンの 4 行・下の欄が入る所）
+	const float kGridGap = 72.f;		// カバンと場所の間
+	const float kGridLabelGap = 20.f;	// マス目の名前の真ん中から、マス目の上端まで
+	const float kFooterGap = 22.f;		// 高い方のマス目の下端から、選んだ物の名前の真ん中まで
 	const float kFooterLineHeight = 24.f;
 	const int kTextSize = 96;
 

@@ -149,8 +149,7 @@ void GameDebugOverlay::castRay( const GameWorld& world, const FirstPersonCamera&
 void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonCamera& camera ) {
 	if ( debugSwitches().showCollision ) {
 		castRay( world, camera );
-		// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）
-		mCollisionDrawer.draw( world.collisionWorld(), world.hitWorld(), camera.projectionViewMatrix(), world.playerBody(), world.playerTarget() );
+		mCollisionDrawer.draw( world.collisionWorld(), world.hitWorld(), camera.projectionViewMatrix(), world.playerBody(), world.playerTarget() );	// 自分の当たり判定は描かない（一人称では自分の体を囲む線が視界を塞ぐ）
 	}
 	if ( debugSwitches().showPickups ) {
 		// 落ちている物の箱を、手前の物に隠れない線で描く（壁の向こうの缶の場所が分かる）。拾われた物は世界が渡さない

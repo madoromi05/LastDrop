@@ -8,10 +8,8 @@ class MemoryManager{
 public:
 	static MemoryManager instance();
 
-	///情報の書き出し(ファイル名を与えればファイルへ、与えなければデバグ出力へ)
-	void write( const char* filename = 0 );
-	///全確保容量(内部予約容量を含む)
-	int totalSize() const;
+	void write( const char* filename = 0 );	///情報の書き出し(ファイル名を与えればファイルへ、与えなければデバグ出力へ)
+	int totalSize() const;					///全確保容量(内部予約容量を含む)
 };
 }
 

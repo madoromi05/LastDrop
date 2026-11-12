@@ -11,11 +11,9 @@ class SkinnedMeshData;
 // ここは見た目を持って描くだけ（描くかどうか＝間引きは描く側の WorldRenderer が決める）
 class SkinnedModelComponent : public Component{
 public:
-	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。この部品より長く生きていること
-	explicit SkinnedModelComponent( const SkinnedMeshData* data ) : mData( data ), mMesh( data ){}
+	explicit SkinnedModelComponent( const SkinnedMeshData* data ) : mData( data ), mMesh( data ){}	// data: 形・見た目・アニメ。所有権は受け取らない。nullptr 不可、isReady() 済みであること。この部品より長く生きていること
 
-	// 形・見た目・アニメ（隣の部品が骨・アニメを引くのに使う。付けたときから在るので awake から借りてよい）
-	const SkinnedMeshData* data() const { return mData; }
+	const SkinnedMeshData* data() const { return mData; }	// 形・見た目・アニメ（隣の部品が骨・アニメを引くのに使う。付けたときから在るので awake から借りてよい）
 
 	SkinnedMeshInstance& mesh(){ return mMesh; }
 	const SkinnedMeshInstance& mesh() const { return mMesh; }

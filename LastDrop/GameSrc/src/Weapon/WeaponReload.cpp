@@ -11,8 +11,7 @@ namespace{
 	// アニメ・合図の時刻・長さは銃ごとの表（WeaponCatalog の WeaponReloadSpec）。アニメは player.json の game_fps でゲームのフレームに直してある
 	// 腕をアニメへ切り替える・戻す長さ（秒）。急に切り替えると腕が跳ねて見える
 	const float kArmBlendSeconds = 0.15f;
-	// 挿す合図の前に、手の弾倉を銃の差し込み口へ寄せる長さ（秒）。手の位置と差し込み口はアニメで少しずれているので、跳ばずにはめるため
-	const float kMagazineSeatSeconds = 0.2f;
+	const float kMagazineSeatSeconds = 0.2f;	// 挿す合図の前に、手の弾倉を銃の差し込み口へ寄せる長さ（秒）。手の位置と差し込み口はアニメで少しずれているので、跳ばずにはめるため
 
 	const int kInactive = -1;
 	const int kNoTick = -1; // 来ない合図（スライドを引かないリロードの CUE_BOLT）
@@ -56,8 +55,7 @@ const char* WeaponReload::animationName() const {
 }
 
 int WeaponReload::animationSecondsToTicks( float animationSeconds ) const {
-	// 速めて流すので、アニメの時刻より早く来る
-	return GameTime::secondsToTicks( animationSeconds / animationRate() );
+	return GameTime::secondsToTicks( animationSeconds / animationRate() );	// 速めて流すので、アニメの時刻より早く来る
 }
 
 void WeaponReload::start( bool magazineEmpty ) {

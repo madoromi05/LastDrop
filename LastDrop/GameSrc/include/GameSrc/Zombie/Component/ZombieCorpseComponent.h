@@ -17,15 +17,11 @@ public:
 	ZombieCorpseComponent();
 
 	const ZombieCorpse& corpse() const { return mCorpse; }
-	// 倒れ始めた後、毎ティック（死亡アニメを進めた後に呼ぶ）
-	void update();
-	// 沈み終わって、消してよいか（そうなった update で、自分の物に destroyLater する）
-	bool isGone() const;
-	// 消えるまでの残り秒（死体・沈んでいる間だけ。それ以外は 0）。確認用の表示に使う
-	float secondsUntilGone() const;
+	void update();					// 倒れ始めた後、毎ティック（死亡アニメを進めた後に呼ぶ）
+	bool isGone() const;			// 沈み終わって、消してよいか（そうなった update で、自分の物に destroyLater する）
+	float secondsUntilGone() const;	// 消えるまでの残り秒（死体・沈んでいる間だけ。それ以外は 0）。確認用の表示に使う
 
-	// Component（Transform・SkinnedModel・ZombieState・ZombieRootMotion が要る）
-	void start() override;
+	void start() override;	// Component（Transform・SkinnedModel・ZombieState・ZombieRootMotion が要る）
 
 private:
 	ZombieCorpse mCorpse;

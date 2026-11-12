@@ -23,13 +23,11 @@ namespace{
 		Graphics::RENDER_TARGET_RGBA16F,    // 法線（-1〜1）。8bit に入らない数なので浮動小数
 		Graphics::RENDER_TARGET_RGBA8,      // AO・粗さ・金属・発光（どれも 0〜1。色ではないので sRGB にしない）
 	};
-	// GBuffer.hlsli の cbuffer GBufferMaterial の番号（b3）。b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使う
-	const int kSurfaceSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 2;
+	const int kSurfaceSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 2;	// GBuffer.hlsli の cbuffer GBufferMaterial の番号（b3）。b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使う
 	// デカールが書く描画先の数（RT0 色・RT1 法線。並びの先頭から）と、深度を読む番号（Decal.hlsl の t5）
 	const int kDecalTargetNumber = 2;
 	const int kDecalDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
-	// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）
-	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );
+	const Vector4 kClearValue( 0.f, 0.f, 0.f, 0.f );							// 何も描かれていない画素は、どの面の情報も 0（ライティングのパスでは深度で見分ける）
 
 	// 雨上がりの水たまり。GBuffer.hlsli の gPuddleMask（t12）と cbuffer GBufferPassConstants（b4）
 	const char* kPuddleMaskFile = "Resource/Texture/Map/puddle_mask.dds";

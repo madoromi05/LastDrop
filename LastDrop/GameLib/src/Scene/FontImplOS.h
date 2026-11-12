@@ -48,11 +48,9 @@ public:
 		//テクスチャ生成。とりあえず一枚
 		//途中から初めて出る字を描き足すので、GPU へ送った後も書ける画像にする（DX11 版の普通の画像は送った後に CPU 側の画素を捨てる）
 		Texture t = Texture::createWritable( mTextureWidth, mTextureHeight );
-		//マップに格納
-		mTextures.insert( make_pair( 0, t ) );
+		mTextures.insert( make_pair( 0, t ) );	//マップに格納
 
-		//フォント名をUNICODE変換
-		DWORD pitch = ( proportional ) ? VARIABLE_PITCH : FIXED_PITCH;
+		DWORD pitch = ( proportional ) ? VARIABLE_PITCH : FIXED_PITCH;	//フォント名をUNICODE変換
 
 		//フォント生成
 		mFontHandle = CreateFontA(
@@ -71,16 +69,15 @@ public:
 			pitch | FF_DONTCARE,
 			fontName );
 		ASSERT( mFontHandle );
-		//HDC生成
-		mDeviceContextHandle = CreateCompatibleDC( NULL );
+		mDeviceContextHandle = CreateCompatibleDC( NULL );	//HDC生成
 		//テキストメトリクス取得
 		//fontセット
 		SelectObject( mDeviceContextHandle, mFontHandle );
 		//文字のメトリクス生成
 		TEXTMETRIC tm;
 		GetTextMetrics( mDeviceContextHandle, &tm );
-		mCharHeight = tm.tmHeight; //実際の値で上書き
-		mCharAscent = tm.tmAscent; //ベースラインの上の寸法が必要
+		mCharHeight = tm.tmHeight;							//実際の値で上書き
+		mCharAscent = tm.tmAscent;							//ベースラインの上の寸法が必要
 	}
 	~FontImplOS(){
 		DeleteDC( mDeviceContextHandle );
@@ -118,8 +115,7 @@ public:
 		return true;
 	}
 	const Char* createGlyph( int code ){
-		//fontセット
-		SelectObject( mDeviceContextHandle, mFontHandle );
+		SelectObject( mDeviceContextHandle, mFontHandle );	//fontセット
 
 		GLYPHMETRICS gm; // 情報
 		MAT2 mat = {
@@ -137,14 +133,13 @@ public:
 			static_cast< UINT >( code ),
 			format,
 			&gm, 0, NULL, &mat );
-		//寸法取得
-		int cellW = static_cast< int >( gm.gmCellIncX );
-		int cellH = static_cast< int >( mCharHeight ); //IncYは役立たず
+		int cellW = static_cast< int >( gm.gmCellIncX );	//寸法取得
+		int cellH = static_cast< int >( mCharHeight );		//IncYは役立たず
 		int glyphW = static_cast< int >( gm.gmBlackBoxX );
 		int glyphH = static_cast< int >( gm.gmBlackBoxY );
 		int glyphX = static_cast< int >( gm.gmptGlyphOrigin.x );
 		int glyphY = static_cast< int >( mCharAscent - gm.gmptGlyphOrigin.y );
-		if ( glyphW + glyphX > cellW ){ //ありえんが対処するほかあるまい
+		if ( glyphW + glyphX > cellW ){						//ありえんが対処するほかあるまい
 			cellW = glyphW + glyphX;
 		}
 		if ( glyphH + glyphY > cellH ){ //ありえんが対処するほかあるまい
@@ -166,8 +161,7 @@ public:
 				mCurrentY = 0;
 				++mCurrentPage;
 				Texture t = Texture::createWritable( mTextureWidth, mTextureHeight );
-				//マップに格納
-				mTextures.insert( make_pair( mCurrentPage, t ) );
+				mTextures.insert( make_pair( mCurrentPage, t ) );	//マップに格納
 				//テクスチャ取り直し
 				TextureIt tit = mTextures.find( mCurrentPage );
 				ASSERT( tit != mTextures.end() );
@@ -193,9 +187,8 @@ public:
 				dst += dstPitch / 4;
 			}
 		}else{
-			// バッファを確保
-			BYTE* data = NEW BYTE[ size ];
-			int srcPitch = ( glyphW + 3 ) & ~( 3 ); //4バイトアライン
+			BYTE* data = NEW BYTE[ size ];			// バッファを確保
+			int srcPitch = ( glyphW + 3 ) & ~( 3 );	//4バイトアライン
 
 			// 二度目の呼び出しが本物。データ取得
 			size = GetGlyphOutlineW(
@@ -226,10 +219,8 @@ public:
 					dst += dstPitch;
 					src += srcPitch;
 				}
-				//旧配列をdelete l|
-				SAFE_DELETE_ARRAY( data );
-				//新配列に差し替え
-				data = newData;
+				SAFE_DELETE_ARRAY( data );	//旧配列をdelete l|
+				data = newData;				//新配列に差し替え
 			}
 			BYTE* src = data;
 			//上部空白の塗りつぶし

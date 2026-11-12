@@ -21,10 +21,8 @@ namespace{
 	// 足先（ToeBase）は Foot の子なので、脚と一緒に無くす（"LeftFoot*" では引けない名前のため別に書く）
 	const BodyPart kNone = BodyPart::Count;
 	const CutDefinition kCutDefinitions[] = {
-		// Head：首の上で切る（頭が 0 で倒れるときに飛ぶ）
-		{ "Head",         { "Head", "low_jaw*" },                                   { BodyPart::Head, kNone },                         kKeepsFooting },
-		// Torso：切れない
-		{ nullptr,        { nullptr },                                              { kNone, kNone },                                  kKeepsFooting },
+		{ "Head",         { "Head", "low_jaw*" },                                   { BodyPart::Head, kNone },                         kKeepsFooting },	// Head：首の上で切る（頭が 0 で倒れるときに飛ぶ）
+		{ nullptr,        { nullptr },                                              { kNone, kNone },                                  kKeepsFooting },	// Torso：切れない
 		// 上腕：肩から腕ごと
 		{ "LeftArm",      { "LeftArm", "LeftForeArm", "LeftHand*" },                { BodyPart::LeftUpperArm, BodyPart::LeftForeArm },   kKeepsFooting },
 		{ "RightArm",     { "RightArm", "RightForeArm", "RightHand*" },             { BodyPart::RightUpperArm, BodyPart::RightForeArm }, kKeepsFooting },

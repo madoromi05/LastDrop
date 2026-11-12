@@ -16,10 +16,8 @@ namespace{
 	// 滑り直す回数の上限。壁に当たって滑る → 次の壁に当たって滑る、の連鎖を何回まで追うか
 	// 2D で角に挟まれても 2 回で止まるので、3 回あれば足りる
 	const int kMaxSlideIterations = 3;
-	// めり込みを外へ出し直す回数の上限。押し出した先で別の相手にめり込んでいる（群れに囲まれた）ときに繰り返す
-	const int kMaxDepenetrationIterations = 3;
-	// これより短い移動は進まない（m）。滑らせた残りが誤差だけになったら打ち切る
-	const float kMinMoveDistance = 0.0001f;
+	const int kMaxDepenetrationIterations = 3;	// めり込みを外へ出し直す回数の上限。押し出した先で別の相手にめり込んでいる（群れに囲まれた）ときに繰り返す
+	const float kMinMoveDistance = 0.0001f;		// これより短い移動は進まない（m）。滑らせた残りが誤差だけになったら打ち切る
 	// 足元を地面の高さへ近づける速さ（m/ティック。秒あたりで決めて直す）
 	// 縁石（15cm）を約 0.1 秒で上り下りする。速すぎると視点が跳ね、遅すぎると歩道の上でしばらく足が沈んで見える
 	const float kGroundFollowSpeed = 1.5f / GameTime::kTicksPerSecond;
@@ -72,8 +70,7 @@ Vector3 CharacterMover::move( const Vector3& delta, const CollisionWorld::BodyFi
 		float travelRate = travel / length;
 		box.center.madd( remaining, travelRate );
 		remaining *= ( 1.f - travelRate );
-		// 残りから面へ向かう成分を除き、面に沿って滑らせる
-		remaining.madd( hit.normal, -remaining.dot( hit.normal ) );
+		remaining.madd( hit.normal, -remaining.dot( hit.normal ) );	// 残りから面へ向かう成分を除き、面に沿って滑らせる
 		// 入り隅（2枚の壁が作る角）では、今の面に沿う向きが前の面へ入り込む向きになる
 		// 2D ではどちらの面にも沿える向きが無いので、そこで止まる（行ったり来たりの振動を防ぐ）
 		if ( hasPreviousNormal && remaining.dot( previousNormal ) < 0.f ) {

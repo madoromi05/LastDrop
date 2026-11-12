@@ -43,9 +43,8 @@ namespace{
 	// 腕・右手の骨の名前の頭のどれにも合わないので、両手持ち・胸元への寄せで頭は動かない（目を先に決めてよい理由。5-4）
 	const char* const kHeadBone = "mixamorig:Head";
 
-	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）
-	const char* const kChestBone = "mixamorig:Spine2";
-	const float kFallbackEyeHeight = 1.65f; // 頭の骨が無いときの、足元からの目の高さ（身長約1.8）
+	const char* const kChestBone = "mixamorig:Spine2";	// 走るときに胸元へ寄せる基準の骨。抱え方・反動・目の位置の値は WeaponPoseParams（起動中に F6 で動かせる）
+	const float kFallbackEyeHeight = 1.65f;				// 頭の骨が無いときの、足元からの目の高さ（身長約1.8）
 
 	const int kNoBone = -1;
 

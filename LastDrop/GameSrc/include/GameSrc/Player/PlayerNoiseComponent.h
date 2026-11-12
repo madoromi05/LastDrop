@@ -22,10 +22,8 @@ public:
 	void update() override;
 
 private:
-	// 持っている銃がこのティックに撃ったら、足元で銃声を鳴らす
-	void emitGunshot();
-	// 0.3 秒ごとに、歩き方で決まる距離（歩き 5m・走り 18m）の足音を鳴らす
-	void emitFootsteps();
+	void emitGunshot();		// 持っている銃がこのティックに撃ったら、足元で銃声を鳴らす
+	void emitFootsteps();	// 0.3 秒ごとに、歩き方で決まる距離（歩き 5m・走り 18m）の足音を鳴らす
 
 	const TransformComponent* mTransform;
 	const PlayerLocomotionComponent* mLocomotion;

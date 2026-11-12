@@ -20,8 +20,7 @@ class Building;
 // （見えない建物の影が、見える所に落ちるため）
 class TownVisibility{
 public:
-	// 目がどのますにも当たらない（町の外・建物の足元・建物より高い所。F6 の観察用カメラなど）とき viewCell が返す値
-	static const int kNoCell = -1;
+	static const int kNoCell = -1;	// 目がどのますにも当たらない（町の外・建物の足元・建物より高い所。F6 の観察用カメラなど）とき viewCell が返す値
 
 	TownVisibility();
 	TownVisibility( const TownVisibility& ) = delete;
@@ -31,15 +30,12 @@ public:
 	void build( const std::vector< Building >& buildings );
 	bool isReady() const;
 
-	// 目の位置 eye が入っているます（kNoCell なら PVS を使わない＝全部描く）
-	int cellAt( const GameLib::Math::Vector3& eye ) const;
-	// viewCell から building 番の建物が見えうるか。viewCell が kNoCell なら true
-	bool showsBuilding( int viewCell, int building ) const;
+	int cellAt( const GameLib::Math::Vector3& eye ) const;														// 目の位置 eye が入っているます（kNoCell なら PVS を使わない＝全部描く）
+	bool showsBuilding( int viewCell, int building ) const;														// viewCell から building 番の建物が見えうるか。viewCell が kNoCell なら true
 	// viewCell から、足元 position にいる物（ゾンビ）が見えうるか。position のますと、その周り 8 ますのどれかが見えうれば true
 	// （体がますの境をまたいで見える分）。viewCell が kNoCell・position が町の外なら true
 	bool showsPoint( int viewCell, const GameLib::Math::Vector3& position ) const;
-	// ますの範囲（上から見た四角。y は 0）。確認用の表示（F3）に使う
-	void cellBounds( int cell, GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;
+	void cellBounds( int cell, GameLib::Math::Vector3* boundsMin, GameLib::Math::Vector3* boundsMax ) const;	// ますの範囲（上から見た四角。y は 0）。確認用の表示（F3）に使う
 	// ますの数（町を覆う 4m のます。表が無ければ 0）・cell が目の来うるます（建物の足元でない）か。確かめ（TownVisibilityCheck）が使う
 	int cellCount() const;
 	bool isOpenCell( int cell ) const;
@@ -57,18 +53,13 @@ private:
 	// ── 表を作る段（build から、この順に呼ぶ。後の段は前の段の結果を読む）──
 	// 建物の足元と遮る長方形を作り、町を囲む範囲を townMin / townMax へ書く。目を使ってよい高さもここで決める
 	void buildFootprints( const std::vector< Building >& buildings, GameLib::Math::Vector3* townMin, GameLib::Math::Vector3* townMax );
-	// 町をますに分け、目が来うるます（真ん中が建物の壁の長方形に入らない）に印を付ける
-	void markOpenCells( const GameLib::Math::Vector3& townMin, const GameLib::Math::Vector3& townMax );
-	// ますごとの見えうる建物（ますの見る点のどれかから見えうる建物）
-	void bakeBuildingVisibility();
-	// ますごとの見えうるます（ゾンビ用。四隅のどれかどうしが見通せれば見えうる）
-	void bakeCellVisibility();
+	void markOpenCells( const GameLib::Math::Vector3& townMin, const GameLib::Math::Vector3& townMax );	// 町をますに分け、目が来うるます（真ん中が建物の壁の長方形に入らない）に印を付ける
+	void bakeBuildingVisibility();																		// ますごとの見えうる建物（ますの見る点のどれかから見えうる建物）
+	void bakeCellVisibility();																			// ますごとの見えうるます（ゾンビ用。四隅のどれかどうしが見通せれば見えうる）
 
-	// 2D の線分 (ax,az)→(bx,bz) を、高さ minHeight 以上の建物（ignore 番を除く）が遮るか
-	bool isBlocked( float ax, float az, float bx, float bz, float minHeight, int ignore ) const;
-	// 点 (x,z) から building 番の建物が見えうるか（建物の見る点を向いた辺の上の点のどれかへ、線が遮られずに届くか）
-	bool seesBuilding( float x, float z, int building ) const;
-	int cellIndex( int cellX, int cellZ ) const; // ますの番号（範囲の外なら kNoCell）
+	bool isBlocked( float ax, float az, float bx, float bz, float minHeight, int ignore ) const;	// 2D の線分 (ax,az)→(bx,bz) を、高さ minHeight 以上の建物（ignore 番を除く）が遮るか
+	bool seesBuilding( float x, float z, int building ) const;										// 点 (x,z) から building 番の建物が見えうるか（建物の見る点を向いた辺の上の点のどれかへ、線が遮られずに届くか）
+	int cellIndex( int cellX, int cellZ ) const;													// ますの番号（範囲の外なら kNoCell）
 	bool hasBit( const std::vector< std::uint32_t >& bits, int row, int rowWords, int column ) const;
 	void setBit( std::vector< std::uint32_t >* bits, int row, int rowWords, int column );
 
@@ -87,7 +78,6 @@ private:
 	std::vector< std::uint32_t > mCellBits;      // ますごとの見えうるます
 };
 
-// 目から見る絵の建物・ゾンビを PVS で間引くか（F6 → Render の PVS。見比べと計測用）。起動中ずっと 1 つ（初期値 true）
-bool& pvsEnabled();
+bool& pvsEnabled();	// 目から見る絵の建物・ゾンビを PVS で間引くか（F6 → Render の PVS。見比べと計測用）。起動中ずっと 1 つ（初期値 true）
 
 #endif

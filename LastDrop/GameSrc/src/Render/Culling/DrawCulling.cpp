@@ -13,12 +13,11 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 画面（影のマップ）の上でこれより小さい物は描かない（画素）
-	const float kMinPixels = 2.f;
+	const float kMinPixels = 2.f;	// 画面（影のマップ）の上でこれより小さい物は描かない（画素）
 	// 霧の後に残る色がこの段の数の 1 段より少なければ、見えないとみなす（8bit の色の 1 段 ＝ 1/255）
 	const float kColorSteps = 255.f;
 	const float kHalf = 0.5f;
-	const float kNoLimit = 0.f; // 距離・小ささを見ない
+	const float kNoLimit = 0.f;		// 距離・小ささを見ない
 }
 
 const float DrawCulling::kPoseMargin = 0.3f;

@@ -30,10 +30,8 @@ enum class GBufferView{
 	HiZ,       // Hi-Z の段（F6 の Hi-Z view level で選ぶ）を、目からの距離の灰色で（Depth と同じ物差し。空は黒）
 	Count,
 };
-// エディタ（F6 の Render）に出す名前
-const char* gbufferViewName( GBufferView );
-// 起動中ずっと 1 つの表示の選択（F6 で書き換える。Release では Final のまま）
-GBufferView& gbufferView();
+const char* gbufferViewName( GBufferView );	// エディタ（F6 の Render）に出す名前
+GBufferView& gbufferView();					// 起動中ずっと 1 つの表示の選択（F6 で書き換える。Release では Final のまま）
 
 // G-Buffer と深度を読んで画面を作る全画面のパス（シェーダは Resource/Shader/DeferredLighting.hlsl・Fog.hlsl）
 // 仕様は GBuffer_Plan.txt 7・8 章、PBR の式は PbrNightLighting_Plan.txt 4 章、霧は NightFinish_Plan.txt 5 章
@@ -68,12 +66,10 @@ public:
 	void drawView( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
 		const GameLib::Graphics::RenderTarget& reflection, const GameLib::Graphics::RenderTarget& hiZ, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& projectionView );
-	// シェーダのコンパイルエラー（ライティング → 霧 → 映り込みを混ぜるシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const char* errorMessage() const;	// シェーダのコンパイルエラー（ライティング → 霧 → 映り込みを混ぜるシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
 
 private:
-	// view と、深度から位置を戻す逆行列を定数に入れて b1 に付ける（3 つのパスの共通部分）
-	void setConstants( GBufferView view, const GameLib::Math::Matrix44& projectionView );
+	void setConstants( GBufferView view, const GameLib::Math::Matrix44& projectionView );	// view と、深度から位置を戻す逆行列を定数に入れて b1 に付ける（3 つのパスの共通部分）
 	// view を定数に入れ、G-Buffer と SSAO の結果と深度を付けて全画面を 1 回描く（drawLighting と drawView の共通部分）
 	void drawFullScreen( GBufferView view, const GBuffer& gbuffer, const GameLib::Graphics::RenderTarget& occlusion,
 		GameLib::Graphics::DepthTarget depth, const GameLib::Math::Matrix44& projectionView );

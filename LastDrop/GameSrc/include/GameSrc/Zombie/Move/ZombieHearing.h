@@ -19,10 +19,8 @@ public:
 	ZombieHearing( const ZombieHearing& ) = delete;
 	ZombieHearing& operator=( const ZombieHearing& ) = delete;
 
-	// position（撃った瞬間の自キャラの足元）で銃声がした。水平に 30m の内のゾンビが、その場所へ寄ってくる
-	void hearGunshot( const GameLib::Math::Vector3& position );
-	// 物音（脱出の車のエンジンなど）がした。届く距離・寄って来方は銃声と同じ
-	void hearNoise( const GameLib::Math::Vector3& position );
+	void hearGunshot( const GameLib::Math::Vector3& position );	// position（撃った瞬間の自キャラの足元）で銃声がした。水平に 30m の内のゾンビが、その場所へ寄ってくる
+	void hearNoise( const GameLib::Math::Vector3& position );	// 物音（脱出の車のエンジンなど）がした。届く距離・寄って来方は銃声と同じ
 	// feet（自キャラの足元）で足音がした。range（m。歩き方で決まる距離）に今日の条件の倍率を掛けた距離の内のゾンビが気付く
 	// 掛けた後が 0 以下なら誰も聞かない
 	void hearFootsteps( const GameLib::Math::Vector3& feet, float range );

@@ -25,8 +25,7 @@ public:
 	// （拾われた物は次の世界の update で消えるので、物そのものは覚えず、位置と状態だけを写しておく）
 	// eye: 目の位置。target: 見ている物（Interactor::target。無ければ nullptr）。inventory: 使えるかを決める持ち物
 	void update( const InteractionSystem& interaction, const GameLib::Math::Vector3& eye, const IInteractable* target, const Inventory& inventory );
-	// 覚えた物を消す（自キャラがいない・死んだときなど、マークを出さないとき）
-	void clear();
+	void clear();	// 覚えた物を消す（自キャラがいない・死んだときなど、マークを出さないとき）
 	// 覚えたマークを renderer に積む（描くのは UiRenderer::draw。HUD の描画でまとめて描かれる）。HUD を描く前に呼ぶ
 	// camera: 今の描画のカメラ（物の位置を画面へ直す）。renderer: nullptr 不可
 	void add( const FirstPersonCamera& camera, UiRenderer* renderer ) const;

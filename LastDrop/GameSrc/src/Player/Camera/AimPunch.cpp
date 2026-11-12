@@ -9,12 +9,9 @@ namespace{
 	// 1 回で跳ねる角度（度）。上へ kPunchPitch、左右へ −kPunchYaw〜+kPunchYaw
 	const float kPunchPitch = 2.5f;
 	const float kPunchYaw = 2.0f;
-	// 1 ティックごとに残る割合。0.85 で約 0.3 秒（18 ティックで 1/19）まで戻る
-	const float kReturnPerTick = 0.85f;
-	// 続けて攻撃されても跳ねすぎないように、合計はこれで止める（度）
-	const float kLimit = 6.f;
-	// これより小さくなったら 0 にする
-	const float kMinOffset = 0.001f;
+	const float kReturnPerTick = 0.85f;	// 1 ティックごとに残る割合。0.85 で約 0.3 秒（18 ティックで 1/19）まで戻る
+	const float kLimit = 6.f;			// 続けて攻撃されても跳ねすぎないように、合計はこれで止める（度）
+	const float kMinOffset = 0.001f;	// これより小さくなったら 0 にする
 
 	float settle( float value ) {
 		value *= kReturnPerTick;

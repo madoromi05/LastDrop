@@ -13,17 +13,14 @@
 #include "ThirdParty/imgui/imgui_impl_win32.h"
 #include "ThirdParty/imgui/imgui_impl_dx11.h"
 
-// imgui_impl_win32.h では、windows.h を持ち込まないよう宣言が #if 0 で外してあるので、使う側で宣言する（ImGui の決まり）
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam );	// imgui_impl_win32.h では、windows.h を持ち込まないよう宣言が #if 0 で外してあるので、使う側で宣言する（ImGui の決まり）
 
 namespace GameLib{
 namespace DebugUi{
 
 namespace{
-	// エディタを開け閉めするキー（F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）
-	const ImGuiKey kToggleKey = ImGuiKey_F6;
-	// 開いている間、押している間だけマウスをエディタに渡すキー（ゲームの操作に Alt は使っていない）
-	const ImGuiKey kEditKey = ImGuiMod_Alt;
+	const ImGuiKey kToggleKey = ImGuiKey_F6;	// エディタを開け閉めするキー（F1～F5・F9 は確認用の機能で使用中。F10 は Windows のメニューに入るキー）
+	const ImGuiKey kEditKey = ImGuiMod_Alt;		// 開いている間、押している間だけマウスをエディタに渡すキー（ゲームの操作に Alt は使っていない）
 
 	bool gCreated = false;
 	bool gOpen = false;

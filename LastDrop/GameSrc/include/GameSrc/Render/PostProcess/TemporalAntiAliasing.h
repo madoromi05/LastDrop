@@ -26,10 +26,8 @@ public:
 	// 履歴が無い（最初・invalidate の後・画面の大きさが変わった）フレームは、今の色をそのまま履歴にする
 	void resolve( const GameLib::Graphics::RenderTarget& sceneColor, const GBuffer& gbuffer, GameLib::Graphics::DepthTarget depth,
 		const GameLib::Math::Matrix44& jitteredProjectionView, const GameLib::Math::Matrix44& projectionView );
-	// 履歴を捨てる（次の resolve は今の色だけ）。TAA を使っていないフレーム・カメラが飛んだときに呼ぶ
-	void invalidate();
-	// シェーダのコンパイルエラー（混ぜるシェーダ → 写し戻すシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
-	const char* errorMessage() const;
+	void invalidate();					// 履歴を捨てる（次の resolve は今の色だけ）。TAA を使っていないフレーム・カメラが飛んだときに呼ぶ
+	const char* errorMessage() const;	// シェーダのコンパイルエラー（混ぜるシェーダ → 写し戻すシェーダの順に、最初に見つかった物）。問題が無ければ空文字列
 
 private:
 	static const int kHistoryNumber = 2;

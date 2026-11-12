@@ -33,8 +33,7 @@ bool satisfies( const ItemGrid& grid, GridRule rule ) {
 
 bool canMove( const ItemGrid& source, GridRule sourceRule, int from, const ItemGrid& target, GridRule targetRule, int to ) {
 	if ( &source == &target ) {
-		// 同じマス目の中の並べ替えは、物の数が変わらないので決まりは変わらない
-		return source.canMove( from, to );
+		return source.canMove( from, to );	// 同じマス目の中の並べ替えは、物の数が変わらないので決まりは変わらない
 	}
 	ItemGrid sourceTrial = source;
 	ItemGrid targetTrial = target;

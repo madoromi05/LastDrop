@@ -275,8 +275,7 @@ void SkinnedMeshData::draw( const std::vector< Matrix34 >& skinMatrices ) const 
 		const Part& part = mParts[ i ];
 		part.mMaterial.apply(); // テクスチャ・法線マップ・材質値（ライトの値は b0 経由でシェーダへ渡る）
 		if ( !part.mMaterial.hasNormalMap() ) {
-			// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）
-			m.setNormalMapStrength( kNoNormalMap );
+			m.setNormalMapStrength( kNoNormalMap );	// シェーダは法線マップを常に読むので、無いパーツは強さ0で効かなくする（元の法線のまま＝固定パイプラインと同じ見た目）
 		}
 		RenderPass::countDraw( part.mTriangleNumber );
 		m.drawIndexed( part.mFirstTriangle, part.mTriangleNumber );

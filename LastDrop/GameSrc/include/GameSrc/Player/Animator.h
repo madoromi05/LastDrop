@@ -21,19 +21,15 @@ public:
 	};
 
 	Animator();
-	// State に対応するアニメを登録する（借用。所有しない）
-	void setAnimation( State, GameLib::Scene::Animation );
+	void setAnimation( State, GameLib::Scene::Animation );	// State に対応するアニメを登録する（借用。所有しない）
 	// 指定 State への遷移を要求する。実際に遷移したら true を返す
 	// true は「呼び出し側が Tree::setAnimation( animation() ) を呼ぶべき合図」
 	bool request( State next );
-	// 現在の State を取得する
-	State state() const;
-	// 現在の State に対応するアニメを取得する（Tree に渡す用）
-	GameLib::Scene::Animation animation() const;
+	State state() const;									// 現在の State を取得する
+	GameLib::Scene::Animation animation() const;			// 現在の State に対応するアニメを取得する（Tree に渡す用）
 
 private:
-	// from から to へ遷移してよいかを判定する
-	bool canTransit( State from, State to ) const;
+	bool canTransit( State from, State to ) const;	// from から to へ遷移してよいかを判定する
 
 	State mState;
 	GameLib::Scene::Animation mAnimations[ STATE_NUM ];

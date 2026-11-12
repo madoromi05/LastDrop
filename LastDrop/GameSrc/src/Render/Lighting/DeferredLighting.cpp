@@ -19,19 +19,15 @@ namespace{
 	const int kNormalSlot = kAlbedoSlot + 1;
 	const int kMaterialSlot = kNormalSlot + 1;
 	const int kDepthSlot = kMaterialSlot + 1;
-	// SSAO の結果（t10。t6〜t9 は影のマップ。LightList.hlsli）。AmbientOcclusion::result
-	const int kOcclusionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 8;
-	// SSR の結果（t13。t11・t12 は G-Buffer へ書く側の ORM と水たまりの模様）。ScreenSpaceReflection::result
-	const int kReflectionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 11;
-	// 月の模様（t14。SkyDetail.hlsli の gMoonTexture）。空を描くライティングのパスでだけ付ける
-	const int kMoonTextureSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 12;
+	const int kOcclusionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 8;		// SSAO の結果（t10。t6〜t9 は影のマップ。LightList.hlsli）。AmbientOcclusion::result
+	const int kReflectionSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 11;	// SSR の結果（t13。t11・t12 は G-Buffer へ書く側の ORM と水たまりの模様）。ScreenSpaceReflection::result
+	const int kMoonTextureSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 12;	// 月の模様（t14。SkyDetail.hlsli の gMoonTexture）。空を描くライティングのパスでだけ付ける
 	// Hi-Z（t15。表示の Hi-Z だけが読む）。ScreenSpaceReflection::hiZ
 	const int kHiZViewSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 13;
 	const char* kMoonTextureFile = "Resource/Texture/Map/moon.dds";
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
-	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）
-	const float kDepthViewRange = 60.f;
+	const float kDepthViewRange = 60.f;	// 深度の表示で、目からこの距離を白にする（画面で見て決めた値ではない初期値）
 
 	const int kMatrixFloats = 16;
 	const int kRowFloats = 4;

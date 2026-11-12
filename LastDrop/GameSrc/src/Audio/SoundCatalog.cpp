@@ -8,13 +8,11 @@ namespace{
 	// 一歩ごとに鳴る音は、同じ音が続くと機械的に聞こえやすいので多めに持つ
 	const int kStepVariations = 4;
 	const int kSingle = 1;
-	// 連射で続けて当たるので、体に当たった音は別テイクを持つ
-	const int kHitFleshVariations = 3;
+	const int kHitFleshVariations = 3;	// 連射で続けて当たるので、体に当たった音は別テイクを持つ
 	// 着弾音も連射で続くので、足音と同じ数を持つ。金属は響きが長く聞き分けやすいので少なめ
 	const int kImpactVariations = 4;
 	const int kImpactMetalVariations = 3;
-	// 倒れる音は続けて倒すと重なるので 2 つ持つ
-	const int kBodyFallVariations = 2;
+	const int kBodyFallVariations = 2;	// 倒れる音は続けて倒すと重なるので 2 つ持つ
 
 	// ── 素材の出どころ ──
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）
@@ -24,10 +22,8 @@ namespace{
 	// ── 音程の揺らぎ ──
 	const float kStepPitchJitter = 0.06f;
 	const float kFoleyPitchJitter = 0.04f;
-	// 連射で同じ音が続くので、少しだけ揺らして機械的に聞こえないようにする（大きく揺らすと別の銃に聞こえる）
-	const float kGunshotPitchJitter = 0.03f;
-	// 当たった音は 1 体に 10 回/秒 続くので、銃声より大きく揺らす（同じ音の繰り返しに聞こえないように）
-	const float kHitPitchJitter = 0.08f;
+	const float kGunshotPitchJitter = 0.03f;	// 連射で同じ音が続くので、少しだけ揺らして機械的に聞こえないようにする（大きく揺らすと別の銃に聞こえる）
+	const float kHitPitchJitter = 0.08f;		// 当たった音は 1 体に 10 回/秒 続くので、銃声より大きく揺らす（同じ音の繰り返しに聞こえないように）
 	// 着弾音も同じ理由で揺らす。金属は響きの高さが変わると別の物に聞こえるので、少し控えめ
 	const float kImpactPitchJitter = 0.08f;
 	const float kImpactMetalPitchJitter = 0.06f;
@@ -65,10 +61,8 @@ namespace{
 	// 銃声の素材は、頭の約 0.6 秒がほぼ無音で、発砲の音はその後に入っている
 	// 頭から鳴らすと、引き金を引いてから音が出るまでが遅れて聞こえるので、発砲の音の直前から鳴らす
 	const float kGunshotStartSeconds = 0.6f;
-	// 体に当たった音の素材は、頭の約 0.04〜0.06 秒が無音（3 テイクで短い方に合わせる）。弾が当たった瞬間に鳴らすため飛ばす
-	const float kHitFleshStartSeconds = 0.04f;
-	// 槓桿の音の素材は、頭の約 0.22 秒が無音。動きの合図（WeaponReload の CUE_BOLT）と同時に鳴らすため飛ばす
-	const float kBoltPullStartSeconds = 0.2f;
+	const float kHitFleshStartSeconds = 0.04f;	// 体に当たった音の素材は、頭の約 0.04〜0.06 秒が無音（3 テイクで短い方に合わせる）。弾が当たった瞬間に鳴らすため飛ばす
+	const float kBoltPullStartSeconds = 0.2f;	// 槓桿の音の素材は、頭の約 0.22 秒が無音。動きの合図（WeaponReload の CUE_BOLT）と同時に鳴らすため飛ばす
 
 	// SoundId の順に並べる（static_assert で数を確かめる）
 	const SoundEntry kEntries[] = {
@@ -86,20 +80,16 @@ namespace{
 		{ "weapon_holster",    kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 		{ "aim_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
 		{ "aim_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		// 元の素材名: "GunShot.wav"
-		{ "gunshot",           kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kGunshotStartSeconds },
+		{ "gunshot",           kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kGunshotStartSeconds },	// 元の素材名: "GunShot.wav"
 		// 空撃ち・リロードは自分の手元の音なので、装備の音と同じ距離。素材はどれも weapons/Weapons の録音（頭に無音が無い物は頭から）
 		// 元の素材名: "Weapon Gun Rifle M16 Dry Fire 02.wav"
 		{ "dry_fire",          kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
-		// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Release 01.wav"
-		{ "mag_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
-		// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
-		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
+		{ "mag_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },	// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Release 01.wav"
+		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },	// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
 		// 元の素材名: "Weapon Gun Rifle M16 Bolt Cock 02.wav"
 		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds },
 		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
-		// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
-		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },
+		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },	// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
 		// 合成は BodyFallSynth.cpp
 		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart },
 		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
@@ -117,8 +107,7 @@ namespace{
 		// 脱出の車。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）
 		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
 		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
-		// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
-		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },	// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
 }

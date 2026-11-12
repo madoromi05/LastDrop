@@ -13,20 +13,16 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const unsigned kRouteColor = VertexColor::pack( 0.3f, 0.9f, 1.f, 1.f ); // 白い当たり判定・黄色い落ちている物と見分けられる水色
-	const unsigned kSeparationColor = VertexColor::pack( 1.f, 0.55f, 0.15f, 1.f ); // 通り道の水色と見分けられる橙色
-	// 線を地面から浮かせる高さ（m）。車道の面（0）・歩道（0.15）に埋もれないように
-	const float kLineLift = 0.3f;
-	// 床の縁は通り道より低く浮かせる（歩道の面 0.15m より少し上）
-	const float kOutlineLift = 0.2f;
-	// 床の縁の色。数が多いので、通り道の水色より暗く薄い緑で目立たせない
-	const unsigned kOutlineColor = VertexColor::pack( 0.3f, 0.8f, 0.4f, 0.35f );
+	const unsigned kRouteColor = VertexColor::pack( 0.3f, 0.9f, 1.f, 1.f );			// 白い当たり判定・黄色い落ちている物と見分けられる水色
+	const unsigned kSeparationColor = VertexColor::pack( 1.f, 0.55f, 0.15f, 1.f );	// 通り道の水色と見分けられる橙色
+	const float kLineLift = 0.3f;													// 線を地面から浮かせる高さ（m）。車道の面（0）・歩道（0.15）に埋もれないように
+	const float kOutlineLift = 0.2f;												// 床の縁は通り道より低く浮かせる（歩道の面 0.15m より少し上）
+	const unsigned kOutlineColor = VertexColor::pack( 0.3f, 0.8f, 0.4f, 0.35f );	// 床の縁の色。数が多いので、通り道の水色より暗く薄い緑で目立たせない
 	// 分離の向きを描く長さ（m。向きの長さ 1 のとき）
 	const float kSeparationLineLength = 1.f;
 	const int kVerticesPerLine = 2;
-	// 床の縁のほかに一度に描ける線の数。ゾンビの上限（30 体）× 通り道の点（曲がる角＋よける点＋行き先）と分離の線に余裕を持たせた数
-	const int kRouteLineCapacity = 1024;
-	const int kBatchCapacity = 2; // 線のまとまり 1 つ＋余裕
+	const int kRouteLineCapacity = 1024;											// 床の縁のほかに一度に描ける線の数。ゾンビの上限（30 体）× 通り道の点（曲がる角＋よける点＋行き先）と分離の線に余裕を持たせた数
+	const int kBatchCapacity = 2;													// 線のまとまり 1 つ＋余裕
 
 	Vector3 lifted( const Vector3& ground, float lift ) {
 		return Vector3( ground.x, ground.y + lift, ground.z );

@@ -14,8 +14,7 @@
 class BonePoseModifier{
 public:
 	virtual ~BonePoseModifier() {}
-	// pose: 骨格の根から見たボーンの姿勢（SkinnedMeshData::computeBonePose の並び）。nullptr 不可
-	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) = 0;
+	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) = 0;	// pose: 骨格の根から見たボーンの姿勢（SkinnedMeshData::computeBonePose の並び）。nullptr 不可
 };
 
 #endif

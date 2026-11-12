@@ -27,27 +27,21 @@ public:
 	GBuffer( const GBuffer& ) = delete;
 	GBuffer& operator=( const GBuffer& ) = delete;
 
-	// 描画先を G-Buffer 3 枚と depth にし、3 枚を消す（depth は消さない。消すのは持ち主の PostProcess::beginScene）
-	void begin( GameLib::Graphics::DepthTarget depth );
+	void begin( GameLib::Graphics::DepthTarget depth );		// 描画先を G-Buffer 3 枚と depth にし、3 枚を消す（depth は消さない。消すのは持ち主の PostProcess::beginScene）
 	// デカール（DecalBatch）を描く間。動かない物を描いた後・動く物の前に、begin〜end の中で呼ぶ
 	// 描画先を RT0（色）と RT1（法線）だけにし、depth は描画先から外して t5 から読めるようにする（デカールは深度から位置を戻す）
 	void beginDecals( GameLib::Graphics::DepthTarget depth );
-	// 描画先を G-Buffer 3 枚と depth へ付け直す（消さない）。続けて動く物を描ける
-	void endDecals( GameLib::Graphics::DepthTarget depth );
-	// これから描く物の動きの種類（begin で Static に戻る）。描く物の種類が変わる所で呼ぶ（GameScene::draw）
-	void setMotion( MotionKind );
-	// 描き方を Forward へ戻し、静的メッシュのシェーダを外す。描画先はそのまま（次に描く所で付け直す）
-	void end();
+	void endDecals( GameLib::Graphics::DepthTarget depth );	// 描画先を G-Buffer 3 枚と depth へ付け直す（消さない）。続けて動く物を描ける
+	void setMotion( MotionKind );							// これから描く物の動きの種類（begin で Static に戻る）。描く物の種類が変わる所で呼ぶ（GameScene::draw）
+	void end();												// 描き方を Forward へ戻し、静的メッシュのシェーダを外す。描画先はそのまま（次に描く所で付け直す）
 
-	const GameLib::Graphics::RenderTarget& albedo() const;   // RT0
-	const GameLib::Graphics::RenderTarget& normal() const;   // RT1
-	const GameLib::Graphics::RenderTarget& material() const; // RT2（AO・粗さ・金属・発光）
-	// 静的メッシュのシェーダのコンパイルエラー。問題が無ければ空文字列
-	const char* errorMessage() const;
+	const GameLib::Graphics::RenderTarget& albedo() const;		// RT0
+	const GameLib::Graphics::RenderTarget& normal() const;		// RT1
+	const GameLib::Graphics::RenderTarget& material() const;	// RT2（AO・粗さ・金属・発光）
+	const char* errorMessage() const;							// 静的メッシュのシェーダのコンパイルエラー。問題が無ければ空文字列
 
 private:
-	// 水たまりの値（PuddleParams）と動きの種類を定数に入れて b4 に付け、模様を t12 に付ける（begin の中。描画先を付けた後）
-	void setPassConstants();
+	void setPassConstants();	// 水たまりの値（PuddleParams）と動きの種類を定数に入れて b4 に付け、模様を t12 に付ける（begin の中。描画先を付けた後）
 
 	static const int kTargetNumber = 3;
 	GameLib::Graphics::RenderTarget mTargets[ kTargetNumber ]; // RT0 色・RT1 法線・RT2 AO と粗さと金属と発光

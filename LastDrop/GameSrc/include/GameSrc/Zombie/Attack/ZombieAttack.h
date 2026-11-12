@@ -28,10 +28,8 @@ public:
 
 	ZombieAttack();
 
-	// 攻撃を始めてよいか（攻撃していない・前の攻撃から待ち時間が過ぎた）。間合い・向きは呼ぶ側が見る
-	bool canStart() const;
-	// 立っている体が、つかみに行く（Reach）。呼ぶ側は、攻撃のアニメを頭から PLAY_ONCE で流し始め、毎ティック update を呼ぶ
-	void start();
+	bool canStart() const;	// 攻撃を始めてよいか（攻撃していない・前の攻撃から待ち時間が過ぎた）。間合い・向きは呼ぶ側が見る
+	void start();			// 立っている体が、つかみに行く（Reach）。呼ぶ側は、攻撃のアニメを頭から PLAY_ONCE で流し始め、毎ティック update を呼ぶ
 	// 腕を振る（Swing）。立っている体は、呼ぶ側が腕振りのアニメ（atack1）を頭から PLAY_ONCE で流し始め、毎ティック update を呼ぶ
 	// 体を引きずる体は、呼ぶ側はアニメを流さず、毎ティック updateWithoutAnimation を呼ぶ
 	void startSwing();
@@ -47,24 +45,18 @@ public:
 	// つかんでいる間に受けたダメージ（部位の倍率を掛けた後）を数える。つかんでいなければ何もしない
 	// 合計が決まった量に届いたら振りほどかれて Ready になり、true を返す（呼ぶ側が、よろけのアニメなどへ替える）
 	bool takeShakeDamage( float amount );
-	// 攻撃をやめる（倒れた・脚を失った）。待ち時間を付けて Ready にする。攻撃していなければ何もしない
-	void cancel();
+	void cancel();			// 攻撃をやめる（倒れた・脚を失った）。待ち時間を付けて Ready にする。攻撃していなければ何もしない
 
 	Phase phase() const;
-	bool isActive() const;        // 攻撃の途中（Ready 以外）
-	// 相手を取りに行っている・つかんでいる・腕を伸ばしている間（Reach・Hold・Swing）。この間は、ほかのゾンビが攻撃を始めない
-	bool isAttacking() const;
-	bool isHolding() const;       // つかんでいる間（Hold）
-	bool grabbedThisTick() const; // 直前の update でつかんだか
-	// 直前の update で相手にダメージを与えたか（立っている体は噛んだ、体を引きずる体は腕が当たった）。量は hitDamage
-	bool hitThisTick() const;
-	// 攻撃のアニメの再生の速さ（SkinnedMeshInstance::setPlaybackRate へ渡す）。つかんでいる間だけ遅い
-	float playbackRate() const;
+	bool isActive() const;			// 攻撃の途中（Ready 以外）
+	bool isAttacking() const;		// 相手を取りに行っている・つかんでいる・腕を伸ばしている間（Reach・Hold・Swing）。この間は、ほかのゾンビが攻撃を始めない
+	bool isHolding() const;			// つかんでいる間（Hold）
+	bool grabbedThisTick() const;	// 直前の update でつかんだか
+	bool hitThisTick() const;		// 直前の update で相手にダメージを与えたか（立っている体は噛んだ、体を引きずる体は腕が当たった）。量は hitDamage
+	float playbackRate() const;		// 攻撃のアニメの再生の速さ（SkinnedMeshInstance::setPlaybackRate へ渡す）。つかんでいる間だけ遅い
 
-	// 1回噛んだ・腕が当たったときのダメージ
-	static float hitDamage();
-	// 攻撃のアニメを流し始める時刻（フレーム）。段階の時刻はこのアニメの時刻なので、流す側もここから流す
-	static float startTime();
+	static float hitDamage();	// 1回噛んだ・腕が当たったときのダメージ
+	static float startTime();	// 攻撃のアニメを流し始める時刻（フレーム）。段階の時刻はこのアニメの時刻なので、流す側もここから流す
 
 private:
 	void finish(); // 待ち時間を付けて Ready にする

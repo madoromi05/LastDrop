@@ -120,8 +120,7 @@ float FirstPersonCamera::yaw() const {
 }
 
 float FirstPersonCamera::pitch() const {
-	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
-	return Math::max( -mPitchLimit, Math::min( mPitchLimit, mPitch + mPitchOffset ) );
+	return Math::max( -mPitchLimit, Math::min( mPitchLimit, mPitch + mPitchOffset ) );	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
 }
 
 Vector3 FirstPersonCamera::viewDirection() const {
@@ -129,8 +128,7 @@ Vector3 FirstPersonCamera::viewDirection() const {
 }
 
 Vector3 FirstPersonCamera::weaponDirection() const {
-	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）
-	return directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );
+	return directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）
 }
 
 float FirstPersonCamera::weaponSwayYaw() const {

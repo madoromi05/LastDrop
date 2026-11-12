@@ -71,8 +71,7 @@ public:
 		STRONG_ASSERT( SUCCEEDED( hr ) );
 		buffer->Release();
 		buffer = 0;
-		//無音をつめる
-		fillSilence( 0, size );
+		fillSilence( 0, size );	//無音をつめる
 	}
 	~Impl(){
 		if ( mBuffer ){

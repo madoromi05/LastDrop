@@ -41,8 +41,7 @@ public:
         }
         if (a_keyCode == 1)
         {
-            // ホイールを横軸として返す（縦は0）
-            return AxisStatus(static_cast<float>(m.wheel()), 0.f);
+            return AxisStatus(static_cast<float>(m.wheel()), 0.f);	// ホイールを横軸として返す（縦は0）
         }
         return AxisStatus();
     }

@@ -12,8 +12,7 @@ class StaticMeshInstance;
 // 建物（Building）は箱1つでは粗いので、メッシュの形に沿った当たり判定を使う（MeshWallBuilder）
 class MeshBoundsBox{
 public:
-	// mesh: 置いた見た目。その頂点の範囲と、置き場所・向き・拡大率から作る（見た目を拡大すれば箱も同じだけ広がる）
-	static BoxCollider make( const StaticMeshInstance& mesh );
+	static BoxCollider make( const StaticMeshInstance& mesh );	// mesh: 置いた見た目。その頂点の範囲と、置き場所・向き・拡大率から作る（見た目を拡大すれば箱も同じだけ広がる）
 };
 
 #endif

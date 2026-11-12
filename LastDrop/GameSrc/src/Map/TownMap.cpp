@@ -4,12 +4,11 @@
 
 namespace{
 	// ── 道路キットの部品の大きさ（m）。tools/configs/road_*.json で、実寸のまま変換してある ──
-	const float kTileLength = 5.70f;     // 直線の道路・歩道の帯・床の部品1枚の長さ（キット全体の単位）
-	const float kRoadWidth = 7.71f;      // 車道の幅（二車線）
-	const float kCurbWidth = 1.43f;      // 縁石つきの歩道の帯の幅
-	const float kSidewalkHeight = 0.15f; // 歩道の面の高さ（車道の面から）
-	// 歩道の帯まで含めた道の幅。交差点は1辺がこの長さの正方形
-	const float kStreetWidth = kRoadWidth + 2.f * kCurbWidth;
+	const float kTileLength = 5.70f;							// 直線の道路・歩道の帯・床の部品1枚の長さ（キット全体の単位）
+	const float kRoadWidth = 7.71f;								// 車道の幅（二車線）
+	const float kCurbWidth = 1.43f;								// 縁石つきの歩道の帯の幅
+	const float kSidewalkHeight = 0.15f;						// 歩道の面の高さ（車道の面から）
+	const float kStreetWidth = kRoadWidth + 2.f * kCurbWidth;	// 歩道の帯まで含めた道の幅。交差点は1辺がこの長さの正方形
 
 	// ── 町の形 ──
 	const int kColumnNumber = 4; // 南北に走る道の本数（両端は町の外周）
@@ -112,8 +111,7 @@ namespace{
 	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）
 	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）
 	const float kSpawnBetweenJunctions = 0.5f;
-	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く
-	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };
+	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く
 
 	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）
 	// 乗れない置物の車は置かない（脱出できる車と見分けが付かないため）
@@ -156,24 +154,21 @@ namespace{
 		{ 0, 1,  1.f,  1.f }, // 西の外周の T 字路の南東の角
 		{ 3, 2, -1.f, -1.f }, // 東の外周の T 字路の北西の角
 	};
-	// 縁石の外側の線（車道の端）から、消火栓の中心まで。奥行き約 0.32m なので、縁石から少し離れて帯の上に収まる
-	const float kHydrantFromCurb = 0.45f;
-	// 交差点の辺（歩道の帯が始まる所）から、消火栓の中心まで
-	const float kHydrantPastJunction = 0.8f;
-	const float kFaceRoadFromEast = -90.f; // 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
+	const float kHydrantFromCurb = 0.45f;		// 縁石の外側の線（車道の端）から、消火栓の中心まで。奥行き約 0.32m なので、縁石から少し離れて帯の上に収まる
+	const float kHydrantPastJunction = 0.8f;	// 交差点の辺（歩道の帯が始まる所）から、消火栓の中心まで
+	const float kFaceRoadFromEast = -90.f;		// 東側の歩道から、車道（-X）へ向ける（StreetSpot の向きの決まり。90 で +X）
 	const float kFaceRoadFromWest = 90.f;
 
 	// ── 街灯（ランタン型の柱。光は柱の頭から） ──
 	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる
 	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）
 	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）
-	const float kLampFromCurb = 0.5f;      // 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
-	const float kLampPastJunction = 1.5f;  // 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
+	const float kLampFromCurb = 0.5f;						// 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
+	const float kLampPastJunction = 1.5f;					// 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
 	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）
 	const float kLampClearance = 3.f;
 	const float kLampDodge = 4.f;
-	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分
-	const float kLampDarkCarDistance = 0.5f * kBlockSize;
+	const float kLampDarkCarDistance = 0.5f * kBlockSize;	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分
 	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる
 	const float kLampAlongEastWest = kAsBuilt;
 	const float kLampAlongNorthSouth = kQuarterTurn;
@@ -502,8 +497,7 @@ TownMap::TownMap() :
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
-	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから
-	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );
+	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから
 }
 
 const std::vector< TownTile >& TownMap::groundTiles() const {

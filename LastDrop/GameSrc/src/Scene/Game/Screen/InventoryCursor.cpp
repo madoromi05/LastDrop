@@ -89,8 +89,7 @@ InventoryCursor::Request InventoryCursor::decide( Inventory* inventory, ItemId e
 	const Request nothing = { Request::NONE, kNoCell };
 	ASSERT( inventory && "InventoryCursor::decide : inventory is null." );
 	if ( mMode == Mode::Placing ) {
-		// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）
-		return ( incoming && inventory->countPlaceableInto( mSelected, *incoming ) > 0 ) ? Request{ Request::PLACE, mSelected } : nothing;
+		return ( incoming && inventory->countPlaceableInto( mSelected, *incoming ) > 0 ) ? Request{ Request::PLACE, mSelected } : nothing;	// 入らない所なら何もしない（赤い枠のまま、別の所を選んでもらう）。入れるのは本編（拾う物から減らすのも本編）
 	}
 	if ( mMode == Mode::Moving ) {
 		place( inventory );

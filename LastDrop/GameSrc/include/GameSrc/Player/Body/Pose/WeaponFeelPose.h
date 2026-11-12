@@ -13,8 +13,7 @@ struct FirstPersonRig;
 // 銃を置く段（WeaponPlacePose）の後に掛ける。前に掛けると、覗く補正で合わせ直されて消える
 class WeaponFeelPose : public BonePoseModifier{
 public:
-	// rig: 骨の番号・持ち方・ピッチ・目の位置を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
-	explicit WeaponFeelPose( const FirstPersonRig* rig );
+	explicit WeaponFeelPose( const FirstPersonRig* rig );	// rig: 骨の番号・持ち方・ピッチ・目の位置を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
 
 	void setSway( float yawDegree, float pitchDegree ); // 照準のぶれ（FirstPersonBody::setSway）
 	void setRecoil( float kick );                       // 反動の量（FirstPersonBody::setRecoil）

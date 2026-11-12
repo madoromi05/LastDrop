@@ -15,9 +15,8 @@ namespace{
 	const char* kDirectory = "Tuning";
 	const char* kExtension = ".xml";
 	const int kNameCapacity = 64;
-	// ファイル名に使えない文字（Windows）。打たれたら保存しない
-	const char* kInvalidNameCharacters = "\\/:*?\"<>|";
-	const float kNameWidthRatio = 0.5f; // 名前の欄の幅（欄の幅に対して。Save ボタンを同じ行に残す）
+	const char* kInvalidNameCharacters = "\\/:*?\"<>|";	// ファイル名に使えない文字（Windows）。打たれたら保存しない
+	const float kNameWidthRatio = 0.5f;					// 名前の欄の幅（欄の幅に対して。Save ボタンを同じ行に残す）
 	const ImVec4 kWarningColor( 1.f, 0.85f, 0.2f, 1.f );
 
 	char gName[ kNameCapacity ] = "tuning"; // 保存する名前（既定は tuning）

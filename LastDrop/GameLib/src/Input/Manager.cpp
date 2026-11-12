@@ -23,10 +23,8 @@ namespace GameLib{
 		}
 
 		void Manager::create( void* wh ){
-			// 二重生成は実体のリークにつながるため強く禁止する
-			STRONG_ASSERT( !gManagerImpl );
-			// void* で受けるのは公開ヘッダを Windows.h から切り離すため。ここで HWND へ復元する
-			gManagerImpl = NEW ManagerImpl( static_cast< HWND >( wh ) );
+			STRONG_ASSERT( !gManagerImpl );									// 二重生成は実体のリークにつながるため強く禁止する
+			gManagerImpl = NEW ManagerImpl( static_cast< HWND >( wh ) );	// void* で受けるのは公開ヘッダを Windows.h から切り離すため。ここで HWND へ復元する
 		}
 
 		void Manager::destroy(){

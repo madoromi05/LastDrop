@@ -8,10 +8,8 @@
 class LodSelector{
 public:
 	LodSelector();
-	// 画面の上の半径 screenPixels（画素）から段を選び直して返す（0 が細かい形）
-	int select( float screenPixels );
-	// 最後に選んだ段（まだ選んでいなければ 0）
-	int current() const;
+	int select( float screenPixels );	// 画面の上の半径 screenPixels（画素）から段を選び直して返す（0 が細かい形）
+	int current() const;				// 最後に選んだ段（まだ選んでいなければ 0）
 
 private:
 	int mLevel;
@@ -31,9 +29,7 @@ struct LodParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（LodSelector.cpp が持つ）
-LodParams& lodParams();
-// 粗い形で描くか（F6 → Render の LOD。見比べと計測用）。false の間はいつも元の形。起動中ずっと 1 つ（初期値 true）
-bool& lodEnabled();
+LodParams& lodParams();	// 起動中ずっと 1 つだけの調整値（LodSelector.cpp が持つ）
+bool& lodEnabled();		// 粗い形で描くか（F6 → Render の LOD。見比べと計測用）。false の間はいつも元の形。起動中ずっと 1 つ（初期値 true）
 
 #endif

@@ -17,10 +17,8 @@ namespace{
 	// 残す側の向き（clipByHeight の keepSign）
 	const float kKeepAbove = 1.f;
 	const float kKeepBelow = -1.f;
-	// 真上から見てこれより短い辺（m）からは法線を作らない（まっすぐ立った壁の縦の辺は長さ 0 になる）
-	const float kMinEdgeLength = 0.0001f;
-	// 2本の法線の内積の絶対値がこれ以上なら、同じ向き（または逆向き）とみなして1本にまとめる（約 0.8 度）
-	const float kSameDirectionDot = 0.9999f;
+	const float kMinEdgeLength = 0.0001f;		// 真上から見てこれより短い辺（m）からは法線を作らない（まっすぐ立った壁の縦の辺は長さ 0 になる）
+	const float kSameDirectionDot = 0.9999f;	// 2本の法線の内積の絶対値がこれ以上なら、同じ向き（または逆向き）とみなして1本にまとめる（約 0.8 度）
 
 	// 凸な多角形 in（inNumber 隅）のうち、高さ height より上（keepSign=kKeepAbove）／下（kKeepBelow）の部分だけを out に書き、隅の数を返す
 	// 境目をまたぐ辺は、境目との交点で切る（Sutherland-Hodgman 法）。隅は最大で1つ増える。全部が外なら 0

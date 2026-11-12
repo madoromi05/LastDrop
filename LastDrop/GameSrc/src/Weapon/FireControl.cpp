@@ -13,8 +13,7 @@ FireControl::FireControl( float roundsPerMinute, bool fullAuto ) :
 	mCooldownTicks( 0 ),
 	mWasHeld( false ) {
 	ASSERT( roundsPerMinute > 0.f && "FireControl : roundsPerMinute must be positive." );
-	// 600発/分なら 6 ティックに1発
-	mIntervalTicks = GameTime::secondsToTicks( kSecondsPerMinute / roundsPerMinute );
+	mIntervalTicks = GameTime::secondsToTicks( kSecondsPerMinute / roundsPerMinute );	// 600発/分なら 6 ティックに1発
 }
 
 bool FireControl::update( bool triggerHeld ) {

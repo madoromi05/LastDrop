@@ -8,12 +8,9 @@
 // 折り返す範囲は [-180, 180)。同じ向きの表し方を1つに決めるため（180 と -180 が両方出てこない）
 class AngleMath{
 public:
-	// degree を [-180, 180) へ折り返す。何周ずれていても1回で計算する
-	static float wrapSigned( float degree );
-	// current から target へ回るときの、近い回り方の角度（[-180, 180)。正なら +X 側へ回る）
-	static float difference( float target, float current );
-	// direction の水平の向き（x・z だけを見る）を度で返す。x・z が両方 0 なら 0（向きが無い）
-	static float headingOf( const GameLib::Math::Vector3& direction );
+	static float wrapSigned( float degree );							// degree を [-180, 180) へ折り返す。何周ずれていても1回で計算する
+	static float difference( float target, float current );				// current から target へ回るときの、近い回り方の角度（[-180, 180)。正なら +X 側へ回る）
+	static float headingOf( const GameLib::Math::Vector3& direction );	// direction の水平の向き（x・z だけを見る）を度で返す。x・z が両方 0 なら 0（向きが無い）
 };
 
 #endif

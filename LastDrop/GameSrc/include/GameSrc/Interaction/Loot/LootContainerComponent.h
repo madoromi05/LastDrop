@@ -20,16 +20,11 @@ public:
 	LootContainerComponent( LootTableId table, GameLib::Math::Random* random, const std::vector< ItemStack >& guaranteed );
 
 	LootTableId table() const;
-	// もう開けたか（開けた所は、次からは待たずにすぐ開く）
-	bool isSearched() const;
-	// 開け終わった（LootSearch が待ち終えた・待たずに開いた）
-	void markSearched();
-	// 開けるまでにかかる秒（開けた所は 0）
-	float searchSeconds() const;
-	// 中身（見るだけ）
-	const ItemGrid& contents() const;
-	// 中身を表から決め直し、まだ開けていない形に戻す（F6 の確認用。random: nullptr 不可）
-	void reroll( GameLib::Math::Random* random );
+	bool isSearched() const;						// もう開けたか（開けた所は、次からは待たずにすぐ開く）
+	void markSearched();							// 開け終わった（LootSearch が待ち終えた・待たずに開いた）
+	float searchSeconds() const;					// 開けるまでにかかる秒（開けた所は 0）
+	const ItemGrid& contents() const;				// 中身（見るだけ）
+	void reroll( GameLib::Math::Random* random );	// 中身を表から決め直し、まだ開けていない形に戻す（F6 の確認用。random: nullptr 不可）
 
 	// IInteractable
 	// 開けていない所はいつも使える。開けた所は、中身が残っている間だけ（空なら灰色のマーク）

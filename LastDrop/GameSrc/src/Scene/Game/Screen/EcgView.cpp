@@ -83,9 +83,8 @@ void EcgView::draw( const UiRect& area, PlayerCondition condition ) {
 	const float left = area.left;
 	const float right = area.left + area.width;
 
-	// 実時間（ミリ秒）から横ずらし量を出し、右→左へ流す。1 時間でひとまわり（大きい値での精度落ちを避ける）
-	const float seconds = ( GameLib::Framework::instance().time() % 3600000u ) * 0.001f;
-	const float scroll = seconds * style.speed; // 画素
+	const float seconds = ( GameLib::Framework::instance().time() % 3600000u ) * 0.001f;	// 実時間（ミリ秒）から横ずらし量を出し、右→左へ流す。1 時間でひとまわり（大きい値での精度落ちを避ける）
+	const float scroll = seconds * style.speed;												// 画素
 
 	// area に掛かる拍の範囲（端で切れる拍も拾えるよう前後に1拍ずつ余裕を持たせる）
 	const int beatBegin = static_cast< int >( floorf( ( left  + scroll ) / beatWidth ) ) - 1;

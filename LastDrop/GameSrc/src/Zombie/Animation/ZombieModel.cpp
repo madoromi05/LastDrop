@@ -6,16 +6,14 @@
 #include "GameLib/Base/DebugStream.h"
 
 namespace{
-	// 骨の名前の頭の共通部分（Resource/Model/Character/zombie.txt の骨は "Zombie_Head" のような名前）
-	const char* kBoneNamePrefix = "Zombie_";
+	const char* kBoneNamePrefix = "Zombie_";	// 骨の名前の頭の共通部分（Resource/Model/Character/zombie.txt の骨は "Zombie_Head" のような名前）
 	// 移動の当たり判定を体より一回り大きくする幅（m。四辺それぞれ）。体の見た目どうしがめり込む前に止めるため
 	// 部位の当たり判定（HitboxLayout）は変えない（弾は体ぴったりで当てる）
 	const float kFootprintPadding = 0.15f;
 	// 歩くときに地面についているかを比べる足先の骨（ZombieStride）
 	const char* kLeftToeBone = "LeftToeBase";
 	const char* kRightToeBone = "RightToeBase";
-	// 骨格の根の骨（腰）。1回だけ流すアニメでは、この骨が前後へ動く（ZombieRootMotion）
-	const char* kRootBone = "Hips";
+	const char* kRootBone = "Hips";				// 骨格の根の骨（腰）。1回だけ流すアニメでは、この骨が前後へ動く（ZombieRootMotion）
 
 	// name のアニメ。name が nullptr なら空（表を作らない）
 	GameLib::Scene::Animation animationOrEmpty( const SkinnedMeshData* data, const char* name ) {

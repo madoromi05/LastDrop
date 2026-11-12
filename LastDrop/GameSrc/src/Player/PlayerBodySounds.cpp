@@ -15,8 +15,7 @@ namespace{
 	// 素手のときの銃声（撃たないので鳴らない。FoleyState を埋めるためだけの値）
 	const SoundId kNoShotSound = SOUND_GUNSHOT;
 	const float kNoShotVolume = 0.f;
-	// 装備の音を鳴らす高さ（足元から。胸のあたり）。足音は足元、装備は体から鳴らして聞こえる高さを分ける
-	const float kBodySoundHeight = 1.3f;
+	const float kBodySoundHeight = 1.3f;	// 装備の音を鳴らす高さ（足元から。胸のあたり）。足音は足元、装備は体から鳴らして聞こえる高さを分ける
 }
 
 PlayerBodySounds::PlayerBodySounds( AudioEngine* audio, const IGroundSurface* ground, const std::vector< GroundZone >& zones ) :

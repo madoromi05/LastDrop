@@ -16,24 +16,19 @@ class ZombieSeverLayout;
 // どの関節で切り、どの骨と部位が無くなるかは ZombieSeverLayout（種類ごとに共有）を借りる
 class ZombieDismemberment : public BonePoseModifier{
 public:
-	// layout: 切り方の設計図。所有権は受け取らない。nullptr 不可。この部位欠損より長く生きていること（ZombieModel が持つ）
-	explicit ZombieDismemberment( const ZombieSeverLayout* layout );
+	explicit ZombieDismemberment( const ZombieSeverLayout* layout );	// layout: 切り方の設計図。所有権は受け取らない。nullptr 不可。この部位欠損より長く生きていること（ZombieModel が持つ）
 
-	// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。切れたら severedThisHit へ足す
-	bool sever( BodyPart part );
+	bool sever( BodyPart part );		// part を切る。切れない部位（胴）・もう無い部位なら何もせず false。切れたら severedThisHit へ足す
 	// 1 発ごとに切れた部位の一覧（持ち主が千切れた部位を飛ばすのに読む）。弾が当たるたびに、持ち主が先に空にする
 	void clearSeveredThisHit();
 	const std::vector< BodyPart >& severedThisHit() const;
-	// part がもう無いか（切った部位の先の部位も、無い）
-	bool isLost( BodyPart part ) const;
-	// 立っていられない部位（脚）を失ったか
-	bool hasLostFooting() const;
+	bool isLost( BodyPart part ) const;	// part がもう無いか（切った部位の先の部位も、無い）
+	bool hasLostFooting() const;		// 立っていられない部位（脚）を失ったか
 	// 切った部位の骨を、切った順に関節の1点へ潰す（BonePoseModifier）
 	// のけぞり（ZombieFlinch）の後に掛ける（のけぞった肩の位置で切り口を作るため）
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
-	// 頂点を全部 point の1点へ集める骨の姿勢（縮尺 0・位置 point）。千切れた部位（SeveredLimb）が、残った体の側を潰すのにも使う
-	static GameLib::Math::Matrix34 collapsedAt( const GameLib::Math::Vector3& point );
+	static GameLib::Math::Matrix34 collapsedAt( const GameLib::Math::Vector3& point );	// 頂点を全部 point の1点へ集める骨の姿勢（縮尺 0・位置 point）。千切れた部位（SeveredLimb）が、残った体の側を潰すのにも使う
 
 private:
 	const ZombieSeverLayout* mLayout; // 借りているだけ

@@ -18,10 +18,8 @@ struct LoadItem;
 class SpikeWriter{
 public:
 	SpikeWriter();
-	// 閉じたフレームがスパイクなら書き出す。書いたら true
-	bool writeIfSpike( const FrameRecord& frame, const std::deque< LoadItem >& recentLoadItems );
-	// この起動で書いた数（Perf の欄に出す）
-	int writtenCount() const;
+	bool writeIfSpike( const FrameRecord& frame, const std::deque< LoadItem >& recentLoadItems );	// 閉じたフレームがスパイクなら書き出す。書いたら true
+	int writtenCount() const;																		// この起動で書いた数（Perf の欄に出す）
 private:
 	long long mLastWrittenFrame; // 前に書いたフレーム（まだなら負）
 	double mSecondsSinceWritten; // 前に書いてから閉じたフレームの時間の合計

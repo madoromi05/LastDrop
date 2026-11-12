@@ -43,7 +43,6 @@ void HudController::draw( const FirstPersonCamera& camera, const RaidSession& se
 	float searchProgress, RaidHud::ProgressKind waitingKind ) {
 	// 積むだけ（1 回の描画で UiRenderer::draw がまとめて描く）
 	mInteractMarkers.add( camera, mUi );
-	addAmmo(); // 右下の弾数
-	// 真ん中の照準「+」は出さない
-	mHud.draw( session, dayCondition, searchProgress, waitingKind );
+	addAmmo();															// 右下の弾数
+	mHud.draw( session, dayCondition, searchProgress, waitingKind );	// 真ん中の照準「+」は出さない
 }

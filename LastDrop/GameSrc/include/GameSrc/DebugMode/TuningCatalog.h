@@ -18,10 +18,8 @@
 
 namespace TuningCatalog{
 
-// 全部の構造体を、見出しを付けて描く（F6 のエディタの欄の中で呼ぶ）
-void drawAll();
-// 全部の項目を既定値へ戻す
-void resetAll();
+void drawAll();		// 全部の構造体を、見出しを付けて描く（F6 のエディタの欄の中で呼ぶ）
+void resetAll();	// 全部の項目を既定値へ戻す
 // 全部の項目を path へ書く。一時ファイルに書いてから置き換える（途中で止まっても前のファイルが壊れない）
 // 書けなかったら false と、その理由を error に入れる
 bool save( const std::string& path, std::string* error );

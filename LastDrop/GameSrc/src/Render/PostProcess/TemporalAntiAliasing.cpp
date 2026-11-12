@@ -19,8 +19,7 @@ namespace{
 	const int kCurrentSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
 	const int kHistorySlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5;
 	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
-	// TaaCopy.hlsl の番号（t2 新しい履歴）
-	const int kCopySourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;
+	const int kCopySourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// TaaCopy.hlsl の番号（t2 新しい履歴）
 
 	const float kUseHistory = 0.f;     // Taa.hlsl の gTaaHistoryWeight.w：履歴を使う
 	const float kDiscardHistory = 1.f; // 履歴を捨てる（今の色だけ）

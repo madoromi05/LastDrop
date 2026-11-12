@@ -8,12 +8,11 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 目の高さ（m。胸から）。伏せているので低い。ここから自キャラの目が見えているかを調べる
-	const float kEyeHeight = 0.4f;
+	const float kEyeHeight = 0.4f;	// 目の高さ（m。胸から）。伏せているので低い。ここから自キャラの目が見えているかを調べる
 	// 腕の往復の速さ（ZombieCrawl::update の pace）。追っている間は 1、気付いていない・追いついて待っている間はゆっくりもがく
 	const float kCrawlPace = 1.f;
 	const float kStrugglePace = 0.3f;
-	const float kStillPace = 0.f; // 攻撃している間・両腕を失った体は、往復を止める
+	const float kStillPace = 0.f;	// 攻撃している間・両腕を失った体は、往復を止める
 
 	float paceOf( ZombieCrawler::Effort effort ) {
 		switch ( effort ) {
@@ -67,8 +66,7 @@ float ZombieCrawler::moveArms( Effort effort, bool reaching, bool moving ) {
 	if ( !moving ) {
 		return 0.f;
 	}
-	// 腕で引いた分だけ進む（引いていない腕・失った腕の分は進まない）
-	return mArms.pullDistance( hasArm( ZombieCrawlLayout::SIDE_LEFT ), hasArm( ZombieCrawlLayout::SIDE_RIGHT ) );
+	return mArms.pullDistance( hasArm( ZombieCrawlLayout::SIDE_LEFT ), hasArm( ZombieCrawlLayout::SIDE_RIGHT ) );	// 腕で引いた分だけ進む（引いていない腕・失った腕の分は進まない）
 }
 
 void ZombieCrawler::moveCenter( const Vector3& step ) {

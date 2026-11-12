@@ -29,35 +29,24 @@ public:
 	AudioEngine( const AudioEngine& ) = delete;
 	AudioEngine& operator=( const AudioEngine& ) = delete;
 
-	// 音を出せる状態か（出力の装置が無いなどで初期化に失敗したら false。そのときも他の関数は呼んでよく、何もしない）
-	bool isReady() const;
+	bool isReady() const;	// 音を出せる状態か（出力の装置が無いなどで初期化に失敗したら false。そのときも他の関数は呼んでよく、何もしない）
 
-	// 毎フレーム呼ぶ。鳴り終わった1回きりの音の後片付けをする
-	void update();
-	// すべての音を止める（true）・続きから鳴らし直す（false）。一時停止の間に使う。止めている間に鳴らした音は、戻したときに鳴り始める
-	void setPaused( bool paused );
-	// 全体の音量（出力の直前で掛ける倍率。1 で元の大きさ）。設定画面の Master Volume
-	void setMasterVolume( float gain );
-	// バスの音量（そのバスに流す全ての音に掛ける倍率。1 で元の大きさ）。設定画面の Effects Volume など
-	void setBusVolume( Bus bus, float gain );
+	void update();								// 毎フレーム呼ぶ。鳴り終わった1回きりの音の後片付けをする
+	void setPaused( bool paused );				// すべての音を止める（true）・続きから鳴らし直す（false）。一時停止の間に使う。止めている間に鳴らした音は、戻したときに鳴り始める
+	void setMasterVolume( float gain );			// 全体の音量（出力の直前で掛ける倍率。1 で元の大きさ）。設定画面の Master Volume
+	void setBusVolume( Bus bus, float gain );	// バスの音量（そのバスに流す全ての音に掛ける倍率。1 で元の大きさ）。設定画面の Effects Volume など
 
-	// 聞き手（カメラ）の位置と向き（長さ1）。毎フレーム、カメラを置いた後に呼ぶ
-	void setListener( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& forward );
+	void setListener( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& forward );	// 聞き手（カメラ）の位置と向き（長さ1）。毎フレーム、カメラを置いた後に呼ぶ
 
 	// 1回きりの音を position から鳴らす（3D）。volume は 0〜1 目安、pitch は 1 で元の高さ
 	// 同時に鳴らせる数を超えたら鳴らさない（その前の音を止めてまで鳴らすほど大事な音はまだ無いため）
 	void play( SoundId, Bus, const GameLib::Math::Vector3& position, float volume, float pitch = 1.f );
-	// 1回きりの音を位置なしで鳴らす（2D）
-	void play2D( SoundId, Bus, float volume, float pitch = 1.f );
+	void play2D( SoundId, Bus, float volume, float pitch = 1.f );	// 1回きりの音を位置なしで鳴らす（2D）
 
-	// ループの音を位置なしで鳴らし始める（2D）。鳴らせなければ kInvalidLoop
-	LoopHandle startLoop( SoundId, Bus, float volume );
-	// ループの音を position から鳴らし始める（3D）。鳴らせなければ kInvalidLoop
-	LoopHandle startLoopAt( SoundId, Bus, const GameLib::Math::Vector3& position, float volume );
-	// 3D のループを動かす。velocity（m/秒）はドップラー効果（近づくと高く、遠ざかると低く聞こえる）に使う
-	void setLoopPosition( LoopHandle, const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& velocity );
-	// ループを止めて番号を返す。kInvalidLoop を渡してもよい（何もしない）
-	void stopLoop( LoopHandle );
+	LoopHandle startLoop( SoundId, Bus, float volume );																	// ループの音を位置なしで鳴らし始める（2D）。鳴らせなければ kInvalidLoop
+	LoopHandle startLoopAt( SoundId, Bus, const GameLib::Math::Vector3& position, float volume );						// ループの音を position から鳴らし始める（3D）。鳴らせなければ kInvalidLoop
+	void setLoopPosition( LoopHandle, const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& velocity );	// 3D のループを動かす。velocity（m/秒）はドップラー効果（近づくと高く、遠ざかると低く聞こえる）に使う
+	void stopLoop( LoopHandle );																						// ループを止めて番号を返す。kInvalidLoop を渡してもよい（何もしない）
 
 private:
 	class Impl;

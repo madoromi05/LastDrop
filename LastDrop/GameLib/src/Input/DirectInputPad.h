@@ -15,8 +15,7 @@ public:
 	static DirectInputPad* create( IDirectInputDevice8* device, const GamePadLayout* layout, HWND windowHandle ){
 		HRESULT hr = device->SetDataFormat( &c_dfDIJoystick2 );
 		if ( SUCCEEDED( hr ) ){
-			// ウィンドウが手前にある間だけ読む（後ろにある間は GetDeviceState が失敗し、何も押していないことになる）
-			hr = device->SetCooperativeLevel( windowHandle, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE );
+			hr = device->SetCooperativeLevel( windowHandle, DISCL_FOREGROUND | DISCL_NONEXCLUSIVE );	// ウィンドウが手前にある間だけ読む（後ろにある間は GetDeviceState が失敗し、何も押していないことになる）
 		}
 		if ( SUCCEEDED( hr ) ){
 			hr = setAxisRange( device );

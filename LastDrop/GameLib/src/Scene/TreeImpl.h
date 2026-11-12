@@ -44,8 +44,7 @@ public:
 		for ( int i = 0; i < mNodeNumber; ++i ){
 			const NodeTemplate* src = tmpl->node( i ); 
 			Node* dst = &mNodes[ i ];
-			//コンストラクト
-			new ( dst ) Node( src );
+			new ( dst ) Node( src );	//コンストラクト
 
 			//子の数を数える
 			int child = src->mChild;
@@ -63,8 +62,7 @@ public:
 				child = tmpl->node( child )->mBrother;
 				++j;
 			}
-			//ノードに与える
-			dst->setChildren( children, childNumber );
+			dst->setChildren( children, childNumber );	//ノードに与える
 		}
 	}
 	~Impl(){

@@ -23,8 +23,7 @@ namespace{
 	void readIndex( SkinnedMeshData* mesh, ConstElement indexElement, int* indexIndex ) {
 		ConstAttribute valueAttr = MeshLoaderUtil::findAttribute( indexElement, "value" );
 		if ( valueAttr ) {
-			// 頂点数は checkVertexNumber 済みなので 16bit に収まる
-			mesh->setIndex( *indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );
+			mesh->setIndex( *indexIndex, static_cast< unsigned short >( valueAttr.getIntValue() ) );	// 頂点数は checkVertexNumber 済みなので 16bit に収まる
 		}
 		++( *indexIndex );
 	}

@@ -136,8 +136,7 @@ void StaticMeshPart::bindForDraw() const {
 	mMaterial.apply(); // テクスチャ・法線マップ・材質値・ライティングモード
 	Graphics::Manager m = Graphics::Manager::instance();
 	if ( RenderPass::current() == RenderPassKind::GBuffer && !mMaterial.hasNormalMap() ) {
-		// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）
-		m.setNormalMapStrength( kNoNormalMap );
+		m.setNormalMapStrength( kNoNormalMap );	// シェーダは法線マップを常に読むので、無い部品は強さ 0 で効かなくする（固定パイプラインの法線マップ無しと同じ見た目）
 	}
 	m.setVertexBuffer( mVertexBuffer );
 	m.setIndexBuffer( mIndexBuffer );

@@ -16,8 +16,7 @@ public:
 	const RaidResult& lastResult() const;
 	void setLastResult( const RaidResult& result );
 
-	// 次の出撃の条件を決める（固定していればそれ、無ければ RaidStart::rollCondition）。seed: 乱数の種
-	DayCondition chooseCondition( unsigned seed ) const;
+	DayCondition chooseCondition( unsigned seed ) const;	// 次の出撃の条件を決める（固定していればそれ、無ければ RaidStart::rollCondition）。seed: 乱数の種
 	// ── F6（Debug・Profile だけで呼ぶ）──
 	bool hasForcedCondition() const;
 	DayCondition forcedCondition() const;

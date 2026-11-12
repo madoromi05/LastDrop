@@ -29,10 +29,8 @@ public:
 	void operator*=( const Matrix33& );
 	void setMul( const Matrix33&, const Matrix33& );
 
-	///完全に一致しているかチェック
-	bool operator==( const Matrix33& ) const;
-	///少しでも違うのかをチェック
-	bool operator!=( const Matrix33& ) const;
+	bool operator==( const Matrix33& ) const;	///完全に一致しているかチェック
+	bool operator!=( const Matrix33& ) const;	///少しでも違うのかをチェック
 
 	float& operator()( int row, int col );
 	float operator()( int row, int col ) const;

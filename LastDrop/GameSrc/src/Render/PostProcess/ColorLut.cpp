@@ -15,8 +15,7 @@ namespace{
 	// 帯の大きさ：32×32 の表を横に 32 枚
 	const int kStripWidth = ColorLut::kSize * ColorLut::kSize;
 	const int kStripHeight = ColorLut::kSize;
-	// LutBake.hlsl は Present.hlsl と同じ番号で定数を読む（b1。PostProcess.cpp の kPresentConstantSlot）
-	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
+	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;	// LutBake.hlsl は Present.hlsl と同じ番号で定数を読む（b1。PostProcess.cpp の kPresentConstantSlot）
 
 	// FileIO は無いファイルを読もうとすると止まる（halt）ので、先にあるかを見る（lut.tga は無いのが普通）
 	bool fileExists( const char* path ) {
@@ -36,8 +35,7 @@ void ColorLut::reload() {
 	mLoaded = false;
 	mTexture.release();
 	if ( fileExists( kLutFile ) ) {
-		// 表の数は画面の色の数のまま引く（_SRGB として読むとリニアに直されてしまう）。TGA のまま（BC7 に縮めると表に誤差が入る）
-		mTexture = Graphics::Texture::create( kLutFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR );
+		mTexture = Graphics::Texture::create( kLutFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR );	// 表の数は画面の色の数のまま引く（_SRGB として読むとリニアに直されてしまう）。TGA のまま（BC7 に縮めると表に誤差が入る）
 	}
 }
 

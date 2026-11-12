@@ -158,9 +158,8 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 		return;
 	}
 
-	// 全体のバー（背景を少し大きく描いて枠に見せ、その上に残りの割合だけ中身を描く）
-	const ZombieHealth& health = healthComponent->health();
-	bool alive = zombie.isAlive(); // 倒れたまま生きている（Downed）も、生きているので白い中身
+	const ZombieHealth& health = healthComponent->health();	// 全体のバー（背景を少し大きく描いて枠に見せ、その上に残りの割合だけ中身を描く）
+	bool alive = zombie.isAlive();							// 倒れたまま生きている（Downed）も、生きているので白い中身
 	UiRect back;
 	back.left = screen.x - kBarWidth * kHalf - kBarBorder;
 	back.top = screen.y - kBarHeight * kHalf - kBarBorder;
@@ -174,8 +173,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 	fill.height = kBarHeight;
 	renderer->addRect( fill, alive ? kBarFillColor : kDeadBarFillColor );
 
-	// 数字はバーの上、状態はバーの下
-	char text[ kTextSize ];
+	char text[ kTextSize ];	// 数字はバーの上、状態はバーの下
 	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）と、
 	// 道を探す順番を待っていれば「wait」
 	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
@@ -198,8 +196,7 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
 			attackPhaseName( attack->attack().phase() ) );
 	} else if ( zombie.isCrawling() ) {
-		// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え
-		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
+		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );	// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え
 	} else if ( state == ZombieStateComponent::State::Alive && zombie.getComponent< ZombieChaseComponent >()->mode() == ZombieChase::Mode::Chase && world.player() ) {
 		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため
 		Vector3 toPlayer;

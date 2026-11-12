@@ -8,14 +8,12 @@
 using namespace GameLib;
 
 namespace{
-	// 大きさ・速さは AimSwayParams（起動中に F6 で動かせる）
-	AimSwayParams gParams;
+	AimSwayParams gParams;	// 大きさ・速さは AimSwayParams（起動中に F6 で動かせる）
 
-	const float kFullTurn = 360.f;     // 波の 1 往復（度。GameLib の sin は度で受ける）
-	const float kStepsPerCycle = 2.f;  // 歩きのアニメ 1 周の歩数（上下は 1 歩ごとに 1 回沈む）
+	const float kFullTurn = 360.f;		// 波の 1 往復（度。GameLib の sin は度で受ける）
+	const float kStepsPerCycle = 2.f;	// 歩きのアニメ 1 周の歩数（上下は 1 歩ごとに 1 回沈む）
 	const float kHalf = 0.5f;
-	// これより小さくなった遅れは 0 にする（いつまでも小さな値で狙いを動かし続けないため）
-	const float kMinLag = 0.001f;
+	const float kMinLag = 0.001f;		// これより小さくなった遅れは 0 にする（いつまでも小さな値で狙いを動かし続けないため）
 
 	// 進み具合 phase（0〜1）を step だけ進め、1 を超えたら折り返す
 	float advance( float phase, float step ) {

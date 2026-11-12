@@ -12,7 +12,6 @@ enum class UpdatePhase{
 	Late,  // 動いた後の物に付いて動く（銃口の光は、撃ったティックのうちに光り始める）
 };
 
-// 段の数（None も含める。GameObjectWorld が段ごとの並びを持つのに使う）
-const int kUpdatePhaseNumber = static_cast< int >( UpdatePhase::Late ) + 1;
+const int kUpdatePhaseNumber = static_cast< int >( UpdatePhase::Late ) + 1;	// 段の数（None も含める。GameObjectWorld が段ごとの並びを持つのに使う）
 
 #endif

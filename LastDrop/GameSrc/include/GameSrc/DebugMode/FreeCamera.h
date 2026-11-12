@@ -27,8 +27,7 @@ public:
 	// マウスの移動量で向きを変える。使っている間・カーソルロック中だけ。1回の描画につき1回
 	// （update の回数に合わせると、2回進めた描画で2倍回るため。FirstPersonControl::readInput と同じ）
 	void look();
-	// キーで1ティックぶん動かす。使っている間だけ。update のたびに呼ぶ（速さをティックで決めているため）
-	void move();
+	void move();	// キーで1ティックぶん動かす。使っている間だけ。update のたびに呼ぶ（速さをティックで決めているため）
 	// 射影・ビュー行列と視点位置を描画ステートへ設定する。自キャラの視点を置いた後、描く前に呼ぶ（上書きする）
 	void apply() const;
 	const FirstPersonCamera& camera() const;

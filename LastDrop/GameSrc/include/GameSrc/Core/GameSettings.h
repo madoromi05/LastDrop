@@ -21,17 +21,12 @@ struct GameSettings{
 	int effectVolume;     // 効果音の音量（0〜100。AudioEngine::BUS_EFFECT）
 	int mouseSensitivity; // 視点の感度（百分率。100 が FirstPersonControl の元の速さ）
 
-	// 既定値（音量はどちらも 100、感度は 100）
-	GameSettings();
+	GameSettings();	// 既定値（音量はどちらも 100、感度は 100）
 
-	// 保存したファイルから読む。ファイルが無い・壊れているときは false を返し、値は既定値のまま。読めた値は範囲に収める
-	bool load();
-	// ファイルへ書く。書けなければ false（遊ぶのは続けられるので止めない）
-	bool save() const;
-	// 音量を audio へ流す（起動時と、設定画面で変えたとき）
-	void applyAudio( AudioEngine& audio ) const;
-	// 視点の感度の倍率（1 が元の速さ）
-	float lookSensitivityScale() const;
+	bool load();									// 保存したファイルから読む。ファイルが無い・壊れているときは false を返し、値は既定値のまま。読めた値は範囲に収める
+	bool save() const;								// ファイルへ書く。書けなければ false（遊ぶのは続けられるので止めない）
+	void applyAudio( AudioEngine& audio ) const;	// 音量を audio へ流す（起動時と、設定画面で変えたとき）
+	float lookSensitivityScale() const;				// 視点の感度の倍率（1 が元の速さ）
 };
 
 #endif

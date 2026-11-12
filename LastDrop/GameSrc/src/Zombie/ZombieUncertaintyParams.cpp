@@ -7,8 +7,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 丈夫さ・フラつきの値（F6 で動かせる。湧いた体が作られるときに読む）
-	ZombieUncertaintyParams gUncertaintyParams;
+	ZombieUncertaintyParams gUncertaintyParams;	// 丈夫さ・フラつきの値（F6 で動かせる。湧いた体が作られるときに読む）
 
 	// low〜high から一様に選ぶ。F6 で幅を逆にしても（high <= low）、low を使う
 	float pickInRange( float low, float high, Random* random ) {

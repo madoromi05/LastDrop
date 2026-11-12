@@ -10,8 +10,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 間引く段の値（F6 で動かせる。毎ティック読むので、変えたらすぐ効く）
-	AnimationThrottleParams gThrottleParams;
+	AnimationThrottleParams gThrottleParams;	// 間引く段の値（F6 で動かせる。毎ティック読むので、変えたらすぐ効く）
 
 	const unsigned kMinInterval = 1; // 毎ティック
 

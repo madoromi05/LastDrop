@@ -20,13 +20,11 @@ public:
 	// footing: 今の足元。angleY: 今の見た目の向き（度）。進む向きへ書き換える。nullptr 不可
 	// 骨がまだ引けない（update 前）なら false を返し、何も変えない
 	bool start( const SkinnedMeshInstance& mesh, const ZombieCrawlLayout& layout, const GameLib::Math::Vector3& footing, float* angleY );
-	// 胸を step だけ動かした（壁・車に沿って滑った後の量）
-	void moveCenter( const GameLib::Math::Vector3& step );
+	void moveCenter( const GameLib::Math::Vector3& step );	// 胸を step だけ動かした（壁・車に沿って滑った後の量）
 	// 胸の位置と進む向き angleY から、見た目の向きを mesh へ、足元を footing へ書き、mesh を足元へ置く（胸の高さは地面に合わせる）
 	// mesh・footing: nullptr 不可
 	void place( float angleY, const CharacterMover& mover, SkinnedMeshInstance* mesh, GameLib::Math::Vector3* footing );
-	// 胸の位置（ワールド）。追う・回り込む・壁に当たるのはこの位置。start の前は意味が無い
-	const GameLib::Math::Vector3& center() const;
+	const GameLib::Math::Vector3& center() const;			// 胸の位置（ワールド）。追う・回り込む・壁に当たるのはこの位置。start の前は意味が無い
 
 private:
 	GameLib::Math::Vector3 mCenter;      // 胸の位置（ワールド。動かすのはこちらで、足元はここから決める）

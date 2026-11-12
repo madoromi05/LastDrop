@@ -35,38 +35,30 @@ public:
 	float animationPhase() const;
 	bool isAnimationFinished() const;
 
-	// アニメを 1 ティック進めて、ポーズを求める（フェード中は切り替え前のポーズと混ぜる）
-	void update();
-	// 時刻とクロスフェードの進みだけを 1 ティック進め、ポーズは求めない（AnimationThrottle で間引くティック）
-	void advance();
-	// ポーズを一度でも求めたか（まだ何も見せていないならフェードしない・描かない）
-	bool hasPose() const;
-	// 最後の update で求めたポーズ（骨格の根から見たボーンの姿勢。並びは SkinnedMeshData の骨の番号。フェード中は混ぜた後）
-	const std::vector< GameLib::Math::Matrix34 >& pose() const;
+	void update();												// アニメを 1 ティック進めて、ポーズを求める（フェード中は切り替え前のポーズと混ぜる）
+	void advance();												// 時刻とクロスフェードの進みだけを 1 ティック進め、ポーズは求めない（AnimationThrottle で間引くティック）
+	bool hasPose() const;										// ポーズを一度でも求めたか（まだ何も見せていないならフェードしない・描かない）
+	const std::vector< GameLib::Math::Matrix34 >& pose() const;	// 最後の update で求めたポーズ（骨格の根から見たボーンの姿勢。並びは SkinnedMeshData の骨の番号。フェード中は混ぜた後）
 
 private:
-	// アニメの時刻とクロスフェードの進みを 1 ティック進め、このティックに見せる時刻を返す（update と advance の共通の所）
-	float advanceClock();
-	// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きする（フェードの進みは advanceClock が数える）
-	void blendFadingPose();
-	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前
-	float lastFrameTime() const;
+	float advanceClock();			// アニメの時刻とクロスフェードの進みを 1 ティック進め、このティックに見せる時刻を返す（update と advance の共通の所）
+	void blendFadingPose();			// フェード中なら、切り替え前のポーズと今のポーズを混ぜて mBonePose を上書きする（フェードの進みは advanceClock が数える）
+	float lastFrameTime() const;	// PLAY_ONCE で止める時刻（フレーム）。GameLib のアニメは最後のキーの時刻ちょうどで始めへ折り返すので、その少し手前
 
 	const SkinnedMeshData* mData;
-	GameLib::Scene::Tree mSkeleton;     // この体だけのポーズ。根は原点・向き0のまま（置き場所は描くときに掛ける）
-	GameLib::Scene::Animation mAnimation; // 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
-	float mTime;                        // 次の update で使うアニメ時刻（フレーム）
-	// 今見えているアニメ時刻（最後の update で使った時刻）。再生の速さが途中で変わっても、見えている時刻を正しく答えるために分けて持つ
-	float mShownTime;
-	float mPlaybackRate;                // 1 回の update で進めるアニメ時刻（フレーム）
-	PlayMode mPlayMode;                 // 再生中のアニメの再生のしかた
+	GameLib::Scene::Tree mSkeleton;							// この体だけのポーズ。根は原点・向き0のまま（置き場所は描くときに掛ける）
+	GameLib::Scene::Animation mAnimation;					// 再生中のアニメ（Tree は持っているアニメを教えてくれないので自分で覚える）
+	float mTime;											// 次の update で使うアニメ時刻（フレーム）
+	float mShownTime;										// 今見えているアニメ時刻（最後の update で使った時刻）。再生の速さが途中で変わっても、見えている時刻を正しく答えるために分けて持つ
+	float mPlaybackRate;									// 1 回の update で進めるアニメ時刻（フレーム）
+	PlayMode mPlayMode;										// 再生中のアニメの再生のしかた
 	// ボーンの姿勢は、骨格の根から見た行列で持つ（置き場所・向きを含まない）
 	// クロスフェード中にキャラが移動・旋回しても、切り替え前のポーズが元の場所に取り残されないようにするため
-	std::vector< GameLib::Math::Matrix34 > mBonePose;     // 今フレームに見せるポーズ（フェード中は混ぜた後）
-	std::vector< GameLib::Math::Matrix34 > mFadeFromPose; // 切り替え直前に見えていたポーズ（フェード中だけ使う）
-	float mFadeFrames;                  // フェードの長さ（フレーム）。0 ならフェードしていない
-	float mFadeElapsed;                 // フェード開始からの経過（フレーム）
-	bool mHasPose;                      // mBonePose を一度でも計算したか
+	std::vector< GameLib::Math::Matrix34 > mBonePose;		// 今フレームに見せるポーズ（フェード中は混ぜた後）
+	std::vector< GameLib::Math::Matrix34 > mFadeFromPose;	// 切り替え直前に見えていたポーズ（フェード中だけ使う）
+	float mFadeFrames;										// フェードの長さ（フレーム）。0 ならフェードしていない
+	float mFadeElapsed;										// フェード開始からの経過（フレーム）
+	bool mHasPose;											// mBonePose を一度でも計算したか
 };
 
 #endif

@@ -13,8 +13,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）
-	const float kMarkAboveTop = 0.15f;
+	const float kMarkAboveTop = 0.15f;	// マークを、物の見た目の箱の上端からどれだけ上に出すか（m。物に重ならず、どの物の上かが分かる高さ）
 
 	// 物の「使える」部品（見て E で使う）。拾える物と、漁れる置物（車・ゴミ箱・木箱）と、脱出の車。無ければ nullptr
 	IInteractable* interactableOf( GameObject* object ) {
@@ -117,8 +116,7 @@ EscapeCarComponent* InteractionSystem::findEscapeCar( const IInteractable* inter
 
 IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit ) const {
 	if ( hit.target ) {
-		// キャラ（ゾンビ・その死体）は使えない。視線はキャラで止まる
-		return nullptr;
+		return nullptr;	// キャラ（ゾンビ・その死体）は使えない。視線はキャラで止まる
 	}
 	// 落ちている物・漁れる置物（弾を止める見た目の部品から、その物の使える部品をたどる）
 	if ( StaticModelComponent* model = mObjects->find< StaticModelComponent >( hit.blocker ) ) {

@@ -13,17 +13,13 @@ class VertexFormat{
 public:
 	enum{ MAX_ELEMENT = 8 };
 
-	///標準の頂点（Graphics::Vertex。位置・法線・色・UV）。固定パイプラインと同じ形
-	static VertexFormat standard();
-	///elements を count 個並べた形。count は MAX_ELEMENT 以下、同じ要素は1回まで
-	static VertexFormat create( const VertexElement* elements, int count );
+	static VertexFormat standard();											///標準の頂点（Graphics::Vertex。位置・法線・色・UV）。固定パイプラインと同じ形
+	static VertexFormat create( const VertexElement* elements, int count );	///elements を count 個並べた形。count は MAX_ELEMENT 以下、同じ要素は1回まで
 
 	int elementNumber() const;
 	VertexElement element( int index ) const;
-	///要素 index が頂点の先頭から何バイト目にあるか
-	int offset( int index ) const;
-	///1頂点のバイト数
-	int stride() const;
+	int offset( int index ) const;	///要素 index が頂点の先頭から何バイト目にあるか
+	int stride() const;				///1頂点のバイト数
 
 	VertexFormat(); ///標準の形
 	bool operator==( const VertexFormat& ) const;

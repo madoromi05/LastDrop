@@ -24,10 +24,8 @@ public:
 	ImpactDustList( const ImpactDustList& ) = delete;
 	ImpactDustList& operator=( const ImpactDustList& ) = delete;
 
-	// point / normal: 当たった位置と、面の外向きの法線（長さ1）。HitWorld::Hit の値をそのまま渡す
-	void spawn( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal );
-	// 全部を1ティック進め、終わった物を消す
-	void update();
+	void spawn( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& normal );	// point / normal: 当たった位置と、面の外向きの法線（長さ1）。HitWorld::Hit の値をそのまま渡す
+	void update();																				// 全部を1ティック進め、終わった物を消す
 	// 全部の粒を1回で描く。1フレームに1回まで。呼ぶ場所の決まりは LitQuadBatch::draw と同じ。絵の読み込みが終わるまでは描かない
 	// projectionView: カメラの射影×ビュー行列
 	// viewDirection: 視線の向き（長さ1）。板を画面に平行にするのと、照らす向き（その逆向き）に使う

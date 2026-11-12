@@ -12,8 +12,7 @@ struct FirstPersonRig;
 // 一番先に掛ける（差し替えた腕も、背骨の曲げ（視線の上下）と、その後の銃の段をそのまま受けるように）
 class ArmOverridePose : public BonePoseModifier{
 public:
-	// rig: 骨の番号を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
-	explicit ArmOverridePose( const FirstPersonRig* rig );
+	explicit ArmOverridePose( const FirstPersonRig* rig );	// rig: 骨の番号を読む。所有権は受け取らない。nullptr 不可。この段より長く生きていること
 
 	// 説明は FirstPersonBody::setArmOverride
 	void set( const std::vector< GameLib::Math::Matrix34 >* pose, float weight, float followHandWeight,

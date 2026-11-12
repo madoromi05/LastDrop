@@ -26,8 +26,7 @@ public:
 	AmmoHud( const AmmoHud& ) = delete;
 	AmmoHud& operator=( const AmmoHud& ) = delete;
 
-	// 右下に積む。opacity: 濃さ（0〜1。AmmoHudVisibility::opacity）。0 なら何も積まない
-	void add( const Ammo& ammo, float opacity );
+	void add( const Ammo& ammo, float opacity );	// 右下に積む。opacity: 濃さ（0〜1。AmmoHudVisibility::opacity）。0 なら何も積まない
 
 private:
 	UiRenderer* mRenderer; // 借りているだけ

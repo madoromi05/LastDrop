@@ -17,8 +17,7 @@ class AudioEngine;
 // キャラのクラスは知らない（歩き方・位相・位置を引数で受け取る）ので、敵や他のプレイヤーの足音にもそのまま使える
 class FootstepEmitter{
 public:
-	// audio: 鳴らす先。所有権は受け取らない。この係より長く生きていること
-	explicit FootstepEmitter( AudioEngine* audio );
+	explicit FootstepEmitter( AudioEngine* audio );	// audio: 鳴らす先。所有権は受け取らない。この係より長く生きていること
 
 	// 1フレーム進める。足が着いた瞬間なら足音を鳴らして true を返す（服や装備の音を一歩に合わせて鳴らすのに使う）
 	// gait: 今の歩き方。phase: 歩き・走りのアニメが1周の何割まで進んだか（0〜1）

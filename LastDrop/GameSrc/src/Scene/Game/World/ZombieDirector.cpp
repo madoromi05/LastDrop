@@ -27,20 +27,19 @@ using namespace GameLib::Math;
 namespace{
 	const char* kZombieFile = "Resource/Model/Character/zombie.txt";
 	const char* kZombieAnimation = "walk";
-	const char* kZombieRunAnimation = "run"; // 走る体が追う・寄るときのアニメ
-	const float kAnimationStartStep = 11.f; // 体ごとに歩き出しをずらす（フレーム）
+	const char* kZombieRunAnimation = "run";		// 走る体が追う・寄るときのアニメ
+	const float kAnimationStartStep = 11.f;			// 体ごとに歩き出しをずらす（フレーム）
 	// 倒れるときのアニメ
 	const char* const kZombieDeathAnimations[] = { "death1", "death2" };
 	const int kZombieDeathAnimationNumber = sizeof( kZombieDeathAnimations ) / sizeof( kZombieDeathAnimations[ 0 ] );
-	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない
-	const char* kZombieDownedAnimation = "death1";
-	const char* kZombieStaggerAnimation = "gethit";			// 撃たれてよろけるときのアニメ
-	const char* kZombieIdleAnimation = "idle1";				// 気付く前・追いついた・見失って探し終えたときに立つアニメ
+	const char* kZombieDownedAnimation = "death1";	// 脚を失って倒れるときのアニメ。前へ倒れてうつ伏せになる方（death2 は仰向けに倒れるので、体を引きずれない
+	const char* kZombieStaggerAnimation = "gethit";	// 撃たれてよろけるときのアニメ
+	const char* kZombieIdleAnimation = "idle1";		// 気付く前・追いついた・見失って探し終えたときに立つアニメ
 	// 立っている体の攻撃の種類。ここを替えれば、流す攻撃のアニメも一緒に替わる
 	// つかみも消さずに残してある（Grab にすれば、つかむ → 噛むになる）
 	const ZombieAttackStyle kZombieAttackStyle = ZombieAttackStyle::Swing;
-	const char* kZombieSwingAnimation = "atack1"; // 右手を 1 回振り下ろす
-	const char* kZombieGrabAnimation = "atack3";  // 両手でつかんで噛む
+	const char* kZombieSwingAnimation = "atack1";	// 右手を 1 回振り下ろす
+	const char* kZombieGrabAnimation = "atack3";	// 両手でつかんで噛む
 	const char* kZombieAttackAnimation =
 		( kZombieAttackStyle == ZombieAttackStyle::Swing ) ? kZombieSwingAnimation : kZombieGrabAnimation;
 
@@ -85,8 +84,7 @@ void ZombieDirector::setup( const TownMap& map ) {
 	rootMotionAnimations.push_back( kZombieAttackAnimation );
 	mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, kZombieRunAnimation, rootMotionAnimations );
 	mFactory = std::make_unique< ZombieFactory >( mZombieModel.get(), kZombieAttackStyle );
-	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）
-	mRandom = Random::create( static_cast< int >( Framework::instance().time() ) );
+	mRandom = Random::create( static_cast< int >( Framework::instance().time() ) );	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）
 	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）
 	std::vector< Vector3 > spawnPoints;
 	for ( const TownPlacement& p : map.zombieSpawnPoints() ) {

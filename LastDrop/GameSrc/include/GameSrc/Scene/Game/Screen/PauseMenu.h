@@ -18,12 +18,9 @@ public:
 	// onResume: Resume が押されたときの処理（本編が止めた世界を動かし直す）。空は不可
 	PauseMenu( UiRenderer* renderer, GameSettings* settings, AudioEngine* audio, std::function< void() > onResume );
 
-	// 開くたびに最初のページから見せる（本編が止めたときに呼ぶ。ボタンの処理の中からは呼ばないこと）
-	void open();
-	// 入力を読んでボタンを操作する。開いている間、1回の描画につき1回（本編の beginFrame で）
-	void handleInput();
-	// ESC：1 つ上のページへ戻る。もう最初のページなら false（本編が一時停止を閉じる）
-	bool back();
+	void open();		// 開くたびに最初のページから見せる（本編が止めたときに呼ぶ。ボタンの処理の中からは呼ばないこと）
+	void handleInput();	// 入力を読んでボタンを操作する。開いている間、1回の描画につき1回（本編の beginFrame で）
+	bool back();		// ESC：1 つ上のページへ戻る。もう最初のページなら false（本編が一時停止を閉じる）
 	// 暗くする板とメニューを描く。開いている間、1回の描画につき1回。本編の 3D を描いた後に呼ぶ（上に重ねる）
 	// 中で UiRenderer::draw まで行うので、同じ描画で HUD（GameHud::draw）は描かないこと（UiRenderer は 1 回の描画に 1 回だけ）
 	void draw();

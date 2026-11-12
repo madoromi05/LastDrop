@@ -55,12 +55,11 @@ const char* SceneManager::loadName( SceneId id ) {
 
 void SceneManager::change( SceneId id ) {
 	ASSERT( mResources && "SceneManager::change : call start first." );
-	// 切り替えからシーンの最初の絵までを、1 回のロードとして測る（起動中なら起動のロードに含める）
-	GameLib::Profiling::beginLoad( loadName( id ) );
+	GameLib::Profiling::beginLoad( loadName( id ) );	// 切り替えからシーンの最初の絵までを、1 回のロードとして測る（起動中なら起動のロードに含める）
 	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）
 	std::unique_ptr< IScene > next = createScene( id );
 	mCurrent = std::move( next );
-	mClock.reset(); // 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
+	mClock.reset();										// 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
 }
 
 void SceneManager::requestChange( SceneId id ) {

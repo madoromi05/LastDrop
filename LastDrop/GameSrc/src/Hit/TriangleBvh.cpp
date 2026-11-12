@@ -13,8 +13,7 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kAxisNumber = 3;
 	const int kRootNode = 0;
-	// 葉に入れる三角形の数の上限。小さいほど木は深くなるが、葉で調べる三角形は減る（4 前後がよく使われる値）
-	const int kMaxLeafTriangles = 4;
+	const int kMaxLeafTriangles = 4;	// 葉に入れる三角形の数の上限。小さいほど木は深くなるが、葉で調べる三角形は減る（4 前後がよく使われる値）
 	// 下りる途中で覚えておく節の数の上限。中央値で分けるので深さは log2(三角形の数 / 4) 程度
 	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする
 	const int kMaxStackDepth = 64;

@@ -132,10 +132,8 @@ float cascadedShadowVisibility(uint first, float3 position, float3 normal, float
     return visibility;
 }
 
-// 地平線（向きの y = 0）から天頂（y = 1）までの色の変わり方。1 より小さいと、地平線の近くだけ明るく残り、すぐ天頂の色になる
-static const float kSkyGradientPower = 0.5;
-// 空の平均の色（拡散の環境光の上半分）は、地平線の色と天頂の色の真ん中
-static const float kSkyAverageBlend = 0.5;
+static const float kSkyGradientPower = 0.5;	// 地平線（向きの y = 0）から天頂（y = 1）までの色の変わり方。1 より小さいと、地平線の近くだけ明るく残り、すぐ天頂の色になる
+static const float kSkyAverageBlend = 0.5;	// 空の平均の色（拡散の環境光の上半分）は、地平線の色と天頂の色の真ん中
 
 // 向き dir（長さ 1）に見える空の色（リニア。明るさは掛けない）。地平線より下は地平線の色のまま
 float3 skyGradient(float3 dir)

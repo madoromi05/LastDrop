@@ -31,19 +31,15 @@ public:
 	// 1回の描画ぶん、現在のシーンを動かす（無ければ何もしない）
 	// 入力を読む（Pad::update）→ beginFrame → 経った時間ぶんの update（0回以上） → draw の順に呼ぶ（IScene.h）
 	void update();
-	// 現在のシーンと、使い回す物を破棄する（終了時。Graphics::Manager が消える前に呼ぶ）
-	void destroy();
-	// ゲームを進める時計。開発用のエディタ（EditorWindow の Scene の欄）が、一時停止・コマ送り・時間の倍率に使う
-	FixedStepClock& clock();
+	void destroy();				// 現在のシーンと、使い回す物を破棄する（終了時。Graphics::Manager が消える前に呼ぶ）
+	FixedStepClock& clock();	// ゲームを進める時計。開発用のエディタ（EditorWindow の Scene の欄）が、一時停止・コマ送り・時間の倍率に使う
 private:
 	SceneManager();
 	~SceneManager();
 	SceneManager( const SceneManager& );
 	void operator=( const SceneManager& );
-	// 種別 id のシーンを作る。作ったシーンは mResources を借りる
-	std::unique_ptr< IScene > createScene( SceneId id ) const;
-	// ロードの計測で使う、シーンの名前（Profiling/<起動時刻>/load_<名前>_*.json）
-	static const char* loadName( SceneId id );
+	std::unique_ptr< IScene > createScene( SceneId id ) const;	// 種別 id のシーンを作る。作ったシーンは mResources を借りる
+	static const char* loadName( SceneId id );					// ロードの計測で使う、シーンの名前（Profiling/<起動時刻>/load_<名前>_*.json）
 	// 種別 id のシーンへその場で切り替える。新しいシーンを作ってから、前のシーンを消す
 	// シーンの関数の途中では呼ばない（requestChange を使う）
 	void change( SceneId id );

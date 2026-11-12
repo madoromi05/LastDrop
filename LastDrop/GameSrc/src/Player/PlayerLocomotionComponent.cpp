@@ -16,18 +16,17 @@ namespace{
 	// 速さは「毎秒」で決め、1フレーム（1ティック。GameTime.h）ぶんに直して使う（update は1ティックに1回）
 	// 歩き・走りの速さ（m/フレーム）は、アニメの足運びに合わせる（合わないと足が地面を滑って見える）
 	// 値は元アニメ（In Place にする前）が1周で進む距離から測った
-	const float kWalkSpeed      = 1.4f / GameTime::kTicksPerSecond; // Walking（素手）
-	const float kRunSpeed       = 3.2f / GameTime::kTicksPerSecond; // Slow Run（素手）
-	const float kArmedWalkSpeed = 1.0f / GameTime::kTicksPerSecond; // walking（Shooter Pack）: 1.36m / 1.37秒
-	const float kArmedRunSpeed  = 3.1f / GameTime::kTicksPerSecond; // rifle run（Shooter Pack）: 2.30m / 0.73秒
+	const float kWalkSpeed      = 1.4f / GameTime::kTicksPerSecond;		// Walking（素手）
+	const float kRunSpeed       = 3.2f / GameTime::kTicksPerSecond;		// Slow Run（素手）
+	const float kArmedWalkSpeed = 1.0f / GameTime::kTicksPerSecond;		// walking（Shooter Pack）: 1.36m / 1.37秒
+	const float kArmedRunSpeed  = 3.1f / GameTime::kTicksPerSecond;		// rifle run（Shooter Pack）: 2.30m / 0.73秒
 	const float kStopSpeed      = 0.f;
 	// 加速・減速（m/フレーム²）。毎秒²の値をフレーム²に直す
 	// 止まる→走るは約0.4秒、走る→止まるは約0.27秒。減速を強めにしているのは、止まりたいときに滑り続けると操作が重く感じるため
 	const float kAcceleration = 8.f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
 	const float kDeceleration = 12.f / ( GameTime::kTicksPerSecond * GameTime::kTicksPerSecond );
-	// アニメを切り替えるときに前後のポーズを混ぜる長さ（フレーム）。0.2秒
-	const float kCrossFadeFrames = 0.2f * GameTime::kTicksPerSecond;
-	const float kMinInputLength = 0.001f; // これより短い入力（逆方向キーの同時押しなど）は静止とみなす
+	const float kCrossFadeFrames = 0.2f * GameTime::kTicksPerSecond;	// アニメを切り替えるときに前後のポーズを混ぜる長さ（フレーム）。0.2秒
+	const float kMinInputLength = 0.001f;								// これより短い入力（逆方向キーの同時押しなど）は静止とみなす
 
 	// 状態ごとの決まりごとの表。状態について知りたいこと（アニメ名・速さ・歩き方・武器を持っているか）は、すべてここから引く
 	// 状態を足すときは、Animator::State に1つ足し、この表に1行足すだけでよい（状態を並べた switch や if は他に無い）
@@ -180,6 +179,5 @@ float PlayerLocomotionComponent::gaitPhase() const {
 }
 
 float PlayerLocomotionComponent::walkRate() const {
-	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）
-	return mSpeed / kArmedWalkSpeed;
+	return mSpeed / kArmedWalkSpeed;	// 速さの割合は銃を持った歩き（1.0m/秒）で 1。脚が壊れて遅く歩くと小さくなり、走っても 1 で止まる（AimSway が止める）
 }

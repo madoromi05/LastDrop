@@ -16,14 +16,12 @@ public:
 		Bag,   // カバン（InventoryScreen）
 		Loot,  // 漁れる場所・給油口の中を見る画面（LootScreen）
 	};
-	// audio・control: 借りるだけ（所有しない）。この Controller より長く生きていること。nullptr 不可
-	ModalController( AudioEngine* audio, FirstPersonControl* control );
-	// モーダルを開く。世界の音を止め、押していた移動・撃つを放し、カーソルを外す（ボタン・マスをマウスで操作するため）
-	void enter( Mode mode );
+	ModalController( AudioEngine* audio, FirstPersonControl* control );	// audio・control: 借りるだけ（所有しない）。この Controller より長く生きていること。nullptr 不可
+	void enter( Mode mode );											// モーダルを開く。世界の音を止め、押していた移動・撃つを放し、カーソルを外す（ボタン・マスをマウスで操作するため）
 	// モーダルを閉じる。止めた音を戻し、カーソルをロックし直す（視点を回せるように）
 	void exit();
 	Mode mode() const { return mMode; }
-	bool isOpen() const { return mMode != Mode::None; } // どれかが開いている間は世界を進めない
+	bool isOpen() const { return mMode != Mode::None; }					// どれかが開いている間は世界を進めない
 	bool isPause() const { return mMode == Mode::Pause; }
 	bool isBag() const { return mMode == Mode::Bag; }
 	bool isLoot() const { return mMode == Mode::Loot; }

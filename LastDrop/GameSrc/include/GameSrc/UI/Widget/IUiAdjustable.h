@@ -8,10 +8,8 @@
 class IUiAdjustable{
 public:
 	virtual ~IUiAdjustable(){}
-	// 1 刻みだけ動かす。direction: -1 で下げる、+1 で上げる
-	virtual void adjust( int direction ) = 0;
-	// cursor（画素）の横の位置に合う値にする（バーをクリック・ドラッグしたとき）
-	virtual void dragTo( const GameLib::Math::Vector2& cursor ) = 0;
+	virtual void adjust( int direction ) = 0;							// 1 刻みだけ動かす。direction: -1 で下げる、+1 で上げる
+	virtual void dragTo( const GameLib::Math::Vector2& cursor ) = 0;	// cursor（画素）の横の位置に合う値にする（バーをクリック・ドラッグしたとき）
 };
 
 #endif

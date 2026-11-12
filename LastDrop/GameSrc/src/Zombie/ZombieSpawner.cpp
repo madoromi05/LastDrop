@@ -16,12 +16,9 @@ namespace{
 	const float kRefillSeconds = 10.f;
 	const int kRefillTicks = GameTime::secondsToTicks( kRefillSeconds );
 
-	// 自キャラからこれより近い所には湧かせない（m。水平）。目の前に急に出ないように
-	const float kMinDistance = 25.f;
-	// 画面の内とみなす範囲（度。カメラの水平の向きから左右それぞれ）。画面の横の端（約 46°）より、振り向き始めの分だけ広く取る
-	const float kViewHalfAngle = 60.f;
-	// 見えるかを調べる、ゾンビの頭の高さ（m。足元から）。頭が見えなければ体も見えないとみなす
-	const float kHeadHeight = 1.7f;
+	const float kMinDistance = 25.f;	// 自キャラからこれより近い所には湧かせない（m。水平）。目の前に急に出ないように
+	const float kViewHalfAngle = 60.f;	// 画面の内とみなす範囲（度。カメラの水平の向きから左右それぞれ）。画面の横の端（約 46°）より、振り向き始めの分だけ広く取る
+	const float kHeadHeight = 1.7f;		// 見えるかを調べる、ゾンビの頭の高さ（m。足元から）。頭が見えなければ体も見えないとみなす
 	// 補充のとき 1 ティックに調べる候補の数。見つからなければ次のティックに続きを調べる（1 ティックに線を何本も引かない）
 	const int kTriesPerTick = 4;
 	const float kFullTurn = 360.f;
@@ -128,8 +125,7 @@ bool ZombieSpawner::isVisible( const View& view, const Vector3& head ) const {
 	if ( forward.dot( flat ) < GameLib::Math::cos( kViewHalfAngle ) * flat.length() ) {
 		return false;
 	}
-	// 画面の内でも、建物・車・地面の陰なら見えない
-	return !mHitWorld->isBlocked( view.playerEye, toHead );
+	return !mHitWorld->isBlocked( view.playerEye, toHead );	// 画面の内でも、建物・車・地面の陰なら見えない
 }
 
 void ZombieSpawner::setTargetCount( int targetCount ) {

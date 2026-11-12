@@ -43,8 +43,7 @@ public:
 	ZombieDirector( const ZombieDirector& ) = delete;
 	ZombieDirector& operator=( const ZombieDirector& ) = delete;
 
-	// ゾンビの部品が共有の棚から引く物（TickContext・PathBudget・ZombieHearing）を置く。物の並びを作った後に 1 回
-	void provideShared();
+	void provideShared();	// ゾンビの部品が共有の棚から引く物（TickContext・PathBudget・ZombieHearing）を置く。物の並びを作った後に 1 回
 	// ゾンビの設計図・組み立て・湧かせる係を作る（GameWorld::placeActors から。ゾンビの形の構築に失敗していれば何もしない）
 	// map: 湧いてよい場所の候補を読む
 	void setup( const TownMap& map );
@@ -56,16 +55,14 @@ public:
 	// setup の前なら何もしない（setup で day から読む）
 	void onDayConditionChanged();
 
-	// ティックの始めに、このティックに道を探してよい回数を戻す
-	void beginTick();
+	void beginTick();						// ティックの始めに、このティックに道を探してよい回数を戻す
 	// 今のフレームで絵を描いたカメラを覚える（次のティックのアニメの間引きに使う）
 	// visibility: 隠れの表（F6 の PVS を切っている・まだ無いなら nullptr）
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye, const TownVisibility* visibility );
 	// Think の段の前に、全員が読む周りを作る（追う先＝このティックに動いた後の自キャラ・攻撃に行っている体・立っている仲間の位置）
 	// player: 自キャラ（居なければ nullptr。追わない）
 	void prepareThink( const GameObject* player );
-	// Think の段の後に、自キャラがつかまれているかを伝える（つかんでいる体が倒れた・振りほどかれた・噛み終えたら、次の update から動ける）
-	void finishThink( GameObject* player );
+	void finishThink( GameObject* player );	// Think の段の後に、自キャラがつかまれているかを伝える（つかんでいる体が倒れた・振りほどかれた・噛み終えたら、次の update から動ける）
 	// ゾンビを止めている間（zombiesFrozen）、finishThink の代わりに呼ぶ。つかまれている自キャラを放す
 	// （つかんだ体が固まったまま自キャラも動けない、とならないように。戻すと finishThink がまたつかまれた形にする）
 	void releaseTarget( GameObject* player );
@@ -73,32 +70,27 @@ public:
 	// cameraYaw: カメラの水平の向き（度）。自キャラが居なければ何もしない（見えない所を決められない）
 	void spawnFromSpawner( const GameObject* player, float cameraYaw );
 
-	// 音をゾンビへ知らせる（物音・確認用。ふだんの足音・銃声は自キャラの PlayerNoiseComponent が棚から引いて使う）
-	ZombieHearing& hearing();
-	// ゾンビを湧かせる係（確認用の表示が読む）。setup の前・形が無ければ nullptr
-	const ZombieSpawner* spawner() const;
+	ZombieHearing& hearing();				// 音をゾンビへ知らせる（物音・確認用。ふだんの足音・銃声は自キャラの PlayerNoiseComponent が棚から引いて使う）
+	const ZombieSpawner* spawner() const;	// ゾンビを湧かせる係（確認用の表示が読む）。setup の前・形が無ければ nullptr
 
 private:
-	GameObjectWorld* mObjects;        // 借りているだけ
-	const HitWorld* mHitWorld;        // 借りているだけ（湧いてよいかの見通し）
+	GameObjectWorld* mObjects;							// 借りているだけ
+	const HitWorld* mHitWorld;							// 借りているだけ（湧いてよいかの見通し）
 	const CollisionWorld* mCollisionWorld;
-	const DayConditionEffect* mDay;   // 借りているだけ
-	const SkinnedMeshData* mZombieData; // MeshCache から借りる
-	// 1 ティックに道を探してよい回数を配る。ゾンビの通り道が棚から借りる（ゾンビより長く生きる）
-	PathBudget mPathBudget;
-	// ゾンビ全員で共有する決まりごと（設計図）。ゾンビが借りる
-	std::unique_ptr< ZombieModel > mZombieModel;
-	// Think の段で全員が読む、このティックの周り。ゾンビが棚から借りる
-	ZombieBrainComponent::TickContext mContext;
-	ChaseTarget mChaseTarget;                      // mContext.target が指す（自キャラが居る間）
-	std::optional< AnimationView > mAnimationView; // mContext.view が指す（setAnimationView の後）
-	ZombieCrowd mCrowd;                            // 立って歩けるゾンビの位置（prepareThink で作り直す）
+	const DayConditionEffect* mDay;						// 借りているだけ
+	const SkinnedMeshData* mZombieData;					// MeshCache から借りる
+	PathBudget mPathBudget;								// 1 ティックに道を探してよい回数を配る。ゾンビの通り道が棚から借りる（ゾンビより長く生きる）
+	std::unique_ptr< ZombieModel > mZombieModel;		// ゾンビ全員で共有する決まりごと（設計図）。ゾンビが借りる
+	ZombieBrainComponent::TickContext mContext;			// Think の段で全員が読む、このティックの周り。ゾンビが棚から借りる
+	ChaseTarget mChaseTarget;							// mContext.target が指す（自キャラが居る間）
+	std::optional< AnimationView > mAnimationView;		// mContext.view が指す（setAnimationView の後）
+	ZombieCrowd mCrowd;									// 立って歩けるゾンビの位置（prepareThink で作り直す）
 	ZombieHearing mHearing;
-	std::unique_ptr< ZombieFactory > mFactory;     // mZombieModel を借りる
-	GameLib::Math::Random mRandom; // 倒れ方（死亡アニメ）・湧かせ方の種を選ぶ（setup で種を決める）
-	int mZombieNumber;             // これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
-	std::unique_ptr< ZombieSpawner > mSpawner;          // mZombieModel の体の大きさを借りる
-	std::vector< ZombieSpawner::Order > mSpawnOrders;   // このティックに出す所（毎回確保し直さないために持つ）
+	std::unique_ptr< ZombieFactory > mFactory;			// mZombieModel を借りる
+	GameLib::Math::Random mRandom;						// 倒れ方（死亡アニメ）・湧かせ方の種を選ぶ（setup で種を決める）
+	int mZombieNumber;									// これまでに出したゾンビの数（歩き出しの時刻・見通しを調べる時刻をずらす番号）
+	std::unique_ptr< ZombieSpawner > mSpawner;			// mZombieModel の体の大きさを借りる
+	std::vector< ZombieSpawner::Order > mSpawnOrders;	// このティックに出す所（毎回確保し直さないために持つ）
 };
 
 // ゾンビを全部止めるか（F6 → Debug の Freeze zombies。確認用）

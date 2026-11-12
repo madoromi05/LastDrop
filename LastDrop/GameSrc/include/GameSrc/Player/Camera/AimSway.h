@@ -26,12 +26,9 @@ class AimSway{
 public:
 	AimSway();
 
-	// 1ティック進める。lookYaw / lookPitch: このティックにマウスで回した角度（度。FirstPersonCamera::rotate に渡したのと同じ約束）
-	void update( const AimSwayBody& body, float lookYaw, float lookPitch );
-	// 弾と銃の向きへ足す左右の角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）
-	float yawOffset() const;
-	// 弾と銃の向きへ足す上下の角度（度。FirstPersonCamera のピッチと同じ約束で、正が見下ろす向き）
-	float pitchOffset() const;
+	void update( const AimSwayBody& body, float lookYaw, float lookPitch );	// 1ティック進める。lookYaw / lookPitch: このティックにマウスで回した角度（度。FirstPersonCamera::rotate に渡したのと同じ約束）
+	float yawOffset() const;												// 弾と銃の向きへ足す左右の角度（度。FirstPersonCamera のヨーと同じ約束で、正が左）
+	float pitchOffset() const;												// 弾と銃の向きへ足す上下の角度（度。FirstPersonCamera のピッチと同じ約束で、正が見下ろす向き）
 
 private:
 	// 息の波の進み具合（0〜1 で 1 往復）。左右と上下で別々に進める（F6 で周期を変えても、波が途中から跳ばない）

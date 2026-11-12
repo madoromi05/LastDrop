@@ -18,10 +18,8 @@ public:
 	// 引数は SeveredLimb のコンストラクタと同じ（random はこのリストが持つ物を使う）
 	void spawn( const SkinnedMeshData* data, const ZombieSeverLayout::Cut& cut, const std::vector< GameLib::Math::Matrix34 >& worldPose,
 		const GameLib::Math::Vector3& direction );
-	// 全部を1ティック進め、沈み終わった物を消す。ground: SeveredLimb::update と同じ
-	void update( const IRayBlocker* ground );
-	// culling で描くと決まった物だけ描く
-	void draw( const DrawCulling& culling ) const;
+	void update( const IRayBlocker* ground );		// 全部を1ティック進め、沈み終わった物を消す。ground: SeveredLimb::update と同じ
+	void draw( const DrawCulling& culling ) const;	// culling で描くと決まった物だけ描く
 
 private:
 	std::vector< std::unique_ptr< SeveredLimb > > mLimbs; // 古い順

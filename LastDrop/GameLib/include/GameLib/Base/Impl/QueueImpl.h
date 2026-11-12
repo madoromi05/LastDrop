@@ -22,8 +22,7 @@ mFront( 0 ){
 		return;
 	}
 	mCapacity = capacity;
-	//コンストラクタを呼びたくないので生new
-	mElements = static_cast< T* >( OPERATOR_NEW( sizeof( T ) * mCapacity ) );
+	mElements = static_cast< T* >( OPERATOR_NEW( sizeof( T ) * mCapacity ) );	//コンストラクタを呼びたくないので生new
 }
 
 template< class T > inline Queue< T >::~Queue(){

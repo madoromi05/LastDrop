@@ -9,10 +9,8 @@ class WeaponRecoil{
 public:
 	WeaponRecoil();
 
-	// 1ティック進める。fired: このティックに1発撃ったか
-	void update( bool fired );
-	// 反動の量（0 = 反動なし、1 = 撃った瞬間）
-	float kick() const;
+	void update( bool fired );	// 1ティック進める。fired: このティックに1発撃ったか
+	float kick() const;			// 反動の量（0 = 反動なし、1 = 撃った瞬間）
 
 private:
 	float mKick;

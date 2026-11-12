@@ -5,8 +5,7 @@
 using GameLib::Math::Vector3;
 
 namespace{
-	// 押し終えるまでの最短（ティック）。秒が短すぎても 0 で割らないように
-	const int kMinTicks = 1;
+	const int kMinTicks = 1;	// 押し終えるまでの最短（ティック）。秒が短すぎても 0 で割らないように
 
 	ZombieStaggerParams gParams;
 

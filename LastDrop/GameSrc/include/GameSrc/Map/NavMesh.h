@@ -36,8 +36,7 @@ public:
 	// start・goal の近くに床が無い・床ができていなければ false（out は空）。out: nullptr 不可
 	bool findPath( const GameLib::Math::Vector3& start, const GameLib::Math::Vector3& goal,
 		std::vector< GameLib::Math::Vector3 >* out ) const;
-	// 床の多角形の縁（2 点ずつで 1 本の線。確認用の表示に使う）。build のときに 1 回だけ作る
-	const std::vector< GameLib::Math::Vector3 >& outline() const;
+	const std::vector< GameLib::Math::Vector3 >& outline() const;	// 床の多角形の縁（2 点ずつで 1 本の線。確認用の表示に使う）。build のときに 1 回だけ作る
 
 private:
 	// Detour の物は Detour の関数で消す（delete では消せない）
@@ -48,8 +47,7 @@ private:
 		void operator()( dtNavMeshQuery* query ) const;
 	};
 
-	// 床の多角形の縁を mOutline に書く（隣の多角形と共有する辺は 1 本だけ）
-	void buildOutline();
+	void buildOutline();	// 床の多角形の縁を mOutline に書く（隣の多角形と共有する辺は 1 本だけ）
 
 	std::unique_ptr< dtNavMesh, NavMeshDeleter > mNavMesh;    // 空なら床ができていない
 	std::unique_ptr< dtNavMeshQuery, QueryDeleter > mQuery;   // mNavMesh を借りて探す

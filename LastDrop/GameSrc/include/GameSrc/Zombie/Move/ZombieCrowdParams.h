@@ -37,7 +37,6 @@ struct ZombieCrowdParams{
 	}
 };
 
-// 起動中ずっと 1 つだけの調整値（ZombieCrowd.cpp が持つ）
-ZombieCrowdParams& zombieCrowdParams();
+ZombieCrowdParams& zombieCrowdParams();	// 起動中ずっと 1 つだけの調整値（ZombieCrowd.cpp が持つ）
 
 #endif

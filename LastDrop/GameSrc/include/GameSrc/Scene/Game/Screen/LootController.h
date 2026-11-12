@@ -24,35 +24,26 @@ struct PlayerCommand;
 // 開閉の共通遷移は ModalController、弾倉同期は MagazineSync、見た目は LootScreen。HUD の棒と見出しは GameScene が本クラスへ問い合わせて描く
 class LootController{
 public:
-	// world/inventory/audio/modals/session: 借りるだけ。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
-	LootController( GameWorld* world, Inventory* inventory, AudioEngine* audio, ModalController* modals, RaidSession* session, UiRenderer* ui );
-	// 開けている間の音・エンジンの音を止める（音の道具は次のシーンも使う）
-	~LootController();
-	// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める。脱出の車は待たずに給油口を開く
-	void beginLoot( IInteractable* opened );
+	LootController( GameWorld* world, Inventory* inventory, AudioEngine* audio, ModalController* modals, RaidSession* session, UiRenderer* ui );	// world/inventory/audio/modals/session: 借りるだけ。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
+	~LootController();																																// 開けている間の音・エンジンの音を止める（音の道具は次のシーンも使う）
+	void beginLoot( IInteractable* opened );																										// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める。脱出の車は待たずに給油口を開く
 	// 開けている途中を取りやめる（音を止める）。開けていなければ何もしない
 	void cancelSearch();
 	bool isSearching() const;
 	// update から 1 ティック進める。commandInterrupts: このティックの操作が取りやめか。raidFinished: 1 日が終わったか
 	// 攻撃された・死んだも取りやめ。開け終わったら中を見る画面を開く（脱出の車なら、ガソリンを入れる）
 	void update( bool commandInterrupts, bool raidFinished );
-	// 操作 command が開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器出し入れ）
-	static bool interrupts( const PlayerCommand& command );
-	// 中を見る画面の入力（ESC・E・Tab で閉じる・マス操作）。ほかの入力は読まない
-	void handleInput();
-	// 中を見る画面を描く。equippedWeapon: 手に持っている銃（マスの印に使う。GameScene が持つ）
-	void draw( ItemId equippedWeapon );
-	// 中を見る画面が開いていて、中身のマス目があるか（draw の前提。消えた物を指していれば false）
-	bool hasOpenGrid() const;
+	static bool interrupts( const PlayerCommand& command );																							// 操作 command が開けている途中の取りやめになるか（動く・撃つ・構える・リロード・武器出し入れ）
+	void handleInput();																																// 中を見る画面の入力（ESC・E・Tab で閉じる・マス操作）。ほかの入力は読まない
+	void draw( ItemId equippedWeapon );																												// 中を見る画面を描く。equippedWeapon: 手に持っている銃（マスの印に使う。GameScene が持つ）
+	bool hasOpenGrid() const;																														// 中を見る画面が開いていて、中身のマス目があるか（draw の前提。消えた物を指していれば false）
 	// HUD の進捗（0〜1。isSearching のときだけ意味がある）と、その文字（漁る/給油）
 	float progress() const;
 	RaidHud::ProgressKind waitingKind() const;
 
 private:
-	// 給油口に要る数を入れて閉じた。漁るのと同じ待ち方で給油し始める
-	void beginRefuel( EscapeCarComponent* car );
-	// 給油の待ちを終えた。給油口のガソリンを使ってエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）
-	void finishRefuel( EscapeCarComponent* car );
+	void beginRefuel( EscapeCarComponent* car );	// 給油口に要る数を入れて閉じた。漁るのと同じ待ち方で給油し始める
+	void finishRefuel( EscapeCarComponent* car );	// 給油の待ちを終えた。給油口のガソリンを使ってエンジンを掛ける（音・ゾンビを呼ぶ・脱出の円を開く）
 	// 中を見る画面を開く・閉じる（止め方はカバンと同じ）。閉じて給油口が満タンなら給油し始める
 	void openLoot( GameObject* target, GridRule lootRule );
 	void closeLoot();

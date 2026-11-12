@@ -8,20 +8,13 @@ namespace Math{
 class Random{
 public:
 	static Random create( int seed = -1 );
-	///種再設定
-	void setSeed( int );
-	///-0x80000000 - 0x7fffffff
-	int getInt();
-	///a-1まで [0,a)
-	int getInt( int a );
-	///aからb-1まで [a,b)
-	int getInt( int a, int b );
-	///0-1だが、1は含まない ( 23bit )
-	float getFloat();
-	///aからbまで。ただしbは含まない。[a, b) ( 23bit )
-	float getFloat( float a );
-	///aからbまで。ただしbは含まない。[a, b) ( 23bit )
-	float getFloat( float a, float b );
+	void setSeed( int );				///種再設定
+	int getInt();						///-0x80000000 - 0x7fffffff
+	int getInt( int a );				///a-1まで [0,a)
+	int getInt( int a, int b );			///aからb-1まで [a,b)
+	float getFloat();					///0-1だが、1は含まない ( 23bit )
+	float getFloat( float a );			///aからbまで。ただしbは含まない。[a, b) ( 23bit )
+	float getFloat( float a, float b );	///aからbまで。ただしbは含まない。[a, b) ( 23bit )
 
 	//以下知らなくていい
 	Random();

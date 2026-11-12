@@ -37,10 +37,9 @@ public:
 	~ZombieHealthComponent();
 
 	const ZombieHealth& health() const { return mHealth; }
-	ZombieFlinch& flinch(){ return *mFlinch; } // awake で作る
+	ZombieFlinch& flinch(){ return *mFlinch; }					// awake で作る
 	const ZombieFlinch& flinch() const { return *mFlinch; }
-	// よろけのアニメの最中か（生きている間だけ true になりうる）
-	bool isStaggering() const { return mStagger.isActive(); }
+	bool isStaggering() const { return mStagger.isActive(); }	// よろけのアニメの最中か（生きている間だけ true になりうる）
 	// よろけの間は体を押し下げ、終わったら歩く・立つのアニメへ戻し、次のよろけまでの間あけを数える
 	// （立っている間、毎ティック。根の動きを置いた後＝ZombieRootMotionSpan::apply の後に呼ぶ）
 	void updateStagger();
@@ -54,17 +53,15 @@ public:
 	void applyDamage( const DamageInfo& damage ) override;
 
 private:
-	void startFalling();      // 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする
-	void startDowned();       // 前へ倒れるアニメ（無ければ死亡アニメ）へ繋ぎ、Downed にする（倒れたまま生きている）
-	// 倒れ始めた（脚を失って倒れたときも）。攻撃していたらやめ（つかんでいたら離し）、移動の名簿から外れる
-	void stopActing();
+	void startFalling();										// 死亡アニメへ繋ぎ（Downed なら倒れる途中のまま続け）、Falling にする
+	void startDowned();											// 前へ倒れるアニメ（無ければ死亡アニメ）へ繋ぎ、Downed にする（倒れたまま生きている）
+	void stopActing();											// 倒れ始めた（脚を失って倒れたときも）。攻撃していたらやめ（つかんでいたら離し）、移動の名簿から外れる
 	// part が 0 になっていて、まだあれば切る（見た目から消して切れた部位を覚えるのは ZombieDismemberment、部位の箱を外すのはここ）
 	void severIfBroken( BodyPart part );
 	bool canStagger( BodyPart part ) const;
-	// よろけのアニメへ繋ぎ、push（弾の進む向き。ワールド）へ押し下げ始める
-	void startStagger( const GameLib::Math::Vector3& push );
-	void shakeOff( const GameLib::Math::Vector3& push ); // 振りほどかれた（攻撃はもう Ready）。よろけて手を放す
-	void updateKnockback();   // 押し下げの 1 ティック分を、当たりながら足元へ足す
+	void startStagger( const GameLib::Math::Vector3& push );	// よろけのアニメへ繋ぎ、push（弾の進む向き。ワールド）へ押し下げ始める
+	void shakeOff( const GameLib::Math::Vector3& push );		// 振りほどかれた（攻撃はもう Ready）。よろけて手を放す
+	void updateKnockback();										// 押し下げの 1 ティック分を、当たりながら足元へ足す
 
 	GameLib::Math::Random mRandom;
 	ZombieHealth mHealth;

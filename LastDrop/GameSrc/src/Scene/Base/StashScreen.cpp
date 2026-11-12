@@ -21,17 +21,16 @@ namespace{
 
 	const float kHalf = 0.5f;
 
-	// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ
-	const float kCellSize = 40.f;
-	const float kGridTop = 70.f;        // マス目の上端
-	const float kGridGap = 60.f;        // 倉庫とカバンの間
-	const float kHeadingTop = 30.f;     // 見出しの真ん中
-	const float kGridLabelGap = 14.f;   // マス目の名前の真ん中から、マス目の上端まで
-	const float kDeployGap = 28.f;      // カバンの下端から Deploy のボタンの上端まで
+	const float kCellSize = 40.f;		// マス 1 つの一辺（画素）。座標の高さ 480 に、見出し・倉庫の 8 行・下の欄が入る大きさ
+	const float kGridTop = 70.f;		// マス目の上端
+	const float kGridGap = 60.f;		// 倉庫とカバンの間
+	const float kHeadingTop = 30.f;		// 見出しの真ん中
+	const float kGridLabelGap = 14.f;	// マス目の名前の真ん中から、マス目の上端まで
+	const float kDeployGap = 28.f;		// カバンの下端から Deploy のボタンの上端まで
 	const float kDeployWidth = 140.f;
 	const float kDeployHeight = 40.f;
-	const float kWarningGap = 22.f;     // ボタンの下端から注意の文字の真ん中まで
-	const float kFooterGap = 22.f;      // 倉庫の下端から、選んだ物の名前の真ん中まで
+	const float kWarningGap = 22.f;		// ボタンの下端から注意の文字の真ん中まで
+	const float kFooterGap = 22.f;		// 倉庫の下端から、選んだ物の名前の真ん中まで
 	const float kFooterLineHeight = 22.f;
 
 	const char* kHeading = "倉庫";
@@ -110,8 +109,7 @@ StashScreen::Request StashScreen::handleInput( ItemGrid* stash, ItemGrid* bag ) 
 	layout( *stash, *bag );
 	UiInput input = UiInput::read( mPreviousCursor );
 	mPreviousCursor = input.cursor;
-	// F6 で中身が変わっても、消えた物を持ち上げたままにしない
-	mPicker.forgetStale( *stash, *bag );
+	mPicker.forgetStale( *stash, *bag );	// F6 で中身が変わっても、消えた物を持ち上げたままにしない
 
 	// マウス：カーソルの下を選ぶ
 	bool onDeploy = deployRect( *bag ).contains( input.cursor );

@@ -3,16 +3,14 @@
 #include "GameLib/GameLib.h"
 
 namespace{
-	// 全体の体力（丈夫さ 1 のとき）。胴（倍率 1）だけを撃つと 6 発で 0 になる（弾1発 20。Bullet.cpp）
-	const float kMaxTotal = 120.f;
+	const float kMaxTotal = 120.f;	// 全体の体力（丈夫さ 1 のとき）。胴（倍率 1）だけを撃つと 6 発で 0 になる（弾1発 20。Bullet.cpp）
 
 	// 部位ごとの決まり
 	struct PartRule{
-		float maxHealth;  // 部位の体力
-		float multiplier; // 当たったときのダメージの倍率
-		bool fatal;       // この部位が 0 になったら倒れるか
-		// 当たるたびに、この確率でその部位の体力を一気に 0 にする（クリティカル。0 なら起きない）
-		float criticalChance;
+		float maxHealth;		// 部位の体力
+		float multiplier;		// 当たったときのダメージの倍率
+		bool fatal;				// この部位が 0 になったら倒れるか
+		float criticalChance;	// 当たるたびに、この確率でその部位の体力を一気に 0 にする（クリティカル。0 なら起きない）
 	};
 	// BodyPart の並びと同じ順（下の static_assert で数を確かめる）
 	const PartRule kPartRules[] = {
@@ -62,8 +60,7 @@ void ZombieHealth::takeDamage( BodyPart part, float baseAmount, float criticalRo
 	} else {
 		mParts[ index ] = subtractToZero( mParts[ index ], amount );
 	}
-	// 壊れた部位に当たっても全体は減り続ける（腕を壊した後も、腕を撃ち続ければいつか倒れる）
-	mTotal = subtractToZero( mTotal, amount );
+	mTotal = subtractToZero( mTotal, amount );	// 壊れた部位に当たっても全体は減り続ける（腕を壊した後も、腕を撃ち続ければいつか倒れる）
 }
 
 bool ZombieHealth::isDead() const {

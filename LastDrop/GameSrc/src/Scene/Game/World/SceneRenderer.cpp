@@ -148,8 +148,7 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 			mPostProcess.sceneDepth(), projectionView );
 		mLights.lights().unbind();
 	}
-	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）
-	Profiling::gpuMark( "GBufferView" );
+	Profiling::gpuMark( "GBufferView" );	// 「PostProcess」「FXAA」の印は endScene の中で打つ。ここまでは G-Buffer の表示（F6 で選んだときだけ。ふだんはほぼ 0）
 }
 
 const char* SceneRenderer::firstShaderError( const char* skinningError ) const {

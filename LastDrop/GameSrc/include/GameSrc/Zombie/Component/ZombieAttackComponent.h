@@ -24,8 +24,7 @@ struct ChaseTarget;
 // 相手へ伝えるのは CombatResolver）。振りほどき（撃たれた量を数える）は ZombieHealthComponent が attack() へ渡す
 class ZombieAttackComponent : public Component{
 public:
-	// style: 立っている体の攻撃の種類。攻撃のアニメ（ZombieAnimationNames::attack）は、この種類に合う物を渡すこと（ZombieDirector が揃える）
-	explicit ZombieAttackComponent( ZombieAttackStyle style );
+	explicit ZombieAttackComponent( ZombieAttackStyle style );	// style: 立っている体の攻撃の種類。攻撃のアニメ（ZombieAnimationNames::attack）は、この種類に合う物を渡すこと（ZombieDirector が揃える）
 
 	ZombieAttack& attack(){ return mAttack; }
 	const ZombieAttack& attack() const { return mAttack; }
@@ -39,20 +38,17 @@ public:
 	// 攻撃の段階を進める（生きている間、毎ティック）。立っている体は、つかんでいる間はアニメをゆっくり流し、
 	// 噛んだら首を突き出し、終わったら立つアニメへ戻す
 	void update( const ChaseTarget* target );
-	// 倒れ始めた・よろけたなどで、攻撃していたらやめる（つかんでいたら離す）
-	void cancel();
+	void cancel();	// 倒れ始めた・よろけたなどで、攻撃していたらやめる（つかんでいたら離す）
 
-	bool isActive() const;          // 攻撃の段階の途中か（伸ばす〜戻しまで）
+	bool isActive() const;				// 攻撃の段階の途中か（伸ばす〜戻しまで）
 	// 相手を取りに行っている・つかんでいる・腕を伸ばしている間か（生きている間だけ）
 	// 持ち主は、この間ほかのゾンビに攻撃を始めさせない（TickContext::attacker）
 	bool isAttacking() const;
-	bool isHoldingTarget() const;       // 相手をつかんでいるか（生きている間だけ）。つかまれた相手は動けない
-	bool grabbedTargetThisTick() const; // 直前の update で相手をつかんだか
-	// 直前の update で相手にダメージを与えたか（噛んだ・腕が当たった。量は ZombieAttack::hitDamage）
-	bool hitTargetThisTick() const;
+	bool isHoldingTarget() const;		// 相手をつかんでいるか（生きている間だけ）。つかまれた相手は動けない
+	bool grabbedTargetThisTick() const;	// 直前の update で相手をつかんだか
+	bool hitTargetThisTick() const;		// 直前の update で相手にダメージを与えたか（噛んだ・腕が当たった。量は ZombieAttack::hitDamage）
 
-	// Component（Transform・SkinnedModel・ZombieState・ZombieChase・ZombieDismember・ZombieRootMotion が要る）
-	void start() override;
+	void start() override;	// Component（Transform・SkinnedModel・ZombieState・ZombieChase・ZombieDismember・ZombieRootMotion が要る）
 
 private:
 	bool canStart( const ChaseTarget* target ) const;

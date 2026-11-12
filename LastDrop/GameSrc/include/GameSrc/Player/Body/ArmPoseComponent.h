@@ -37,30 +37,27 @@ public:
 	void start() override;
 
 private:
-	// 持っている銃 gun（素手なら nullptr）の構えのポーズを取り直す。handBone: 銃を持つ手の骨
-	void sampleStancePoses( const GunComponent* gun, int handBone );
-	// 腕を差し替えるアニメ animation のポーズを求める物（名前ごとに 1 つ作って使い回す）。awake の後に呼ぶ
-	AnimationPoseSampler* armSampler( const char* animation );
+	void sampleStancePoses( const GunComponent* gun, int handBone );	// 持っている銃 gun（素手なら nullptr）の構えのポーズを取り直す。handBone: 銃を持つ手の骨
+	AnimationPoseSampler* armSampler( const char* animation );			// 腕を差し替えるアニメ animation のポーズを求める物（名前ごとに 1 つ作って使い回す）。awake の後に呼ぶ
 	// from と to をボーンごとに weight の割合で混ぜて out へ書く（位置は直線・向きは球面。MatrixBlend）。from と to は同じ骨の数
 	static void blendPoses( const std::vector< GameLib::Math::Matrix34 >& from, const std::vector< GameLib::Math::Matrix34 >& to,
 		float weight, std::vector< GameLib::Math::Matrix34 >* out );
 
 	const SkinnedMeshData* mHolderData;
 	FirstPersonBodyComponent* mBody;
-	const GunComponent* mPosedGun; // 構えのポーズを取った銃（替わったら取り直す。中身は読まず、見分けるだけ）
-	int mPosedHandBone;            // そのときの銃を持つ手の骨
-	// 腕を差し替えるアニメ（リロード・拳銃の構え）のポーズを求める物。名前ごと（形を借りるので awake の後に作る）
-	std::map< std::string, std::unique_ptr< AnimationPoseSampler > > mArmSamplers;
-	std::vector< GameLib::Math::Matrix34 > mHoldPose; // 腕のポーズを持つ銃（拳銃）の構え（持ち替えたときに求める）
-	bool mHasHoldPose;                                 // mHoldPose を使うか（持っている銃に腕のポーズがあり、求められた）
-	std::vector< GameLib::Math::Matrix34 > mReadyPose; // 覗いていない間の構え（WeaponSpec::readyAnimation。持ち替えたときに求める）
-	bool mHasReadyPose;                                 // mReadyPose を使うか
-	std::vector< GameLib::Math::Matrix34 > mReadyBodyPose; // mReadyPose を作ったときの体のアニメ（WeaponSpec::readyBodyAnimation）のポーズ
-	bool mHasReadyBodyPose;                              // mReadyBodyPose を使うか（右手を、腕を寄せる基準にする）
-	std::vector< GameLib::Math::Matrix34 > mArmPose;  // 覗いていない間の構えと構えを混ぜた腕のポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
-	std::vector< GameLib::Math::Matrix34 > mReloadPose; // 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
-	float mHoldWeight;  // 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
-	float mCarryWeight; // 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）
+	const GunComponent* mPosedGun;													// 構えのポーズを取った銃（替わったら取り直す。中身は読まず、見分けるだけ）
+	int mPosedHandBone;																// そのときの銃を持つ手の骨
+	std::map< std::string, std::unique_ptr< AnimationPoseSampler > > mArmSamplers;	// 腕を差し替えるアニメ（リロード・拳銃の構え）のポーズを求める物。名前ごと（形を借りるので awake の後に作る）
+	std::vector< GameLib::Math::Matrix34 > mHoldPose;								// 腕のポーズを持つ銃（拳銃）の構え（持ち替えたときに求める）
+	bool mHasHoldPose;																// mHoldPose を使うか（持っている銃に腕のポーズがあり、求められた）
+	std::vector< GameLib::Math::Matrix34 > mReadyPose;								// 覗いていない間の構え（WeaponSpec::readyAnimation。持ち替えたときに求める）
+	bool mHasReadyPose;																// mReadyPose を使うか
+	std::vector< GameLib::Math::Matrix34 > mReadyBodyPose;							// mReadyPose を作ったときの体のアニメ（WeaponSpec::readyBodyAnimation）のポーズ
+	bool mHasReadyBodyPose;															// mReadyBodyPose を使うか（右手を、腕を寄せる基準にする）
+	std::vector< GameLib::Math::Matrix34 > mArmPose;								// 覗いていない間の構えと構えを混ぜた腕のポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
+	std::vector< GameLib::Math::Matrix34 > mReloadPose;								// 求めたポーズ（FirstPersonBody が次の姿勢の計算まで借りる）
+	float mHoldWeight;																// 両手持ちの効き具合（FirstPersonBody::setHoldWeight へ渡す）
+	float mCarryWeight;																// 胸元への寄せ具合（FirstPersonBody::setCarryWeight へ渡す）
 };
 
 #endif

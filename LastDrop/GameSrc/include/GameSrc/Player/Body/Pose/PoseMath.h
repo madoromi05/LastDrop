@@ -20,8 +20,7 @@ public:
 	// 銃に付いた点 anchor が goal へ来るよう動かす変換を求める。両腕へ掛ければ、手が銃から離れずに銃ごと動く
 	static GameLib::Math::Matrix34 alignWeapon( const GameLib::Math::Matrix34& gun, const GameLib::Math::Matrix34& axes,
 		const GameLib::Math::Vector3& anchor, const GameLib::Math::Vector3& goal );
-	// 銃の置き場所 gun の、銃口の向き（モデルの +Z）と横の向き（+X）を長さ1にして求める（持ち方の縮尺を取り除く）
-	static void weaponAxes( const GameLib::Math::Matrix34& gun, GameLib::Math::Vector3* barrel, GameLib::Math::Vector3* side );
+	static void weaponAxes( const GameLib::Math::Matrix34& gun, GameLib::Math::Vector3* barrel, GameLib::Math::Vector3* side );	// 銃の置き場所 gun の、銃口の向き（モデルの +Z）と横の向き（+X）を長さ1にして求める（持ち方の縮尺を取り除く）
 };
 
 #endif

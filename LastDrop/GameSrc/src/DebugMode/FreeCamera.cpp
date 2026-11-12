@@ -12,12 +12,9 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	// 真上・真下ちょうどだと、ビュー行列を作る上向き（+Y）と視線が重なって向きが決まらないので、少し手前で止める
-	const float kPitchLimit = 89.f;
-	// マウス1画素あたりの回転（度）。自キャラの視点（FirstPersonControl）と同じ感度にして、切り替えても手の感覚を変えない
-	const float kLookDegreesPerPixel = 0.15f;
-	// 動く速さ（m/ティック）。町の1区画（数十 m）を1〜2秒で渡れる速さ。人の走る速さの数倍
-	const float kMoveSpeed = 20.f / GameTime::kTicksPerSecond;
+	const float kPitchLimit = 89.f;								// 真上・真下ちょうどだと、ビュー行列を作る上向き（+Y）と視線が重なって向きが決まらないので、少し手前で止める
+	const float kLookDegreesPerPixel = 0.15f;					// マウス1画素あたりの回転（度）。自キャラの視点（FirstPersonControl）と同じ感度にして、切り替えても手の感覚を変えない
+	const float kMoveSpeed = 20.f / GameTime::kTicksPerSecond;	// 動く速さ（m/ティック）。町の1区画（数十 m）を1〜2秒で渡れる速さ。人の走る速さの数倍
 	// Shift を押している間の倍率。町の端から端まで（数百 m）を数秒で渡るため
 	const float kFastMultiplier = 4.f;
 	const Vector3 kUp( 0.f, 1.f, 0.f );
@@ -57,8 +54,7 @@ void FreeCamera::look() {
 		return;
 	}
 	AxisStatus look = InputLook();
-	// 向きの正負は FirstPersonControl::readInput と同じ（右へ動かすと右を向き、下へ動かすと下を向く）
-	mCamera.rotate( -look.m_width * kLookDegreesPerPixel, look.m_height * kLookDegreesPerPixel );
+	mCamera.rotate( -look.m_width * kLookDegreesPerPixel, look.m_height * kLookDegreesPerPixel );	// 向きの正負は FirstPersonControl::readInput と同じ（右へ動かすと右を向き、下へ動かすと下を向く）
 }
 
 void FreeCamera::move() {

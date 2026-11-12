@@ -7,8 +7,7 @@
 using namespace GameLib;
 
 namespace{
-	// 短押しの長さ・覗くまでの時間は WeaponStanceParams（秒。起動中に F6 で動かせる）。ティックへは使うたびに換算する
-	WeaponStanceParams gParams;
+	WeaponStanceParams gParams;	// 短押しの長さ・覗くまでの時間は WeaponStanceParams（秒。起動中に F6 で動かせる）。ティックへは使うたびに換算する
 
 	// これより短く押して離したら「覗いたまま」にする（ティック）
 	int tapTicks() {

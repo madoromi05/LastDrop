@@ -158,14 +158,12 @@ public:
 		string fn( filename ); //stringへ移植
 
 		mMutex.lock();
-		//まずmapにあるか確認
-		InIt it = mInFiles.find( fn );
-		if ( it == mInFiles.end() ){ //ないので作る
+		InIt it = mInFiles.find( fn );	//まずmapにあるか確認
+		if ( it == mInFiles.end() ){	//ないので作る
 			InFile::Impl* f = NEW InFile::Impl();
 			it = mInFiles.insert( make_pair( fn, f ) ).first;
 			f->setIterator( it );
-			//ロード要求
-			mInRequests.push_back( fn );
+			mInRequests.push_back( fn );	//ロード要求
 		}else{
 			it->second->refer();
 		}
@@ -185,24 +183,21 @@ public:
 	}
 	OutFile::Impl* createOutFile( const char* filename, const char* data, int size ){
 		mMutex.lock();
-		//ハンドル生成
-		OutFile::Impl* f = NEW OutFile::Impl( mOutRequestId );
+		OutFile::Impl* f = NEW OutFile::Impl( mOutRequestId );	//ハンドル生成
 
-		//リクエスト生成
-		OutRequest* req = NEW OutRequest( filename, data, size, mOutRequestId, false );
+		OutRequest* req = NEW OutRequest( filename, data, size, mOutRequestId, false );	//リクエスト生成
 		//ハンドル、リクエスト追加
 		mOutFiles.insert( make_pair( mOutRequestId, f ) );
 		mOutRequests.push_back( req );
-		++mOutRequestId; //次に備えてインクリメント
+		++mOutRequestId;																//次に備えてインクリメント
 		mMutex.unlock();
 
 		return f;
 	}
 	void writeFile( const char* filename, const char* data, int size ){
 		mMutex.lock();
-		//リクエスト生成
-		OutRequest* req = NEW OutRequest( filename, data, size, mOutRequestId, true );
-		++mOutRequestId; //次に備えてインクリメント
+		OutRequest* req = NEW OutRequest( filename, data, size, mOutRequestId, true );	//リクエスト生成
+		++mOutRequestId;																//次に備えてインクリメント
 		//リクエストのみ追加
 		mOutRequests.push_back( req );
 		mMutex.unlock();
@@ -307,8 +302,7 @@ public:
 
 			if ( !error ){
 				size = static_cast< int >( readSize );
-				//バッファ確保
-				mArchives[ archiveIndex ].allocate( &buffer, size, entryIndex );
+				mArchives[ archiveIndex ].allocate( &buffer, size, entryIndex );	//バッファ確保
 				//読み込み
 				bool readError = false;
 				mArchives[ archiveIndex ].read( 
@@ -369,9 +363,8 @@ public:
 
 		bool isAuto = req->isAuto();
 		int id = req->id();
-		//ファイルオープン
-		const char* fileName = req->fileName();
-		setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
+		const char* fileName = req->fileName();	//ファイルオープン
+		setlocale( LC_ALL, "" );				//これがないと日本語ファイル名を受け付けない
 		ofstream out( fileName, ofstream::binary );
 		bool error = false;
 		if ( !out ){

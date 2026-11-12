@@ -34,14 +34,13 @@ public:
 	SkinnedMeshInstance( const SkinnedMeshInstance& ) = delete;
 	SkinnedMeshInstance& operator=( const SkinnedMeshInstance& ) = delete;
 
-	void setPosition( const GameLib::Math::Vector3& );	// 置き場所（ワールド座標）
-	void setAngleY( float degree );						// Y軸まわりの向き（度）
+	void setPosition( const GameLib::Math::Vector3& );											// 置き場所（ワールド座標）
+	void setAngleY( float degree );																// Y軸まわりの向き（度）
 	// 再生するアニメを名前で設定する。見つからなければデバッグ出力してレスト姿勢のまま
 	// startTime: 再生開始時刻（フレーム）。同じアニメの複数体をずらして、動きが揃わないようにする
 	// mode: 再生のしかた。省略するとループ
 	void setAnimation( const char* name, float startTime, PlayMode mode = PLAY_LOOP );
-	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる
-	void setAnimation( GameLib::Scene::Animation, float startTime, PlayMode mode = PLAY_LOOP );
+	void setAnimation( GameLib::Scene::Animation, float startTime, PlayMode mode = PLAY_LOOP );	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる
 	// 今見えているポーズから、animation へ fadeFrames フレームかけて滑らかに切り替える
 	// フェード中に呼び直してもよい（その時点で見えている混ざったポーズから、改めて混ぜ始める）
 	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う
@@ -49,12 +48,9 @@ public:
 	// 再生の速さ（1 で 1 ティックに 1 フレーム。0.5 なら半分の速さ）。アニメを切り替える（setAnimation・crossFadeTo）と 1 に戻る
 	// アニメの一部だけをゆっくり見せたいときに、そのアニメの間だけ変える。0 より大きいこと
 	void setPlaybackRate( float rate );
-	// 今見えているアニメの時刻（フレーム。最後の update で使った時刻）。アニメの何フレーム目で何かを起こすときに読む
-	float animationTime() const;
-	// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0
-	float animationPhase() const;
-	// PLAY_ONCE のアニメが最後のフレームまで来て、止まっているか。PLAY_LOOP なら常に false
-	bool isAnimationFinished() const;
+	float animationTime() const;																// 今見えているアニメの時刻（フレーム。最後の update で使った時刻）。アニメの何フレーム目で何かを起こすときに読む
+	float animationPhase() const;																// 再生中のアニメが1周のどこまで進んだか（0以上1未満）。アニメが無い・長さ0なら0
+	bool isAnimationFinished() const;															// PLAY_ONCE のアニメが最後のフレームまで来て、止まっているか。PLAY_LOOP なら常に false
 	// 描く直前にポーズを書き換える処理（一人称で頭を消す・視点に合わせて上半身を曲げる等）
 	// 所有権は受け取らない。nullptr で外す。このインスタンスより長く生きていること
 	void setPoseModifier( BonePoseModifier* );
@@ -64,8 +60,7 @@ public:
 	// 所有権は受け取らない。nullptr で外す（無ければアニメのポーズのまま）。このインスタンスより長く生きていること
 	void setBodyPoseModifier( BonePoseModifier* );
 
-	// アニメを1フレーム（1ティック）進めて、ポーズを求める
-	void update();
+	void update();	// アニメを1フレーム（1ティック）進めて、ポーズを求める
 	// アニメの時刻とクロスフェードの進みだけを 1 ティック進め、ポーズは求めない（見えるポーズは前の update のまま）
 	// 遠い・映らない体のアニメを間引くティックに、update の代わりに呼ぶ（AnimationThrottle）。時刻は止めないので、
 	// 次の update では間引かなかった時と同じ時刻のポーズになる（動きが遅れず、飛ぶだけ）。animationTime も進む
@@ -87,16 +82,14 @@ public:
 	// まだ update していなければ、全部を根の位置（rootMatrix）に置く。体から千切れた部位を、切れた瞬間の姿勢で写すのに使う
 	// out: nullptr 不可
 	void shownWorldPose( std::vector< GameLib::Math::Matrix34 >* out ) const;
-	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける
-	GameLib::Math::Matrix34 rootMatrix() const;
+	GameLib::Math::Matrix34 rootMatrix() const;	// 置き場所と向きの行列。骨格の根から見た位置（ボーンの姿勢・BonePoseModifier が求めた点）をワールドへ置くのに掛ける
 	// ワールドの向き（移動を含まない）・点を、骨格の根の空間（置き場所と向きを掛ける前）へ直す（rootMatrix の逆を掛ける）
 	// 弾の向きでのけぞらせる・相手の方へ顔を向けるなど、骨を曲げる書き換え（BonePoseModifier）へ渡す向き・点を作るのに使う
 	GameLib::Math::Vector3 toRootDirection( const GameLib::Math::Vector3& worldDirection ) const;
 	GameLib::Math::Vector3 toRootPoint( const GameLib::Math::Vector3& worldPoint ) const;
 
 private:
-	// 体のポーズ（体の書き換えが無ければアニメのポーズ、あれば mBodyPose）
-	const std::vector< GameLib::Math::Matrix34 >& bodyPose() const;
+	const std::vector< GameLib::Math::Matrix34 >& bodyPose() const;	// 体のポーズ（体の書き換えが無ければアニメのポーズ、あれば mBodyPose）
 
 	const SkinnedMeshData* mData;
 	AnimationPlayer mPlayer; // アニメの再生（骨格・時刻・クロスフェード・アニメのポーズ）
@@ -109,8 +102,7 @@ private:
 	std::vector< GameLib::Math::Matrix34 > mBodyPose;
 	BonePoseModifier* mBodyPoseModifier;			// 無ければ nullptr（mBodyPose は使わずアニメのポーズを体のポーズとみなす）
 
-	// 描くときに求める骨の行列（ボーン数ぶん）。毎回確保し直さないための作業領域なので、const の draw から書けるよう mutable にする
-	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;
+	mutable std::vector< GameLib::Math::Matrix34 > mSkinMatrices;	// 描くときに求める骨の行列（ボーン数ぶん）。毎回確保し直さないための作業領域なので、const の draw から書けるよう mutable にする
 	// mSkinMatrices が今のポーズ・置き場所より古いか（update・setPosition・setAngleY で立て、draw で作り直して下ろす）
 	mutable bool mSkinStale;
 	GameLib::Math::Vector3 mPosition;

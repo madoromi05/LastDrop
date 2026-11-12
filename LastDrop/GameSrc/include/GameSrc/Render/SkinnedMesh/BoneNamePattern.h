@@ -14,8 +14,7 @@ public:
 	// prefix + name に当てはまる骨の番号を out の後ろへ足す。当てはまる骨が無ければ何も足さない
 	// data / prefix / name / out: nullptr 不可
 	static void append( const SkinnedMeshData* data, const char* prefix, const char* name, std::vector< int >* out );
-	// prefix + name の骨の番号（'*' は使えない）。無ければ -1
-	static int find( const SkinnedMeshData* data, const char* prefix, const char* name );
+	static int find( const SkinnedMeshData* data, const char* prefix, const char* name );	// prefix + name の骨の番号（'*' は使えない）。無ければ -1
 };
 
 #endif

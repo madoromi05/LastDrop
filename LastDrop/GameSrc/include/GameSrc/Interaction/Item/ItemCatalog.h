@@ -56,9 +56,7 @@ struct ItemSpec{
 	float blue;
 };
 
-// 種類 id の決まり。id は ITEM_NUMBER 未満であること
-const ItemSpec& itemSpec( ItemId id );
-// 保存のファイルの名前 saveName の種類（知らない名前なら ITEM_NONE）
-ItemId itemFromSaveName( const char* saveName );
+const ItemSpec& itemSpec( ItemId id );				// 種類 id の決まり。id は ITEM_NUMBER 未満であること
+ItemId itemFromSaveName( const char* saveName );	// 保存のファイルの名前 saveName の種類（知らない名前なら ITEM_NONE）
 
 #endif

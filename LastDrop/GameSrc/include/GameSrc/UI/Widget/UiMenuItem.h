@@ -26,8 +26,7 @@ public:
 	virtual void activate();
 
 private:
-	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う
-	UiRect screenRect() const;
+	UiRect screenRect() const;	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う
 
 	UiAnchor mAnchor;
 	UiRect mRect; // left は mAnchor からのずれ（理由は UiAnchor.h）

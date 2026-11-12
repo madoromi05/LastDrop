@@ -161,10 +161,8 @@ public:
 			PROFILE_SCOPE( "Input" );
 			Input::Manager().update( pointerScale, pointerOffset );
 		}
-		// エディタの 1 フレームを始める。ここから postUpdate までの間に、ゲーム側も ImGui で描ける
-		DebugUi::beginFrame();
-		// 3D は異方性つきで読む。点サンプリングだと、浅い角度で見た路面の細い線が粗いミップでつぶれて太く見える
-		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );
+		DebugUi::beginFrame();														// エディタの 1 フレームを始める。ここから postUpdate までの間に、ゲーム側も ImGui で描ける
+		Graphics::Manager().setTextureFilter( Graphics::TEXTURE_FILTER_LINEAR );	// 3D は異方性つきで読む。点サンプリングだと、浅い角度で見た路面の細い線が粗いミップでつぶれて太く見える
 	}
 	void postUpdate(){
 		// デバッグ文字・2D は画素をにじませない

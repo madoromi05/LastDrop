@@ -6,8 +6,7 @@
 #include <string>
 
 namespace{
-	// 名前の末尾がこれなら、その前までで始まる骨を全部含める
-	const char kWildcard = '*';
+	const char kWildcard = '*';	// 名前の末尾がこれなら、その前までで始まる骨を全部含める
 }
 
 void BoneNamePattern::append( const SkinnedMeshData* data, const char* prefix, const char* name, std::vector< int >* out ) {

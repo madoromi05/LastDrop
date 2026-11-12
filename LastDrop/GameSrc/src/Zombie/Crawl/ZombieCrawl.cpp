@@ -16,9 +16,8 @@ namespace{
 	// 1 往復の長さ（秒）。前半で手を前へ運び、後半で引く。左右は半周ずらすので、引くのは 1 往復に 2 回
 	const float kStrokeSeconds = 1.25f;
 	const float kPhasePerTick = 1.f / ( kStrokeSeconds * GameTime::kTicksPerSecond );
-	const float kReachShare = 0.5f; // 1 往復のうち、手を前へ運んでいる割合（残りが引く）
-	// 1 回引くと進む長さ（m）。1 往復で 2 回引くので、平均 0.25 × 2 / 1.25 = 0.4m/秒
-	const float kPullDistance = 0.25f;
+	const float kReachShare = 0.5f;		// 1 往復のうち、手を前へ運んでいる割合（残りが引く）
+	const float kPullDistance = 0.25f;	// 1 回引くと進む長さ（m）。1 往復で 2 回引くので、平均 0.25 × 2 / 1.25 = 0.4m/秒
 	// 倒れた姿勢から決めた形へ移る長さ（秒）
 	const float kFadeInSeconds = 0.4f;
 	const float kWeightPerTick = 1.f / ( kFadeInSeconds * GameTime::kTicksPerSecond );
@@ -35,10 +34,8 @@ namespace{
 	const float kMaxLookYawDegree = 70.f;
 	const float kMaxLookUpDegree = 60.f;
 	const float kMaxLookDownDegree = 10.f;
-	// 相手が居ないときに見る向き（体の前から上へ起こす角度。度）。うつ伏せで地面を見ないように、少し上を見る
-	const float kIdleLookUpDegree = 20.f;
-	// 顔の向きを回す速さ（度/ティック）。1 秒に 240°（相手が見えた瞬間に首が跳ねないように）
-	const float kLookTurnPerTick = 240.f / GameTime::kTicksPerSecond;
+	const float kIdleLookUpDegree = 20.f;								// 相手が居ないときに見る向き（体の前から上へ起こす角度。度）。うつ伏せで地面を見ないように、少し上を見る
+	const float kLookTurnPerTick = 240.f / GameTime::kTicksPerSecond;	// 顔の向きを回す速さ（度/ティック）。1 秒に 240°（相手が見えた瞬間に首が跳ねないように）
 
 	// ── 手 ──
 	// 手を突く所（肩の真下の地面から。m）。前へ伸ばし切った所と、外側へずらす量。引き終わりは、伸ばし切った所から
@@ -49,15 +46,12 @@ namespace{
 	// 手首の中心・中指の付け根を置く高さ（m。地面から）。手の厚みの半分ほどで、地面に付いて見える
 	const float kWristGroundHeight = 0.045f;
 	const float kKnuckleGroundHeight = 0.03f;
-	// 手を前へ運ぶ途中に地面から浮かせる高さ（m。運ぶ真ん中で一番高い）。地面をこする程度
-	const float kHandCarryLift = 0.04f;
+	const float kHandCarryLift = 0.04f;				// 手を前へ運ぶ途中に地面から浮かせる高さ（m。運ぶ真ん中で一番高い）。地面をこする程度
 	// 攻撃するとき：手を伸ばす所（肩の真下の地面から前へ）と、手首の高さ（足首を引っかく）
 	const float kReachForward = 0.6f;
 	const float kReachWristHeight = 0.12f;
-	// 肘を向ける向き（外側・上・前 の重み）。前腕で這うときは、肘が外側の下へ張り出す
-	const Vector3 kElbowPole( 0.7f, -0.7f, -0.2f );
-	// 肘の中心をこれより下へ行かせない高さ（m。地面から）
-	const float kElbowMinHeight = 0.05f;
+	const Vector3 kElbowPole( 0.7f, -0.7f, -0.2f );	// 肘を向ける向き（外側・上・前 の重み）。前腕で這うときは、肘が外側の下へ張り出す
+	const float kElbowMinHeight = 0.05f;			// 肘の中心をこれより下へ行かせない高さ（m。地面から）
 	// 手首から中指の付け根の向きの、上下の成分の範囲（手のひらが地面へ刺さらない・反り返らない）
 	const float kHandMinPitch = -0.6f;
 	const float kHandMaxPitch = 0.3f;

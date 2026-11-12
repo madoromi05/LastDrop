@@ -14,14 +14,12 @@ namespace GameLib{
 namespace Profiling{
 
 namespace{
-	// 予算の何倍を超えたらスパイクとするか。VSync 中は 1 回描き損ねると 2 倍（33ms）になるので、その間に置く
-	const double kSpikeBudgetRatio = 1.5;
-	// 続けて書かない間隔（秒）。書き出しで次のフレームが遅れ、それがまたスパイクになるのを防ぐ
-	const double kCooldownSeconds = 1.0;
+	const double kSpikeBudgetRatio = 1.5;	// 予算の何倍を超えたらスパイクとするか。VSync 中は 1 回描き損ねると 2 倍（33ms）になるので、その間に置く
+	const double kCooldownSeconds = 1.0;	// 続けて書かない間隔（秒）。書き出しで次のフレームが遅れ、それがまたスパイクになるのを防ぐ
 	// 1 回の起動で書く数の上限（ずっと重い場面でファイルが増え続けないように）
 	const int kMaxFilesPerLaunch = 50;
 	const double kMillisecondsPerSecond = 1000.0;
-	const int kFormatVersion = 1; // JSON の形を変えたら上げる
+	const int kFormatVersion = 1;			// JSON の形を変えたら上げる
 }
 
 SpikeWriter::SpikeWriter() :

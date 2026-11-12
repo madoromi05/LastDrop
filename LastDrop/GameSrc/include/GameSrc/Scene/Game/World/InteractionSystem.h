@@ -42,22 +42,18 @@ public:
 	// interactable（Interactor::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）
 	// 漁れる場所でなければ nullptr
 	LootContainerComponent* findContainer( const IInteractable* interactable );
-	// interactable（Interactor::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr
-	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );
+	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );	// interactable（Interactor::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr
 	// ── F6 の確認用（Loot の欄） ──
 	// 全部の漁れる場所の中身を決め直し、まだ開けていない形に戻す。seed: 乱数の種
 	void rerollLoot( int seed );
-	// 全部の漁れる場所を開けたことにする（待たずに中を見られる）
-	void markAllLootSearched();
-	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ
-	void removeTakenPickups();
+	void markAllLootSearched();												// 全部の漁れる場所を開けたことにする（待たずに中を見られる）
+	void removeTakenPickups();												// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す
 	// 確認用の表示が、物の場所を壁越しに見せるのに使う。out: 出力先。nullptr 不可
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
 
 private:
-	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。キャラなら nullptr
-	IInteractable* resolveInteractable( const HitWorld::Hit& hit ) const;
+	IInteractable* resolveInteractable( const HitWorld::Hit& hit ) const;	// 視線が当たった物（findInteractable が一番手前を選ぶ前の 1 つ）が使える物ならそれを返す。キャラなら nullptr
 
 	const HitWorld* mHitWorld;  // 借りているだけ
 	GameObjectWorld* mObjects;  // 借りているだけ

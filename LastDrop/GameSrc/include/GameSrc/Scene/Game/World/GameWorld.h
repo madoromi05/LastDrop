@@ -56,15 +56,12 @@ public:
 	// 町（地面・建物・置物・漁れる場所・脱出の車・箱の中のガソリン）を組み立てる（TownEnvironment）
 	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号。RaidSession が選ぶ）
 	void buildTown( int escapeCarSpot );
-	// ゾンビの歩ける床を TownCache から借りて、共有の棚へ置く（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。buildTown の後
-	void buildNavMesh();
-	// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後
-	void buildVisibility();
+	void buildNavMesh();												// ゾンビの歩ける床を TownCache から借りて、共有の棚へ置く（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。buildTown の後
+	void buildVisibility();												// 建物の隠れの表を TownCache から借りる（同じ）。buildTown の後
 	// 自キャラ（と手に持つ銃）を置き、ゾンビを湧かせる係（ZombieSpawner）を作る。歩ける床の後（ゾンビが共有の棚から床を借りる）
 	// escapeCarSpot: buildTown と同じ番号（自キャラはその車のそばから始める。TownEscapeCarSpot::playerStart）
 	void placeActors( int escapeCarSpot );
-	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる
-	void alertZombiesToNoise( const GameLib::Math::Vector3& position );
+	void alertZombiesToNoise( const GameLib::Math::Vector3& position );	// 物音（脱出の車のエンジンなど）がした。銃声と同じ距離の内のゾンビが、その場所へ寄ってくる
 	// 1ティック進める
 	//   Input（自キャラが操作どおりに動く・撃つ。足音・銃声をゾンビへ知らせる）→ 撃ったなら弾を出す → 弾を飛ばし、当たった所を CombatResolver が解決
 	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす。沈み終えた死体は自分で消える印を付ける）→
@@ -90,25 +87,22 @@ public:
 	// 多い分のゾンビは消さない（群れ → ふつうでも、居るゾンビはそのまま）。出撃の始めの知らせは出し直さない
 	void changeDayCondition( DayCondition condition );
 
-	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
-	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );
+	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
 
 	// 見て E で使う物を探す・拾われた物を消す（Interactor の finder と、1 回の描画ごとの後片付け）
 	InteractionSystem& interaction();
 	const InteractionSystem& interaction() const;
-	// 当たった後の出来事（音・画面の赤みの係が、update の後に読む）
-	const CombatResolver& combat() const;
-	// 弾痕・砂ぼこり・血・千切れた部位。描くときに並べ替えるので、WorldRenderer へ書いてよい形で貸す（描く以外には使わない）
-	EffectManager& effects();
+	const CombatResolver& combat() const;	// 当たった後の出来事（音・画面の赤みの係が、update の後に読む）
+	EffectManager& effects();				// 弾痕・砂ぼこり・血・千切れた部位。描くときに並べ替えるので、WorldRenderer へ書いてよい形で貸す（描く以外には使わない）
 
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
-	const TownEnvironment& town() const;                // 町（地図・道路と歩道・建物・歩ける床・隠れの表）
-	const ZombieDirector& zombies() const;              // ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
-	const DayConditionEffect& dayCondition() const;		// 今日の条件の効き目（街灯・霧・HUD はシーンがここから読む）
-	DayCondition dayConditionKind() const;				// 今日の条件がどれか（F6 の Raid の欄が出す・結果の画面へ渡す）
-	const CollisionWorld& collisionWorld() const;		// 移動の当たり判定の名簿
-	const HitWorld& hitWorld() const;					// 命中の当たり判定の名簿
-	const BulletList& bullets() const;					// 飛んでいる弾
+	const TownEnvironment& town() const;			// 町（地図・道路と歩道・建物・歩ける床・隠れの表）
+	const ZombieDirector& zombies() const;			// ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
+	const DayConditionEffect& dayCondition() const;	// 今日の条件の効き目（街灯・霧・HUD はシーンがここから読む）
+	DayCondition dayConditionKind() const;			// 今日の条件がどれか（F6 の Raid の欄が出す・結果の画面へ渡す）
+	const CollisionWorld& collisionWorld() const;	// 移動の当たり判定の名簿
+	const HitWorld& hitWorld() const;				// 命中の当たり判定の名簿
+	const BulletList& bullets() const;				// 飛んでいる弾
 	// 自キャラの物（部品は PlayerComponent の説明）。place の前・構築に失敗して置けなかったときは nullptr
 	// 返すポインタはこの世界がある間使える（自キャラは消えない）
 	GameObject* player();
@@ -122,8 +116,7 @@ public:
 	// 書ける方は、update の外で部品の値を入れる係（弾倉の数を入れる MagazineSync）だけが使う（物を増やす・消すのは世界の中の係）
 	const GameObjectWorld& objects() const;
 	GameObjectWorld& objects();
-	// 自キャラが死んだか（自キャラが居なければ false）
-	bool isPlayerDead() const;
+	bool isPlayerDead() const;						// 自キャラが死んだか（自キャラが居なければ false）
 
 private:
 	// 物を組み立てて置く関数は、1 つの関数で 1 つの物だけを作る（中の変数は画像と同じ obj）
@@ -137,17 +130,14 @@ private:
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;
-	// 町。名簿が地面・建物を指すので、名簿より先に宣言する（mPropFactory を借りるので、その後に宣言する）
-	TownEnvironment mTown;
-	const StaticMeshData* mBulletData;    // MeshCache から借りる。飛ぶ弾
-	CollisionWorld mCollisionWorld;			// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する
+	TownEnvironment mTown;						// 町。名簿が地面・建物を指すので、名簿より先に宣言する（mPropFactory を借りるので、その後に宣言する）
+	const StaticMeshData* mBulletData;			// MeshCache から借りる。飛ぶ弾
+	CollisionWorld mCollisionWorld;				// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する
 	HitWorld mHitWorld;
-	BulletList mBullets;			// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）
-	EffectManager mEffects;	// 弾痕・砂ぼこり・血しぶき・千切れた部位
-	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）
-	std::vector< BulletList::Impact > mImpacts;
-	// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）
-	ZombieDirector mZombies;
+	BulletList mBullets;						// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）
+	EffectManager mEffects;						// 弾痕・砂ぼこり・血しぶき・千切れた部位
+	std::vector< BulletList::Impact > mImpacts;	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）
+	ZombieDirector mZombies;					// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ
 	// （名簿への登録・解除もここが行う）
 	// 物が名簿・町の歩ける床・mZombies の物を借りるので、それらより後に宣言する（＝先に破棄される）
@@ -155,8 +145,8 @@ private:
 	// 当たった後を解決する・使う物を探す。mObjects・mEffects・名簿を借りるので、それらより後に宣言する
 	CombatResolver mCombat;
 	InteractionSystem mInteraction;
-	GameObject* mPlayer;             // 自キャラの物（mObjects が持つ。置けなければ nullptr）
-	PlayerComponent* mPlayerControl; // 自キャラの操作を読む部品（同上）
+	GameObject* mPlayer;						// 自キャラの物（mObjects が持つ。置けなければ nullptr）
+	PlayerComponent* mPlayerControl;			// 自キャラの操作を読む部品（同上）
 };
 
 #endif
