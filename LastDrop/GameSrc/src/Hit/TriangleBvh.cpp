@@ -13,6 +13,7 @@ namespace{
 	const int kVerticesPerTriangle = 3;
 	const int kAxisNumber = 3;
 	const int kRootNode = 0;
+	const int kChildNumber = 2;			// 葉でない節の子の数（二分木）
 	const int kMaxLeafTriangles = 4;	// 葉に入れる三角形の数の上限。小さいほど木は深くなるが、葉で調べる三角形は減る（4 前後がよく使われる値）
 	// 下りる途中で覚えておく節の数の上限。中央値で分けるので深さは log2(三角形の数 / 4) 程度
 	// （unsigned short のつながりでは三角形は最大 2 万強で、深さ 13 前後）。余裕を見て大きめにする
@@ -150,30 +151,13 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 		}
 		const Node& node = mNodes[ pending.node ];
 		if ( node.triangleCount > 0 ) {
-			PROFILE_COUNT( "Hit.triangles", static_cast< double >( node.triangleCount ) ); // 調べる三角形の数
-			for ( int i = node.firstChildOrTriangle; i < node.firstChildOrTriangle + node.triangleCount; ++i ) {
-				const Vector3* v0;
-				const Vector3* v1;
-				const Vector3* v2;
-				corners( positions, indices, mTriangles[ i ], &v0, &v1, &v2 );
-				float t;
-				Vector3 n;
-				if ( !HitMath::segmentTriangle( origin, delta, *v0, *v1, *v2, &t, &n ) ) {
-					continue;
-				}
-				if ( found && t >= *time ) {
-					continue;
-				}
-				*time = t;
-				*normal = n;
-				found = true;
-			}
+			raycastLeaf( node, positions, indices, origin, delta, time, normal, &found );
 			continue;
 		}
 		// 子の 2 つのうち、線分が先に入る方を後に積む（先に取り出して調べ、早く当たりを見つけて遠い方を飛ばすため）
-		Pending children[ 2 ];
+		Pending children[ kChildNumber ];
 		int childCount = 0;
-		for ( int c = 0; c < 2; ++c ) {
+		for ( int c = 0; c < kChildNumber; ++c ) {
 			int childIndex = node.firstChildOrTriangle + c;
 			const Node& child = mNodes[ childIndex ];
 			float enter;
@@ -186,7 +170,7 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 			}
 			children[ childCount++ ] = Pending{ childIndex, enter };
 		}
-		if ( childCount == 2 && children[ 0 ].enterTime < children[ 1 ].enterTime ) {
+		if ( childCount == kChildNumber && children[ 0 ].enterTime < children[ 1 ].enterTime ) {
 			std::swap( children[ 0 ], children[ 1 ] );
 		}
 		ASSERT( depth + childCount <= kMaxStackDepth && "TriangleBvh : tree is deeper than the stack." );
@@ -195,4 +179,26 @@ const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) cons
 		}
 	}
 	return found;
+}
+
+void TriangleBvh::raycastLeaf( const Node& leaf, const std::vector< Vector3 >& positions, const std::vector< unsigned short >& indices,
+const Vector3& origin, const Vector3& delta, float* time, Vector3* normal, bool* found ) const {
+	PROFILE_COUNT( "Hit.triangles", static_cast< double >( leaf.triangleCount ) ); // 調べる三角形の数
+	for ( int i = leaf.firstChildOrTriangle; i < leaf.firstChildOrTriangle + leaf.triangleCount; ++i ) {
+		const Vector3* v0;
+		const Vector3* v1;
+		const Vector3* v2;
+		corners( positions, indices, mTriangles[ i ], &v0, &v1, &v2 );
+		float t;
+		Vector3 n;
+		if ( !HitMath::segmentTriangle( origin, delta, *v0, *v1, *v2, &t, &n ) ) {
+			continue;
+		}
+		if ( *found && t >= *time ) {
+			continue;
+		}
+		*time = t;
+		*normal = n;
+		*found = true;
+	}
 }

@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Game/Hud/AmmoHudVisibility.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 namespace{
 	const float kLingerSeconds = 2.f;    // 覗くのをやめた・リロードを終えた後、出したままにする長さ
@@ -26,13 +27,8 @@ void AmmoHudVisibility::update( bool wanted ) {
 		--mLingerTicks;
 	}
 	bool shown = wanted || mLingerTicks > 0;
-	if ( shown ) {
-		mOpacity += stepPerTick( kFadeInSeconds );
-		mOpacity = ( mOpacity > kOpaque ) ? kOpaque : mOpacity;
-	} else {
-		mOpacity -= stepPerTick( kFadeOutSeconds );
-		mOpacity = ( mOpacity < kHidden ) ? kHidden : mOpacity;
-	}
+	float step = shown ? stepPerTick( kFadeInSeconds ) : -stepPerTick( kFadeOutSeconds );
+	mOpacity = ScalarMath::clamp( mOpacity + step, kHidden, kOpaque );
 }
 
 float AmmoHudVisibility::opacity() const {

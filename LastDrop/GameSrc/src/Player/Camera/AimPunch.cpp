@@ -1,4 +1,5 @@
 #include "GameSrc/Player/Camera/AimPunch.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -12,11 +13,6 @@ namespace{
 	const float kReturnPerTick = 0.85f;	// 1 ティックごとに残る割合。0.85 で約 0.3 秒（18 ティックで 1/19）まで戻る
 	const float kLimit = 6.f;			// 続けて攻撃されても跳ねすぎないように、合計はこれで止める（度）
 	const float kMinOffset = 0.001f;	// これより小さくなったら 0 にする
-
-	float settle( float value ) {
-		value *= kReturnPerTick;
-		return ( Math::abs( value ) < kMinOffset ) ? 0.f : value;
-	}
 }
 
 AimPunch::AimPunch( int seed ) :
@@ -27,12 +23,12 @@ AimPunch::AimPunch( int seed ) :
 
 void AimPunch::punch() {
 	mRise = Math::min( kLimit, mRise + kPunchPitch );
-	mSide = Math::max( -kLimit, Math::min( kLimit, mSide + mRandom.getFloat( -kPunchYaw, kPunchYaw ) ) );
+	mSide = ScalarMath::clampSigned( mSide + mRandom.getFloat( -kPunchYaw, kPunchYaw ), kLimit );
 }
 
 void AimPunch::update() {
-	mRise = settle( mRise );
-	mSide = settle( mSide );
+	mRise = ScalarMath::decay( mRise, kReturnPerTick, kMinOffset );
+	mSide = ScalarMath::decay( mSide, kReturnPerTick, kMinOffset );
 }
 
 float AimPunch::pitchOffset() const {

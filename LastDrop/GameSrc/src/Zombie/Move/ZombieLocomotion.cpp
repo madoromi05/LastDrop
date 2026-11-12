@@ -4,6 +4,7 @@
 #include "GameSrc/Collision/CharacterMover.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -106,13 +107,14 @@ bool ZombieLocomotion::turnToward( const Vector3& center, const Vector3& destina
 	// 向き 0 が +Z、90 が +X（AngleMath）
 	float difference = AngleMath::difference( AngleMath::headingOf( toDestination ), *angleY );
 	float turnLimit = ( posture == Posture::Crawling ) ? kCrawlTurnPerTick : kTurnPerTick;
-	float turn = Math::max( -turnLimit, Math::min( turnLimit, difference ) );
+	float turn = ScalarMath::clampSigned( difference, turnLimit );
 	*angleY = AngleMath::wrapSigned( *angleY + turn );
 	return Math::abs( difference - turn ) <= kTurnInPlaceDegree;
 }
 
 Vector3 ZombieLocomotion::walkStep( float distance, float angleY ) const {
-	Vector3 step( Math::sin( angleY ) * distance, 0.f, Math::cos( angleY ) * distance );
+	Vector3 step;
+	step.setMul( AngleMath::forwardOf( angleY ), distance );
 	return mMover->move( step );	// 壁・車・ほかの体に当たったら沿って滑る（向きを変えてめり込んだ分も、ここで外へ出る）
 }
 

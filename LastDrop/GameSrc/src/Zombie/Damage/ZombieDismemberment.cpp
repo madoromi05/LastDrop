@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/Damage/ZombieDismemberment.h"
 #include "GameSrc/Zombie/Damage/ZombieSeverLayout.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 
@@ -56,8 +57,7 @@ void ZombieDismemberment::apply( std::vector< Matrix34 >* pose ) {
 	for ( BodyPart part : mCutParts ) {
 		const ZombieSeverLayout::Cut& cut = mLayout->cut( part );
 		// 関節の位置は、潰す前に読む（関節の骨も潰す骨に入っている）
-		const Matrix34& joint = ( *pose )[ cut.jointBone ];
-		Matrix34 collapsed = collapsedAt( Vector3( joint.m03, joint.m13, joint.m23 ) );
+		Matrix34 collapsed = collapsedAt( PlacementMatrix::translationOf( ( *pose )[ cut.jointBone ] ) );
 		for ( int bone : cut.bones ) {
 			( *pose )[ bone ] = collapsed;
 		}

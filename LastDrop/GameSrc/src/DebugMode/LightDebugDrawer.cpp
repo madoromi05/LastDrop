@@ -1,6 +1,7 @@
 #include "GameSrc/DebugMode/LightDebugDrawer.h"
 #include "GameSrc/Render/Lighting/LightList.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/Graphics/Enum.h"
 #include "GameLib/Math/Functions.h"
@@ -15,7 +16,6 @@ namespace{
 	const float kLineLift = 0.3f;      // 線を地面から浮かせる高さ（m。ZombiePathDrawer と同じ。歩道に埋もれないように）
 	const float kMarkSize = 0.3f;      // 光の位置の十字の腕の長さ（m）
 	const int kCircleSegments = 24;    // 円を何本の線で描くか
-	const float kFullTurnDegree = 360.f;
 	const float kSpotLineLength = 3.f; // スポットの照らす向きの線の長さ（m）
 	const int kMarkLines = 5;          // 十字 3 本＋縦の線 1 本＋スポットの向き 1 本
 	const int kVerticesPerLine = 2;
@@ -58,8 +58,8 @@ void LightDebugDrawer::draw( const LightList& lights, const Matrix44& projection
 		if ( height < light.range ) {
 			float radius = sqrt( light.range * light.range - height * height );
 			for ( int s = 0; s < kCircleSegments; ++s ) {
-				float a0 = kFullTurnDegree * s / kCircleSegments;
-				float a1 = kFullTurnDegree * ( s + 1 ) / kCircleSegments;
+				float a0 = AngleMath::kFullTurnDegree * s / kCircleSegments;
+				float a1 = AngleMath::kFullTurnDegree * ( s + 1 ) / kCircleSegments;
 				mRenderer.addLine( Vector3( p.x + radius * cos( a0 ), lineY, p.z + radius * sin( a0 ) ),
 					Vector3( p.x + radius * cos( a1 ), lineY, p.z + radius * sin( a1 ) ), color, color );
 			}

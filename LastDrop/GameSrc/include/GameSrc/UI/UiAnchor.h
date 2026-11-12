@@ -1,6 +1,7 @@
 #ifndef INCLUDED_UI_ANCHOR_H
 #define INCLUDED_UI_ANCHOR_H
 
+#include "GameSrc/UI/UiRect.h"
 #include "Framework.h"
 
 // 部品の横の位置を、画面のどこから測るか
@@ -38,6 +39,15 @@ namespace UiLayout {
 	// column の今の左端の x（画素）
 	inline float columnLeft( const UiColumn& column ) {
 		return column.margin + column.index * ( columnWidth( column ) + column.gap );
+	}
+	// 今の画面全体の範囲（画素）。後ろを暗くする板に使う
+	inline UiRect screenRect() {
+		UiRect screen;
+		screen.left = 0.f;
+		screen.top = 0.f;
+		screen.width = static_cast< float >( GameLib::Framework::instance().width() );
+		screen.height = static_cast< float >( GameLib::Framework::instance().height() );
+		return screen;
 	}
 }
 

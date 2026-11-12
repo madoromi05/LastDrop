@@ -3,6 +3,7 @@
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 
 #include "GameLib/GameLib.h"
@@ -124,12 +125,9 @@ bool PlayerLocomotionComponent::isCarryState( Animator::State state ) {
 }
 
 bool PlayerLocomotionComponent::readMoveDirection( const PlayerCommand& command, float cameraYaw, Vector3* direction ) const {
-	// カメラの水平の前方と右（FirstPersonCamera と同じ約束: 前方はヨー0で +Z、右は 前方×上）
-	Vector3 cameraForward( Math::sin( cameraYaw ), 0.f, Math::cos( cameraYaw ) );
-	Vector3 cameraRight( -Math::cos( cameraYaw ), 0.f, Math::sin( cameraYaw ) );
 	direction->set( 0.f, 0.f, 0.f );
-	direction->madd( cameraForward, command.forward );
-	direction->madd( cameraRight, command.strafe );
+	direction->madd( AngleMath::forwardOf( cameraYaw ), command.forward );	// カメラの水平の前（FirstPersonCamera と同じ約束。ヨー 0 で +Z）
+	direction->madd( AngleMath::rightOf( cameraYaw ), command.strafe );
 	if ( direction->length() < kMinInputLength ) {
 		return false;
 	}

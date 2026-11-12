@@ -1,4 +1,5 @@
 #include "GameSrc/Render/LitQuadBatch.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -18,16 +19,14 @@ namespace{
 	const int kSoftConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // SoftQuad.hlsli の b1
 	const float kNoSoftDistance = 0.f; // 薄くしない（SoftQuad.hlsli は深度を読まない）
 
-	const int kMatrixFloats = 16;
-	const int kRowFloats = 4;
 	// SoftQuad.hlsli の cbuffer SoftQuadConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct SoftQuadConstants{
-		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
-		float viewDepthRow[ kRowFloats ];             // 射影×ビューの 4 行目（m30..m33）
+		float inverseProjectionView[ ShaderConstants::kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
+		float viewDepthRow[ ShaderConstants::kRowFloats ];             // 射影×ビューの 4 行目（m30..m33）
 		float softDistance;
 		float unused[ 3 ];
 	};
-	static_assert( sizeof( SoftQuadConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * 2 ), "SoftQuadConstants : keep the HLSL layout." );
+	static_assert( sizeof( SoftQuadConstants ) == sizeof( float ) * ( ShaderConstants::kMatrixFloats + ShaderConstants::kRowFloats * 2 ), "SoftQuadConstants : keep the HLSL layout." );
 
 	// 板の4隅（左下・右下・右上・左上）。横・縦の向きに何倍進むか
 	// UV は、横が負なら uv.left・正なら uv.right、縦が負（下）なら uv.bottom・正（上）なら uv.top（絵の左上が 0,0）
@@ -167,13 +166,8 @@ void LitQuadBatch::setSoftConstants( const Matrix44& projectionView ) {
 	SoftQuadConstants constants;
 	Matrix44 inverse;
 	inverse.setInverse( projectionView );
-	for ( int i = 0; i < kMatrixFloats; ++i ) {
-		constants.inverseProjectionView[ i ] = ( &inverse.m00 )[ i ];
-	}
-	const int kDepthRowStart = kMatrixFloats - kRowFloats; // m30..m33
-	for ( int i = 0; i < kRowFloats; ++i ) {
-		constants.viewDepthRow[ i ] = ( &projectionView.m00 )[ kDepthRowStart + i ];
-	}
+	ShaderConstants::copyMatrix44( inverse, constants.inverseProjectionView );
+	ShaderConstants::copyDepthRow( projectionView, constants.viewDepthRow );
 	constants.softDistance = softParticlesEnabled() ? mSoftDistance : kNoSoftDistance;
 	constants.unused[ 0 ] = 0.f;
 	constants.unused[ 1 ] = 0.f;

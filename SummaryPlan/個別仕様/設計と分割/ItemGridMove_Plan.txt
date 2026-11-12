@@ -1,0 +1,342 @@
+================================================================================
+ マス目の移動（ItemGrid::applyMove と applyMoveBetween）の重複をまとめる計画メモ
+ 作成日：2026-11-13
+ 状態：2026-11-13 仕様案。★1〜★3 の決定待ち（コードはまだ変えていない）
+       変える前の結果は、使い捨ての単体テストで記録済み（7 章）
+ 依頼：2026-11-12〜13 の「重複・生の数字・長い関数」の見直しの E。
+       インベントリのロジック（物が消える・増えるに直結する）に触るので、仕様書を書いて承認をもらってから進める
+ 記録：C:\AIResorce\GameDev\GameChats\CleanCodeRefactor.md
+================================================================================
+
+目次
+  0. 決定事項と未決事項（まずここを見る）
+  1. 手本のゲームでは
+  2. 今のコードで分かったこと（2 つの関数の違いの一覧）
+  3. 同じマス目の移動を「元と先が同じ移動」として扱えるか
+  4. まとめた後の形
+  5. 振る舞いが変わりうる所と、同じ結果になる理由
+  6. 変えるファイルと進める順
+  7. 確認のしかた
+  8. 今回は触らない所
+  9. 懸念点
+ 10. 参考記事
+
+================================================================================
+ 0. 決定事項と未決事項
+================================================================================
+
+--------------------------------------------------------------------------------
+ ★ ユーザーに決めてもらうこと（おすすめを先に書く）
+--------------------------------------------------------------------------------
+ ★1 どこまでまとめるか
+     （おすすめ）案A：入口の関数 2 つ（applyMove・applyMoveBetween）は残し、違いだけを持たせる。
+                      同じ行で書かれている 2 段（①重ねる・②入れ替え）を private 関数 2 つへ切り出して、両方から呼ぶ
+       ・「同じマス目のときだけの決まり」（同じ所なら false・動かす物自身を除く）が、applyMove を読めば全部分かる
+       ・ASSERT の文字（"ItemGrid::applyMove : nothing to move." など）が今のまま残る
+       ・入口は 13 行ずつになる。残る重複は「動かす物を調べる」3 行だけ
+     （別案）案B：入口も 1 つにする。applyMove を消し、canMove・move から
+                  applyMoveBetween( &trial, from, *this, &trial, to ) を呼ぶ
+       ・行数は案A よりさらに 8 行ほど減る
+       ・「sourceCells == targetCells なら」の分岐が関数の中に 2 か所できる（同じ所なら false・ownersIn の except）。
+         ポインタの比べ方で動きが変わるので、読む人が「同じマス目のとき」を頭で追う必要がある
+       ・同じマス目の移動の ASSERT の文字が applyMoveBetween の物に変わる
+
+ ★2 切り出す 2 つの関数への引数の渡し方（名前は tryStackInto・swapAndRestore）
+     （おすすめ）案A：引数をそのまま並べる
+         static bool tryStackInto( Cells* sourceCells, int source, Cells* targetCells, const std::vector< int >& others );
+         bool swapAndRestore( Cells* sourceCells, int source, const ItemGrid& target, Cells* targetCells, int placed,
+                              const std::vector< int >& others ) const;
+       ・型を足さない。呼ぶ所は入口の 2 つだけで、並べて見比べられる
+       ・swapAndRestore の引数が 6 つになる（今の applyMoveBetween は 5 つ）
+     （別案）案B：「元と先」を 1 つの struct（private の MoveSides）にまとめて渡す
+       ・呼ぶ所が tryStackInto( sides, others ) の形になり、source と placed の取り違えが起きにくい
+       ・private 関数 2 つのためだけの型が 1 つ増える
+
+ ★3 「決して通らない確認」をどうするか（2-3 に書いた、どけた後の isFree の確認）
+     （おすすめ）案A：今のまま残す（swapAndRestore の中へ 1 か所にまとまる）
+       ・分けるだけの作り直しなので、行を 1 つも足し引きしない
+     （別案）案B：ASSERT に変える（「ここは必ず空いている」をコードで言う）
+       ・意味ははっきりするが、Release で「false を返す」が無くなる。今回の「振る舞いを変えない」から外れる
+
+--------------------------------------------------------------------------------
+ 決まっていること（依頼・今までの方針から）
+--------------------------------------------------------------------------------
+ ・振る舞いは変えない。変えるのは「どこに書いてあるか」だけ（設計思想.md「分けるだけの作り直しでは、振る舞いを変えない」）
+ ・public の口（canMove・move・canMoveBetween・moveBetween）は名前も引数も変えない。呼ぶ所（Inventory・ItemTransfer）は触らない
+ ・クラスは分けない。同じ表（Cells）の並べ方を知らないと書けない仕事なので、関数に分けるだけにする
+   （設計思想.md「同じデータの並べ方を知らないと書けない仕事は、クラスを分けない」）
+ ・新しいファイルは作らない（vcxproj は触らない）
+ ・変える前後で同じ結果になることを、使い捨ての単体テストで比べる。最後に Debug・Release・Profile の 3 構成でビルドする
+ ・変えた箇所は、変更前→変更後を 1 か所も省かずチャットに貼る。コミットはしない
+
+================================================================================
+ 1. 手本のゲームでは
+================================================================================
+ 中の作りを整理するだけで、遊びの仕様（重ねる・入れ替える・戻す所）は 1 つも変わらないので、調べる対象が無い。
+
+================================================================================
+ 2. 今のコードで分かったこと
+================================================================================
+ 対象：GameSrc/src/Interaction/Item/ItemGrid.cpp
+   applyMove（273〜327 行・55 行）         … 同じマス目の中の移動。canMove・move が、表の写しの上で呼ぶ
+   applyMoveBetween（340〜393 行・54 行）  … 別のマス目への移動。canMoveBetween・moveBetween が、2 つの表の写しの上で呼ぶ
+ どちらも「写しの上で動かしてみて、できたら true」。move・moveBetween は true のときだけ写しを本物と入れ替える。
+
+ 2-1. 2 つの関数の流れ（同じ）
+   (a) 動かす物を調べる（from の持ち主のマス source・中身 moving・決まり spec）
+   (b) 置く先のマスを決める（placementCell で右端なら左へ寄せる）
+   (c) 動かせない場合を先に返す
+   (d) 置く先を使っている物 others を集める（ownersIn）
+   (e) ① others が 1 つで、同じ物で重ねられるなら、入る分だけ足して終わり
+   (f) ② 入れ替え。others を全部どける → 動かす物を元からどける → 置く先へ置く → どけた物を元のマス目へ戻す
+
+ 2-2. 違いの一覧
+   #  所                     applyMove（同じマス目）            applyMoveBetween（別のマス目）         まとめた後
+   -- ---------------------- ---------------------------------- -------------------------------------- ------------------
+   1  元と先の表             cells 1 つ                         sourceCells と targetCells             段の関数は 2 つ受け取る。
+                                                                                                       同じマス目では同じ表を渡す
+   2  (b) 置く先を決める     this の placementCell              target の placementCell                入口に残す
+   3  (c) 同じ所へ動かす     target == source なら false        確認しない（別のマス目なら、番号が     入口に残す
+                             （画面では取りやめとして扱う）     同じでも別の所なので動かせる）
+   4  (c) 列が足りない       確認しない（動かす物が入っている   target.isInside でなければ false       入口に残す
+                             マス目なので、必ず足りる）         （1 列のマス目に 2 マスの物）
+   5  (d) ownersIn の except source（動かす物自身は数えない）   kEmpty（何も除かない）                 入口に残す
+   6  (e) ① 重ねる           12 行。表の名前だけが違う          同じ                                   tryStackInto
+   7  (f) ② 入れ替え         27 行。表の名前と、列の数を        同じ                                   swapAndRestore
+                             読む所（mColumns）だけが違う       （置く先のずれは target.mColumns、
+                                                                 戻す所は this の mColumns）
+   8  ASSERT の文字          "ItemGrid::applyMove : ..."        "ItemGrid::applyMoveBetween : ..."     入口に残す（変えない）
+
+   ・5 が一番大事な違い。別のマス目の移動で except に source を渡すと、先のマス目の「たまたま同じ番号のマス」に
+     ある物を others から落としてしまう。ここは入口ごとに書き分ける
+   ・6・7 は、cells を sourceCells・targetCells に、target を placed に読み替えると 1 行ずつ同じになる
+
+ 2-3. 決して通らない確認が 1 つずつある（★3）
+   ② の途中の「if ( !isFree( 置く先 ) ) return false;」（306 行・372 行）。
+   その前に、置く先を使っている物を全部どけ、同じマス目なら動かす物もどけているので、置く先は必ず空いている。
+   印を入れた写しで 7 章のテスト（約 10 万通り）を回して、1 回も通らないことを確かめた。
+
+ 2-4. 今の動きのうち、そのまま残る物（テストで見えた物）
+   ・2 マスの物の右のマスを指して動かすと、物は 1 マス右へずれる（指したマスが左のマスになるため。3 の「同じ所」は左のマスで比べる）
+   ・一杯のマスへ同じ物を重ねようとすると、入れ替えになる（① は「空きがあるとき」だけ）
+   ・できなかったとき、写しは途中まで変わっている（呼ぶ側が写しを捨てるので、本物は変わらない）
+
+================================================================================
+ 3. 同じマス目の移動を「元と先が同じ移動」として扱えるか
+================================================================================
+ 答え：①②の段は扱える。入口はそのままでは扱えない（違いが 3 つ残る）。
+
+ 3-1. 段（①②）は扱える
+   段の関数に「元の表」と「先の表」を別の引数で渡す形にして、同じマス目の移動では同じ表を 2 回渡す。
+   このとき applyMoveBetween の①②の行は、applyMove の①②の行と 1 行ずつ同じ処理になる。理由：
+   ・表の大きさを変える処理が無い（place・clear はマスを書き換えるだけ）。だから 2 つの引数が同じ表を指していても、
+     途中で取った参照（重ねる先の into）は壊れない
+   ・重ねる先 into は others の 1 つで、others は動かす物自身を含まない（2-2 の 5）。同じ表でも、足す先と引く元は別のマス
+   ・処理の順番（others をどける → 動かす物をどける → 置く → 戻す）は 2 つの関数で同じ
+   ・列の数は、同じマス目なら target.mColumns と mColumns が同じ値
+
+ 3-2. 入口は違いが残る
+   ・同じ所へ動かしたら false（2-2 の 3）は、同じマス目のときだけの決まり
+   ・ownersIn の except（2-2 の 5）は、同じマス目のときだけ source を渡す
+   ・列が足りない確認（2-2 の 4）は、同じマス目に足しても結果は変わらない（必ず通る）が、要らない確認が増える
+   入口も 1 つにすると（★1 案B）、上の 2 つが「sourceCells == targetCells なら」の分岐になる。
+   おすすめは、入口を 2 つ残して違いをそこに書く形（★1 案A）。「同じマス目だけの決まり」が applyMove の 1 か所で読める。
+
+================================================================================
+ 4. まとめた後の形（★1 案A・★2 案A・★3 案A のとき）
+================================================================================
+ 4-1. ItemGrid.h の private（applyMove・applyMoveBetween・ownersIn の宣言は今のまま。下の 2 つを足す）
+
+   // 動かす物（sourceCells の source）を、置く先を 1 つだけで使っている同じ物へ、入る分だけ重ねる。入りきらない分は元のマスに残る
+   // others は置く先（targetCells）を使っている物。重ねたら true。others が 1 つでない・別の物・重ねない物・もう一杯なら何もせず false
+   // 同じマス目の中の移動では、sourceCells と targetCells に同じ表を渡す
+   static bool tryStackInto( Cells* sourceCells, int source, Cells* targetCells, const std::vector< int >& others );
+   // 動かす物（sourceCells の source）を target のマス目（の写し targetCells）の placed へ置き、そこを使っていた物 others を
+   // this のマス目（の写し sourceCells）へ戻す。戻す所は、置く先と同じ並びのまま元の場所。入らなければ上の行・左の列から空いている所
+   // 全部戻せたら true。戻せない物があれば false（表は途中まで変わっている）
+   // 同じマス目の中の移動では、target に *this を、sourceCells と targetCells に同じ表を渡す
+   bool swapAndRestore( Cells* sourceCells, int source, const ItemGrid& target, Cells* targetCells, int placed,
+                        const std::vector< int >& others ) const;
+
+ 4-2. ItemGrid.cpp の入口（違いだけが残る）
+
+   bool ItemGrid::applyMove( Cells* cells, int from, int to ) const {
+       int source = ( *cells )[ from ].owner;
+       ASSERT( source != kEmpty && "ItemGrid::applyMove : nothing to move." );
+       ItemId item = ( *cells )[ source ].stack.item;
+       int target = placementCell( item, to );
+       if ( target == source ) {
+           return false; // 同じ所（動かさない。画面では取りやめとして扱う）
+       }
+       std::vector< int > others = ownersIn( *cells, target, itemSpec( item ).cellSize, source );   // （今のコメントのまま）
+       if ( tryStackInto( cells, source, cells, others ) ) {
+           return true;
+       }
+       return swapAndRestore( cells, source, *this, cells, target, others );
+   }
+
+   bool ItemGrid::applyMoveBetween( Cells* sourceCells, int from, const ItemGrid& target, Cells* targetCells, int to ) const {
+       int source = ( *sourceCells )[ from ].owner;
+       ASSERT( source != kEmpty && "ItemGrid::applyMoveBetween : nothing to move." );
+       ItemId item = ( *sourceCells )[ source ].stack.item;
+       int size = itemSpec( item ).cellSize;
+       int placed = target.placementCell( item, to );
+       if ( !target.isInside( placed / target.mColumns, placed % target.mColumns, size ) ) {
+           return false; // 列が足りない（1 列のマス目に 2 マスの物）
+       }
+       std::vector< int > others = ownersIn( *targetCells, placed, size, kEmpty );                  // （今のコメントのまま）
+       if ( tryStackInto( sourceCells, source, targetCells, others ) ) {
+           return true;
+       }
+       return swapAndRestore( sourceCells, source, target, targetCells, placed, others );
+   }
+
+ 4-3. 切り出す 2 つ（中身は今の applyMoveBetween の①②の行をそのまま移す）
+
+   bool ItemGrid::tryStackInto( Cells* sourceCells, int source, Cells* targetCells, const std::vector< int >& others ) {
+       if ( others.size() != 1 ) {
+           return false;
+       }
+       ItemStack& moving = ( *sourceCells )[ source ].stack;
+       ItemStack& into = ( *targetCells )[ others[ 0 ] ].stack;
+       int stackSize = itemSpec( moving.item ).stackSize;
+       if ( into.item != moving.item || stackSize <= 1 || into.amount >= stackSize ) {
+           return false;
+       }
+       int count = std::min( moving.amount, stackSize - into.amount );
+       into.amount += count;
+       moving.amount -= count;
+       if ( moving.amount == 0 ) {
+           clear( sourceCells, source );
+       }
+       return true;
+   }
+
+   bool ItemGrid::swapAndRestore( Cells* sourceCells, int source, const ItemGrid& target, Cells* targetCells, int placed,
+                                  const std::vector< int >& others ) const {
+       ItemStack moving = ( *sourceCells )[ source ].stack;   // どける前に写す
+       int movingSize = itemSpec( moving.item ).cellSize;
+       std::vector< ItemStack > otherStacks;
+       for ( int other : others ) {
+           otherStacks.push_back( ( *targetCells )[ other ].stack );
+           clear( targetCells, other );
+       }
+       clear( sourceCells, source );
+       if ( !target.isFree( *targetCells, placed, movingSize ) ) {
+           return false;
+       }
+       place( targetCells, placed, moving );
+       // どけた物は、置く先と同じ並び（ずれ）のまま元の場所へ。入らなければ、上の行・左の列から空いている所へ
+       for ( size_t i = 0; i < others.size(); ++i ) {
+           （今の 378〜390 行のまま）
+       }
+       return true;
+   }
+
+ 4-4. 行数（見込み）
+   今：applyMove 55 行 ＋ applyMoveBetween 54 行 ＝ 109 行
+   後：applyMove 13 ＋ applyMoveBetween 14 ＋ tryStackInto 17 ＋ swapAndRestore 30 ＝ 約 74 行
+   「重ねる決まり」を直す入口は tryStackInto、「入れ替えて戻す決まり」を直す入口は swapAndRestore の 1 か所ずつになる。
+
+================================================================================
+ 5. 振る舞いが変わりうる所と、同じ結果になる理由
+================================================================================
+ 5-1. 同じ表を 2 つの引数で渡す（同じマス目の移動）
+   3-1 のとおり。段の関数は「2 つの表が別の物」を前提にした書き方をしない（表を入れ替える・大きさを変える・
+   片方を全部読んでからもう片方へ書く、をしない）。処理の順番は今の applyMove と同じ。
+
+ 5-2. 動かす物の中身を読む時
+   今：関数の始めに moving へ写し、①②はその写しを読む
+   後：①は元のマスを直接読む（数を引く前に、足す数 count を決める。今と同じ順）。
+       ②は元のマスをどける前に写す（今と同じく、どけた後は写しを置く）
+   ①で足す数は「今の moving.amount」と「元のマスの amount」が同じ値のうちに決まるので、結果は同じ。
+
+ 5-3. ①の条件の書き方
+   今：if ( others が 1 つ ) { if ( 同じ物 && 重ねられる && 空きがある ) { 足す; return true; } }
+   後：当てはまらない場合を先に return false（早く返す形）。条件の中身は同じ 4 つで、当てはまるときだけ足す。
+
+ 5-4. 列の数を読む所（②の戻す所の計算）
+   今の applyMove は全部 mColumns。後は「置く先のずれ」を target.mColumns で読む。
+   同じマス目では target が *this なので同じ値。
+
+ 5-5. できなかったときの表
+   false を返すときに写しが途中まで変わっているのは今も同じ（変わり方も同じ順なので同じ形）。呼ぶ側は写しを捨てる。
+
+ 5-6. 変わらない物
+   ・public の関数の名前・引数・ASSERT の文字
+   ・保存ファイルの形（マス目の中身の並びが同じなので、save.xml に書かれる物も同じ）
+   ・速さ（others は参照で渡す。写しの数は今と同じ）
+
+================================================================================
+ 6. 変えるファイルと進める順
+================================================================================
+ 変える：
+   GameSrc/include/GameSrc/Interaction/Item/ItemGrid.h   … private に 2 つの宣言とコメントを足す
+   GameSrc/src/Interaction/Item/ItemGrid.cpp             … applyMove・applyMoveBetween を 4-2 の形にし、2 つの関数を足す
+ 作る・消す：無し（vcxproj・filters は触らない）
+
+ 進める順：
+   段1 ItemGrid.h・ItemGrid.cpp を変える
+   段2 使い捨ての単体テストを変えた後のコードでビルドし、変える前の出力と比べる（1 文字でも違えば戻して調べる）
+   段3 Debug でビルド → Debug・Release・Profile の 3 構成でビルド
+   段4 変更前→変更後をチャットに貼る。この計画書の状態欄・GameChats/CleanCodeRefactor.md・メモリを更新する
+
+================================================================================
+ 7. 確認のしかた
+================================================================================
+ 7-1. 使い捨ての単体テスト（リポジトリには入れない。scratchpad に置く）
+   ・ItemGrid.cpp と ItemCatalog.cpp を、GameLib の代わりの小さな ASSERT だけのヘッダと一緒に cl でビルドする
+   ・public の関数だけを使う（placeAt で形を作り、canMove → move・canMoveBetween → moveBetween の結果を全部のマスについて書き出す）。
+     中の形が変わっても同じテストがそのまま通る
+   ・書き出す物：動かせたか、動かした後の全部のマスの「持ち主・種類・数・込めた弾の数」
+   ・変える前のコードの出力は記録済み（約 29.6MB の文字）。変えた後の出力と 1 バイトずつ比べる
+
+ 7-2. 名前を付けて調べる場合（同じマス目と別のマス目の両方）
+   ・空きへ動かす（1 マス・2 マス・2 マスの物の右のマスから・右端で左へ寄る）
+   ・同じ所へ動かす（同じマス目は false。別のマス目の同じ番号は動かせる）
+   ・同じ物に重ねる（入りきる・入りきらない・一杯の所へ＝入れ替え・一杯の物を半端な所へ・別の種類の弾）
+   ・重ねない物どうし（腕時計と腕時計・拳銃とライフル。込めた弾の数が一緒に動く）
+   ・1 マスと 2 マスの入れ替え（左のマスへ・右のマスへ・逆向き）
+   ・2 マスの物の置く先に 1 マスの物が 2 つ
+   ・2 マスの物の置く先に、2 マスの物が 2 つ半分ずつ
+   ・入れ替えで戻す所が埋まっていて、空きへ回る
+   ・空きが無くて失敗
+   ・列が足りない（1 列のマス目へ 2 マスの物）・元のマス目が 1 列で、どけた 2 マスの物が戻れない
+
+ 7-3. 乱数で作った形の総当たり
+   ・列 1〜4 × 行 1〜3 のマス目に、全部の種類の物を乱数で置いた形を 3000 個ずつ（同じマス目用・別のマス目用）
+   ・物があるマス from × 全部のマス to を全部試す
+   ・合わせて、同じマス目 56,772 通り（動かせる 45,853・動かせない 10,919）、
+     別のマス目 42,661 通り（動かせる 39,674・動かせない 2,987）
+   ・印を入れた写しで、全部の分かれ道を通っていることを確かめた
+     （重ねる・空きへ置く・置く先に 2 つ・同じ並びへ戻す・空きへ回して戻す・戻せず失敗・列が足りない）
+
+ 7-4. ビルドと画面
+   ・Debug・Release・Profile の 3 構成でビルドが通る
+   ・遊んで見る所（ユーザー）：カバンの中で動かす・重ねる・入れ替える、漁れる場所や給油口 ⇔ カバンで動かす・F の自動で置く
+
+================================================================================
+ 8. 今回は触らない所
+================================================================================
+ ・countPlaceableInto・placeInto の「同じ物で重ねられるか」の条件（拾うときの決まり。入れ替えをしない別の流れ）
+ ・addOne・canAddOne の「重ねられるマスを探す」ループ（2 回書いてある）
+ ・ItemTransfer（入れてよい物の決まり）・Inventory・画面（InventoryScreen・InventoryCursor）
+ ・2-4 に書いた今の動き（2 マスの物の右のマスを指すと 1 マスずれる、など）
+
+================================================================================
+ 9. 懸念点
+================================================================================
+ ・同じ表を 2 つの引数で渡すので、後で段の関数を直す人が「2 つは別の表」と思い込むと壊れる。
+   ヘッダの宣言のコメントに「同じマス目の中の移動では同じ表を渡す」と書いて防ぐ（4-1）
+ ・単体テストは GameLib の ASSERT を小さな代わりの物に差し替えてビルドする。ゲーム本体の ASSERT（halt）とは止まり方が違うが、
+   ASSERT が外れる場合は今回のテストに無い（外れたら出力に出て、比べたときに分かる）
+ ・画面を通した確認は自動ではできない。7-4 の遊んで見る所はユーザーにお願いする
+
+================================================================================
+ 10. 参考記事
+================================================================================
+ ・Duplicate Code（Refactoring.Guru）：https://refactoring.guru/smells/duplicate-code
+ ・Extract Method（同）：https://refactoring.guru/extract-method
+ ・Parameterize Method（同。違う所を引数にして 1 つの関数にする）：https://refactoring.guru/parameterize-method
+ ・Introduce Parameter Object（同。★2 案B の形）：https://refactoring.guru/introduce-parameter-object
+ ・Characterization test（変える前の結果を記録して、後と比べるテスト）：https://en.wikipedia.org/wiki/Characterization_test

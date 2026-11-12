@@ -1,6 +1,8 @@
 #include "GameSrc/Render/PostProcess/TemporalAntiAliasing.h"
 #include "GameSrc/Render/Lighting/GBuffer.h"
 #include "GameSrc/Render/PostProcess/TaaParams.h"
+#include "GameSrc/Render/ShaderSlots.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -13,23 +15,19 @@ namespace{
 	const char* kCopyShaderFile = "Resource/Shader/TaaCopy.hlsl";
 	const float kScreenScale = 1.f; // シーンの色と同じ大きさ
 
-	// Taa.hlsl の番号と揃える（GBuffer.hlsli の t3 法線＝動きの種類・t5 深度、t6 今の色・t7 前の履歴 / b1）
-	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
-	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
-	const int kCurrentSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
-	const int kHistorySlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 5;
-	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
+	// Taa.hlsl の番号と揃える。G-Buffer の法線（a が動きの種類）・深度の番号は ShaderSlots で、そのすぐ後ろを自分の入力に使う
+	const int kCurrentSlot = ShaderSlots::kAfterGBuffer;					// t6 今のシーンの色
+	const int kHistorySlot = kCurrentSlot + 1;								// t7 前の履歴
+	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;	// b1
 	const int kCopySourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// TaaCopy.hlsl の番号（t2 新しい履歴）
 
 	const float kUseHistory = 0.f;     // Taa.hlsl の gTaaHistoryWeight.w：履歴を使う
 	const float kDiscardHistory = 1.f; // 履歴を捨てる（今の色だけ）
 
-	const int kMatrixFloats = 16;
-	const int kRowFloats = 4;
 	// Taa.hlsl の cbuffer TaaConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct TaaConstants{
-		float inverseProjectionView[ kMatrixFloats ];  // 行ごと（Matrix44 の m00..m33 の順）
-		float previousProjectionView[ kMatrixFloats ];
+		float inverseProjectionView[ ShaderConstants::kMatrixFloats ];  // 行ごと（Matrix44 の m00..m33 の順）
+		float previousProjectionView[ ShaderConstants::kMatrixFloats ];
 		float historyWeight;
 		float movingHistoryWeight;
 		float firstPersonHistoryWeight;
@@ -39,13 +37,7 @@ namespace{
 		float firstPersonClipGamma;
 		float unused;
 	};
-	static_assert( sizeof( TaaConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kRowFloats * 2 ), "TaaConstants : keep the HLSL layout." );
-
-	void copyMatrix( const Matrix44& matrix, float* destination ) {
-		for ( int i = 0; i < kMatrixFloats; ++i ) {
-			destination[ i ] = ( &matrix.m00 )[ i ];
-		}
-	}
+	static_assert( sizeof( TaaConstants ) == sizeof( float ) * ( ShaderConstants::kMatrixFloats * 2 + ShaderConstants::kRowFloats * 2 ), "TaaConstants : keep the HLSL layout." );
 }
 
 TaaParams& taaParams() {
@@ -77,8 +69,8 @@ void TemporalAntiAliasing::resolve( const Graphics::RenderTarget& sceneColor, co
 	TaaConstants constants;
 	Matrix44 inverse;
 	inverse.setInverse( jitteredProjectionView );
-	copyMatrix( inverse, constants.inverseProjectionView );
-	copyMatrix( mPreviousProjectionView, constants.previousProjectionView );
+	ShaderConstants::copyMatrix44( inverse, constants.inverseProjectionView );
+	ShaderConstants::copyMatrix44( mPreviousProjectionView, constants.previousProjectionView );
 	constants.historyWeight = params.historyWeight;
 	constants.movingHistoryWeight = params.movingHistoryWeight;
 	constants.firstPersonHistoryWeight = params.firstPersonHistoryWeight;
@@ -95,8 +87,8 @@ void TemporalAntiAliasing::resolve( const Graphics::RenderTarget& sceneColor, co
 	gm.setRenderTargets( &mHistory[ next ], 1, Graphics::DepthTarget() );
 	gm.setBlendMode( Graphics::BLEND_OPAQUE );
 	gm.setShader( mShader );
-	gm.setShaderResource( kNormalSlot, gbuffer.normal() ); // 描画先の切り替えで外れるので、切り替えた後に付ける
-	gm.setShaderResource( kDepthSlot, depth );
+	gm.setShaderResource( ShaderSlots::kGBufferNormal, gbuffer.normal() ); // 描画先の切り替えで外れるので、切り替えた後に付ける
+	gm.setShaderResource( ShaderSlots::kSceneDepth, depth );
 	gm.setShaderResource( kCurrentSlot, sceneColor );
 	gm.setShaderResource( kHistorySlot, mHistory[ mCurrent ] );
 	gm.setConstantBuffer( kConstantSlot, mConstants );

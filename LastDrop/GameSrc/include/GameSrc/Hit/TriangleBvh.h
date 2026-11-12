@@ -37,6 +37,11 @@ private:
 	// centers：三角形ごとの中心（三角形の番号の順）
 	void split( int nodeIndex, int first, int count, const std::vector< GameLib::Math::Vector3 >& positions,
 		const std::vector< unsigned short >& indices, const std::vector< GameLib::Math::Vector3 >& centers );
+	// raycast の、葉 1 つぶん。leaf の三角形を全部調べ、今までの当たりより早い物があれば time・normal を書き換えて found を true にする
+	// found: 今までに当たりがあったか（あれば time がその時刻）。nullptr 不可
+	void raycastLeaf( const Node& leaf, const std::vector< GameLib::Math::Vector3 >& positions, const std::vector< unsigned short >& indices,
+		const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal, bool* found ) const;
 
 	std::vector< Node > mNodes;   // [0] が根。空なら木は無い
 	std::vector< int > mTriangles; // 三角形の番号を、葉ごとにまとまるよう並べ替えた物

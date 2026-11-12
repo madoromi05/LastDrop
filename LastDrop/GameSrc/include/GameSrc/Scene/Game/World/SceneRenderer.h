@@ -48,6 +48,17 @@ private:
 	// 目から見る絵の、描くかどうか（描く距離は霧から）
 	DrawCulling cameraCulling( const FirstPersonCamera& camera ) const;
 
+	// render の段。呼ぶ順番に意味がある（render に並べた順。順番の理由は各段の中に書く）
+	// projectionView: TAA のずらしを掛けた後の射影×ビュー。全部の段に同じ物を渡す
+	void beginScene( const DamagePostEffect& damage );														// 画面全体の赤み・痛み・暗さ・ノイズの番号を PostProcess へ渡して、シーンを描き始める
+	void drawGBuffer( const FirstPersonCamera& camera, const GameLib::Math::Matrix44& projectionView );		// 不透明な物を G-Buffer へ（動かない物 → デカール → 動く物）
+	void drawLighting( const GameLib::Math::Matrix44& projectionView );										// G-Buffer を全画面 1 回で照らして、シーンの色へ
+	void drawReflection( const GameLib::Math::Matrix44& projectionView );									// 映り込み（SSR）を作って混ぜる。切っている間は結果を消す
+	void drawFog( const GameLib::Math::Matrix44& projectionView );											// 霧（F6 で切っている間は描かない）
+	void resolveTaa( const FirstPersonCamera& camera, const GameLib::Math::Matrix44& projectionView );		// TAA。使わないとき・カメラが替わったフレームは履歴を捨てる
+	void drawTranslucent( const FirstPersonCamera& camera, const GameLib::Math::Matrix44& projectionView );	// 半透明の板（砂ぼこり・血・マズルフラッシュ）
+	void drawGBufferView( GBufferView view, const GameLib::Math::Matrix44& projectionView );				// G-Buffer の表示（F6 で選んだときだけ）。画面へ写した後に上から描く
+
 	GameWorld* mWorld;						// 借りているだけ
 	WorldRenderer mRenderer;				// 世界を描く（mWorld を読む）
 	PostProcess mPostProcess;

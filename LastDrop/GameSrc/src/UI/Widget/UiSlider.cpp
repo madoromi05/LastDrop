@@ -3,6 +3,7 @@
 #include "GameSrc/UI/Widget/SelectionMarks.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/MenuPalette.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include <algorithm>
@@ -82,7 +83,7 @@ void UiSlider::adjust( int direction ) {
 
 void UiSlider::dragTo( const Vector2& cursor ) {
 	UiRect bar = barRect();
-	float ratio = std::min( std::max( ( cursor.x - bar.left ) / bar.width, 0.f ), 1.f );
+	float ratio = ScalarMath::clamp( ( cursor.x - bar.left ) / bar.width, 0.f, 1.f );
 	float value = static_cast< float >( mRange.minValue ) + ratio * static_cast< float >( mRange.maxValue - mRange.minValue );
 	setClamped( static_cast< int >( std::lround( value ) ) );
 }

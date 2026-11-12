@@ -22,7 +22,7 @@ struct LightData
     float4 nearDistance;    // x 近さの下限（m。これより近い面はこの距離と同じ明るさ。LightList.h の LightSource::nearDistance）  yzw 使わない
 };
 
-// b2（LightList.cpp の kLightSlot）。b1 は全画面のパスの定数・キャラの骨、b3 は G-Buffer の材質値
+// b2（ShaderSlots::kLightConstants）。b1 は全画面のパスの定数・キャラの骨、b3 は G-Buffer の材質値
 cbuffer LightConstants : register(b2)
 {
     float4 gLightCount; // x: 照らすライトの数

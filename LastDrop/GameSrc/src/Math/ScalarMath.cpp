@@ -25,6 +25,16 @@ float ScalarMath::smoothStep( float t ) {
 	return t * t * ( 3.f - 2.f * t );
 }
 
+float ScalarMath::easeOut( float t ) {
+	float remain = 1.f - t;
+	return 1.f - remain * remain;
+}
+
+float ScalarMath::decay( float value, float remain, float minimum ) {
+	value *= remain;
+	return ( Math::abs( value ) < minimum ) ? 0.f : value;
+}
+
 float ScalarMath::wrapUnit( float phase ) {
 	float wrapped = phase - std::floor( phase );
 	return ( wrapped >= kFullCycle ) ? 0.f : wrapped;	// 0 のすぐ下（-0.00000001 など）は、引いた所で丸められてちょうど 1 になることがある。範囲の外なので 0 にする

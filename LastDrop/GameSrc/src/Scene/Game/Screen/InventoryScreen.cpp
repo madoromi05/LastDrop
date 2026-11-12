@@ -3,7 +3,7 @@
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiInput.h"
 #include "GameSrc/UI/UiAnchor.h"
-#include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Player/PlayerHealth.h"
@@ -33,7 +33,6 @@ namespace{
 	const float kMenuWidth = 100.f;
 	const float kMenuHeight = 28.f;
 	const float kMenuSpacing = 4.f;
-	const float kFrameThickness = 2.f;
 	// 左下の心電図パネルの位置と大きさ
 	const float kEcgMargin = 14.f;
 	const float kEcgWidth = 210.f;
@@ -51,20 +50,6 @@ namespace{
 	const char* kPickupFormat = "拾う：%s";           // 1 つずつの物（ガソリン・銃）
 	const char* kPickupAmountFormat = "拾う：%s ×%d"; // 重ねられる物（弾）は数も
 	const int kTextSize = 64;
-
-	// 後ろの町を透かして見せる濃さ。暗くする板とマスの背景に使い、物の絵と文字は濃いまま
-	// 一時停止（0.6）より薄い
-	const float kPanelAlpha = 0.5f;
-	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );
-	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
-	const unsigned kHintColor = VertexColor::pack( 0.65f, 0.65f, 0.65f );
-	const unsigned kHeadingColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // ボタンを選んだ色と同じ黄
-	const unsigned kSelectColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );
-	const unsigned kPlaceColor = VertexColor::pack( 0.35f, 0.9f, 0.35f );   // 置ける所
-	const unsigned kBlockedColor = VertexColor::pack( 0.9f, 0.2f, 0.15f );  // 入らない所
-	const unsigned kMenuPlateColor = VertexColor::pack( 0.15f, 0.15f, 0.15f, 0.9f );
-	const unsigned kMenuSelectedColor = VertexColor::pack( 0.85f, 0.65f, 0.15f, 0.95f );
-	const unsigned kMenuSelectedTextColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );
 
 	float gridWidth( const ItemGrid& grid ) {
 		return ItemGridView::width( grid, kCellSize );
@@ -89,7 +74,7 @@ InventoryScreen::InventoryScreen( UiRenderer* renderer ) :
 	mPreviousCursor( 0.f, 0.f ) {
 	static_assert( sizeof( kMenuLabels ) / sizeof( kMenuLabels[ 0 ] ) == InventoryCursor::MENU_ITEM_NUMBER, "kMenuLabels must name every MenuItem" );
 	ASSERT( mRenderer && "InventoryScreen : renderer is null." );
-	mView.setCellAlpha( kPanelAlpha );
+	mView.setCellAlpha( GridPalette::BACKDROP_ALPHA );
 }
 
 void InventoryScreen::openForPlacing( const Inventory& inventory, const ItemStack& incoming ) {
@@ -191,19 +176,13 @@ void InventoryScreen::draw( const Inventory& inventory, ItemId equipped, const c
 	const ItemGrid& grid = inventory.grid();
 	mCursor.forgetStale( grid );
 	layout( grid );
-	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）
-	UiRect screen;
-	screen.left = 0.f;
-	screen.top = 0.f;
-	screen.width = static_cast< float >( Framework::instance().width() );
-	screen.height = static_cast< float >( Framework::instance().height() );
-	mRenderer->addRect( screen, kDimColor );
+	mRenderer->addRect( UiLayout::screenRect(), GridPalette::BACKDROP );	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）
 
 	Vector2 heading( UiLayout::anchorX( UI_ANCHOR_CENTER ), gridOrigin( grid ).y - kHeadingGap );
-	mRenderer->addText( kHeading, heading, UI_TEXT_LARGE, UI_ALIGN_CENTER, kHeadingColor );
+	mRenderer->addText( kHeading, heading, UI_TEXT_LARGE, UI_ALIGN_CENTER, GridPalette::HEADING );
 	if ( exits ) {
 		Vector2 exitsLine( heading.x, gridOrigin( grid ).y - kExitsGap );
-		mRenderer->addText( exits, exitsLine, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+		mRenderer->addText( exits, exitsLine, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::HINT );
 	}
 	mView.drawCells( grid, ( mCursor.mode() == InventoryCursor::Mode::Moving ) ? mCursor.movingFrom() : kNone );
 	mView.drawMark( grid, equipped, kEquippedMark );
@@ -231,7 +210,7 @@ void InventoryScreen::drawSelection( const Inventory& inventory, const ItemStack
 		int target = grid.placementCell( incoming->item, selected );
 		bool fits = inventory.countPlaceableInto( selected, *incoming ) > 0;
 		mView.drawGhost( grid, target, *incoming );
-		mView.addFrame( mView.spanRect( grid, target, itemSpec( incoming->item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
+		mView.addPlacementFrame( grid, target, incoming->item, fits );
 		return;
 	}
 	if ( mCursor.mode() == InventoryCursor::Mode::Moving ) {
@@ -239,24 +218,18 @@ void InventoryScreen::drawSelection( const Inventory& inventory, const ItemStack
 		ItemId item = grid.stackAt( movingFrom ).item;
 		int target = grid.placementCell( item, selected );
 		bool fits = ( target == movingFrom ) || inventory.canMove( movingFrom, selected );
-		mView.addFrame( mView.spanRect( grid, target, itemSpec( item ).cellSize ), kFrameThickness, fits ? kPlaceColor : kBlockedColor );
+		mView.addPlacementFrame( grid, target, item, fits );
 		return;
 	}
-	// 物のマスなら、その物全体（2 マスの物は 1 行）に枠
-	int owner = grid.ownerCell( selected );
-	if ( owner == kNone ) {
-		mView.addFrame( mView.cellRect( grid, selected ), kFrameThickness, kSelectColor );
-	} else {
-		mView.addFrame( mView.spanRect( grid, owner, itemSpec( grid.stackAt( owner ).item ).cellSize ), kFrameThickness, kSelectColor );
-	}
+	mView.addSelectionFrame( grid, selected );
 }
 
 void InventoryScreen::drawMenu( const ItemGrid& grid ) {
 	for ( int i = 0; i < mCursor.menuCount(); ++i ) {
 		UiRect rect = menuRect( grid, i );
 		bool selected = ( i == mCursor.menuChoice() );
-		mRenderer->addRect( rect, selected ? kMenuSelectedColor : kMenuPlateColor );
-		mRenderer->addText( kMenuLabels[ mCursor.menuItem( i ) ], rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, selected ? kMenuSelectedTextColor : kTextColor );
+		mRenderer->addRect( rect, selected ? GridPalette::BUTTON_SELECTED : GridPalette::BUTTON );
+		mRenderer->addText( kMenuLabels[ mCursor.menuItem( i ) ], rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, selected ? GridPalette::BUTTON_SELECTED_TEXT : GridPalette::TEXT );
 	}
 }
 
@@ -280,7 +253,7 @@ void InventoryScreen::drawFooter( const ItemGrid& grid, const ItemStack* incomin
 		}
 		name = text;
 	}
-	mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
+	mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::TEXT );
 	const char* hint = kBrowseHint;
 	if ( mode == InventoryCursor::Mode::Menu ) {
 		hint = kMenuHint;
@@ -290,5 +263,5 @@ void InventoryScreen::drawFooter( const ItemGrid& grid, const ItemStack* incomin
 		hint = kMovingHint;
 	}
 	position.y += kFooterLineHeight;
-	mRenderer->addText( hint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+	mRenderer->addText( hint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::HINT );
 }

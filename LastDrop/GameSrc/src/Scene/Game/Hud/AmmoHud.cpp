@@ -37,7 +37,7 @@ namespace{
 	const Color kIconColor = { 1.f, 1.f, 1.f, 0.9f };
 	const Color kTextColor = { 0.95f, 0.95f, 0.95f, 0.9f };
 	const Color kFullColor = { 0.4f, 0.95f, 0.45f, 0.9f };  // 弾倉が満タン
-	const Color kEmptyColor = { 0.95f, 0.25f, 0.2f, 0.9f }; // 弾倉が空（RaidHud の残り時間の警告と同じ赤）
+	const Color kEmptyColor = { 0.95f, 0.25f, 0.2f, 0.9f }; // 弾倉が空
 
 	const char* kSlashText = "/";
 	const char* kNumberFormat = "%d";

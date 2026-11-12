@@ -987,6 +987,9 @@
     <ClCompile Include="GameSrc\src\Render\RenderPass.cpp">
       <Filter>GameSrc\Render</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Render\ShaderConstants.cpp">
+      <Filter>GameSrc\Render</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Render\Lighting\LightList.cpp">
       <Filter>GameSrc\Render\Lighting</Filter>
     </ClCompile>
@@ -1288,6 +1291,9 @@
       <Filter>GameSrc\Math</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp">
+      <Filter>GameSrc\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Math\OrthoBasis.cpp">
       <Filter>GameSrc\Math</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieHealth.cpp">
@@ -1976,6 +1982,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemGridView.h">
       <Filter>GameSrc\Scene\Game\Screen</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\GridPalette.h">
+      <Filter>GameSrc\Scene\Game\Screen</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootParams.h">
       <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
@@ -2205,6 +2214,12 @@
       <Filter>GameSrc\Render\Lighting</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShaderSlots.h">
+      <Filter>GameSrc\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShaderConstants.h">
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\LightList.h">
@@ -2568,6 +2583,9 @@
       <Filter>GameSrc\Math</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Math\ScalarMath.h">
+      <Filter>GameSrc\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Math\OrthoBasis.h">
       <Filter>GameSrc\Math</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieHealth.h">

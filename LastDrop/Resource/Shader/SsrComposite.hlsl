@@ -9,8 +9,8 @@
 #include "DeferredConstants.hlsli"
 #include "SsrCommon.hlsli"
 
-Texture2D gOcclusion  : register(t10); // SSAO の結果（DeferredLighting.cpp の kOcclusionSlot）
-Texture2D gReflection : register(t13); // SSR の結果（同 kReflectionSlot。半分の大きさ）
+Texture2D gOcclusion  : register(t10); // SSAO の結果（ShaderSlots::kOcclusion）
+Texture2D gReflection : register(t13); // SSR の結果（ShaderSlots::kReflection。半分の大きさ）
 
 static const float4 kNothing = float4(0.0, 0.0, 0.0, 1.0);
 

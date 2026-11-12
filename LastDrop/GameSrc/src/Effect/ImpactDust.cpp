@@ -1,5 +1,7 @@
 #include "GameSrc/Effect/ImpactDust.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -28,11 +30,9 @@ namespace{
 	const float kOuterOpacityRate = 0.2f;
 	const float kOuterRadiusRate = 1.3f;
 
-	const float kFullTurn = 360.f; // 粒の板の向きの範囲（度）
-
 	// 外向き度 reach（0〜1）に合わせて、1 倍（中心）から rate 倍（一番外）までの間の倍率を返す
 	float rateByReach( float rate, float reach ) {
-		return 1.f + ( rate - 1.f ) * reach;
+		return ScalarMath::lerp( 1.f, rate, reach );
 	}
 }
 
@@ -48,9 +48,9 @@ ImpactDust::ImpactDust( const Vector3& point, const Vector3& normal, std::mt1993
 		direction.normalize();
 		// 速い粒ほど遠くで止まる（減速が速さに比例するため）ので、速さの割合をそのまま外向き度にする
 		mReach[ i ] = GameLib::Math::pow( unit( *random ), kSpeedBias );
-		mAngle[ i ] = unit( *random ) * kFullTurn;
+		mAngle[ i ] = unit( *random ) * AngleMath::kFullTurnDegree;
 		mPosition[ i ] = start;
-		mVelocity[ i ].setMul( direction, kMinSpeed + ( kMaxSpeed - kMinSpeed ) * mReach[ i ] );
+		mVelocity[ i ].setMul( direction, ScalarMath::lerp( kMinSpeed, kMaxSpeed, mReach[ i ] ) );
 	}
 }
 
@@ -78,8 +78,7 @@ const Vector3& ImpactDust::particlePosition( int index ) const {
 float ImpactDust::particleRadius( int index ) const {
 	ASSERT( index >= 0 && index < kParticleNumber && "ImpactDust : index is out of range." );
 	// 出た直後に早く広がり、だんだんゆっくりになる（煙が広がる感じ）
-	float remain = 1.f - progress();
-	float radius = kStartRadius + ( kEndRadius - kStartRadius ) * ( 1.f - remain * remain );
+	float radius = ScalarMath::lerp( kStartRadius, kEndRadius, ScalarMath::easeOut( progress() ) );
 	return radius * rateByReach( kOuterRadiusRate, mReach[ index ] );
 }
 

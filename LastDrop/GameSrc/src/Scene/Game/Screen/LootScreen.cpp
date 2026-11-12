@@ -3,11 +3,10 @@
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiInput.h"
 #include "GameSrc/UI/UiAnchor.h"
-#include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 #include "GameSrc/Core/Pad.h"
 
 #include "GameLib/GameLib.h"
-#include "Framework.h"
 #include <cstdio>
 
 using namespace GameLib;
@@ -33,13 +32,6 @@ namespace{
 	const char* kBrowseHint = "[Enter] 持つ   [F] 移す   [Esc] 閉じる";
 	const char* kMovingHint = "[Enter] 置く   [Esc] やめる";
 	const char* kEquippedMark = "E";
-
-	// 後ろの町を透かして見せる濃さ（町のカバンの画面と同じ 0.5）
-	const float kPanelAlpha = 0.5f;
-	const unsigned kDimColor = VertexColor::pack( 0.f, 0.f, 0.f, kPanelAlpha );
-	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
-	const unsigned kHintColor = VertexColor::pack( 0.65f, 0.65f, 0.65f );
-	const unsigned kHeadingColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // カバンの画面の見出しと同じ黄
 }
 
 LootScreen::LootScreen( UiRenderer* renderer ) :
@@ -48,11 +40,12 @@ LootScreen::LootScreen( UiRenderer* renderer ) :
 	mPicker( renderer, &mIcons, GridRule::CarryLimit, GridRule::Free ),
 	mPreviousCursor( 0.f, 0.f ) {
 	ASSERT( mRenderer && "LootScreen : renderer is null." );
-	mPicker.setCellAlpha( kPanelAlpha );
+	mPicker.setCellAlpha( GridPalette::BACKDROP_ALPHA );
 }
 
 void LootScreen::open( GridRule lootRule ) {
 	mPicker.setRightRule( lootRule );
+	mPicker.view( kLoot ).setPlaceholder( ItemTransfer::onlyItem( lootRule ) );	// 給油口は空いた所にガソリンの絵を薄く
 	mPicker.reset( kLoot, kFirstCell );
 }
 
@@ -91,13 +84,7 @@ void LootScreen::handleInput( ItemGrid* bag, ItemGrid* loot ) {
 
 void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* title, ItemId equipped ) {
 	layout( bag, loot );
-	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）
-	UiRect screen;
-	screen.left = 0.f;
-	screen.top = 0.f;
-	screen.width = static_cast< float >( Framework::instance().width() );
-	screen.height = static_cast< float >( Framework::instance().height() );
-	mRenderer->addRect( screen, kDimColor );
+	mRenderer->addRect( UiLayout::screenRect(), GridPalette::BACKDROP );	// 板を先に積む（UiRenderer は積んだ順に長方形を描くので、マスより下になる）
 
 	struct Shown{
 		Side side;
@@ -108,7 +95,7 @@ void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* ti
 	for ( const Shown& shown : grids ) {
 		UiRect first = mPicker.view( shown.side ).cellRect( *shown.grid, kFirstCell );
 		Vector2 label( first.left + ItemGridView::width( *shown.grid, kCellSize ) * kHalf, first.top - kGridLabelGap );
-		mRenderer->addText( shown.label, label, UI_TEXT_LARGE, UI_ALIGN_CENTER, kHeadingColor );
+		mRenderer->addText( shown.label, label, UI_TEXT_LARGE, UI_ALIGN_CENTER, GridPalette::HEADING );
 	}
 	mPicker.draw( bag, loot, true );
 	mPicker.view( kBag ).drawMark( bag, equipped, kEquippedMark );
@@ -129,7 +116,7 @@ void LootScreen::drawFooter( const ItemGrid& bag, const ItemGrid& loot ) {
 	} else {
 		std::snprintf( text, sizeof( text ), "%s", kEmptyName );
 	}
-	mRenderer->addText( text, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
+	mRenderer->addText( text, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::TEXT );
 	position.y += kFooterLineHeight;
-	mRenderer->addText( mPicker.isMoving() ? kMovingHint : kBrowseHint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+	mRenderer->addText( mPicker.isMoving() ? kMovingHint : kBrowseHint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::HINT );
 }

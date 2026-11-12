@@ -9,6 +9,7 @@
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
@@ -27,10 +28,6 @@ namespace{
 	// カバンから捨てた物を置く、自キャラの足元から向いている方への長さ（m）
 	// ガソリンの缶は移動を止める箱を持つので、体（半径 約 0.4m）と缶の箱が重ならず、目の前に見える所
 	const float kDropForward = 0.8f;
-
-	Vector3 toPosition( const TownPlacement& placement ) {
-		return Vector3( placement.x, placement.y, placement.z );
-	}
 
 	// 街灯のガラスを光る形で置くか（停電の日＝街灯の明るさ 0 は消えた形）
 	bool lampsLit( const DayConditionEffect& day ) {
@@ -89,7 +86,7 @@ void GameWorld::alertZombiesToNoise( const Vector3& position ) {
 
 void GameWorld::placePlayer( int escapeCarSpot ) {
 	const TownPlacement& start = mTown.map().escapeCarSpots()[ escapeCarSpot ].playerStart;
-	mPlayer = mPlayerFactory.spawn( &mObjects, toPosition( start ), start.yawDegree );
+	mPlayer = mPlayerFactory.spawn( &mObjects, start.position(), start.yawDegree );
 	mPlayerControl = mPlayer->getComponent< PlayerComponent >();
 }
 
@@ -106,8 +103,7 @@ bool GameWorld::dropItem( const ItemStack& stack, float cameraYaw ) {
 		return false;
 	}
 	Vector3 position = mPlayer->getComponent< TransformComponent >()->position();
-	Vector3 forward( GameLib::Math::sin( cameraYaw ), 0.f, GameLib::Math::cos( cameraYaw ) );
-	position.madd( forward, kDropForward );
+	position.madd( AngleMath::forwardOf( cameraYaw ), kDropForward );
 	return mPropFactory.spawnDroppedItem( &mObjects, stack, position, cameraYaw ) != nullptr;
 }
 

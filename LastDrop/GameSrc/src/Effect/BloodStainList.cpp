@@ -1,5 +1,7 @@
 #include "GameSrc/Effect/BloodStainList.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/OrthoBasis.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -31,13 +33,7 @@ namespace{
 
 	// 向きをばらすとき、1 つごとに回す角度（度。黄金角。BulletHoleList と同じ）
 	const float kTurnPerStainDegree = 137.5f;
-	const float kFullTurnDegree = 360.f;
 	const float kMinAlongSurface = 0.2f;	// 弾の向きを面に写した長さがこれより短ければ、面にほぼ垂直に撃ったとみなし、絵の向きをばらす（筋の向きが決まらないため）
-
-	// 絵の向きを作るときの仮の「上」（BulletHoleList と同じ）
-	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
-	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
-	const float kParallelLimit = 0.99f;
 
 	DecalBatch::UvRect cellUvRect( int cell ) {
 		DecalBatch::UvRect rect;
@@ -96,17 +92,14 @@ const IRayBlocker* attachedTo ) {
 }
 
 Vector3 BloodStainList::nextTurnedDirection( const Vector3& normal ) {
-	// 面の上で直交する2本の向きを作り、法線まわりに回す（BulletHoleList::add と同じ）
-	const Vector3& helper = ( Math::abs( normal.dot( kWorldUp ) ) > kParallelLimit ) ? kWorldRight : kWorldUp;
+	// 面の上で直交する2本の向きを作り、法線まわりに回す
 	Vector3 tangent;
-	tangent.setCross( helper, normal );
-	tangent.normalize();
 	Vector3 bitangent;
-	bitangent.setCross( normal, tangent );
+	OrthoBasis::around( normal, &tangent, &bitangent );
 	Vector3 turned;
 	turned.setMul( tangent, Math::cos( mNextTurnDegree ) );
 	turned.madd( bitangent, Math::sin( mNextTurnDegree ) );
-	mNextTurnDegree = std::fmod( mNextTurnDegree + kTurnPerStainDegree, kFullTurnDegree );
+	mNextTurnDegree = std::fmod( mNextTurnDegree + kTurnPerStainDegree, AngleMath::kFullTurnDegree );
 	return turned;
 }
 

@@ -20,7 +20,7 @@ namespace{
 	// 曲線は始めと終わりがゆっくりになる物（smoothstep）。直線だと腕が急に動き出し・急に止まって見えるため
 	float easedProgress( float seconds, float from, float to ) {
 		float t = ( seconds - from ) / ( to - from );
-		return ScalarMath::smoothStep( Math::min( 1.f, Math::max( 0.f, t ) ) );
+		return ScalarMath::smoothStep( ScalarMath::clamp( t, 0.f, 1.f ) );
 	}
 }
 

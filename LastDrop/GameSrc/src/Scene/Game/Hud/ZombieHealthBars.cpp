@@ -13,6 +13,8 @@
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/ScreenProjection.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector2.h"
@@ -50,10 +52,7 @@ namespace{
 	const int kTextSize = 32;
 	const float kHalf = 0.5f;
 
-	// -1〜1 の立方体を置く行列（HitboxSet::boxMatrix）から、箱の中心と、一番高い所の高さ
-	Vector3 boxCenter( const Matrix34& box ) {
-		return Vector3( box.m03, box.m13, box.m23 );
-	}
+	// -1〜1 の立方体を置く行列（HitboxSet::boxMatrix）の、一番高い所の高さ。箱の中心は行列の移動の部分（PlacementMatrix::translationOf）
 	float boxTop( const Matrix34& box ) {
 		return box.m13 + std::fabs( box.m10 ) + std::fabs( box.m11 ) + std::fabs( box.m12 );
 	}
@@ -63,7 +62,7 @@ namespace{
 		for ( int i = 0; i < boxes.boxNumber(); ++i ) {
 			Matrix34 box;
 			if ( boxes.boxPart( i ) == part && boxes.boxMatrix( i, &box ) ) {
-				*out = boxCenter( box );
+				*out = PlacementMatrix::translationOf( box );
 				out->y = boxTop( box ) + kBarAboveHead;
 				return true;
 			}
@@ -128,6 +127,63 @@ namespace{
 		}
 		return "-";
 	}
+
+	// 全体のバーを screen を中心に積む（背景を少し大きく描いて枠に見せ、その上に残りの割合だけ中身を描く）。背景の範囲を返す
+	// alive: 倒れたまま生きている（Downed）も、生きているので白い中身
+	UiRect addBar( UiRenderer* renderer, const Vector2& screen, const ZombieHealth& health, bool alive ) {
+		UiRect back;
+		back.left = screen.x - kBarWidth * kHalf - kBarBorder;
+		back.top = screen.y - kBarHeight * kHalf - kBarBorder;
+		back.width = kBarWidth + kBarBorder * kBorderSides;
+		back.height = kBarHeight + kBarBorder * kBorderSides;
+		renderer->addRect( back, kBarBackColor );
+		UiRect fill;
+		fill.left = screen.x - kBarWidth * kHalf;
+		fill.top = screen.y - kBarHeight * kHalf;
+		fill.width = kBarWidth * ( health.total() / health.maxTotal() );
+		fill.height = kBarHeight;
+		renderer->addRect( fill, alive ? kBarFillColor : kDeadBarFillColor );
+		return back;
+	}
+
+	// バーの上の文字。体力と丈夫さ（x1.12 など）を出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる
+	// 後ろはアニメの段（Near / Far / Hidden）、道を探す順番を待っていれば「wait」、走る体には「R」（脚が傷んで歩きに落ちたら消える）
+	void formatSummary( char* text, size_t size, const ZombieStateComponent& zombie, const ZombieHealth& health ) {
+		const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
+		const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
+		bool waitingForPath = chase && chase->path().isWaitingForSearch();
+		bool runner = chase && chase->locomotion().isRunner();
+		std::snprintf( text, size, "HP %d/%d x%.2f %s%s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
+			brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "", runner ? " R" : "" );
+	}
+
+	// バーの下の文字。立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す
+	// 攻撃・死体の部品は外せる（外した体は、その状態の文字を出さない）
+	void formatStatus( char* text, size_t size, const ZombieStateComponent& zombie, const ZombieHealthComponent& healthComponent,
+	const GameWorld& world ) {
+		bool alive = zombie.isAlive();
+		ZombieStateComponent::State state = zombie.state();
+		const ZombieAttackComponent* attack = zombie.getComponent< ZombieAttackComponent >();
+		const ZombieCorpseComponent* corpse = zombie.getComponent< ZombieCorpseComponent >();
+		const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
+		if ( alive && healthComponent.isStaggering() ) {
+			std::snprintf( text, size, "Staggered" );
+		} else if ( alive && attack && attack->attack().phase() != ZombieAttack::Phase::Ready ) {
+			std::snprintf( text, size, "%sAttack %s", zombie.isCrawling() ? "Downed " : "", attackPhaseName( attack->attack().phase() ) );
+		} else if ( zombie.isCrawling() ) {
+			std::snprintf( text, size, "%s %s", stateName( state ), chaseModeName( chase->mode() ) );	// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え
+		} else if ( state == ZombieStateComponent::State::Alive && chase->mode() == ZombieChase::Mode::Chase && world.player() ) {
+			// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため
+			float distance = FlatMath::distance( zombie.position(), world.player()->getComponent< TransformComponent >()->position() );
+			std::snprintf( text, size, "%s %.2fm", chaseModeName( chase->mode() ), distance );
+		} else if ( state == ZombieStateComponent::State::Alive ) {
+			std::snprintf( text, size, "%s", chaseModeName( chase->mode() ) );
+		} else if ( state == ZombieStateComponent::State::Downed || state == ZombieStateComponent::State::Falling || !corpse ) {
+			std::snprintf( text, size, "%s", stateName( state ) );
+		} else {
+			std::snprintf( text, size, "%s %.1fs", stateName( state ), corpse->secondsUntilGone() );
+		}
+	}
 }
 
 void ZombieHealthBars::add( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
@@ -158,58 +214,14 @@ const Matrix44& projectionView, UiRenderer* renderer ) const {
 		return;
 	}
 
-	const ZombieHealth& health = healthComponent->health();	// 全体のバー（背景を少し大きく描いて枠に見せ、その上に残りの割合だけ中身を描く）
-	bool alive = zombie.isAlive();							// 倒れたまま生きている（Downed）も、生きているので白い中身
-	UiRect back;
-	back.left = screen.x - kBarWidth * kHalf - kBarBorder;
-	back.top = screen.y - kBarHeight * kHalf - kBarBorder;
-	back.width = kBarWidth + kBarBorder * kBorderSides;
-	back.height = kBarHeight + kBarBorder * kBorderSides;
-	renderer->addRect( back, kBarBackColor );
-	UiRect fill;
-	fill.left = screen.x - kBarWidth * kHalf;
-	fill.top = screen.y - kBarHeight * kHalf;
-	fill.width = kBarWidth * ( health.total() / health.maxTotal() );
-	fill.height = kBarHeight;
-	renderer->addRect( fill, alive ? kBarFillColor : kDeadBarFillColor );
+	const ZombieHealth& health = healthComponent->health();
+	UiRect back = addBar( renderer, screen, health, zombie.isAlive() );
 
 	char text[ kTextSize ];	// 数字はバーの上、状態はバーの下
-	// 丈夫さ（x1.12 など）も出す。体ごとに最大が違うので、撃つ前に何発かかる体か確かめられる。後ろはアニメの段（Near / Far / Hidden）と、
-	// 道を探す順番を待っていれば「wait」
-	const ZombieBrainComponent* brain = zombie.getComponent< ZombieBrainComponent >();
-	const ZombieChaseComponent* chase = zombie.getComponent< ZombieChaseComponent >();
-	bool waitingForPath = chase && chase->path().isWaitingForSearch();
-	// 走る体には「R」を付ける（脚が傷んで歩きに落ちたら消える）
-	bool runner = chase && chase->locomotion().isRunner();
-	std::snprintf( text, sizeof( text ), "HP %d/%d x%.2f %s%s%s", rounded( health.total() ), rounded( health.maxTotal() ), health.toughness(),
-		brain ? animationLevelName( brain->animationLevel() ) : "", waitingForPath ? " wait" : "", runner ? " R" : "" );
+	formatSummary( text, sizeof( text ), zombie, health );
 	Vector2 above( screen.x, back.top - kTextGap - kLineHeight * kHalf );
 	renderer->addText( text, above, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
-	// 立っている間は、追ってくる AI の考え（Wander / Chase / Search）。よろけている・攻撃している間はそちらを出す
-	// 攻撃・死体の部品は外せる（外した体は、その状態の文字を出さない）
-	ZombieStateComponent::State state = zombie.state();
-	const ZombieAttackComponent* attack = zombie.getComponent< ZombieAttackComponent >();
-	const ZombieCorpseComponent* corpse = zombie.getComponent< ZombieCorpseComponent >();
-	if ( alive && healthComponent->isStaggering() ) {
-		std::snprintf( text, sizeof( text ), "Staggered" );
-	} else if ( alive && attack && attack->attack().phase() != ZombieAttack::Phase::Ready ) {
-		std::snprintf( text, sizeof( text ), "%sAttack %s", zombie.isCrawling() ? "Downed " : "",
-			attackPhaseName( attack->attack().phase() ) );
-	} else if ( zombie.isCrawling() ) {
-		std::snprintf( text, sizeof( text ), "%s %s", stateName( state ), chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );	// 体を引きずっている間は、Downed の後ろに追ってくる AI の考え
-	} else if ( state == ZombieStateComponent::State::Alive && zombie.getComponent< ZombieChaseComponent >()->mode() == ZombieChase::Mode::Chase && world.player() ) {
-		// 追っている間は自キャラまでの距離（足元どうし・水平）も出す。攻撃を始める間合いに入れているかを見るため
-		Vector3 toPlayer;
-		toPlayer.setSub( world.player()->getComponent< TransformComponent >()->position(), zombie.position() );
-		toPlayer.y = 0.f;
-		std::snprintf( text, sizeof( text ), "%s %.2fm", chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ), toPlayer.length() );
-	} else if ( state == ZombieStateComponent::State::Alive ) {
-		std::snprintf( text, sizeof( text ), "%s", chaseModeName( zombie.getComponent< ZombieChaseComponent >()->mode() ) );
-	} else if ( state == ZombieStateComponent::State::Downed || state == ZombieStateComponent::State::Falling || !corpse ) {
-		std::snprintf( text, sizeof( text ), "%s", stateName( state ) );
-	} else {
-		std::snprintf( text, sizeof( text ), "%s %.1fs", stateName( state ), corpse->secondsUntilGone() );
-	}
+	formatStatus( text, sizeof( text ), zombie, *healthComponent, world );
 	Vector2 below( screen.x, back.bottom() + kTextGap + kLineHeight * kHalf );
 	renderer->addText( text, below, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
 
@@ -225,7 +237,7 @@ void ZombieHealthBars::addPartLabels( const ZombieStateComponent& zombie, const 
 	for ( int i = 0; i < boxes.boxNumber(); ++i ) {
 		Matrix34 box;
 		Vector2 screen;
-		if ( !boxes.boxMatrix( i, &box ) || !ScreenProjection::worldToScreen( projectionView, boxCenter( box ), &screen ) ) {
+		if ( !boxes.boxMatrix( i, &box ) || !ScreenProjection::worldToScreen( projectionView, PlacementMatrix::translationOf( box ), &screen ) ) {
 			continue;
 		}
 		BodyPart part = boxes.boxPart( i );

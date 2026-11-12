@@ -42,10 +42,6 @@ namespace{
 	const char* kZombieGrabAnimation = "atack3";	// 両手でつかんで噛む
 	const char* kZombieAttackAnimation =
 		( kZombieAttackStyle == ZombieAttackStyle::Swing ) ? kZombieSwingAnimation : kZombieGrabAnimation;
-
-	Vector3 toPosition( const TownPlacement& placement ) {
-		return Vector3( placement.x, placement.y, placement.z );
-	}
 }
 
 ZombieDirector::ZombieDirector( MeshCache* meshes, GameObjectWorld* objects, const HitWorld* hitWorld, const CollisionWorld* collisionWorld,
@@ -88,7 +84,7 @@ void ZombieDirector::setup( const TownMap& map ) {
 	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）
 	std::vector< Vector3 > spawnPoints;
 	for ( const TownPlacement& p : map.zombieSpawnPoints() ) {
-		spawnPoints.push_back( toPosition( p ) );
+		spawnPoints.push_back( p.position() );
 	}
 	mSpawner = std::make_unique< ZombieSpawner >( spawnPoints, mHitWorld, mCollisionWorld,
 		&mZombieModel->footprint(), mRandom.getInt(), mDay->zombieCount );

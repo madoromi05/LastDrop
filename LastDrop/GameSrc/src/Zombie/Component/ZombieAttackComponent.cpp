@@ -170,7 +170,7 @@ void ZombieAttackComponent::alignToHeldTarget( const Vector3& target ) {
 	fromTarget.y = 0.f;
 	float length = fromTarget.length();
 	if ( length <= 0.f ) {
-		fromTarget.set( -Math::sin( *mAngleY ), 0.f, -Math::cos( *mAngleY ) );
+		fromTarget.setNeg( AngleMath::forwardOf( *mAngleY ) );
 		length = 1.f;
 	}
 	Vector3 wanted;

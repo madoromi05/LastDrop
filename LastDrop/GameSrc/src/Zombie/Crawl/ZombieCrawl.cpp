@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/Crawl/ZombieCrawl.h"
 #include "GameSrc/Math/AxisRotation.h"
+#include "GameSrc/Math/AngleMath.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/PlacementMatrix.h"
 #include "GameSrc/Math/ScalarMath.h"
@@ -16,8 +17,10 @@ namespace{
 	// 1 往復の長さ（秒）。前半で手を前へ運び、後半で引く。左右は半周ずらすので、引くのは 1 往復に 2 回
 	const float kStrokeSeconds = 1.25f;
 	const float kPhasePerTick = 1.f / ( kStrokeSeconds * GameTime::kTicksPerSecond );
-	const float kReachShare = 0.5f;		// 1 往復のうち、手を前へ運んでいる割合（残りが引く）
-	const float kPullDistance = 0.25f;	// 1 回引くと進む長さ（m）。1 往復で 2 回引くので、平均 0.25 × 2 / 1.25 = 0.4m/秒
+	const float kReachShare = 0.5f;				// 1 往復のうち、手を前へ運んでいる割合（残りが引く）
+	const float kRightArmPhaseOffset = 0.5f;	// 右腕は半周ずらす（左が伸ばしている間に右が引く）
+	const float kPullDistance = 0.25f;			// 1 回引くと進む長さ（m）。1 往復で 2 回引くので、平均 0.25 × 2 / 1.25 = 0.4m/秒
+	const float kHalf = 0.5f;
 	// 倒れた姿勢から決めた形へ移る長さ（秒）
 	const float kFadeInSeconds = 0.4f;
 	const float kWeightPerTick = 1.f / ( kFadeInSeconds * GameTime::kTicksPerSecond );
@@ -64,7 +67,6 @@ namespace{
 
 	// これより短い向き・外積（長さ）は決まらないとみなす
 	const float kTinyLength = 0.001f;
-	const float kHalfTurnDegree = 180.f;
 
 	float distanceBetween( const Vector3& a, const Vector3& b ) {
 		Vector3 d;
@@ -87,7 +89,7 @@ namespace{
 			return 0.f;
 		}
 		float t = ( phase - kReachShare ) / ( 1.f - kReachShare );
-		return ( 1.f - Math::cos( kHalfTurnDegree * t ) ) * 0.5f;
+		return ( 1.f - Math::cos( AngleMath::kHalfTurnDegree * t ) ) * kHalf;
 	}
 
 	// v を長さ 1 にする。短すぎれば fallback を返す
@@ -254,10 +256,7 @@ void ZombieCrawl::update( float pace, bool reaching ) {
 			pulledShare( after ) - pulledShare( before );
 		mPulled[ s ] = kPullDistance * share;
 	}
-	mPhase += step;
-	if ( mPhase >= 1.f ) {
-		mPhase -= 1.f;
-	}
+	mPhase = ScalarMath::wrapUnit( mPhase + step );
 }
 
 void ZombieCrawl::setLookTarget( bool hasTarget, const Vector3& rootPoint ) {
@@ -280,8 +279,7 @@ float ZombieCrawl::armPhase( ZombieCrawlLayout::Side side ) const {
 	if ( side == ZombieCrawlLayout::SIDE_LEFT ) {
 		return mPhase;
 	}
-	float phase = mPhase + 0.5f; // 右腕は半周ずらす（左が伸ばしている間に右が引く）
-	return ( phase >= 1.f ) ? phase - 1.f : phase;
+	return ScalarMath::wrapUnit( mPhase + kRightArmPhaseOffset );
 }
 
 void ZombieCrawl::apply( std::vector< Matrix34 >* pose ) {
@@ -380,7 +378,7 @@ void ZombieCrawl::placeHand( ZombieCrawlLayout::Side side, const Vector3& forwar
 	if ( phase < kReachShare ) {
 		float t = phase / kReachShare;
 		forwardAmount = ScalarMath::lerp( kHandPulledForward, kHandReachForward, ScalarMath::smoothStep( t ) );
-		height += kHandCarryLift * Math::sin( kHalfTurnDegree * t );
+		height += kHandCarryLift * Math::sin( AngleMath::kHalfTurnDegree * t );
 	} else {
 		forwardAmount = ScalarMath::lerp( kHandReachForward, kHandPulledForward, pulledShare( phase ) );
 	}

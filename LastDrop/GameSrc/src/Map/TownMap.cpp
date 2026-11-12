@@ -475,6 +475,10 @@ namespace{
 	}
 }
 
+GameLib::Math::Vector3 TownPlacement::position() const {
+	return GameLib::Math::Vector3( x, y, z );
+}
+
 TownMap::TownMap() :
 	mTPoseZombie( toPlacement( kTPoseZombie ) ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );

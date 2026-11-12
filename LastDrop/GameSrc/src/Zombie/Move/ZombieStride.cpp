@@ -1,6 +1,8 @@
 #include "GameSrc/Zombie/Move/ZombieStride.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/ScalarMath.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -23,10 +25,8 @@ namespace{
 	int leftToe, int rightToe, Vector3* left, Vector3* right ) {
 		skeleton->updateAnimation( time );
 		data->computeBonePose( *skeleton, pose );
-		const Matrix34& l = ( *pose )[ leftToe ];
-		const Matrix34& r = ( *pose )[ rightToe ];
-		left->set( l.m03, l.m13, l.m23 );
-		right->set( r.m03, r.m13, r.m23 );
+		*left = PlacementMatrix::translationOf( ( *pose )[ leftToe ] );
+		*right = PlacementMatrix::translationOf( ( *pose )[ rightToe ] );
 	}
 }
 
@@ -79,7 +79,7 @@ float ZombieStride::distanceAt( float time ) const {
 	float fraction = t - static_cast< float >( index );
 	float a = mDistances[ index % frameNumber ];
 	float b = mDistances[ ( index + 1 ) % frameNumber ];
-	return a + ( b - a ) * fraction;
+	return ScalarMath::lerp( a, b, fraction );
 }
 
 float ZombieStride::cycleLength() const {

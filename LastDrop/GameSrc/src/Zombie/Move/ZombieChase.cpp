@@ -3,6 +3,7 @@
 #include "GameSrc/Hit/HitWorld.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -41,17 +42,11 @@ namespace{
 	// 近づけないまま、これだけ過ぎたら選び直す（秒）
 	const float kWanderStallSeconds = 1.f;
 	const int kWanderStallTicks = GameTime::secondsToTicks( kWanderStallSeconds );
-	const float kHalfTurn = 180.f;
 
 	// ── 銃声を聞く──
 	// 聞いてから向かい始めるまで（秒。体ごと・聞くたびにこの間でランダム）。全員が同じ瞬間に振り向かないように
 	const float kNoiseDelayMinSeconds = 0.2f;
 	const float kNoiseDelayMaxSeconds = 1.0f;
-
-	// 向き angleY（度。0 は +Z、90 は +X）の水平の向き（長さ 1）
-	Vector3 forwardOf( float angleY ) {
-		return Vector3( GameLib::Math::sin( angleY ), 0.f, GameLib::Math::cos( angleY ) );
-	}
 
 	// toTarget が、向き angleY から左右 kFieldOfViewHalfDegree の内か（水平だけで見る）
 	bool isInFieldOfView( float angleY, const Vector3& toTarget ) {
@@ -60,7 +55,7 @@ namespace{
 		if ( length <= 0.f ) {
 			return true; // 真上・真下は向きが無いので前とみなす
 		}
-		return forwardOf( angleY ).dot( flat ) >= GameLib::Math::cos( kFieldOfViewHalfDegree ) * length;
+		return AngleMath::forwardOf( angleY ).dot( flat ) >= GameLib::Math::cos( kFieldOfViewHalfDegree ) * length;
 	}
 }
 
@@ -222,10 +217,10 @@ void ZombieChase::startWanderWait() {
 }
 
 bool ZombieChase::pickWanderPoint( const Vector3& self, float angleY, const HitWorld& hitWorld ) {
-	float baseAngle = mWanderTurnBack ? angleY + kHalfTurn : angleY;
+	float baseAngle = mWanderTurnBack ? angleY + AngleMath::kHalfTurnDegree : angleY;
 	Vector3 probeOrigin( self.x, self.y + kWanderProbeHeight, self.z );
 	for ( int i = 0; i < kWanderPickTries; ++i ) {
-		Vector3 direction = forwardOf( baseAngle + mRandom.getFloat( -kWanderHalfAngle, kWanderHalfAngle ) );
+		Vector3 direction = AngleMath::forwardOf( baseAngle + mRandom.getFloat( -kWanderHalfAngle, kWanderHalfAngle ) );
 		float distance = mRandom.getFloat( kWanderMinDistance, kWanderMaxDistance );
 		Vector3 probe;
 		probe.setMul( direction, distance + kWanderClearance );

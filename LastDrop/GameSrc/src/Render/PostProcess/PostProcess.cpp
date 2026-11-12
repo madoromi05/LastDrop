@@ -1,5 +1,6 @@
 #include "GameSrc/Render/PostProcess/PostProcess.h"
 #include "GameSrc/Render/PostProcess/PostProcessParams.h"
+#include "GameSrc/Render/ShaderSlots.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -22,8 +23,6 @@ namespace{
 	const int kLutSlot = kSceneColorSlot + 2;
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 	const int kFxaaInputSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// Fxaa.hlsl の番号と揃える（t2 / b1）
-	// 半透明の板が読むシーンの深度（SoftQuad.hlsli の t5。G-Buffer の並びの深度と同じ番号）
-	const int kSoftQuadDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
 	const int kFxaaConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
 
 	// Fxaa.hlsl の cbuffer FxaaConstants と同じ並び（float 4 個）
@@ -162,7 +161,7 @@ void PostProcess::resumeScene() {
 void PostProcess::resumeSceneReadOnlyDepth() {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	gm.setRenderTargets( &mSceneColor, 1, mSceneDepth, true );
-	gm.setShaderResource( kSoftQuadDepthSlot, mSceneDepth ); // 描画先の切り替えで外れるので、切り替えた後に付ける
+	gm.setShaderResource( ShaderSlots::kSceneDepth, mSceneDepth ); // 描画先の切り替えで外れるので、切り替えた後に付ける
 }
 
 void PostProcess::bindSceneColor() {

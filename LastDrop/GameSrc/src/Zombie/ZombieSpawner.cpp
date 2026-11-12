@@ -3,6 +3,7 @@
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Collision/BodyFootprint.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -21,7 +22,6 @@ namespace{
 	const float kHeadHeight = 1.7f;		// 見えるかを調べる、ゾンビの頭の高さ（m。足元から）。頭が見えなければ体も見えないとみなす
 	// 補充のとき 1 ティックに調べる候補の数。見つからなければ次のティックに続きを調べる（1 ティックに線を何本も引かない）
 	const int kTriesPerTick = 4;
-	const float kFullTurn = 360.f;
 }
 
 ZombieSpawner::ZombieSpawner( const std::vector< Vector3 >& candidates, const HitWorld* hitWorld,
@@ -68,7 +68,7 @@ void ZombieSpawner::planInitial( const View& view, std::vector< Order >* out ) {
 			break;
 		}
 		const Vector3& position = mCandidates[ index ];
-		float yaw = mRandom.getFloat( kFullTurn );
+		float yaw = mRandom.getFloat( AngleMath::kFullTurnDegree );
 		if ( canSpawnAt( view, position, yaw ) ) {
 			out->push_back( { position, yaw } );
 			--remaining;
@@ -90,7 +90,7 @@ void ZombieSpawner::planRefill( const View& view, std::vector< Order >* out ) {
 	}
 	for ( int i = 0; i < kTriesPerTick; ++i ) {
 		const Vector3& position = mCandidates[ mRandom.getInt( static_cast< int >( mCandidates.size() ) ) ];
-		float yaw = mRandom.getFloat( kFullTurn );
+		float yaw = mRandom.getFloat( AngleMath::kFullTurnDegree );
 		if ( canSpawnAt( view, position, yaw ) ) {
 			out->push_back( { position, yaw } );
 			mRefillTicks = kRefillTicks;
@@ -121,8 +121,7 @@ bool ZombieSpawner::isVisible( const View& view, const Vector3& head ) const {
 	toHead.setSub( head, view.playerEye );
 	// 画面の外なら見えない（重い線より先に、向きで外す）
 	Vector3 flat( toHead.x, 0.f, toHead.z );
-	Vector3 forward( GameLib::Math::sin( view.viewYaw ), 0.f, GameLib::Math::cos( view.viewYaw ) );
-	if ( forward.dot( flat ) < GameLib::Math::cos( kViewHalfAngle ) * flat.length() ) {
+	if ( AngleMath::forwardOf( view.viewYaw ).dot( flat ) < GameLib::Math::cos( kViewHalfAngle ) * flat.length() ) {
 		return false;
 	}
 	return !mHitWorld->isBlocked( view.playerEye, toHead );	// 画面の内でも、建物・車・地面の陰なら見えない

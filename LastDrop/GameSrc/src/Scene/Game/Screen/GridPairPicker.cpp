@@ -1,5 +1,4 @@
 #include "GameSrc/Scene/Game/Screen/GridPairPicker.h"
-#include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"
 #include <algorithm>
@@ -8,10 +7,6 @@ using namespace GameLib::Math;
 
 namespace{
 	const int kNone = -1;
-	const float kFrameThickness = 2.f;
-	const unsigned kSelectColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );
-	const unsigned kPlaceColor = VertexColor::pack( 0.35f, 0.9f, 0.35f );   // 置ける所
-	const unsigned kBlockedColor = VertexColor::pack( 0.9f, 0.2f, 0.15f );  // 入らない所
 
 	GridPairPicker::Side otherSide( GridPairPicker::Side side ) {
 		return ( side == GridPairPicker::Side::Left ) ? GridPairPicker::Side::Right : GridPairPicker::Side::Left;
@@ -222,14 +217,8 @@ void GridPairPicker::draw( const ItemGrid& left, const ItemGrid& right, bool sho
 		// 置く所に、持ち上げている物の大きさの枠。入らない所は赤
 		ItemId item = gridOf( left, right, mMovingSide ).stackAt( mMovingFrom ).item;
 		int target = current.placementCell( item, mSelected );
-		view.addFrame( view.spanRect( current, target, itemSpec( item ).cellSize ), kFrameThickness,
-			canPlace( left, right ) ? kPlaceColor : kBlockedColor );
+		view.addPlacementFrame( current, target, item, canPlace( left, right ) );
 		return;
 	}
-	int owner = current.ownerCell( mSelected );
-	if ( owner == kNone ) {
-		view.addFrame( view.cellRect( current, mSelected ), kFrameThickness, kSelectColor );
-	} else {
-		view.addFrame( view.spanRect( current, owner, itemSpec( current.stackAt( owner ).item ).cellSize ), kFrameThickness, kSelectColor );
-	}
+	view.addSelectionFrame( current, mSelected );
 }

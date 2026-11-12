@@ -70,7 +70,7 @@ float CameraShake::noise( int channel ) const {
 	float t = ScalarMath::smoothStep( mPhase - static_cast< float >( index ) );
 	float a = latticeValue( mSeed, channel, mLatticeBase + index );
 	float b = latticeValue( mSeed, channel, mLatticeBase + index + 1 );
-	return a + ( b - a ) * t;
+	return ScalarMath::lerp( a, b, t );
 }
 
 float CameraShake::pitch() const {

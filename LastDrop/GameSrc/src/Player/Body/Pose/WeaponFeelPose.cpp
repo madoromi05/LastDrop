@@ -5,6 +5,7 @@
 #include "GameSrc/Player/Camera/AimSwayParams.h"
 #include "GameSrc/Math/AxisRotation.h"
 #include "GameSrc/Math/PlacementMatrix.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 
@@ -71,8 +72,8 @@ void WeaponFeelPose::kickWeapon( std::vector< Matrix34 >* pose ) const {
 	PoseMath::weaponAxes( mRig->weaponPlacement( *pose ), &barrel, &gunSide );
 
 	// 覗き具合で、腰だめの動きと覗いているときの動きの間を取る
-	float back = ( params.recoilBackHip + ( params.recoilBackAim - params.recoilBackHip ) * mAimWeight ) * mRecoil;
-	float rise = ( params.recoilMuzzleRiseHip + ( params.recoilMuzzleRiseAim - params.recoilMuzzleRiseHip ) * mAimWeight ) * mRecoil;
+	float back = ScalarMath::lerp( params.recoilBackHip, params.recoilBackAim, mAimWeight ) * mRecoil;
+	float rise = ScalarMath::lerp( params.recoilMuzzleRiseHip, params.recoilMuzzleRiseAim, mAimWeight ) * mRecoil;
 
 	// 手首を中心に銃口を跳ね上げてから、銃口と逆の向きへ引く。銃の横の軸まわりは、正の角度で銃口が下を向くので負で回す
 	// 手首を中心にするのは、握っている所を支点に銃の先が跳ねるように見せるため

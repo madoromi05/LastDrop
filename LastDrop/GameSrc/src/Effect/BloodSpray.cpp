@@ -1,5 +1,6 @@
 #include "GameSrc/Effect/BloodSpray.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 
@@ -98,9 +99,7 @@ const Vector3& BloodSpray::dropPosition( int index ) const {
 }
 
 float BloodSpray::dropRadius() const {
-	// 出た直後に早く広がり、だんだんゆっくりになる（ImpactDust と同じ曲線）
-	float remain = 1.f - progress();
-	return ( kStartRadius + ( kEndRadius - kStartRadius ) * ( 1.f - remain * remain ) ) * mScale;
+	return ScalarMath::lerp( kStartRadius, kEndRadius, ScalarMath::easeOut( progress() ) ) * mScale;	// 出た直後に早く広がり、だんだんゆっくりになる
 }
 
 float BloodSpray::dropOpacity() const {

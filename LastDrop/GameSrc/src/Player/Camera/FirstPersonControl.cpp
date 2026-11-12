@@ -2,6 +2,7 @@
 #include "GameSrc/Player/Camera/LookParams.h"
 #include "GameSrc/Core/Pad.h"
 #include "GameSrc/Core/GameSettings.h"
+#include "GameSrc/Math/ScalarMath.h"
 #include "Framework.h"
 
 #include "GameLib/GameLib.h"
@@ -16,7 +17,7 @@ namespace{
 
 	// 覗き具合に合わせた縦の視野角（度）
 	float fieldOfView( float aimWeight ) {
-		return gLookParams.hipFieldOfView + ( gLookParams.aimFieldOfView - gLookParams.hipFieldOfView ) * aimWeight;
+		return ScalarMath::lerp( gLookParams.hipFieldOfView, gLookParams.aimFieldOfView, aimWeight );
 	}
 
 	// スティックで回す量に使う、1 回の描画の長さの上限（秒）。一時停止や読み込みで空いた時間を、1 度に回さないため

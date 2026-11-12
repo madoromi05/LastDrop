@@ -13,9 +13,10 @@ bool satisfies( const ItemGrid& grid, GridRule rule ) {
 	if ( rule == GridRule::Free ) {
 		return true;
 	}
-	if ( rule == GridRule::FuelOnly ) {
+	ItemId only = onlyItem( rule );
+	if ( only != ITEM_NONE ) {
 		for ( const ItemStack& stack : grid.stacks() ) {
-			if ( stack.item != ITEM_FUEL ) {
+			if ( stack.item != only ) {
 				return false;
 			}
 		}
@@ -89,6 +90,10 @@ bool quickMove( ItemGrid* source, GridRule sourceRule, int from, ItemGrid* targe
 		movedAny = true;
 	}
 	return movedAny;
+}
+
+ItemId onlyItem( GridRule rule ) {
+	return ( rule == GridRule::FuelOnly ) ? ITEM_FUEL : ITEM_NONE;
 }
 
 } //namespace ItemTransfer

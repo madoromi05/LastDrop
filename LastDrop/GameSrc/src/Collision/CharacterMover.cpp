@@ -2,6 +2,7 @@
 #include "GameSrc/Collision/CollisionWorld.h"
 #include "GameSrc/Collision/ICollisionBody.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -91,7 +92,7 @@ float CharacterMover::followGround( const Vector3& position ) const {
 	if ( !mWorld->groundHeight( position, &ground ) ) {
 		return position.y;
 	}
-	float step = Math::max( -kGroundFollowSpeed, Math::min( ground - position.y, kGroundFollowSpeed ) );
+	float step = ScalarMath::clampSigned( ground - position.y, kGroundFollowSpeed );
 	return position.y + step;
 }
 

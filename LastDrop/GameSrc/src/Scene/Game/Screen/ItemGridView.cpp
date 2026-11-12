@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Game/Screen/ItemGridView.h"
 #include "GameSrc/Scene/Game/Screen/ItemIcons.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Render/VertexColor.h"
@@ -17,7 +18,8 @@ namespace{
 	const int kNone = -1;
 
 	const float kCellGap = 4.f;				// マスどうしの間（画素）
-	const float kIconInset = 3.f;			// マスの縁から絵まで（選んだ枠の太さより広く、枠が絵に掛からないように）
+	const float kFrameThickness = 2.f;		// 選んだ枠・置ける所の枠の太さ
+	const float kIconInset = 3.f;			// マスの縁から絵まで（枠の太さより広く、枠が絵に掛からないように）
 	const float kBothSides = 2.f;			// 左右（上下）の両側の余白の分
 	const float kAmountPlateWidth = 26.f;	// 数（2 桁）を置く右下の板。板の真ん中に数を置く
 	const float kAmountPlateHeight = 20.f;	// 文字（UI_TEXT_NORMAL の 20）と同じ高さ
@@ -37,10 +39,9 @@ namespace{
 	const float kOpaque = 1.f;        // 絵はそのままの色・濃さで貼る（白を掛ける）
 	const float kLiftedAlpha = 0.35f; // 持ち上げている物の元の場所（薄くして、どれを動かしているか分かるように）
 	const float kGhostAlpha = 0.6f;   // 拾って持っている物を、置こうとしている所に重ねる濃さ
+	const float kPlaceholderAlpha = 0.2f; // 入れる物が決まっている空いた所の絵。持ち上げた元の場所より薄くして、まだ入っていないと分かるように
 	const unsigned kAmountPlateColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.65f );
-	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
 	const unsigned kEmptyRoundsColor = VertexColor::pack( 0.95f, 0.25f, 0.2f ); // 弾倉が空
-	const unsigned kMarkColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // ボタンを選んだ色と同じ黄
 
 	unsigned itemColor( ItemId id, float alpha ) {
 		const ItemSpec& spec = itemSpec( id );
@@ -68,7 +69,8 @@ ItemGridView::ItemGridView( UiRenderer* renderer, ItemIcons* icons ) :
 	mOrigin( 0.f, 0.f ),
 	mCellSize( 0.f ),
 	mEmptyAlpha( kDefaultEmptyAlpha ),
-	mItemAlpha( kDefaultItemAlpha ) {
+	mItemAlpha( kDefaultItemAlpha ),
+	mPlaceholder( ITEM_NONE ) {
 	ASSERT( mRenderer && mIcons && "ItemGridView : an argument is null." );
 }
 
@@ -80,6 +82,10 @@ void ItemGridView::setLayout( const Vector2& origin, float cellSize ) {
 void ItemGridView::setCellAlpha( float alpha ) {
 	mEmptyAlpha = alpha;
 	mItemAlpha = alpha;
+}
+
+void ItemGridView::setPlaceholder( ItemId item ) {
+	mPlaceholder = item;
 }
 
 float ItemGridView::width( const ItemGrid& grid, float cellSize ) {
@@ -129,6 +135,7 @@ void ItemGridView::drawCells( const ItemGrid& grid, int lifted ) {
 		unsigned color = mIcons->icon( item ) ? VertexColor::pack( kItemCellGray, kItemCellGray, kItemCellGray, alpha ) : itemColor( item, alpha );
 		mRenderer->addRect( spanRect( grid, i, itemSpec( item ).cellSize ), color );
 	}
+	drawPlaceholders( grid );
 	// ② 物の絵（まとめて積む）。持ち上げている物の元の場所は、背景と同じく薄くする
 	for ( int i = 0; i < grid.cellCount(); ++i ) {
 		if ( grid.ownerCell( i ) != i ) {
@@ -151,6 +158,26 @@ void ItemGridView::drawIcon( const UiRect& area, ItemId item, float alpha ) {
 	}
 }
 
+void ItemGridView::drawPlaceholders( const ItemGrid& grid ) {
+	if ( mPlaceholder == ITEM_NONE ) {
+		return;
+	}
+	int size = itemSpec( mPlaceholder ).cellSize;
+	for ( int i = 0; i < grid.cellCount(); ++i ) {
+		int column = i % grid.columns();
+		if ( column % size != 0 || column + size > grid.columns() ) {
+			continue; // 行を物の大きさで区切った頭のマスだけ見る
+		}
+		bool empty = true;
+		for ( int k = i; k < i + size; ++k ) {
+			empty = empty && ( grid.ownerCell( k ) == kNone );
+		}
+		if ( empty ) {
+			drawIcon( spanRect( grid, i, size ), mPlaceholder, kPlaceholderAlpha );
+		}
+	}
+}
+
 void ItemGridView::drawAmounts( const ItemGrid& grid ) {
 	char text[ kTextSize ];
 	for ( int i = 0; i < grid.cellCount(); ++i ) {
@@ -163,13 +190,13 @@ void ItemGridView::drawAmounts( const ItemGrid& grid ) {
 		// 重ねられる物だけ数を出す（ガソリンのように 1 つずつの物は数を出さない）
 		if ( spec.stackSize > 1 ) {
 			std::snprintf( text, sizeof( text ), "%d", stack.amount );
-			drawCornerText( area, text, true, kAmountPlateWidth, kTextColor );
+			drawCornerText( area, text, true, kAmountPlateWidth, GridPalette::TEXT );
 		}
 		// 銃は左下に「弾倉の数/弾倉の大きさ」。空は赤（リロードし忘れに気づけるように）
 		WeaponId weapon = weaponForItem( stack.item );
 		if ( weapon != WEAPON_NONE ) {
 			std::snprintf( text, sizeof( text ), kRoundsFormat, stack.loadedRounds, weaponSpec( weapon ).magazineCapacity );
-			drawCornerText( area, text, false, kRoundsPlateWidth, ( stack.loadedRounds == 0 ) ? kEmptyRoundsColor : kTextColor );
+			drawCornerText( area, text, false, kRoundsPlateWidth, ( stack.loadedRounds == 0 ) ? kEmptyRoundsColor : GridPalette::TEXT );
 		}
 	}
 }
@@ -199,21 +226,34 @@ void ItemGridView::drawMark( const ItemGrid& grid, ItemId item, const char* mark
 		plate.width = kMarkPlateSize;
 		plate.height = kMarkPlateSize;
 		mRenderer->addRect( plate, kAmountPlateColor );
-		mRenderer->addText( mark, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kMarkColor );
+		mRenderer->addText( mark, plate.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::HEADING );
 		return; // 印を付ける物（手に持っている銃）は 1 種類 1 丁だけ
 	}
 }
 
-void ItemGridView::addFrame( const UiRect& rect, float thickness, unsigned color ) {
+void ItemGridView::addSelectionFrame( const ItemGrid& grid, int cell ) {
+	int owner = grid.ownerCell( cell );
+	if ( owner == kNone ) {
+		addFrame( cellRect( grid, cell ), GridPalette::FRAME_SELECT );
+	} else {
+		addFrame( spanRect( grid, owner, itemSpec( grid.stackAt( owner ).item ).cellSize ), GridPalette::FRAME_SELECT );
+	}
+}
+
+void ItemGridView::addPlacementFrame( const ItemGrid& grid, int target, ItemId item, bool fits ) {
+	addFrame( spanRect( grid, target, itemSpec( item ).cellSize ), fits ? GridPalette::FRAME_PLACE : GridPalette::FRAME_BLOCKED );
+}
+
+void ItemGridView::addFrame( const UiRect& rect, unsigned color ) {
 	UiRect edge = rect;
-	edge.height = thickness;
+	edge.height = kFrameThickness;
 	mRenderer->addRect( edge, color ); // 上
-	edge.top = rect.bottom() - thickness;
+	edge.top = rect.bottom() - kFrameThickness;
 	mRenderer->addRect( edge, color ); // 下
 	edge.top = rect.top;
 	edge.height = rect.height;
-	edge.width = thickness;
+	edge.width = kFrameThickness;
 	mRenderer->addRect( edge, color ); // 左
-	edge.left = rect.right() - thickness;
+	edge.left = rect.right() - kFrameThickness;
 	mRenderer->addRect( edge, color ); // 右
 }

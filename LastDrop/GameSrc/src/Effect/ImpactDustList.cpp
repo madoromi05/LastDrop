@@ -1,5 +1,6 @@
 #include "GameSrc/Effect/ImpactDustList.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Math/OrthoBasis.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -22,11 +23,6 @@ namespace{
 	const float kDustRed = 0.78f;
 	const float kDustGreen = 0.74f;
 	const float kDustBlue = 0.66f;
-
-	// 板を画面に平行にするときの仮の「上」。真上・真下を見ているときは、もう一方を使う（Bullet::draw と同じ）
-	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
-	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
-	const float kParallelLimit = 0.99f;
 
 	const float kSoftDistance = 0.3f;	// 壁・地面に刺さった所で粒を薄くし始める奥行きの差（m）。見た目を確かめる前の初期値
 }
@@ -60,12 +56,9 @@ void ImpactDustList::draw( const Matrix44& projectionView, const Vector3& viewDi
 		return;
 	}
 	// 視線に直交する横と縦（長さ1）。粒の板をこの2本で張ると、画面に平行になる
-	const Vector3& helper = ( Math::abs( viewDirection.dot( kWorldUp ) ) > kParallelLimit ) ? kWorldRight : kWorldUp;
 	Vector3 right;
-	right.setCross( helper, viewDirection );
-	right.normalize();
 	Vector3 up;
-	up.setCross( viewDirection, right );
+	OrthoBasis::around( viewDirection, &right, &up );
 	// 粒には面が無いので、カメラの方を向いた面として照らす（こちらから見える側に当たる光の明るさになる）
 	Vector3 towardCamera;
 	towardCamera.setNeg( viewDirection );

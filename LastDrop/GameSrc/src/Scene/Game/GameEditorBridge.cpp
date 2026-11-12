@@ -11,6 +11,7 @@
 #include "GameSrc/DebugMode/EditorWindow.h"
 #include "GameSrc/DebugMode/DebugSwitches.h"
 #include "GameSrc/Core/Pad.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
@@ -79,10 +80,10 @@ void GameEditorBridge::spawnRequestedZombies( GameWorld* world, const FirstPerso
 	if ( !player ) {
 		return;
 	}
-	// 視点の水平の向きの前と右（PlayerLocomotionComponent::readMoveDirection の cameraForward / cameraRight と同じ式）。間に建物があっても調べない（中に出ることがある）
+	// 視点の水平の向きの前と右。間に建物があっても調べない（中に出ることがある）
 	float yaw = camera.yaw();
-	Vector3 forward( Math::sin( yaw ), 0.f, Math::cos( yaw ) );
-	Vector3 right( -Math::cos( yaw ), 0.f, Math::sin( yaw ) );
+	Vector3 forward = AngleMath::forwardOf( yaw );
+	Vector3 right = AngleMath::rightOf( yaw );
 	Vector3 center;
 	center.setMadd( player->getComponent< TransformComponent >()->position(), forward, kDebugSpawnDistance );
 	// 真ん中を中心に、横へ等間隔に並べる（3 体なら -1.2m・0・+1.2m）

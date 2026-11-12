@@ -1,6 +1,7 @@
 #include "GameSrc/Weapon/WeaponStance.h"
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/Math/Functions.h"
 
@@ -17,11 +18,6 @@ namespace{
 	// 覗き具合が 1 ティックに進む量（覗き始めてからサイトが目の前に来るまでで 1）
 	float aimStep() {
 		return 1.f / ( gParams.aimSeconds * GameTime::kTicksPerSecond );
-	}
-
-	// 始めと終わりがゆっくりになる曲線（smoothstep）。直線だと銃が急に動き出し・急に止まって見えるため
-	float easeInOut( float t ) {
-		return t * t * ( 3.f - 2.f * t );
 	}
 }
 
@@ -93,5 +89,5 @@ bool WeaponStance::isAiming() const {
 }
 
 float WeaponStance::aimWeight() const {
-	return easeInOut( mAimProgress );
+	return ScalarMath::smoothStep( mAimProgress );	// 始めと終わりをゆっくりにする。直線だと銃が急に動き出し・急に止まって見えるため
 }

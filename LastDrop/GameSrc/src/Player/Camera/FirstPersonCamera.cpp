@@ -1,4 +1,6 @@
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
+#include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -20,7 +22,6 @@ namespace{
 	const float kNearClip     = 0.05f;
 	const float kFarClip      = 1000.f;
 
-	const float kFullTurn = 360.f;
 	const Vector3 kUp( 0.f, 1.f, 0.f );
 
 	// ヨー・ピッチ（度）から向き（長さ1）。ヨー0で +Z、ピッチは正で見下ろす
@@ -54,12 +55,12 @@ FirstPersonCamera::FirstPersonCamera( float pitchLimit ) :
 void FirstPersonCamera::rotate( float yawDelta, float pitchDelta ) {
 	mYaw += yawDelta;
 	// ヨーは回し続けても桁あふれで精度が落ちないよう、1周で折り返す
-	if ( mYaw >= kFullTurn ) {
-		mYaw -= kFullTurn;
+	if ( mYaw >= AngleMath::kFullTurnDegree ) {
+		mYaw -= AngleMath::kFullTurnDegree;
 	} else if ( mYaw < 0.f ) {
-		mYaw += kFullTurn;
+		mYaw += AngleMath::kFullTurnDegree;
 	}
-	mPitch = Math::max( -mPitchLimit, Math::min( mPitchLimit, mPitch + pitchDelta ) );
+	mPitch = ScalarMath::clampSigned( mPitch + pitchDelta, mPitchLimit );
 }
 
 void FirstPersonCamera::setAimOffset( float yawDegree, float pitchDegree ) {
@@ -120,7 +121,7 @@ float FirstPersonCamera::yaw() const {
 }
 
 float FirstPersonCamera::pitch() const {
-	return Math::max( -mPitchLimit, Math::min( mPitchLimit, mPitch + mPitchOffset ) );	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
+	return ScalarMath::clampSigned( mPitch + mPitchOffset, mPitchLimit );	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
 }
 
 Vector3 FirstPersonCamera::viewDirection() const {

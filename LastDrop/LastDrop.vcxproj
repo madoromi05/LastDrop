@@ -379,6 +379,7 @@
     <ClCompile Include="GameSrc\src\Render\Lighting\GBuffer.cpp" />
     <ClCompile Include="GameSrc\src\Render\Lighting\DeferredLighting.cpp" />
     <ClCompile Include="GameSrc\src\Render\RenderPass.cpp" />
+    <ClCompile Include="GameSrc\src\Render\ShaderConstants.cpp" />
     <ClCompile Include="GameSrc\src\Render\Lighting\LightList.cpp" />
     <ClCompile Include="GameSrc\src\Render\Lighting\LightingParams.cpp" />
     <ClCompile Include="GameSrc\src\Render\Shadow\ShadowMap.cpp" />
@@ -599,6 +600,7 @@
     <ClCompile Include="GameSrc\src\Math\AxisRotation.cpp" />
     <ClCompile Include="GameSrc\src\Math\AngleMath.cpp" />
     <ClCompile Include="GameSrc\src\Math\ScalarMath.cpp" />
+    <ClCompile Include="GameSrc\src\Math\OrthoBasis.cpp" />
     <ClCompile Include="GameSrc\src\Math\FlatMath.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\ZombieHealthBars.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\InteractMarkers.cpp" />
@@ -930,6 +932,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\DayCondition.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemTransfer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\ItemGridView.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\GridPalette.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootTable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootContainerComponent.h" />
@@ -1009,6 +1012,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\GBuffer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\DeferredLighting.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\RenderPass.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShaderSlots.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Render\ShaderConstants.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\LightList.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Lighting\LightingParams.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\Shadow\ShadowMap.h" />
@@ -1135,6 +1140,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Math\AxisRotation.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\AngleMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\ScalarMath.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Math\OrthoBasis.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Math\FlatMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\DamageInfo.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\IDamageable.h" />

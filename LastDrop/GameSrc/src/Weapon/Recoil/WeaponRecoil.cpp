@@ -1,4 +1,5 @@
 #include "GameSrc/Weapon/Recoil/WeaponRecoil.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 namespace{
 	const float kFullKick = 1.f;
@@ -19,10 +20,7 @@ void WeaponRecoil::update( bool fired ) {
 		mKick = kFullKick;
 		return;
 	}
-	mKick *= kRemainPerTick;
-	if ( mKick < kMinKick ) {
-		mKick = 0.f;
-	}
+	mKick = ScalarMath::decay( mKick, kRemainPerTick, kMinKick );
 }
 
 float WeaponRecoil::kick() const {

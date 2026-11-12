@@ -4,6 +4,7 @@
 #include "GameSrc/Raid/DayCondition.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiAnchor.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 #include "GameSrc/Render/VertexColor.h"
 
 #include "GameLib/GameLib.h"
@@ -39,7 +40,7 @@ namespace{
 	const float kSearchBarHeight = 6.f;
 	const float kSearchTextGap = 16.f;											// 棒の真ん中から、文字の真ん中まで（上へ）
 	const unsigned kSearchBackColor = VertexColor::pack( 0.f, 0.f, 0.f, 0.6f );
-	const unsigned kSearchFillColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );	// 選んだ枠と同じ黄
+	const unsigned kSearchFillColor = GridPalette::FRAME_SELECT;				// マス目の選んだ枠と同じ黄
 	const float kHalf = 0.5f;
 }
 

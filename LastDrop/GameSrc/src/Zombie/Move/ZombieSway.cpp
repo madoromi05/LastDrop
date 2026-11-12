@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/Damage/ZombieFlinchLayout.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/ScalarMath.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -12,7 +13,6 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const float kFullTurn = 360.f;					// 波の 1 往復（度。GameLib の sin は度で受ける）
 	const float kLurchPeriodRatio = 2.7f;			// ゆっくりの波（よろめき）の長さは、ふだんの揺れの何倍か。整数の比にしないことで、2 つの波が重なる時がたまにしか来ない
 	// 2 つの波の割合（足すと 1）。ふだんは最大の 7 割ほどで揺れ、2 つが重なったときだけ最大まで傾く
 	const float kMainShare = 0.7f;
@@ -43,7 +43,7 @@ void ZombieSway::update( float targetStrength, float maxDegree ) {
 	mStrength += ScalarMath::clampSigned( target - mStrength, kFadePerTick );
 	mPhase = ScalarMath::wrapUnit( mPhase + mPhaseStep );
 	mLurchPhase = ScalarMath::wrapUnit( mLurchPhase + mPhaseStep / kLurchPeriodRatio );
-	float wave = kMainShare * Math::sin( kFullTurn * mPhase ) + kLurchShare * Math::sin( kFullTurn * mLurchPhase );
+	float wave = kMainShare * Math::sin( AngleMath::kFullTurnDegree * mPhase ) + kLurchShare * Math::sin( AngleMath::kFullTurnDegree * mLurchPhase );
 	mLean = wave * mStrength;
 	mDegree = mLean * maxDegree;
 }

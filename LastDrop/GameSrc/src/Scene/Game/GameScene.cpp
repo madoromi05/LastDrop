@@ -220,21 +220,7 @@ void GameScene::draw() {
 		mLoad.drawLoadingScreen( mWorld.dayCondition().title );
 		return;
 	}
-	mControl.setEyeDrop( mFeedback.damageView().eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
-	const GameObject* player = mWorld.player();
-	if ( player ) {
-		Vector3 eye = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
-		mControl.placeCamera( &eye, aimWeight() );
-	} else {
-		mControl.placeCamera( nullptr, aimWeight() );
-	}
-#ifdef ZF_EDITOR
-	// 自キャラの視点は、観察用カメラの間も目へ置き続ける（見ている物を使う視線と、戻ったときの位置のため）
-	// 描くのは観察用カメラから（自キャラの視点で設定した描画ステートを上書きする）
-	if ( mFreeCamera.isActive() ) {
-		mFreeCamera.apply();
-	}
-#endif
+	placeViewCamera();
 	const FirstPersonCamera& camera = viewCamera();
 	// このフレームで描くカメラ（観察用カメラの間はそちら）を、次のティックのゾンビのアニメの間引きのために渡す
 	mWorld.setAnimationView( camera.projectionViewMatrix(), camera.eyePosition() );
@@ -251,8 +237,33 @@ void GameScene::draw() {
 		, &mDebug // 当たり判定・ライトの表示（パイプラインの途中に挟むので渡す）
 #endif
 	);
+	drawUi( camera );
+	// パイプラインのシェーダの誤りは SceneRenderer がまとめて順に見る（写す→キャラ→G-Buffer→表示）
+	// キャラのスキニングの誤りは GameResources が持つので、順番の都合で渡す
+	mDebug.drawShaderError( mSceneRenderer.firstShaderError( mResources->meshes().skinning().errorMessage() ) );
+}
+
+void GameScene::placeViewCamera() {
+	mControl.setEyeDrop( mFeedback.damageView().eyeDrop() ); // 死んだ後に膝から崩れる分だけ、目を下げて置く
+	const GameObject* player = mWorld.player();
+	if ( player ) {
+		Vector3 eye = player->getComponent< FirstPersonBodyComponent >()->eyePosition();
+		mControl.placeCamera( &eye, aimWeight() );
+	} else {
+		mControl.placeCamera( nullptr, aimWeight() );
+	}
+#ifdef ZF_EDITOR
+	// 自キャラの視点は、観察用カメラの間も目へ置き続ける（見ている物を使う視線と、戻ったときの位置のため）
+	// 描くのは観察用カメラから（自キャラの視点で設定した描画ステートを上書きする）
+	if ( mFreeCamera.isActive() ) {
+		mFreeCamera.apply();
+	}
+#endif
+}
+
+void GameScene::drawUi( const FirstPersonCamera& camera ) {
 	// UiRenderer は 1 回の描画に 1 回しか描けない（中の PrimitiveRenderer が 2 回目の draw で ASSERT）
-	// 止めている間は HUD を出さず、メニューがまとめて描く（HUD とメニューの両方が描いて止まっていた）
+	// 止めている間は HUD を出さず、メニューがまとめて描く（HUD とメニューの両方が描くと止まる）
 	if ( mModals.isPause() ) {
 		mPauseMenu.draw();
 	} else if ( mModals.isBag() ) {
@@ -269,12 +280,6 @@ void GameScene::draw() {
 #endif
 		mHud.draw( camera, mSession, mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );	// 遊んでいる間の HUD（マーク・弾数・知らせと棒）。積むだけで、下の UiRenderer::draw がまとめて描く
 	}
-
-	GameDebugOverlay::TextState text;
-	text.cursorLocked = mControl.isCursorLocked();
-	// パイプラインのシェーダの誤りは SceneRenderer がまとめて順に見る（写す→キャラ→G-Buffer→表示）
-	// キャラのスキニングの誤りは GameResources が持つので、順番の都合で渡す
-	text.shaderError = mSceneRenderer.firstShaderError( mResources->meshes().skinning().errorMessage() );
 }
 
 void GameScene::updateInteraction() {

@@ -15,7 +15,7 @@ class FirstPersonCamera;
 class UiRenderer;
 
 // 本編の確認用の表示。画面の左下（状態表示の上）に文字（DebugScreen）で出すものと、Debug・Profile ビルドだけの当たり判定の表示をまとめる
-// ・どのビルドでも出す文字: 操作説明、シェーダのコンパイルエラー（あるときだけ）
+// ・どのビルドでも出す文字: シェーダのコンパイルエラー（あるときだけ）
 // ・Debug・Profile ビルド（ZF_EDITOR）だけ。どれを出すかは F6 の Debug タブで切り替える（DebugSwitches）:
 //   showCollision: 当たり判定の表示。表示中は画面中央（視線）へ確認用の線分を撃ち、当たった所と相手を出す
 //   showPickups: 落ちている物（ガソリン）の当たり判定の箱を、壁や建物を透かして表示する
@@ -31,11 +31,9 @@ class GameDebugOverlay{
 public:
 	GameDebugOverlay();
 
-	// 画面に出す文字の材料
-	struct TextState{
-		bool cursorLocked;            // カーソルをロックしているか（操作説明を切り替える）
-		const char* shaderError;      // シェーダのコンパイルエラー。空文字列なら出さない。nullptr 不可
-	};
+	// シェーダのコンパイルエラーを、左下に 1 行で出す。1回の描画につき1回
+	// shaderError: エラーの文。空文字列なら何も出さない。nullptr 不可
+	void drawShaderError( const char* shaderError ) const;
 
 #ifdef ZF_EDITOR
 	void drawCollision( const GameWorld& world, const FirstPersonCamera& camera );									// 表示中のもの（当たり判定・落ちている物の箱・ゾンビの通り道）を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ

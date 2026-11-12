@@ -1,6 +1,8 @@
 #include "GameSrc/Render/PostProcess/AmbientOcclusion.h"
 #include "GameSrc/Render/Lighting/GBuffer.h"
 #include "GameSrc/Render/PostProcess/SsaoParams.h"
+#include "GameSrc/Render/ShaderSlots.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -18,10 +20,7 @@ namespace{
 	const float kResolutionScale = 0.5f;	// 描画先の大きさ（画面に対する倍率）。Ssao.hlsl の kHalfResolutionStep と揃える
 	const float kMaxScreenRadius = 0.1f;	// 画面の上の半径の上限（画面の高さに対する割合。5-3）。手元の銃・腕で点が画面中に散らばらないように。調整しない
 
-	// Ssao.hlsl の番号と揃える（GBuffer.hlsli の t3 法線・t5 深度 / b1）
-	const int kNormalSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 1;
-	const int kDepthSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 3;
-	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;
+	const int kConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;	// Ssao.hlsl の b1。G-Buffer の法線・深度の番号は ShaderSlots
 	const int kBlurSourceSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT;	// SsaoBlur.hlsl の番号と揃える（t2 / b1）
 
 	// SsaoBlur.hlsl の cbuffer SsaoBlurConstants と同じ並び（float 4 つ＝16 バイト）。xy が 1 画素ずつ進む向き
@@ -34,12 +33,11 @@ namespace{
 
 	const Vector4 kNoOcclusionColor( 1.f, 10000.f, 0.f, 1.f );	// SSAO を切っている間の結果（r：AO 1 ＝遮られていない、g：Ssao.hlsl の kSkyDistance と同じ遠さ）
 
-	const int kMatrixFloats = 16;
 	const int kParamFloats = 8;
 	// Ssao.hlsl の cbuffer SsaoConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct SsaoConstants{
-		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
-		float projectionView[ kMatrixFloats ];
+		float inverseProjectionView[ ShaderConstants::kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
+		float projectionView[ ShaderConstants::kMatrixFloats ];
 		float radius;
 		float bias;
 		float intensity;
@@ -49,13 +47,7 @@ namespace{
 		float noiseFrame; // ノイズのフレームの番号（TAA のとき毎フレーム変わる）
 		float unused;
 	};
-	static_assert( sizeof( SsaoConstants ) == sizeof( float ) * ( kMatrixFloats * 2 + kParamFloats ), "SsaoConstants : keep the HLSL layout." );
-
-	void copyMatrix( const Matrix44& matrix, float* destination ) {
-		for ( int i = 0; i < kMatrixFloats; ++i ) {
-			destination[ i ] = ( &matrix.m00 )[ i ];
-		}
-	}
+	static_assert( sizeof( SsaoConstants ) == sizeof( float ) * ( ShaderConstants::kMatrixFloats * 2 + kParamFloats ), "SsaoConstants : keep the HLSL layout." );
 }
 
 SsaoParams& ssaoParams() {
@@ -95,8 +87,8 @@ void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth
 	SsaoConstants constants;
 	Matrix44 inverse;
 	inverse.setInverse( projectionView );
-	copyMatrix( inverse, constants.inverseProjectionView );
-	copyMatrix( projectionView, constants.projectionView );
+	ShaderConstants::copyMatrix44( inverse, constants.inverseProjectionView );
+	ShaderConstants::copyMatrix44( projectionView, constants.projectionView );
 	constants.radius = params.radius;
 	constants.bias = params.bias;
 	constants.intensity = params.intensity;
@@ -110,12 +102,12 @@ void AmbientOcclusion::draw( const GBuffer& gbuffer, Graphics::DepthTarget depth
 	gm.setRenderTargets( &mOcclusion, 1, Graphics::DepthTarget() ); // 描画範囲が半分の大きさになる
 	gm.setBlendMode( Graphics::BLEND_OPAQUE ); // 全画面を上書き（前のフレームの結果とは混ぜない）
 	gm.setShader( mShader );
-	gm.setShaderResource( kNormalSlot, gbuffer.normal() ); // 描画先の切り替えで外れるので、切り替えた後に付ける
-	gm.setShaderResource( kDepthSlot, depth );
+	gm.setShaderResource( ShaderSlots::kGBufferNormal, gbuffer.normal() ); // 描画先の切り替えで外れるので、切り替えた後に付ける
+	gm.setShaderResource( ShaderSlots::kSceneDepth, depth );
 	gm.setConstantBuffer( kConstantSlot, mConstants );
 	gm.drawFullScreen();
-	gm.setShaderResource( kNormalSlot, Graphics::RenderTarget() );
-	gm.setShaderResource( kDepthSlot, Graphics::DepthTarget() );
+	gm.setShaderResource( ShaderSlots::kGBufferNormal, Graphics::RenderTarget() );
+	gm.setShaderResource( ShaderSlots::kSceneDepth, Graphics::DepthTarget() );
 	// 横 → 縦（6-1）。縦の結果は作った先へ戻すので、結果はいつも mOcclusion
 	if ( ssaoBlurEnabled() ) {
 		blur( mOcclusion, mBlurScratch, mBlurHorizontal );

@@ -24,10 +24,6 @@ namespace{
 	const char* kBuildingFile = "Resource/Model/Map/building_noground.txt";
 	const GroundMaterial kBuildingMaterial = GROUND_CONCRETE;	// 建物の壁の材質（着弾音）。どちらもレンガの建物なので、コンクリートの音で鳴らす
 
-	Vector3 toPosition( const TownPlacement& placement ) {
-		return Vector3( placement.x, placement.y, placement.z );
-	}
-
 	// 箱に必ず入れる物。ガソリンは 1 個、ライフルは弾倉いっぱい
 	const ItemStack kFuelStack = { ITEM_FUEL, 1 };
 	ItemStack loadedRifle() {
@@ -68,11 +64,11 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, boo
 	placeLootSpots( target.objects );
 	// 消火栓は見た目の置物（置けなくても〈形の構築の失敗〉その場所に無いだけで遊べる）
 	for ( const TownPlacement& p : mMap->fireHydrants() ) {
-		mProps->spawnFireHydrant( target.objects, toPosition( p ), p.yawDegree );
+		mProps->spawnFireHydrant( target.objects, p.position(), p.yawDegree );
 	}
 	// 街灯の柱も見た目の置物（同じ）。照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る
 	for ( const TownPlacement& p : mMap->streetLights() ) {
-		mProps->spawnStreetLamp( target.objects, toPosition( p ), p.yawDegree, lampsLit );
+		mProps->spawnStreetLamp( target.objects, p.position(), p.yawDegree, lampsLit );
 	}
 	placeEscapeCar( target.objects, escapeCarSpot ); // 町に置く車はこの 1 台だけ（乗れない置物の車は置かない）
 }
@@ -86,7 +82,7 @@ const std::vector< TownPlacement >& placements ) const {
 	std::vector< Building >* buildings = target.buildings;
 	buildings->reserve( buildings->size() + placements.size() );
 	for ( const TownPlacement& p : placements ) {
-		buildings->emplace_back( shapes, toPosition( p ), p.yawDegree, kBuildingMaterial );
+		buildings->emplace_back( shapes, p.position(), p.yawDegree, kBuildingMaterial );
 		buildings->back().addCollidersTo( target.collisionWorld );
 	}
 }
@@ -111,10 +107,10 @@ void WorldBuilder::placeLootSpots( GameObjectWorld* objects ) const {
 	addToRandomSpots( &guaranteed, dumpsterCount, crateCount, params.rifleCount, loadedRifle(), &random ); // 木箱はゴミ箱の後ろの番号
 	int spot = 0;
 	for ( const TownPlacement& p : mMap->dumpsters() ) {
-		mProps->spawnLootContainer( objects, LootTableId::Dumpster, toPosition( p ), p.yawDegree, &random, guaranteed[ spot++ ] );
+		mProps->spawnLootContainer( objects, LootTableId::Dumpster, p.position(), p.yawDegree, &random, guaranteed[ spot++ ] );
 	}
 	for ( const TownPlacement& p : mMap->crates() ) {
-		mProps->spawnLootContainer( objects, LootTableId::Crate, toPosition( p ), p.yawDegree, &random, guaranteed[ spot++ ] );
+		mProps->spawnLootContainer( objects, LootTableId::Crate, p.position(), p.yawDegree, &random, guaranteed[ spot++ ] );
 	}
 }
 
@@ -122,5 +118,5 @@ void WorldBuilder::placeEscapeCar( GameObjectWorld* objects, int escapeCarSpot )
 	const std::vector< TownEscapeCarSpot >& spots = mMap->escapeCarSpots();
 	ASSERT( escapeCarSpot >= 0 && escapeCarSpot < static_cast< int >( spots.size() ) && "WorldBuilder : bad escape car spot." );
 	const TownPlacement& p = spots[ escapeCarSpot ].placement;
-	mProps->spawnEscapeCar( objects, toPosition( p ), p.yawDegree, raidParams().requiredFuel );
+	mProps->spawnEscapeCar( objects, p.position(), p.yawDegree, raidParams().requiredFuel );
 }

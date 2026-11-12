@@ -8,8 +8,8 @@
 #include "SsrCommon.hlsli"
 
 Texture2D        gSource          : register(t2); // ScreenSpaceReflection.cpp の kBlurSourceSlot（半分の大きさ）
-Texture2D        gGBufferMaterial : register(t4); // 同 kMaterialSlot（G-Buffer の材質。g が粗さ。元の大きさ）
-Texture2D<float> gSceneDepth      : register(t5); // 同 kDepthSlot（シーンの深度。元の大きさ）
+Texture2D        gGBufferMaterial : register(t4); // ShaderSlots::kGBufferMaterial（G-Buffer の材質。g が粗さ。元の大きさ）
+Texture2D<float> gSceneDepth      : register(t5); // ShaderSlots::kSceneDepth（シーンの深度。元の大きさ）
 
 // ScreenSpaceReflection.cpp の SsrBlurConstants と同じ並び
 cbuffer SsrBlurConstants : register(b1)

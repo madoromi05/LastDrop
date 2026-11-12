@@ -1,5 +1,7 @@
 #include "GameSrc/Weapon/Bullet/BulletHoleList.h"
 #include "GameSrc/Core/GameTime.h"
+#include "GameSrc/Math/AngleMath.h"
+#include "GameSrc/Math/OrthoBasis.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -27,12 +29,6 @@ namespace{
 	const float kHalfDepth = 0.05f;
 	// 1 つごとに絵を回す角度（度。黄金角）。何枚並んでも向きがそろいにくく、同じ絵の繰り返しが目立たない
 	const float kTurnPerHoleDegree = 137.5f;
-	const float kFullTurnDegree = 360.f;
-
-	// 絵の向きを作るときの仮の「上」。法線とほぼ平行（床・天井）なら外積が 0 に近づくので、もう一方を使う（Bullet::draw と同じ）
-	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
-	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
-	const float kParallelLimit = 0.99f; // 法線と上の内積がこれを超えたら、ほぼ真上・真下とみなす
 }
 
 BulletHoleList::BulletHoleList() :
@@ -49,12 +45,9 @@ void BulletHoleList::add( const Vector3& point, const Vector3& normal, const IRa
 		mHoles.erase( mHoles.begin() ); // 一番古い物。数が少ないので、詰め直しの手間は気にしない
 	}
 	// 面の上で直交する2本の向きを作る
-	const Vector3& helper = ( Math::abs( normal.dot( kWorldUp ) ) > kParallelLimit ) ? kWorldRight : kWorldUp;
 	Vector3 tangent;
-	tangent.setCross( helper, normal );
-	tangent.normalize();
 	Vector3 bitangent;
-	bitangent.setCross( normal, tangent );
+	OrthoBasis::around( normal, &tangent, &bitangent );
 
 	// 法線まわりに回してから、絵の大きさにする
 	Hole hole;
@@ -66,7 +59,7 @@ void BulletHoleList::add( const Vector3& point, const Vector3& normal, const IRa
 	hole.attachedTo = attachedTo;
 	hole.age = 0;
 	mHoles.push_back( hole );
-	mNextTurnDegree = std::fmod( mNextTurnDegree + kTurnPerHoleDegree, kFullTurnDegree );
+	mNextTurnDegree = std::fmod( mNextTurnDegree + kTurnPerHoleDegree, AngleMath::kFullTurnDegree );
 }
 
 void BulletHoleList::update() {

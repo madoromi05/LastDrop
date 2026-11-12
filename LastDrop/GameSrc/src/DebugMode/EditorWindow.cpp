@@ -27,6 +27,7 @@
 #include "GameSrc/Raid/RaidSession.h"
 #include "GameSrc/Raid/RaidRecord.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -376,7 +377,27 @@ namespace{
 		}
 	}
 
-	void drawRender() {
+	// チェックボックスと、その右の薄い字のひと言（何が切り替わるか・どこで見るか）を 1 行に並べる
+	void toggleWithHint( const char* label, bool* value, const char* hint ) {
+		ImGui::Checkbox( label, value );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "%s", hint );
+	}
+
+	// 列挙型の値を 1 つ選ぶコンボ。Enum::Count が値の数、nameOf が値の名前
+	template< class Enum > void enumCombo( const char* label, Enum* value, const char* ( *nameOf )( Enum ) ) {
+		if ( ImGui::BeginCombo( label, nameOf( *value ) ) ) {
+			for ( int i = 0; i < static_cast< int >( Enum::Count ); ++i ) {
+				Enum candidate = static_cast< Enum >( i );
+				if ( ImGui::Selectable( nameOf( candidate ), candidate == *value ) ) {
+					*value = candidate;
+				}
+			}
+			ImGui::EndCombo();
+		}
+	}
+
+	void drawVSyncAndLightingPreset() {
 		GameLib::Graphics::Manager graphics = GameLib::Graphics::Manager::instance();
 		bool vsync = graphics.isVSync();
 		if ( ImGui::Checkbox( "VSync", &vsync ) ) {
@@ -394,42 +415,28 @@ namespace{
 		}
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(lighting preset)" );
-		// 影を描くか。同じ場面で切り替えて、絵と GPU の時間（gpu.Shadow）を見比べる
-		ImGui::Checkbox( "Shadows", &shadowsEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(flashlight + moon cascades)" );
-		// 建物を形ごとにまとめて描くか。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings
-		ImGui::Checkbox( "Instancing", &instancingEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(buildings)" );
-		// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか。回数は Pvs.building・Pvs.zombie
-		ImGui::Checkbox( "PVS", &pvsEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(hidden buildings + zombies)" );
-		// 置物を遠くで粗い形（LOD）で描くか。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles
-		ImGui::Checkbox( "LOD", &lodEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(car, fuel cans)" );
-		// 霧を掛けるか。同じ場面で切り替えて、絵と GPU の時間（gpu.Fog）を見比べる
-		ImGui::Checkbox( "Fog", &fogEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(distance + height)" );
+	}
+
+	// 描く物を減らす仕組みの切り替え。同じ場面で切り替えて、絵と回数・GPU の時間を見比べる
+	void drawGeometryToggles() {
+		toggleWithHint( "Shadows", &shadowsEnabled(), "(flashlight + moon cascades)" );	// 影を描くか。時間は gpu.Shadow
+		toggleWithHint( "Instancing", &instancingEnabled(), "(buildings)" );			// 建物を形ごとにまとめて描くか。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings
+		toggleWithHint( "PVS", &pvsEnabled(), "(hidden buildings + zombies)" );			// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか。回数は Pvs.building・Pvs.zombie
+		toggleWithHint( "LOD", &lodEnabled(), "(car, fuel cans)" );						// 置物を遠くで粗い形（LOD）で描くか。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles
+	}
+
+	// 画面全体のパスと、見た目の仕上げの切り替え
+	void drawEffectToggles() {
+		toggleWithHint( "Fog", &fogEnabled(), "(distance + height)" );	// 霧を掛けるか。時間は gpu.Fog
 		// 空の月の絵。値は Tuning の LightingParams（moonRadius〜moonHaloFalloff）
 		// 切ると今までのグラデーションだけの空（水たまりの月も消える）。時間は gpu.Lighting
-		ImGui::Checkbox( "Sky detail", &skyDetailEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(moon)" );
+		toggleWithHint( "Sky detail", &skyDetailEnabled(), "(moon)" );
 		// SSAO を作るか。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO
 		ImGui::Checkbox( "SSAO", &ssaoEnabled() );
 		ImGui::SameLine();
-		// ぼかしを切ると、点の並びを回したざらつきがそのまま見える（調整用）
-		ImGui::Checkbox( "SSAO blur", &ssaoBlurEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(view: G-Buffer > SSAO)" );
+		toggleWithHint( "SSAO blur", &ssaoBlurEnabled(), "(view: G-Buffer > SSAO)" );	// ぼかしを切ると、点の並びを回したざらつきがそのまま見える（調整用）
 		// 映り込み。値は Tuning の SSR。切ると空と地面の色の映り込みに戻る。時間は gpu.SSR・gpu.SSR composite
-		ImGui::Checkbox( "SSR", &ssrEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(view: G-Buffer > SSR / SSR color)" );
+		toggleWithHint( "SSR", &ssrEnabled(), "(view: G-Buffer > SSR / SSR color)" );
 		// Hi-Z。切ると今までの直線の進み方（段階12 の計測が終わったら直線は消す）。時間は gpu.Hi-Z・gpu.SSR
 		ImGui::Checkbox( "Hi-Z", &hiZEnabled() );
 		ImGui::SameLine();
@@ -438,21 +445,14 @@ namespace{
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > Hi-Z)" );
 		// 粗い面のぼけた映り込み。切ると鏡の向きだけ・ぼかしも今までのまま。TAA を切るとざらつくのが正しい
-		ImGui::Checkbox( "Stochastic SSR", &ssrStochasticEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(roughness 0.4-0.7, Tuning > SSR maxRoughness)" );
+		toggleWithHint( "Stochastic SSR", &ssrStochasticEnabled(), "(roughness 0.4-0.7, Tuning > SSR maxRoughness)" );
 		// 雨上がりの水たまり。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える
-		ImGui::Checkbox( "Puddles", &puddlesEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(road only, view: G-Buffer > Roughness)" );
-		// 弾痕のデカール。切ると弾痕が描かれない（板の弾痕に戻すのではない）。時間は gpu.Decals
-		ImGui::Checkbox( "Decals", &decalsEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(bullet holes)" );
-		// 半透明の板を壁・地面に刺さった所で薄くするか。切ると板の縁の線が見える
-		ImGui::Checkbox( "Soft particles", &softParticlesEnabled() );
-		ImGui::SameLine();
-		ImGui::TextDisabled( "(dust, blood, muzzle flash)" );
+		toggleWithHint( "Puddles", &puddlesEnabled(), "(road only, view: G-Buffer > Roughness)" );
+		toggleWithHint( "Decals", &decalsEnabled(), "(bullet holes)" );								// 弾痕のデカール。切ると弾痕が描かれない（板の弾痕に戻すのではない）。時間は gpu.Decals
+		toggleWithHint( "Soft particles", &softParticlesEnabled(), "(dust, blood, muzzle flash)" );	// 半透明の板を壁・地面に刺さった所で薄くするか。切ると板の縁の線が見える
+	}
+
+	void drawColorControls() {
 		// カラーグレーディングとディザ。値は Tuning の PostProcessParams。縞は Dither を切ると見える
 		ImGui::Checkbox( "Color grading", &colorGradingEnabled() );
 		ImGui::SameLine();
@@ -472,29 +472,22 @@ namespace{
 		ImGui::BeginDisabled( !lut.loaded );
 		ImGui::SliderFloat( "LUT strength", &postProcessParams().lutStrength, 0.f, 1.f );
 		ImGui::EndDisabled();
+	}
+
+	void drawViewSelectors() {
 		// アンチエイリアス。Off / FXAA / TAA から 1 つ。FXAA の値は Tuning の PostProcessParams（fxaa〜）
 		// TAA は描く行列を毎フレームずらし、霧の後に履歴と混ぜる（値は Tuning の TAA。時間は gpu.TAA）
-		AntiAliasing& antiAliasing = antiAliasingMode();
-		if ( ImGui::BeginCombo( "Anti-aliasing", antiAliasingName( antiAliasing ) ) ) {
-			for ( int i = 0; i < static_cast< int >( AntiAliasing::Count ); ++i ) {
-				AntiAliasing candidate = static_cast< AntiAliasing >( i );
-				if ( ImGui::Selectable( antiAliasingName( candidate ), candidate == antiAliasing ) ) {
-					antiAliasing = candidate;
-				}
-			}
-			ImGui::EndCombo();
-		}
-		// G-Buffer の中身の表示。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す
-		GBufferView& view = gbufferView();
-		if ( ImGui::BeginCombo( "G-Buffer", gbufferViewName( view ) ) ) {
-			for ( int i = 0; i < static_cast< int >( GBufferView::Count ); ++i ) {
-				GBufferView candidate = static_cast< GBufferView >( i );
-				if ( ImGui::Selectable( gbufferViewName( candidate ), candidate == view ) ) {
-					view = candidate;
-				}
-			}
-			ImGui::EndCombo();
-		}
+		enumCombo( "Anti-aliasing", &antiAliasingMode(), antiAliasingName );
+		enumCombo( "G-Buffer", &gbufferView(), gbufferViewName );	// G-Buffer の中身の表示。Final 以外を選ぶと、ライティングの代わりに中身を画面に出す
+	}
+
+	// Render タブ。上から、VSync と光の入れ替え → 描く物を減らす仕組み → 画面全体のパス → 色 → 表示の選択
+	void drawRender() {
+		drawVSyncAndLightingPreset();
+		drawGeometryToggles();
+		drawEffectToggles();
+		drawColorControls();
+		drawViewSelectors();
 	}
 
 	// World タブ（世界の中身を触る 4 つの欄。どれも長くなるので、タブの中では見出しで開け閉めする）
@@ -519,7 +512,7 @@ namespace EditorWindow{
 void draw() {
 	const ImGuiViewport* viewport = ImGui::GetMainViewport();
 	float width = viewport->WorkSize.x * kWindowWidthRatio;
-	width = ( width < kMinWindowWidth ) ? kMinWindowWidth : ( ( width > kMaxWindowWidth ) ? kMaxWindowWidth : width );
+	width = ScalarMath::clamp( width, kMinWindowWidth, kMaxWindowWidth );
 	// 右端に上から下まで固定する（窓を動かしたり大きさを変えたりしない。imgui.ini も書かない）
 	ImGui::SetNextWindowPos( ImVec2( viewport->WorkPos.x + viewport->WorkSize.x - width, viewport->WorkPos.y ) );
 	ImGui::SetNextWindowSize( ImVec2( width, viewport->WorkSize.y ) );

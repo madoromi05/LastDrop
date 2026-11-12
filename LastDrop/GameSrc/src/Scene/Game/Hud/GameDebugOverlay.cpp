@@ -29,9 +29,8 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── DebugScreen の文字位置（左上は体の図を置くので、左下に出す） ──
-	// 左下に、下から順に積む。行は下から数えた番号（0 が一番下）
+	// 左下に、下から順に積む。行は下から数えた番号（0 が一番下。0 は使っていない）
 	const int kHelpColumn = 1;
-	const int kHelpLine = 0;
 	const int kShaderErrorLine = 1; // シェーダのコンパイルエラー（あるときだけ）
 	const int kDebugRowHeight = 16; // DebugScreen の 1 行の高さ（画素。Framework::drawDebugString）
 	const int kStatusLines = 2;     // 左下の状態表示の行の数（この上に積む）
@@ -88,6 +87,14 @@ namespace{
 }
 
 GameDebugOverlay::GameDebugOverlay() {
+}
+
+void GameDebugOverlay::drawShaderError( const char* shaderError ) const {
+	ASSERT( shaderError && "GameDebugOverlay : shaderError is null." );
+	// 直して保存すれば自動で作り直されるので、止めずに理由だけ出しておく
+	if ( shaderError[ 0 ] != '\0' ) {
+		drawErrorLine( kHelpColumn, rowFromBottom( kShaderErrorLine ), shaderError );
+	}
 }
 
 #ifdef ZF_EDITOR

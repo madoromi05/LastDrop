@@ -2,6 +2,7 @@
 #include "GameSrc/Zombie/Animation/ZombieModel.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
 #include "GameSrc/Render/Culling/DrawCulling.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 using namespace GameLib::Math;
 
@@ -69,8 +70,7 @@ void EffectManager::spawnSeveredLimb( const SkinnedMeshInstance& zombieMesh, con
 const Vector3& direction ) {
 	zombieMesh.shownWorldPose( &mSeverPose );
 	const ZombieSeverLayout::Cut& cut = model.severLayout().cut( part );
-	const Matrix34& joint = mSeverPose[ cut.jointBone ];
-	mBloodSpray.spawn( Vector3( joint.m03, joint.m13, joint.m23 ), direction, kSeverBloodScale );
+	mBloodSpray.spawn( PlacementMatrix::translationOf( mSeverPose[ cut.jointBone ] ), direction, kSeverBloodScale );
 	mSeveredLimbs.spawn( model.data(), cut, mSeverPose, direction );
 }
 

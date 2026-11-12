@@ -1,4 +1,6 @@
 #include "GameSrc/Render/Lighting/LightList.h"
+#include "GameSrc/Render/ShaderSlots.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -10,10 +12,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const int kLightSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT + 1;	// LightList.hlsli の cbuffer LightConstants の番号（b2）。b1 は全画面のパス・キャラの骨、b3 は G-Buffer の材質値が使う
-	// 影のマップの最初の番号（t6）。t2〜t5 は G-Buffer と深度（DeferredLighting.cpp）。LightList.hlsli と揃える
-	const int kFirstShadowSlot = Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 4;
-	const int kMatrixFloats = 16;
+	static_assert( LightList::kMaxShadowMaps == ShaderSlots::kShadowMapNumber, "LightList : keep the shadow map slots in ShaderSlots." );
 	// 影のずらしと濃さの初期値（setShadowSettings を呼ぶまで。ShadowParams の初期値と同じ）
 	const float kDefaultNormalOffsetTexels = 1.5f;
 	const float kDefaultLightOffsetTexels = 1.f;
@@ -45,7 +44,7 @@ namespace{
 		float shadowSettings[ kVectorFloats ];  // x 法線のずらし（画素）  y 光の方へのずらし（画素）  z 影の濃さ  w 使わない
 		float cascadeEnds[ kVectorFloats ];     // xyz 月の CSM の各枚の奥の端（m）  w 次の枚と混ぜる割合
 		float cascadeView[ kVectorFloats ];     // xyz カメラの向き（奥行きを測る向き）  w 使わない
-		float shadowMatrices[ LightList::kMaxShadowMaps ][ kMatrixFloats ]; // 光の側の射影×ビュー（行ごと）
+		float shadowMatrices[ LightList::kMaxShadowMaps ][ ShaderConstants::kMatrixFloats ]; // 光の側の射影×ビュー（行ごと）
 		float shadowTexels[ LightList::kMaxShadowMaps ][ kVectorFloats ];   // x 1 画素の大きさ（m）  y 1 なら透視（x は光から 1m の所）  zw 使わない
 		LightData lights[ LightList::kMaxLights ];
 	};
@@ -223,9 +222,7 @@ void LightList::bind( const Vector3& eye ) {
 	setVector( constants.cascadeEnds, Vector3( mCascadeEnds[ 0 ], mCascadeEnds[ 1 ], mCascadeEnds[ 2 ] ), mCascadeBlendRatio );
 	setVector( constants.cascadeView, mCascadeViewDirection, 0.f );
 	for ( int i = 0; i < kMaxShadowMaps; ++i ) {
-		for ( int f = 0; f < kMatrixFloats; ++f ) {
-			constants.shadowMatrices[ i ][ f ] = ( &mShadowMatrices[ i ].m00 )[ f ];
-		}
+		ShaderConstants::copyMatrix44( mShadowMatrices[ i ], constants.shadowMatrices[ i ] );
 		constants.shadowTexels[ i ][ 0 ] = mShadowTexelSizes[ i ];
 		constants.shadowTexels[ i ][ 1 ] = mShadowPerspective[ i ] ? kPerspectiveFlag : kOrthographicFlag;
 	}
@@ -233,27 +230,27 @@ void LightList::bind( const Vector3& eye ) {
 		constants.lights[ i ] = toData( mLights[ mSelected[ i ] ] );
 	}
 	mConstants.set( &constants, sizeof( constants ) );
-	Graphics::Manager::instance().setConstantBuffer( kLightSlot, mConstants );
+	Graphics::Manager::instance().setConstantBuffer( ShaderSlots::kLightConstants, mConstants );
 }
 
 void LightList::bindShadowMaps() const {
 	Graphics::Manager gm = Graphics::Manager::instance();
 	for ( int i = 0; i < kMaxShadowMaps; ++i ) {
 		if ( mShadowDepths[ i ] ) {
-			gm.setShaderResource( kFirstShadowSlot + i, mShadowDepths[ i ] );
+			gm.setShaderResource( ShaderSlots::kFirstShadowMap + i, mShadowDepths[ i ] );
 		}
 	}
 }
 
 void LightList::rebindConstants() const {
-	Graphics::Manager::instance().setConstantBuffer( kLightSlot, mConstants );
+	Graphics::Manager::instance().setConstantBuffer( ShaderSlots::kLightConstants, mConstants );
 }
 
 void LightList::unbind() {
 	Graphics::Manager gm = Graphics::Manager::instance();
-	gm.setConstantBuffer( kLightSlot, Graphics::ConstantBuffer() );
+	gm.setConstantBuffer( ShaderSlots::kLightConstants, Graphics::ConstantBuffer() );
 	for ( int i = 0; i < kMaxShadowMaps; ++i ) {
-		gm.setShaderResource( kFirstShadowSlot + i, Graphics::DepthTarget() );
+		gm.setShaderResource( ShaderSlots::kFirstShadowMap + i, Graphics::DepthTarget() );
 	}
 }
 

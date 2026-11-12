@@ -1,5 +1,6 @@
 #include "GameSrc/Zombie/Animation/ZombieRootMotion.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Matrix34.h"
@@ -44,7 +45,7 @@ bool ZombieRootMotion::isValid() const {
 Vector3 ZombieRootMotion::offsetAt( float time ) const {
 	ASSERT( isValid() && "ZombieRootMotion : no table." );
 	int last = static_cast< int >( mOffsets.size() ) - 1;
-	float t = Math::max( 0.f, Math::min( time, static_cast< float >( last ) ) );
+	float t = ScalarMath::clamp( time, 0.f, static_cast< float >( last ) );
 	int index = static_cast< int >( t );
 	if ( index >= last ) {
 		return mOffsets[ last ];

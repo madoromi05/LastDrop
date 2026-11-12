@@ -2,6 +2,7 @@
 #define INCLUDED_TOWN_MAP_H
 
 #include "GameSrc/Audio/GroundMaterial.h"
+#include "GameLib/Math/Vector3.h"
 #include <vector>
 
 // 置き場所と向き
@@ -10,6 +11,8 @@ struct TownPlacement{
 	float y; // 高さ（車道の面が 0）
 	float z;
 	float yawDegree; // 上から見て反時計回りが正
+
+	GameLib::Math::Vector3 position() const;	// 置き場所（x・y・z）を Vector3 で返す
 };
 
 // 地面に並べる部品の種類（道路キットから変換した物と、町の外の土）

@@ -1,4 +1,5 @@
 #include "GameSrc/Render/DecalBatch.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -37,19 +38,17 @@ namespace{
 	const float kBoxHalf = 0.5f;
 	const float kFull = 2.f; // 半分の長さ → 箱の 1 辺（行列の軸は「箱の中の 1 が何 m か」）
 
-	const int kMatrixFloats = 16;
-	const int kRowFloats = 4;
 	const int kLocalRows = 3;
 	// Decal.hlsl の cbuffer DecalConstants と同じ並び（16 バイトずつの区切りに合わせる）
 	struct DecalConstants{
-		float inverseProjectionView[ kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
-		float toLocal[ kLocalRows ][ kRowFloats ];    // ワールド → 箱の中の座標（行ごと）
-		float right[ kRowFloats ];
-		float up[ kRowFloats ];
-		float facing[ kRowFloats ];                   // w が不透明度
-		float uvRect[ kRowFloats ];                   // 絵のうち使う所（左・上・幅・高さ）
+		float inverseProjectionView[ ShaderConstants::kMatrixFloats ]; // 行ごと（Matrix44 の m00..m33 の順）
+		float toLocal[ kLocalRows ][ ShaderConstants::kRowFloats ];    // ワールド → 箱の中の座標（行ごと）
+		float right[ ShaderConstants::kRowFloats ];
+		float up[ ShaderConstants::kRowFloats ];
+		float facing[ ShaderConstants::kRowFloats ];                   // w が不透明度
+		float uvRect[ ShaderConstants::kRowFloats ];                   // 絵のうち使う所（左・上・幅・高さ）
 	};
-	static_assert( sizeof( DecalConstants ) == sizeof( float ) * ( kMatrixFloats + kRowFloats * ( kLocalRows + 4 ) ), "DecalConstants : keep the HLSL layout." );
+	static_assert( sizeof( DecalConstants ) == sizeof( float ) * ( ShaderConstants::kMatrixFloats + ShaderConstants::kRowFloats * ( kLocalRows + 4 ) ), "DecalConstants : keep the HLSL layout." );
 
 	// axis（箱の軸。長さは箱の 1 辺が何 m か）に沿った「箱の中の座標」を出す行：(axis / |axis|², −center・axis / |axis|²)
 	// 軸どうしが直交しているので、逆行列を作らずに内積だけで戻せる
@@ -155,9 +154,7 @@ void DecalBatch::setDecalConstants( const Decal& decal, const Matrix44& inverseP
 	Graphics::Manager::instance().setWorldMatrix( world );
 
 	DecalConstants constants;
-	for ( int i = 0; i < kMatrixFloats; ++i ) {
-		constants.inverseProjectionView[ i ] = ( &inverseProjectionView.m00 )[ i ];
-	}
+	ShaderConstants::copyMatrix44( inverseProjectionView, constants.inverseProjectionView );
 	writeLocalRow( axisX, decal.center, constants.toLocal[ 0 ] );
 	writeLocalRow( axisY, decal.center, constants.toLocal[ 1 ] );
 	writeLocalRow( axisZ, decal.center, constants.toLocal[ 2 ] );

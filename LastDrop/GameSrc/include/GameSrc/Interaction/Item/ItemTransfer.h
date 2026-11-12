@@ -21,6 +21,7 @@ namespace ItemTransfer{
 	// ①同じ物で重ねられるマス → ②上の行・左の列の空き、の順に入れる（入れ替えはしない）。重ねて入りきらない分は次のマスへ続け、
 	// それでも入らない分は source に残る。1 つでも動いたら true。source と target は別のマス目であること
 	bool quickMove( ItemGrid* source, GridRule sourceRule, int from, ItemGrid* target, GridRule targetRule );
+	ItemId onlyItem( GridRule rule );	// rule が入れてよい物を 1 種類に決めているなら、その物（FuelOnly ならガソリン）。決めていなければ ITEM_NONE
 }
 
 #endif

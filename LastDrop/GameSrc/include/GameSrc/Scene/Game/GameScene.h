@@ -77,6 +77,9 @@ private:
 	ItemId equippedWeapon() const;
 	void updateInteraction();			// 見ている物の案内を出し、E で使う。車が走れるようになったらクリア画面へ（1回の描画につき1回）
 	void updateListener();				// 聞き手をカメラに合わせて音を更新する（1回の描画につき1回。視点を置いた後）
+	void placeViewCamera();				// 自キャラの視点を目へ置く（観察用カメラの間は、その後で観察用カメラの行列に差し替える）。draw の始めに 1 回
+	// 3D の上に重ねる画面を描く。全画面のモーダル（一時停止・カバン・中を見る画面）のどれか 1 つ、どれでもなければ HUD
+	void drawUi( const FirstPersonCamera& camera );
 	// 出撃を 1 ティック進め（RaidSession）、終わったら結果の画面へ移る（1ティックに1回、PlayerFeedback::reactToCombat の後）
 	// 脱出：すぐ。死んだ：暗くなり終わるのを待ってから
 	void updateRaid();

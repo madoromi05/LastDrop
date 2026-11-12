@@ -12,7 +12,7 @@
 static const float kSpare = 0.0;			// 予備のチャンネルに書く値
 static const float kEmissionScale = 8.0;	// 発光の強さ 1 のときの明るさ（色に掛ける）。HDR なので 1 を超えてよい（ブルームで光る）。画面で見て決めた値ではない初期値
 
-// b3：次に描く物の PBR の材質値（MeshMaterial::apply → RenderPass::setSurface。GBuffer.cpp の kSurfaceSlot）
+// b3：次に描く物の PBR の材質値（MeshMaterial::apply → RenderPass::setSurface。ShaderSlots::kSurfaceConstants）
 // b1 はキャラの骨（Skinning.hlsli）、b2 は段階 3-b のライトの一覧に使うので空けておく
 cbuffer GBufferMaterial : register(b3)
 {
@@ -22,7 +22,7 @@ cbuffer GBufferMaterial : register(b3)
 // 書く側だけが読む物。番号は読む側（t2〜t5・SSAO の t10）と重ならない所
 // 材質の画像（r AO・g 粗さ・b 金属）。無い材質には白 1 画素が付く（RenderPass::setSurface）ので、数値 × 画像 = 数値のまま
 Texture2D gOrmMap     : register(t11);
-Texture2D gPuddleMask : register(t12);	// 雨上がりの水たまりの模様（GBuffer.cpp の kPuddleMaskSlot。tools/texgen/puddle_gen.py）。ワールドの x・z で読む
+Texture2D gPuddleMask : register(t12);	// 雨上がりの水たまりの模様（ShaderSlots::kPuddleMask。tools/texgen/puddle_gen.py）。ワールドの x・z で読む
 // b4：G-Buffer へ描く間ずっと同じ値（GBuffer.cpp の PassConstants）。水たまりの値（PuddleParams から）と、今描いている物の動きの種類
 cbuffer GBufferPassConstants : register(b4)
 {

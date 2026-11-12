@@ -34,12 +34,12 @@ static const float kMotionMovingThreshold = 0.25;      // これより大きけ�
 static const float kMotionFirstPersonThreshold = 0.75; // これより大きければ手元
 
 // SSR の結果（ScreenSpaceReflection。画面の半分の大きさ・rgb 映る色 × 確からしさ・a 確からしさ）
-// 表示（SSR・SSR color）だけが読む。番号は DeferredLighting.cpp の kReflectionSlot。混ぜるのは SsrComposite.hlsl
+// 表示（SSR・SSR color）だけが読む。番号は ShaderSlots::kReflection。混ぜるのは SsrComposite.hlsl
 Texture2D gReflection : register(t13);
-Texture2D<float> gHiZView : register(t15); // 表示の Hi-Z だけが読む（DeferredLighting.cpp の kHiZViewSlot）
+Texture2D<float> gHiZView : register(t15); // 表示の Hi-Z だけが読む（ShaderSlots::kHiZView）
 static const float kMinConfidence = 1e-3; // SSR color の表示で、これより確からしさが小さい所は黒（0 で割らない）
 
-// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き）。番号は DeferredLighting.cpp の kOcclusionSlot
+// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に奥行き）。番号は ShaderSlots::kOcclusion
 // ライティング（材質の AO に掛け合わせ、環境光にだけ効かせる。6-4）と表示（SSAO）が、元の大きさへ拡大して読む（SsaoUpsample.hlsli）
 Texture2D gOcclusion : register(t10);
 

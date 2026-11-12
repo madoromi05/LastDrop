@@ -1,5 +1,6 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshInstancing.h"
 #include "GameSrc/Render/RenderPass.h"
+#include "GameSrc/Render/ShaderConstants.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
@@ -11,9 +12,7 @@ namespace{
 	const char* kGBufferShaderFile = "Resource/Shader/StaticMeshInstancedGBuffer.hlsl";
 	const char* kShadowShaderFile = "Resource/Shader/StaticMeshInstancedShadow.hlsl";
 	const int kPlacementSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // StaticMeshInstancing.hlsli の b1
-	const int kRowsPerInstance = 3;   // 3x4 行列 = float4 が3行
-	const int kFloatsPerRow = 4;
-	const int kFloatsPerInstance = kRowsPerInstance * kFloatsPerRow;
+	const int kFloatsPerInstance = ShaderConstants::kMatrix34Floats;	// 置き場所 1 つは 3x4 行列（float4 が 3 行）
 }
 
 StaticMeshInstancing::StaticMeshInstancing() :
@@ -55,13 +54,8 @@ void StaticMeshInstancing::begin() {
 
 void StaticMeshInstancing::setPlacements( const Matrix34* placements, int number ) {
 	ASSERT( placements && number > 0 && number <= kMaxInstances && "StaticMeshInstancing : bad placements." );
-	// Matrix34 は行ごとに m00..m03 / m10..m13 / m20..m23 と並ぶので、そのまま3行ぶん写す
 	for ( int i = 0; i < number; ++i ) {
-		const Matrix34& m = placements[ i ];
-		float* row = &mPlacementRows[ i * kFloatsPerInstance ];
-		row[ 0 ] = m.m00; row[ 1 ] = m.m01; row[ 2 ]  = m.m02; row[ 3 ]  = m.m03;
-		row[ 4 ] = m.m10; row[ 5 ] = m.m11; row[ 6 ]  = m.m12; row[ 7 ]  = m.m13;
-		row[ 8 ] = m.m20; row[ 9 ] = m.m21; row[ 10 ] = m.m22; row[ 11 ] = m.m23;
+		ShaderConstants::copyMatrix34( placements[ i ], &mPlacementRows[ i * kFloatsPerInstance ] );
 	}
 	mPlacementBuffer.set( mPlacementRows.data(), number * kFloatsPerInstance * static_cast< int >( sizeof( float ) ) );	// 使う数のぶんだけ送る。残りの中身は不定になるが、SV_InstanceID は描く数より小さいので読まれない
 }

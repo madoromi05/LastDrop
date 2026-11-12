@@ -6,14 +6,9 @@
 using namespace GameLib;
 using namespace GameLib::Math;
 
-namespace{
-	const float kHalfTurn = 180.f;
-	const float kFullTurn = 360.f;
-}
-
 float AngleMath::wrapSigned( float degree ) {
-	float wrapped = degree - kFullTurn * std::floor( ( degree + kHalfTurn ) / kFullTurn );	// -180 を 0 周目の始まりにして、何周目かを floor で数えて引く（while で 1 周ずつ引くと、無限大で終わらない）
-	return ( wrapped >= kHalfTurn ) ? wrapped - kFullTurn : wrapped;						// -180 のすぐ下（-180.00001 など）は、360 を足した所で丸められてちょうど 180 になることがある。範囲の外なので戻す
+	float wrapped = degree - kFullTurnDegree * std::floor( ( degree + kHalfTurnDegree ) / kFullTurnDegree );	// -180 を 0 周目の始まりにして、何周目かを floor で数えて引く（while で 1 周ずつ引くと、無限大で終わらない）
+	return ( wrapped >= kHalfTurnDegree ) ? wrapped - kFullTurnDegree : wrapped;								// -180 のすぐ下（-180.00001 など）は、360 を足した所で丸められてちょうど 180 になることがある。範囲の外なので戻す
 }
 
 float AngleMath::difference( float target, float current ) {
@@ -25,4 +20,12 @@ float AngleMath::headingOf( const Vector3& direction ) {
 		return 0.f;
 	}
 	return Math::atan2( direction.x, direction.z );
+}
+
+Vector3 AngleMath::forwardOf( float degree ) {
+	return Vector3( Math::sin( degree ), 0.f, Math::cos( degree ) );
+}
+
+Vector3 AngleMath::rightOf( float degree ) {
+	return Vector3( -Math::cos( degree ), 0.f, Math::sin( degree ) );
 }

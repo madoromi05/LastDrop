@@ -1,5 +1,7 @@
 #include "GameSrc/Effect/MuzzleFlash.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Math/ScalarMath.h"
+#include "GameSrc/Math/OrthoBasis.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Functions.h"
@@ -52,14 +54,9 @@ namespace{
 
 	const float kHalf = 0.5f;           // 幅から、板の中心から辺までの長さにする
 
-	// 板を画面に平行にするときの仮の「上」。視線と平行に近いときは、もう一方を使う（ImpactDustList::draw と同じ）
-	const Vector3 kWorldUp( 0.f, 1.f, 0.f );
-	const Vector3 kWorldRight( 1.f, 0.f, 0.f );
-	const float kParallelLimit = 0.99f;
-
 	// 覗き具合 aimWeight（0〜1）に合わせて、1 倍から aimRate 倍までの間の倍率を返す
 	float rateByAim( float aimRate, float aimWeight ) {
-		return 1.f + ( aimRate - 1.f ) * aimWeight;
+		return ScalarMath::lerp( 1.f, aimRate, aimWeight );
 	}
 
 	// 画面に平行な、幅 width の丸い板を1枚ためる。right / up: 視線に直交する横と縦（長さ1）
@@ -125,12 +122,9 @@ void MuzzleFlash::draw( const Matrix44& projectionView, const Vector3& viewDirec
 	Vector3 center;
 	center.setMadd( muzzlePosition, muzzleDirection, kFlashOffset );
 	// 視線に直交する横と縦（長さ1）。板をこの2本で張ると、画面に平行になる。どちらの板も丸いので回さない
-	const Vector3& helper = ( Math::abs( viewDirection.dot( kWorldUp ) ) > kParallelLimit ) ? kWorldRight : kWorldUp;
 	Vector3 right;
-	right.setCross( helper, viewDirection );
-	right.normalize();
 	Vector3 up;
-	up.setCross( viewDirection, right );
+	OrthoBasis::around( viewDirection, &right, &up );
 	Vector3 towardCamera;
 	towardCamera.setNeg( viewDirection );
 

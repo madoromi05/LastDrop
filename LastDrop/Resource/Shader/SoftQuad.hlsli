@@ -15,7 +15,7 @@ cbuffer SoftQuadConstants : register(b1)
     float4 gSoftParams;                   // x: 薄くし始める奥行きの差（m。0 以下なら薄くしない）  yzw: 使わない
 };
 
-Texture2D<float> gSoftSceneDepth : register(t5); // PostProcess.cpp の kSoftQuadDepthSlot
+Texture2D<float> gSoftSceneDepth : register(t5); // ShaderSlots::kSceneDepth
 
 // 0〜1（0 で消える、1 でそのまま）。position：SV_Position（xy が画素の位置）、world：板の画素のワールドの位置
 // return は 1 か所にする（途中で返すと、最適化なしの fxc が「初期化していないかもしれない」と警告するため。Pbr.hlsli と同じ）

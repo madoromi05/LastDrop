@@ -1,4 +1,5 @@
 #include "GameSrc/Weapon/Recoil/ViewRecoil.h"
+#include "GameSrc/Math/ScalarMath.h"
 
 namespace{
 	const float kRisePerShot = 1.30f;	// 1発で視点が跳ね上がる角度（度。ライフル〈反動の大きさ 1〉のとき）。「少しだけ」の指定なので、狙いが大きく外れない小ささにする
@@ -19,10 +20,7 @@ void ViewRecoil::update( float shotRecoil ) {
 		mRise = kRisePerShot * shotRecoil;
 		return;
 	}
-	mRise *= kRemainPerTick;
-	if ( mRise < kMinRise ) {
-		mRise = 0.f;
-	}
+	mRise = ScalarMath::decay( mRise, kRemainPerTick, kMinRise );
 }
 
 float ViewRecoil::pitchOffset() const {

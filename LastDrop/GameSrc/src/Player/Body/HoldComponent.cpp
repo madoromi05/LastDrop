@@ -9,6 +9,7 @@
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -42,8 +43,7 @@ namespace{
 		Matrix34 toWeapon; // 骨格の根の空間 → 銃のモデル座標
 		toWeapon.setMul( pose[ hand ], grip );
 		toWeapon.invert();
-		const Matrix34& support = pose[ supportHand ];
-		toWeapon.mul( out, Vector3( support.m03, support.m13, support.m23 ) );
+		toWeapon.mul( out, PlacementMatrix::translationOf( pose[ supportHand ] ) );
 		return true;
 	}
 }

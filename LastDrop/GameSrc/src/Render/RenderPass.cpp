@@ -1,4 +1,5 @@
 #include "GameSrc/Render/RenderPass.h"
+#include "GameSrc/Render/ShaderSlots.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Shader.h"
@@ -7,8 +8,6 @@
 #include "GameLib/Profiling/Profiler.h"
 
 namespace{
-	const int kOrmSlot = GameLib::Graphics::Manager::FIRST_USER_TEXTURE_SLOT + 9;	// GBuffer.hlsli の gOrmMap の番号（t11）。t2〜t5 は G-Buffer を読む側、t10 は SSAO の結果が使うので重ならない所
-
 	RenderPassKind gCurrent = RenderPassKind::Forward;
 	const GameLib::Graphics::Shader* gStaticMeshShader = nullptr;     // GBuffer の間だけ指す（持ち主は GBuffer）
 	GameLib::Graphics::ConstantBuffer* gSurfaceConstants = nullptr;  // 同上
@@ -50,7 +49,7 @@ void endGBuffer() {
 	gDefaultOrm = nullptr;
 	gHasSentSurface = false;
 	gSentOrm = GameLib::Graphics::Texture(); // 画像を持ち続けない
-	GameLib::Graphics::Manager::instance().setShaderResource( kOrmSlot, GameLib::Graphics::Texture() ); // 後から描く物に残さない
+	GameLib::Graphics::Manager::instance().setShaderResource( ShaderSlots::kOrmMap, GameLib::Graphics::Texture() ); // 後から描く物に残さない
 }
 
 void beginShadow( const GameLib::Graphics::Shader& staticMeshShader ) {
@@ -79,7 +78,7 @@ void setSurface( const SurfaceParams& params, GameLib::Graphics::Texture orm ) {
 		gSentSurface = params;
 	}
 	if ( !gHasSentSurface || shownOrm != gSentOrm ) {
-		GameLib::Graphics::Manager::instance().setShaderResource( kOrmSlot, shownOrm );
+		GameLib::Graphics::Manager::instance().setShaderResource( ShaderSlots::kOrmMap, shownOrm );
 		gSentOrm = shownOrm;
 	}
 	gHasSentSurface = true;

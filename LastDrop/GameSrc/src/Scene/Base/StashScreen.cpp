@@ -4,6 +4,7 @@
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiInput.h"
 #include "GameSrc/UI/UiAnchor.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Core/Pad.h"
 
@@ -43,12 +44,6 @@ namespace{
 	const char* kDeployHint = "[Enter] 町へ出る";
 	const char* kNoWeaponWarning = "カバンに銃がありません";
 
-	const unsigned kTextColor = VertexColor::pack( 0.92f, 0.92f, 0.92f );
-	const unsigned kHintColor = VertexColor::pack( 0.65f, 0.65f, 0.65f );
-	const unsigned kHeadingColor = VertexColor::pack( 0.85f, 0.65f, 0.15f ); // ボタンを選んだ色と同じ黄
-	const unsigned kButtonColor = VertexColor::pack( 0.15f, 0.15f, 0.15f, 0.9f );
-	const unsigned kButtonSelectedColor = VertexColor::pack( 0.85f, 0.65f, 0.15f, 0.95f );
-	const unsigned kButtonSelectedTextColor = VertexColor::pack( 0.05f, 0.05f, 0.05f );
 	const unsigned kWarningColor = VertexColor::pack( 0.95f, 0.75f, 0.2f );
 
 	bool hasWeapon( const ItemGrid& grid ) {
@@ -150,7 +145,7 @@ StashScreen::Request StashScreen::handleInput( ItemGrid* stash, ItemGrid* bag ) 
 void StashScreen::draw( const ItemGrid& stash, const ItemGrid& bag ) {
 	layout( stash, bag );
 	float center = UiLayout::anchorX( UI_ANCHOR_CENTER );
-	mRenderer->addText( kHeading, Vector2( center, kHeadingTop ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kHeadingColor );
+	mRenderer->addText( kHeading, Vector2( center, kHeadingTop ), UI_TEXT_LARGE, UI_ALIGN_CENTER, GridPalette::HEADING );
 
 	struct Shown{
 		Side side;
@@ -161,7 +156,7 @@ void StashScreen::draw( const ItemGrid& stash, const ItemGrid& bag ) {
 	for ( const Shown& shown : grids ) {
 		UiRect first = mPicker.view( shown.side ).cellRect( *shown.grid, kFirstCell );
 		Vector2 label( first.left + ItemGridView::width( *shown.grid, kCellSize ) * kHalf, first.top - kGridLabelGap );
-		mRenderer->addText( shown.label, label, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
+		mRenderer->addText( shown.label, label, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::TEXT );
 	}
 	mPicker.draw( stash, bag, !mOnDeploy ); // Deploy を選んでいる間は、ボタンの色で見せる
 	drawDeploy( bag );
@@ -171,8 +166,8 @@ void StashScreen::draw( const ItemGrid& stash, const ItemGrid& bag ) {
 
 void StashScreen::drawDeploy( const ItemGrid& bag ) {
 	UiRect rect = deployRect( bag );
-	mRenderer->addRect( rect, mOnDeploy ? kButtonSelectedColor : kButtonColor );
-	mRenderer->addText( kDeployLabel, rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, mOnDeploy ? kButtonSelectedTextColor : kTextColor );
+	mRenderer->addRect( rect, mOnDeploy ? GridPalette::BUTTON_SELECTED : GridPalette::BUTTON );
+	mRenderer->addText( kDeployLabel, rect.center(), UI_TEXT_NORMAL, UI_ALIGN_CENTER, mOnDeploy ? GridPalette::BUTTON_SELECTED_TEXT : GridPalette::TEXT );
 	// カバンに銃が無ければ知らせる（止めはしない）
 	if ( !hasWeapon( bag ) ) {
 		Vector2 line( rect.center().x, rect.bottom() + kWarningGap );
@@ -187,9 +182,9 @@ void StashScreen::drawFooter( const ItemGrid& stash, const ItemGrid& bag ) {
 	if ( !mOnDeploy || moving ) {
 		const ItemStack* stack = mPicker.focusedStack( stash, bag );
 		const char* name = stack ? itemSpec( stack->item ).name : kEmptyName; // 銃の弾数はマスの左下に出す
-		mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
+		mRenderer->addText( name, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::TEXT );
 	}
 	const char* hint = moving ? kMovingHint : ( mOnDeploy ? kDeployHint : kBrowseHint );
 	position.y += kFooterLineHeight;
-	mRenderer->addText( hint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kHintColor );
+	mRenderer->addText( hint, position, UI_TEXT_NORMAL, UI_ALIGN_CENTER, GridPalette::HINT );
 }

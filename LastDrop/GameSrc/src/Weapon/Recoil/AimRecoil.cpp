@@ -28,11 +28,6 @@ namespace{
 	const int kSettleTicks = 7;
 	const float kReturnPerTick = 0.9f;	// 撃ちやめた後、1 ティックごとに残る割合。0.9 で約 0.4 秒（24 ティックで 1/12）まで戻る
 	const float kMinOffset = 0.001f;	// これより小さくなったら 0 にする（いつまでも小さな値で狙いを動かし続けないため）
-
-	float settle( float value ) {
-		value *= kReturnPerTick;
-		return ( Math::abs( value ) < kMinOffset ) ? 0.f : value;
-	}
 }
 
 AimRecoil::AimRecoil( int seed ) :
@@ -54,8 +49,8 @@ void AimRecoil::update( float shotRecoil ) {
 		return; // 連射の間。ずれはたまったまま
 	}
 	mShotIndex = 0;
-	mRise = settle( mRise );
-	mSide = settle( mSide );
+	mRise = ScalarMath::decay( mRise, kReturnPerTick, kMinOffset );
+	mSide = ScalarMath::decay( mSide, kReturnPerTick, kMinOffset );
 }
 
 void AimRecoil::kick( float scale ) {
