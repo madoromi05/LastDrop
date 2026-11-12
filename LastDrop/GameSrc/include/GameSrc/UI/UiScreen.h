@@ -28,7 +28,7 @@ public:
 	static GameLib::Math::Vector2 sideTitlePosition();				// 題名の左上（UI_ALIGN_LEFT で使う）
 	static UiRect sideRuleRect();									// 題名の下の赤い短い線の範囲
 	static GameLib::Math::Vector2 sideTaglinePosition();			// 赤い線の下のひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う）
-	static GameLib::Math::Vector2 sideLeadPosition();				// 題名の上の小さいひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う）
+	static GameLib::Math::Vector2 sideLeadPosition();				// 題名の上の小さいひと言の、左端の縦の真ん中（UI_ALIGN_MIDDLE_LEFT で使う。脱出成功の「町を出た。」）
 	// 縦に並べる count 行のうち、index 番目（0 が一番上）の範囲
 	// 一番下の行の位置は行の数によらず同じで、行が多いほど上へ伸びる
 	static UiRect sideMenuItemRect( int index, int count );
@@ -41,6 +41,13 @@ public:
 	static UiRect sideBackItemRect();								// 中身の下に 1 つだけ置く行（操作の一覧の「戻る」・脱出成功の「タイトルへ」）の範囲
 	static UiRect sideTableRowRect();								// 結果の表の 1 行目の範囲。2 行目からは同じ高さで下へ続ける（UiStatTable）
 	static GameLib::Math::Vector2 keyHintPosition();				// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）
+	// ── 真ん中に寄せる画面（ゲームオーバー。どれも UI_ANCHOR_CENTER）──
+	static GameLib::Math::Vector2 centerHeadingPosition();			// 見出しの真ん中（UI_ALIGN_CENTER で使う）
+	static UiRect centerRuleRect();									// 見出しの下の細い線の範囲
+	static GameLib::Math::Vector2 centerSummaryPosition();			// 線の下の 1 行の真ん中（UI_ALIGN_CENTER で使う）
+	static UiRect centerChoiceRect( int index, int count );			// 横に並べる count 個の行のうち、index 番目（0 が一番左）の範囲。並び全体を真ん中に置く
+	static GameLib::Math::Vector2 centerKeyHintPosition();			// 画面の下の操作の案内の真ん中（UiKeyHintRow を UI_ALIGN_CENTER で使う）
+	// ── 本編の HUD ──
 	static GameLib::Math::Vector2 screenCenter();					// 画面の中央（照準。UI_ANCHOR_CENTER）
 	static GameLib::Math::Vector2 statusLinePosition( int index );	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（UI_ANCHOR_LEFT。左揃えで使う）
 

@@ -7,24 +7,39 @@
 
 using namespace GameLib::Math;
 
-UiMenuItem::UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate, float letterSpacing ) :
+namespace{
+	const UiTextSize kTextSize = UI_TEXT_MENU;
+}
+
+UiMenuItem::UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate, float letterSpacing,
+	UiAlign labelAlign ) :
 	mAnchor( anchor ),
 	mRect( rect ),
 	mLabel( label ),
 	mOnActivate( onActivate ),
 	mSelected( false ),
-	mLetterSpacing( letterSpacing ) {
+	mLetterSpacing( letterSpacing ),
+	mLabelAlign( labelAlign ) {
 	ASSERT( label && mOnActivate && "UiMenuItem : label or onActivate is empty." );
+	ASSERT( ( labelAlign == UI_ALIGN_MIDDLE_LEFT || labelAlign == UI_ALIGN_CENTER ) && "UiMenuItem : labelAlign must be MIDDLE_LEFT or CENTER." );
 }
 
 void UiMenuItem::draw( UiRenderer& renderer ) const {
-	UiRect rect = screenRect();
-	if ( mSelected ) {
-		SelectionMarks::draw( renderer, rect );
+	const UiRect rect = screenRect();
+	float labelLeft = 0.f;
+	if ( mLabelAlign == UI_ALIGN_CENTER ) {
+		const float labelWidth = renderer.textWidth( mLabel.c_str(), kTextSize, mLetterSpacing ); // ひし形の位置が文字の幅で決まるので、先に測る
+		if ( mSelected ) {
+			SelectionMarks::drawCentered( renderer, rect, labelWidth );
+		}
+		labelLeft = SelectionMarks::centeredLabelLeft( rect, labelWidth );
+	} else {
+		if ( mSelected ) {
+			SelectionMarks::draw( renderer, rect );
+		}
+		labelLeft = SelectionMarks::labelLeft( rect );
 	}
-
-	Vector2 labelPosition( SelectionMarks::labelLeft( rect ) , rect.center().y );
-	renderer.addText( mLabel.c_str(), labelPosition, UI_TEXT_MENU, UI_ALIGN_MIDDLE_LEFT,
+	renderer.addText( mLabel.c_str(), Vector2( labelLeft, rect.center().y ), kTextSize, UI_ALIGN_MIDDLE_LEFT,
 		mSelected ? MenuPalette::TEXT_SELECTED : MenuPalette::TEXT_DIM, mLetterSpacing );
 }
 

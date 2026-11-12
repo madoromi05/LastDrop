@@ -8,6 +8,7 @@
 // （ウィンドウの縦横の比が変わっても絵をつぶさない）。暗くするのは UiShade で、ここは貼るだけ
 // 絵は作るときに読み始め、読み終わるまでは何も描かない（読み込みは非同期）
 // 絵は幅と高さが 2 の累乗の TGA にすること（GameLib は TGA を 2 の累乗へ切り上げて余白を作り、addImage は絵の全体を貼るので、
+// 余白があると画面に出る）。画面写真からは tools/convert/screenshot_to_ui_tga.py、作る絵は tools/texgen で作る
 class UiBackdrop : public IUiElement{
 public:
 	// filename: 絵のファイル。nullptr 不可。color: 絵に掛ける色（VertexColor::WHITE でそのまま。暗くするなら灰色）

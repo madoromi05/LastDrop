@@ -313,6 +313,9 @@
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Result\ResultText.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Result\EscapedPage.cpp" />
+    <ClCompile Include="GameSrc\src\Scene\Result\GameOverPage.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
@@ -321,8 +324,8 @@
     <ClCompile Include="GameSrc\src\UI\UiInput.cpp" />
     <ClCompile Include="GameSrc\src\UI\UiRenderer.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiLabel.cpp" />
-    <ClCompile Include="GameSrc\src\UI\Widget\UiButton.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiMenuItem.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiStatTable.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiBackdrop.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiShade.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\UiBar.cpp" />
@@ -944,6 +947,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\ResultText.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\EscapedPage.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\GameOverPage.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
@@ -957,8 +963,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\IUiSelectable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\UiRenderer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiLabel.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiButton.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiMenuItem.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiStatTable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBackdrop.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiShade.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBar.h" />

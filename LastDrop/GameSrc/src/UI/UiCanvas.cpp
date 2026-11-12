@@ -46,12 +46,21 @@ void UiCanvas::handleInput( const UiInput& input ) {
 	if ( input.downPressed ) {
 		select( ( mSelected + 1 ) % count );
 	}
+	// 左右：値を動かせる部品なら値を変え、ほかは上下と同じく選ぶ部品を移す（横に並べた行を ← → で選ぶ）
 	IUiAdjustable* selectedAdjustable = ( mSelected != kNone ) ? mAdjustables[ mSelected ] : nullptr;
-	if ( selectedAdjustable && input.leftPressed ) {
-		selectedAdjustable->adjust( -1 );
+	if ( input.leftPressed ) {
+		if ( selectedAdjustable ) {
+			selectedAdjustable->adjust( -1 );
+		} else {
+			select( ( mSelected + count - 1 ) % count );
+		}
 	}
-	if ( selectedAdjustable && input.rightPressed ) {
-		selectedAdjustable->adjust( 1 );
+	if ( input.rightPressed ) {
+		if ( selectedAdjustable ) {
+			selectedAdjustable->adjust( 1 );
+		} else {
+			select( ( mSelected + 1 ) % count );
+		}
 	}
 	// 決定は最後に1回だけ（activate でシーンが切り替わる予約をしたら、この画面ではそれ以上何もしない）
 	// 値を動かせる部品のクリックは、決定ではなく「その場所の値にして、ドラッグを始める」

@@ -38,8 +38,13 @@ def to_byte(value):
 
 def write_tga(path, size, body):
     """size×size の TGA を書く。body: 上の行から B,G,R,A の並び。"""
+    write_tga_size(path, size, size, body)
+
+
+def write_tga_size(path, width, height, body):
+    """width×height の TGA を書く（UI の背景のように横長の絵）。body: 上の行から B,G,R,A の並び。"""
     header = struct.pack("<BBBHHBHHHHBB", 0, 0, TGA_UNCOMPRESSED_TRUE_COLOR, 0, 0, 0, 0, 0,
-                         size, size, TGA_BITS_PER_PIXEL, TGA_DESCRIPTOR)
+                         width, height, TGA_BITS_PER_PIXEL, TGA_DESCRIPTOR)
     with open(path, "wb") as f:
         f.write(header)
         f.write(body)

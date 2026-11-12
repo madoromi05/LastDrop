@@ -71,11 +71,9 @@ GameScene::GameScene( GameResources* resources ) :
 GameScene::~GameScene() {
 	// 開けている音・エンジンの音は mLoot の破棄で止まる（音の道具は次のシーンも使う）
 	if ( mModals.isOpen() ) {
-		// 持ち帰る物は無いので、カバンは捨てて結果だけを渡す
-		RaidResult result = mSession.result();
-		result.condition = mWorld.dayConditionKind();
-		mResources->raidRecord().setLastResult( result );
+		mResources->audio().setPaused( false );
 	}
+	// エディタへ渡した物は mEditor の破棄で外れる（世界より先に破棄される）
 }
 
 void GameScene::pause() {
@@ -363,7 +361,9 @@ void GameScene::updateRaid() {
 void GameScene::finishRaid() {
 	mRaidFinished = true;
 	// 持ち帰る物は無いので、カバンは捨てて結果だけを渡す
-	mResources->raidRecord().setLastResult( mSession.result() );
+	RaidResult result = mSession.result();
+	result.condition = mWorld.dayConditionKind();
+	mResources->raidRecord().setLastResult( result );
 	SceneManager::instance().requestChange( SceneManager::SCENE_RAID_END );
 }
 

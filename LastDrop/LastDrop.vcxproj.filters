@@ -861,6 +861,15 @@
     <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp">
       <Filter>GameSrc\Scene\Result</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Result\ResultText.cpp">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Result\EscapedPage.cpp">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Scene\Result\GameOverPage.cpp">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
@@ -885,10 +894,10 @@
     <ClCompile Include="GameSrc\src\UI\Widget\UiLabel.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\UI\Widget\UiButton.cpp">
+    <ClCompile Include="GameSrc\src\UI\Widget\UiMenuItem.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\UI\Widget\UiMenuItem.cpp">
+    <ClCompile Include="GameSrc\src\UI\Widget\UiStatTable.cpp">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\UI\Widget\UiBackdrop.cpp">
@@ -2012,6 +2021,15 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h">
       <Filter>GameSrc\Scene\Result</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\ResultText.h">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\EscapedPage.h">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\GameOverPage.h">
+      <Filter>GameSrc\Scene\Result</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -2051,10 +2069,10 @@
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiLabel.h">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiButton.h">
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiMenuItem.h">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiMenuItem.h">
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiStatTable.h">
       <Filter>GameSrc\UI\Widget</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiBackdrop.h">

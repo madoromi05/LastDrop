@@ -11,7 +11,7 @@
 
 // 名前・バー・数字を横に並べた 1 行（設定画面の音量・感度）。値は整数で、最小〜最大を刻みで動かす
 // 値の持ち主は作る側（GameSettings など）で、ここは getter / setter の関数で読み書きするだけ
-// （どの設定を変えるかを知らないので、項目が増えてもこのクラスは変わらない。UiButton の onActivate と同じ考え方）
+// （どの設定を変えるかを知らないので、項目が増えてもこのクラスは変わらない。UiMenuItem の onActivate と同じ考え方）
 // 板は描かない。選ばれている間はメニューの行と同じ印（SelectionMarks）を出す。バーは細い線とひし形、色は MenuPalette
 // 左右キー・バーのクリックとドラッグで値を変える（いつ変えるかは UiCanvas）。MenuRestyle_Plan.txt
 class UiSlider : public IUiElement, public IUiSelectable, public IUiAdjustable{

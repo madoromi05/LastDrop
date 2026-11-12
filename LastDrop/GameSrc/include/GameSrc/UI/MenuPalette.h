@@ -7,6 +7,7 @@
 // 部品（UiMenuItem・UiSlider・UiKeyHintRow など）と並べ方（MenuLayout）が同じ色を使うので 1 か所に置く
 // 画面は sRGB ではなく、UI は ToneMap の後にそのまま描くので、モックの 16 進の色と同じ数で同じ色に見える
 // 赤（ACCENT）は印と線だけに使う（文字には使わない。黒地では細い文字が読みにくい）
+// 文字の赤はゲームオーバーの大きい見出し（DEATH_HEADING）だけ。字が大きいので読める
 namespace MenuPalette{
 	const unsigned TEXT = VertexColor::pack( 0.910f, 0.894f, 0.863f );			// #e8e4dc 題名・強い文字
 	const unsigned TEXT_SELECTED = VertexColor::pack( 0.953f, 0.937f, 0.906f );	// #f3efe7 選んでいる行の文字
@@ -24,7 +25,10 @@ namespace MenuPalette{
 	const unsigned BAR_FILL = VertexColor::pack( 0.788f, 0.769f, 0.729f );		// #c9c4ba
 	// 操作の一覧の行の上の細い線
 	const unsigned ROW_LINE = VertexColor::pack( 0.133f, 0.125f, 0.114f );		// #22201d
-	const unsigned SHADE = VertexColor::pack( 0.020f, 0.020f, 0.020f, 0.92f );	// 背景の絵の左を暗くする影（UiShade）。#050505
+	// ゲームオーバーの見出しと、その下の細い線
+	const unsigned DEATH_HEADING = VertexColor::pack( 0.761f, 0.227f, 0.192f );	// #c23a31
+	const unsigned DEATH_LINE = VertexColor::pack( 0.353f, 0.090f, 0.078f );		// #5a1714
+	const unsigned SHADE =VertexColor::pack( 0.020f, 0.020f, 0.020f, 0.92f );	// 背景の絵の左を暗くする影（UiShade）。#050505
 }
 
 #endif
