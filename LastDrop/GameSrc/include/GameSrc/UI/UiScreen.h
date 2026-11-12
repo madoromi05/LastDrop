@@ -3,6 +3,7 @@
 
 #include "GameSrc/UI/UiCanvas.h"
 #include "GameSrc/UI/UiRect.h"
+#include "GameSrc/UI/UiAnchor.h"
 #include "GameLib/Math/Vector2.h"
 
 class UiRenderer;
@@ -25,20 +26,7 @@ public:
 
 	// ── 並べる位置（画素）──
 	// x は基準（UiAnchor）からのずれで返す。括弧の中の基準と組にして部品へ渡すこと（理由は UiAnchor.h）。
-	// 画面の見出しの位置（UI_ANCHOR_CENTER。中央揃えで使う）。
-	static GameLib::Math::Vector2 headingPosition();
-	// 画面中央に縦に並べるボタンの index 番目（0 が一番上）の範囲（UI_ANCHOR_CENTER）。
-	static UiRect menuButtonRect( int index );
-	// 設定画面の index 行目（0 が一番上）の範囲（UI_ANCHOR_CENTER）。スライダーの行は幅いっぱい。
-	static UiRect settingRowRect( int index );
-	// 設定画面の index 行目に置くボタンの範囲（UI_ANCHOR_CENTER）。行と同じ高さで、幅はメニューのボタンと同じ。
-	static UiRect settingButtonRect( int index );
-	// 操作の一覧の index 行目の文字の位置（UI_ANCHOR_CENTER。UI_ALIGN_MIDDLE_LEFT で使う）。
-	// column: 0 が操作の名前、1 がキーの名前。
-	static GameLib::Math::Vector2 listLinePosition( int index, int column );
-	// 操作の一覧（lineCount 行）の下に置くボタンの範囲（UI_ANCHOR_CENTER）。
-	static UiRect listButtonRect( int lineCount );
-	// ── RE:2 風の左寄せのメニュー（MENU_LOOK_SIDE。どれも UI_ANCHOR_LEFT）──
+	// ── RE:2 風の左寄せのメニュー（どれも UI_ANCHOR_LEFT）──
 	// 題名の左上（UI_ALIGN_LEFT で使う）。
 	static GameLib::Math::Vector2 sideTitlePosition();
 	// 題名の下の赤い短い線の範囲。
@@ -56,6 +44,12 @@ public:
 	static UiRect sideSettingRowRect( int index );
 	// rowCount 行のスライダーの下に、少し空けて並べるページを開く行（操作の一覧・戻る）の index 番目の範囲。
 	static UiRect sideSettingLinkRect( int rowCount, int index );
+	// 操作の一覧のまとまりを置く列（count 列のうち、左から index 番目）。画面の左右の余白の間を等分する。
+	static UiColumn controlsColumn( int index, int count );
+	// 操作の一覧のまとまりの名前の上端（画面の上端から）。
+	static float controlsGroupTop();
+	// 操作の一覧の下に置く「戻る」の行の範囲。
+	static UiRect sideBackItemRect();
 	// 画面の下の操作の案内の、左端の縦の真ん中（UiKeyHintRow）。
 	static GameLib::Math::Vector2 keyHintPosition();
 	// 画面の中央（照準。UI_ANCHOR_CENTER）。

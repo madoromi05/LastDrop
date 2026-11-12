@@ -1,0 +1,126 @@
+結果の画面（ゲームオーバー・脱出成功）を RE:2 風に揃える（ResultScreen_Plan）
+2026-11-12 案。★ は決めてほしい所（おすすめを先に書いた）。承認までコードは変えない。
+
+■ 目的
+タイトル・一時停止・設定・操作の一覧（MenuRestyle_Plan.txt）と同じ見た目に、結果の画面を揃える。
+見本は claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD の「ゲームオーバー」「脱出成功」）。
+揃え終えたら、板のボタン（UiButton）はどこからも使わなくなるので消す。
+
+■ 今の形（RaidEndScene）
+・クリアも死んだも同じ並べ方。中央に見出し（ESCAPED は緑・KILLED IN ACTION は赤。ゴシック 48）、
+  その下に「かかった時間」「倒した数」の 2 行、板のボタン（死んだときは「もう一度」と「タイトルへ」、クリアは「タイトルへ」）。
+・背景は黒。下の操作の案内は無い。
+
+■ 手本のゲームでは
+・タルコフ：出撃の終わり方に名前が付く（Survived・Killed in Action・Missing in Action・Run-Through・Left the Action）。
+  終わり方で、その出撃の経験値に掛かる倍率が変わる（Survived 1.5・KIA と MIA 0.75・Run-Through 0.5・Left the Action 0）。
+  出撃の後に、行動ごとの経験値の内訳が出る。
+  出典：https://escapefromtarkov.fandom.com/wiki/Experience
+  出撃の終わりに、倒した相手の一覧（倒した数・ヘッドショット・武器）の画面が出る。
+  出典：https://tarkov-stammtisch.de/news/world-s-first-escape-from-tarkov-kill-counter
+  画面が出る順番と並べ方を書いた出典は見つからなかった（分からなかった）。
+  → このゲームは 1 回勝負で、経験値も持ち帰る物も無い（SimpleRun_Plan.txt）。出すのは時間・倒した数・今回の条件だけにする。
+・RE:2（2019）：結果の画面のランクは、クリアまでの時間だけで決まる（セーブや死んだ回数は見ない）。
+  出典：https://stevivor.com/guides/resident-evil-2-rankings-guide-shoot-st-r-s/
+  ゲームオーバーの画面の選べる項目を書いた出典は見つからなかった（分からなかった）。
+  → 時間を一番目立つ数字として出す。ランクは作らない（★5）。
+・見た目はユーザーが選んだ RE:2 風（ゲーム案_確定条件.md「メニュー画面の見た目」）。
+
+■ 画面の中身（数字は座標の高さ 480 で。モックの 720 の 2/3）
+1. 脱出成功（左寄せ。タイトルと同じ並べ方）
+   ・左上に小さく「町を出た。」、その下に「ESCAPED」（題名と同じ字 UI_TEXT_TITLE・白）、赤い短い線。
+     ESCAPED と赤い線の位置はタイトルの題名と同じ（UiScreen::sideTitlePosition・sideRuleRect を使う）。
+   ・表（左端 80・幅 280・行の高さ 39。上端は画面の高さの 0.467）。行の上に細い線、最後の行は下にも線。
+       かかった時間   14:07
+       倒した数       23
+       今回の条件     霧の日      （★3）
+     名前は小さい字（UI_TEXT_CAPTION・TEXT_SUB）、値は右寄せで大きめ（UI_TEXT_MENU・TEXT）。
+   ・「タイトルへ」の行（UiMenuItem。始めから選ばれている。位置は UiScreen::sideMenuItemRect の 1 行）。
+   ・下の案内：[Enter] 決定（左寄せ）。
+   ・背景：脱出の車の後ろ姿の絵。左を暗くする（タイトルと同じ UiBackdrop ＋ UiShade）（★4）。
+2. ゲームオーバー（中央寄せ）
+   ・中央に「GAME OVER」（UI_TEXT_TITLE・くすんだ赤 #c23a31。上端は画面の高さの 0.30）（★2）。
+     赤を文字に使うのはこの見出しだけ（大きい字なので読める。背景との比は約 3.9 : 1）。
+   ・その下に暗い赤の細い線（幅 213・太さ 1・#5a1714）。
+   ・その下に 1 行で「経過 08:42　・　倒した数 12」（UI_TEXT_CAPTION・TEXT_SUB・中央揃え）。
+   ・選ぶ行：「もう一度」「タイトルへ」を横に 2 つ（1 つ 147×35・間 16。上端は画面の高さの 0.63）（★1）。
+     選んでいる行は、上下の細い線・薄い帯・文字の左に赤いひし形。文字は中央揃え。
+     始めは「もう一度」が選ばれている。
+   ・下の案内：[← →] 選ぶ  [Enter] 決定（中央揃え）。
+   ・背景：ほぼ黒（#040303）に、画面の端へ向かって暗い赤がにじむ絵（ざらつきも絵に入れる）（★4）。
+3. 変えない物
+   ・押した後の動き（もう一度＝新しく引き直して町へ・タイトルへ）。
+   ・死んだときの暗転からこの画面へ移る流れ。
+   ・時間の数え方（一時停止・カバン・漁る画面の間は数えない）と、秒の切り捨て。
+
+■ 作る物・変える物
+設計：今の RaidEndScene は 2 つの画面を 1 つのコンストラクタで出し分けている。並べ方が別物になるので、
+     設定・操作の一覧と同じ形（ページの名前空間）に分ける。RaidEndScene は「結果を読んで、どちらを並べるか選ぶ」だけにする。
+
+段1 脱出成功
+   ・RaidResult に「今回の条件」（DayCondition）を足す。入れるのは、結果を RaidRecord へ置く所（★3 を作る場合）。
+   ・ResultText（新しい名前空間。GameSrc/Scene/Result/）：秒 →「14:07」、数 →「23」の文字にする関数。
+     2 つのページが同じ書き方を使うので 1 か所に置く。
+   ・UiStatTable（新しい部品。GameSrc/UI/Widget/）：名前（左）と値（右寄せ）の行を縦に並べ、行の上と最後の下に細い線を描くだけ。
+     線の色は操作の一覧と同じ MenuPalette::ROW_LINE。
+   ・EscapedPage（新しい名前空間）：小さいひと言・ESCAPED・赤い線・UiStatTable・「タイトルへ」・下の案内を canvas に足す。
+   ・UiScreen に位置を足す：ひと言の位置・表の範囲。
+   ・RaidEndScene：クリアなら EscapedPage::build を呼ぶ。
+段2 ゲームオーバー
+   ・MenuPalette に色を 2 つ足す：見出しの赤（#c23a31）・その下の線（#5a1714）。
+   ・UiChoiceItem（新しい部品）：中央揃えの選べる行。印は SelectionMarks に中央用の描き方を足す。
+   ・UiCanvas：左右のキーで選ぶ部品を移せるようにする（★1）。
+   ・UiKeyHintRow：中央揃えで並べられるようにする（全部の幅を測ってから左から描く。KeyCap::width を使う）。
+   ・GameOverPage（新しい名前空間）：GAME OVER・線・1 行の結果・「もう一度」「タイトルへ」・下の案内。
+   ・UiScreen に位置を足す：見出し・線・1 行の結果・選ぶ行。
+   ・RaidEndScene：死んだなら GameOverPage::build を呼ぶ。addLine と古い定数を消す。
+段3 背景（★4）
+   ・ゲームオーバー：tools/texgen に絵を作るスクリプトを足し、Resource/UI/gameover_backdrop.tga を作る
+     （黒地に、端へ向かう暗い赤とざらつきを焼き込んだ、透けない絵。幅と高さは 2 の累乗）。UiBackdrop で描く。
+   ・脱出成功：ゲームの中で脱出の車を後ろから写した画面写真を、タイトルと同じ手順
+     （tools/convert/screenshot_to_ui_tga.py）で Resource/UI/escaped_backdrop.tga にする。UiBackdrop ＋ UiShade で描く。
+段4 片付け
+   ・UiButton（.h / .cpp）を消す（使う所が無くなる）。vcxproj と filters からも外す。
+   ・UiSlider.h・UiMenuItem.h の説明にある「UiButton と同じ」を、今の言い方に直す。
+   ・RaidEndScene.h の説明を今の形に直す。
+
+■ 影響範囲
+・変わるのは結果の画面の見た目だけ。結果の中身（時間・倒した数）と、押した後の動きは変えない。
+・UiCanvas に左右で選ぶ決まりを足すと、タイトル・一時停止でも左右のキー（← → と A / D）で行が移る（★1）。
+  スライダーの行では今まで通り値が変わる。
+・RaidResult に条件を足すと、結果を作る所（GameScene が RaidRecord へ置く所）が 1 行変わる。
+・修正の入口：色は MenuPalette.h、位置は UiScreen.cpp、文言は EscapedPage.cpp・GameOverPage.cpp、
+  数字の書き方は ResultText.cpp。
+
+■ 確かめ方
+・3 構成（Debug / Release / Profile）のビルド。
+・脱出成功：F6 の Raid の欄の脱出（forceExtract）で出す。
+・ゲームオーバー：ゾンビに噛まれて死ぬ。時間が掛かるなら、F6 に「自キャラを死なせる」を足す（段2 の中で決める）。
+・Claude が窓を写して見る → ユーザーが画面で見る。
+
+■ 決めてほしいこと
+★1 ゲームオーバーの選ぶ行の並べ方
+   おすすめ：モック通り、横に 2 つ（← → で選ぶ）。UiCanvas は「値を動かせない行では、左右でも選ぶ行が移る」とする。
+            どの画面にも同じ決まりが効くので、画面ごとの設定は足さない。
+   ほか：縦に 2 つ（上下で選ぶ。UiCanvas は今のまま。下の案内は [Enter] 決定 だけになる）。
+★2 死んだときの見出しの文字
+   おすすめ：モック通り「GAME OVER」。
+   ほか：今のまま「KILLED IN ACTION」（タルコフの終わり方の名前。字が多いので、字の間を詰める）。
+★3 脱出成功の表の「今回の条件」の行
+   おすすめ：入れる（どの条件で何分だったかが 1 枚で分かる。RaidResult に値を 1 つ足すだけ）。
+   ほか：入れない（表は 2 行。RaidResult は変えない）。
+★4 背景の絵（段3）
+   おすすめ：段1・段2 は黒い背景で作り、段3 で絵を足す。
+            ゲームオーバーの絵は Claude がツールで作る。脱出成功の絵は、ユーザーが写した画面写真を使う。
+   ほか：背景は黒のままにする（段3 を作らない）。
+★5 クリアのランク（時間で S / A / B）
+   おすすめ：作らない（時間の基準を決めるには、何度も遊んだ記録が要る。先に見た目を揃える）。
+★6 コードを書く人
+   おすすめ：Claude が編集して、ビルドと窓の写しまで行う（MenuRestyle の段5 と同じ）。段ごとに変えた所を報告する。
+   ほか：ユーザーが書く（Claude は変更前 → 変更後を渡す）。
+
+■ 参考
+・Component パターン：https://gameprogrammingpatterns.com/component.html
+・タルコフの終わり方と経験値：https://escapefromtarkov.fandom.com/wiki/Experience
+・タルコフの倒した相手の画面：https://tarkov-stammtisch.de/news/world-s-first-escape-from-tarkov-kill-counter
+・RE:2 のランク：https://stevivor.com/guides/resident-evil-2-rankings-guide-shoot-st-r-s/

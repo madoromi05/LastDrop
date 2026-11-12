@@ -8,24 +8,6 @@ using namespace GameLib::Math;
 
 namespace{
 	const float kHalf = 0.5f;
-	// 見出しは画面の上から 1/3 の所。
-	const float kHeadingHeightRatio = 1.f / 3.f;
-	// ボタンの大きさと並べ方（画素）。最初のボタンは画面の縦の中央より少し下から始める。
-	const float kMenuButtonWidth = 220.f;
-	const float kMenuButtonHeight = 44.f;
-	const float kMenuButtonSpacing = 14.f;  // ボタンとボタンの間
-	const float kMenuTopOffset = 20.f;      // 画面の縦の中央から、最初のボタンの上端まで
-
-	// 設定画面の行（画素）。高さと間はメニューのボタンと同じ。行が多いので、メニューより上（縦の中央の少し上）から始める。
-	const float kSettingRowWidth = 560.f;
-	const float kSettingTopOffset = -60.f;  // 画面の縦の中央から、最初の行の上端まで
-
-	// 操作の一覧（画素）。見出しの下から 2 列で並べる。
-	const float kListTopOffset = 60.f;      // 見出しから最初の行の真ん中まで
-	const float kListLineHeight = 28.f;     // UI_TEXT_NORMAL の文字より少し広く
-	const float kListColumnX[] = { -220.f, 20.f }; // 列ごとの左端（画面の横の中央から）。操作の名前・キーの名前
-	const float kListButtonGap = 24.f;      // 最後の行の真ん中から、ボタンの上端まで
-	// RE:2 風の左寄せのメニュー（画素。座標の高さ 480 で、モックの 720 の 2/3）。
 	// 縦の位置は画面の高さに対する割合、そこからの間は画素。横は画面の左端から。
 	const float kSideMarginX = 80.f;            // 題名・ひと言・案内の左端
 	const float kSideTitleTopRatio = 0.24f;     // 題名の上端（画面の上から）
@@ -42,10 +24,12 @@ namespace{
 	const float kSideHeadingTopRatio = 0.19f;   // 見出しの上端（画面の上から）
 	const float kSideHeadingToRule = 44.f;      // 見出しの上端から赤い線まで（見出しの文字の高さ 32 ＋ 間 12）
 	const float kSideHeadingRuleWidth = 37.f;
-	const float kSideSettingTopRatio = 0.35f;   // 設定の最初の行の上端（画面の上から）
+	const float kSideContentTopRatio = 0.35f;   // 見出しの下の中身の上端（画面の上から）。設定の最初の行・操作の一覧のまとまり
 	const float kSideSettingRowWidth = 507.f;   // 名前・バー・数字が並ぶ幅
 	const float kSideSettingRowHeight = 40.f;   // スライダーの行（メニューの行より高く、バーを触りやすく）
 	const float kSideSettingLinkGap = 19.f;     // 最後のスライダーの行から、ページを開く行までの間
+	const float kControlsColumnGap = 37.f;      // 操作の一覧の列と列の間
+	const float kSideBackBottomRatio = 0.867f;  // 操作の一覧の「戻る」の行の下端（画面の上から）
 	const float kKeyHintBottomMargin = 27.f;    // 画面の下端から案内の縦の真ん中まで
 	// 本編の HUD（画素）。
 	const float kStatusMargin = 16.f;      // 画面の左端・下端からの余白
@@ -67,49 +51,6 @@ void UiScreen::handleInput() {
 void UiScreen::draw() {
 	mCanvas.draw( *mRenderer );
 	mRenderer->draw();
-}
-
-Vector2 UiScreen::headingPosition() {
-	return Vector2( 0.f, Framework::instance().height() * kHeadingHeightRatio );
-}
-
-UiRect UiScreen::menuButtonRect( int index ) {
-	UiRect rect;
-	rect.width = kMenuButtonWidth;
-	rect.height = kMenuButtonHeight;
-	rect.left = -kMenuButtonWidth * kHalf;
-	rect.top = Framework::instance().height() * kHalf + kMenuTopOffset + index * ( kMenuButtonHeight + kMenuButtonSpacing );
-	return rect;
-}
-
-UiRect UiScreen::settingRowRect( int index ) {
-	UiRect rect;
-	rect.width = kSettingRowWidth;
-	rect.height = kMenuButtonHeight;
-	rect.left = -kSettingRowWidth * kHalf;
-	rect.top = Framework::instance().height() * kHalf + kSettingTopOffset + index * ( kMenuButtonHeight + kMenuButtonSpacing );
-	return rect;
-}
-
-UiRect UiScreen::settingButtonRect( int index ) {
-	UiRect rect = settingRowRect( index );
-	rect.width = kMenuButtonWidth;
-	rect.left = -kMenuButtonWidth * kHalf;
-	return rect;
-}
-
-Vector2 UiScreen::listLinePosition( int index, int column ) {
-	ASSERT( column >= 0 && column < static_cast< int >( sizeof( kListColumnX ) / sizeof( kListColumnX[ 0 ] ) ) && "UiScreen : bad list column." );
-	return Vector2( kListColumnX[ column ], headingPosition().y + kListTopOffset + index * kListLineHeight );
-}
-
-UiRect UiScreen::listButtonRect( int lineCount ) {
-	UiRect rect;
-	rect.width = kMenuButtonWidth;
-	rect.height = kMenuButtonHeight;
-	rect.left = -kMenuButtonWidth * kHalf;
-	rect.top = listLinePosition( lineCount - 1, 0 ).y + kListButtonGap;
-	return rect;
 }
 
 Vector2 UiScreen::sideTitlePosition() {
@@ -160,7 +101,7 @@ UiRect UiScreen::sideSettingRowRect( int index ) {
 	ASSERT( index >= 0 && "UiScreen : bad side setting row index." );
 	UiRect rect;
 	rect.left = kSideMenuItemLeft;
-	rect.top = Framework::instance().height() * kSideSettingTopRatio + index * ( kSideSettingRowHeight + kSideMenuItemSpacing );
+	rect.top = Framework::instance().height() * kSideContentTopRatio + index * ( kSideSettingRowHeight + kSideMenuItemSpacing );
 	rect.width = kSideSettingRowWidth;
 	rect.height = kSideSettingRowHeight;
 	return rect;
@@ -172,6 +113,29 @@ UiRect UiScreen::sideSettingLinkRect( int rowCount, int index ) {
 	rect.left = kSideMenuItemLeft;
 	rect.top = sideSettingRowRect( rowCount - 1 ).bottom() + kSideSettingLinkGap + index * ( kSideMenuItemHeight + kSideMenuItemSpacing );
 	rect.width = kSideSettingRowWidth;
+	rect.height = kSideMenuItemHeight;
+	return rect;
+}
+
+UiColumn UiScreen::controlsColumn( int index, int count ) {
+	ASSERT( index >= 0 && index < count && "UiScreen : bad controls column index." );
+	UiColumn column;
+	column.index = index;
+	column.count = count;
+	column.margin = kSideMarginX;
+	column.gap = kControlsColumnGap;
+	return column;
+}
+
+float UiScreen::controlsGroupTop() {
+	return Framework::instance().height() * kSideContentTopRatio;
+}
+
+UiRect UiScreen::sideBackItemRect() {
+	UiRect rect;
+	rect.left = kSideMenuItemLeft;
+	rect.top = Framework::instance().height() * kSideBackBottomRatio - kSideMenuItemHeight;
+	rect.width = kSideMenuItemWidth;
 	rect.height = kSideMenuItemHeight;
 	return rect;
 }

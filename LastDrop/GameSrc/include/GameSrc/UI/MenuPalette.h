@@ -22,6 +22,8 @@ namespace MenuPalette{
 	// 設定のスライダーのバー。細い線の上に、溜まっている所を明るい線で重ねる。
 	const unsigned BAR_TRACK = VertexColor::pack( 0.227f, 0.220f, 0.204f );    // #3a3834
 	const unsigned BAR_FILL = VertexColor::pack( 0.788f, 0.769f, 0.729f );     // #c9c4ba
+	// 操作の一覧の行の上の細い線。
+	const unsigned ROW_LINE = VertexColor::pack( 0.133f, 0.125f, 0.114f );     // #22201d
 	// 背景の絵の左を暗くする影（UiShade）。#050505。
 	const unsigned SHADE = VertexColor::pack( 0.020f, 0.020f, 0.020f, 0.92f );
 }

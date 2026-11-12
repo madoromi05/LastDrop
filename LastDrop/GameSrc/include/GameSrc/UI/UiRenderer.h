@@ -11,7 +11,7 @@
 // 文字の大きさ（と書体）。増やすときはここに1つ足し、UiRenderer.cpp の文字の表にも1つ足す。
 enum UiTextSize{
 	UI_TEXT_NORMAL, // ボタン・HUD
-	UI_TEXT_LARGE,  // 画面の見出し（一時停止の Pause など）
+	UI_TEXT_LARGE,  // 大きい見出し（結果画面・ロード画面・カバン・HUD の知らせ）
 	// RE:2 風のメニュー（明朝体）
 	UI_TEXT_TITLE,   // ゲームの題名
 	UI_TEXT_HEADING, // 設定・操作の一覧の見出し（左上）

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -203,6 +203,7 @@
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\EcgView.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\KeyCap.cpp" />
     <ClCompile Include="GameSrc\src\UI\Widget\SelectionMarks.cpp" />
+    <ClCompile Include="GameSrc\src\UI\Widget\UiKeyBindingGroup.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieRootMotionComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\ZombieFactory.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieDismemberComponent.cpp" />
@@ -719,6 +720,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\EcgView.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\KeyCap.h" />
     <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\SelectionMarks.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\UI\Widget\UiKeyBindingGroup.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieRootMotionComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieHealthComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h" />
