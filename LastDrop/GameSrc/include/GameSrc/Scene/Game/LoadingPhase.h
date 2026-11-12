@@ -18,7 +18,8 @@ public:
 	// 1 段階進める（isReady でない間だけ呼ぶ）。meshesReady: テクスチャまで読み終えたか（GameResources::meshes().update）
 	// 完了したフレームだけ true を返す（呼び出し側がそのとき後処理を行う）。まだなら false（この描画はロード画面だけ）
 	bool advance( bool meshesReady );
-	void drawLoadingScreen( const char* heading );	// ロード中の画面を描く（世界は描かない）。heading: 見出しに出す文字（今回の条件の名前）
+	// ロード中の画面を描く（世界は描かない）。heading: 見出しに出す文字（今回の条件の名前）。goal: 見出しの下の目的の文
+	void drawLoadingScreen( const char* heading, const char* goal );
 
 private:
 	GameLoader mLoader;

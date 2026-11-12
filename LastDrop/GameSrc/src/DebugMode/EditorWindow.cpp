@@ -64,7 +64,7 @@ namespace{
 
 	// F6 で出し入れする物（銃とその弾を並べて置く）
 	// ガソリンは 2 マスの持ち帰る物なので、ここでは触らない
-	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM, ITEM_BANDAGE, ITEM_WATCH, ITEM_LAPTOP };
+	const ItemId kDebugItems[] = { ITEM_AMMO_762, ITEM_RIFLE, ITEM_PISTOL, ITEM_AMMO_9MM, ITEM_BANDAGE };
 	// 一度に足す・減らす数。上限は弾を 1 回で十分に持てる数（カバンの空きのほうが先に尽きる）
 	const int kMinItemAmount = 1;
 	const int kMaxItemAmount = 999;

@@ -19,7 +19,7 @@ class StaticMeshData;
 class GameObject;
 class GameObjectWorld;
 
-// 置物（置物の車・漁れるゴミ箱と木箱・落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物）を部品から組み立てる
+// 置物（置物の車・漁れるゴミ箱と木箱・落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯）を部品から組み立てる
 // （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt）
 // 部品の並び・形のファイル・名前・材質・中身の量を 1 か所で決める（「何で出来ているか」）
 // どこに置くか・何個置くかは使う側（WorldBuilder：最初に置く物、GameWorld：カバンから捨てた物）が決める
@@ -49,12 +49,12 @@ public:
 	// 地面に落ちている銃（拾うとカバンへ入る）。id: どの銃か。上を歩ける
 	// 弾倉の中身は持たない（銃の物〈自キャラが持てる銃〉が持ち続ける。銃は 1 種類 1 丁だけなので、拾い直すと前の弾数のまま）
 	GameObject* spawnWeaponDrop( GameObjectWorld* world, WeaponId id, const GameLib::Math::Vector3& position, float yawDegree ) const;
-	// カバンから捨てた物。落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯と売れる物になり、拾い直せる
-	// stack: 捨てた物と数（弾・包帯は数をそのまま持つ。ガソリン・銃・売れる物は 1 つ）
+	// カバンから捨てた物。落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯になり、拾い直せる
+	// stack: 捨てた物と数（弾・包帯は数をそのまま持つ。ガソリン・銃は 1 つ）
 	GameObject* spawnDroppedItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;
 
 private:
-	GameObject* spawnGroundItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;	// 落ちている物（ItemSpec::groundFile の形で、上を歩ける）。弾・包帯・売れる物。stack の数をそのまま持つ
+	GameObject* spawnGroundItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;	// 落ちている物（ItemSpec::groundFile の形で、上を歩ける）。弾・包帯。stack の数をそのまま持つ
 	const StaticMeshLods& groundShapes( ItemId item ) const;																						// 物の種類 item の、落ちた形（ItemSpec::groundFile を持つ物だけ）
 	const StaticMeshLods& streetLampShapes( bool lit ) const;																						// 街灯の形（lit: ガラスが光る形か、消えた形か）
 	// 動かない置物の物を作り、見た目と箱の部品まで付けて返す（まだ spawn しない。呼ぶ側が残りの部品を付けて spawn する）

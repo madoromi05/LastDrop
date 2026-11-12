@@ -21,8 +21,6 @@ namespace{
 		// ── 段階R3 の物。形と絵は tools/modelgen/loot_prop_gen.py・item_icon_gen.py ──
 		// ITEM_BANDAGE: 1 マスに 3 つ。カバンの画面で使えば体力が戻る
 		{ "包帯", "bandage", ITEM_KIND_MEDICAL, "Resource/Model/Prop/bandage.txt", "Resource/UI/icon_bandage.tga", 1, 3, kNoLimit, 0.90f, 0.88f, 0.80f },
-		{ "腕時計", "watch", ITEM_KIND_VALUABLE, "Resource/Model/Prop/watch.txt", "Resource/UI/icon_watch.tga", 1, 1, kNoLimit, 0.80f, 0.70f, 0.35f },				// ITEM_WATCH: 1 マス。点が無くなったので、今は拾っても使い道が無い
-		{ "ノートパソコン", "laptop", ITEM_KIND_VALUABLE, "Resource/Model/Prop/laptop.txt", "Resource/UI/icon_laptop.tga", 2, 1, kNoLimit, 0.25f, 0.26f, 0.30f },	// ITEM_LAPTOP: 2 マス。腕時計と同じく、今は使い道が無い
 	};
 }
 

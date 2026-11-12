@@ -2,6 +2,7 @@
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/UI/UiRect.h"
 #include "GameSrc/Render/VertexColor.h"
+#include "GameSrc/Scene/Game/Screen/GridPalette.h"
 
 #include "GameLib/GameLib.h"
 #include "Framework.h"
@@ -13,7 +14,7 @@ namespace{
 	const float kHalf = 0.5f;
 	// 画面の真ん中からの高さ（上が負）
 	const float kHeadingAboveCenter = 40.f;
-	const float kLabelBelowCenter = 10.f;
+	const float kGoalBelowCenter = 10.f;
 	const float kBarBelowCenter = 40.f;
 	const float kBarWidth = 240.f;
 	const float kBarHeight = 8.f;
@@ -22,6 +23,7 @@ namespace{
 
 	const unsigned kBackColor = VertexColor::pack( 0.f, 0.f, 0.f );
 	const unsigned kTextColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
+	const unsigned kGoalColor = GridPalette::FRAME_SELECT;	// 始めの知らせの目的の文・給油の棒と同じ黄
 	const unsigned kFrameColor = VertexColor::pack( 0.6f, 0.6f, 0.6f );
 	const unsigned kBarBackColor = VertexColor::pack( 0.12f, 0.12f, 0.12f );
 	const unsigned kBarFillColor = VertexColor::pack( 0.95f, 0.95f, 0.95f );
@@ -32,7 +34,7 @@ LoadingScreen::LoadingScreen( UiRenderer* renderer ) :
 	ASSERT( mRenderer && "LoadingScreen : renderer is null." );
 }
 
-void LoadingScreen::draw( const char* heading, const char* label, float progress ) {
+void LoadingScreen::draw( const char* heading, const char* goal, float progress ) {
 	float width = static_cast< float >( GameLib::Framework::instance().width() );
 	float height = static_cast< float >( GameLib::Framework::instance().height() );
 	float centerX = width * kHalf;
@@ -43,7 +45,7 @@ void LoadingScreen::draw( const char* heading, const char* label, float progress
 	mRenderer->addRect( back, kBackColor );
 
 	mRenderer->addText( heading, Vector2( centerX, centerY - kHeadingAboveCenter ), UI_TEXT_LARGE, UI_ALIGN_CENTER, kTextColor );
-	mRenderer->addText( label, Vector2( centerX, centerY + kLabelBelowCenter ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kTextColor );
+	mRenderer->addText( goal, Vector2( centerX, centerY + kGoalBelowCenter ), UI_TEXT_NORMAL, UI_ALIGN_CENTER, kGoalColor );
 
 	float ratio = ( progress < 0.f ) ? 0.f : ( ( progress > 1.f ) ? 1.f : progress );
 	UiRect frame = { centerX - kBarWidth * kHalf - kBarFrame, centerY + kBarBelowCenter - kBarFrame,

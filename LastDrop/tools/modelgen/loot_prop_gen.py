@@ -2,9 +2,9 @@
 # =====================================================================
 # loot_prop_gen.py
 #   段階R3（SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q2）の形を、Blender の箱と円柱を組み合わせて作る。
-#   手元にゴミ箱・木箱・包帯・腕時計・ノートパソコンの 3D モデルが無いため（ダウンロードのフォルダも調べた）。
+#   手元にゴミ箱・木箱・包帯の 3D モデルが無いため（ダウンロードのフォルダも調べた）。
 #     ゴミ箱（dumpster）・木箱（crate）     … 町の漁れる場所（人 1.79m に合わせた実寸）
-#     包帯（bandage）・腕時計（watch）・ノートパソコン（laptop） … 地面に落ちた形と、カバンの絵（item_icon_gen.py）の元
+#     包帯（bandage） … 地面に落ちた形と、カバンの絵（item_icon_gen.py）の元
 #   どの形も 1 枚の色の画像（4 × 4 のます）を分け合う。形の部品ごとに、どのますの色を貼るか（PATCHES の番号）を決め、
 #   部品の面をそのますの中へ平らに写す（色は無地＋細かいむら・木目・板の線などの模様だけなので、写し方の向きは問わない）。
 #   材質の画像（ORM：r AO・g 粗さ・b 金属）も、同じますの並びで書く。
@@ -38,7 +38,7 @@ SEED = 3105
 CYLINDER_SEGMENTS = 20
 
 # ── ますの色（PATCHES の番号 = ますの番号。左下から右へ、下の段から上の段へ）──
-# color: sRGB の数。noise: 明るさのむらの強さ。roughness・metallic: ORM。pattern: 模様（None・"planks"・"grain"・"stripes"・"ticks"）。
+# color: sRGB の数。noise: 明るさのむらの強さ。roughness・metallic: ORM。pattern: 模様（None・"planks"・"grain"・"stripes"）。
 PATCHES = [
     { "name": "paint_green",   "color": (0.13, 0.30, 0.17), "noise": 0.06, "roughness": 0.60, "metallic": 0.0, "pattern": "grime" },
     { "name": "plastic_black", "color": (0.05, 0.05, 0.05), "noise": 0.03, "roughness": 0.70, "metallic": 0.0, "pattern": None },
@@ -51,12 +51,6 @@ PATCHES = [
     { "name": "stencil",       "color": (0.31, 0.33, 0.18), "noise": 0.04, "roughness": 0.80, "metallic": 0.0, "pattern": "stencil" },
     { "name": "cloth_cream",   "color": (0.88, 0.85, 0.76), "noise": 0.05, "roughness": 0.95, "metallic": 0.0, "pattern": "weave" },
     { "name": "cloth_shadow",  "color": (0.62, 0.58, 0.50), "noise": 0.04, "roughness": 0.95, "metallic": 0.0, "pattern": "weave" },
-    { "name": "gold",          "color": (0.83, 0.66, 0.32), "noise": 0.03, "roughness": 0.30, "metallic": 1.0, "pattern": None },
-    { "name": "watch_face",    "color": (0.92, 0.92, 0.90), "noise": 0.01, "roughness": 0.20, "metallic": 0.0, "pattern": "ticks" },
-    { "name": "leather",       "color": (0.34, 0.20, 0.10), "noise": 0.06, "roughness": 0.70, "metallic": 0.0, "pattern": None },
-    { "name": "laptop_base",   "color": (0.24, 0.25, 0.27), "noise": 0.02, "roughness": 0.40, "metallic": 0.8, "pattern": None },
-    { "name": "laptop_lid",    "color": (0.36, 0.37, 0.40), "noise": 0.02, "roughness": 0.35, "metallic": 0.8, "pattern": None },
-    { "name": "laptop_logo",   "color": (0.76, 0.77, 0.79), "noise": 0.01, "roughness": 0.20, "metallic": 1.0, "pattern": None },
 ]
 PATCH = { patch[ "name" ]: index for index, patch in enumerate( PATCHES ) }
 
@@ -94,25 +88,10 @@ BANDAGE = [
     ( "cylinder", 0.0565, 0.03, ( 0.0, 0.0, 0.055 ), "X", "medical_red" ),
     ( "box", ( 0.10, 0.08, 0.004 ), ( 0.0, -0.09, 0.002 ), "cloth_cream" ),
 ]
-# 腕時計：金の丸い枠・白い文字盤・革のベルト（平らに置いた形。見えるよう実物の 1.5 倍）。
-WATCH = [
-    ( "cylinder", 0.033, 0.018, ( 0.0, 0.0, 0.015 ), "Z", "gold" ),
-    ( "cylinder", 0.028, 0.003, ( 0.0, 0.0, 0.0245 ), "Z", "watch_face" ),
-    ( "box", ( 0.036, 0.30, 0.006 ), ( 0.0, 0.0, 0.003 ), "leather" ),
-]
-# ノートパソコン（閉じた形）：本体・ふた・ふたの印・後ろの蝶番。
-LAPTOP = [
-    ( "box", ( 0.34, 0.24, 0.012 ), ( 0.0, 0.0, 0.006 ), "laptop_base" ),
-    ( "box", ( 0.34, 0.24, 0.010 ), ( 0.0, 0.0, 0.017 ), "laptop_lid" ),
-    ( "box", ( 0.04, 0.04, 0.001 ), ( 0.0, 0.0, 0.0225 ), "laptop_logo" ),
-    ( "cylinder", 0.006, 0.30, ( 0.0, 0.12, 0.012 ), "X", "laptop_base" ),
-]
 MODELS = [
     ( "dumpster", DUMPSTER ),
     ( "crate", CRATE ),
     ( "bandage", BANDAGE ),
-    ( "watch", WATCH ),
-    ( "laptop", LAPTOP ),
 ]
 
 
@@ -154,15 +133,6 @@ def pattern_shade( pattern, size, rng ):
         return np.where( blocks, -1.0, shade )
     elif pattern == "weave":
         shade = shade + 0.05 * np.sign( np.sin( u * 120.0 ) * np.sin( v * 120.0 ) )
-    elif pattern == "ticks":
-        # 文字盤の 12 本の目盛り（真ん中から外へ）。
-        du = u - 0.5
-        dv = v - 0.5
-        radius = np.sqrt( du * du + dv * dv )
-        angle = np.arctan2( dv, du )
-        tick = ( radius > 0.36 ) & ( radius < 0.46 ) & ( np.abs( ( angle / ( 2 * math.pi ) * 12.0 ) % 1.0 - 0.5 ) > 0.42 )
-        hands = ( np.abs( du ) < 0.02 ) & ( dv > 0 ) & ( dv < 0.3 ) | ( np.abs( dv ) < 0.02 ) & ( du > 0 ) & ( du < 0.22 )
-        shade = np.where( tick | hands, 0.1, shade )
     elif pattern == "grime":
         # 下ほど汚れて暗い（地面の泥）・細かいむら。
         shade = shade - 0.15 * np.clip( 0.35 - v, 0.0, 0.35 ) / 0.35 + 0.05 * value_noise( rng, size, 16 )

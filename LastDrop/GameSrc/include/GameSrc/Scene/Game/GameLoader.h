@@ -20,8 +20,7 @@ public:
 	// 1 段階ぶん進める（1 回の描画に 1 回）。meshesReady: この描画の MeshCache::update が全部済んだと答えたか
 	// 全部の段階が済んだら true（それ以降は何もせず true）
 	bool advance( bool meshesReady );
-	float progress() const;			// 全体の進み具合（0〜1。ロード画面の棒）
-	const char* stageLabel() const;	// 次に行う段階の名前（ロード画面に出す。日本語）
+	float progress() const;	// 全体の進み具合（0〜1。ロード画面の棒）
 
 private:
 	enum class Stage{

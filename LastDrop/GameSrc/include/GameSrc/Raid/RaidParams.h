@@ -13,7 +13,7 @@ struct RaidParams{
 	int rifleCount = 1;		// 町に置くライフルの数（木箱に 1 丁ずつ・弾倉いっぱいで必ず入れる。木箱の数より多くはできない＝ASSERT）
 
 	// ── 1 回の出撃 ──
-	float exitNoticeSeconds = 5.f;   // 始めに今回の条件と脱出の車の場所（「脱出の車：北」）を出す長さ（秒）
+	float exitNoticeSeconds = 5.f;   // 始めに今回の条件と目的の文（RaidGoal::TEXT）を出す長さ（秒）
 	// ── 脱出の車 ──
 	float refuelSeconds = 2.f;       // ガソリン 1 個を入れる長さ（秒。動く・撃つ・構える・攻撃で取りやめ。漁るのと同じ）
 	float extractSeconds = 5.f;      // 給油し終えた車のそばにこれだけ居続けたら脱出

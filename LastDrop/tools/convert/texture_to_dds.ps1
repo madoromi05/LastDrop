@@ -46,7 +46,7 @@ $Textures = @(
 	@{ Name = "fire_hydrant_albedo";  Kind = "Color";  MaxSize = 0 }
 	@{ Name = "fire_hydrant_normal";  Kind = "Normal"; MaxSize = 0 }
 	@{ Name = "fire_hydrant_orm";     Kind = "Data";   MaxSize = 0 }
-	@{ Name = "loot_props_albedo";    Kind = "Color";  MaxSize = 0 }  # ゴミ箱・木箱・包帯・腕時計・ノートパソコン（tools/modelgen/loot_prop_gen.py。R3_Plan.txt Q2）
+	@{ Name = "loot_props_albedo";    Kind = "Color";  MaxSize = 0 }  # ゴミ箱・木箱・包帯（tools/modelgen/loot_prop_gen.py。R3_Plan.txt Q2）
 	@{ Name = "loot_props_orm";       Kind = "Data";   MaxSize = 0 }
 	@{ Name = "player_body_albedo";   Kind = "Color";  MaxSize = 0 }
 	@{ Name = "player_body_normal";   Kind = "Normal"; MaxSize = 0 }

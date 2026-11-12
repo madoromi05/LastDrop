@@ -43,7 +43,7 @@ GameSrc の `.h`・`.cpp`（619 ファイル）を文字で数えた（2026-11-1
 
 ## 1. ファイルの分け方：ヘッダ・cpp・無名 namespace
 
-**見る所**：[RenderPass.cpp](../GameSrc/src/Render/RenderPass.cpp) の先頭、[GBuffer.cpp](../GameSrc/src/Render/Lighting/GBuffer.cpp) の先頭
+**見る所**：[RenderPass.cpp](../LastDrop/GameSrc/src/Render/RenderPass.cpp) の先頭、[GBuffer.cpp](../LastDrop/GameSrc/src/Render/Lighting/GBuffer.cpp) の先頭
 
 どの `.cpp` も先頭に `namespace{ ... }` があり、`kXxx` という定数や小さな関数が入っている。
 
@@ -52,7 +52,7 @@ GameSrc の `.h`・`.cpp`（619 ファイル）を文字で数えた（2026-11-1
 1. 無名の `namespace{ }` に入れた定数・関数は、ほかの `.cpp` から見えるか
 2. `RenderPass.cpp` の `gCurrent` はグローバル変数だが、ほかのファイルから書き換えられるか。書き換える入口はどこか
 3. `GBuffer.cpp` の `puddleParams()` は、中に `static PuddleParams sParams;` を持つ。この変数はいつ作られ、いつ消えるか。なぜ普通のグローバル変数にしないのか
-4. ヘッダの `#ifndef INCLUDED_...` は何を防いでいるか。[Component.h](../GameSrc/include/GameSrc/World/Component.h) の `class GameObject;`（中身の無い宣言）は何のためか
+4. ヘッダの `#ifndef INCLUDED_...` は何を防いでいるか。[Component.h](../LastDrop/GameSrc/include/GameSrc/World/Component.h) の `class GameObject;`（中身の無い宣言）は何のためか
 
 <details><summary>答え</summary>
 
@@ -65,7 +65,7 @@ GameSrc の `.h`・`.cpp`（619 ファイル）を文字で数えた（2026-11-1
 
 ## 2. クラス・const・参照とポインタ
 
-**見る所**：[FixedStepClock.cpp](../GameSrc/src/Core/FixedStepClock.cpp)、[GameObject.h](../GameSrc/include/GameSrc/World/GameObject.h)
+**見る所**：[FixedStepClock.cpp](../LastDrop/GameSrc/src/Core/FixedStepClock.cpp)、[GameObject.h](../LastDrop/GameSrc/include/GameSrc/World/GameObject.h)
 
 **読むときの問い**
 
@@ -85,7 +85,7 @@ GameSrc の `.h`・`.cpp`（619 ファイル）を文字で数えた（2026-11-1
 
 ## 3. 持ち主と寿命：unique_ptr・std::move・コピー禁止・Release
 
-**見る所**：[GameObject.h](../GameSrc/include/GameSrc/World/GameObject.h) の `addComponent`、[SceneManager.cpp](../GameSrc/src/Scene/SceneManager.cpp) の `createScene` と `change`、[Component.h](../GameSrc/include/GameSrc/World/Component.h)
+**見る所**：[GameObject.h](../LastDrop/GameSrc/include/GameSrc/World/GameObject.h) の `addComponent`、[SceneManager.cpp](../LastDrop/GameSrc/src/Scene/SceneManager.cpp) の `createScene` と `change`、[Component.h](../LastDrop/GameSrc/include/GameSrc/World/Component.h)
 
 このコードには「物の持ち方」が 3 種類ある。まずこれを見分けられるようにする。
 
@@ -95,7 +95,7 @@ GameSrc の `.h`・`.cpp`（619 ファイル）を文字で数えた（2026-11-1
 | 借りる | `T*`・`const T&` | 自分では消さない | `Component::mGameObject`、`addComponent` の戻り値 |
 | GameLib のハンドル | `Graphics::Shader`・`Texture`・`RenderTarget` など | 最後の 1 つのハンドルが消えたとき（参照カウント） | `GBuffer` の `mStaticMeshShader` |
 
-GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（[Shader.cpp](../GameLib/src/Graphics/Shader.cpp)・[ShaderImpl.h](../GameLib/src/Graphics/ShaderImpl.h)）。
+GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（[Shader.cpp](../LastDrop/GameLib/src/Graphics/Shader.cpp)・[ShaderImpl.h](../LastDrop/GameLib/src/Graphics/ShaderImpl.h)）。
 コピーしても GPU の物は増えず、指す先を数えるだけ。中身の `Impl` が D3D11 の COM オブジェクト（`ID3D11VertexShader*` など）を持ち、デストラクタで `Release()` する。
 
 **読むときの問い**
@@ -104,7 +104,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 2. `Component` は `Component( const Component& ) = delete;` でコピーを禁じている。コピーできると何が壊れるか
 3. `SceneManager::change` は、`createScene( id )` で次のシーンを作り終えてから `mCurrent = std::move( next );` している。前のシーンはどの行で消えるか。順番を逆（先に前のシーンを消す）にしない理由は
 4. `Component` のデストラクタは `virtual ~Component() = default;`。`virtual` を付け忘れると何が起きるか
-5. [ManagerImpl.h](../GameLib/src/Graphics/ManagerImpl.h) のデストラクタは `mDevice->Release()` などを 1 つずつ書いている。`Release` を 1 つ忘れるとどうなるか。忘れない仕組みは何か
+5. [ManagerImpl.h](../LastDrop/GameLib/src/Graphics/ManagerImpl.h) のデストラクタは `mDevice->Release()` などを 1 つずつ書いている。`Release` を 1 つ忘れるとどうなるか。忘れない仕組みは何か
 
 <details><summary>答え</summary>
 
@@ -118,7 +118,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 
 ## 4. 継承・virtual・インターフェース
 
-**見る所**：[IScene.h](../GameSrc/include/GameSrc/Scene/IScene.h)、[Component.h](../GameSrc/include/GameSrc/World/Component.h)、[ShaderImpl.h](../GameLib/src/Graphics/ShaderImpl.h) の `IncludeHandler`
+**見る所**：[IScene.h](../LastDrop/GameSrc/include/GameSrc/Scene/IScene.h)、[Component.h](../LastDrop/GameSrc/include/GameSrc/World/Component.h)、[ShaderImpl.h](../LastDrop/GameLib/src/Graphics/ShaderImpl.h) の `IncludeHandler`
 
 **読むときの問い**
 
@@ -138,7 +138,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 
 ## 5. テンプレート
 
-**見る所**：[GameObject.h](../GameSrc/include/GameSrc/World/GameObject.h)（`addComponent`・`getComponent`・`worldMemberOf`）、[ComponentTypeId.h](../GameSrc/include/GameSrc/World/ComponentTypeId.h)
+**見る所**：[GameObject.h](../LastDrop/GameSrc/include/GameSrc/World/GameObject.h)（`addComponent`・`getComponent`・`worldMemberOf`）、[ComponentTypeId.h](../LastDrop/GameSrc/include/GameSrc/World/ComponentTypeId.h)
 
 `GameObject.h` は、このコードの中で一番 C++ らしい所。ここが読めれば、ほかのテンプレートは読める。
 
@@ -146,7 +146,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 
 1. `template< class T, class... Args > T* addComponent( Args&&... args )` の `class... Args` と `Args&&...` と `std::forward< Args >( args )...` は、それぞれ何をしているか
 2. `static_assert( std::is_base_of< Component, T >::value, "..." )` は、いつ・何を確かめているか。`ASSERT` と何が違うか
-3. `componentTypeId< T >()` は、`T` ごとに違う番号を返す。どういう仕組みか（[ComponentTypeId.h](../GameSrc/include/GameSrc/World/ComponentTypeId.h)）。`dynamic_cast` を使わないのはなぜか
+3. `componentTypeId< T >()` は、`T` ごとに違う番号を返す。どういう仕組みか（[ComponentTypeId.h](../LastDrop/GameSrc/include/GameSrc/World/ComponentTypeId.h)）。`dynamic_cast` を使わないのはなぜか
 4. `worldMemberOf` の `if constexpr` は、普通の `if` と何が違うか
 5. テンプレートの関数の中身が `.cpp` ではなくヘッダに書いてあるのはなぜか
 
@@ -162,7 +162,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 
 ## 6. 標準ライブラリ：vector・string・function・ラムダ
 
-**見る所**：[ShaderImpl.h](../GameLib/src/Graphics/ShaderImpl.h) の `IncludeHandler`、[PuddleParams.h](../GameSrc/include/GameSrc/Render/PostProcess/PuddleParams.h) の `visit`、[SceneRenderer.cpp](../GameSrc/src/Scene/Game/World/SceneRenderer.cpp) の `firstShaderError`
+**見る所**：[ShaderImpl.h](../LastDrop/GameLib/src/Graphics/ShaderImpl.h) の `IncludeHandler`、[PuddleParams.h](../LastDrop/GameSrc/include/GameSrc/Render/PostProcess/PuddleParams.h) の `visit`、[SceneRenderer.cpp](../LastDrop/GameSrc/src/Scene/Game/World/SceneRenderer.cpp) の `firstShaderError`
 
 **読むときの問い**
 
@@ -184,9 +184,9 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 
 **読むときの問い**
 
-1. `static_cast< int >( mAccumulated / GameTime::kTickSeconds )` は、小数をどう整数にするか（切り捨てか四捨五入か）。[GameTime.h](../GameSrc/include/GameSrc/Core/GameTime.h) の `secondsToTicks` がわざわざ四捨五入にしている理由は
+1. `static_cast< int >( mAccumulated / GameTime::kTickSeconds )` は、小数をどう整数にするか（切り捨てか四捨五入か）。[GameTime.h](../LastDrop/GameSrc/include/GameSrc/Core/GameTime.h) の `secondsToTicks` がわざわざ四捨五入にしている理由は
 2. `enum class RenderPassKind` と、GameLib の古い `enum`（`Graphics::BLEND_OPAQUE` など）は何が違うか
-3. D3D11 のコードには `reinterpret_cast< void** >( &backBuffer )` が出てくる（[ManagerImpl.h](../GameLib/src/Graphics/ManagerImpl.h) の `createRTVandDSV`）。`static_cast` ではだめな理由は
+3. D3D11 のコードには `reinterpret_cast< void** >( &backBuffer )` が出てくる（[ManagerImpl.h](../LastDrop/GameLib/src/Graphics/ManagerImpl.h) の `createRTVandDSV`）。`static_cast` ではだめな理由は
 
 <details><summary>答え</summary>
 
@@ -203,7 +203,7 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 **読むときの問い**
 
 1. `"説明"` は文字列なのに、なぜ `&&` でつなげられるか
-2. `ASSERT` と `STRONG_ASSERT` の違いは（[ManagerImpl.h](../GameLib/src/Graphics/ManagerImpl.h) の `checkCreated` のコメント）
+2. `ASSERT` と `STRONG_ASSERT` の違いは（[ManagerImpl.h](../LastDrop/GameLib/src/Graphics/ManagerImpl.h) の `checkCreated` のコメント）
 3. ASSERT に書いてよい条件と、書いてはいけない条件は
 
 <details><summary>答え</summary>
@@ -241,14 +241,14 @@ GameLib のハンドルは、小さなクラスが `Impl*` を 1 つ持つ形（
 - 種類の見分けは、まず `dynamic_cast` で書いてよい。動いたら `componentTypeId< T >()` の方法へ書き換える
 - 確かめ方：`Position` と `Mover`（`Position` を毎回動かす）の 2 つの部品を作り、`Mover` が `getComponent< Position >()` で隣の部品を引いて動かす
 
-書けたら、自分の [GameObject.h](../GameSrc/include/GameSrc/World/GameObject.h) と見比べる。自分の物に無くて、あちらにある物（`requireComponent`・`removeComponentLater`・`awake` と `start` の 2 段）が、何の問題を解いているかを書き出す。
+書けたら、自分の [GameObject.h](../LastDrop/GameSrc/include/GameSrc/World/GameObject.h) と見比べる。自分の物に無くて、あちらにある物（`requireComponent`・`removeComponentLater`・`awake` と `start` の 2 段）が、何の問題を解いているかを書き出す。
 
 ### 課題 01-4：消して書き直す
 
 学習用のブランチで、次の関数の中身を消して書き直す（やり方は README）。
 
-- [FixedStepClock.cpp](../GameSrc/src/Core/FixedStepClock.cpp) の `ticksToRun`（02 章でやってもよい）
-- [SceneRenderer.cpp](../GameSrc/src/Scene/Game/World/SceneRenderer.cpp) の `firstShaderError`（配列と範囲 for の練習。短い）
+- [FixedStepClock.cpp](../LastDrop/GameSrc/src/Core/FixedStepClock.cpp) の `ticksToRun`（02 章でやってもよい）
+- [SceneRenderer.cpp](../LastDrop/GameSrc/src/Scene/Game/World/SceneRenderer.cpp) の `firstShaderError`（配列と範囲 for の練習。短い）
 
 ## 説明できるか
 

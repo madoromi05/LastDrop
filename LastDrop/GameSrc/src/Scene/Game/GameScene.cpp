@@ -17,6 +17,7 @@
 #include "GameSrc/Render/PostProcess/PostProcessParams.h"
 #include "GameSrc/Raid/RaidStart.h"
 #include "GameSrc/Raid/RaidParams.h"
+#include "GameSrc/Raid/RaidGoal.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Interaction/IInteractable.h"
 #include "GameSrc/Interaction/Item/MagazineSync.h"
@@ -217,7 +218,7 @@ bool GameScene::isLoading() const {
 void GameScene::draw() {
 	if ( !mLoad.isReady() ) {
 		// ロード中は世界を描かず、ロード画面だけ
-		mLoad.drawLoadingScreen( mWorld.dayCondition().title );
+		mLoad.drawLoadingScreen( mWorld.dayCondition().title, RaidGoal::TEXT );
 		return;
 	}
 	placeViewCamera();

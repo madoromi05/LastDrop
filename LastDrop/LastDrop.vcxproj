@@ -923,6 +923,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\World\TownEnvironment.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemGrid.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidParams.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidGoal.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidClock.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\ExtractionTracker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidSession.h" />

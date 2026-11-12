@@ -1955,6 +1955,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidParams.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidGoal.h">
+      <Filter>GameSrc\Raid</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Raid\RaidClock.h">
       <Filter>GameSrc\Raid</Filter>
     </ClInclude>

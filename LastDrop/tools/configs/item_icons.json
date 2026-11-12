@@ -55,24 +55,6 @@
             "size": [256, 256],
             "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
             "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
-        },
-        {
-            "name": "icon_watch",
-            "fbx": "../generated/loot_props/watch.fbx",
-            "size": [256, 256],
-            "rotation": [0.0, 0.0, 45.0],
-            "camera_elevation": 55.0,
-            "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
-            "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
-        },
-        {
-            "name": "icon_laptop",
-            "fbx": "../generated/loot_props/laptop.fbx",
-            "size": [512, 256],
-            "camera_elevation": 50.0,
-            "camera_azimuth": -15.0,
-            "albedo": "../../Resource/Texture/Prop/loot_props_albedo.tga",
-            "orm": "../../Resource/Texture/Prop/loot_props_orm.tga"
         }
     ]
 }

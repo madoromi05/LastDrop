@@ -15,6 +15,6 @@ bool LoadingPhase::advance( bool meshesReady ) {
 	return true; // このフレームで完了（呼び出し側が後処理を 1 回行う）
 }
 
-void LoadingPhase::drawLoadingScreen( const char* heading ) {
-	mLoadingScreen.draw( heading, mLoader.stageLabel(), mLoader.progress() );
+void LoadingPhase::drawLoadingScreen( const char* heading, const char* goal ) {
+	mLoadingScreen.draw( heading, goal, mLoader.progress() );
 }

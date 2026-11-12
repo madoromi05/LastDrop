@@ -37,7 +37,7 @@ namespace{
 	const char* kStreetLampName = "StreetLamp";
 
 	const int kFuelPerCan = 1;
-	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯・売れる物は小さいので金属のまま（ほぼ当たらない）
+	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯は小さいので金属のまま（ほぼ当たらない）
 	const GroundMaterial kMetalMaterial = GROUND_METAL;
 	const GroundMaterial kWoodMaterial = GROUND_WOOD;
 }
@@ -174,7 +174,6 @@ GameObject* PropFactory::spawnDroppedItem( GameObjectWorld* world, const ItemSta
 		return spawnFuel( world, position, yawDegree );
 	case ITEM_KIND_AMMO:
 	case ITEM_KIND_MEDICAL:
-	case ITEM_KIND_VALUABLE:
 		return spawnGroundItem( world, stack, position, yawDegree );
 	case ITEM_KIND_WEAPON:
 		ASSERT( stack.amount == kOneWeapon && "PropFactory::spawnDroppedItem : a gun is one." );

@@ -54,29 +54,29 @@
 
 | 見る物 | ファイル | 名前 |
 |---|---|---|
-| 描画先を作る | [RenderTargetImpl.h](../GameLib/src/Graphics/RenderTargetImpl.h) | `createDxObjects` |
-| 深度の描画先（シェーダからも読める） | [DepthTargetImpl.h](../GameLib/src/Graphics/DepthTargetImpl.h) | `R32_TYPELESS`・`D32_FLOAT`・`R32_FLOAT`・`mReadOnlyDSV` |
-| 描画先を付ける | [ManagerImpl.h](../GameLib/src/Graphics/ManagerImpl.h) | `setRenderTargets`・`unbindUserShaderResources`・`resetRenderTargets` |
+| 描画先を作る | [RenderTargetImpl.h](../LastDrop/GameLib/src/Graphics/RenderTargetImpl.h) | `createDxObjects` |
+| 深度の描画先（シェーダからも読める） | [DepthTargetImpl.h](../LastDrop/GameLib/src/Graphics/DepthTargetImpl.h) | `R32_TYPELESS`・`D32_FLOAT`・`R32_FLOAT`・`mReadOnlyDSV` |
+| 描画先を付ける | [ManagerImpl.h](../LastDrop/GameLib/src/Graphics/ManagerImpl.h) | `setRenderTargets`・`unbindUserShaderResources`・`resetRenderTargets` |
 | 描画先をテクスチャとして読む | 同上 | `setShaderResource` |
 | 全画面を描く（C++） | 同上 | `drawFullScreen` |
-| 全画面を描く（HLSL） | [Common.hlsli](../Resource/Shader/Common.hlsli) | `fullScreenVertex` |
+| 全画面を描く（HLSL） | [Common.hlsli](../LastDrop/Resource/Shader/Common.hlsli) | `fullScreenVertex` |
 
 ### ディファードと PBR
 
 | 見る物 | ファイル | 名前 |
 |---|---|---|
-| 全部の順番 | [SceneRenderer.cpp](../GameSrc/src/Scene/Game/World/SceneRenderer.cpp) | `render` |
-| G-Buffer の並び（ただ 1 か所の決まり） | [GBuffer.hlsli](../Resource/Shader/GBuffer.hlsli) | 先頭のコメント・`GBufferOutput`・`writeGBuffer` |
-| G-Buffer を作る・付ける | [GBuffer.cpp](../GameSrc/src/Render/Lighting/GBuffer.cpp) | `kFormats`・`begin`・`end` |
-| G-Buffer へ書くシェーダ | [StaticMeshGBuffer.hlsl](../Resource/Shader/StaticMeshGBuffer.hlsl) | `VSMain`・`PSMain` |
-| 今どのパスか | [RenderPass.cpp](../GameSrc/src/Render/RenderPass.cpp) | `beginGBuffer`・`setSurface` |
-| ライティングのパス（C++） | [DeferredLighting.cpp](../GameSrc/src/Render/Lighting/DeferredLighting.cpp) | `drawLighting` |
-| ライティングのパス（HLSL） | [DeferredLighting.hlsl](../Resource/Shader/DeferredLighting.hlsl) | `PSMain` |
-| 深度から位置を戻す | [DepthPosition.hlsli](../Resource/Shader/DepthPosition.hlsli) | `worldPositionFromDepth` |
-| PBR の式 | [Pbr.hlsli](../Resource/Shader/Pbr.hlsli) | `surfaceBrdf`・`distributionGgx`・`geometrySmith`・`fresnelSchlick`・`evaluateLight`・`shadeSurface` |
-| ライトの一覧 | [LightList.cpp](../GameSrc/src/Render/Lighting/LightList.cpp)・[LightList.hlsli](../Resource/Shader/LightList.hlsli) | 16 個まで |
-| シーンの色（HDR）と画面へ写す所 | [PostProcess.cpp](../GameSrc/src/Render/PostProcess/PostProcess.cpp)・[Present.hlsl](../Resource/Shader/Present.hlsl) | `beginScene`・`endScene`・`toneMapAces` |
-| デカール（弾痕） | [DecalBatch.cpp](../GameSrc/src/Render/DecalBatch.cpp)・[Decal.hlsl](../Resource/Shader/Decal.hlsl) | G-Buffer の色と法線へ上書き |
+| 全部の順番 | [SceneRenderer.cpp](../LastDrop/GameSrc/src/Scene/Game/World/SceneRenderer.cpp) | `render` |
+| G-Buffer の並び（ただ 1 か所の決まり） | [GBuffer.hlsli](../LastDrop/Resource/Shader/GBuffer.hlsli) | 先頭のコメント・`GBufferOutput`・`writeGBuffer` |
+| G-Buffer を作る・付ける | [GBuffer.cpp](../LastDrop/GameSrc/src/Render/Lighting/GBuffer.cpp) | `kFormats`・`begin`・`end` |
+| G-Buffer へ書くシェーダ | [StaticMeshGBuffer.hlsl](../LastDrop/Resource/Shader/StaticMeshGBuffer.hlsl) | `VSMain`・`PSMain` |
+| 今どのパスか | [RenderPass.cpp](../LastDrop/GameSrc/src/Render/RenderPass.cpp) | `beginGBuffer`・`setSurface` |
+| ライティングのパス（C++） | [DeferredLighting.cpp](../LastDrop/GameSrc/src/Render/Lighting/DeferredLighting.cpp) | `drawLighting` |
+| ライティングのパス（HLSL） | [DeferredLighting.hlsl](../LastDrop/Resource/Shader/DeferredLighting.hlsl) | `PSMain` |
+| 深度から位置を戻す | [DepthPosition.hlsli](../LastDrop/Resource/Shader/DepthPosition.hlsli) | `worldPositionFromDepth` |
+| PBR の式 | [Pbr.hlsli](../LastDrop/Resource/Shader/Pbr.hlsli) | `surfaceBrdf`・`distributionGgx`・`geometrySmith`・`fresnelSchlick`・`evaluateLight`・`shadeSurface` |
+| ライトの一覧 | [LightList.cpp](../LastDrop/GameSrc/src/Render/Lighting/LightList.cpp)・[LightList.hlsli](../LastDrop/Resource/Shader/LightList.hlsli) | 16 個まで |
+| シーンの色（HDR）と画面へ写す所 | [PostProcess.cpp](../LastDrop/GameSrc/src/Render/PostProcess/PostProcess.cpp)・[Present.hlsl](../LastDrop/Resource/Shader/Present.hlsl) | `beginScene`・`endScene`・`toneMapAces` |
+| デカール（弾痕） | [DecalBatch.cpp](../LastDrop/GameSrc/src/Render/DecalBatch.cpp)・[Decal.hlsl](../LastDrop/Resource/Shader/Decal.hlsl) | G-Buffer の色と法線へ上書き |
 
 ## 読むときの問い
 
@@ -84,7 +84,7 @@
 
 1. `RenderTargetImpl.h` の `createDxObjects` は、1 枚のテクスチャから `mRTV` と `mSRV` の 2 つのビューを作っている。なぜ 2 つ要るか
 2. `ManagerImpl.h` の `setRenderTargets` は、最初に `unbindUserShaderResources()` を呼んで、t2 以降を全部外している。外さないと何が起きるか
-3. そのせいで、[GBuffer.cpp](../GameSrc/src/Render/Lighting/GBuffer.cpp) の `endDecals` には「材質の画像（t11）も外れている」ことから起きた不具合の話が書いてある。何が起きて、どう直したか。これは 05 章のどの話と同じ種類か
+3. そのせいで、[GBuffer.cpp](../LastDrop/GameSrc/src/Render/Lighting/GBuffer.cpp) の `endDecals` には「材質の画像（t11）も外れている」ことから起きた不具合の話が書いてある。何が起きて、どう直したか。これは 05 章のどの話と同じ種類か
 4. `DepthTargetImpl.h` は、テクスチャを `R32_TYPELESS`、DSV を `D32_FLOAT`、SRV を `R32_FLOAT` で作っている。なぜ型を決めない形式（TYPELESS）で作るのか
 5. `mReadOnlyDSV`（読み取り専用の DSV）は何のためにあるか。`SceneRenderer::render` のどこで使っているか
 6. `setRenderTargets` は、描画先を付けた後に `RSSetViewports` もしている。なぜ要るか（SSAO は画面の半分の大きさ）
@@ -176,7 +176,7 @@ M9（G-Buffer とディファード）をやる。
 
 ### 課題 08-4：式を 1 つずつ切る
 
-[Pbr.hlsli](../Resource/Shader/Pbr.hlsli) の `surfaceBrdf` で、次を 1 つずつ試して保存する（Debug ならホットリロードで反映）。絵がどう変わるかをメモして、戻す。
+[Pbr.hlsli](../LastDrop/Resource/Shader/Pbr.hlsli) の `surfaceBrdf` で、次を 1 つずつ試して保存する（Debug ならホットリロードで反映）。絵がどう変わるかをメモして、戻す。
 
 - `specular` を 0 にする（拡散だけ）
 - 拡散を 0 にする（鏡面だけ）
@@ -186,7 +186,7 @@ M9（G-Buffer とディファード）をやる。
 
 ### 課題 08-5：消して書き直す
 
-学習用のブランチで、[Common.hlsli](../Resource/Shader/Common.hlsli) の `fullScreenVertex` と、[DepthPosition.hlsli](../Resource/Shader/DepthPosition.hlsli) の `worldPositionFromDepth` の中身を消して書き直す。
+学習用のブランチで、[Common.hlsli](../LastDrop/Resource/Shader/Common.hlsli) の `fullScreenVertex` と、[DepthPosition.hlsli](../LastDrop/Resource/Shader/DepthPosition.hlsli) の `worldPositionFromDepth` の中身を消して書き直す。
 
 ## 説明できるか
 
