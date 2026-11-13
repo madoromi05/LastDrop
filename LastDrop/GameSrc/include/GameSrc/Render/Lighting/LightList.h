@@ -68,7 +68,7 @@ struct EnvironmentLight{
 // 作るのは Graphics::Manager ができた後（シーンの中）
 class LightList{
 public:
-	static const int kMaxLights = 16; // LightList.hlsli の kMaxLights と揃える
+	static const int kMaxLights = 20; // LightList.hlsli の kMaxLights と揃える
 	static const int kMaxShadowMaps = 4; // LightList.hlsli の kMaxShadowMaps と揃える（懐中電灯 1 ＋ 月の 3 枚）
 	static const int kCascadeCount = 3;  // 月の CSM の枚数（LightList.hlsli の gCascadeEnds と揃える。CascadedShadowMap::kCascadeCount と同じ）
 
