@@ -1,0 +1,136 @@
+================================================================================
+ 見ている物を使う（Interactor）を自キャラの部品にする の計画メモ
+ 作成日：2026-11-14
+ 状態：2026-11-14 ユーザー「全部 A で実装」で ★1〜3 すべて A に決定。実装した。
+       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち。9 章）。コミットはしていない
+       仕様からの違い：
+        ・GameScene::updateInteraction の始めは「InteractorComponent が無ければ、マークを消して戻る」。
+          部品を外した自キャラでは、使える物のマークも出ない（見ている物が無いため）
+        ・VS を開いたまま vcxproj と filters を書き換えた（Interactor の 2 つを InteractorComponent に替え、IInteractFinder.h を足した。
+          VS で再読み込みが要る。VS 側で上書き保存しないこと）
+       行数：InteractorComponent.h 45（新）・InteractorComponent.cpp 61（新）・IInteractFinder.h 20（新）。Interactor.h 41・Interactor.cpp 52 は消した
+ 依頼：2026-11-13 ユーザー「ポートフォリオの画像のようなコンポーネント指向が理想」→「5 つで進める」の 4 番目
+         1. 明かり（LightComponent_Plan.txt）  2. 銃を 1 つの物に（WeaponObject_Plan.txt）
+         3. 持ち物（InventoryComponent_Plan.txt）  … 1〜3 は 11-14 実装済み・どれも画面確認待ち
+         4. 見ている物を使う（この仕様書）
+         5. 千切れた部位
+ 前の段階：GameWorldSplit_Plan.txt 2-5（使える物を探す InteractionSystem）・InventoryPickup_Plan.txt（拾う物は置く所を選ぶ）
+ 手本のゲームの調査：作り直しで遊び方は変えないので、タルコフの調査は無し
+ 決まり：遊びは変えない（作り直しだけ）。変わってしまう所は 6 章に全部書く
+================================================================================
+
+0. 何が問題か
+ 「見ている物を E で使う」は自キャラの仕事なのに、シーン（GameScene）が Interactor を持っている。
+   ・自キャラの手が届く距離（kInteractReach = 2.5m）が GameScene.cpp にある
+   ・視線を当てない的（自キャラ自身の体）と、使うときに増減する持ち物を、シーンが毎回外から渡している
+       mInteractor( kInteractReach, [ this ]( … ){ return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } )
+       mInteractor.update( camera.eyePosition(), camera.viewDirection(), inventory, interactPressed );
+     どちらも自キャラの部品（HitboxComponent・InventoryComponent）で、自キャラなら自分で引ける
+ 持ち物（3 番目）を自キャラへ移したので、それを使う「見て使う」も自キャラの側へそろえる。
+
+1. 今の形
+   Interactor（GameSrc/Interaction/。52 行）
+      作るとき：手が届く距離・使える物を探す関数（Finder。std::function）
+      update( 目, 向き, 持ち物, E を押したか )：視線の先の使える物を探して覚え（target）、押されたら
+         漁れる場所・給油口 → opened に残す（待つ・画面を開くのは呼ぶ側）
+         拾う物           → offer に残す（置く所を選ぶのは呼ぶ側）
+         それ以外         → すぐ使う（interact）
+   呼ぶのは GameScene::updateInteraction だけ（1 回の描画に 1 回。一時停止・カバン・漁りの間は呼ばない）
+      その後、offer → BagController::startPlacing、opened → LootController::beginLoot、target → HudController::updateMarkers
+
+2. 分けた後の形
+ 2-1 InteractorComponent（新。GameSrc/Interaction/InteractorComponent.h / .cpp）（★3）
+   自キャラの「見ている物を使う」部品。今の Interactor の中身をそのまま移す
+     explicit InteractorComponent( float reach )            … reach: 手が届く距離（m）
+     void look( 目, 向き, bool interactPressed )            … 今の update。1 回の描画に 1 回、シーンが呼ぶ（★1）
+     const IInteractable* target() const / IInteractable* offer() const / IInteractable* opened() const   … 今と同じ
+     void start() override                                  … InventoryComponent を requireComponent、使える物を探す相手を共有の棚から引く
+   look の中で自分で引く物
+     ・持ち物     … 同じ物の InventoryComponent（必須。start で借りる）
+     ・視線を当てない的 … 同じ物の HitboxComponent（外せる部品。使うたびに getComponent。無ければ nullptr を渡す＝今の playerTarget と同じ）
+     ・使える物を探す相手 … 共有の棚の IInteractFinder（★2）
+   段では動かない（updatePhase は None）。名前を look にするのは、Component::update（引数なし）と紛れないようにするため
+   自キャラの外せる部品にする（外すと、物を見ても使えない。PlayerComponent はこの部品を知らない）
+
+ 2-2 IInteractFinder（新。GameSrc/Interaction/IInteractFinder.h）（★2）
+   「視線の先の、一番手前の使える物を探す」インターフェース。関数は 1 つ
+     virtual IInteractable* findInteractable( origin, delta, const IHittable* viewer ) = 0;
+   InteractionSystem が実装する（今の findInteractable と同じ形なので、override を付けるだけ）
+   GameWorld がコンストラクタで共有の棚へ置く（mObjects.provide< IInteractFinder >( &mInteraction )）
+   今の Finder（std::function）と同じ役。Interaction のフォルダの部品が、Scene のフォルダの係を名指しせずに済む
+
+ 2-3 自キャラ
+   PlayerFactory::spawn に 1 行足す。手が届く距離の定数（kInteractReach）は GameScene.cpp から PlayerFactory.cpp へ移す
+      obj->addComponent< InteractorComponent >( kInteractReach );
+
+ 2-4 シーン
+   GameScene：mInteractor を消す。updateInteraction は自キャラの InteractorComponent を引いて look を呼ぶ
+      InteractorComponent* interactor = player ? player->getComponent< InteractorComponent >() : nullptr;
+      無ければ（自キャラが居ない・部品を外した）マークを消して戻る（今の「自キャラが居なければ戻る」と同じ所）
+      offer・opened・target の読み方と、その後の流れ（Bag・Loot・Hud）は変えない
+
+ 2-5 消える物
+   ・Interactor.h / Interactor.cpp（中身は InteractorComponent へ移る。使う所は GameScene だけだった）
+   ・GameScene.cpp の kInteractReach と、Finder を作るラムダ
+
+3. 依存の向き（一方通行のまま）
+   PlayerFactory ─→ InteractorComponent（付ける）
+   InteractorComponent ─→ InventoryComponent（必須）・HitboxComponent（任意）・IInteractFinder（共有の棚。インターフェースだけ）・IInteractable
+   InteractionSystem ─→ IInteractFinder を実装
+   GameScene ─→ InteractorComponent（look を呼び、offer・opened・target を読む）
+   ・InteractorComponent は InteractionSystem・GameScene・カバンの画面を知らない
+   ・GameScene は、手が届く距離・視線を当てない的・持ち物を渡さなくなる（渡すのは、目・向き・E を押したか だけ）
+
+4. 手を付けない所
+   ・IInteractable と、それを実装する部品（PickupComponent・LootContainerComponent・EscapeCarComponent）
+   ・InteractionSystem の探し方（見る箱・壁の向こうは見えない）
+   ・LootSearch（開けるまで待つ）・BagController・LootController・InteractMarkers の動き
+   ・E を読む所（GameScene。観察用カメラ・死んだ後は押していないことにする決まりも、今のまま GameScene）
+
+5. 外から読む所
+   ・コメントの「Interactor」は、InteractorComponent に書き換える
+     （IInteractable.h・EscapeCarComponent.h・LootContainerComponent.h・LootSearch.h・InteractMarkers.h・GameWorld.h・InteractionSystem.h）
+   ・F6 の Objects の欄：Player の部品の数が 1 増える（14 → 15）
+
+6. 変わってしまう所
+   ・視線を当てない的：今は GameWorld::playerTarget()（自キャラの HitboxComponent）。後は部品が自分で引く同じ HitboxComponent（同じ物）
+   ・手が届く距離の定数の置き場所が GameScene.cpp から PlayerFactory.cpp へ移る（値は 2.5m のまま）
+   ・呼ぶ時（1 回の描画に 1 回・モーダルの間は呼ばない）・目と向き（前回の描画で置いたカメラ）・押した瞬間の扱いは変えない
+   ・処理の順番・数値・計測の印・ログの文字・保存ファイルは変えない
+
+7. 決めてほしい所（★）
+ ★1 いつ動かすか
+     A（おすすめ）今と同じ。1 回の描画に 1 回、シーンが look を呼ぶ。部品は段では動かない
+       （E は押した瞬間を 1 回だけ拾う。目と向きは描画で決まるカメラの値。ティックは 1 回の描画に 0 回のこともある）
+     B 入力の段（ティック）で自分で動く。E を PlayerCommand に入れ、目と向きは体の部品から読む。
+       画像の「部品が自分で動く」に近いが、見ている物の決まる時がティックごとになり、視線が体の向き（照準のぶれ・揺れの前）になる。
+       遊びが少し変わる
+ ★2 使える物を探す相手の渡し方
+     A（おすすめ）インターフェース IInteractFinder を共有の棚から引く（2-2）
+     B InteractionSystem を共有の棚へ置いて、そのまま引く（インターフェースは作らない）。
+       ファイルは 1 つ減るが、GameSrc/Interaction/ の部品が GameSrc/Scene/Game/World/ の係のヘッダを読むことになる
+ ★3 Interactor クラスの扱い
+     A（おすすめ）InteractorComponent に作り替え、Interactor は消す（使う所が GameScene だけで、同じ物を 2 つ持たない）
+     B Interactor は残し、InteractorComponent が中に 1 つ持つ（PlayerHealthComponent・InventoryComponent と同じ形）。
+       Finder（std::function）の形も残る
+
+8. 手順
+   1. IInteractFinder を作り、InteractionSystem が実装する。GameWorld が共有の棚へ置く
+   2. InteractorComponent を作る（Interactor の中身を移す）。PlayerFactory で付ける
+   3. GameScene：mInteractor を消し、updateInteraction を自キャラの部品を引く形に替える
+   4. Interactor.h / .cpp を消す。コメントの名前を直す
+   5. vcxproj と filters：Interactor の 2 つを外し、新しい 3 つを登録する
+   6. Debug・Profile・Release の 3 構成でビルド
+   7. この仕様書の状態欄、GameChats/ComponentSystem.md、メモリを更新
+
+9. 画面で確かめる所
+   ・使える物の上にマークが出て、見ている物は大きく「E」が出る
+   ・落ちている物を E で拾うと、カバンが開いて置く所を選べる
+   ・木箱・ゴミ箱を E で開け始め、開け終わると中を見る画面が出る。開けている途中の E で取りやめになる
+   ・脱出の車を E で見ると給油口が開く
+   ・2.5m より遠い物・壁の向こうの物は使えない
+   ・観察用カメラの間・死んだ後は E が効かない
+
+10. 参考
+   ・Component（Game Programming Patterns）: https://gameprogrammingpatterns.com/component.html
+   ・Service Locator（同）: https://gameprogrammingpatterns.com/service-locator.html

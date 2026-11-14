@@ -9,7 +9,7 @@ class GameObject;
 // 物は部品を組み合わせて作る（自キャラ＝Transform・SkinnedModel・CharacterCollider・Hitbox・Hold・Player …）
 // 振る舞いとデータは部品の側が持つ。付ける順には意味を持たせない（awake と start の 2 段で、どの順に付けても同じに動く）
 // 隣の部品の借り方：
-// ・必須の部品（無いとこの部品が成り立たない）：start で requireComponent して覚える。印が付き、外せなくなる
+// ・必須の部品（無いとこの部品が成り立たない）：start で requireComponent して覚える。印が付き、この部品と一緒にしか外せなくなる
 // ・任意の部品（外すとその振る舞いだけ無くなる）：使う所で getComponent し、nullptr なら飛ばす（覚えない。途中で外されても落ちない）
 // 世界に 1 つの物（当たり判定の名簿・町の床の形など）は、付けるときの引数ではなく shared で引く
 // 呼ばれる順：
@@ -30,7 +30,8 @@ public:
 	template< class T >
 	T* getComponent() const;
 	// 同じ物に付いているはずの T の部品。無ければ ASSERT で止める（Unity の RequireComponent の代わり）。awake・start の中で使う
-	// 引かれた部品には「ほかの部品が要る」印が付き、removeComponentLater で外せなくなる
+	// 引かれた部品には「この部品が要った」印が付き、この部品と同じ flush で一緒に外すときしか外せなくなる
+	// 自分自身を引くと、ずっと外せない印になる（自分のポインタをよそへ渡した部品が使う）
 	template< class T >
 	T* requireComponent() const;
 	// 世界に 1 つの T（GameObjectWorld::provide で置いた物）。置いていなければ ASSERT で止める。awake・start の中で使う

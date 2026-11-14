@@ -1,0 +1,190 @@
+================================================================================
+ 明かりを物の部品にする（LightComponent が自分の光を答える） の計画メモ
+ 作成日：2026-11-14
+ 状態：2026-11-14 ユーザー「全部 A で実装」で ★1〜4 すべて A に決定。実装した。
+       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち。9 章）。コミットはしていない
+       仕様からの違い：
+        ・HoldComponent の socket を渡す・外す所は、private の plugLightSockets( socket ) 1 つにまとめた（bindWeapon と onDestroy から呼ぶ）
+        ・MuzzleFlashComponent の const の flash()（光を読む口）は、読む所が無くなったので消した（lightSource が代わり）
+        ・SceneLights の影を付ける所は addShadowedLight（private）に分けた。影のマップは 1 枚なので、影を落とす光が 2 つ以上あれば
+          最初の 1 つにだけ付ける（今は懐中電灯 1 つしか同時に付かないので、起きない）
+        ・LightComponent が socket を持たないとき、向きは TransformComponent の向き（AngleMath::forwardOf）を使う
+          （街灯は点光源なので使わない。置き場所を持つ物にスポットを付けたときのため）
+        ・コメントも今の形に直した：PropFactory.h・TownMap.h・GameObjectTag.h・WorldBuilder.cpp・SceneLights.h・MuzzleFlashComponent.h
+        ・VS を開いたまま vcxproj と filters へ 4 つ登録した（VS で再読み込みが要る。VS 側で上書き保存しないこと）
+       分けた後の行数：SceneLights.cpp 210→214・LightComponent.h 28→36・LightComponent.cpp 66（新）・LightPreset.h 22（新）・
+                       LightPreset.cpp 46（新）・ILightSocket.h 16（新）
+ 依頼：2026-11-13 ユーザー「ポートフォリオの画像のようなコンポーネント指向が理想」→ 部品にした方がよい物を 5 つ挙げ、
+       「5 つで進める」で決定。この仕様書はその 1 番目
+         1. 明かり（この仕様書）
+         2. 銃（手に持つ銃と落ちている銃を 1 つの物に）
+         3. 持ち物（Inventory を自キャラの部品に）
+         4. 見ている物を使う（Interactor を自キャラの部品に）
+         5. 千切れた部位（1 つずつ物にする）
+       2〜5 は、前の番号が終わってから 1 つずつ仕様書を書く（互いに独立）
+ 前の段階：ComponentSystem3_Plan.txt（awake・共有の棚・必須と任意の部品）
+           MidPrioritySplit_Plan.txt 1 章（SceneLights を GameScene から分けた）
+ 手本のゲームの調査：作り直しで遊び方は変えないので、タルコフの調査は無し
+ 決まり：遊びは変えない（作り直しだけ）。変わってしまう所は 6 章に全部書く
+================================================================================
+
+0. 何が問題か
+ LightComponent は「付いている・消えている」しか持っていない。光そのもの（位置・色・強さ）は SceneLights が、
+ 光の種類ごとに違う道で集めている。
+   ・懐中電灯 … 自キャラ → HoldComponent → 銃の LightComponent（付いているか）＋ HoldComponent::muzzle（銃口）
+   ・銃口の光 … WorldRenderer::muzzleLight（中で自キャラ → HoldComponent → 銃の MuzzleFlashComponent）
+   ・街灯     … TownMap::streetLights の座標の一覧（街灯の物は読まない。柱の物と光が別々に置かれている）
+ このため
+   ・光る物を足すたびに SceneLights に道を 1 本足すことになる（物に部品を 1 行足すだけでは光らない）
+   ・SceneLights が HoldComponent・TownMap・WorldRenderer の中身を知っている
+   ・街灯の物を消しても光は残る（物と光がつながっていない）
+
+1. 今それぞれが持っている仕事
+ 1-1 LightComponent（ヘッダだけ・28 行）
+   ① 付いている・消えている（押した瞬間に切り替える）
+   ② このティックに切り替えたか（スイッチの音を鳴らす PlayerBodySounds が読む）
+ 1-2 SceneLights（実装 210 行）
+   ① 月・補助光・空・環境光・霧を調整値から作る
+   ② 懐中電灯の光を作る（自キャラの HoldComponent をたどる・調整値を読む・銃口から前へずらす・内側の角度を抑える）
+   ③ 懐中電灯の影のマップを付ける
+   ④ 銃口の光を WorldRenderer から受け取る
+   ⑤ 街灯の光を TownMap の座標から作る（高さを足す・今日の条件の倍率を掛ける）
+   ⑥ 影のマップを描く
+   ②④⑤ の「物の光を作る」を、物の部品の側へ移す。①③⑥ は SceneLights に残す（世界に 1 つの物・描く手順のため）
+
+2. 分けた後の形
+ 2-1 LightComponent（GameSrc/Component/。.cpp を足す）
+   「この物の光を 1 つ答える」部品。持つのは 3 つだけ
+     ・光の種類（LightPreset。付けるときに渡す）
+     ・付いている・消えている（今と同じ。update・isOn・toggledThisTick は変えない）
+     ・光の出る所を答える相手（ILightSocket。持つ側が渡す。無ければ自分の物の TransformComponent の位置）
+   公開の関数（足す物）
+     explicit LightComponent( LightPreset preset )
+     void setSocket( const ILightSocket* socket )   … 持つ側が渡す。nullptr で外す。所有権は受け取らない
+     bool castsShadow() const                       … 影を落とす種類か（LightPreset の表）
+     LightPreset preset() const
+     bool lightSource( LightSource* out ) const     … 今の光。消えている・出る所が無ければ false
+   lightSource の中
+     消えていれば false
+     → socket があれば socket に位置と向きを聞く（false なら false）
+     → 無ければ同じ物の TransformComponent（任意。使う所で getComponent）の位置。それも無ければ false
+     → LightPresets::make( preset, 位置, 向き ) で LightSource を作る
+
+ 2-2 LightPreset（新。GameSrc/Component/LightPreset.h / .cpp）（★1）
+   光の種類と、種類ごとの決まりの表。色・強さ・届く距離は部品に写さず、調整値（LightingParams）を毎回読む
+   （F6 で動かした値がすぐ効くのを保つため）
+     enum class LightPreset{ StreetLamp, Flashlight }
+     LightPresets::startsOn( preset )     … 始めから付いているか（街灯：付いている・懐中電灯：消えている）
+     LightPresets::castsShadow( preset )  … 影を落とすか（懐中電灯だけ）
+     LightPresets::make( preset, position, direction ) → LightSource
+        StreetLamp：位置に streetLightHeight を足した点光源（今の SceneLights 87〜89 行目と同じ式）
+        Flashlight：銃口から flashlightOffset だけ前のスポット。内側の角度は外側までに抑える。近さの下限を入れる
+                    （今の SceneLights::addFlashlight 164〜170 行目と同じ式）
+
+ 2-3 ILightSocket（新。GameSrc/Component/ILightSocket.h）（★4）
+   「光の出る所の今の位置と向き」を答えるインターフェース。関数は 1 つ
+     virtual bool lightSocket( Vector3* position, Vector3* direction ) const = 0;   … 今は無ければ false
+   実装するのは HoldComponent（中身は今の muzzle をそのまま返す）
+   銃の物は TransformComponent を持たず、手の骨に付いて動くので、位置は持つ側にしか分からない。
+   LightComponent が HoldComponent を直接知ると「銃 → 持つ側」の逆向きの依存ができるので、インターフェースを挟む
+
+ 2-4 HoldComponent
+   ・ILightSocket を実装する（lightSocket は muzzle を呼ぶだけ）
+   ・bindWeapon：持っていた銃の LightComponent・MuzzleFlashComponent から socket を外し（nullptr）、
+     新しく持った銃の 2 つへ自分を渡す。どちらも任意の部品（無ければ飛ばす）
+   ・onDestroy：持っている銃の 2 つから socket を外す（消えた部品を指したままにしない）
+   ・light()・muzzle() は残す（PlayerComponent・PlayerBodySounds・WorldRenderer::drawMuzzleFlash が読む）
+
+ 2-5 MuzzleFlashComponent（★2）
+   ・setSocket( const ILightSocket* ) を足す
+   ・bool lightSource( LightSource* out ) const を足す（socket が無ければ false。あれば MuzzleFlash::light へ位置と向きを渡す）
+   ・光り方（MuzzleFlash）と、描く所（WorldRenderer::drawMuzzleFlash）は変えない
+
+ 2-6 SceneLights
+   ・addFlashlight・街灯のループ・mRenderer->muzzleLight を消し、addObjectLights（新・private）にまとめる
+       1. 影を落とす LightComponent を全部たどる（forEach）。lightSource が true なら、影のマップが空いていれば付けて足す
+       2. MuzzleFlashComponent を全部たどり、lightSource が true なら足す
+       3. 残りの LightComponent を全部たどり、lightSource が true なら足す。
+          街灯（LightPreset::StreetLamp）には今日の条件の倍率を掛け、0 なら足さない（★3）
+     1 → 2 → 3 の順は、今の「懐中電灯 → 銃口の光 → 街灯」と同じ（6 章の 1 つ目）
+   ・懐中電灯の影の行列は、受け取った LightSource の位置・向き・外側の角度・届く距離から作る（今と同じ値）
+   ・#include から HoldComponent・（TownMap の座標の読み取り）が消える。WorldRenderer は影を落とす物を描くのに残る
+
+ 2-7 組み立て（Factory）
+   PlayerFactory::spawnWeapon   obj->addComponent< LightComponent >( LightPreset::Flashlight );
+   PropFactory::spawnStreetLamp obj->addComponent< LightComponent >( LightPreset::StreetLamp );   … 1 行足す
+   街灯は「Transform・StaticModel・BoxCollider・Light」の 4 つになる
+
+ 2-8 消える物
+   ・WorldRenderer::muzzleLight（呼ぶのは SceneLights だけ）
+   ・SceneLights::addFlashlight
+   ・WorldBuilder.cpp 69 行目のコメント「照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る」は、
+     今の形の説明に書き直す
+
+3. 依存の向き（一方通行のまま）
+   SceneLights ─→ LightComponent・MuzzleFlashComponent（GameObjectWorld::forEach でたどる）・LightingParams・今日の条件
+   LightComponent ─→ LightPreset・ILightSocket（インターフェースだけ）・TransformComponent（任意）
+   MuzzleFlashComponent ─→ GunComponent（今と同じ）・ILightSocket（インターフェースだけ）
+   HoldComponent ─→ LightComponent・MuzzleFlashComponent（借りる。今と同じ向き）・ILightSocket を実装
+   ・LightComponent・MuzzleFlashComponent は HoldComponent を知らない
+   ・SceneLights は HoldComponent・TownMap の街灯の座標・WorldRenderer::muzzleLight を知らなくなる
+
+4. 光る物を足すときの手順（分けた後）
+   今：SceneLights に「その物をどうたどって、どの調整値から作るか」を書き足す
+   後：物を組み立てる所に obj->addComponent< LightComponent >( 種類 ) を 1 行足す。
+       新しい種類の光なら LightPreset に 1 つ足し、LightPresets::make に式を足す
+
+5. 外から読む所
+   ・PlayerComponent::updateHands：hold->light()->update( … ) は変えない
+   ・PlayerBodySounds：hold->light()->toggledThisTick() は変えない
+   ・GameWorld::changeDayCondition → PropFactory::relightStreetLamps（ガラスの形を替える）は変えない
+   ・F6 の Zombie info のライトの表示（LightDebugDrawer）は LightList を読むだけなので変えない
+
+6. 変わってしまう所
+   ・ライトを一覧へ足す順は変えない（月 → 補助光 → 懐中電灯 → 銃口の光 → 街灯）。
+     LightList は 20 個を選ぶとき、届く範囲の内にいる光どうしは足した順で残す（LightList::select の stable_sort）ので、
+     順が変わると選ばれる光が変わる。そのため 2-6 の 1 → 2 → 3 の順でたどる
+   ・街灯の柱の形の構築に失敗したとき：今は柱が無くても光だけ出る。後は柱の物が無いので光も出ない
+     （失敗は MeshCache がデバッグ出力する。ふだんは起きない）
+   ・街灯の物の部品が 1 つ増える（F6 の Objects の欄の部品の数が、街灯 38 本で 1 ずつ増える）
+   ・1 回の描画ごとに LightComponent を 40 個ほどたどる（街灯 38 ＋ 銃 2）。今も 38 個の座標をたどっているので、差は出ない見込み
+   ・数値・計測の印・ログの文字・保存ファイルは変えない
+
+7. 決めてほしい所（★）
+ ★1 光の色・強さ・届く距離をどこに置くか
+     A（おすすめ）部品は種類（LightPreset）だけを持ち、値は調整値（LightingParams）を毎回読む。F6 で動かすとすぐ効く（今と同じ）
+     B 部品が色・強さ・届く距離を自分で持つ（画像の形に近い）。F6 の調整値が効かなくなるので、F6 の欄を部品ごとに作り直す
+ ★2 銃口の光（MuzzleFlashComponent）も今回そろえるか
+     A（おすすめ）そろえる（2-5）。SceneLights から WorldRenderer::muzzleLight の道が消え、物の光の道が 1 つになる
+     B 今回は触らない（SceneLights に銃口の光の道が 1 本残る）
+ ★3 街灯に今日の条件（停電）の倍率を掛ける所
+     A（おすすめ）SceneLights（今と同じ所）。LightComponent は今日の条件を知らない
+     B LightComponent が共有の棚から今日の条件（DayConditionEffect）を引いて掛ける。
+       SceneLights は種類を見なくてよくなるが、共通の部品が出撃の決まりを知る
+     C 停電の日は街灯の LightComponent を消す（PropFactory::relightStreetLamps で切り替える）。
+       倍率が 0 か 1 のときだけ今と同じになる（途中の値を使いたくなったら合わない）
+ ★4 懐中電灯の「どこから照らすか」の渡し方
+     A（おすすめ）ILightSocket（2-3）。HoldComponent が実装し、持った銃の部品へ渡す
+     B SceneLights が今のまま HoldComponent に銃口を聞く（懐中電灯だけ特別な道が残る。街灯だけ部品の形になる）
+
+8. 手順（1 つずつビルドする）
+   1. LightPreset・ILightSocket を作る
+   2. LightComponent を作り直す（.cpp を足す）。PlayerFactory の引数を足す。この時点では SceneLights は今の道のまま動く
+   3. HoldComponent に ILightSocket を実装し、bindWeapon・onDestroy で socket を渡す・外す
+   4. SceneLights の懐中電灯を、LightComponent をたどる形に替える（addFlashlight を消す）
+   5. PropFactory::spawnStreetLamp に LightComponent を足し、SceneLights の街灯のループを替える
+   6. MuzzleFlashComponent に socket と lightSource を足し、WorldRenderer::muzzleLight を消す（★2 が A のとき）
+   7. Debug・Profile・Release の 3 構成でビルド。新しいファイルを vcxproj と filters に登録（VS を閉じてから）
+   8. この仕様書の状態欄（仕様からの違い・行数）、GameChats/ComponentSystem.md、設計思想.md、メモリを更新
+
+9. 画面で確かめる所
+   ・街灯の下が今と同じ明るさ・同じ色で照らされる
+   ・F6 の Raid の欄で停電に替えると街灯の光が消え、戻すと付く
+   ・F で懐中電灯が付く・消える。影が出る。銃を持ち替えても、銃ごとの付け消しを覚えている
+   ・撃つと銃口の光で手元と壁が光る
+   ・F6 の streetLightHeight・streetLightIntensity・flashlightIntensity・flashlightOuterAngle を動かすとすぐ効く
+   ・F6 の Zombie info のライトの表示で、選ばれる光の数と並びが今と同じ
+
+10. 参考
+   ・Component（Game Programming Patterns）: https://gameprogrammingpatterns.com/component.html
+   ・Unity の Light コンポーネント（物に付けた部品が光を持ち、描く側が集める形）: https://docs.unity3d.com/Manual/class-Light.html

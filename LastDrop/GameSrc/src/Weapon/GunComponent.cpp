@@ -1,7 +1,28 @@
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
+#include "GameSrc/World/GameObjectWorld.h"
 
 #include <algorithm>
+
+GunComponent* GunComponent::find( GameObjectWorld& objects, ItemId item ) {
+	GunComponent* found = nullptr;
+	objects.forEach< GunComponent >( [ item, &found ]( GunComponent& gun ) {
+		if ( gun.spec().item == item ) {
+			found = &gun;
+		}
+	} );
+	return found;
+}
+
+const GunComponent* GunComponent::find( const GameObjectWorld& objects, ItemId item ) {
+	const GunComponent* found = nullptr;
+	objects.forEach< GunComponent >( [ item, &found ]( const GunComponent& gun ) {
+		if ( gun.spec().item == item ) {
+			found = &gun;
+		}
+	} );
+	return found;
+}
 
 GunComponent::GunComponent( const WeaponSpec& spec ) :
 	mSpec( &spec ),

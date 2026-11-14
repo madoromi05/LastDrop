@@ -2,6 +2,7 @@
 #include "GameSrc/Map/TownCache.h"
 #include "GameSrc/Map/NavMesh.h"
 #include "GameSrc/Map/TownVisibility.h"
+#include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Profiling/Profiler.h"
@@ -26,6 +27,7 @@ void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld,
 	target.hitWorld = hitWorld;
 	target.objects = objects;
 	mBuilder.build( target, escapeCarSpot, lampsLit );
+	objects->provide( &mGround ); // 千切れた部位の部品が、落ちる先の地面として引く（地面だけ。建物・車の上には乗せない）
 }
 
 NavMesh* TownEnvironment::buildNavMesh( const CollisionWorld& collisionWorld ) {

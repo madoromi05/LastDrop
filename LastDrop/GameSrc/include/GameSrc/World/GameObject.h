@@ -20,7 +20,8 @@ class GameObjectWorld;
 // ・同じ種類の部品は 1 つまで。付ける順は自由（Component の awake・start の約束）
 // ・途中で付けてもよい（すぐ awake・start して動き出す。GameObjectWorld がたどっている最中は付けない）
 //   外すのは removeComponentLater で印を付けるだけで、実際に外れるのは GameObjectWorld::flush の中（消える物と同じ約束）
-//   ほかの部品が requireComponent した部品は外せない（外すとその部品が成り立たないため）
+//   ほかの部品が requireComponent した部品は、要った部品と同じ flush で一緒に外すときだけ外せる（片方だけ外すと、要った部品が成り立たないため）
+//   落とした銃の地面の部品（置き場所・見た目・箱・アイテム・拾う）のように、まとまりで付け外しする物のための決まり
 // ・部品の並びを動かす関数（eraseAt・markSpawned など）は private で、持ち主（friend の GameObjectWorld）だけが呼ぶ
 // ・持ち主は GameObjectWorld だけ。ほかの人は生のポインタを借りる（消えるのは flush の中だけ）
 //   消えたかを知りたいときは GameObjectHandle で持つ
@@ -45,7 +46,7 @@ public:
 		entry.typeId = componentTypeId< T >();
 		entry.member = worldMemberOf( raw );
 		entry.component = std::move( component );
-		entry.required = false;
+		entry.locked = false;
 		entry.removing = false;
 		entry.phase = raw->updatePhase();
 		mComponents.push_back( std::move( entry ) );
@@ -67,14 +68,16 @@ public:
 		return nullptr;
 	}
 
-	// ほかの部品が要る T の部品（無ければ ASSERT で止める）。要る印を付け、removeComponentLater で外せなくする
-	// 印は、要った側の部品を外しても残す（どの部品が要ったかまでは覚えない）
+	// 部品 requirer が要る T の部品（無ければ ASSERT で止める）。T の部品に「requirer が要った」と覚えさせる
+	// requirer: 要った部品（この物に付いていること。Component::requireComponent が自分を渡す）
+	// 覚えた印は requirer が外れると消える。requirer が T の部品そのものなら、ずっと外せない印になる
+	// （自分のポインタをよそへ渡した部品が、自分を外せなくするのに使う）
 	template< class T >
-	T* requireComponent(){
+	T* requireComponent( const Component* requirer ){
 		int id = componentTypeId< T >();
 		for ( Entry& entry : mComponents ){
 			if ( entry.typeId == id ){
-				entry.required = true;
+				markRequired( &entry, requirer );
 				return static_cast< T* >( entry.component.get() );
 			}
 		}
@@ -83,14 +86,14 @@ public:
 	}
 
 	// 次の GameObjectWorld::flush で T の部品を外す印を付ける（付いていなければ何もしない）。外す前に onDestroy を呼ぶ
-	// ほかの部品が requireComponent した部品は外せない（ASSERT で止める）。外せるのは、隣の部品が getComponent で
-	// 使う所ごとに引いている任意の部品だけ（覚えたポインタが残らないので、外れた後も落ちない）
+	// ほかの部品が requireComponent した部品は、要った部品にも同じ flush までに外す印を付けること（flush が ASSERT で確かめる）
+	// 自分で自分を requireComponent した部品は外せない（ここで ASSERT で止める）
 	template< class T >
 	void removeComponentLater(){
 		int id = componentTypeId< T >();
 		for ( Entry& entry : mComponents ){
 			if ( entry.typeId == id ){
-				ASSERT( !entry.required && "GameObject : a component required by another component cannot be removed." );
+				ASSERT( !entry.locked && "GameObject : a component that required itself cannot be removed." );
 				entry.removing = true;
 				requestRemoval();
 				return;
@@ -113,8 +116,10 @@ private:
 	// index 番目の部品が名簿へ載る部品（IWorldMember）なら、その窓口。載らない部品なら nullptr
 	IWorldMember* worldMemberAt( int index ) const { return mComponents[ index ].member; }
 	bool isRemovingAt( int index ) const { return mComponents[ index ].removing; }
+	bool canRemoveMarked() const;	// 外す印の付いた部品を今外してよいか（その部品を要った部品にも、全部外す印が付いているか）
 	UpdatePhase updatePhaseAt( int index ) const { return mComponents[ index ].phase; }	// index 番目の部品を付けたときの段。外すときもこれで段の並びを探す
 	// index 番目の部品を外して捨てる（onDestroy と名簿から外すのは GameObjectWorld が済ませてから呼ぶ）
+	// 捨てた部品が付けた「要った」の印も、残りの部品から消す
 	void eraseAt( int index );
 	void markSpawned(){ mSpawned = true; }
 
@@ -122,7 +127,8 @@ private:
 		int typeId;
 		std::unique_ptr< Component > component;
 		IWorldMember* member; // 名簿へ載る部品なら、その窓口（component と同じ物を指す）。載らないなら nullptr
-		bool required;        // ほかの部品が requireComponent した（外せない）
+		std::vector< int > requiredBy; // この部品を requireComponent した部品の種類（外せるのは、これが全部同じ flush で外れるときだけ）
+		bool locked;          // 自分で自分を requireComponent した（ずっと外せない）
 		bool removing;        // 次の flush で外す
 		// 付けたときの updatePhase の答え。載せるときも外すときもこれを使う
 		// （途中で updatePhase の答えが変わっても、段の並びに消えた部品が残らないように）
@@ -138,6 +144,8 @@ private:
 			return nullptr;
 		}
 	}
+	void markRequired( Entry* entry, const Component* requirer );	// entry の部品に「requirer が要った」と覚えさせる（requirer が entry の部品そのものなら、ずっと外せない印）
+	const Entry* findEntry( int typeId ) const;						// 種類 typeId の部品（付いていなければ nullptr）
 	void attachLate( int index );	// spawn した後に付けた index 番目の部品を、持ち主に start させ・載せてもらう
 	void requestRemoval();			// 外す印を付けたことを持ち主に知らせる（flush で外してもらう）
 
@@ -156,7 +164,7 @@ T* Component::getComponent() const {
 
 template< class T >
 T* Component::requireComponent() const {
-	return mGameObject->requireComponent< T >();
+	return mGameObject->requireComponent< T >( this );
 }
 
 #endif

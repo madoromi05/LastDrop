@@ -3,15 +3,19 @@
 
 #include "GameSrc/Weapon/Bullet/BulletList.h"
 #include "GameSrc/Scene/Game/World/EffectManager.h"
+#include "GameSrc/Zombie/Damage/SeveredLimbFactory.h"
 #include "GameSrc/Hit/BodyPart.h"
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include "GameSrc/Audio/GroundMaterial.h"
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix34.h"
 #include <vector>
 
 class GameObject;
 class GameObjectWorld;
 class HitWorld;
+class SkinnedMeshInstance;
+class ZombieModel;
 
 // 当たった後に何が起きるかを決める係
 // ・弾：物に当たったら弾痕と砂ぼこり、ゾンビに当たったらダメージを渡して血しぶき・後ろの壁と足元の血の跡・千切れた部位・
@@ -52,7 +56,7 @@ public:
 	};
 
 	// どれも所有権は受け取らない。nullptr 不可。この係より長く生きていること（どれも GameWorld が持つ）
-	// objects: 当たった物の部品を引く。effects: 弾痕・血しぶき・血の跡・千切れた部位を出す
+	// objects: 当たった物の部品を引く・千切れた部位の物を置く。effects: 弾痕・血しぶき・血の跡を出す
 	// hitWorld: 血の跡を付ける面（撃たれたゾンビの後ろ・足元）を聞く
 	CombatResolver( GameObjectWorld* objects, EffectManager* effects, const HitWorld* hitWorld );
 	CombatResolver( const CombatResolver& ) = delete;
@@ -74,10 +78,16 @@ private:
 	// 弾が当たったゾンビ（impact.hit.target）の後ろ（弾の向きへ）と真下を聞き、物の面に血の跡を付ける
 	// 後ろは、先に別のゾンビに当たったら付けない（後ろのゾンビにも、その奥の壁にも）
 	void stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size );
+	// zombieMesh（model の形のゾンビの見た目）の part が今切れたので、切り口に血しぶきを出し、千切れた部位の物を飛ばす
+	// 切れた部位は applyDamage の直後ならまだ見えている（体から消えるのは次の update）ので、その姿勢を写す
+	// direction: 弾の進む向き（長さ1）
+	void severLimb( const SkinnedMeshInstance& zombieMesh, const ZombieModel& model, BodyPart part, const GameLib::Math::Vector3& direction );
 
 	GameObjectWorld* mObjects;  // 借りているだけ
 	EffectManager* mEffects;    // 借りているだけ
 	const HitWorld* mHitWorld;  // 借りているだけ
+	SeveredLimbFactory mLimbFactory;                   // 千切れた部位の物を組み立てる（数の上限と、回り方のばらつきの乱数を持つ）
+	std::vector< GameLib::Math::Matrix34 > mSeverPose; // 切れた瞬間の骨の姿勢（severLimb の作業領域。毎回確保し直さないために持つ）
 	std::vector< ZombieHit > mZombieHits;           // このティックの出来事（毎回確保し直さないために持つ）
 	std::vector< SurfaceHit > mSurfaceHits;         // 同上
 	std::vector< ZombieAttackEvent > mZombieAttacks; // 同上

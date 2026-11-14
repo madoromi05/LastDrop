@@ -46,7 +46,7 @@
 | メモリ | 少ない | G-Buffer の分だけ多い |
 | 画面全体の効果 | 作りにくい | 法線・深度が残っているので SSAO・SSR・デカールが作りやすい |
 
-このゲームは夜の町でライトが 16 個あるので、ディファードにした（技術まとめ 8 章⑥）。
+このゲームは夜の町で、月・懐中電灯・銃口の光・街灯と、同時に照らすライトが十数個あるので、ディファードにした（技術まとめ 8 章⑥）。
 
 ## 自分のコードのどこか
 
@@ -74,7 +74,8 @@
 | ライティングのパス（HLSL） | [DeferredLighting.hlsl](../LastDrop/Resource/Shader/DeferredLighting.hlsl) | `PSMain` |
 | 深度から位置を戻す | [DepthPosition.hlsli](../LastDrop/Resource/Shader/DepthPosition.hlsli) | `worldPositionFromDepth` |
 | PBR の式 | [Pbr.hlsli](../LastDrop/Resource/Shader/Pbr.hlsli) | `surfaceBrdf`・`distributionGgx`・`geometrySmith`・`fresnelSchlick`・`evaluateLight`・`shadeSurface` |
-| ライトの一覧 | [LightList.cpp](../LastDrop/GameSrc/src/Render/Lighting/LightList.cpp)・[LightList.hlsli](../LastDrop/Resource/Shader/LightList.hlsli) | 16 個まで |
+| ライトの一覧 | [LightList.cpp](../LastDrop/GameSrc/src/Render/Lighting/LightList.cpp)・[LightList.hlsli](../LastDrop/Resource/Shader/LightList.hlsli) | 一度に照らせる数の上限は `kMaxLights`（C++ とシェーダの両方にある。04 章の課題 04-5） |
+| ライトを集める | [SceneLights.cpp](../LastDrop/GameSrc/src/Scene/Game/World/SceneLights.cpp) | `setup`・`addMoon`・`addObjectLights`（物に付いた `LightComponent`・`MuzzleFlashComponent` を全部たどる。10 章） |
 | シーンの色（HDR）と画面へ写す所 | [PostProcess.cpp](../LastDrop/GameSrc/src/Render/PostProcess/PostProcess.cpp)・[Present.hlsl](../LastDrop/Resource/Shader/Present.hlsl) | `beginScene`・`endScene`・`toneMapAces` |
 | デカール（弾痕） | [DecalBatch.cpp](../LastDrop/GameSrc/src/Render/DecalBatch.cpp)・[Decal.hlsl](../LastDrop/Resource/Shader/Decal.hlsl) | G-Buffer の色と法線へ上書き |
 

@@ -36,9 +36,10 @@ namespace{
 	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition ) :
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag ) :
 	mCondition( condition ),
 	mDay( dayConditionEffect( condition ) ),
+	mStartBag( startBag ),
 	mPlayerFactory( meshes ),
 	mPropFactory( meshes ),
 	mTown( meshes, town, &mPropFactory ),
@@ -54,6 +55,7 @@ GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition
 	// ゾンビの部品が共有の棚から引く物（TickContext・道探しの回数・音を知らせる係）を置く
 	// 歩ける床（NavMesh）は buildNavMesh で TownCache から借りたときに置く（ゾンビを置くのはその後の placeActors）
 	mZombies.provideShared();
+	mObjects.provide< IInteractFinder >( &mInteraction ); // 自キャラの「見ている物を使う」部品が、使える物を探すのに引く
 }
 
 // 係の定義が見える所で破棄する
@@ -86,7 +88,7 @@ void GameWorld::alertZombiesToNoise( const Vector3& position ) {
 
 void GameWorld::placePlayer( int escapeCarSpot ) {
 	const TownPlacement& start = mTown.map().escapeCarSpots()[ escapeCarSpot ].playerStart;
-	mPlayer = mPlayerFactory.spawn( &mObjects, start.position(), start.yawDegree );
+	mPlayer = mPlayerFactory.spawn( &mObjects, start.position(), start.yawDegree, mStartBag );
 	mPlayerControl = mPlayer->getComponent< PlayerComponent >();
 }
 
@@ -107,8 +109,7 @@ bool GameWorld::dropItem( const ItemStack& stack, float cameraYaw ) {
 	return mPropFactory.spawnDroppedItem( &mObjects, stack, position, cameraYaw ) != nullptr;
 }
 
-void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection,
-	Inventory* inventory ) {
+void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const Vector3& viewDirection ) {
 	{
 		PROFILE_SCOPE( "World.prepare" );
 		mCollisionWorld.refreshBodies();	// 動く体を今の置き場所でますへ入れ直させる（体が動く前に 1 回）
@@ -117,7 +118,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	{
 		PROFILE_SCOPE( "World.player" );
 		if ( mPlayerControl ) {
-			mPlayerControl->setInput( command, cameraYaw, cameraPitch, inventory );
+			mPlayerControl->setInput( command, cameraYaw, cameraPitch );
 		}
 		mObjects.update( UpdatePhase::Input );	// 自キャラが動いて撃ち、その後に足音・銃声をゾンビへ知らせる（PlayerNoiseComponent。同じ段の中で PlayerComponent の後）
 	}
@@ -144,7 +145,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.effects" );
-		mEffects.update( &mTown.ground() ); // 千切れた部位が落ちる先は地面だけ（建物・車の上には乗らず、抜ける）
+		mEffects.update(); // 弾痕・砂ぼこり・血。千切れた部位は物なので、Late の段で自分で進む
 	}
 	{
 		PROFILE_SCOPE( "World.zombies" );
@@ -160,7 +161,7 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.late" );
-		mObjects.update( UpdatePhase::Late );	// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）
+		mObjects.update( UpdatePhase::Late );	// 動いた後の物に付いて動く部品（銃口の光。撃ったティックの描画が光り始めになる）と、千切れた部位
 		mObjects.flush();						// このティックで消す印の付いたもの（沈み終えた死体も）を、全員の更新が済んでから消す（名簿からも外れる）
 	}
 	{

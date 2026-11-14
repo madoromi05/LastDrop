@@ -6,6 +6,7 @@
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Effect/MuzzleFlashComponent.h"
+#include "GameSrc/Zombie/Component/SeveredLimbComponent.h"
 #include "GameSrc/Render/Culling/DrawCulling.h"
 
 #include "GameLib/GameLib.h"
@@ -88,8 +89,12 @@ void WorldRenderer::drawPlayer() const {
 
 void WorldRenderer::drawCharacters( const DrawCulling& culling ) const {
 	drawZombies( culling );
-	mEffects->drawSeveredLimbs( culling );
+	drawSeveredLimbs( culling );
 	Profiling::gpuMark( "Zombies" );
+}
+
+void WorldRenderer::drawSeveredLimbs( const DrawCulling& culling ) const {
+	mWorld->objects().forEach< SeveredLimbComponent >( [ &culling ]( const SeveredLimbComponent& limb ) { limb.draw( culling ); } );
 }
 
 void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includesPlayer ) {
@@ -100,7 +105,7 @@ void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includes
 		drawPlayer();
 	}
 	drawZombies( culling );
-	mEffects->drawSeveredLimbs( culling );
+	drawSeveredLimbs( culling );
 	beginBuildings();
 	for ( const Building& building : mWorld->town().buildings() ) {
 		addBuilding( building, culling );
@@ -165,14 +170,4 @@ void WorldRenderer::drawMuzzleFlash( const Matrix44& projectionView, const Vecto
 	}
 	flash->flash().draw( projectionView, viewDirection, muzzlePosition, muzzleDirection,
 		mWorld->player()->getComponent< HoldComponent >()->aimWeight() );
-}
-
-bool WorldRenderer::muzzleLight( LightSource* out ) const {
-	Vector3 muzzlePosition;
-	Vector3 muzzleDirection;
-	const MuzzleFlashComponent* flash = heldMuzzleFlash( mWorld->player(), &muzzlePosition, &muzzleDirection );
-	if ( !flash ) {
-		return false;
-	}
-	return flash->flash().light( muzzlePosition, muzzleDirection, out );
 }

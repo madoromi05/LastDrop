@@ -2,10 +2,12 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/StaticModelComponent.h"
+#include "GameSrc/Component/LightComponent.h"
 #include "GameSrc/Interaction/Item/ItemComponent.h"
 #include "GameSrc/Interaction/PickupComponent.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
+#include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -28,8 +30,7 @@ namespace{
 	const char* kFuelName = "Fuel";
 	const char* kAmmoDropName = "AmmoDrop";
 	const char* kItemDropName = "ItemDrop";
-	const char* kWeaponDropName = "WeaponDrop";
-	const int kOneWeapon = 1; // 落ちている銃は 1 丁
+	const int kOneWeapon = 1; // 地面に置いた銃は 1 丁
 	const char* kEscapeCarName = "EscapeCar";
 	const char* kDumpsterName = "Dumpster";
 	const char* kCrateName = "Crate";
@@ -60,17 +61,22 @@ PropFactory::PropFactory( MeshCache* meshes ) :
 		}
 	}
 	for ( int i = 0; i < WEAPON_NUMBER; ++i ) {
-		mWeaponDropShapes.emplace_back( meshes->staticMesh( weaponSpec( static_cast< WeaponId >( i ) ).groundFile ) );
+		mWeaponGroundShapes.emplace_back( meshes->staticMesh( weaponSpec( static_cast< WeaponId >( i ) ).groundFile ) );
 	}
 }
 
 GameObject* PropFactory::createProp( GameObjectWorld* world, GameObjectTag tag, const char* name, const StaticMeshLods& shapes,
 const Vector3& position, float yawDegree, DrawCulling::Target cullTarget, BoxColliderComponent::Mode colliderMode, GroundMaterial material ) const {
 	GameObject* obj = world->create( tag, name );
+	addPropParts( obj, shapes, position, yawDegree, cullTarget, colliderMode, material );
+	return obj;
+}
+
+void PropFactory::addPropParts( GameObject* obj, const StaticMeshLods& shapes, const Vector3& position, float yawDegree,
+DrawCulling::Target cullTarget, BoxColliderComponent::Mode colliderMode, GroundMaterial material ) const {
 	obj->addComponent< TransformComponent >( position, yawDegree );
 	obj->addComponent< StaticModelComponent >( shapes, material, cullTarget );
 	obj->addComponent< BoxColliderComponent >( colliderMode ); // 箱は見た目の頂点から求める（見た目は awake で置かれる）
-	return obj;
 }
 
 GameObject* PropFactory::spawnLootContainer( GameObjectWorld* world, LootTableId table, const Vector3& position, float yawDegree,
@@ -118,6 +124,7 @@ GameObject* PropFactory::spawnStreetLamp( GameObjectWorld* world, const Vector3&
 	// 背丈 3.9m あり遠くからも見える（光るガラスが目印になる）ので、大きい物の側（Large）で間引く
 	GameObject* obj = createProp( world, GameObjectTag::StreetLamp, kStreetLampName, shapes, position, yawDegree,
 		DrawCulling::Target::Large, BoxColliderComponent::Mode::Fixed, kMetalMaterial );
+	obj->addComponent< LightComponent >( LightPreset::StreetLamp ); // 柱の頭から照らす。停電の日は、ライトの一覧を作る側が明るさを 0 にする
 	world->spawn( obj );
 	return obj;
 }
@@ -147,23 +154,41 @@ GameObject* PropFactory::spawnFuel( GameObjectWorld* world, const Vector3& posit
 	GameObject* obj = createProp( world, GameObjectTag::Fuel, kFuelName, mFuelCanShapes, position, yawDegree,
 		DrawCulling::Target::Small, BoxColliderComponent::Mode::Removable, kMetalMaterial );
 	obj->addComponent< ItemComponent >( ITEM_FUEL, kFuelPerCan );
-	obj->addComponent< PickupComponent >();
+	obj->addComponent< PickupComponent >( PickupComponent::AfterTaken::DestroyObject );
 	world->spawn( obj );
 	return obj;
 }
 
-GameObject* PropFactory::spawnWeaponDrop( GameObjectWorld* world, WeaponId id, const Vector3& position, float yawDegree ) const {
-	ASSERT( id >= 0 && id < WEAPON_NUMBER && "PropFactory::spawnWeaponDrop : bad WeaponId." );
-	const StaticMeshLods& shapes = mWeaponDropShapes[ id ];
+GameObject* PropFactory::layWeaponOnGround( GameObjectWorld* world, WeaponId id, const Vector3& position, float yawDegree ) const {
+	ASSERT( world && id >= 0 && id < WEAPON_NUMBER && "PropFactory::layWeaponOnGround : bad argument." );
+	const StaticMeshLods& shapes = mWeaponGroundShapes[ id ];
 	if ( !shapes.full()->isReady() ) {
 		return nullptr;
 	}
-	GameObject* obj = createProp( world, GameObjectTag::WeaponDrop, kWeaponDropName, shapes, position, yawDegree,
-		DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough, kMetalMaterial );
-	obj->addComponent< ItemComponent >( weaponSpec( id ).item, kOneWeapon );
-	obj->addComponent< PickupComponent >();
-	world->spawn( obj );
-	return obj;
+	GunComponent* gun = GunComponent::find( *world, weaponSpec( id ).item );
+	if ( !gun ) {
+		return nullptr; // 手に持つ形の構築に失敗して、銃の物が作られていない
+	}
+	GameObject* weapon = gun->gameObject();
+	if ( weapon->getComponent< TransformComponent >() ) {
+		return nullptr; // もう地面にある（外す印が付いて、まだ外れていない間も）
+	}
+	// 捨てた銃は新しい物を作らず、銃の物へ地面に置くための部品を足す（拾われたら liftFromGround で外す）
+	// 足元の小さな物でつまずかないよう、移動の名簿には載せない（上を歩ける）
+	addPropParts( weapon, shapes, position, yawDegree, DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough, kMetalMaterial );
+	weapon->addComponent< ItemComponent >( weaponSpec( id ).item, kOneWeapon );
+	weapon->addComponent< PickupComponent >( PickupComponent::AfterTaken::LeaveObject ); // ItemComponent と見た目を start で借りるので最後に付ける
+	return weapon;
+}
+
+void PropFactory::liftFromGround( GameObject* weapon ) {
+	ASSERT( weapon && "PropFactory::liftFromGround : weapon is null." );
+	// 5 つは互いに借り合っているので、全部に印を付ける（同じ flush で一緒に外れる。片方だけでは外せない）
+	weapon->removeComponentLater< PickupComponent >();
+	weapon->removeComponentLater< ItemComponent >();
+	weapon->removeComponentLater< BoxColliderComponent >();
+	weapon->removeComponentLater< StaticModelComponent >();
+	weapon->removeComponentLater< TransformComponent >();
 }
 
 GameObject* PropFactory::spawnDroppedItem( GameObjectWorld* world, const ItemStack& stack, const Vector3& position, float yawDegree ) const {
@@ -177,7 +202,7 @@ GameObject* PropFactory::spawnDroppedItem( GameObjectWorld* world, const ItemSta
 		return spawnGroundItem( world, stack, position, yawDegree );
 	case ITEM_KIND_WEAPON:
 		ASSERT( stack.amount == kOneWeapon && "PropFactory::spawnDroppedItem : a gun is one." );
-		return spawnWeaponDrop( world, weaponForItem( stack.item ), position, yawDegree );
+		return layWeaponOnGround( world, weaponForItem( stack.item ), position, yawDegree );
 	default:
 		ASSERT( false && "PropFactory::spawnDroppedItem : no shape for this item." );
 		return nullptr;
@@ -200,7 +225,7 @@ GameObject* PropFactory::spawnGroundItem( GameObjectWorld* world, const ItemStac
 	GameObject* obj = createProp( world, isAmmo ? GameObjectTag::AmmoDrop : GameObjectTag::ItemDrop, isAmmo ? kAmmoDropName : kItemDropName,
 		shapes, position, yawDegree, DrawCulling::Target::Small, BoxColliderComponent::Mode::WalkThrough, kMetalMaterial );
 	obj->addComponent< ItemComponent >( stack.item, stack.amount );
-	obj->addComponent< PickupComponent >();
+	obj->addComponent< PickupComponent >( PickupComponent::AfterTaken::DestroyObject );
 	world->spawn( obj );
 	return obj;
 }

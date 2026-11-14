@@ -20,7 +20,7 @@ namespace GameLib{ namespace Math{ class Vector3; } }
 // 攻撃された赤み・暗転（PlayerDamageView）や観察用の表示（GameDebugOverlay）は別系統
 class HudController{
 public:
-	HudController( GameWorld* world, Inventory* inventory, UiRenderer* ui );				// world/inventory: 借りるだけ。ui: 描画に使う。どれも nullptr 不可・この Controller より長く生きていること
+	HudController( GameWorld* world, UiRenderer* ui );									// world: 借りるだけ。ui: 描画に使う。どちらも nullptr 不可・この Controller より長く生きていること
 	void updateAmmoVisibility( bool wanted );												// 右下の弾数を出す時間と濃さを進める。wanted: 今出したいか（覗いている・リロード中）。update のビューの段で 1 回
 	void updateMarkers( const GameLib::Math::Vector3& eye, const IInteractable* target );	// 使える物の上のマークを更新する（見ている物・持ち物で色が変わる）。eye: 目の位置。target: 今見ている使える物
 	void clearMarkers();																	// マークを消す（自キャラがいない・死んだとき）
@@ -30,10 +30,10 @@ public:
 		float searchProgress, RaidHud::ProgressKind waitingKind );
 
 private:
-	void addAmmo();	// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）
+	void addAmmo();						// 手に持っている銃の弾数を、右下の HUD へ積む（出す時間でなければ何もしない）
+	const Inventory* inventory() const;	// 自キャラの持ち物（自キャラが居なければ nullptr）。覚えずに、使うたびに自キャラの部品から引く
 
 	GameWorld* mWorld;     // 借りているだけ
-	Inventory* mInventory; // 借りているだけ
 	UiRenderer* mUi;       // 借りているだけ（マークを積むのに使う）
 	RaidHud mHud;
 	AmmoHud mAmmoHud;                     // 右下の銃の絵と弾数

@@ -9,7 +9,7 @@ enum class UpdatePhase{
 	None,  // 自分では動かない（隣の部品から頼まれて動く・読まれるだけ）
 	Input, // 操作を読んで動く（自キャラ）
 	Think, // 考えて動く（ゾンビ）。自キャラが動いた後の位置を追う
-	Late,  // 動いた後の物に付いて動く（銃口の光は、撃ったティックのうちに光り始める）
+	Late,  // 動いた後の物に付いて動く（銃口の光は、撃ったティックのうちに光り始める）。誰からも読まれずに動く物もここ（千切れた部位）
 };
 
 const int kUpdatePhaseNumber = static_cast< int >( UpdatePhase::Late ) + 1;	// 段の数（None も含める。GameObjectWorld が段ごとの並びを持つのに使う）

@@ -1,13 +1,12 @@
 #include "GameSrc/Scene/Game/Hud/HudController.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
-#include "GameSrc/Interaction/Item/Inventory.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameLib/Math/Vector3.h"
 
-HudController::HudController( GameWorld* world, Inventory* inventory, UiRenderer* ui ) :
+HudController::HudController( GameWorld* world, UiRenderer* ui ) :
 	mWorld( world ),
-	mInventory( inventory ),
 	mUi( ui ),
 	mHud( ui ),
 	mAmmoHud( ui ) {
@@ -18,7 +17,16 @@ void HudController::updateAmmoVisibility( bool wanted ) {
 }
 
 void HudController::updateMarkers( const GameLib::Math::Vector3& eye, const IInteractable* target ) {
-	mInteractMarkers.update( mWorld->interaction(), eye, target, *mInventory );
+	const Inventory* bag = inventory();
+	if ( !bag ) {
+		mInteractMarkers.clear(); // 自キャラが居ない（使える物の色を決める持ち物が無い）
+		return;
+	}
+	mInteractMarkers.update( mWorld->interaction(), eye, target, *bag );
+}
+
+const Inventory* HudController::inventory() const {
+	return InventoryComponent::inventoryOf( mWorld->player() );
 }
 
 void HudController::clearMarkers() {
@@ -35,7 +43,8 @@ void HudController::addAmmo() {
 	ammo.weapon = gun->spec().item;
 	ammo.rounds = gun->magazineRounds();
 	ammo.capacity = gun->spec().magazineCapacity;
-	ammo.reserve = mInventory->count( gun->spec().ammo );
+	const Inventory* bag = inventory();
+	ammo.reserve = bag ? bag->count( gun->spec().ammo ) : 0;
 	mAmmoHud.add( ammo, mAmmoHudVisibility.opacity() );
 }
 

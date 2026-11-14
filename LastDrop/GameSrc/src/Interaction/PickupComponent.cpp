@@ -29,9 +29,14 @@ namespace{
 	}
 }
 
-PickupComponent::PickupComponent() :
+PickupComponent::PickupComponent( AfterTaken afterTaken ) :
 	mItem( nullptr ),
+	mAfterTaken( afterTaken ),
 	mTaken( false ) {
+}
+
+PickupComponent::AfterTaken PickupComponent::afterTaken() const {
+	return mAfterTaken;
 }
 
 void PickupComponent::start() {

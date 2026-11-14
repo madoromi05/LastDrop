@@ -9,6 +9,7 @@
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
 class Inventory;
+class GameObjectWorld;
 
 // 銃の撃つ仕組み（画像の GunComponent）。どの銃か（弾倉・連射・使う弾…）は作る時に受け取る表の行（WeaponSpec）で決まる。連射の間隔は FireControl、弾倉の弾の数は Magazine、
 // 撃った反動の量は WeaponRecoil、リロードの時間割は WeaponReload に任せる（委譲）
@@ -21,6 +22,10 @@ public:
 	explicit GunComponent( const WeaponSpec& spec );	// spec: どの銃か（WeaponCatalog の表の行。表は動かないので借りるだけ）
 
 	const WeaponSpec& spec() const;
+	// objects の中の、カバンの物 item に当たる銃（銃は 1 種類 1 丁だけ作るので、種類で引ける）。無ければ nullptr
+	// 物の外から銃を種類で引く所（弾倉の数を写す MagazineSync・捨てた銃を地面へ置く PropFactory）が、同じたどり方を書かずに済むようにする
+	static GunComponent* find( GameObjectWorld& objects, ItemId item );
+	static const GunComponent* find( const GameObjectWorld& objects, ItemId item );
 
 	// 撃つ番が来たら、弾倉に弾があれば 1 発撃ち、空なら空撃ちにする（1 ティックに 1 回）
 	// pulling: 撃てる状態で引き金を引いているか。triggerHeld: 撃てるかに関わらず引き金を引いているか（離したら空撃ちの止めを外す）

@@ -66,7 +66,7 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, boo
 	for ( const TownPlacement& p : mMap->fireHydrants() ) {
 		mProps->spawnFireHydrant( target.objects, p.position(), p.yawDegree );
 	}
-	// 街灯の柱も見た目の置物（同じ）。照らす光はシーンが同じ置き場所の一覧から作るので、柱が置けなくても光は出る
+	// 街灯の柱も置けなくても遊べる（同じ）。照らす光は柱の物の LightComponent が持つので、柱が置けなければ光も出ない
 	for ( const TownPlacement& p : mMap->streetLights() ) {
 		mProps->spawnStreetLamp( target.objects, p.position(), p.yawDegree, lampsLit );
 	}

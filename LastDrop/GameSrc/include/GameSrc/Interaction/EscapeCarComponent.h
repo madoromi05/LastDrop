@@ -21,7 +21,7 @@ public:
 
 	// IInteractable
 	bool canInteract( const Inventory& inventory ) const override; // 給油が済むまではいつでも開ける（ガソリンが無くても、要る数が見える）
-	void interact( Inventory* inventory ) override;                // 呼ばれない（Interactor は lootGrid のある物を opened へ回す）
+	void interact( Inventory* inventory ) override;                // 呼ばれない（InteractorComponent は lootGrid のある物を opened へ回す）
 	bool offeredStack( ItemStack* out ) const override;            // 拾う物ではないので false
 	void takeOffered( int count ) override;                        // 呼ばれない
 	ItemGrid* lootGrid() override;                                  // 給油口のマス目

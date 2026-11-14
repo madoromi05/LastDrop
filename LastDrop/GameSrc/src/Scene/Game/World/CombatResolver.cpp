@@ -14,6 +14,9 @@
 #include "GameSrc/Zombie/Component/ZombieAttackComponent.h"
 #include "GameSrc/Zombie/Component/ZombieHealthComponent.h"
 #include "GameSrc/Zombie/Component/ZombieDismemberComponent.h"
+#include "GameSrc/Zombie/Animation/ZombieModel.h"
+#include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
+#include "GameSrc/Math/PlacementMatrix.h"
 #include "GameSrc/World/GameObjectWorld.h"
 
 #include "GameLib/GameLib.h"
@@ -136,9 +139,16 @@ void CombatResolver::hitZombie( const BulletList::Impact& impact ) {
 	mEffects->spawnBloodHit( hit.point, impact.direction, bloodHitSize( event.weight, hit.part ) ); // 重さが決まってから（頭は多く）
 
 	for ( BodyPart part : severed ) {
-		mEffects->spawnSeveredLimb( mesh, model, part, impact.direction );
+		severLimb( mesh, model, part, impact.direction );
 	}
 	stainAroundZombie( impact, bloodStainSize( hit.part, !severed.empty() ) );	// 千切れた部位がいくつあっても、血の跡は 1 発につき 1 組（切れたのはこの 1 発の当たった所なので）
+}
+
+void CombatResolver::severLimb( const SkinnedMeshInstance& zombieMesh, const ZombieModel& model, BodyPart part, const Vector3& direction ) {
+	zombieMesh.shownWorldPose( &mSeverPose );
+	const ZombieSeverLayout::Cut& cut = model.severLayout().cut( part );
+	mEffects->spawnSeverBlood( PlacementMatrix::translationOf( mSeverPose[ cut.jointBone ] ), direction );
+	mLimbFactory.spawn( mObjects, model.data(), cut, mSeverPose, direction ); // 弾の解決は段と段の間なので、ここで物を置いてよい
 }
 
 void CombatResolver::stainAroundZombie( const BulletList::Impact& impact, EffectManager::BloodStainSize size ) {

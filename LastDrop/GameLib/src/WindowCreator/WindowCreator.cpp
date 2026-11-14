@@ -522,6 +522,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}else{
 			gImpl->mActive = ( ( wParam & 0xffff ) != 0 );
 		}
+		{
+			//一時停止が勝手に開く原因を確かめる間だけ置くログ。相手の窓は、フォーカスを取った（または返した）窓
+			char otherTitle[ 256 ] = "";
+			if ( lParam ){
+				GetWindowTextA( reinterpret_cast< HWND >( lParam ), otherTitle, sizeof( otherTitle ) );
+			}
+			GameLib::cout << "[PauseProbe] time=" << WindowCreator().time()
+				<< " WM_ACTIVATE active=" << ( gImpl->mActive ? 1 : 0 )
+				<< " other=\"" << otherTitle << "\"" << GameLib::endl;
+		}
 		break;
 	case WM_SYSCOMMAND:
 		//最大化（SC_MAXIMIZE）は通常のウィンドウの最大化にするので DefWindowProc に任せる

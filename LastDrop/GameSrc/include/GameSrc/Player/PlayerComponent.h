@@ -5,7 +5,7 @@
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/Animator.h"
 
-class Inventory;
+class InventoryComponent;
 class HoldComponent;
 class GunComponent;
 class PlayerHealthComponent;
@@ -19,7 +19,7 @@ class CharacterColliderComponent;
 // 体は常にカメラの水平の向きを向き、WASD はその向き基準の前後・横歩きになる。入力デバイスは読まない（操作は PlayerCommand で受け取る）
 // 自キャラの物の部品（PlayerFactory が付ける。付ける順は自由。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）：
 //   必須：Transform（足元と向き）・SkinnedModel（見た目）・FirstPersonBody（一人称の体の見せ方）・
-//         PlayerLocomotion（歩き方のアニメと速さ）・CharacterCollider（移動の当たり判定と滑る移動）
+//         PlayerLocomotion（歩き方のアニメと速さ）・CharacterCollider（移動の当たり判定と滑る移動）・Inventory（持ち物）
 //   任意（外すとその振る舞いだけ無くなる。使う所ごとに getComponent で引く）：
 //         Hold（持つ銃と構え。外すと素手）・PlayerHealth（体力。外すと死なない）・Hitbox（部位の命中。外すと撃たれない）・
 //         PlayerGrab（ゾンビにつかまれる。外すと襲われない）・ArmPose（腕の効き具合。外すと腕は体のアニメのまま）
@@ -35,8 +35,7 @@ public:
 
 	// 次の update で使う操作。GameWorld が Input の段の前に毎ティック渡す
 	// command: この1ティックの操作。cameraYaw / cameraPitch: カメラの水平・上下の向き（度。FirstPersonCamera::yaw / pitch）
-	// inventory: 予備の弾（ITEM_AMMO）を持つ持ち物。リロードを込め終えたら、ここから減らす。所有権は受け取らない。nullptr 不可
-	void setInput( const PlayerCommand& command, float cameraYaw, float cameraPitch, Inventory* inventory );
+	void setInput( const PlayerCommand& command, float cameraYaw, float cameraPitch );
 
 	// Component（必須の部品が要る）
 	UpdatePhase updatePhase() const override;
@@ -55,8 +54,8 @@ private:
 	PlayerCommand mCommand;
 	float mCameraYaw;
 	float mCameraPitch;
-	Inventory* mInventory;
 	// ── 同じ物の必須の部品（start で借りる）──
+	InventoryComponent* mInventory;	// 持ち物。カバンの銃を持つ・リロードで予備の弾を弾倉へ移すのに、持つ部品へ渡す
 	TransformComponent* mTransform;
 	SkinnedModelComponent* mModel;
 	FirstPersonBodyComponent* mBody;

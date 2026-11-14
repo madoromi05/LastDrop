@@ -1,17 +1,33 @@
 #include "GameSrc/Effect/MuzzleFlashComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
+#include "GameSrc/Component/ILightSocket.h"
 #include "GameSrc/World/GameObject.h"
 
+#include "GameLib/GameLib.h"
+
+using namespace GameLib::Math;
+
 MuzzleFlashComponent::MuzzleFlashComponent() :
-	mGun( nullptr ) {
+	mGun( nullptr ),
+	mSocket( nullptr ) {
 }
 
 MuzzleFlash& MuzzleFlashComponent::flash() {
 	return mFlash;
 }
 
-const MuzzleFlash& MuzzleFlashComponent::flash() const {
-	return mFlash;
+void MuzzleFlashComponent::setSocket( const ILightSocket* socket ) {
+	mSocket = socket;
+}
+
+bool MuzzleFlashComponent::lightSource( LightSource* out ) const {
+	ASSERT( out && "MuzzleFlashComponent : out is null." );
+	Vector3 muzzlePosition;
+	Vector3 muzzleDirection;
+	if ( !mSocket || !mSocket->lightSocket( &muzzlePosition, &muzzleDirection ) ) {
+		return false;
+	}
+	return mFlash.light( muzzlePosition, muzzleDirection, out );
 }
 
 UpdatePhase MuzzleFlashComponent::updatePhase() const {

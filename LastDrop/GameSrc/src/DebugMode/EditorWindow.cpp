@@ -234,12 +234,12 @@ namespace{
 			case GameObjectTag::Zombie: return "Zombie";
 			case GameObjectTag::Fuel: return "Fuel";
 			case GameObjectTag::AmmoDrop: return "AmmoDrop";
-			case GameObjectTag::WeaponDrop: return "WeaponDrop";
 			case GameObjectTag::ItemDrop: return "ItemDrop";
 			case GameObjectTag::LootContainer: return "LootContainer";
 			case GameObjectTag::EscapeCar: return "EscapeCar";
 			case GameObjectTag::FireHydrant: return "FireHydrant";
 			case GameObjectTag::StreetLamp: return "StreetLamp";
+			case GameObjectTag::SeveredLimb: return "SeveredLimb";
 		}
 		return "?";
 	}
