@@ -22,7 +22,7 @@
 - LearnOpenGL「[HDR](https://learnopengl.com/Advanced-Lighting/HDR)」：1 を超える明るさとトーンマップ
 - Brian Karis「[Real Shading in Unreal Engine 4](https://blog.selfshadow.com/publications/s2013-shading-course/karis/s2013_pbs_epic_notes_v2.pdf)」（英語・PDF）：自分の `Pbr.hlsli` が参照している資料。LearnOpenGL の後に読む
 - Krzysztof Narkowicz「[ACES Filmic Tone Mapping Curve](https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/)」：`Present.hlsl` のトーンマップの式の元
-- 自分の記録：`SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt`・`PbrNightLighting_Plan.txt`・`LinearToneMap_Plan.txt`、技術まとめ 8 章の⑥⑦
+- 自分の記録：`SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt`・`PbrNightLighting_Plan.txt`・`LinearToneMap_Plan.txt`、`SummaryPlan/計測の記録.md` の⑥⑦
 
 ## 言葉の整理
 
@@ -46,7 +46,7 @@
 | メモリ | 少ない | G-Buffer の分だけ多い |
 | 画面全体の効果 | 作りにくい | 法線・深度が残っているので SSAO・SSR・デカールが作りやすい |
 
-このゲームは夜の町で、月・懐中電灯・銃口の光・街灯と、同時に照らすライトが十数個あるので、ディファードにした（技術まとめ 8 章⑥）。
+このゲームは夜の町で、月・懐中電灯・銃口の光・街灯と、同時に照らすライトが十数個あるので、ディファードにした（技術まとめ 5-1・計測の記録⑥）。
 
 ## 自分のコードのどこか
 

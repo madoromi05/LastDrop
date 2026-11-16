@@ -53,11 +53,8 @@ bool PlayerFactory::isReady() const {
 }
 
 GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree, const ItemGrid& startBag ) const {
-	// HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。付ける順は自由
-	// （部品は awake で自分の物を作り、start で隣の部品を借りる）
 	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise・Interactor）は、行を消せばその振る舞いだけ無くなる
-	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない・物を見ても使えない）
-	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く
+	// Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く
 	// 音は、動いた後の足元・撃った後の銃を読むため）
 	std::vector< const GameObject* > weapons;
 	for ( int i = 0; i < WEAPON_NUMBER; ++i ) {
@@ -71,14 +68,14 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 	obj->addComponent< ArmPoseComponent >();
 	obj->addComponent< PlayerLocomotionComponent >();
 	obj->addComponent< PlayerHealthComponent >();
-	obj->addComponent< InventoryComponent >( startBag ); // 持ち物（カバン）。カバンの銃を持つ・予備の弾を込めるのに PlayerComponent が借りる
-	obj->addComponent< InteractorComponent >( kInteractReach ); // 見ている物を E で使う。シーンが 1 回の描画に 1 回呼ぶ（段では動かない）
+	obj->addComponent< InventoryComponent >( startBag ); // 持ち物
+	obj->addComponent< InteractorComponent >( kInteractReach ); // 見ている物を E で使う
 	obj->addComponent< HitboxComponent >( mPlayerData, kBoneNamePrefix );
 	obj->addComponent< CharacterColliderComponent >();
-	obj->addComponent< PlayerFootprintComponent >(); // 移動の当たり判定の形（CharacterCollider へ渡す）
+	obj->addComponent< PlayerFootprintComponent >(); // 移動の当たり判定の形
 	obj->addComponent< PlayerGrabComponent >();
 	obj->addComponent< PlayerComponent >();
-	obj->addComponent< PlayerNoiseComponent >(); // PlayerComponent の後（上の説明）
+	obj->addComponent< PlayerNoiseComponent >(); 
 	world->spawn( obj );
 	return obj;
 }

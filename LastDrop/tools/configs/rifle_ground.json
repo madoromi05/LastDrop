@@ -1,6 +1,6 @@
 {
     "mode": "static",
-    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/source/FP_AKM_binary.fbx",
+    "fbx_path": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/assault-rifle-hq-3d-game-asset/source/FP_AKM_binary.fbx",
     "out_path": "../../Resource/Model/Weapon/rifle_ground.txt",
     "split_vertices": true,
     "resource_root": "../..",

@@ -41,7 +41,7 @@
         },
         {
             "name": "icon_rifle",
-            "fbx": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/pubg-akm-assault-rifle-hq-3d-game-asset (1)/source/FP_AKM_binary.fbx",
+            "fbx": "C:/Users/mador/Downloads/ゾンビゲーム/ゲームモデル/assault-rifle-hq-3d-game-asset/source/FP_AKM_binary.fbx",
             "size": [256, 256],
             "camera_elevation": 5.0,
             "camera_azimuth": -90.0,
