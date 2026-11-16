@@ -6,6 +6,7 @@
 #include "GameSrc/Scene/Menu/MenuScene.h"
 #include "GameSrc/Scene/Menu/MenuCatalog.h"
 #include "GameSrc/Core/Pad.h"
+#include "GameSrc/DebugMode/EditorWindow.h"
 #include "GameLib/GameLib.h"
 #include "GameLib/Profiling/Profiler.h"
 
@@ -26,6 +27,7 @@ SceneManager& SceneManager::instance() {
 void SceneManager::start( SceneId first ) {
 	ASSERT( !mResources && "SceneManager::start : already started." );
 	mResources = std::make_unique< GameResources >();
+	EditorWindow::setRaidRecord( &mResources->raidRecord() );	// F6 の Raid の欄と結果画面の確認が使う。起動から終了まで 1 つなので、どのシーンでも触れるようここで 1 回渡す
 	change( first );
 }
 
@@ -109,5 +111,6 @@ FixedStepClock& SceneManager::clock() {
 void SceneManager::destroy() {
 	// シーンが借りている物を先に消さないよう、シーン → 使い回す物 の順に消す
 	mCurrent.reset();
+	EditorWindow::setRaidRecord( nullptr );	// 消える RaidRecord を F6 が指し続けないように
 	mResources.reset();
 }

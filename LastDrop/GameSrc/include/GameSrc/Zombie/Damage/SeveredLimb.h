@@ -18,7 +18,7 @@ class DrawCulling;
 // ほかの骨を全部切り口の1点へ潰す（体の側の ZombieDismemberment と逆の潰し方）
 // 姿勢は切れた瞬間のものを固め、丸ごと動かす（剛体。関節は曲がらない）。当たり判定は無い（弾は抜け、踏めない。壁も抜ける）
 // 書き換えは自分で行う（BonePoseModifier を自分の中だけで使うので、外からは見せない）
-// 持ち主（SeveredLimbList）が unique_ptr で持つ（メッシュが自分を書き換えとして指すので、動かさない）
+// 持ち主は物の部品（SeveredLimbComponent が中に 1 つ持つ）。メッシュが自分を書き換えとして指すので、動かさない・写さない
 class SeveredLimb : private BonePoseModifier{
 public:
 	// data: 形と見た目（千切れたゾンビと同じ物）。所有権は受け取らない。nullptr 不可、isReady() 済み。この部位より長く生きていること

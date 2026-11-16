@@ -36,6 +36,7 @@
 #include "GameLib/Input/GamePad.h"
 #include "GameLib/Input/InputBuilder.h"
 #include "ThirdParty/imgui/imgui.h"
+#include <algorithm>
 #include <string>
 
 namespace{
@@ -57,7 +58,7 @@ namespace{
 	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
 	RaidSession* gRaid = nullptr;    // GameScene から受け取った、1 回の出撃（無ければ nullptr）
-	RaidRecord* gRaidRecord = nullptr; // GameScene から受け取った、出撃の間で受け渡す物（無ければ nullptr）
+	RaidRecord* gRaidRecord = nullptr; // SceneManager::start から受け取った、出撃の間で受け渡す物（起動の後はどのシーンでもある）
 	InteractionSystem* gInteraction = nullptr; // GameScene から受け取った、漁れる場所を探す係（無ければ nullptr）
 	GameWorld* gWorld = nullptr;     // GameScene から受け取った、今の出撃の世界（今日の条件を切り替える。無ければ nullptr）
 	const char* const kRandomConditionName = "random"; // 日の条件の一覧の、固定しない（次の出撃から毎回ランダム）の行
@@ -234,12 +235,12 @@ namespace{
 			case GameObjectTag::Zombie: return "Zombie";
 			case GameObjectTag::Fuel: return "Fuel";
 			case GameObjectTag::AmmoDrop: return "AmmoDrop";
-			case GameObjectTag::WeaponDrop: return "WeaponDrop";
 			case GameObjectTag::ItemDrop: return "ItemDrop";
 			case GameObjectTag::LootContainer: return "LootContainer";
 			case GameObjectTag::EscapeCar: return "EscapeCar";
 			case GameObjectTag::FireHydrant: return "FireHydrant";
 			case GameObjectTag::StreetLamp: return "StreetLamp";
+			case GameObjectTag::SeveredLimb: return "SeveredLimb";
 		}
 		return "?";
 	}
@@ -397,6 +398,54 @@ namespace{
 		}
 	}
 
+	// 結果画面の確認（Scene タブ）。出撃を最後まで遊ばずに、脱出成功・ゲームオーバーの見た目を確かめる
+	const int kPreviewStartSeconds = 754;	// 初めの値。12:34 で、分も秒も 2 桁になる
+	const int kPreviewStartKills = 23;
+	const int kMinPreviewValue = 0;			// 時間が負だと ResultText::time が止まる
+
+	int gPreviewSeconds = kPreviewStartSeconds;
+	int gPreviewKills = kPreviewStartKills;
+	DayCondition gPreviewCondition = DayCondition::Normal;
+
+	const char* dayConditionName( DayCondition condition ) {
+		return dayConditionEffect( condition ).saveName;
+	}
+
+	// 入力した値で最後の結果を置き換え、結果画面へ切り替える。切り替えは今のシーンの処理が終わってから（SceneManager::requestChange）
+	void showResult( RaidEnding ending ) {
+		RaidResult result;
+		result.ending = ending;
+		result.seconds = static_cast< float >( gPreviewSeconds );
+		result.kills = gPreviewKills;
+		result.condition = gPreviewCondition;
+		gRaidRecord->setLastResult( result );
+		SceneManager::instance().requestChange( SceneManager::SCENE_RAID_END );
+	}
+
+	// タイトル・出撃中・結果画面のどこからでも開ける。結果画面で押し直すと、その値で作り直す
+	void drawResultPreview() {
+		ImGui::SeparatorText( "Result screen" );
+		ImGui::PushID( "ResultPreview" );	// World タブの Raid の欄と同じ名前のコンボを置くため
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x * kSliderWidthRatio );
+		if ( ImGui::InputInt( "Time (s)", &gPreviewSeconds ) ) {
+			gPreviewSeconds = std::max( gPreviewSeconds, kMinPreviewValue );
+		}
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x * kSliderWidthRatio );
+		if ( ImGui::InputInt( "Kills", &gPreviewKills ) ) {
+			gPreviewKills = std::max( gPreviewKills, kMinPreviewValue );
+		}
+		ImGui::SetNextItemWidth( ImGui::GetContentRegionAvail().x * kSliderWidthRatio );
+		enumCombo( "Condition", &gPreviewCondition, dayConditionName );
+		if ( ImGui::Button( "Show escaped" ) ) {
+			showResult( RaidEnding::Escaped );
+		}
+		ImGui::SameLine();
+		if ( ImGui::Button( "Show game over" ) ) {
+			showResult( RaidEnding::Killed );
+		}
+		ImGui::PopID();
+	}
+
 	void drawVSyncAndLightingPreset() {
 		GameLib::Graphics::Manager graphics = GameLib::Graphics::Manager::instance();
 		bool vsync = graphics.isVSync();
@@ -530,6 +579,7 @@ void draw() {
 			}
 			if ( ImGui::BeginTabItem( "Scene" ) ) {
 				drawScene();
+				drawResultPreview();
 				ImGui::EndTabItem();
 			}
 			if ( ImGui::BeginTabItem( "Render" ) ) {

@@ -4,8 +4,6 @@
 #include "GameSrc/Scene/IScene.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
 #include "GameSrc/Scene/Game/World/SceneRenderer.h"
-#include "GameSrc/Interaction/Item/Inventory.h"
-#include "GameSrc/Interaction/Interactor.h"
 #include "GameSrc/Player/Camera/FirstPersonControl.h"
 #include "GameSrc/Scene/Game/PlayerFeedback.h"
 #include "GameSrc/Scene/Game/Hud/HudController.h"
@@ -43,7 +41,7 @@ class EscapeCarComponent;
 //   世界（町・キャラ・物・当たり判定）  … GameWorld
 //   世界を描く                          … WorldRenderer
 //   入力と視点                          … FirstPersonControl
-//   見ている物を使う                    … Interactor（持ち物は Inventory）
+//   見ている物を使う                    … 自キャラの InteractorComponent（シーンは 1 回の描画に 1 回 look を呼ぶだけ。持ち物も自キャラの InventoryComponent）
 //   出来事を自キャラへ返す（当たった音・揺れ・攻撃された反応・足音・反動とぶれ）… PlayerFeedback
 //     （攻撃された・死んだ後の見せ方の量は PlayerDamageView。画面の赤み・暗さは PostProcess、視点の下がりは FirstPersonControl へ渡す）
 //   出撃の始めの形（カバン・条件）      … RaidStart（F6 で固定した条件は RaidRecord）
@@ -95,20 +93,18 @@ private:
 	GameWorld mWorld;			// 世界。今回の条件（停電・霧など）も世界が持つ。他の部品が中の物（名簿・地面・町の配置）を借りるので、先に宣言する（＝後に破棄される）
 	// 世界を画面へ写す（ディファードのパイプライン。View）。mWorld を読むので、mWorld より後に宣言する（＝先に破棄される）
 	SceneRenderer mSceneRenderer;
-	Inventory mInventory;
-	Interactor mInteractor;
 	// 1 回の出撃（mWorld の町の脱出の車の候補を借りるので、mWorld より後に宣言する）
 	// 選んだ車のそばの始めの向きを mControl が読むので、mControl より先に宣言する
 	RaidSession mSession;
 	FirstPersonControl mControl;
 	PlayerFeedback mFeedback;	// このティックの出来事を自キャラの視点・音・画面へ返す（足元の材質を mWorld の町から借りるので、その後に宣言する）
-	HudController mHud;			// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld/mInventory を借りるので、その後に宣言する
+	HudController mHud;			// 遊んでいる間の画面表示（始めの知らせ・弾数・使える物のマーク）。mWorld を借りるので、その後に宣言する
 	// 出撃のロードの段階（mWorld と、mSession が選んだ脱出の車の置き場所を使うので、その後に宣言する）
 	LoadingPhase mLoad;
 	PauseMenu mPauseMenu;
 	ModalController mModals;	// 全画面のモーダル（一時停止・カバン・漁り）の状態と、開閉の共通遷移（音を止める・カーソル）。mControl と音を借りるので、その後に宣言する
-	BagController mBag;			// カバン（持ち物のマス目）の開閉と操作。mInventory/mWorld/mControl/mModals を借りるので、その後に宣言する
-	// 漁れる場所・給油の待ちと中を見る画面。mWorld/mInventory/音/mModals/mSession を借りるので、その後に宣言する
+	BagController mBag;			// カバン（持ち物のマス目）の開閉と操作。mWorld/mControl/mModals を借りるので、その後に宣言する
+	// 漁れる場所・給油の待ちと中を見る画面。mWorld/音/mModals/mSession を借りるので、その後に宣言する
 	LootController mLoot;
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR

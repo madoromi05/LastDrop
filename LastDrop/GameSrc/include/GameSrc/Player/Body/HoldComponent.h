@@ -5,6 +5,7 @@
 #include "GameLib/Math/Matrix34.h"
 #include "GameSrc/World/Component.h"
 #include "GameSrc/World/GameObjectHandle.h"
+#include "GameSrc/Component/ILightSocket.h"
 #include "GameSrc/Weapon/WeaponStance.h"
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include <memory>
@@ -32,7 +33,9 @@ class FirstPersonBodyComponent;
 // （あちらがこの部品を読み、この部品はあちらを知らない）
 // 銃をしまう操作は無い。手に持った銃はいつも出していて、持ち替え・捨てた瞬間に手へ現れる・消える（出し入れのアニメが無いため）
 // 撃つ・リロードを始めるかを決めるのは PlayerComponent（ここは「持っている銃」と「構え」を答え、頼まれたら銃へ伝える）
-class HoldComponent : public Component{
+// 持った銃の光の部品（LightComponent・MuzzleFlashComponent）へ、光の出る所（銃口）を答える相手として自分を渡す
+// 銃は置き場所を持たないので、持ち替える・手放すたびに渡し直す
+class HoldComponent : public Component, public ILightSocket{
 public:
 	// weapons: 持てる銃（GunComponent・WeaponModelComponent の付いた物。1 種類 1 丁）。nullptr は飛ばす。所有権は受け取らない
 	// （持ち主は GameObjectWorld）。この部品より長く生きていること。始めは素手で、最初の syncWithInventory でカバンの銃を持つ
@@ -68,13 +71,18 @@ public:
 	bool muzzle( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const;	// 銃口の今の位置（ワールド）と向き（長さ1）。銃を持っていない・まだポーズが無ければ false（out は変えない）
 	void draw() const;																			// 手に持っている銃と弾倉を描く（持つ側の見た目を描いた後に呼ぶ）
 
+	bool lightSocket( GameLib::Math::Vector3* position, GameLib::Math::Vector3* direction ) const override;	// ILightSocket。持っている銃の光の出る所は銃口（muzzle と同じ）
+
 	// Component（SkinnedModelComponent・FirstPersonBodyComponent が要る）
 	// awake：持つ側の形を借りる。start：手の骨を引く（銃を持たせるのは最初の syncWithInventory）
+	// onDestroy：持っている銃の光の部品から自分を外す（消えた部品を指したままにしない）
 	void awake() override;
 	void start() override;
+	void onDestroy() override;
 
 private:
 	void bindWeapon( GameObject* held );						// held を手に持たせる（nullptr なら素手）。銃の部品を借り直し、一人称の体へ持ち方を渡す
+	void plugLightSockets( const ILightSocket* socket ) const;	// 今持っている物の光の部品へ、光の出る所を答える相手を渡す（nullptr で外す）。どちらも外せる部品なので、無ければ飛ばす
 	GameObject* findWeapon( ItemId item ) const;				// 持てる銃のうち、カバンの物 item の銃（無ければ nullptr）
 	bool weaponPlacement( GameLib::Math::Matrix34* out ) const;	// 銃の今の置き場所（銃のモデル座標 → ワールド）。持っていない・まだポーズが無ければ false
 

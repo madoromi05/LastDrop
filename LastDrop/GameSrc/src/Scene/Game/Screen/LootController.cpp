@@ -1,6 +1,6 @@
 #include "GameSrc/Scene/Game/Screen/LootController.h"
 #include "GameSrc/Scene/Game/Screen/ModalController.h"
-#include "GameSrc/Interaction/Item/Inventory.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 #include "GameSrc/Interaction/Item/MagazineSync.h"
 #include "GameSrc/Interaction/IInteractable.h"
@@ -30,10 +30,9 @@ namespace{
 	const char* kFuelPortTitle = "給油口"; // 脱出の車を開けた画面の右の見出し
 }
 
-LootController::LootController( GameWorld* world, Inventory* inventory, AudioEngine* audio, ModalController* modals, RaidSession* session,
+LootController::LootController( GameWorld* world, AudioEngine* audio, ModalController* modals, RaidSession* session,
 	UiRenderer* ui ) :
 	mWorld( world ),
-	mInventory( inventory ),
 	mAudio( audio ),
 	mModals( modals ),
 	mSession( session ),
@@ -154,7 +153,7 @@ void LootController::openLoot( GameObject* target, GridRule lootRule ) {
 	ASSERT( target && "LootController::openLoot : target is null." );
 	mTarget = GameObjectHandle( target );
 	// 銃のマスの「弾倉の数/大きさ」を今の数にする（場所へ置いていった銃も、その数のまま残る。カバンを開くときと同じ）
-	storeMagazineRounds( *mInventory, *mWorld );
+	storeMagazineRounds( *inventory(), *mWorld );
 	mScreen.open( lootRule );
 	mModals->enter( ModalController::Mode::Loot ); // 一時停止と同じ遷移（音を止め、入力を放し、カーソルを外す）
 }
@@ -165,7 +164,7 @@ void LootController::closeLoot() {
 	bool refuel = car && car->isTankFull();
 	mTarget = GameObjectHandle();
 	// カバンへ入れた銃（場所から拾った銃）の弾倉の数を、銃の物へ入れる（場所の中の銃は込めた数を持つ。木箱のライフルは 0）
-	restoreMagazineRounds( *mInventory, *mWorld );
+	restoreMagazineRounds( *inventory(), *mWorld );
 	mModals->exit(); // 注ぐ音を鳴らす前に音を戻す（exit が setPaused(false)）
 	if ( refuel ) {
 		beginRefuel( car );
@@ -189,7 +188,11 @@ void LootController::handleInput() {
 		closeLoot();
 		return;
 	}
-	mScreen.handleInput( mInventory->gridForTransfer(), grid );
+	mScreen.handleInput( inventory()->gridForTransfer(), grid );
+}
+
+Inventory* LootController::inventory() const {
+	return InventoryComponent::inventoryOf( mWorld->player() );
 }
 
 LootContainerComponent* LootController::lootTarget() const {
@@ -216,7 +219,7 @@ const char* LootController::openedTitle() const {
 }
 
 void LootController::draw( ItemId equippedWeapon ) {
-	mScreen.draw( mInventory->grid(), *openedGrid(), openedTitle(), equippedWeapon );
+	mScreen.draw( inventory()->grid(), *openedGrid(), openedTitle(), equippedWeapon );
 }
 
 bool LootController::hasOpenGrid() const {

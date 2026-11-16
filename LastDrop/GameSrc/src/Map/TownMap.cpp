@@ -3,7 +3,7 @@
 #include <cmath>
 
 namespace{
-	// ── 道路キットの部品の大きさ（m）。tools/configs/road_*.json で、実寸のまま変換してある ──
+	// ── 道路キットの部品の大きさ（m）
 	const float kTileLength = 5.70f;							// 直線の道路・歩道の帯・床の部品1枚の長さ（キット全体の単位）
 	const float kRoadWidth = 7.71f;								// 車道の幅（二車線）
 	const float kCurbWidth = 1.43f;								// 縁石つきの歩道の帯の幅
@@ -88,7 +88,7 @@ namespace{
 	};
 	const float kLotOffset = 0.25f * kBlockSize; // ブロックの中心から建物の中心まで
 
-	// ── 町を囲む建物（足元の板の無い形。tools/configs/building_noground.json）──
+	// ── 町を囲む建物）──
 	// 外周の道の外側の歩道に正面の壁を合わせ、壁どうしが付く間隔で並べて、町の外へ出られなくする
 	const float kBuildingBodyWidth = 7.83f;  // 建物の本体の幅（正面から見た左右。両端の柱まで）
 	const float kBuildingFrontDepth = 3.94f; // 建物の中心から正面の壁まで
@@ -160,15 +160,15 @@ namespace{
 	const float kFaceRoadFromWest = 90.f;
 
 	// ── 街灯（ランタン型の柱。光は柱の頭から） ──
-	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる
+	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に立てる。どれも歩道の帯（縁石の上）に立てる
 	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）
-	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）
+	// 区間の柱は、外周の道なら両側の歩道に向かい合わせで 2 本立てる。外側の歩道は、囲む建物の前の帯
+	// 中の道なら 1 本で、区間ごとに左右を入れ替える（同じ側に並んで見えないように）
 	const float kLampFromCurb = 0.5f;						// 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
 	const float kLampPastJunction = 1.5f;					// 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
 	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）
 	const float kLampClearance = 3.f;
 	const float kLampDodge = 4.f;
-	const float kLampDarkCarDistance = 0.5f * kBlockSize;	// 脱出の車の置き場所からこれより近い区間の柱は立てない（「車は光なし」の決まり）。区間の長さの半分
 	// 柱の向き（ランタンは柱の真上なので見た目だけ）。道に沿わせる
 	const float kLampAlongEastWest = kAsBuilt;
 	const float kLampAlongNorthSouth = kQuarterTurn;
@@ -385,7 +385,6 @@ namespace{
 		}
 	}
 
-
 	// 消火栓の置き場所（足元は歩道の面の高さ）
 	TownPlacement hydrantPlacement( const HydrantSpot& spot ) {
 		float x = roadX( static_cast< float >( spot.column ) ) + spot.sideX * ( 0.5f * kRoadWidth + kHydrantFromCurb );
@@ -423,19 +422,10 @@ namespace{
 		return lamp;
 	}
 
-	bool nearEscapeCar( const TownPlacement& lamp, const std::vector< TownEscapeCarSpot >& cars ) {
-		for ( const TownEscapeCarSpot& car : cars ) {
-			if ( squaredFlatDistance( lamp, car.placement ) < kLampDarkCarDistance * kLampDarkCarDistance ) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び。cars: 脱出の車の置き場所（近くの区間には立てない）
 	void addStreetLamps( std::vector< TownPlacement >* lamps, const std::vector< const std::vector< TownPlacement >* >& props,
 	const std::vector< TownEscapeCarSpot >& cars ) {
-		const float curbToLamp = 0.5f * kRoadWidth + kLampFromCurb;          // 道の中心から柱まで（道を横切る向き）
+		const float curbToLamp = 0.5f * kRoadWidth + kLampFromCurb;           // 道の中心から柱まで（道を横切る向き）
 		const float junctionToLamp = 0.5f * kStreetWidth + kLampPastJunction; // 交差点の中心から柱まで（道に沿う向き）
 		const float kEast = 1.f;
 		const float kSouth = 1.f;
@@ -457,8 +447,10 @@ namespace{
 			for ( int column = 0; column + 1 < kColumnNumber; ++column ) {
 				float side = perimeter ? towardCenter( row, kRowNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kSouth : -kSouth );
 				TownPlacement lamp = { roadX( column + 0.5f ), kSidewalkHeight, roadZ( static_cast< float >( row ) ) + side * curbToLamp, kLampAlongEastWest };
-				if ( !nearEscapeCar( lamp, cars ) ) {
-					lamps->push_back( dodgeProps( lamp, kEast, kNone, props ) );
+				lamps->push_back(dodgeProps(lamp, kEast, kNone, props));
+				if ( perimeter ) {
+					TownPlacement outer = { roadX( column + 0.5f ), kSidewalkHeight, roadZ( static_cast< float >( row ) ) - side * curbToLamp, kLampAlongEastWest };	// 内側の柱の向かいの、外側の歩道
+					lamps->push_back( dodgeProps( outer, kEast, kNone, props ) );
 				}
 			}
 		}
@@ -467,8 +459,10 @@ namespace{
 			for ( int row = 0; row + 1 < kRowNumber; ++row ) {
 				float side = perimeter ? towardCenter( column, kColumnNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kEast : -kEast );
 				TownPlacement lamp = { roadX( static_cast< float >( column ) ) + side * curbToLamp, kSidewalkHeight, roadZ( row + 0.5f ), kLampAlongNorthSouth };
-				if ( !nearEscapeCar( lamp, cars ) ) {
-					lamps->push_back( dodgeProps( lamp, kNone, kSouth, props ) );
+				lamps->push_back( dodgeProps( lamp, kNone, kSouth, props ) );
+				if ( perimeter ) {
+					TownPlacement outer = { roadX( static_cast< float >( column ) ) - side * curbToLamp, kSidewalkHeight, roadZ( row + 0.5f ), kLampAlongNorthSouth };	// 内側の柱の向かいの、外側の歩道
+					lamps->push_back( dodgeProps( outer, kNone, kSouth, props ) );
 				}
 			}
 		}

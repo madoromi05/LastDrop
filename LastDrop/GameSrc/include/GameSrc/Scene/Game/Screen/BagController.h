@@ -16,8 +16,8 @@ enum class PlayerCondition;
 // 開閉の共通遷移（音/カーソル）は ModalController、見た目は InventoryScreen、HUD の弾数や脱出点の文面は GameScene が持つ
 class BagController{
 public:
-	BagController( Inventory* inventory, GameWorld* world, FirstPersonControl* control, ModalController* modals, UiRenderer* ui );	// inventory/world/control/modals: 借りるだけ（所有しない）。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
-	// 開けるか（自キャラが生きている）。観察用カメラ中・死亡の最終判断は呼び出し側で足す
+	BagController( GameWorld* world, FirstPersonControl* control, ModalController* modals, UiRenderer* ui );	// world/control/modals: 借りるだけ（所有しない）。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
+	// 開けるか（自キャラの持ち物があって、生きている）。観察用カメラ中・死亡の最終判断は呼び出し側で足す
 	bool canOpen() const;
 	void open();
 	void close();
@@ -36,9 +36,9 @@ private:
 	void useFromBag( int cell );
 	bool isPlayerInjured() const;
 	PlayerCondition playerCondition() const;
+	Inventory* inventory() const;				// 自キャラの持ち物（自キャラが居なければ nullptr）。覚えずに、使うたびに自キャラの部品から引く。開いている間は必ず在る（canOpen）
 	ItemId equippedWeapon() const;				// 手に持っている銃の物（素手・自キャラがいなければ ITEM_NONE）。マスの「E」の印と Equip に使う
 
-	Inventory* mInventory;			// 借りているだけ
 	GameWorld* mWorld;				// 借りているだけ
 	FirstPersonControl* mControl;	// 借りているだけ（捨てる向きのため）
 	ModalController* mModals;		// 借りているだけ（開閉の共通遷移）

@@ -24,7 +24,7 @@ struct PlayerCommand;
 // 開閉の共通遷移は ModalController、弾倉同期は MagazineSync、見た目は LootScreen。HUD の棒と見出しは GameScene が本クラスへ問い合わせて描く
 class LootController{
 public:
-	LootController( GameWorld* world, Inventory* inventory, AudioEngine* audio, ModalController* modals, RaidSession* session, UiRenderer* ui );	// world/inventory/audio/modals/session: 借りるだけ。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
+	LootController( GameWorld* world, AudioEngine* audio, ModalController* modals, RaidSession* session, UiRenderer* ui );						// world/audio/modals/session: 借りるだけ。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
 	~LootController();																																// 開けている間の音・エンジンの音を止める（音の道具は次のシーンも使う）
 	void beginLoot( IInteractable* opened );																										// E で漁れる場所・脱出の車 opened を選んだ。開けた所ならすぐ中を見る画面、まだなら開け始める。脱出の車は待たずに給油口を開く
 	// 開けている途中を取りやめる（音を止める）。開けていなければ何もしない
@@ -53,9 +53,9 @@ private:
 	// 中を見ているマス目と、右の見出し（消えた・開いていなければ nullptr）
 	ItemGrid* openedGrid() const;
 	const char* openedTitle() const;
+	Inventory* inventory() const;	// 自キャラの持ち物。覚えずに、使うたびに自キャラの部品から引く。中を見る画面は自キャラが E で開くので、開いている間は必ず在る
 
 	GameWorld* mWorld;         // 借りているだけ
-	Inventory* mInventory;     // 借りているだけ
 	AudioEngine* mAudio;       // 借りているだけ
 	ModalController* mModals;  // 借りているだけ（開閉の共通遷移）
 	RaidSession* mSession;     // 借りているだけ（給油で脱出の円を開く）

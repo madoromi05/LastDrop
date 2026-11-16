@@ -12,7 +12,6 @@ class GameWorld;
 class EffectManager;
 class Building;
 class DrawCulling;
-struct LightSource;
 
 // 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-1）
 // 持ち主はシーン（GameScene）。世界は描き方を知らない（描く順・間引き・パイプラインを変えても、世界の進め方は変わらない）
@@ -59,12 +58,10 @@ public:
 	// 撃った瞬間に銃口が光る板を描く。呼ぶ場所の決まりは drawImpactDust と同じ（加算なので順番は問わない）
 	// 銃口の位置は、描くたびに自キャラの今の銃から取り直す
 	void drawMuzzleFlash( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& viewDirection ) const;
-	// 撃った瞬間に銃口の前に灯す点光源。光っていない・自キャラが銃を構えていなければ false（out は変えない）
-	// シーンがライトの一覧（LightList）を作るときに読む。out: nullptr 不可
-	bool muzzleLight( LightSource* out ) const;
 
 private:
-	void drawZombies( const DrawCulling& culling ) const;	// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
+	void drawZombies( const DrawCulling& culling ) const;		// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
+	void drawSeveredLimbs( const DrawCulling& culling ) const;	// 千切れた部位の物を全部たどり、culling で描くと決まった物だけ描く（同じ 2 か所から。ゾンビの後）
 	void drawPlayer() const;								// 自キャラの体と、手に持っている銃を描く（drawFirstPerson・drawShadowCasters から）
 	void beginBuildings();									// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
 	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ

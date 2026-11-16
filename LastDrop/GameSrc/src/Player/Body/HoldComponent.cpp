@@ -6,6 +6,7 @@
 #include "GameSrc/Component/LightComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/Weapon/WeaponModelComponent.h"
+#include "GameSrc/Effect/MuzzleFlashComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
@@ -86,6 +87,10 @@ void HoldComponent::start() {
 	}
 }
 
+void HoldComponent::onDestroy() {
+	plugLightSockets( nullptr );
+}
+
 bool HoldComponent::equip( ItemId item ) {
 	GameObject* weapon = findWeapon( item );
 	if ( !weapon || weapon == mHeld.get() ) {
@@ -127,6 +132,7 @@ void HoldComponent::bindWeapon( GameObject* held ) {
 	if ( mGun ) {
 		mGun->cancelReload(); // 替えている途中の銃を手放す（弾は込めない）
 	}
+	plugLightSockets( nullptr ); // 手放す銃は、もう光の出る所が無い
 	mHeld = GameObjectHandle( held );
 	mGun = nullptr;
 	mLight = nullptr;
@@ -143,6 +149,7 @@ void HoldComponent::bindWeapon( GameObject* held ) {
 	mWeaponModel = model;
 	mGun = gun;
 	mLight = held->getComponent< LightComponent >();
+	plugLightSockets( this );
 	// 腕のポーズ（拳銃の構え）は ArmPoseComponent が、持っている銃が替わったのに気付いて取り直す
 	Matrix34 grip = model->gripInHand();
 	mHeldItem = std::make_unique< HeldItem >( model->weapon(), mHandBone, grip );
@@ -172,6 +179,19 @@ GunComponent* HoldComponent::heldGun( const GameObject* holder ) {
 
 LightComponent* HoldComponent::light() const {
 	return mGun ? mLight : nullptr;
+}
+
+void HoldComponent::plugLightSockets( const ILightSocket* socket ) const {
+	GameObject* held = mHeld.get();
+	if ( !held ) {
+		return;
+	}
+	if ( LightComponent* light = held->getComponent< LightComponent >() ) {
+		light->setSocket( socket );
+	}
+	if ( MuzzleFlashComponent* flash = held->getComponent< MuzzleFlashComponent >() ) {
+		flash->setSocket( socket );
+	}
 }
 
 GameObject* HoldComponent::heldObject() const {
@@ -233,6 +253,10 @@ bool HoldComponent::muzzle( Vector3* position, Vector3* direction ) const {
 	}
 	mWeaponModel->muzzle( gun, position, direction );
 	return true;
+}
+
+bool HoldComponent::lightSocket( Vector3* position, Vector3* direction ) const {
+	return muzzle( position, direction );
 }
 
 void HoldComponent::draw() const {

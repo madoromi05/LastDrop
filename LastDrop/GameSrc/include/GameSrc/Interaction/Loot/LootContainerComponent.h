@@ -29,7 +29,7 @@ public:
 	// IInteractable
 	// 開けていない所はいつも使える。開けた所は、中身が残っている間だけ（空なら灰色のマーク）
 	bool canInteract( const Inventory& inventory ) const override;
-	void interact( Inventory* inventory ) override;     // 呼ばれない（Interactor は lootGrid のある物を使わずに opened へ回す）
+	void interact( Inventory* inventory ) override;     // 呼ばれない（InteractorComponent は lootGrid のある物を使わずに opened へ回す）
 	bool offeredStack( ItemStack* out ) const override; // 拾う物ではないので false
 	void takeOffered( int count ) override;             // 呼ばれない
 	ItemGrid* lootGrid() override;

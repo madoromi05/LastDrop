@@ -14,6 +14,8 @@
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
 #include "GameSrc/Player/PlayerLocomotionComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
+#include "GameSrc/Interaction/InteractorComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/Weapon/WeaponModelComponent.h"
 #include "GameSrc/Effect/MuzzleFlashComponent.h"
@@ -24,11 +26,12 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
-	const char* kPlayerFile = "Resource/Model/Character/player.txt"; // tools/configs/player.json で変換
-	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある（tools/configs/pistol.json・rifle.json などで変換）
+	// ── 自キャラ
+	const char* kPlayerFile = "Resource/Model/Character/player.txt";
+	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある
 	// 骨の名前の頭の共通部分（部位ごとの当たり判定で骨を引くのに使う）
 	const char* kBoneNamePrefix = "mixamorig:";
+	const float kInteractReach = 2.5f; // 見ている物を使うときに手が届く距離（m）。足元の缶を立ったまま拾える長さ
 
 	// ── 物の名前（確認用。F6 のエディタの物の一覧・デバッグ出力。ゲームの判断はタグで行う）──
 	const char* kPlayerName = "Player";
@@ -49,11 +52,11 @@ bool PlayerFactory::isReady() const {
 	return mPlayerData->isReady();
 }
 
-GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree ) const {
+GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& position, float yawDegree, const ItemGrid& startBag ) const {
 	// HoldComponent が銃を手に持たせ、PlayerComponent が操作を読んで部品へ頼む。付ける順は自由
 	// （部品は awake で自分の物を作り、start で隣の部品を借りる）
-	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise）は、行を消せばその振る舞いだけ無くなる
-	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない）
+	// 外せる部品（Hold・ArmPose・PlayerHealth・Hitbox・PlayerGrab・PlayerNoise・Interactor）は、行を消せばその振る舞いだけ無くなる
+	// （素手・腕はアニメのまま・死なない・撃たれない・襲われない・音を立てない・物を見ても使えない）
 	// ただし Input の段で動く 2 つ（PlayerComponent → PlayerNoise）は、この順に付ける（同じ段の中は付けた順に動く
 	// 音は、動いた後の足元・撃った後の銃を読むため）
 	std::vector< const GameObject* > weapons;
@@ -68,6 +71,8 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 	obj->addComponent< ArmPoseComponent >();
 	obj->addComponent< PlayerLocomotionComponent >();
 	obj->addComponent< PlayerHealthComponent >();
+	obj->addComponent< InventoryComponent >( startBag ); // 持ち物（カバン）。カバンの銃を持つ・予備の弾を込めるのに PlayerComponent が借りる
+	obj->addComponent< InteractorComponent >( kInteractReach ); // 見ている物を E で使う。シーンが 1 回の描画に 1 回呼ぶ（段では動かない）
 	obj->addComponent< HitboxComponent >( mPlayerData, kBoneNamePrefix );
 	obj->addComponent< CharacterColliderComponent >();
 	obj->addComponent< PlayerFootprintComponent >(); // 移動の当たり判定の形（CharacterCollider へ渡す）
@@ -88,7 +93,7 @@ GameObject* PlayerFactory::spawnWeapon( GameObjectWorld* world, WeaponId id ) co
 	GameObject* obj = world->create( GameObjectTag::Weapon, spec.name ); // 画像の obj_manager.Register( "AK47" )
 	obj->addComponent< WeaponModelComponent >( mWeaponData[ id ], magazine, spec.grip );
 	obj->addComponent< GunComponent >( spec );
-	obj->addComponent< LightComponent >();
+	obj->addComponent< LightComponent >( LightPreset::Flashlight );
 	obj->addComponent< MuzzleFlashComponent >();
 	world->spawn( obj );
 	return obj;

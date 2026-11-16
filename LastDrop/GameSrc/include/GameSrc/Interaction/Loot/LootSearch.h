@@ -8,7 +8,7 @@ class GameObject;
 
 // 漁れる場所を開けている途中（E を押してから中を見る画面が開くまで。SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q6）
 // どの場所を開けているか・経った秒・かかる秒だけを持つ。何をしたら取りやめか（動く・撃つ・構える・攻撃された・E をもう一度）を決めるのは
-// 呼ぶ側（GameScene が操作と出来事から interrupted を作る）。Interactor に足すと「見る係」と「待つ係」が混ざるので分けた
+// 呼ぶ側（GameScene が操作と出来事から interrupted を作る）。InteractorComponent に足すと「見る係」と「待つ係」が混ざるので分けた
 // 場所は GameObjectHandle で指す（開けている間に物が消えても、消えた物を指したままにならない）
 // 世界が止まっている間（一時停止・カバン）は tick を呼ばないので、待つ時間も止まる
 // 脱出の車への給油（給油口を閉じた後の RaidParams::refuelSeconds）も同じ待ち方をする

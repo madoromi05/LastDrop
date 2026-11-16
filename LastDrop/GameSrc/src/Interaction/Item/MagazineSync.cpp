@@ -7,13 +7,8 @@
 #include "GameSrc/Weapon/WeaponCatalog.h"
 
 int magazineRoundsOf( const GameObjectWorld& objects, ItemId item ) {
-	int rounds = 0;
-	objects.forEach< GunComponent >( [ item, &rounds ]( const GunComponent& gun ) {
-		if ( gun.spec().item == item ) {
-			rounds = gun.magazineRounds();
-		}
-	} );
-	return rounds;
+	const GunComponent* gun = GunComponent::find( objects, item );
+	return gun ? gun->magazineRounds() : 0;
 }
 
 void storeMagazineRounds( Inventory& inventory, const GameWorld& world ) {
@@ -34,12 +29,8 @@ void restoreMagazineRounds( Inventory& inventory, GameWorld& world ) {
 		if ( weaponForItem( stack.item ) == WEAPON_NONE ) {
 			continue;
 		}
-		ItemId item = stack.item;
-		int rounds = stack.loadedRounds;
-		world.objects().forEach< GunComponent >( [ item, rounds ]( GunComponent& gun ) {
-			if ( gun.spec().item == item ) {
-				gun.setMagazineRounds( rounds );
-			}
-		} );
+		if ( GunComponent* gun = GunComponent::find( world.objects(), stack.item ) ) {
+			gun->setMagazineRounds( stack.loadedRounds );
+		}
 	}
 }

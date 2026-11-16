@@ -10,7 +10,7 @@ class GameObjectWorld;
 // カバンのマスに出す銃の弾倉数と、世界の銃の物が持つ本当の弾倉数を同期する
 // 町の中では銃の物が本当の数を持ち、カバンのマスはその写し
 // カバン/漁りの画面を開くとき store、閉じるとき・出撃のロード直後に restore を呼ぶ
-// 銃の物を種類で引くのはここだけ（銃は 1 種類 1 丁なので、種類で引ける）
+// 銃の物は種類で引く（GunComponent::find。銃は 1 種類 1 丁なので、種類で引ける）
 
 int magazineRoundsOf( const GameObjectWorld& objects, ItemId item );		// 世界の銃の物 item（ITEM_KIND_WEAPON）の弾倉に入っている弾の数（その銃が無ければ 0）
 void storeMagazineRounds( Inventory& inventory, const GameWorld& world );	// 世界の銃の物をカバンの対応するマスへ書き写す（画面を開く直前に）

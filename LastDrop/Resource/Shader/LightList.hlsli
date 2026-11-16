@@ -5,7 +5,7 @@
 
 #include "Common.hlsli"
 
-static const uint kMaxLights = 16; // LightList.h の kMaxLights と揃える
+static const uint kMaxLights = 30; // LightList.h の kMaxLights と揃える
 static const uint kMaxShadowMaps = 4; // LightList.h の kMaxShadowMaps と揃える
 
 // LightList.h の LightKind と同じ番号

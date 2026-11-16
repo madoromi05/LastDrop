@@ -5,6 +5,7 @@
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/World/GameObject.h"
@@ -39,7 +40,6 @@ GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
 	EditorWindow::setInventory( nullptr ); // カバンも同じ
 	EditorWindow::setRaid( nullptr );
-	EditorWindow::setRaidRecord( nullptr );
 	EditorWindow::setInteraction( nullptr );
 	EditorWindow::setWorld( nullptr );
 }
@@ -48,7 +48,7 @@ void GameEditorBridge::markReady() {
 	mFireProbe.markReady();
 }
 
-void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera ) {
+void GameEditorBridge::publish( GameWorld* world, RaidSession* session, bool freeCamera ) {
 	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（Debug と Profile ビルドだけで効く）
 	GameObject* player = world->player();
 	bool& invincibleRequested = debugSwitches().toggleInvincible;
@@ -63,9 +63,8 @@ void GameEditorBridge::publish( GameWorld* world, Inventory* inventory, RaidSess
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
 	EditorWindow::setFreeCameraActive( freeCamera );
 	EditorWindow::setObjects( &world->objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
-	EditorWindow::setInventory( inventory );       // F6 の Inventory の欄（物を足す・行を増やす）
+	EditorWindow::setInventory( InventoryComponent::inventoryOf( player ) ); // F6 の Inventory の欄（物を足す・行を増やす）。自キャラが居なければ出さない
 	EditorWindow::setRaid( session );              // F6 の Raid の欄（経った時間・すぐ脱出）
-	EditorWindow::setRaidRecord( record );         // 同じ欄の、次の出撃の条件
 	EditorWindow::setWorld( world );               // 同じ欄の、今の出撃の条件を切り替える
 	EditorWindow::setInteraction( &world->interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
 }

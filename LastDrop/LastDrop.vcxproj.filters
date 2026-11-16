@@ -229,6 +229,9 @@
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieCorpseComponent.cpp">
       <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\Component\SeveredLimbComponent.cpp">
+      <Filter>GameSrc\Zombie\Component</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieBrainComponent.cpp">
       <Filter>GameSrc\Zombie\Component</Filter>
     </ClCompile>
@@ -275,6 +278,12 @@
       <Filter>GameSrc\Effect</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Component\StaticModelComponent.cpp">
+      <Filter>GameSrc\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Component\LightComponent.cpp">
+      <Filter>GameSrc\Component</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Component\LightPreset.cpp">
       <Filter>GameSrc\Component</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Component\HitboxComponent.cpp">
@@ -511,6 +520,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieCorpseComponent.h">
       <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\SeveredLimbComponent.h">
+      <Filter>GameSrc\Zombie\Component</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieChaseComponent.h">
       <Filter>GameSrc\Zombie\Component</Filter>
     </ClInclude>
@@ -571,6 +583,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemComponent.h">
       <Filter>GameSrc\Interaction\Item</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\InventoryComponent.h">
+      <Filter>GameSrc\Interaction\Item</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h">
       <Filter>GameSrc\Effect</Filter>
     </ClInclude>
@@ -584,6 +599,12 @@
       <Filter>GameSrc\Component</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Component\LightComponent.h">
+      <Filter>GameSrc\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Component\LightPreset.h">
+      <Filter>GameSrc\Component</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Component\ILightSocket.h">
       <Filter>GameSrc\Component</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Component\HitboxComponent.h">
@@ -783,6 +804,9 @@
     <ClCompile Include="GameSrc\src\Interaction\Item\Inventory.cpp">
       <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Interaction\Item\InventoryComponent.cpp">
+      <Filter>GameSrc\Interaction\Item</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\Item\ItemGrid.cpp">
       <Filter>GameSrc\Interaction\Item</Filter>
     </ClCompile>
@@ -870,7 +894,7 @@
     <ClCompile Include="GameSrc\src\Scene\Result\GameOverPage.cpp">
       <Filter>GameSrc\Scene\Result</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp">
+    <ClCompile Include="GameSrc\src\Interaction\InteractorComponent.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp">
@@ -1194,7 +1218,7 @@
     <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimb.cpp">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimbList.cpp">
+    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimbFactory.cpp">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombieChase.cpp">
@@ -2045,7 +2069,10 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\GameOverPage.h">
       <Filter>GameSrc\Scene\Result</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\InteractorComponent.h">
+      <Filter>GameSrc\Interaction</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractFinder.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h">
@@ -2471,7 +2498,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimb.h">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimbList.h">
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimbFactory.h">
       <Filter>GameSrc\Zombie\Damage</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieChase.h">

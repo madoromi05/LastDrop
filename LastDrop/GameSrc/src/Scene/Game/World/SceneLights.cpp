@@ -1,9 +1,9 @@
 #include "GameSrc/Scene/Game/World/SceneLights.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
 #include "GameSrc/Scene/Game/World/WorldRenderer.h"
-#include "GameSrc/World/GameObject.h"
-#include "GameSrc/Player/Body/HoldComponent.h"
+#include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Component/LightComponent.h"
+#include "GameSrc/Effect/MuzzleFlashComponent.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Render/Culling/DrawCulling.h"
 #include "GameSrc/Render/Shadow/ShadowParams.h"
@@ -73,22 +73,7 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 	if ( params.fillIntensity > 0.f ) {
 		mLights.add( directionalLight( lightDirectionFrom( params.fillElevation, params.fillAzimuth ), params.fillColor, params.fillIntensity ) );
 	}
-	// 自分の手元の光（懐中電灯・マズルフラッシュ）は、街灯より先に足す（16 個を選ぶとき、目からの距離が同じなら足した順で残るため）
-	addFlashlight( params );
-	LightSource muzzle;
-	if ( mRenderer->muzzleLight( &muzzle ) ) {
-		mLights.add( muzzle );
-	}
-	// 街灯の柱の頭（ランタンのガラスの中）から。16 個を超えた分は、LightList が目から遠い物から外す
-	// 外れた柱もガラスは光ったまま（模型の発光）
-	// 明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）
-	float streetLightIntensity = params.streetLightIntensity * mWorld->dayCondition().streetLightScale;
-	if ( streetLightIntensity > 0.f ) {
-		for ( const TownPlacement& spot : mWorld->town().map().streetLights() ) {
-			Vector3 position( spot.x, spot.y + params.streetLightHeight, spot.z );
-			mLights.add( pointLight( position, params.streetLightColor, streetLightIntensity, params.streetLightRange ) );
-		}
-	}
+	addObjectLights();
 	EnvironmentLight environment;
 	environment.skyZenithColor = params.skyZenithColor;
 	environment.skyHorizonColor = params.skyHorizonColor;
@@ -150,34 +135,53 @@ void SceneLights::addMoon( const LightingParams& params, const FirstPersonCamera
 	mLights.add( moon );
 }
 
-void SceneLights::addFlashlight( const LightingParams& params ) {
+void SceneLights::addObjectLights() {
 	mFlashlightCastsShadow = false;
-	const GameObject* player = mWorld->player();
-	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
-	const LightComponent* light = hold ? hold->light() : nullptr; // 銃に付いたライト（素手なら無い）
-	Vector3 muzzlePosition;
-	Vector3 muzzleDirection;
-	// 素手・まだポーズが無い間は銃口が無い（muzzle が false）ので照らさない。付けた状態は銃のライトが覚えている
-	if ( !light || !light->isOn() || !hold->muzzle( &muzzlePosition, &muzzleDirection ) ) {
+	const GameObjectWorld& objects = mWorld->objects();
+	objects.forEach< LightComponent >( [ this ]( const LightComponent& light ) {
+		if ( light.castsShadow() ) {
+			addShadowedLight( light );
+		}
+	} );
+	objects.forEach< MuzzleFlashComponent >( [ this ]( const MuzzleFlashComponent& flash ) {
+		LightSource source;
+		if ( flash.lightSource( &source ) ) {
+			mLights.add( source );
+		}
+	} );
+	// 街灯の明るさは調整値 × 今日の条件（停電の日は 0。調整値そのものは変えない）
+	// 照らす数の上限を超えた分は、LightList が目から遠い物から外す。外れた柱もガラスは光ったまま（模型の発光）
+	float streetLampScale = mWorld->dayCondition().streetLightScale;
+	objects.forEach< LightComponent >( [ this, streetLampScale ]( const LightComponent& light ) {
+		LightSource source;
+		if ( light.castsShadow() || !light.lightSource( &source ) ) {
+			return;
+		}
+		if ( light.preset() == LightPreset::StreetLamp ) {
+			source.intensity *= streetLampScale;
+			if ( source.intensity <= 0.f ) {
+				return;
+			}
+		}
+		mLights.add( source );
+	} );
+}
+
+void SceneLights::addShadowedLight( const LightComponent& light ) {
+	LightSource source;
+	if ( !light.lightSource( &source ) ) {
 		return;
 	}
-	Vector3 position;
-	position.setMadd( muzzlePosition, muzzleDirection, params.flashlightOffset );
-	// F6 で内側を外側より大きくしても止まらないよう、内側は外側までに抑える
-	float innerAngle = min( params.flashlightInnerAngle, params.flashlightOuterAngle );
-	LightSource flashlight = spotLight( position, muzzleDirection, params.flashlightColor, params.flashlightIntensity, params.flashlightRange,
-		innerAngle, params.flashlightOuterAngle );
-	flashlight.nearDistance = params.flashlightNearDistance;
 	// 影。光と同じ位置・向き・角度から見た深度を、drawShadowMaps が描く。F6 で影を切っている間は付けない
-	if ( shadowsEnabled() ) {
-		mFlashlightShadowMatrix = spotShadowProjectionView( position, muzzleDirection, params.flashlightOuterAngle,
-			shadowParams().flashlightNearClip, params.flashlightRange );
+	if ( shadowsEnabled() && !mFlashlightCastsShadow ) {
+		mFlashlightShadowMatrix = spotShadowProjectionView( source.position, source.direction, source.outerAngleDegree,
+			shadowParams().flashlightNearClip, source.range );
 		mLights.setShadowMap( kFlashlightShadowIndex, mFlashlightShadow.depth(), mFlashlightShadowMatrix,
-			spotShadowTexelSizeAtOneMeter( params.flashlightOuterAngle, mFlashlightShadow.size() ), kPerspectiveShadow );
-		flashlight.shadowMap = kFlashlightShadowIndex;
+			spotShadowTexelSizeAtOneMeter( source.outerAngleDegree, mFlashlightShadow.size() ), kPerspectiveShadow );
+		source.shadowMap = kFlashlightShadowIndex;
 		mFlashlightCastsShadow = true;
 	}
-	mLights.add( flashlight );
+	mLights.add( source );
 }
 
 void SceneLights::drawShadowMaps( const FirstPersonCamera& camera ) {

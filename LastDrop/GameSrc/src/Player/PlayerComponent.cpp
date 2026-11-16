@@ -5,6 +5,7 @@
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Player/PlayerGrabComponent.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
@@ -35,11 +36,10 @@ PlayerComponent::PlayerComponent() :
 	mCollider( nullptr ) {
 }
 
-void PlayerComponent::setInput( const PlayerCommand& command, float cameraYaw, float cameraPitch, Inventory* inventory ) {
+void PlayerComponent::setInput( const PlayerCommand& command, float cameraYaw, float cameraPitch ) {
 	mCommand = command;
 	mCameraYaw = cameraYaw;
 	mCameraPitch = cameraPitch;
-	mInventory = inventory;
 }
 
 UpdatePhase PlayerComponent::updatePhase() const {
@@ -47,6 +47,7 @@ UpdatePhase PlayerComponent::updatePhase() const {
 }
 
 void PlayerComponent::start() {
+	mInventory = requireComponent< InventoryComponent >();
 	mTransform = requireComponent< TransformComponent >();
 	mModel = requireComponent< SkinnedModelComponent >();
 	mBody = requireComponent< FirstPersonBodyComponent >();
@@ -55,7 +56,6 @@ void PlayerComponent::start() {
 }
 
 void PlayerComponent::update() {
-	ASSERT( mInventory && "PlayerComponent::update : inventory is null (setInput first)." );
 	// 持つ・体力・命中の部品は外せる（外すと素手・死なない・撃たれない）ので、使うたびに引く
 	HoldComponent* hold = getComponent< HoldComponent >();
 	PlayerCommand command = allowedCommand( mCommand );
@@ -93,13 +93,14 @@ void PlayerComponent::updateHands( HoldComponent* hold, const PlayerCommand& com
 	if ( !hold ) {
 		return;
 	}
+	Inventory& inventory = mInventory->inventory();
 	// 捨てた銃を手から外し、素手ならカバンの銃を持つ（このティックの構え・撃つより前に）
-	hold->syncWithInventory( *mInventory );
+	hold->syncWithInventory( inventory );
 	GunComponent* gun = hold->gun();
 	// リロード中は覗かない（覗く入力を渡さない。押したままなら、込め終えた後に押し直したとみなして覗き始める）
 	bool reloading = gun && gun->isReloading();
 	hold->updateStance( command.aimHeld && !reloading, wantsRun );
-	hold->updateReload( command.reloadPressed, mInventory );
+	hold->updateReload( command.reloadPressed, &inventory );
 	// 懐中電灯は銃に付いているので、銃を持っていれば（リロード中でも）付け外しできる
 	if ( LightComponent* light = hold->light() ) {
 		light->update( command.flashlightPressed );

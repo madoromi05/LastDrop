@@ -20,7 +20,6 @@
 class MeshCache;
 class TownCache;
 class StaticMeshData;
-class Inventory;
 class PlayerComponent;
 
 // 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
@@ -29,12 +28,13 @@ class PlayerComponent;
 //   町（地図・地面・建物・歩ける床・隠れの表） … TownEnvironment（組み立ては WorldBuilder、置物の部品の並びは PropFactory）
 //   ゾンビの数と周り・音を知らせる     … ZombieDirector（組み立ては ZombieFactory、音は ZombieHearing）
 //   自キャラ                       … PlayerFactory（自キャラの足音・銃声は、自キャラの PlayerNoiseComponent が ZombieHearing へ）
-//   弾痕・砂ぼこり・血・千切れた部位 … EffectManager
+//   弾痕・砂ぼこり・血               … EffectManager（千切れた部位は物。組み立ては SeveredLimbFactory）
 //   当たった後に何が起きるか     … CombatResolver（出来事の並びも持つ）
 //   見て E で使う物を探す         … InteractionSystem
 //   描く                         … WorldRenderer（シーンが持ち、この世界を読む。世界は描き方を知らない）
 // 名簿へ載せる・外すのは物の部品（IWorldMember）が GameObjectWorld の spawn・flush の中で行う
 // 建物・地面・飛ぶ弾・エフェクトは GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため）
+// 千切れた部位は数が少なく、1 つずつ寿命を持つので GameObject にする
 //
 // 舞台は碁盤の目の町。町の周りは建物で囲んであり、外へは出られない
 // 建物とゾンビと車は移動を止め、自キャラは当たると沿って滑る。道路と歩道は移動を止めないが、弾・視線は止める（TownGround）
@@ -46,7 +46,8 @@ public:
 	// meshes: 設計図を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所
 	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること
 	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数）。F6 の changeDayCondition で替わる
-	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition );
+	// startBag: 始めのカバンの中身（RaidStart::startBag）。写して持ち、自キャラを置くときに自キャラの持ち物へ渡す
+	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
@@ -65,12 +66,11 @@ public:
 	// 1ティック進める
 	//   Input（自キャラが操作どおりに動く・撃つ。足音・銃声をゾンビへ知らせる）→ 撃ったなら弾を出す → 弾を飛ばし、当たった所を CombatResolver が解決
 	//   → エフェクトを進める → Think（ゾンビが追う・攻撃する。噛んだら CombatResolver が自キャラの体力を減らす。沈み終えた死体は自分で消える印を付ける）→
-	//   Late（銃口が光る）→ 消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）
-	// command / cameraYaw / cameraPitch / inventory: PlayerComponent::setInput へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）
+	//   Late（銃口が光る・千切れた部位が飛ぶ）→ 消す印の付いた物を消す（flush）→ 足りなければゾンビを見えない所へ湧かせる（ZombieSpawner）
+	// command / cameraYaw / cameraPitch: PlayerComponent::setInput へそのまま渡す（cameraYaw は湧かせてよい「画面の外」を決めるのにも使う）
 	// viewDirection: 弾を出す向き（長さ1。FirstPersonCamera::weaponDirection）。弾は自キャラの目からこの向きへ飛ぶ
 	//                （画面の中央から、照準のぶれの分だけずれた所＝銃が向いている所へ飛ぶ）
-	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection,
-		Inventory* inventory );
+	void update( const PlayerCommand& command, float cameraYaw, float cameraPitch, const GameLib::Math::Vector3& viewDirection );
 
 	// 歩いて追ってくるゾンビを1体出す（倒れ方は体ごとにランダム）
 	// update の外（ティックの間）で呼ぶ（物の並びをたどっている最中に増やさない）
@@ -89,11 +89,11 @@ public:
 
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
 
-	// 見て E で使う物を探す・拾われた物を消す（Interactor の finder と、1 回の描画ごとの後片付け）
+	// 見て E で使う物を探す・拾われた物を消す（InteractorComponent が引く IInteractFinder と、1 回の描画ごとの後片付け）
 	InteractionSystem& interaction();
 	const InteractionSystem& interaction() const;
 	const CombatResolver& combat() const;	// 当たった後の出来事（音・画面の赤みの係が、update の後に読む）
-	EffectManager& effects();				// 弾痕・砂ぼこり・血・千切れた部位。描くときに並べ替えるので、WorldRenderer へ書いてよい形で貸す（描く以外には使わない）
+	EffectManager& effects();				// 弾痕・砂ぼこり・血。描くときに並べ替えるので、WorldRenderer へ書いてよい形で貸す（描く以外には使わない）
 
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
 	const TownEnvironment& town() const;			// 町（地図・道路と歩道・建物・歩ける床・隠れの表）
@@ -127,6 +127,7 @@ private:
 	// ゾンビの係が mDay を指して読むので、mZombies より先に宣言する
 	DayCondition mCondition;
 	DayConditionEffect mDay;
+	ItemGrid mStartBag;							// 始めのカバンの中身。自キャラを置くまで預かる（自キャラの持ち物が写して持つ）
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;
@@ -135,7 +136,7 @@ private:
 	CollisionWorld mCollisionWorld;				// 当たり判定の名簿。載る物を借りて持つので、載る物より先に宣言する
 	HitWorld mHitWorld;
 	BulletList mBullets;						// 飛んでいる弾。名簿には載らない（名簿へ当たりを聞くだけ）
-	EffectManager mEffects;						// 弾痕・砂ぼこり・血しぶき・千切れた部位
+	EffectManager mEffects;						// 弾痕・砂ぼこり・血しぶき・血の跡
 	std::vector< BulletList::Impact > mImpacts;	// 弾が当たった所（update の作業領域。毎回確保し直さないために持つ）
 	ZombieDirector mZombies;					// ゾンビの数と周り。ゾンビが設計図・TickContext・道探しの回数を借りるので、mObjects より先に宣言する（＝後に破棄される）
 	// 世界に置く物（自キャラ・銃・ゾンビ・落ちている物・車）。物（GameObject）に部品を付けて持つ

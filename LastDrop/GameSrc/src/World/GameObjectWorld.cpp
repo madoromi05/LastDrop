@@ -183,6 +183,8 @@ void GameObjectWorld::removeMarkedComponents() {
 	for ( GameObject* object : removalList ) {
 		// 外す印の付いた部品だけをここで外す（消す印も付いている物の残りの部品は、物ごと消すときに外れる）
 		// まだ spawn していない物は、名簿に載っていないので捨てるだけ
+		// 要られた部品を外すなら、要った部品も一緒に外すこと（片方だけ外すと、要った部品が消えた部品を指したまま残る）
+		ASSERT( object->canRemoveMarked() && "GameObjectWorld : a required component is removed without the component that required it." );
 		for ( int i = object->componentNumber() - 1; i >= 0; --i ) {
 			if ( !object->isRemovingAt( i ) ) {
 				continue;

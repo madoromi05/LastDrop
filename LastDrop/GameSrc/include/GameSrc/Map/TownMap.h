@@ -74,7 +74,7 @@ public:
 	const std::vector< TownPlacement >& fireHydrants() const;		// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）
 	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中
-	// 柱は WorldBuilder が置き、光は柱の頭（足元 + LightingParams::streetLightHeight）からシーンが出す。届く距離・色・強さも LightingParams
+	// 柱は WorldBuilder が置き、光は柱の物の LightComponent が柱の頭（足元 + LightingParams::streetLightHeight）から出す。届く距離・色・強さも LightingParams
 	const std::vector< TownPlacement >& streetLights() const;
 
 private:

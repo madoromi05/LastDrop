@@ -14,6 +14,6 @@
 | `ゾンビ/` | 追う・道探し（NavMesh）・聞く・湧く・攻撃・体力と欠損・よろけ・這う・ルートモーション・不確かさ | — |
 | `出撃と帰還/` | ゲームの作り直し（R1 マス目のカバン〜R4 走るゾンビ）、日ごとの条件、拾う、脱出の車と給油口、5 日をやめた 1 回勝負（SimpleRun_Plan） | `RaidLoop_Spec.txt` |
 | `UI/` | 一時停止・設定画面・キーの割り当て（作らない）・日本語化・物の絵・使える物のマーク・弾数・タイトル画面（RE:2 風）・メニューを RE:2 風に揃える・結果の画面を RE:2 風に揃える（ResultScreen_Plan.txt）・パッドの操作の一覧とパッド感度（PadControls_Plan.txt）・設定のページをタブに分ける（OptionsTabs_Plan.txt） | — |
-| `設計と分割/` | ComponentSystem、GameWorld・Zombie・大きいクラスの分割、小さな計算の置き場所、音の基盤のまとめ、メニューの部品のまとまり（MenuKit）、マス目の移動の重複をまとめる（ItemGridMove_Plan.txt） | — |
+| `設計と分割/` | ComponentSystem、GameWorld・Zombie・大きいクラスの分割、小さな計算の置き場所、音の基盤のまとめ、メニューの部品のまとまり（MenuKit）、マス目の移動の重複をまとめる（ItemGridMove_Plan.txt）・部品にする範囲を広げる 5 つ（1 明かり LightComponent_Plan.txt・2 銃を 1 つの物に WeaponObject_Plan.txt・3 持ち物を自キャラの部品に InventoryComponent_Plan.txt・4 見ている物を使うを自キャラの部品に InteractorComponent_Plan.txt・5 千切れた部位を物に SeveredLimbObject_Plan.txt） | — |
 
 `射撃と手応え/images/` は拳銃の構えを比べた絵（`PistolAnimation_Plan.txt` から指している）。

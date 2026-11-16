@@ -20,7 +20,9 @@
 #include "GameSrc/Raid/RaidGoal.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Interaction/IInteractable.h"
+#include "GameSrc/Interaction/InteractorComponent.h"
 #include "GameSrc/Interaction/Item/MagazineSync.h"
+#include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Interaction/Loot/LootParams.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
@@ -40,7 +42,6 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const float kInteractReach = 2.5f; // 手が届く距離（m）。足元の缶を立ったまま拾える長さ
 	// カバンの画面の見出しの下に出す、今回の脱出の車の場所
 	const char* kExitsPrefix = "脱出の車：";
 	const char* kExitsSeparator = " / ";
@@ -50,22 +51,21 @@ namespace{
 GameScene::GameScene( GameResources* resources ) :
 	mResources( resources ),
 	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）
-	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ) ),
+	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ),
+		RaidStart::startBag() ),														// 毎回同じ始めのカバン（拳銃と 9mm の弾）。自キャラの持ち物になる
 	mSceneRenderer( &mWorld ),														// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
-	mInventory( RaidStart::startBag() ),											// 毎回同じ始めのカバン（拳銃と 9mm の弾）
-	mInteractor( kInteractReach, [ this ]( const Vector3& origin, const Vector3& delta ) { return mWorld.interaction().findInteractable( origin, delta, mWorld.playerTarget() ); } ),
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
 	// キャラの向いている方（その日の車の方）を見始める
 	mControl( mWorld.town().map().escapeCarSpots()[ mSession.escapeCarSpot() ].playerStart.yawDegree, &resources->settings() ),
 	mFeedback( &resources->audio(), &mWorld.town() ),								// 出来事を自キャラの視点・音・画面へ返す
-	mHud( &mWorld, &mInventory, &resources->uiRenderer() ),							// 遊び中の画面表示（棒・弾数・マーク）
+	mHud( &mWorld, &resources->uiRenderer() ),											// 遊び中の画面表示（棒・弾数・マーク）
 	// 出撃のロード段階（mSession が選んだ脱出の車の置き場所を使うので、その後に並べる）
 	mLoad( &mWorld, &resources->meshes(), mSession.escapeCarSpot(), &resources->uiRenderer() ),
 	mPauseMenu( &resources->uiRenderer(), &resources->settings(), &resources->audio(), [ this ]() { resume(); } ),
 	mModals( &resources->audio(), &mControl ),										// 音とカーソルを借りて、モーダルの開閉の共通遷移を受け持つ
-	mBag( &mInventory, &mWorld, &mControl, &mModals, &resources->uiRenderer() ),	// カバンの開閉と操作
+	mBag( &mWorld, &mControl, &mModals, &resources->uiRenderer() ),					// カバンの開閉と操作
 	// 漁れる場所・給油（mWorld の脱出の車の候補を使う mSession を借りるので、その後に並べる）
-	mLoot( &mWorld, &mInventory, &resources->audio(), &mModals, &mSession, &resources->uiRenderer() ),
+	mLoot( &mWorld, &resources->audio(), &mModals, &mSession, &resources->uiRenderer() ),
 	mRaidFinished( false ) {
 }
 
@@ -115,8 +115,12 @@ void GameScene::beginFrame() {
 		if ( !mLoad.advance( allReady ) ) {
 			return;
 		}
-		restoreMagazineRounds( mInventory, mWorld ); // 銃の物を作った後に、始めのカバンの弾倉の数を入れる
+		// 銃の物を作った後に、始めのカバンの弾倉の数を入れる（自キャラが置けなかったら、持ち物も銃も無い）
+		if ( Inventory* inventory = InventoryComponent::inventoryOf( mWorld.player() ) ) {
+			restoreMagazineRounds( *inventory, mWorld );
+		}
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
+		GameLib::cout << "[PauseProbe] time=" << GameLib::WindowCreator().time() << " load done" << GameLib::endl;	// 一時停止の原因を確かめる間だけ置くログ
 #ifdef ZF_EDITOR
 		mEditor.markReady();
 #endif
@@ -149,6 +153,10 @@ void GameScene::handleFrameInput() {
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）
 	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように）
 	if ( ( InputMenu() || !GameLib::WindowCreator().isActive() ) && !mWorld.isPlayerDead() ) {
+		//一時停止が勝手に開く原因を確かめる間だけ置くログ
+		GameLib::cout << "[PauseProbe] time=" << GameLib::WindowCreator().time()
+			<< " pause menu=" << ( InputMenu() ? 1 : 0 )
+			<< " active=" << ( GameLib::WindowCreator().isActive() ? 1 : 0 ) << GameLib::endl;
 		pause();
 		return;
 	}
@@ -160,7 +168,7 @@ void GameScene::handleFrameInput() {
 	}
 #ifdef ZF_EDITOR
 	mFreeCamera.handleToggle( mControl.camera() );															// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）
-	mEditor.publish( &mWorld, &mInventory, &mSession, &mResources->raidRecord(), isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
+	mEditor.publish( &mWorld, &mSession, isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
 #endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう
 	if ( isFreeCameraActive() ) {
@@ -186,7 +194,7 @@ void GameScene::update() {
 	// 逆にすると W が1フレーム前の向きへの前進になり、視点も体に1フレーム遅れて、腕や銃が画面の中で揺れて見える
 	const FirstPersonCamera& camera = mControl.camera();
 	// 弾は照準のぶれを足した向き（銃が向いている所）へ飛ぶ。画面の中央（viewDirection）からは、ぶれの分だけずれる
-	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection(), &mInventory );
+	mWorld.update( mControl.command(), camera.yaw(), camera.pitch(), camera.weaponDirection() );
 	mControl.consumePressed();															// 使ったので消す（同じ描画の間の次の update で、もう一度反応しないように）
 	// 撃った手応え（当たった音・強い命中の揺れ）と、攻撃された反応（顔を向ける・怯み・音・赤み）。計測の印は中で Game.hitFeedback・Game.damage
 	mFeedback.reactToCombat( mWorld, &mControl );
@@ -284,9 +292,10 @@ void GameScene::drawUi( const FirstPersonCamera& camera ) {
 }
 
 void GameScene::updateInteraction() {
-	const GameObject* player = mWorld.player();
-	if ( !player ) {
-		mHud.clearMarkers();
+	GameObject* player = mWorld.player();
+	InteractorComponent* interactor = player ? player->getComponent< InteractorComponent >() : nullptr; // 外せる部品
+	if ( !interactor ) {
+		mHud.clearMarkers(); // 自キャラが居ない・物を使えない自キャラ（見ている物が無いので、マークも出さない）
 		return;
 	}
 	const FirstPersonCamera& camera = mControl.camera();	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）
@@ -296,13 +305,13 @@ void GameScene::updateInteraction() {
 		mLoot.cancelSearch(); // 開けている途中に E をもう一度押したら取りやめ
 		interactPressed = false;
 	}
-	mInteractor.update( camera.eyePosition(), camera.viewDirection(), &mInventory, interactPressed );
+	interactor->look( camera.eyePosition(), camera.viewDirection(), interactPressed );
 	// 拾う物は、カバンを開いて入れるマスを選ぶ。拾い終えた物は次の描画の後片付けで消える
-	if ( IInteractable* offer = mInteractor.offer() ) {
+	if ( IInteractable* offer = interactor->offer() ) {
 		mBag.startPlacing( offer );
 	}
 	// 漁れる場所は、開けるまで待ってから中を見る画面を開く
-	if ( IInteractable* opened = mInteractor.opened() ) {
+	if ( IInteractable* opened = interactor->opened() ) {
 		mLoot.beginLoot( opened );
 	}
 	mWorld.interaction().removeTakenPickups();	// 拾われた物は印を付けるだけ。実際に消えるのはティックの最後（GameWorld::update）
@@ -310,7 +319,7 @@ void GameScene::updateInteraction() {
 	if ( mWorld.isPlayerDead() ) {
 		mHud.clearMarkers();
 	} else {
-		mHud.updateMarkers( camera.eyePosition(), mInteractor.target() );
+		mHud.updateMarkers( camera.eyePosition(), interactor->target() );
 	}
 }
 

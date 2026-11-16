@@ -85,6 +85,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <TargetName>LastDrop</TargetName>
+  </PropertyGroup>
   <!-- ==================== Debug|Win32 ==================== -->
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -213,6 +216,7 @@
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieAttackComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieHealthComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieCorpseComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\Component\SeveredLimbComponent.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Component\ZombieBrainComponent.cpp" />
     <ClCompile Include="GameSrc\src\World\GameObjectHandle.cpp" />
     <ClCompile Include="GameSrc\src\World\GameObject.cpp" />
@@ -229,6 +233,8 @@
     <ClCompile Include="GameSrc\src\Interaction\PropFactory.cpp" />
     <ClCompile Include="GameSrc\src\Effect\MuzzleFlashComponent.cpp" />
     <ClCompile Include="GameSrc\src\Component\StaticModelComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\LightComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Component\LightPreset.cpp" />
     <ClCompile Include="GameSrc\src\Component\HitboxComponent.cpp" />
     <ClCompile Include="GameSrc\src\Component\CharacterColliderComponent.cpp" />
     <ClCompile Include="GameSrc\src\Component\BoxColliderComponent.cpp" />
@@ -259,6 +265,7 @@
     <ClCompile Include="GameSrc\src\Collision\WallMesh.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\ItemCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\Inventory.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\Item\InventoryComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\MagazineSync.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerGrabComponent.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryCursor.cpp" />
@@ -316,7 +323,7 @@
     <ClCompile Include="GameSrc\src\Scene\Result\ResultText.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\EscapedPage.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\GameOverPage.cpp" />
-    <ClCompile Include="GameSrc\src\Interaction\Interactor.cpp" />
+    <ClCompile Include="GameSrc\src\Interaction\InteractorComponent.cpp" />
     <ClCompile Include="GameSrc\src\Map\SpawnPicker.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownMap.cpp" />
     <ClCompile Include="GameSrc\src\Map\NavMesh.cpp" />
@@ -567,7 +574,7 @@
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieSeverLayout.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Damage\ZombieDismemberment.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimb.cpp" />
-    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimbList.cpp" />
+    <ClCompile Include="GameSrc\src\Zombie\Damage\SeveredLimbFactory.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombieChase.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombiePath.cpp" />
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombieCrowd.cpp" />
@@ -732,6 +739,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\ZombieFactory.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieDismemberComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieCorpseComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\SeveredLimbComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieChaseComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieStateComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Component\ZombieCrawlComponent.h" />
@@ -752,11 +760,14 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PickupComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\PropFactory.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\ItemComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\InventoryComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlashComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\TransformComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\StaticModelComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\SkinnedModelComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\LightComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\LightPreset.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Component\ILightSocket.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\HitboxComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\CharacterColliderComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Component\BoxColliderComponent.h" />
@@ -955,7 +966,8 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\ResultText.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\EscapedPage.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\GameOverPage.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Interaction\Interactor.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\InteractorComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Interaction\IInteractFinder.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\SpawnPicker.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownMap.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\NavMesh.h" />
@@ -1102,7 +1114,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieSeverLayout.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\ZombieDismemberment.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimb.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimbList.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Damage\SeveredLimbFactory.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieChase.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombiePath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieCrowd.h" />

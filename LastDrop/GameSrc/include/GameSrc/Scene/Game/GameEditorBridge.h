@@ -4,9 +4,7 @@
 #include "GameSrc/DebugMode/FireProbe.h"
 
 class GameWorld;
-class Inventory;
 class RaidSession;
-class RaidRecord;
 class FirstPersonCamera;
 class FirstPersonControl;
 class ModalController;
@@ -25,8 +23,9 @@ public:
 
 	void markReady();							// 出撃のロードが終わった（FireProbe が、そこから記録を始める）
 	// 描画ごとに、F6 で頼まれた自キャラの無敵の切り替え（DebugSwitches::toggleInvincible）を行い、F6 のエディタへ今の物を渡す（エディタの欄が読む・書く）
-	// 世界・カバン・出撃・出撃の間で受け渡す物はどれも借りるだけ（このシーンの間だけ指す）。freeCamera: 観察用カメラを使っているか（F6 に出す）
-	void publish( GameWorld* world, Inventory* inventory, RaidSession* session, RaidRecord* record, bool freeCamera );
+	// 世界・出撃はどちらも借りるだけ（このシーンの間だけ指す）。カバンは世界の自キャラの持ち物を渡す。freeCamera: 観察用カメラを使っているか（F6 に出す）
+	// 出撃の間で受け渡す物（RaidRecord）は起動から終了まで生きるので、ここではなく SceneManager::start が渡す
+	void publish( GameWorld* world, RaidSession* session, bool freeCamera );
 	// F6 で頼まれていたら（DebugSwitches::spawnZombies）、自キャラの前にゾンビを出す（世界を変えるので、読むだけの GameDebugOverlay ではなくここ）
 	// ティックの間に呼ぶ。camera: 自キャラの視点（向いている方へ出す）
 	void spawnRequestedZombies( GameWorld* world, const FirstPersonCamera& camera );

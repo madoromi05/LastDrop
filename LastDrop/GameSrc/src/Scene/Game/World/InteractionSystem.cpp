@@ -4,6 +4,7 @@
 #include "GameSrc/Component/BoxColliderComponent.h"
 #include "GameSrc/Collision/MeshBoundsBox.h"
 #include "GameSrc/Interaction/PickupComponent.h"
+#include "GameSrc/Interaction/PropFactory.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Interaction/EscapeCarComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
@@ -126,10 +127,15 @@ IInteractable* InteractionSystem::resolveInteractable( const HitWorld::Hit& hit 
 }
 
 void InteractionSystem::removeTakenPickups() {
-	// ガソリンも弾も同じ手順（どちらも PickupComponent を持つ物）
+	// ガソリンも弾も銃も同じ手順（どれも PickupComponent を持つ物）。拾われた後に物を残すかだけが違う
 	mObjects->forEach< PickupComponent >( [ this ]( PickupComponent& pickup ) {
-		if ( pickup.isTaken() ) {
-			mEffects->detach( pickup.getComponent< StaticModelComponent >() ); // 物が消える前に外す
+		if ( !pickup.isTaken() ) {
+			return;
+		}
+		mEffects->detach( pickup.getComponent< StaticModelComponent >() ); // 見た目が消える前に、付いた弾痕・血の跡を外す
+		if ( pickup.afterTaken() == PickupComponent::AfterTaken::LeaveObject ) {
+			PropFactory::liftFromGround( pickup.gameObject() ); // 銃。物は残り、地面に置くための部品だけ外れる
+		} else {
 			mObjects->destroyLater( pickup.gameObject() );
 		}
 	} );

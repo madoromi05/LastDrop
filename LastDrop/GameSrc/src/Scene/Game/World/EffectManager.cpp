@@ -1,8 +1,4 @@
 #include "GameSrc/Scene/Game/World/EffectManager.h"
-#include "GameSrc/Zombie/Animation/ZombieModel.h"
-#include "GameSrc/Render/SkinnedMesh/SkinnedMeshInstance.h"
-#include "GameSrc/Render/Culling/DrawCulling.h"
-#include "GameSrc/Math/PlacementMatrix.h"
 
 using namespace GameLib::Math;
 
@@ -66,12 +62,8 @@ void EffectManager::spawnBloodDrip( const Vector3& point, const Vector3& normal,
 	mBloodStains.addDrip( point, normal, splatterHalfSize( size ) * kDripSizeRatio, blocker );
 }
 
-void EffectManager::spawnSeveredLimb( const SkinnedMeshInstance& zombieMesh, const ZombieModel& model, BodyPart part,
-const Vector3& direction ) {
-	zombieMesh.shownWorldPose( &mSeverPose );
-	const ZombieSeverLayout::Cut& cut = model.severLayout().cut( part );
-	mBloodSpray.spawn( PlacementMatrix::translationOf( mSeverPose[ cut.jointBone ] ), direction, kSeverBloodScale );
-	mSeveredLimbs.spawn( model.data(), cut, mSeverPose, direction );
+void EffectManager::spawnSeverBlood( const Vector3& jointPosition, const Vector3& direction ) {
+	mBloodSpray.spawn( jointPosition, direction, kSeverBloodScale );
 }
 
 void EffectManager::detach( const IRayBlocker* blocker ) {
@@ -79,12 +71,11 @@ void EffectManager::detach( const IRayBlocker* blocker ) {
 	mBloodStains.removeAttachedTo( blocker );
 }
 
-void EffectManager::update( const IRayBlocker* ground ) {
+void EffectManager::update() {
 	mBulletHoles.update();
 	mImpactDust.update();
 	mBloodSpray.update();
 	mBloodStains.update();
-	mSeveredLimbs.update( ground );
 }
 
 void EffectManager::drawDecals( const Matrix44& projectionView ) {
@@ -98,8 +89,4 @@ void EffectManager::drawImpactDust( const Matrix44& projectionView, const Vector
 
 void EffectManager::drawBloodSpray( const Matrix44& projectionView, const Vector3& viewDirection, const Vector3& eye ) {
 	mBloodSpray.draw( projectionView, viewDirection, eye );
-}
-
-void EffectManager::drawSeveredLimbs( const DrawCulling& culling ) const {
-	mSeveredLimbs.draw( culling );
 }

@@ -2,6 +2,7 @@
 #define INCLUDED_INTERACTION_SYSTEM_H
 
 #include "GameSrc/Hit/HitWorld.h"
+#include "GameSrc/Interaction/IInteractFinder.h"
 #include "GameSrc/Collision/BoxCollider.h"
 #include "GameLib/Math/Vector3.h"
 #include <vector>
@@ -17,7 +18,8 @@ class EscapeCarComponent;
 // 使える物：落ちている物（カバンから捨てた物）、漁れる場所（ゴミ箱・木箱
 // どれも LootContainerComponent を持つ）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す
 // 何を使うと何が起きるか（持ち物が増える）は、使える部品（IInteractable）が決める
-class InteractionSystem{
+// 探す口（IInteractFinder）は世界が共有の棚へ置き、自キャラの InteractorComponent が引く
+class InteractionSystem : public IInteractFinder{
 public:
 	// 近くの使える物 1 つ（collectNearby の答え）
 	struct NearbyInteractable{
@@ -33,21 +35,23 @@ public:
 
 	// origin から delta だけ進む視線の先の、一番手前の使える物。視線はキャラにも当たる（キャラに当たったら何も使えない）
 	// 落ちている物は一回り大きい見る箱（PickupComponent::lookRaycast）でも当たる。壁などの向こうの物は返さない
-	// viewer: 視線を当てない的（目が体の中にある自キャラ）。nullptr 可。使える物が無ければ nullptr（Interactor の finder に使う）
-	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* viewer );
+	// viewer: 視線を当てない的（目が体の中にある自キャラ）。nullptr 可。使える物が無ければ nullptr（IInteractFinder。InteractorComponent が呼ぶ）
+	IInteractable* findInteractable( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, const IHittable* viewer ) override;
 	// 目 eye から radius（m）以内にマークがあり、目とマークの間が壁・建物・ほかの物で隠れていない使える物を、全部 out の後ろへ足す
 	// （マークを出すため）。拾われた物は入れない。死体には出さない
 	// 隠れているかは弾を止める物だけで調べる（ゾンビの体では隠さない）。out: nullptr 不可
 	void collectNearby( const GameLib::Math::Vector3& eye, float radius, std::vector< NearbyInteractable >* out ) const;
-	// interactable（Interactor::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）
+	// interactable（InteractorComponent::opened が返した物）を、漁れる場所の部品として引き直す（開けている間、消えたかを GameObjectHandle で見るため）
 	// 漁れる場所でなければ nullptr
 	LootContainerComponent* findContainer( const IInteractable* interactable );
-	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );	// interactable（Interactor::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr
+	EscapeCarComponent* findEscapeCar( const IInteractable* interactable );	// interactable（InteractorComponent::opened が返した物）を、脱出の車の部品として引き直す（同じ理由）。脱出の車でなければ nullptr
 	// ── F6 の確認用（Loot の欄） ──
 	// 全部の漁れる場所の中身を決め直し、まだ開けていない形に戻す。seed: 乱数の種
 	void rerollLoot( int seed );
 	void markAllLootSearched();												// 全部の漁れる場所を開けたことにする（待たずに中を見られる）
-	void removeTakenPickups();												// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ
+	// 拾われた物に、消す印を付ける（実際に消えるのは次の update の最後）。物を使った後、1回の描画につき1回呼ぶ
+	// 拾われた後も物が残る物（銃。PickupComponent::AfterTaken::LeaveObject）は、地面に置くための部品だけを外す印を付ける
+	void removeTakenPickups();
 	// 落ちている物（まだ拾われていないガソリン）の移動の当たり判定の箱を、全部 out の後ろへ足す
 	// 確認用の表示が、物の場所を壁越しに見せるのに使う。out: 出力先。nullptr 不可
 	void appendPickupColliders( std::vector< BoxCollider >* out ) const;
