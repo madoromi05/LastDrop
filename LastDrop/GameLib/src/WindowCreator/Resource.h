@@ -1,8 +1,3 @@
-﻿//{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by WindowCreator.rc
-//
-
 #define IDS_APP_TITLE			103
 
 #define IDR_MAINFRAME			128
@@ -17,8 +12,7 @@
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
-// 新しいオブジェクトの次の既定値
-// 
+
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 

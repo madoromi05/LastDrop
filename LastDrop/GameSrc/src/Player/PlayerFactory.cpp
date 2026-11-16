@@ -26,9 +26,9 @@
 using namespace GameLib::Math;
 
 namespace{
-	// ── 自キャラ（Mixamo Ch15。身長約1.8）──
-	const char* kPlayerFile = "Resource/Model/Character/player.txt"; // tools/configs/player.json で変換
-	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある（tools/configs/pistol.json・rifle.json などで変換）
+	// ── 自キャラ
+	const char* kPlayerFile = "Resource/Model/Character/player.txt";
+	// 銃の形のファイルは銃ごとの表（WeaponCatalog）にある
 	// 骨の名前の頭の共通部分（部位ごとの当たり判定で骨を引くのに使う）
 	const char* kBoneNamePrefix = "mixamorig:";
 	const float kInteractReach = 2.5f; // 見ている物を使うときに手が届く距離（m）。足元の缶を立ったまま拾える長さ

@@ -5,7 +5,7 @@
 using namespace GameLib;
 
 namespace{
-	const char* kGameTitle = "ZOMBIE ESCAPE"; // 仮の名前
+	const char* kGameTitle = "LAST DROP";
 	const char* kTitleBackdrop = "Resource/UI/title_backdrop.tga";
 	// 絵の街灯は真ん中より右にあるので、はみ出た横は右を多めに切る（4:3 の画面でも題名と街灯が重ならない）
 	const float kTitleBackdropAlignX = 0.25f;

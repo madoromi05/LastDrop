@@ -14,7 +14,7 @@ struct LightingParams{
 	float moonElevation = 35.f;
 	float moonAzimuth = 40.f;
 	GameLib::Math::Vector3 moonColor = GameLib::Math::Vector3( 0.62f, 0.72f, 1.f );
-	float moonIntensity = 0.25f;
+	float moonIntensity = 0.35f;
 
 	// ── 補助光（平行光）── 昼に影側を真っ黒にしない光。夜は使わない（強さ 0）
 	float fillElevation = 21.8f;

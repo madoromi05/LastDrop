@@ -160,9 +160,10 @@ namespace{
 	const float kFaceRoadFromWest = 90.f;
 
 	// ── 街灯（ランタン型の柱。光は柱の頭から） ──
-	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に 1 本ずつ。どれも歩道の帯（縁石の上）に立てる
+	// 交差点ごとに 1 本と、交差点どうしの区間の真ん中に立てる。どれも歩道の帯（縁石の上）に立てる
 	// 交差点の柱は東西の道の歩道の、町の中心側の角に立てる（消火栓は南北の道の歩道なので重ならない）
-	// 区間の柱は、外周の道なら町の内側の歩道、中の道なら区間ごとに左右を入れ替える（同じ側に並んで見えないように）
+	// 区間の柱は、外周の道なら両側の歩道に向かい合わせで 2 本立てる。外側の歩道は、囲む建物の前の帯
+	// 中の道なら 1 本で、区間ごとに左右を入れ替える（同じ側に並んで見えないように）
 	const float kLampFromCurb = 0.5f;						// 縁石の線（車道の端）から柱の中心まで。台座の半径 約 0.26m が帯（1.43m）に収まる
 	const float kLampPastJunction = 1.5f;					// 交差点の辺（歩道の帯が始まる所）から、交差点の柱の中心まで
 	// ゴミ箱・木箱・消火栓の中心からこれより近ければ、柱を道に沿って kLampDodge だけ遠ざける（箱は車道の端・柱は歩道で、横に約 1.3m しか離れないため）
@@ -447,6 +448,10 @@ namespace{
 				float side = perimeter ? towardCenter( row, kRowNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kSouth : -kSouth );
 				TownPlacement lamp = { roadX( column + 0.5f ), kSidewalkHeight, roadZ( static_cast< float >( row ) ) + side * curbToLamp, kLampAlongEastWest };
 				lamps->push_back(dodgeProps(lamp, kEast, kNone, props));
+				if ( perimeter ) {
+					TownPlacement outer = { roadX( column + 0.5f ), kSidewalkHeight, roadZ( static_cast< float >( row ) ) - side * curbToLamp, kLampAlongEastWest };	// 内側の柱の向かいの、外側の歩道
+					lamps->push_back( dodgeProps( outer, kEast, kNone, props ) );
+				}
 			}
 		}
 		for ( int column = 0; column < kColumnNumber; ++column ) {
@@ -455,6 +460,10 @@ namespace{
 				float side = perimeter ? towardCenter( column, kColumnNumber ) : ( ( ( row + column ) % 2 == 0 ) ? kEast : -kEast );
 				TownPlacement lamp = { roadX( static_cast< float >( column ) ) + side * curbToLamp, kSidewalkHeight, roadZ( row + 0.5f ), kLampAlongNorthSouth };
 				lamps->push_back( dodgeProps( lamp, kNone, kSouth, props ) );
+				if ( perimeter ) {
+					TownPlacement outer = { roadX( static_cast< float >( column ) ) - side * curbToLamp, kSidewalkHeight, roadZ( row + 0.5f ), kLampAlongNorthSouth };	// 内側の柱の向かいの、外側の歩道
+					lamps->push_back( dodgeProps( outer, kNone, kSouth, props ) );
+				}
 			}
 		}
 	}

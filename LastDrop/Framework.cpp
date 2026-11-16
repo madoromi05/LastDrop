@@ -32,7 +32,7 @@ public:
 	mFullScreenForbidden( true ),
 	mVSync( true ),
 	mAntiAlias( false ),
-	mTitle( "DirectX11 Turn Command Battle" ),
+	mTitle( "LAST DROP" ),
 	mArchiveNames( 0 ),
 	mArchiveNumber( 0 ),
 	mLoadMode( FileIO::Manager::MODE_DIRECT_FIRST ),
@@ -283,7 +283,7 @@ void WindowCreator::configure( Configuration* config ){
 	Framework f;
 	config->setWidth( f.width() );
 	config->setHeight( f.height() );
-	config->setTitle( "DirectX11 Turn Command Battle" );
+	config->setTitle( "LAST DROP" );
 	config->setCursorFile( "Resource/UI/cursor.cur" ); //黒い細い矢印に白い縁（tools/texgen/cursor_gen.py）
 	config->enableFullScreen( true );  //メインモニターをフルスクリーンで起動
 	config->forbidFullScreen( false ); //alt+enterでボーダーレスのフルスクリーンへ切り替えられる

@@ -39,6 +39,9 @@ MONITORINFO primaryMonitorInfo() {
 	return monitor;
 }
 
+/// <summary>
+/// ウィンドウとアプリ全体の状態
+/// </summary>
 class Impl{
 public:
 	Impl() :
@@ -146,8 +149,11 @@ public:
 
 Impl* gImpl = 0; //唯一のインスタンス
 
-} //namespace{}
+}
 
+/// <summary>
+/// ゲーム側に見せる窓口
+/// </summary>
 WindowCreator::WindowCreator(){
 	ASSERT( isMainThread() && "you must call from MAIN thread" );	//別スレッドからの呼び出しは許されない
 }
@@ -269,7 +275,7 @@ void WindowCreator::Configuration::enableDragAndDrop( bool f ){
 	gImpl->mDragAndDropEnabled = f;
 }
 
-} //namespace GameLib
+}
 
 #define MAX_LOADSTRING 100
 
