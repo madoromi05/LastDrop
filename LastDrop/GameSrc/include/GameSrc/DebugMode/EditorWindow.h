@@ -6,6 +6,7 @@
 //   Debug ：確認用の切り替え（無敵・ゾンビを止める・ゾンビを出す・当たり判定などの表示・観察用カメラ）
 //           本編へは DebugSwitches（ゾンビを止めるのは zombiesFrozen）を通して頼む
 //   Scene ：一時停止・1 ティック進める・時間の倍率（SceneManager の時計。ESC の一時停止とは別で、メニューも音も触らない）
+//           結果画面の確認（時間・倒した数・条件を入れて、脱出成功・ゲームオーバーの画面をすぐ開く。どのシーンからでも）
 //   Render：VSync の切り替え（CPU と GPU のどちらが重いかを見分けるときに切る）と、昼・夜の光（LightingParams）・影の ON/OFF・G-Buffer と影の中身の表示（DeferredLighting）
 //   Perf  ：計測の数字・グラフ・区間・印・ロード・GPU・CSV の記録（中身は GameLib の Profiling::drawPerfPanel。CSV は旧 F7）
 //   Tuning：調整値の構造体（TuningPanel。自キャラ・銃・視点・ゾンビの群れ。プリセットの保存・読み込みと Copy as C++）
@@ -36,10 +37,11 @@ void setObjects( const GameObjectWorld* objects );
 // Inventory の欄で触るカバン。窓は自キャラを知らないので、GameScene から渡す。所有権は受け取らない
 // nullptr なら欄に何も出さない。GameScene が終わるときに nullptr へ戻す。Release では何もしない
 void setInventory( Inventory* inventory );
-// Raid の欄で触る、1 回の出撃（経った時間・すぐ脱出）と、出撃の間で受け渡す物（次の出撃の条件の固定）
-// どちらも窓は知らないので、本編が渡す。所有権は受け取らない
+// Raid の欄で触る、1 回の出撃（経った時間・すぐ脱出）。窓は知らないので、本編が渡す。所有権は受け取らない
 // nullptr ならその行を出さない。シーンが終わるときに nullptr へ戻す。Release では何もしない
 void setRaid( RaidSession* session );
+// Raid の欄（次の出撃の条件の固定）と、Scene タブの結果画面の確認が触る、出撃の間で受け渡す物。所有権は受け取らない
+// 起動から終了まで 1 つなので、SceneManager::start が 1 回だけ渡す（どのシーンでも触れる）。Release では何もしない
 void setRaidRecord( RaidRecord* record );
 // Loot の欄で触る、漁れる場所（中身を振り直す・全部開けたことにする）。本編が渡す。所有権は受け取らない
 // nullptr なら欄に何も出さない。シーンが終わるときに nullptr へ戻す。Release では何もしない

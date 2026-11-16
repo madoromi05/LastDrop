@@ -168,7 +168,7 @@ void GameScene::handleFrameInput() {
 	}
 #ifdef ZF_EDITOR
 	mFreeCamera.handleToggle( mControl.camera() );															// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）
-	mEditor.publish( &mWorld, &mSession, &mResources->raidRecord(), isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
+	mEditor.publish( &mWorld, &mSession, isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
 #endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう
 	if ( isFreeCameraActive() ) {
