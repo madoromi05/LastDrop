@@ -16,7 +16,7 @@ public:
 	//         絵の主役（街灯など）を、左に置く文字から離すのに使う
 	UiBackdrop( const char* filename, unsigned color, float alignX );
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	// 読み込みは isReady を呼んだときに進む（GameLib）。draw は const なので mutable にする

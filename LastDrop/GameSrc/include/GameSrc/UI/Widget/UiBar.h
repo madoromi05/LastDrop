@@ -10,7 +10,7 @@ class UiBar : public IUiElement{
 public:
 	UiBar( UiAnchor anchor, const UiRect& rect, unsigned color );	// anchor / rect: 範囲（画素）。rect.left は anchor からのずれ、rect.top は画面の上端から。color: VertexColor::pack の並び
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	UiAnchor mAnchor;

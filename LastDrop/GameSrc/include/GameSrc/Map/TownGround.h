@@ -33,11 +33,11 @@ public:
 	void place( const TownMap& map );				// map の並べ方どおりに部品を置く。構築に失敗した種類の部品は置かない（理由は MeshCache がデバッグ出力済み）
 	void draw( const ViewFrustum& frustum ) const;	// 部品の種類ごとに、まとめた物を1回で描く。frustum: カメラに映る範囲（まとめた物がまるごと映らなければ描かない）
 	// 弾の当たり判定（見た目の三角形で判定する）。線分が上から見て通るますにかかる部品だけを調べる（GroundGrid）
-	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
-		float* time, GameLib::Math::Vector3* normal ) const;
-	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;					// 弾が当たった所の材質。足元の材質（materialBelow）と同じ答え。部品のすき間なら町の外の土と同じ材質
-	virtual bool materialBelow( const GameLib::Math::Vector3& position, GroundMaterial* material ) const;	// 足元の材質。position を通る縦の線分で、一番上にある部品を探し、その種類から決める。重さは raycast と同じ
-	virtual bool heightBelow( const GameLib::Math::Vector3& position, float* height ) const;				// 足元の面の高さ。position を通る縦の線分（足元の MoveHeight::kStepOver 上から下）で、一番上の面を探す。重さは raycast と同じ
+	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal ) const override;
+	GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const override;					// 弾が当たった所の材質。足元の材質（materialBelow）と同じ答え。部品のすき間なら町の外の土と同じ材質
+	bool materialBelow( const GameLib::Math::Vector3& position, GroundMaterial* material ) const override;	// 足元の材質。position を通る縦の線分で、一番上にある部品を探し、その種類から決める。重さは raycast と同じ
+	bool heightBelow( const GameLib::Math::Vector3& position, float* height ) const override;				// 足元の面の高さ。position を通る縦の線分（足元の MoveHeight::kStepOver 上から下）で、一番上の面を探す。重さは raycast と同じ
 
 private:
 	// 置いた部品1枚（当たり判定・足元の材質用。描くのには使わない）

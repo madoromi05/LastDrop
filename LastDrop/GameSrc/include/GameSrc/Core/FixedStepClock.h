@@ -28,7 +28,7 @@ public:
 	float timeScale() const;
 
 private:
-	typedef std::chrono::steady_clock Clock;
+	using Clock = std::chrono::steady_clock;
 	Clock::time_point mPrevious; // 前回 ticksToRun を呼んだ時刻
 	double mAccumulated;         // まだティックにしていない時間（秒）
 	bool mStarted;               // reset 後に一度でも数えたか

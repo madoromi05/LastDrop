@@ -24,10 +24,10 @@ public:
 	UiMenuItem( UiAnchor anchor, const UiRect& rect, const char* label, std::function< void() > onActivate, float letterSpacing,
 		UiAlign labelAlign = UI_ALIGN_MIDDLE_LEFT );
 
-	virtual void draw( UiRenderer& renderer ) const;
-	virtual bool contains( const GameLib::Math::Vector2& point ) const;
-	virtual void setSelected( bool selected );
-	virtual void activate();
+	void draw( UiRenderer& renderer ) const override;
+	bool contains( const GameLib::Math::Vector2& point ) const override;
+	void setSelected( bool selected ) override;
+	void activate() override;
 
 private:
 	UiRect screenRect() const;	// 今の画面上の範囲。描くときと、カーソルが乗っているかを調べるときに同じ範囲を使う

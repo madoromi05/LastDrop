@@ -12,7 +12,7 @@ public:
 	// solidUntil / fadeUntil: 画面の幅に対する割合（0..1）。0 <= solidUntil <= fadeUntil <= 1
 	UiShade( unsigned color, float solidUntil, float fadeUntil );
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	unsigned mColor;

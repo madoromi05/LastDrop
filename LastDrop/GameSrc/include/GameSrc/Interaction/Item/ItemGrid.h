@@ -70,7 +70,7 @@ private:
 		int owner;
 		ItemStack stack;
 	};
-	typedef std::vector< Cell > Cells;
+	using Cells = std::vector< Cell >;
 
 	bool isInside( int row, int column, int size ) const;
 	bool isFree( const Cells& cells, int owner, int size ) const;

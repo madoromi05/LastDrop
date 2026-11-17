@@ -41,7 +41,7 @@ namespace{
 	// 命中の重さ。重い方から調べる（頭で倒した ＞ 部位が飛んだ ＞ 倒した ＞ ふつう）
 	// 重さの決まりを変えるときは、ここだけを直す
 	CombatResolver::ZombieHit::Weight chooseHitWeight( BodyPart part, bool killed, bool severed ) {
-		typedef CombatResolver::ZombieHit::Weight Weight;
+		using Weight = CombatResolver::ZombieHit::Weight;
 		if ( killed && part == BodyPart::Head ) {
 			return Weight::HeadBurst;
 		}
@@ -53,7 +53,7 @@ namespace{
 
 	// 命中の重さ → 血しぶきの大きさ（ふつうだけ、頭かどうかで分ける）
 	EffectManager::BloodHitSize bloodHitSize( CombatResolver::ZombieHit::Weight weight, BodyPart part ) {
-		typedef CombatResolver::ZombieHit::Weight Weight;
+		using Weight = CombatResolver::ZombieHit::Weight;
 		switch ( weight ) {
 			case Weight::HeadBurst: return EffectManager::BloodHitSize::Burst;
 			case Weight::Severed:

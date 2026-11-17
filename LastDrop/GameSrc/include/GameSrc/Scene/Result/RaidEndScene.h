@@ -14,9 +14,9 @@ class RaidEndScene : public IScene{
 public:
 	// resources: UI の道具と最後の結果を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
 	explicit RaidEndScene( GameResources* resources );
-	virtual void beginFrame();
-	virtual void update();
-	virtual void draw();
+	void beginFrame() override;
+	void update() override;
+	void draw() override;
 
 private:
 	UiScreen mScreen;

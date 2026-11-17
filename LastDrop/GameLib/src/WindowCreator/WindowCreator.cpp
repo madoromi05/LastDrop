@@ -277,12 +277,12 @@ void WindowCreator::Configuration::enableDragAndDrop( bool f ){
 
 }
 
-#define MAX_LOADSTRING 100
+constexpr int kMaxLoadString = 100;	// タイトルとウィンドウクラス名の文字数の上限
 
 // グローバル変数:
 HINSTANCE hInst;								// 現在のインターフェイス
-TCHAR szTitle[MAX_LOADSTRING];					// タイトル バーのテキスト
-TCHAR szWindowClass[MAX_LOADSTRING];			// メイン ウィンドウ クラス名
+TCHAR szTitle[kMaxLoadString];					// タイトル バーのテキスト
+TCHAR szWindowClass[kMaxLoadString];			// メイン ウィンドウ クラス名
 
 // このコード モジュールに含まれる関数の宣言を転送します:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -401,7 +401,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	timeEndPeriod( 1 );
 
 	CoUninitialize();
-	return (int) msg.wParam;
+	return static_cast< int >( msg.wParam );
 }
 
 

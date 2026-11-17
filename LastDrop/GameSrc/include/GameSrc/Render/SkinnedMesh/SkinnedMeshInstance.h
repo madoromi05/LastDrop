@@ -24,7 +24,7 @@ class BonePoseModifier;
 class SkinnedMeshInstance{
 public:
 	// アニメの再生のしかた（中身は AnimationPlayer::PlayMode。SkinnedMeshInstance::PLAY_ONCE の形で書けるよう名前を残す）
-	typedef AnimationPlayer::PlayMode PlayMode;
+	using PlayMode = AnimationPlayer::PlayMode;
 	static const PlayMode PLAY_LOOP = AnimationPlayer::PLAY_LOOP; // 最後まで来たら始めへ戻る（歩き・待機）
 	static const PlayMode PLAY_ONCE = AnimationPlayer::PLAY_ONCE; // 最後のフレームで止まる（倒れる）
 

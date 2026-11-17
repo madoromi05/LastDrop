@@ -90,7 +90,7 @@ public:
 	Texture* texture,
 	Vector2* uvTopLeft,
 	Vector2* uvBottomRight,
-	int code ){
+	int code ) override {
 		//コードテーブルにあれば使う
 		CharIt cit = mChars.find( code );
 		const Char* c = 0;
@@ -275,7 +275,7 @@ public:
 		CharIt it = mChars.insert( make_pair( code, c ) ).first;
 		return &( it->second );
 	}
-	int charHeight() const {
+	int charHeight() const override {
 		return mCharHeight;
 	}
 private:

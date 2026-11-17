@@ -35,9 +35,9 @@ public:
 	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す
 	const GameLib::Math::Vector3& position() const;						// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う
 	// 弾の当たり判定（見た目の三角形で判定する）
-	virtual bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
-		float* time, GameLib::Math::Vector3* normal ) const;
-	virtual GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const;	// 作るときに受け取った材質（どこに当たっても同じ）
+	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
+		float* time, GameLib::Math::Vector3* normal ) const override;
+	GroundMaterial surfaceMaterial( const GameLib::Math::Vector3& point ) const override;	// 作るときに受け取った材質（どこに当たっても同じ）
 
 private:
 	StaticMeshInstance mMesh;

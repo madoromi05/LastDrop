@@ -30,12 +30,12 @@ public:
 	UiSlider( UiAnchor anchor, const UiRect& rect, const char* label, const Range& range,
 		std::function< int() > getValue, std::function< void( int ) > setValue, std::function< std::string( int ) > formatValue );
 
-	virtual void draw( UiRenderer& renderer ) const;
-	virtual bool contains( const GameLib::Math::Vector2& point ) const;
-	virtual void setSelected( bool selected );
-	virtual void activate();
-	virtual void adjust( int direction );
-	virtual void dragTo( const GameLib::Math::Vector2& cursor );
+	void draw( UiRenderer& renderer ) const override;
+	bool contains( const GameLib::Math::Vector2& point ) const override;
+	void setSelected( bool selected ) override;
+	void activate() override;
+	void adjust( int direction ) override;
+	void dragTo( const GameLib::Math::Vector2& cursor ) override;
 
 private:
 	UiRect screenRect() const; // 行の今の画面上の範囲（理由は UiAnchor.h）

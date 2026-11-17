@@ -21,7 +21,7 @@ public:
 		BUS_NUM,
 	};
 	// ループの音を指す番号。startLoop が返し、stopLoop などに渡す
-	typedef int LoopHandle;
+	using LoopHandle = int;
 	static const LoopHandle kInvalidLoop = -1;
 
 	AudioEngine();

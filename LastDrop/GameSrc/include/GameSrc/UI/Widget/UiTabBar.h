@@ -22,12 +22,12 @@ public:
 	UiTabBar( const UiRect& rect, const std::vector< std::string >& labels, int current, float tabWidth, UiTextSize textSize,
 		std::function< void( int ) > onChange );
 
-	virtual void draw( UiRenderer& renderer ) const;
-	virtual bool contains( const GameLib::Math::Vector2& point ) const;
-	virtual void setSelected( bool selected );
-	virtual void activate();												// 次のタブへ（パッドの決定ボタンだけでも切り替えられるように）
-	virtual void adjust( int direction );
-	virtual void dragTo( const GameLib::Math::Vector2& cursor );			// cursor の下の名前のタブにする（名前の無い所なら何もしない）
+	void draw( UiRenderer& renderer ) const override;
+	bool contains( const GameLib::Math::Vector2& point ) const override;
+	void setSelected( bool selected ) override;
+	void activate() override;												// 次のタブへ（パッドの決定ボタンだけでも切り替えられるように）
+	void adjust( int direction ) override;
+	void dragTo( const GameLib::Math::Vector2& cursor ) override;			// cursor の下の名前のタブにする（名前の無い所なら何もしない）
 
 private:
 	void change( int index );		// index のタブにし、変わったときだけ onChange を呼ぶ

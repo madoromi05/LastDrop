@@ -37,7 +37,7 @@ void PlayerFeedback::reactToCombat( const GameWorld& world, FirstPersonControl* 
 }
 
 void PlayerFeedback::shakeOnHeavyHits( const GameWorld& world, FirstPersonControl* control ) const {
-	typedef CombatResolver::ZombieHit::Weight Weight;
+	using Weight = CombatResolver::ZombieHit::Weight;
 	for ( const CombatResolver::ZombieHit& hit : world.combat().zombieHitsThisTick() ) {
 		if ( hit.weight == Weight::Severed || hit.weight == Weight::HeadBurst ) {
 			control->shakeOnHeavyHit( hit.weight == Weight::HeadBurst );

@@ -15,7 +15,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	typedef GridPairPicker::Side Side;
+	using Side = GridPairPicker::Side;
 	const Side kStash = Side::Left; // 左が倉庫
 	const Side kBag = Side::Right;  // 右がカバン
 	const int kFirstCell = 0;

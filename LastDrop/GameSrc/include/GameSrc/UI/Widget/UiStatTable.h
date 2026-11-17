@@ -20,7 +20,7 @@ public:
 	// 2 行目からは同じ幅と高さで下へ続ける。rows: 上から並べる順。空は不可
 	UiStatTable( UiAnchor anchor, const UiRect& firstRow, const std::vector< Row >& rows );
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	void drawRow( UiRenderer& renderer, const Row& row, const UiRect& rect ) const;	// 行 1 つ（上の線・名前・値）を rect の範囲に描く

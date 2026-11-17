@@ -24,7 +24,7 @@ enum class PlayerCondition;
 // （PauseMenu と同じ分け方。画面から世界を触らない）。動かす（並べ替え）はカバンの中だけで済むので、ここから Inventory に頼む
 class InventoryScreen{
 public:
-	typedef InventoryCursor::Request Request;	// 本編への頼み（中身は InventoryCursor::Request。BagController が InventoryScreen::Request の形で読む）
+	using Request = InventoryCursor::Request;	// 本編への頼み（中身は InventoryCursor::Request。BagController が InventoryScreen::Request の形で読む）
 
 	explicit InventoryScreen( UiRenderer* renderer );	// renderer: 借りる。所有権は受け取らない。nullptr 不可。この画面より長く生きていること
 

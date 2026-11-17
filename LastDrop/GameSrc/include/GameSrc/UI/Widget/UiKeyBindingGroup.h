@@ -21,7 +21,7 @@ public:
 	// name: まとまりの名前。rows: 上から並べる順。空は不可
 	UiKeyBindingGroup( const UiColumn& column, float top, const char* name, const std::vector< Row >& rows );
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 	void setRows( const std::vector< Row >& rows );	// 並べる行を差し替える（操作のタブでキーボード・マウスとパッドを切り替えたとき）。空は不可
 
 private:

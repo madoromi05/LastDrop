@@ -17,9 +17,9 @@ public:
 	// resources: UI の道具と設定を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
 	// definition: 並べる中身。写して使うので、渡した後は消してよい
 	MenuScene( GameResources* resources, const MenuDefinition& definition );
-	virtual void beginFrame();
-	virtual void update();
-	virtual void draw();
+	void beginFrame() override;
+	void update() override;
+	void draw() override;
 private:
 	MenuPages mPages;
 };

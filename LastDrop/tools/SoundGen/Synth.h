@@ -9,7 +9,7 @@
 namespace Synth{
 
 const int kSampleRate = 44100;
-typedef std::vector< float > Buffer;
+using Buffer = std::vector< float >;
 
 // 種から毎回同じ列を出す乱数（xorshift32）。生成し直しても同じ音になり、差分で音が変わったかを確かめられる
 class Random{

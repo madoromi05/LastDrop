@@ -59,11 +59,11 @@ class GameScene : public IScene{
 public:
 	explicit GameScene( GameResources* resources );	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
 	// 一時停止のまま別のシーンへ移る（Retry・Title）ときに、止めた音を戻す（音の道具は次のシーンも使う）
-	virtual ~GameScene();
-	virtual void beginFrame();
-	virtual void update();
-	virtual void draw();
-	virtual bool isLoading() const;					// メッシュの組み立てが終わって世界を並べるまでは読み込み中（draw は何も描かない）
+	~GameScene() override;
+	void beginFrame() override;
+	void update() override;
+	void draw() override;
+	bool isLoading() const override;					// メッシュの組み立てが終わって世界を並べるまでは読み込み中（draw は何も描かない）
 private:
 	// 一時停止する・戻る。止める間は世界を進めず、音を止め、カーソルを外す。戻ったらカーソルをロックする
 	void pause();

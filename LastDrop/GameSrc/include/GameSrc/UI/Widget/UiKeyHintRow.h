@@ -23,7 +23,7 @@ public:
 	UiKeyHintRow( UiAnchor anchor, const GameLib::Math::Vector2& position, const std::vector< Hint >& hints,
 		UiAlign align = UI_ALIGN_MIDDLE_LEFT );
 
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	float drawHint( UiRenderer& renderer, const Hint& hint, float x, float middleY ) const;	// 1 つの案内を x から描き、次の案内を始める x を返す

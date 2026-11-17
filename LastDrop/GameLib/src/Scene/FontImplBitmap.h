@@ -83,7 +83,7 @@ public:
 	Texture* texture,
 	Vector2* uvTopLeft,
 	Vector2* uvBottomRight,
-	int code ){
+	int code ) override {
 		//二分検索致しますよ
 		int first = 0;
 		int last = mCharNumber - 1;
@@ -117,7 +117,7 @@ public:
 			return false;
 		}
 	}
-	int charHeight() const {
+	int charHeight() const override {
 		return mCharHeight;
 	}
 private:

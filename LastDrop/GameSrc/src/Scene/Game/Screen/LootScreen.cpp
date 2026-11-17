@@ -13,7 +13,7 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	typedef GridPairPicker::Side Side;
+	using Side = GridPairPicker::Side;
 	const Side kBag = Side::Left;   // 左がカバン
 	const Side kLoot = Side::Right; // 右が場所の中身
 	const int kFirstCell = 0;

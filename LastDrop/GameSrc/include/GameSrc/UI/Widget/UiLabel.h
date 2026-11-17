@@ -18,7 +18,7 @@ public:
 	void setText( const char* text );
 	// 置き場所を変える（作ったときの anchor から見たずれ。動く照準など）
 	void setOffset( const GameLib::Math::Vector2& offset );
-	virtual void draw( UiRenderer& renderer ) const;
+	void draw( UiRenderer& renderer ) const override;
 
 private:
 	std::string mText;
