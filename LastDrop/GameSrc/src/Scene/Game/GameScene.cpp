@@ -246,7 +246,10 @@ void GameScene::draw() {
 		, &mDebug // 当たり判定・ライトの表示（パイプラインの途中に挟むので渡す）
 #endif
 	);
-	drawUi( camera );
+	{
+		PROFILE_SCOPE( "Game.ui" );
+		drawUi( camera );
+	}
 	// パイプラインのシェーダの誤りは SceneRenderer がまとめて順に見る（写す→キャラ→G-Buffer→表示）
 	// キャラのスキニングの誤りは GameResources が持つので、順番の都合で渡す
 	mDebug.drawShaderError( mSceneRenderer.firstShaderError( mResources->meshes().skinning().errorMessage() ) );

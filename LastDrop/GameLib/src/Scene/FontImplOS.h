@@ -6,6 +6,7 @@
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Math/Vector2.h"
 #include "GameLib/WindowCreator/WindowCreator.h"
+#include "GameLib/Profiling/Profiler.h"
 #include <map> //いずれ自作に換えたい...
 
 #include <windows.h>
@@ -115,6 +116,8 @@ public:
 		return true;
 	}
 	const Char* createGlyph( int code ){
+		PROFILE_TOTAL( "Font.glyphMs" );	// 初めて出る字を OS から描き足す時間
+		PROFILE_COUNT( "Font.glyphs", 1 );
 		SelectObject( mDeviceContextHandle, mFontHandle );	//fontセット
 
 		GLYPHMETRICS gm; // 情報

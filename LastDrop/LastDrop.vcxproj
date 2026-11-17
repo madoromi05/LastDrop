@@ -651,6 +651,7 @@
     <ClCompile Include="GameLib\src\Graphics\RenderTarget.cpp" />
     <ClCompile Include="GameLib\src\Graphics\DepthTarget.cpp" />
     <ClCompile Include="GameLib\src\Graphics\Shader.cpp" />
+    <ClCompile Include="GameLib\src\Graphics\ShaderDiskCache.cpp" />
     <ClCompile Include="GameLib\src\Graphics\ConstantBuffer.cpp" />
     <ClCompile Include="GameLib\src\Graphics\VertexFormat.cpp" />
     <!-- Input -->
@@ -1221,6 +1222,8 @@
     <ClInclude Include="GameLib\src\Graphics\RenderTargetImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\DepthTargetImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\ShaderImpl.h" />
+    <ClInclude Include="GameLib\src\Graphics\ShaderDiskCache.h" />
+    <ClInclude Include="GameLib\src\Graphics\CompiledShader.h" />
     <ClInclude Include="GameLib\src\Graphics\ConstantBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\IndexBufferImpl.h" />
     <ClInclude Include="GameLib\src\Graphics\NoLightingVsHlsl.h" />

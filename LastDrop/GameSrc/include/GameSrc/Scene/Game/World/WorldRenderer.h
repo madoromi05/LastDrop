@@ -11,6 +11,7 @@
 class GameWorld;
 class EffectManager;
 class Building;
+class StaticModelComponent;
 class DrawCulling;
 
 // 世界（GameWorld）を読んで描く係（View。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-1）
@@ -22,7 +23,7 @@ class DrawCulling;
 //   drawShadowCasters（影のマップごと）→ drawStatic → drawDecals → drawFirstPerson → drawCharacters →
 //   （ライティング・霧・TAA）→ drawImpactDust → drawBloodSpray → drawMuzzleFlash
 // 動かない物は手前に来やすい物から描く：建物（目に近い順）→ 車・置物 → 地面。先に描いた物に隠れる画素は、GPU が色の計算の前に捨てる
-// （Early-Z）。建物は形ごとにインスタンシングでまとめて描く（形の中では目に近い順）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
+// （Early-Z）。建物と置物は形ごとにインスタンシングでまとめて描く（建物は形の中で目に近い順）。動かない物と動く物の間にデカール（弾痕）を描き、後から描く動く物がデカールを上書きして、
 // キャラに弾痕が乗らないようにする
 class WorldRenderer{
 public:
@@ -63,18 +64,20 @@ private:
 	void drawZombies( const DrawCulling& culling ) const;		// culling で描くと決まったゾンビだけ描く（drawCharacters・drawShadowCasters から）
 	void drawSeveredLimbs( const DrawCulling& culling ) const;	// 千切れた部位の物を全部たどり、culling で描くと決まった物だけ描く（同じ 2 か所から。ゾンビの後）
 	void drawPlayer() const;								// 自キャラの体と、手に持っている銃を描く（drawFirstPerson・drawShadowCasters から）
-	void beginBuildings();									// 建物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
-	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBuildings〜endBuildings の間に、描きたい順に呼ぶ
+	void beginBatch();										// 建物か置物を描き始める。インスタンシングで描けるか（F6 の Instancing が ON で、今のパスのシェーダがある）をここで決める
+	// culling で描くと決まった建物を、まとめて描くなら集め、1 軒ずつなら今描く。beginBatch〜endBatch の間に、描きたい順に呼ぶ
 	// 隠れ（PVS）も culling に聞く（目から見る絵の culling だけが表を持つ）
 	void addBuilding( const Building& building, const DrawCulling& culling );
 	int buildingIndex( const Building& building ) const;	// building の GameWorld::buildings の並びでの番号（PVS の表の番号）
-	void endBuildings();									// 集めた建物を形ごとにまとめて描く（1 軒ずつ描いているときは何もしない）
+	void drawProps( const DrawCulling& culling );			// 置物を全部たどり、culling で描くと決まった物を描く（beginBatch〜endBatch は中で呼ぶ）
+	void addProp( const StaticModelComponent& model, const DrawCulling& culling );	// culling で描くと決まった置物を、まとめて描くなら集め、1 つずつなら今描く。beginBatch〜endBatch の間に呼ぶ
+	void endBatch();										// 集めた物を形ごとにまとめて描く（1 つずつ描いているときは何もしない）
 
 	const GameWorld* mWorld;												// 借りているだけ
 	EffectManager* mEffects;												// 借りているだけ
-	StaticMeshInstancing mInstancing;										// 建物をまとめて描く道具。シェーダは G-Buffer と影の両方で使う
-	StaticMeshBatch mBuildingBatch;											// 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物を集める作業領域
-	bool mBatchesBuildings;													// beginBuildings で決めた、今の建物をまとめて描くか
+	StaticMeshInstancing mInstancing;										// 建物と置物をまとめて描く道具。シェーダは G-Buffer と影の両方で使う
+	StaticMeshBatch mStaticBatch;											// 1 回の描画（G-Buffer・影の 1 枚）ぶんの建物か置物を集める作業領域
+	bool mBatches;															// beginBatch で決めた、今の建物か置物をまとめて描くか
 	std::vector< std::pair< float, const Building* > > mBuildingDrawOrder;	// 建物を目に近い順に描くための並び（目からの距離の 2 乗と建物）。drawStatic の作業領域（毎フレーム確保し直さないために持つ）
 };
 

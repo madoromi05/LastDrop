@@ -54,6 +54,11 @@ bool& skyDetailEnabled() {
 	return sEnabled;
 }
 
+bool& lightCullingEnabled() {
+	static bool sEnabled = true; // 起動中ずっと 1 つ（F6 で書き換える）
+	return sEnabled;
+}
+
 Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree ) {
 	float horizontal = cos( elevationDegree );
 	return Vector3( -horizontal * sin( azimuthDegree ), -sin( elevationDegree ), -horizontal * cos( azimuthDegree ) );	// 光の来る方の逆が、光の進む向き

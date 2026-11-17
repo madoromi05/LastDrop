@@ -213,14 +213,21 @@ void AudioEngine::update() {
 }
 
 void AudioEngine::setPaused( bool paused ) {
+	PROFILE_SCOPE( "Audio.setPaused" ); // 画面を開く瞬間に毎回通るので、別の区間で測る
 	if ( !mImpl->mEngineReady ) {
 		return;
 	}
-	// 出力の装置ごと止める。鳴っている途中の音は、その位置のまま止まって続きから鳴る（音ごとに止めて覚え直さなくてよい）
-	if ( paused ) {
-		ma_engine_stop( &mImpl->mEngine );
-	} else {
-		ma_engine_start( &mImpl->mEngine );
+	// 出力の装置は動かしたまま、バスごと止める。止めたバスは中の音を読まないので、鳴っている途中の音はその位置のまま止まって続きから鳴る
+	// 装置ごと止める ma_engine_stop は、音のスレッドが応えるまでゲームのスレッドを待たせるので使わない
+	for ( int i = 0; i < BUS_NUM; ++i ) {
+		if ( !mImpl->mBusReady[ i ] ) {
+			continue;
+		}
+		if ( paused ) {
+			ma_sound_group_stop( &mImpl->mBuses[ i ] );
+		} else {
+			ma_sound_group_start( &mImpl->mBuses[ i ] );
+		}
 	}
 }
 

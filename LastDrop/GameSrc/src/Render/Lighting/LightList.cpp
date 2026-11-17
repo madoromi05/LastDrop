@@ -1,10 +1,12 @@
 #include "GameSrc/Render/Lighting/LightList.h"
 #include "GameSrc/Render/ShaderSlots.h"
 #include "GameSrc/Render/ShaderConstants.h"
+#include "GameSrc/Render/Culling/ViewFrustum.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Math/Functions.h"
+#include "GameLib/Profiling/Profiler.h"
 
 #include <algorithm>
 
@@ -19,6 +21,8 @@ namespace{
 	const float kDefaultShadowStrength = 1.f;
 	const float kPerspectiveFlag = 1.f;
 	const float kOrthographicFlag = 0.f;
+	const float kCullingOnFlag = 1.f;	// シェーダは 0.5 より大きいかで読む（LightList.hlsli の gLightCount.y）
+	const float kCullingOffFlag = 0.f;
 
 	const float kMinSpotCosineWidth = 0.0001f;	// スポットの角度の幅が 0 のとき（inner == outer）の 0 割りよけ
 
@@ -33,7 +37,7 @@ namespace{
 	};
 	// LightList.hlsli の cbuffer LightConstants と同じ並び
 	struct LightConstants{
-		float count[ kVectorFloats ];           // x 照らすライトの数  yzw 使わない
+		float count[ kVectorFloats ];           // x 照らすライトの数  y 1 なら届く距離の外のライトを計算しない  zw 使わない
 		float skyZenith[ kVectorFloats ];       // xyz 天頂の色（sRGB）  w 描く空の明るさ
 		float skyHorizon[ kVectorFloats ];      // xyz 地平線の色（sRGB）  w 環境光の強さ
 		float ground[ kVectorFloats ];          // xyz 地面の色（sRGB。下からの環境光）  w 使わない
@@ -79,6 +83,18 @@ namespace{
 		Vector3 d;
 		d.setSub( light.position, eye );
 		return max( 0.f, d.length() - light.range );
+	}
+
+	// light の光が view の映る範囲に届きうるか。平行光はどこにでも届く。点・スポットは届く範囲の球を囲む箱で調べる
+	// 映る範囲に届かないライトは、どの画素の色にも足されない（ディファードも半透明の板も、映っている物しか照らさない）
+	bool mayLight( const LightSource& light, const ViewFrustum& view ) {
+		if ( light.kind == LightKind::Directional ) {
+			return true;
+		}
+		Vector3 boundsMin, boundsMax;
+		boundsMin.setSub( light.position, light.range );
+		boundsMax.setAdd( light.position, light.range );
+		return view.mayContain( boundsMin, boundsMax );
 	}
 
 	LightData toData( const LightSource& light ) {
@@ -191,9 +207,12 @@ void LightList::setCascades( const Vector3& viewDirection, const float ( &cascad
 	mCascadeBlendRatio = blendRatio;
 }
 
-void LightList::select( const Vector3& eye ) {
+void LightList::select( const Vector3& eye, const ViewFrustum* view ) {
 	mSelected.clear();
 	for ( int i = 0; i < static_cast< int >( mLights.size() ); ++i ) {
+		if ( view && !mayLight( mLights[ i ], *view ) ) {
+			continue;
+		}
 		mSelected.push_back( i );
 	}
 	// 平行光 → 届く範囲のふちが目に近い順。同じなら足した順のまま（毎フレーム入れ替わってちらつかないように）
@@ -203,12 +222,17 @@ void LightList::select( const Vector3& eye ) {
 	if ( static_cast< int >( mSelected.size() ) > kMaxLights ) {
 		mSelected.resize( kMaxLights );
 	}
+	PROFILE_COUNT( "Light.candidates", static_cast< double >( mLights.size() ) );
+	PROFILE_COUNT( "Light.selected", static_cast< double >( mSelected.size() ) );
+	PROFILE_COUNT( "Light.culling", view ? 1.0 : 0.0 ); // CSV で入/切のフレームを分けるため
 }
 
-void LightList::bind( const Vector3& eye ) {
-	select( eye );
+void LightList::bind( const Vector3& eye, const Matrix44& projectionView, bool culling ) {
+	ViewFrustum view( projectionView );
+	select( eye, culling ? &view : nullptr );
 	LightConstants constants = {};
 	constants.count[ 0 ] = static_cast< float >( mSelected.size() );
+	constants.count[ 1 ] = culling ? kCullingOnFlag : kCullingOffFlag;
 	setVector( constants.skyZenith, mEnvironment.skyZenithColor, mEnvironment.skyIntensity );
 	setVector( constants.skyHorizon, mEnvironment.skyHorizonColor, mEnvironment.ambientIntensity );
 	setVector( constants.ground, mEnvironment.groundColor, 0.f );

@@ -25,7 +25,7 @@ struct LightData
 // b2（ShaderSlots::kLightConstants）。b1 は全画面のパスの定数・キャラの骨、b3 は G-Buffer の材質値
 cbuffer LightConstants : register(b2)
 {
-    float4 gLightCount; // x: 照らすライトの数
+    float4 gLightCount; // x: 照らすライトの数  y: 0.5 より大きければ、届く距離の外のライトを計算しない（F6 の Light culling）
     float4 gSkyZenith;  // xyz 天頂の色（sRGB）  w 描く空の明るさ
     float4 gSkyHorizon; // xyz 地平線の色（sRGB）  w 環境光の強さ
     float4 gGround;     // xyz 地面の色（sRGB。下からの環境光）

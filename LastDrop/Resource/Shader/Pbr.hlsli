@@ -182,14 +182,27 @@ float3 evaluateLight(Surface s, float3 v, LightData light)
     return surfaceBrdf(s, l, v, radiance * attenuation, alphaWiden);
 }
 
+// light の光が position まで届くか。平行光はどこにでも届く。点・スポットは届く距離の内側だけ（外では evaluateLight の窓がちょうど 0）
+bool reaches(LightData light, float3 position)
+{
+    float3 toLight = light.positionRange.xyz - position;
+    float range = light.positionRange.w;
+    return (uint)light.directionKind.w == kLightDirectional || dot(toLight, toLight) < range * range;
+}
+
 // 面を、環境光とライトの一覧（b2）で照らした色（発光は含まない）
 float3 shadeSurface(Surface s)
 {
     float3 v = normalize(gEyePosition.xyz - s.position);
     float3 c = ambientLighting(s, v);
     uint count = min((uint)gLightCount.x, kMaxLights);
+    bool skipUnreached = gLightCount.y > 0.5; // F6 の Light culling（LightList::bind）
     for (uint i = 0; i < count; ++i)
     {
+        if (skipUnreached && !reaches(gLights[i], s.position))
+        {
+            continue; // 届かない光は足しても 0 なので、BRDF と影を計算しない
+        }
         c += evaluateLight(s, v, gLights[i]);
     }
     return c;

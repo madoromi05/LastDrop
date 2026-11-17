@@ -36,7 +36,7 @@ namespace{
 WorldRenderer::WorldRenderer( const GameWorld* world, EffectManager* effects ) :
 	mWorld( world ),
 	mEffects( effects ),
-	mBatchesBuildings( false ) {
+	mBatches( false ) {
 	ASSERT( world && effects && "WorldRenderer : an argument is null." );
 }
 
@@ -51,14 +51,15 @@ void WorldRenderer::drawStatic( const DrawCulling& culling, const Vector3& eye )
 	std::sort( mBuildingDrawOrder.begin(), mBuildingDrawOrder.end(),
 		[]( const std::pair< float, const Building* >& a, const std::pair< float, const Building* >& b ) { return a.first < b.first; } );
 	// まとめて描くときも、形の中では近い順に詰めるので手前から描かれる（違う形どうしの順は混ざらない）
-	beginBuildings();
+	beginBatch();
+	PROFILE_COUNT( "Draw.instancing", mBatches ? 1.0 : 0.0 ); // CSV で F6 の Instancing の入/切のフレームを分けるため（目から見る絵で 1 回だけ数える）
 	for ( const auto& entry : mBuildingDrawOrder ) {
 		addBuilding( *entry.second, culling );
 	}
-	endBuildings();
+	endBatch();
 	Profiling::gpuMark( "Buildings" );
-	// 置物（車・落ちているガソリン・ゾンビが落とした弾。作った順＝車が先）
-	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
+	// 置物（車・街灯・消火栓・ゴミ箱・落ちているガソリン。形ごとにまとめ、形の中では作った順＝車が先）
+	drawProps( culling );
 	Profiling::gpuMark( "Props" );
 	// 地面は画面の下半分を覆うが、その多くは建物・キャラ・車に隠れるので最後。まとめて描くので映る範囲だけで間引く
 	mWorld->town().ground().draw( culling.frustum() );
@@ -106,17 +107,17 @@ void WorldRenderer::drawShadowCasters( const DrawCulling& culling, bool includes
 	}
 	drawZombies( culling );
 	drawSeveredLimbs( culling );
-	beginBuildings();
+	beginBatch();
 	for ( const Building& building : mWorld->town().buildings() ) {
 		addBuilding( building, culling );
 	}
-	endBuildings();
-	mWorld->objects().forEach< StaticModelComponent >( [ &culling ]( const StaticModelComponent& model ) { model.draw( culling ); } );
+	endBatch();
+	drawProps( culling );
 }
 
-void WorldRenderer::beginBuildings() {
-	mBatchesBuildings = instancingEnabled() && mInstancing.isReady();
-	mBuildingBatch.clear();
+void WorldRenderer::beginBatch() {
+	mBatches = instancingEnabled() && mInstancing.isReady();
+	mStaticBatch.clear();
 }
 
 int WorldRenderer::buildingIndex( const Building& building ) const {
@@ -127,18 +128,34 @@ void WorldRenderer::addBuilding( const Building& building, const DrawCulling& cu
 	if ( !culling.showsBuildingIndex( buildingIndex( building ) ) ) {
 		return;
 	}
-	if ( !mBatchesBuildings ) {
+	if ( !mBatches ) {
 		building.draw( culling ); // 1 軒ずつ（F6 で Instancing を切った見比べ・シェーダが無いとき）
 		return;
 	}
 	if ( building.shows( culling ) ) {
-		mBuildingBatch.add( building.mesh(), building.shapeFor( culling ) ); // 形 × 段ごとにまとまる
+		mStaticBatch.add( building.mesh(), building.shapeFor( culling ) ); // 形 × 段ごとにまとまる
 	}
 }
 
-void WorldRenderer::endBuildings() {
-	if ( mBatchesBuildings ) {
-		mBuildingBatch.draw( &mInstancing );
+void WorldRenderer::drawProps( const DrawCulling& culling ) {
+	beginBatch();
+	mWorld->objects().forEach< StaticModelComponent >( [ this, &culling ]( const StaticModelComponent& model ) { addProp( model, culling ); } );
+	endBatch();
+}
+
+void WorldRenderer::addProp( const StaticModelComponent& model, const DrawCulling& culling ) {
+	if ( !mBatches ) {
+		model.draw( culling ); // 1 つずつ（F6 で Instancing を切った見比べ・シェーダが無いとき）
+		return;
+	}
+	if ( model.shows( culling ) ) {
+		mStaticBatch.add( model.mesh(), model.shapeFor( culling ) ); // 形 × 段ごとにまとまる（灯った街灯と消えた街灯は別の形）
+	}
+}
+
+void WorldRenderer::endBatch() {
+	if ( mBatches ) {
+		mStaticBatch.draw( &mInstancing );
 	}
 }
 

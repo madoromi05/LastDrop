@@ -7,6 +7,8 @@
 #include "GameLib/Math/Matrix44.h"
 #include <vector>
 
+class ViewFrustum;
+
 // ライトの種類（PbrNightLighting_Plan.txt 6 章）。番号は Resource/Shader/LightList.hlsli と揃える
 enum class LightKind{
 	Directional, // 平行光（月・太陽）。向きだけ。減衰しない
@@ -68,7 +70,7 @@ struct EnvironmentLight{
 // 作るのは Graphics::Manager ができた後（シーンの中）
 class LightList{
 public:
-	static const int kMaxLights = 40; // LightList.hlsli の kMaxLights と揃える
+	static const int kMaxLights = 30; // LightList.hlsli の kMaxLights と揃える
 	static const int kMaxShadowMaps = 4; // LightList.hlsli の kMaxShadowMaps と揃える（懐中電灯 1 ＋ 月の 3 枚）
 	static const int kCascadeCount = 3;  // 月の CSM の枚数（LightList.hlsli の gCascadeEnds と揃える。CascadedShadowMap::kCascadeCount と同じ）
 
@@ -89,7 +91,9 @@ public:
 	// 月の CSM の枚の選び方。viewDirection：カメラの向き（長さ 1。奥行きはこの向きに沿って測る）
 	// cascadeEnds：各枚の受け持ちの奥の端（m）。blendRatio：各枚の受け持ちの奥の何割を、次の枚と混ぜるか（境目を目立たせない）
 	void setCascades( const GameLib::Math::Vector3& viewDirection, const float ( &cascadeEnds )[ kCascadeCount ], float blendRatio );
-	void bind( const GameLib::Math::Vector3& eye );													// 照らすライトを選んで定数を書き、b2 に付ける。eye：目の位置（選ぶ順番に使う）
+	// 照らすライトを選んで定数を書き、b2 に付ける。eye：目の位置（選ぶ順番に使う）。projectionView：描くカメラの射影×ビュー
+	// culling：true なら、映る範囲に届かないライトを外し、シェーダも届く距離の外の画素で計算しない（F6 の Light culling）
+	void bind( const GameLib::Math::Vector3& eye, const GameLib::Math::Matrix44& projectionView, bool culling );
 	// 影のマップを t6〜 に付ける。描画先を変える（Manager::setRenderTargets）と t2 以降は外れるので、
 	// 影を読む物（ライティングのパス・半透明の板）を描く前に、そのつど呼ぶ
 	void bindShadowMaps() const;
@@ -101,7 +105,7 @@ public:
 	bool isSelected( int index ) const;
 
 private:
-	void select( const GameLib::Math::Vector3& eye );	// mLights から照らす物を選び、mSelected に番号を入れる（平行光 → 目に近い順）
+	void select( const GameLib::Math::Vector3& eye, const ViewFrustum* view );	// mLights から照らす物を選び、mSelected に番号を入れる（平行光 → 目に近い順）。view が nullptr でなければ、その範囲に届かない物は入れない
 
 	std::vector< LightSource > mLights;
 	EnvironmentLight mEnvironment;

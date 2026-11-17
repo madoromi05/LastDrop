@@ -22,8 +22,9 @@ public:
 	StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget );
 	StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget );	// 細かさの段（LOD）を持つ置物（車・缶）。shapes.full() が上の data にあたる（当たり判定・箱は元の形で作る）
 
-	// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
-	void draw( const DrawCulling& culling ) const;
+	void draw( const DrawCulling& culling ) const;						// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
+	bool shows( const DrawCulling& culling ) const;						// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く
+	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す
 	const StaticMeshInstance& mesh() const;
 	// 描く形だけを shapes に替える（街灯のガラスが光る形と消えた形。F6 で今日の条件を切り替えたとき）
 	// shapes は今の形と同じ頂点の物（材質だけ違う）であること。弾・視線の当たりと箱は元の形のまま

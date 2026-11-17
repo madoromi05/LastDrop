@@ -39,8 +39,8 @@ private:
 	std::vector< float > mPlacementRows; // 定数バッファへ送る前の詰め直し（1 軒 = 3 行 × float4）
 };
 
-// 建物をインスタンシングで描くか（F6 → Render の Instancing。見比べと計測用）
-// false の間は 1 軒ずつ描く（今までの描き方）。起動中ずっと 1 つ（StaticMeshInstancing.cpp が持つ。初期値 true。Release では true のまま）
+// 建物と置物をインスタンシングで描くか（F6 → Render の Instancing。見比べと計測用）
+// false の間は 1 つずつ描く。起動中ずっと 1 つ（StaticMeshInstancing.cpp が持つ。初期値 true。Release では true のまま）
 bool& instancingEnabled();
 
 #endif

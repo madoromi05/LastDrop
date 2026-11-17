@@ -469,9 +469,10 @@ namespace{
 	// 描く物を減らす仕組みの切り替え。同じ場面で切り替えて、絵と回数・GPU の時間を見比べる
 	void drawGeometryToggles() {
 		toggleWithHint( "Shadows", &shadowsEnabled(), "(flashlight + moon cascades)" );	// 影を描くか。時間は gpu.Shadow
-		toggleWithHint( "Instancing", &instancingEnabled(), "(buildings)" );			// 建物を形ごとにまとめて描くか。切ると 1 軒ずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings
+		toggleWithHint( "Instancing", &instancingEnabled(), "(buildings + props)" );	// 建物と置物を形ごとにまとめて描くか。切ると 1 つずつ描く。回数は Draw.gbuffer・Draw.shadow、時間は gpu.Buildings・gpu.Props
 		toggleWithHint( "PVS", &pvsEnabled(), "(hidden buildings + zombies)" );			// 簡易 PVS で、建物の向こうに隠れた建物・ゾンビを描かないか。回数は Pvs.building・Pvs.zombie
 		toggleWithHint( "LOD", &lodEnabled(), "(car, fuel cans)" );						// 置物を遠くで粗い形（LOD）で描くか。境目は Tuning の Lod。回数は Lod.1・Lod.2・Draw.triangles
+		toggleWithHint( "Light culling", &lightCullingEnabled(), "(off-screen + out of range)" );	// 届かないライトを計算しないか。回数は Light.selected、時間は gpu.Lighting
 	}
 
 	// 画面全体のパスと、見た目の仕上げの切り替え

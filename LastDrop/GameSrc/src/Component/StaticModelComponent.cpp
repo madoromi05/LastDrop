@@ -26,9 +26,17 @@ void StaticModelComponent::awake() {
 }
 
 void StaticModelComponent::draw( const DrawCulling& culling ) const {
-	if ( culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), mCullTarget ) ) {
-		mMesh.draw( culling.chooseLod( mShapes, &mLod, mMesh.boundsMin(), mMesh.boundsMax() ) );
+	if ( shows( culling ) ) {
+		mMesh.draw( shapeFor( culling ) );
 	}
+}
+
+bool StaticModelComponent::shows( const DrawCulling& culling ) const {
+	return culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), mCullTarget );
+}
+
+const StaticMeshData* StaticModelComponent::shapeFor( const DrawCulling& culling ) const {
+	return culling.chooseLod( mShapes, &mLod, mMesh.boundsMin(), mMesh.boundsMax() );
 }
 
 const StaticMeshInstance& StaticModelComponent::mesh() const {

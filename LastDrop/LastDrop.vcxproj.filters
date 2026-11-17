@@ -358,6 +358,9 @@
     <ClCompile Include="GameLib\src\Graphics\Shader.cpp">
       <Filter>GameLib\Graphics</Filter>
     </ClCompile>
+    <ClCompile Include="GameLib\src\Graphics\ShaderDiskCache.cpp">
+      <Filter>GameLib\Graphics</Filter>
+    </ClCompile>
     <ClCompile Include="GameLib\src\Graphics\ConstantBuffer.cpp">
       <Filter>GameLib\Graphics</Filter>
     </ClCompile>
@@ -1590,6 +1593,12 @@
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\ShaderImpl.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\ShaderDiskCache.h">
+      <Filter>GameLib\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="GameLib\src\Graphics\CompiledShader.h">
       <Filter>GameLib\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Graphics\ConstantBufferImpl.h">

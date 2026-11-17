@@ -106,6 +106,9 @@ bool& fogEnabled();
 // 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用）。false の間は今までの空のグラデーションだけ
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
 bool& skyDetailEnabled();
+// 画面に届かないライトを一覧から外し、届く距離の外の画素でライトを計算しないか（F6 → Render の Light culling。見比べと計測用）
+// 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
+bool& lightCullingEnabled();
 GameLib::Math::Vector3 lightDirectionFrom( float elevationDegree, float azimuthDegree );	// 高さと方位（度）から、その方から来る光の進む向き（長さ 1。LightList の平行光に渡す形）
 
 #endif

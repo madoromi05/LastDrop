@@ -25,6 +25,8 @@ mono_crash.*
 # 計測用の Profile 構成の出力と、計測ファイル（CSV・JSON）の書き出し先
 **/x64/[Pp]rofile/
 /LastDrop/Profiling/
+# 前の起動でコンパイルしたシェーダ（起動をまたいでコンパイルを飛ばす。消しても次の起動で作り直すだけ。ShaderDiskCache_Plan.txt）
+/LastDrop/ShaderCache/
 # F6 のエディタで保存した調整値のプリセット（試している間の控え。決まった値は Copy as C++ でコードへ戻す）
 /LastDrop/Tuning/
 # 5 日間の続き（倉庫・カバン・ハイスコア。遊ぶ人ごとの物。SummaryPlan/個別仕様/出撃と帰還/R2_Plan.txt 7 章）

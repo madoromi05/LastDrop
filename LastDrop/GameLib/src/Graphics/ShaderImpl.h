@@ -6,6 +6,8 @@
 #include "GameLib/Base/Impl/ReferenceType.h"
 #include "GameLib/Base/DebugStream.h"
 #include "GameLib/Profiling/Profiler.h"
+#include "Graphics/CompiledShader.h"
+#include "Graphics/ShaderDiskCache.h"
 
 #include <d3dcompiler.h>
 #include <cstdio>
@@ -22,12 +24,6 @@ namespace ShaderDetail{
 	const char* const kPixelEntry  = "PSMain";
 	const char* const kVertexTarget = "vs_5_0";
 	const char* const kPixelTarget  = "ps_5_0";
-
-	// 読んだファイルと、そのときの更新時刻。どれかが変わったら作り直す
-	struct FileStamp{
-		std::string path;
-		FILETIME writeTime;
-	};
 
 	inline bool readWriteTime( const std::string& path, FILETIME* out ){
 		WIN32_FILE_ATTRIBUTE_DATA data;
@@ -134,15 +130,21 @@ namespace ShaderDetail{
 	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす（Profile のロードの半分がコンパイルだった）
 	// 読んだファイル（#include も）の更新時刻を一緒に覚え、どれかが変わっていたら使わずにコンパイルし直す（ホットリロードはそのまま効く）
 	// 入口・ターゲット・フラグはどのシェーダも同じ（kVertexEntry など）なので、ファイル名だけで引ける
-	struct CompiledShader{
-		std::vector< char > vs;
-		std::vector< char > ps;
-		std::vector< FileStamp > files;
-	};
-
 	inline std::map< std::string, CompiledShader >& compiledShaders(){
 		static std::map< std::string, CompiledShader > sCompiled; // メインスレッドだけで使う（シェーダを作るのはメインスレッド）
 		return sCompiled;
+	}
+
+	// 起動をまたいで覚える所（ShaderDiskCache_Plan.txt）。起動するたびの最初のロードでも、変わっていないシェーダはコンパイルしない
+	// コンパイルの設定（compileFlags）が同じ構成どうし（Profile と Release）は同じ所を使い、Debug とは書き換え合わない
+#ifdef _DEBUG
+	const char* const kDiskCacheDirectory = "ShaderCache/Debug/";
+#else
+	const char* const kDiskCacheDirectory = "ShaderCache/Optimized/";
+#endif
+	inline const ShaderDiskCache& diskCache(){
+		static const ShaderDiskCache sCache( kDiskCacheDirectory, compileFlags() ); // メインスレッドだけで使う
+		return sCache;
 	}
 
 	inline bool isUnchanged( const std::vector< FileStamp >& files ){
@@ -204,6 +206,13 @@ public:
 			const CompiledShader& c = cached->second;
 			return createShaders( c.vs.data(), c.vs.size(), c.ps.data(), c.ps.size(), c.files );
 		}
+		// 前の起動で覚えた物があり、読んだファイルが変わっていなければ、その結果から作る（作れなければ下でコンパイルし直す）
+		CompiledShader stored;
+		if ( diskCache().load( mFilename, &stored ) && isUnchanged( stored.files ) &&
+			createShaders( stored.vs.data(), stored.vs.size(), stored.ps.data(), stored.ps.size(), stored.files ) ){
+			compiledShaders()[ mFilename ] = std::move( stored );
+			return true;
+		}
 		std::vector< FileStamp > files;
 		std::vector< char > source;
 		if ( !readFile( mFilename, &source, &files ) ){
@@ -245,7 +254,8 @@ public:
 		if ( !createShaders( compiled.vs.data(), compiled.vs.size(), compiled.ps.data(), compiled.ps.size(), files ) ){
 			return false;
 		}
-		compiledShaders()[ mFilename ] = std::move( compiled ); // 作れた物だけ覚える
+		diskCache().save( mFilename, compiled );					// 作れた物だけ覚える
+		compiledShaders()[ mFilename ] = std::move( compiled );
 		return true;
 	}
 

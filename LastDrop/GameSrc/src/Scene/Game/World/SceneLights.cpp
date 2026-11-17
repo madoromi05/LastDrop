@@ -97,7 +97,7 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 		environment.pixelAngle = camera.fieldOfView() / static_cast< float >( gm.height() );
 	}
 	mLights.setEnvironment( environment );
-	mLights.bind( camera.eyePosition() );
+	mLights.bind( camera.eyePosition(), camera.projectionViewMatrix(), lightCullingEnabled() );
 }
 
 void SceneLights::addMoon( const LightingParams& params, const FirstPersonCamera& camera ) {
