@@ -1,12 +1,12 @@
 結果の画面（ゲームオーバー・脱出成功）を RE:2 風に揃える（ResultScreen_Plan）
-2026-11-12 案。★ は決めてほしい所（おすすめを先に書いた）。承認までコードは変えない。
+2026-11-12 案。★1〜★6 はおすすめのまま決定。段1〜段4 を Claude が実装済み・コミット済み（「■ 決定と実装」）。
 
 ■ 目的
 タイトル・一時停止・設定・操作の一覧（MenuRestyle_Plan.txt）と同じ見た目に、結果の画面を揃える。
 見本は claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD の「ゲームオーバー」「脱出成功」）。
 揃え終えたら、板のボタン（UiButton）はどこからも使わなくなるので消す。
 
-■ 今の形（RaidEndScene）
+■ 作る前の形（RaidEndScene。11-12 に下の形へ作り直した）
 ・クリアも死んだも同じ並べ方。中央に見出し（ESCAPED は緑・KILLED IN ACTION は赤。ゴシック 48）、
   その下に「かかった時間」「倒した数」の 2 行、板のボタン（死んだときは「もう一度」と「タイトルへ」、クリアは「タイトルへ」）。
 ・背景は黒。下の操作の案内は無い。
@@ -33,7 +33,7 @@
    ・表（左端 80・幅 280・行の高さ 39。上端は画面の高さの 0.467）。行の上に細い線、最後の行は下にも線。
        かかった時間   14:07
        倒した数       23
-       今回の条件     霧の日      （★3）
+       今回の条件     霧が濃い    （★3。値は DayConditionEffect::title）
      名前は小さい字（UI_TEXT_CAPTION・TEXT_SUB）、値は右寄せで大きめ（UI_TEXT_MENU・TEXT）。
    ・「タイトルへ」の行（UiMenuItem。始めから選ばれている。位置は UiScreen::sideMenuItemRect の 1 行）。
    ・下の案内：[Enter] 決定（左寄せ）。
@@ -118,6 +118,17 @@
 ★6 コードを書く人
    おすすめ：Claude が編集して、ビルドと窓の写しまで行う（MenuRestyle の段5 と同じ）。段ごとに変えた所を報告する。
    ほか：ユーザーが書く（Claude は変更前 → 変更後を渡す）。
+
+■ 決定と実装（2026-11-12）
+・決定：★1〜★6 ともおすすめのまま（横に 2 つ・「GAME OVER」・今回の条件の行を入れる・背景の絵あり・ランクなし・Claude が編集）。
+・段1〜段4 を実装。今のコードで確かめた形：
+  ・RaidEndScene は結果を読んで EscapedPage::build か GameOverPage::build を選ぶだけ（GameSrc/Scene/Result/）。数字の書き方は ResultText
+  ・脱出成功：「町を出た。」・ESCAPED・UiStatTable（かかった時間・倒した数・今回の条件）・「タイトルへ」・背景 Resource/UI/escaped_backdrop.tga
+  ・ゲームオーバー：GAME OVER（MenuPalette::DEATH_HEADING）・線（DEATH_LINE）・「経過 08:42　・　倒した数 12」の 1 行・
+    「もう一度」「タイトルへ」を横に 2 つ・背景 Resource/UI/gameover_backdrop.tga
+  ・横の 2 つの行は、計画の UiChoiceItem を作らず、UiMenuItem を中央揃えで使った（UiScreen::centerChoiceRect）
+  ・段4：UiButton はコードに無い
+・3 構成ビルド済み・画面確認済み・コミット済み（1002f85）。
 
 ■ 参考
 ・Component パターン：https://gameprogrammingpatterns.com/component.html

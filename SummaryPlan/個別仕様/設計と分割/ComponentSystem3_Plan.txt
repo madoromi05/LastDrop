@@ -2,10 +2,12 @@
  部品の付け替えを簡単にする（画像の obj->AddComponent< T >() の形へ）の計画メモ
  作成日：2026-11-02
  状態：2026-11-02 ユーザー「お願いします」で ★1〜5 はおすすめどおり・★6 を足して決定。実装した。
-       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）
+       Debug・Profile・Release のビルドが警告なしで通過。画面確認済み（11-02）
        ★6（足した）：物を組み立てる関数は 1 つの関数で 1 つの物だけを作り、中の変数は画像と同じ obj にそろえる
-         （GameWorld::placeWeapon・placePlayer・placeEscapeCar・placeFuelStation・placeFuel・createProp・dropAmmo、ZombieFactory::spawn。
-          2026-11-02 自キャラと銃は PlayerFactory::spawn・spawnWeapon へ移した）
+         （GameWorld::placeWeapon・placePlayer・placeEscapeCar・placeFuelStation・placeFuel・createProp、ZombieFactory::spawn。
+          2026-11-02 自キャラと銃は PlayerFactory::spawn・spawnWeapon へ移した。置物は GameWorldSplit で PropFactory・WorldBuilder へ移した）
+ 今の形（2026-11-17 の確認）：ゾンビが弾を落とす dropAmmo は無い（11-05 にやめた）。銃は 11-14 から手に持つ物と落ちている物が 1 つ
+       （WeaponObject_Plan.txt）。requireComponent は 11-14 から要った部品の印を付ける（印の付いた部品は外せない）
        仕様からの違い：
         ・ZombieDismember は外せない部品にした（ZombieState の体の中心・Brain の部位の箱の置き方が、引きずる体の胸を読むため）
         ・PickupComponent は BoxColliderComponent を借りず、見た目から同じ箱を求める（start どうしの順番が残るため）

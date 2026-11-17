@@ -3,14 +3,18 @@
   SkinnedMeshData・SkinnedMeshInstance・InventoryScreen・PlayerComponent）の計画メモ
  作成日：2026-11-09
  状態：2026-11-09 ユーザー「Go with all A」で ★1〜7 すべて A に決定。実装した。
-       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）。コミットはしていない
+       Debug・Profile・Release のビルドが警告なしで通過。画面確認済み・コミット済み（11-09「分割」）
+ 今の形（2026-11-17 の確認）：
+       ・RunState と RunStateFile（2 章・★7・段1）は、同じ 11-09 の 1 回勝負への作り直し（SimpleRun_Plan.txt）で消した。
+         5 日間の状態と save.xml の読み書きは今のコードに無い。出撃の始めと記録は Raid/RaidStart・RaidRecord が持つ
+       ・InventoryScreen::Request は using で残っている（typedef から using に替えた）
        仕様からの違い：
         ・SceneLights の影のシェーダの誤りは shadowErrorMessage 1 つにまとめた（懐中電灯 → 月の順は前と同じ）
-        ・RunState に kFirstDay（1）を足した（RunStateFile が日の番号を数えるのに使う）
+        ・RunState に kFirstDay（1）を足した（RunStateFile が日の番号を数えるのに使う。今は RunState ごと無い）
         ・NavMeshBuilder は dtNavMesh* を返し、NavMesh が受け取って持つ（消すのは NavMesh の削除子）。かかった時間のログは前と同じく NavMesh が出す
         ・TownVisibilityCheck は表の口に cellCount・isOpenCell を足して読む（見られる長方形は建物の形の箱から求め直す）。数の出力は前と同じ形
         ・SkinnedMeshData に足した読み口は vertexNumber・restPosition・strongestBone・bindInverse
-        ・InventoryCursor に Request・MenuItem を移し、InventoryScreen::Request は typedef で残した（BagController は変えない）
+        ・InventoryCursor に Request・MenuItem を移し、InventoryScreen::Request は別名で残した（BagController は変えない）
         ・アニメが見つからないときのログの文字（SkinnedMeshInstance: animation not found）は前のまま
        分けた後の行数：SceneRenderer.cpp 356→183・RunState.cpp 355→91・TownVisibility.cpp 453→400（見込み 340 より多い。段の関数の頭と、
                        読み口 2 つが増えた分）・NavMesh.cpp 444→194・SkinnedMeshData.cpp 312→285・SkinnedMeshInstance.cpp 244→161・
@@ -40,7 +44,7 @@
   ・影・ライトの定数（kFlashlightShadowSize など）も移す
  残る：描く手順・霧の距離・目から見る絵のカリング・シェーダの誤りをまとめる。見込み 356 → 約 200 行
 
-2. RunState（実装 355 行）★7
+2. RunState（実装 355 行）★7　※ RunState・RunStateFile は 11-09 の SimpleRun で消した。この章は当時の記録
  今：5 日間の状態（日・倉庫・カバン・倒した数・日ごとの条件・ハイスコア・前の結果）＋ save.xml の読み書き（load 67 行）
  分ける：RunStateFile（Raid/RunStateFile.h）
   ・関数：static bool load( RunState* )・static bool save( const RunState& )・static void erase()
@@ -102,7 +106,7 @@
 
 9. 分けた後の依存（一方通行）
    SceneRenderer → SceneLights → WorldRenderer（影を描く）・GameWorld（読むだけ）
-   RunRules・BaseScene・EditorWindow → RunStateFile → RunState
+   RunRules・BaseScene・EditorWindow → RunStateFile → RunState（今は 3 つとも無い）
    TownCache → TownVisibility ／ TownVisibilityCheck → TownVisibility（Debug だけ）
    NavMesh → NavMeshBuilder → CollisionWorld（読むだけ）
    HitboxLayout・BodyFootprint → SkinnedMeshShape → SkinnedMeshData
@@ -145,7 +149,7 @@
   ・新しいファイルは vcxproj へ足す（Visual Studio は閉じておいてほしい）。コミットはしない（頼まれたら）
 
 13. 遊んで確かめること（画面確認）
-  ・拠点 → 出撃 → 脱出 → 1 日の結果で save.xml が前と同じ形で書かれる・続きから読める・F6 で保存を消せる
+  ・拠点 → 出撃 → 脱出 → 1 日の結果で save.xml が前と同じ形で書かれる・続きから読める・F6 で保存を消せる（RunState と一緒に消えた項目）
   ・夜の町の月・街灯・懐中電灯と、その影（懐中電灯・月の 3 枚）
   ・ゾンビが建物を回り込んで追ってくる（F3 の水色の線・床の縁）・遠い建物が隠れて描かれない（F6 の PVS の ON/OFF）
   ・Debug の起動時の出力「TownVisibility verify: … seen in 3D (should be 0)」が前と同じ数

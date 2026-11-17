@@ -1,5 +1,5 @@
 タイトル画面を RE:2 風にする（TitleScreen_Plan）
-2026-11-09 案。★ は決めてほしい所（おすすめを先に書いた）。承認までコードは変えない。
+2026-11-09 案。★1〜★4 は決定し、実装済み・コミット済み（「■ 決定と実装」）。一時停止・設定・操作の一覧は MenuRestyle_Plan.txt で揃えた。
 
 ■ 目的
 claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD の「タイトル」）の見た目をゲームのタイトル画面に入れる。
@@ -87,4 +87,4 @@ claude.ai のモック（https://claude.ai/artifact/RHr5y2N5hLMGD8SW4cx5jD の�
     はみ出し、真ん中に合わせると街灯が題名に重なった。MenuDefinition::backdropAlignX で絵ごとに決める。
   - 部品を 2 つ足した：UiBar（題名の下の赤い線）・UiKeyHintRow（下の案内の列）。色は GameSrc/UI/MenuPalette.h の 1 か所。
 ・Debug・Release・Profile（x64）のビルドが通った。640×480 と 2560×1369 の窓でタイトルを写して見た（Release・Debug。Debug は ASSERT で止まらない）。
-・まだ：一時停止・設定・操作の一覧は今の見た目のまま（次の段）。パッドのときの案内の表示も次の段。
+・その後：一時停止・設定・操作の一覧は MenuRestyle_Plan.txt で同じ見た目に揃えた。パッドの操作の表示は PadControls_Plan.txt。

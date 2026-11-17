@@ -2,7 +2,6 @@
 #include "GameSrc/Zombie/Component/ZombieStateComponent.h"
 #include "GameSrc/Zombie/Component/ZombieBrainComponent.h"
 #include "GameSrc/World/GameObjectWorld.h"
-#include "GameSrc/Raid/DayCondition.h"
 #include "GameSrc/Math/FlatMath.h"
 
 #include "GameLib/GameLib.h"
@@ -13,10 +12,9 @@ namespace{
 	const float kGunshotHearingRange = 30.f; // 銃声が届く距離（m。撃った所から水平だけ）
 }
 
-ZombieHearing::ZombieHearing( GameObjectWorld* objects, const DayConditionEffect* day ) :
-	mObjects( objects ),
-	mDay( day ) {
-	ASSERT( mObjects && mDay && "ZombieHearing : an argument is null." );
+ZombieHearing::ZombieHearing( GameObjectWorld* objects ) :
+	mObjects( objects ) {
+	ASSERT( mObjects && "ZombieHearing : objects is null." );
 }
 
 void ZombieHearing::hearGunshot( const Vector3& position ) {
@@ -35,13 +33,11 @@ void ZombieHearing::hearNoise( const Vector3& position ) {
 }
 
 void ZombieHearing::hearFootsteps( const Vector3& feet, float range ) {
-	// 雨の日は届きにくい（今日の条件の倍率）
-	float scaled = range * mDay->footstepHearingScale;
-	if ( scaled <= 0.f ) {
+	if ( range <= 0.f ) {
 		return; // 止まっている（つかまれている間も止まっている）
 	}
-	mObjects->forEach< ZombieStateComponent >( [ &feet, scaled ]( ZombieStateComponent& zombie ) {
-		if ( FlatMath::distance( zombie.position(), feet ) <= scaled ) {
+	mObjects->forEach< ZombieStateComponent >( [ &feet, range ]( ZombieStateComponent& zombie ) {
+		if ( FlatMath::distance( zombie.position(), feet ) <= range ) {
 			zombie.getComponent< ZombieBrainComponent >()->hearFootsteps(); // 聞くかどうかはゾンビが決める（銃声と同じ）
 		}
 	} );

@@ -3,7 +3,8 @@
  作成日：2026-10-31
  状態：Q1〜Q5 ともおすすめ案（★）でユーザーが承認（2026-10-31）。
        9-a・9-b 実装済み（2026-10-31。fxc・Debug / Release / Profile のビルドまで）。ユーザーが画面確認済み（2026-10-31）。変えた所は 12 章
-       ただし 10-31 11:45 の時点で Resource/lut_export.tga が無く、Export LUT → Reload LUT の流れはまだ通していない（9-c の記録 3 の準備で確かめる）
+       星は同じ日にユーザーの指示で削除した（13 章）。今あるのは月と LUT だけ。5 章と星の項目は、作った時の記録として読む
+       Export LUT → Reload LUT の流れはまだ通していない（9-c の記録 3 の準備で確かめる）。LUT の置き場所は今 Resource/UI/（ColorLut.cpp）
        9-c 計測待ち（10 章の手順。ユーザーが録り、こちらで集計する）
  元の仕様：GraphicsExtra_Spec.txt（段階 9〜13 の全体。Q1〜Q11 は★で承認 10-31。4 章が段階9）
            Q4（LUT は 2D の帯 1024×32）・Q5（今の色の調整を LUT に書き出し、外で直して読む・混ぜる強さ）・Q11（月・星は空のシェーダ）
@@ -18,7 +19,7 @@
   2. 今のコードで関係するところ
   3. ゴールと、段階9 でやらないこと
   4. 月（9-a）
-  5. 星（9-a）
+  5. 星（9-a。13 章で削除）
   6. LUT（9-b）
   7. LUT を外の道具で直す手順
   8. 調整（F6）と表示
@@ -97,13 +98,11 @@
 ================================================================================
  ゴール
   ・夜空の月の向きに月が見え、少しにじむ（ブルーム）。水たまりに月が映る（Q1）
-  ・天頂の近くに細かい星が見え、地平線の近くと月の周りでは消える。TAA でちらつかない
   ・今の色の調整を LUT に書き出し、外で直した LUT を読んで、強さを動かして見比べられる
  やらないこと
   ・月の満ち欠け・雲・天気（全体の計画 1 章）
   ・月が動く（時間で空を回る）。月の向きは F6 の値のまま
-  ・星座・天の川（星は式の点だけ）
-  ・星の瞬き（TAA で消えてちらつくため。全体の計画 Q11）
+  ・星（13 章で削除。星座・天の川・瞬きも作らない）
   ・LUT をいくつも切り替える（Q5 の B）・Options のフィルタ
   ・月の光の強さを月の絵に合わせて変えること（今の夜の暗さの基準を変えない）
 
@@ -121,7 +120,7 @@
   ・月が地平線より下（moonElevation < 0）のときは描かない（今は 0〜90° の範囲なので起きないが、式は守っておく）
 
 ================================================================================
- 5. 星（9-a）
+ 5. 星（9-a。13 章で削除。コードには無い。作った時の記録として残す）
 ================================================================================
   ・向き dir を立方体の 6 面へ写し、面ごとに細かい升目（1 辺 starGridSize 個。初期値 256）に分ける。升目ごとのハッシュで
       ある・ない（starDensity 初期値 0.06 の割合でだけある）／升目の中の位置／明るさ（暗い星が多く明るい星は少ない：乱数の 8 乗）／色の温度（青白〜黄）
@@ -160,10 +159,10 @@
 ================================================================================
  7. LUT を外の道具で直す手順（Photoshop・GIMP・Krita など）
 ================================================================================
-  1) F6 → Render → Grading で「Export LUT」を押す → Resource/lut_export.tga（今の色の調整を焼いた表）
+  1) F6 → Render → Grading で「Export LUT」を押す → Resource/UI/lut_export.tga（今の色の調整を焼いた表）
   2) 同じ画面の写真を撮る（今ある capture。F6 の表示を閉じてから）
   3) 写真を外の道具で開き、色の調整を「調整レイヤー」で足す（トーンカーブ・色相・彩度など。ぼかし・ゆがみは使えない）
-  4) 同じ調整レイヤーを lut_export.tga にも掛けて、Resource/lut.tga の名前で保存（TGA・24bit か 32bit・圧縮なし。大きさは 1024×32 のまま）
+  4) 同じ調整レイヤーを lut_export.tga にも掛けて、Resource/UI/lut.tga の名前で保存（TGA・24bit か 32bit・圧縮なし。大きさは 1024×32 のまま）
   5) F6 の「Reload LUT」を押して見比べる。強さを動かす
   ・写真と表は同じ「画面の色」なので、写真で見た色の変わり方が、そのままゲームに出る（Q3）
 
@@ -172,10 +171,8 @@
 ================================================================================
   ・F6 → Tuning → Lighting（LightingParams。今の月の値の下に足す）:
       moonRadius 0.75°（0.1〜5）・moonDiscIntensity 3（0〜20）・moonHaloIntensity 0.05（0〜1）・moonHaloFalloff 8（1〜32）
-      starDensity 0.06（0〜0.3）・starIntensity 0.4（0〜4）・starHorizonFade 0.15（0〜0.5）
-      ※ starGridSize はシェーダの定数（形が変わり、値を動かしても見比べにならないため）
   ・F6 → Render:
-      Sky detail の ON/OFF（月・星をまとめて。見比べと計測用。OFF で今と同じ空）
+      Sky detail の ON/OFF（月だけ。見比べと計測用。OFF で月の無い空）
       Grading に「Export LUT」「Reload LUT」のボタン・lutStrength（lut.tga が無いときは灰色）・「LUT: lut.tga（1024×32）」か「LUT: none」の表示
   ・値は決まったら Copy as C++ で初期値へ戻す（今までと同じ）
 
@@ -186,8 +183,7 @@
        tools/texgen/moon_gen.py → moon.tga → texture_to_dds.ps1（BC7_SRGB）
        LightingParams・LightList（定数 gMoon・gSkyDetail を足す）・LightList.hlsli（skyColor・environmentLight）・
        DeferredLighting（moon.dds を t14 に付ける）・F6 の Sky detail
-       確かめること：月が影の向きの空にある・ブルームで少しにじむ・水たまりに月が映る・星が TAA でちらつかない・
-                     地平線の近くと月の周りで星が消える・Sky detail OFF で今と同じ空
+       確かめること：月が影の向きの空にある・ブルームで少しにじむ・水たまりに月が映る・Sky detail OFF で月の無い空
   9-b LUT
        Grading.hlsli（gradeColor を移す）・LutBake.hlsl・Present.hlsl（LUT を引く）・PostProcess（LUT の読み込み・焼く・書き出し）・
        GameLib の RenderTarget::writeTga・F6 のボタン
@@ -198,22 +194,22 @@
 ================================================================================
  10. 計測
 ================================================================================
-  ・今までと同じ録り方（PerfCompare。同じ場所・同じ向き。段階 8 の記録と並べる）
+  ・今までと同じ録り方（同じ場所・同じ向き。段階 8 の記録と並べる）
       記録 1：Sky detail OFF・LUT なし（今と同じ）
       記録 2：Sky detail ON・LUT なし
       記録 3：Sky detail ON・LUT あり（強さ 1）
   ・見る数：gpu.Lighting（空と環境光の計算が増える）・gpu.Present（LUT を引く）。どちらも 0.02ms 以下の見込み（全体の計画 9 章）
-  ・空が画面の多くを占める向き（上を見る）でも 1 回録る（月・星の計算は空の画素の数で増えるため）
-  ・手順（2026-10-31。ユーザーが録る。F7 は押すたびに記録の開始／停止で、開始ごとに別の CSV になる）
-      準備：Profile・F6 → Render の VSync を切る（切ってから F7）・夜（Night）・懐中電灯 ON・ほかは全部 ON のまま（AA は TAA）
-            LUT の準備：F6 → Render の Export LUT を押し、Resource/lut_export.tga を Resource/lut.tga にコピーして Reload LUT。
+  ・空が画面の多くを占める向き（上を見る）でも 1 回録る（月の計算は空の画素の数で増えるため）
+  ・手順（ユーザーが録る。F6 の Perf 欄の Record CSV は押すたびに記録の開始／停止で、開始ごとに別の CSV になる）
+      準備：Profile・F6 → Render の VSync を切る（切ってから Record CSV）・夜（Night）・懐中電灯 ON・ほかは全部 ON のまま（AA は TAA）
+            LUT の準備：F6 → Render の Export LUT を押し、Resource/UI/lut_export.tga を Resource/UI/lut.tga にコピーして Reload LUT。
             表示が「LUT: lut.tga 1024x32」になり、Color grading を切っても絵が変わらないことを見る（6-4 の確かめ）。
             見終わったら Color grading を ON に戻す
-      記録 1（道）：月が見えて、水たまりも映る所で立ち止まり、向きを変えずに F7 を押して
-        A：Sky detail OFF・LUT strength 0 で約 30 秒 → B：Sky detail ON で約 30 秒 → C：LUT strength 1 にして約 30 秒 → F7 で止める
+      記録 1（道）：月が見えて、水たまりも映る所で立ち止まり、向きを変えずに Record CSV を押して
+        A：Sky detail OFF・LUT strength 0 で約 30 秒 → B：Sky detail ON で約 30 秒 → C：LUT strength 1 にして約 30 秒 → Stop CSV で止める
       記録 2（空）：真上に近い所を向いて同じ A → B（LUT は空と関係ないので B まで）
       分け方：GPU の印では A・B・C を見分けられないので、切り替えた時刻（だいたいの秒）を教えてもらい、前後 2 秒と最初・最後の 1 秒は使わない
-      見る数：gpu.Lighting（A→B の差が月・星・映る月の重さ）・gpu.PostProcess（B→C の差が LUT の重さ）・GPU 全体・CPU の中央値
+      見る数：gpu.Lighting（A→B の差が月・映る月の重さ）・gpu.PostProcess（B→C の差が LUT の重さ）・GPU 全体・CPU の中央値
       録ったら CSV のフォルダ（Profiling/<日時>/）と切り替えた秒を教えてもらい、こちらで集計する
 
 ================================================================================
@@ -258,4 +254,4 @@
   ・SkyDetail.hlsli の星の節（starField・hash33・cubeFace・kStar*）と、LightList の定数 gStars を削除。
     EnvironmentLight・LightingParams の starDensity・starIntensity・starHorizonFade と F6 の項目も削除
   ・1 画素の角度（月の模様のミップを選ぶのに使う）は、空いていた gMoonHalo.z へ移した（LightList.cpp の moonHalo と一緒）
-  ・F6 の Sky detail は月だけ（表示も "(moon)"）。fxc とビルドは通った・画面確認待ち
+  ・F6 の Sky detail は月だけ（表示も "(moon)"）。fxc とビルドは通った・画面確認済み

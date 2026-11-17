@@ -2,7 +2,10 @@
  マズルフラッシュ（撃った瞬間に銃口が光る演出）の計画メモ
  作成日：2026-10-16
  状態：作り方を決めた（2026-10-16）。6 章（銃の当たり判定）は実装済み（2026-10-16）。
-       残り（銃口の位置・光る板と絵・にじみの板・点光源）も実装済み（2026-10-17）。画面での確認はまだ
+       残り（銃口の位置・光る板と絵・にじみの板・点光源）も実装済み（2026-10-17）・画面確認済み
+       今の形（まずここを見る）：芯の絵は 1 枚の muzzle_flash.tga ではなく、コマ送りの絵
+       Resource/Texture/Effect/muzzle_flash_sheet.dds（EffectFlipbook_Plan.txt）。にじみの絵は Resource/Texture/Effect/muzzle_glow.dds。
+       当たり判定の線などの確認用の表示は F6 の Debug タブ
 ================================================================================
 
 目次
@@ -159,12 +162,12 @@
 --------------------------------------------------------------------------------
  4-6. 絵
 --------------------------------------------------------------------------------
- ・ツールで作る（tools/texgen/muzzle_flash_gen.py → Resource/muzzle_flash.tga）。dust_gen.py と同じ考え方
+ ・ツールで作る（tools/texgen/muzzle_flash_gen.py。今の絵は Resource/Texture/Effect/muzzle_flash_sheet.dds。EffectFlipbook_Plan.txt）。dust_gen.py と同じ考え方
  ・4 種類を1枚の画像に並べる（星形 2 種類・横の炎 2 種類）
  ・中心は白、外へ行くほど黄色 → オレンジ → 黒（加算なので黒は透明と同じ）
  ・LitQuadBatch は今「絵を1枚まるごと貼る」作りなので、絵の一部（4 分の 1）を貼れるよう、
    add に UV の範囲を渡せるようにする
- ・にじみの板の絵（4-7）は別の画像にする（同じツールで Resource/muzzle_glow.tga も作る）
+ ・にじみの板の絵（4-7）は別の画像にする（同じツールで作る。今は Resource/Texture/Effect/muzzle_glow.dds）
 
 --------------------------------------------------------------------------------
  4-7. 光のにじみの板
@@ -318,13 +321,13 @@
      光の明るさ（0〜1）を答える（setupLights が読む）
      銃口の位置は持たない（描くときに受け取る）
  ・LitQuadBatch に「光らせて描く」モードと、add に UV の範囲（絵の一部を貼る）を足す
-     フラッシュの板（muzzle_flash.tga）とにじみの板（muzzle_glow.tga）は絵が違うので、
+     フラッシュの板（muzzle_flash_sheet.dds）とにじみの板（muzzle_glow.dds）は絵が違うので、
      LitQuadBatch を2つ持つか、1つを2回に分けて描く（どちらも1フレームに描く回数が1回増えるだけ）
  ・HeldItem に置き場所（骨の行列 × 持ち方）を返す関数を足す
  ・PlayerCharacter に muzzle を足す
  ・GameWorld に mMuzzleFlash と drawMuzzleFlash を足す
  ・GameScene::setupLights でライト 2 番を設定する
- ・tools/texgen/muzzle_flash_gen.py と Resource/muzzle_flash.tga、Resource/muzzle_glow.tga
+ ・tools/texgen/muzzle_flash_gen.py と Resource/Texture/Effect/muzzle_flash_sheet.dds、muzzle_glow.dds
  ・銃の当たり判定（6 章）
      FirstPersonBody：銃の頂点の範囲を受け取り、apply の最後に銃の箱を求めて覚える
      BodyFootprint：「この範囲も囲む」形の place を足す
@@ -345,18 +348,18 @@
     mWorld.drawMuzzleFlash( ... ); // フラッシュの板 → にじみの板。銃口は player->muzzle() で取り直す
 
  作る順番（それぞれ画面で確かめてから次へ）
-  1. 銃の当たり判定 … F1 で長方形が銃を囲むこと、壁に銃口が入らないこと（実装済み）
+  1. 銃の当たり判定 … F6 の Debug タブで長方形が銃を囲むこと、壁に銃口が入らないこと（実装済み）
   2. 銃口の位置     … 仮に小さな板を銃口に置いて、反動・歩き・覗きで離れないこと
   3. 光る板と絵
   4. 光のにじみの板 … 覗いたときに照準が見えること、壁際で切れ目が目立たないこと
   5. 点光源
-  2〜5 は 2026-10-17 にまとめて実装した（画面での確認はまだ）。確かめるときは上の順に見る。
+  2〜5 は 2026-10-17 にまとめて実装した（画面確認済み）。
 
  実装で決めた初期値（7 章の部品。見た目を確かめる前の値。MuzzleFlash.cpp の定数）
   （2026-10-17 の「光」への変更後の値）
   ・光の芯は幅 7cm、銃口の先端から 2cm 前に置く。明るさの倍率 3
   ・点光源の強さ 1.5（1m 先で 1.5、5m 先で 0.3。今の式は「強さ × cos / 距離」で届く距離の上限が無い）
-  ・芯の絵は 1 枚（muzzle_flash.tga）。色は絵に入れ、アルファは不透明
+  ・芯の絵は作ったときは 1 枚（muzzle_flash.tga）。今は 4 形のコマ送り（muzzle_flash_sheet.dds）。色は絵に入れ、アルファは不透明
     （加算なので黒が透明。アルファも薄くすると頂点のアルファと二重に掛かる）
   ・にじみの絵は白で、濃淡はアルファだけ（色は頂点の色で掛ける）
 

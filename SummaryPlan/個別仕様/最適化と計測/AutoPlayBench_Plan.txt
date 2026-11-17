@@ -1,9 +1,19 @@
 ================================================================================
- 自動で遊んで計測するツール（AutoPlay ベンチマーク）の計画メモ
+ 計測の道具（案・保留）
+   ・自動で遊んで計測するツール（AutoPlay ベンチマーク。0〜14 章）
+   ・記録の CSV を 2 つ並べて比べるツール（tools/perf_compare.py。15 章。元は PerfCompare_Plan.txt）
  作成日：2026-10-28（同日 改 1：ユーザー「行動はすべてのイベントを発火させたいので、もっと項目を増やすべき」）
- 状態：仕様の案。★の 6 つがユーザーの決定待ち。実装は承認の後
+         CSV を比べるツールの案は 2026-10-26 作成。2026-11-17 にこの文書へまとめた
+ 状態：どちらも仕様の案のまま保留。AutoPlay の★Q1〜Q6・比べるツールの★Q1〜Q4 は決まっていない。コードも tools/perf_compare.py も無い
+       今の計測は、F6 の Perf 欄の Record CSV で録った CSV を、こちらで集計している（計測の記録.md ①〜⑯）
+       グラフィック・最適化の新しい段階は、作り直しが遊べるまで止めているので、再開するときに決め直す
+ 書いた時から変わった所（作るときは今のコードで出来事・行動を拾い直す）
+   ・記録の開始／停止は F7 ではなく F6 の Perf 欄のボタン（2026-11-09 に F1〜F5・F7・F9 のキーを消し、F6 のタブへ）
+   ・ゲームは 1 回勝負の出撃（SimpleRun_Plan.txt）。ガソリンを車へ運ぶクリア・何度でも拾える置き場・ゾンビが落とす弾は無い
+   ・銃を「しまう」操作は無い（2026-11-12）。描き方はディファードだけ（フォワードは無い）
+   ・道探しは StreetGraph ではなく NavMesh（Map/NavMesh）
  関係：DebugTools_Profiling_Plan.txt（手順 6「スナップショットの保存と、自動ベンチマーク」・6-4 の「定期的な性能チェック」）、
-       Optimization_Plan.txt 9 章（入れる前と後で同じ場面の数字を比べる）、PerfCompare_Plan.txt（記録の CSV を比べる。こちらとは別の物）
+       Optimization_Plan.txt 9 章（入れる前と後で同じ場面の数字を比べる）
 ================================================================================
 
 目次
@@ -22,6 +32,7 @@
  12. 懸念点
  13. 後回しにする物
  14. 参考
+ 15. 記録の CSV を 2 つ並べて比べるツール（tools/perf_compare.py）
 
 ================================================================================
  0. 決定事項と未決事項
@@ -30,7 +41,7 @@
 --------------------------------------------------------------------------------
  決定事項（ユーザー指定）
 --------------------------------------------------------------------------------
- ・人が操作しなくても、ゲームの中で自キャラが勝手に動き、その間の数字を勝手に記録するツール（2026-10-28。CSV を比べるツール PerfCompare とは別）
+ ・人が操作しなくても、ゲームの中で自キャラが勝手に動き、その間の数字を勝手に記録するツール（2026-10-28。CSV を比べるツール（15 章）とは別）
  ・行動は、ゲームの出来事（イベント）を全部発火させられるだけそろえる（2026-10-28）
    → 5 章に出来事を全部並べ、6 章の行動でどれを起こせるかを対応させる。走り終わったら「起きた／起きなかった」を表にする
  ・実装は仕様の承認の後
@@ -55,7 +66,7 @@
      案 B：F6 の欄だけ
 
  ★Q3. 計測の中身
-     案 A（おすすめ）：走り始めに VSync を自動で切って F7 の記録を始め、終わったら止めて VSync を戻す。
+     案 A（おすすめ）：走り始めに VSync を自動で切って CSV の記録を始め、終わったら止めて VSync を戻す。
        行動ごと・出来事ごとの表を autoplay_<シナリオ名>_<時刻>.md に書く（8 章）
      案 B：記録の始め・止めだけ（表は作らない）
 
@@ -67,8 +78,8 @@
  ★Q5. 入力の差し込み方（改 1 で追加）
      案 A（おすすめ）：仮想のパッド。AutoPlay が「W を押している」「マウスを右へ 3 画素」「E を押した瞬間」を作り、
        Pad が読んだ本物の入力の代わりに使う。ゲームの中は人が遊ぶときと全く同じ道を通る
-       → タイトル・一時停止・設定・クリア・ゲームオーバーの画面も、F1〜F9 の確認用のキーも同じ仕組みで押せる
-          （PlayerCommand に直接入れる案だと、メニューと「使う」と確認用のキーに、それぞれ別の差し込み口が要る）
+       → タイトル・一時停止・設定・結果の画面も同じ仕組みで押せる
+          （PlayerCommand に直接入れる案だと、メニューと「使う」に、それぞれ別の差し込み口が要る）
      案 B：PlayerCommand と視点の回す量を直接渡す（初めの案。自キャラの操作だけなら少し簡単）
 
  ★Q6. 起きなかった出来事の扱い（改 1 で追加）
@@ -109,8 +120,8 @@
    ゲームの入力は全部ここを通る（InputFire() などのショートカット）。仮想のパッドはここに差し込める（Q5 の案 A）
  ・PlayerCommand：自キャラへの 1 フレームぶんの操作。コメントに「AI・リプレイなど、操作の出どころが変わっても…」とある（Q5 の案 B の口）
  ・GameWorld：出来事の一覧を毎ティック出している（zombieHitsThisTick・surfaceHitsThisTick・zombieAttacksThisTick）。spawnZombie もある
- ・StreetGraph::findPath：ゾンビが建物を回り込む道探し（A*）。自キャラの「そこまで歩く」にも使える
- ・Profiling：toggleRecording（F7）・markEvent（印）。印は今「Shot」と「押したボタンの名前」しか付いていない。1 フレームに残せる印は 16 個まで
+ ・道探し：書いた時は StreetGraph::findPath（A*）。今は NavMesh（Map/NavMesh）。自キャラの「そこまで歩く」にも使える
+ ・Profiling：toggleRecording（今は F6 の Perf 欄の Record CSV から呼ぶ）・markEvent（印）。印は今「Shot」と「押したボタンの名前」しか付いていない。1 フレームに残せる印は 16 個まで
  ・Graphics::Manager::setVSync・WindowCreator::commandLineString（起動の引数。今はどこも使っていない）
  ・乱数の種：ゾンビ用（GameWorld.cpp 139 行）とガソリンの置き場所（225 行）が、起動からの時間（Framework::time）で決まっている
  ・窓が裏に回ると一時停止する（GameScene::beginFrame）。放っておいて走らせる間は、これを止める必要がある
@@ -142,7 +153,8 @@
 ================================================================================
  5. 出来事の一覧（発火させたい物）
 ================================================================================
- ゲームのコードから全部を拾った（2026-10-28）。どれにも名前を付け、起きた所で印を付ける（GAME_EVENT( "Zombie.Stagger" ) のような 1 行。10 章）。
+ ゲームのコードから全部を拾った（2026-10-28）。今のゲームに無い物（しまう・落ちた弾・ガソリンを車へ運ぶクリア・確認用のキー・フォワード）は消した。
+ 1 回勝負の出撃（拠点・脱出点・カバン・漁る・走るゾンビ・日の条件）の出来事は、作るときに足す。どれにも名前を付け、起きた所で印を付ける（GAME_EVENT( "Zombie.Stagger" ) のような 1 行。10 章）。
  印は計測の CSV の events 列にも入るので、出来事ごとの重さが分かる。「起こす行動」は 6 章の名前。
 
  ■ 画面の切り替え・メニュー
@@ -150,8 +162,8 @@
   -----------------------  ----------------------------------------------  ---------------------------------------
   Scene.Title              タイトル画面に入った                            起動したとき／MenuSelect Title
   Scene.Game               本編に入った（ロードの始まり）                  MenuSelect Start・Retry
-  Scene.Clear              クリア画面に入った                              Escape
-  Scene.GameOver           ゲームオーバー画面に入った                      Die
+  Scene.Clear              結果の画面（脱出できた）に入った                Escape
+  Scene.GameOver           結果の画面（死んだ）に入った                    Die
   Menu.Options             設定のページを開いた                            MenuSelect Options
   Menu.Controls            操作の一覧のページを開いた                      MenuSelect Controls
   Menu.Volume              音量（Master・Effects）を変えた                 SetOption
@@ -170,8 +182,6 @@
   Player.Interact.Nothing  何も無い所で「使う」を押した                    Interact（何も見ていないとき）
 
  ■ 銃
-  Weapon.Draw              武器を出した                                    Holster
-  Weapon.Holster           武器をしまった                                  Holster
   Weapon.AimHold           押している間だけ覗いた                          Aim mode="hold"
   Weapon.AimToggle         短押しで覗いたままにした                        Aim mode="toggle"
   Weapon.AimOut            覗くのをやめた                                  Aim mode="off"
@@ -186,7 +196,7 @@
  ■ 弾が当たった
   Bullet.HitConcrete       建物・歩道に当たった（弾痕・砂ぼこり・音）      ShootSurface material="concrete"
   Bullet.HitDirt           車道・町の外に当たった                          ShootSurface material="dirt"
-  Bullet.HitMetal          車・ガソリン缶・落ちた弾に当たった              ShootSurface material="metal"
+  Bullet.HitMetal          車・ガソリン缶に当たった                        ShootSurface material="metal"
   Bullet.HitZombieHead     ゾンビの頭に当たった                            Shoot part="head"
   Bullet.HitZombieBody     ゾンビの体（頭以外）に当たった                  Shoot part="torso" など
   Bullet.HitCorpse         死体に当たった                                  ShootCorpse
@@ -205,8 +215,6 @@
   Zombie.Corpse            倒れ終わって死体になった                        Die の後に Wait
   Zombie.Sink              死体が沈み始めた・消えた                        Die の後に Wait（長め）
   Zombie.LimbSink          千切れた部位が沈んで消えた                      Sever の後に Wait（長め）
-  Zombie.DropAmmo          倒れたゾンビが弾を落とした（40%。種で決まる）   Shoot until="dead"
-  Zombie.AmmoRecycled      落ちた弾が多すぎて古い物を消した                何体も倒して拾わない
 
  ■ ゾンビ：動き
   Zombie.Wander            うろついた                                      SpawnZombies facing="away"（気付かせない）
@@ -228,28 +236,20 @@
   Player.Pickup.Heal       （回復は今のゲームに無い。作ったらここに足す）  −
 
  ■ ゾンビが湧く
-  Spawn.Debug              F9 と同じ道で出した                             SpawnZombies
+  Spawn.Debug              確認用に出した（F6 から出すのと同じ道）         SpawnZombies
   Spawn.Auto               見えない所に勝手に湧いた                        SetAutoSpawn on → Wait
   Spawn.Refill             10 秒ごとの補充で湧いた                         同上（倒してから待つ）
   Spawn.Limit              上限に達して湧かなかった                        SpawnZombies count="（上限より多く）"
-  Spawn.FuelBonus          給油の後に目標の数が増えた（+4）                Refuel → SetAutoSpawn on → Wait
+  Spawn.FuelBonus          給油の後に目標の数が増えた                      Refuel → SetAutoSpawn on → Wait
 
- ■ 拾う・給油・脱出
-  Item.PickFuel            落ちているガソリンを拾った                      PickUp item="fuel"
-  Item.PickEndlessFuel     何度でも拾える置き場から拾った                  PickUp item="endlessFuel"
-  Item.PickAmmo            ゾンビが落とした弾を拾った                      PickUp item="ammo"
+ ■ 拾う・給油・脱出（1 回勝負の形に合わせて作るときに拾い直す）
+  Item.PickFuel            ガソリンを拾った                                PickUp item="fuel"
   Item.Refuel              車にガソリンを入れた                            Refuel
-  Item.EscapeReady         決まった数が入って車が走れるようになった        Escape
   Item.Siren               脱出のサイレンが鳴った                          Escape
 
- ■ 確認用（Debug・Profile だけ）
-  Debug.Collision          当たり判定の表示を切り替えた（F1 など）         DebugKey work="DebugCollision"
-  Debug.PickupCollision    落ちている物の当たり判定を透かして出した        DebugKey work="DebugPickupCollision"
-  Debug.ZombieHealth       ゾンビの体力を頭の上に出した（F3）              DebugKey work="DebugZombieHealth"
-  Debug.FreeCamera         観察用カメラを使った・戻った（F4）              DebugKey work="DebugFreeCamera" → FlyFreeCamera
-  Debug.Invincible         無敵を切り替えた（F5）                          SetInvincible
+ ■ 確認用（Debug・Profile だけ。F6 のタブの切り替えを使う）
   Debug.Editor             F6 のエディタを開いた・閉じた                   DebugKey work="Editor"
-  Debug.RenderPath         描き方（ディファード／フォワード）を変えた      SetRender path="forward"
+  Debug.Switch             F6 の確認用の切り替え（当たり判定・体力・自由カメラ・無敵 …）を動かした   SetSwitch
   Debug.GBufferView        G-Buffer の中身を見た（色・法線 …）             SetRender view="normal" など
 
  起こせない物（自動では起こさない。表に「手で確かめる」と出す）
@@ -281,14 +281,13 @@
 
  ■ 移動・視点
   Walk            direction, seconds, run   向き（forward・back・left・right、組み合わせも可）へ決まった秒だけ歩く／走る
-  MoveTo          target, run               行き先まで歩く／走る。道は StreetGraph::findPath で探す
-                                            target：座標・fuel（一番近いガソリン）・endlessFuel・car・ammo（一番近い落ちた弾）・zombie・start
+  MoveTo          target, run               行き先まで歩く／走る。道は NavMesh で探す
+                                            target：座標・fuel（一番近いガソリン）・car・zombie・start
   LookAround      degreesPerSecond, turns   その場で決まった速さで回る（映る物を変えて描く重さを見る）
   LookAt          target, pitch             その方を向く（target は MoveTo と同じ。空を見るときは pitch）
 
  ■ 銃
-  Holster         state                     武器を出す（drawn）／しまう（holstered）。もうその状態なら何もしない
-  Aim             mode                      hold（押したまま）・toggle（短押し）・off（やめる）
+  Aim            mode                      hold（押したまま）・toggle（短押し）・off（やめる）
   Fire            count, interval           今向いている方へ count 発撃つ。interval="0" で続けて（連射）
   Reload          なし                      弾を込める（込め終わるまで待つ）
   EmptyMagazine   なし                      空へ撃って弾倉を空にする（空からの Reload・空撃ちの前に使う）
@@ -311,18 +310,19 @@
 
  ■ 物・脱出
   Interact        なし                      今見ている物を使う（E）
-  PickUp          item                      MoveTo → LookAt → Interact をまとめた物（fuel・endlessFuel・ammo）
+  PickUp          item                      MoveTo → LookAt → Interact をまとめた物（fuel など。作るときに今の物で決める）
   Refuel          なし                      ガソリンを持っていなければ拾い、車へ行って入れる
   Escape          なし                      必要な数になるまで Refuel をくり返す（クリア画面へ進む）
 
  ■ 自キャラ
-  SetInvincible   state                     無敵を on／off（F5 と同じ）
+  SetInvincible   state                     無敵を on／off（F6 の切り替えと同じ）
   Die             なし                      無敵を切って LetGrab をくり返し、死ぬまで待つ（ゲームオーバー画面へ進む）
 
  ■ 確認用
-  DebugKey        work                      確認用のキーを 1 回押す（WorkId の名前。DebugCollision・DebugZombieHealth・DebugFreeCamera …）
+  DebugKey        work                      キーを 1 回押す（WorkId の名前。今は F6 の Editor だけ）
+  SetSwitch       name, state               F6 の確認用の切り替え（DebugSwitches）を on／off
   FlyFreeCamera   seconds                   観察用カメラで決まった道を飛ぶ（上・下・前へ）
-  SetRender       path, view                描き方と G-Buffer の見せ方を変える（F6 の Render 欄と同じ値）
+  SetRender       view                      G-Buffer の見せ方を変える（F6 の Render 欄と同じ値）
   SetVSync        state                     VSync を on／off（走り始めは off。比べたいときだけ）
 
  自キャラへの操作の作り方（Q5 の案 A の場合）
@@ -335,11 +335,12 @@
 ================================================================================
  7. 全部の出来事を起こすシナリオ（all_events）
 ================================================================================
- 5 章を全部起こす順番の案（AutoPlay/all_events.xml）。前の出来事の結果を次で使うように並べる（倒したゾンビの落とした弾を拾う、など）。
+ 5 章を全部起こす順番の案（AutoPlay/all_events.xml）。前の出来事の結果を次で使うように並べる。
+ 9・13 の拾う・脱出は書いた時（5 日間・車へ運ぶ形の前）の流れ。作るときは 1 回勝負の出撃の流れで組み直す。
 
    1 タイトル     MenuSelect Options → SetOption → MenuSelect Controls → Back → Back → MenuSelect Start → WaitScene game
    2 何もいない町 Walk 前後左右・走る・壁に当てる → LookAround → Interact（何も無い所）
-   3 銃           Holster drawn → Aim hold／toggle／off → Fire 1 → Fire 10（連射）→ Reload → EmptyMagazine → Fire（空撃ち）→ Reload
+   3 銃           Aim hold／toggle／off → Fire 1 → Fire 10（連射）→ Reload → EmptyMagazine → Fire（空撃ち）→ Reload
                   → SetAmmo reserve 0 → Reload（込められない）→ SetAmmo 戻す
    4 物に撃つ     ShootSurface concrete／dirt／metal → ShootSky → ShootSurface concrete count（弾痕の上限より多く）
    5 撃たれる     SpawnZombies 1 → Shoot torso until stagger → Shoot head until critical → … until dead → WaitFor Zombie.Sink
@@ -350,20 +351,20 @@
    7 攻撃         SpawnZombies 1 → LetGrab → Shoot grabbing（振りほどく）→ LetGrab → Wait（噛まれる）
                   → Downed を作って LetGrab（足をつかむ）→ KillAll
    8 湧く         SpawnZombies（上限より多く）→ KillAll → SetAutoSpawn on → Wait（湧く・補充）→ SetAutoSpawn off → KillAll
-   9 拾う         倒したゾンビの弾を PickUp ammo → PickUp fuel → Refuel → SetAutoSpawn on → Wait（+4）→ off → PickUp endlessFuel
-  10 確認用       DebugKey 各種 → FlyFreeCamera → SetRender forward → 各 view → 戻す
+   9 拾う         PickUp fuel → Refuel → SetAutoSpawn on → Wait（目標の数が増える）→ off
+  10 確認用       SetSwitch 各種 → FlyFreeCamera → SetRender 各 view → 戻す
   11 一時停止     Pause → MenuSelect Options → Back → Resume → Pause → Retry（本編を作り直す）
   12 死ぬ         Die → WaitScene gameOver → MenuSelect Retry
   13 脱出         Escape → WaitScene clear → MenuSelect Title → MenuSelect Quit
 
- 種で決まる出来事（クリティカル 10%・弾を落とす 40%・死亡アニメの種類）は、種を決めているので毎回同じ結果になる。
+ 種で決まる出来事（クリティカル 10%・死亡アニメの種類）は、種を決めているので毎回同じ結果になる。
  種を変えて起きなくなったら、Shoot の until="critical" が時間切れになって表に出る。
 
 ================================================================================
  8. 計測と出す物
 ================================================================================
  （Q3・Q6 が案 A の場合）
- ・走り始め：VSync を切る → F7 の記録を始める
+ ・走り始め：VSync を切る → CSV の記録を始める（Record CSV と同じ toggleRecording）
  ・行動を始めるたび：印を付ける（AutoPlay.<行動名>）。CSV に step 列を足し、今どの行動か（シナリオの何行目か）を入れる
  ・出来事が起きるたび：5 章の名前で印を付ける（CSV の events 列）。AutoPlay は名前ごとの回数を数える
  ・走り終わり：記録を止める（perf_*.csv と _system.json）→ VSync を元に戻す → 表を書く
@@ -376,7 +377,7 @@
   ・表 2：行動ごと（行目・行動・かかった秒・フレーム数・frameMs / cpuMs / gpuMs の平均と p99・最大・時間切れか）
   ・表 3：シナリオ全体（同じ列。平均の FPS と 1% low の FPS も）
   ・表 4：重かったフレームの上位 5 つ（何行目の行動の、何フレーム目か・印）。スパイクの JSON の名前も並べる
-  ・数え方は PerfCompare_Plan.txt の 5 章と同じ（p95・p99 は Excel の PERCENTILE.INC と同じ線形の補間）
+  ・数え方は 15 章の比べるツールと同じ（p95・p99 は Excel の PERCENTILE.INC と同じ線形の補間）
   ・5 章の「手で確かめる」物の一覧を最後に出す
 
 ================================================================================
@@ -384,7 +385,7 @@
 ================================================================================
  （Q4 が案 A の場合）
  ・乱数の種：GameWorld::place に種を渡す形を足す。渡さなければ今と同じく起動からの時間（ふつうに遊ぶときは毎回違う）
-   → ゾンビの倒れ方・個体差・クリティカル・弾を落とすか・ガソリンの置き場所が毎回同じになる
+   → ゾンビの倒れ方・個体差・クリティカル・ガソリンの置き場所が毎回同じになる
    （ワールドの状態の保存 5-6 の「種を決める所」と同じ物。こちらを先に作れば 5-6 でも使える）
  ・ZombieSpawner を止める口を足す（SetAutoSpawn）
  ・本編はシナリオで Start してから始まる（町の始めの場所 TownMap::playerStart から）
@@ -421,7 +422,7 @@
       SceneManager / Framework  起動の引数 -autoplay を読んで AutoPlayer を作る。終わったら閉じる
       EditorWindow         AutoPlay 欄を足す
   GameLib：Profiling に startRecording / stopRecording / setSection( 番号, 名前 ) を足す
-           （今の toggleRecording は startRecording / stopRecording を呼ぶ形にする。F7 の動きは変えない）
+           （今の toggleRecording は startRecording / stopRecording を呼ぶ形にする。Record CSV のボタンの動きは変えない）
 
   ほか：tools/autoplay.bat（Profile の exe を -autoplay 付きで起動。回数の指定。終わりのコードで OK／NG を出す）
         AutoPlay/all_events.xml・town_combat.xml・town_walk.xml
@@ -432,11 +433,11 @@
              出来事を足すときは、起きる所に GAME_EVENT を 1 行と、AutoPlayEvents の一覧に 1 行足す（一覧に無い名前は Debug で ASSERT）。
 
  作る順番の案（1 回で全部は大きいので、段ごとに画面で確かめる）
-  段 1：仮想のパッド・AutoPlayer・起動の引数・計測の始め止め・Wait・Walk・LookAround・Holster・Aim・Fire・Reload・SpawnZombies・Shoot（部位を狙う）
+  段 1：仮想のパッド・AutoPlayer・起動の引数・計測の始め止め・Wait・Walk・LookAround・Aim・Fire・Reload・SpawnZombies・Shoot（部位を狙う）
         GAME_EVENT は「銃」「弾が当たった」「ゾンビ：撃たれたとき」の分
   段 2：MenuSelect・SetOption・Pause・WaitScene・Die・SetInvincible（画面の切り替えとメニューの出来事）
   段 3：MoveTo・PickUp・Refuel・Escape・LetGrab・SetAutoSpawn（道探しと拾う・攻撃・湧く）
-  段 4：DebugKey・FlyFreeCamera・SetRender と all_events.xml の仕上げ、発火の表
+  段 4：SetSwitch・FlyFreeCamera・SetRender と all_events.xml の仕上げ、発火の表
 
 ================================================================================
  11. 確かめ方
@@ -447,7 +448,7 @@
  ・ある出来事の GAME_EVENT をわざと消すと、表 0 にその名前が出て NG になる（発火の表が正しく働く）
  ・表 2 の行動ごとのフレーム数を足すと、全体のフレーム数になる
  ・行動ごとの frameMs の平均が、CSV をその step で絞って Excel の AVERAGE をとった値と同じ
- ・走り終わった後、VSync・無敵・湧きが元に戻っている。F7 を自分で押したときの動きは今と同じ
+ ・走り終わった後、VSync・無敵・湧きが元に戻っている。Record CSV を自分で押したときの動きは今と同じ
  ・走っている間にキーボードとマウスを触っても、自キャラが動かない（仮想のパッドだけを使っている）
 
 ================================================================================
@@ -455,7 +456,7 @@
 ================================================================================
  ・作業がとても大きい：行動 約 35 個・出来事 約 70 か所・メニューの口・種の固定。今までで一番大きい（手順 5 の 3〜4 倍）
    → 10 章の 4 段に分け、段ごとに画面で確かめる
- ・自キャラの道探し：StreetGraph はゾンビ用なので、自キャラの体の大きさで通れない所を通そうとすることがある → timeout で次へ進む
+ ・自キャラの道探し：NavMesh はゾンビの体の大きさで作っているので、自キャラが通れない所を通そうとすることがある → timeout で次へ進む
  ・部位を狙って撃っても、照準のぶれ・反動・ゾンビの動きで別の部位に当たることがある
    → Shoot は until の状態になるまで撃ち続ける（狙った部位以外に当たっても止めない）。倒れてしまったら新しく出し直す
  ・「詰まって横へ」「フラつき」「探すのを諦める」は、場面しだいで起きないことがある → expect と timeout で表に出す。起きやすい場面は作りながら探す
@@ -469,7 +470,7 @@
  13. 後回しにする物
 ================================================================================
  ・自分で考えるボット（Q1 の案 B）：「Loop」行動として、ガソリン探し → 給油 → ゾンビを撃つ を時間まで繰り返す物を後から足せる
- ・何回か走らせた結果を並べて推移を見る（ベヨネッタ 2 のような毎日の計測。PerfCompare の 3 つ以上の比較とまとめて考える）
+ ・何回か走らせた結果を並べて推移を見る（ベヨネッタ 2 のような毎日の計測。15 章の 3 つ以上の比較とまとめて考える）
  ・メモリの量の記録（今の CSV にはメモリの列が無い）
  ・ワールドの状態の保存（5-6）から始めるシナリオ（<AutoPlay snapshot="..."> で、途中の場面から始める）
  ・出来事の後に「正しい結果になったか」まで確かめる（例：Bite の後に体力が減ったか）。今回は「起きたか」だけ
@@ -487,3 +488,68 @@
      https://sonyinteractive.com/en/innovation/research-academia/research/ai-technology-for-automating-gameplay-on-playstation-5-under-human-equivalent-conditions/
  ・運営が始まった後からでも自動テストを導入して自動化したい（セガ、CEDEC 2023 のレポート）
      https://dev.classmethod.jp/articles/cedec2023_sega_atc/
+ ・Python の csv（CSV を読む）            https://docs.python.org/ja/3/library/csv.html
+ ・Python の statistics.quantiles         https://docs.python.org/ja/3/library/statistics.html#statistics.quantiles
+   （method='inclusive' が Excel の PERCENTILE.INC と同じ数え方）
+ ・Excel の PERCENTILE.INC                https://support.microsoft.com/en-us/office/percentile-inc-function-680f9539-45eb-410b-9a5e-c1355e5fe2ed
+
+================================================================================
+ 15. 記録の CSV を 2 つ並べて比べるツール（tools/perf_compare.py。2026-10-26 の案・保留）
+================================================================================
+ 15-1. 決まったこと（ユーザー指定 2026-10-26）
+  ・tools/perf_compare.py として作る。ゲームのコード（GameLib・GameSrc）は変えない。実装は仕様の承認の後
+  ・目的：最適化の前と後の CSV を 2 つ渡すだけで、列ごとの平均・p95・p99・最大値と差が表で出る。
+    Excel で式を書く手間をなくし、毎回同じ数え方にする。「速くならなかった最適化は戻す」（Optimization_Plan.txt 9 章）を数字で決める
+  ・開発用の道具で遊ぶ人には見えないので、タルコフは調べない
+
+ 15-2. 聞きたいこと（★。決まっていない）
+  ★Q1. どの Python で動かすか
+      案 A（おすすめ）：Blender 付属の Python（ほかの tools/*.py と同じ）。標準のライブラリだけで書く
+      案 B：Python を別に入れて pandas などを使う（入れる物が増える）
+  ★Q2. 呼び方
+      案 A（おすすめ）：tools/perf_compare.bat も作る。引数なしで Profiling/ の新しい 2 つを比べる（古い方が「前」）。2 つ渡せばその 2 つ、1 つなら集計だけ
+      案 B：py だけ
+  ★Q3. 結果をどこに出すか
+      案 A（おすすめ）：画面に表を出し、同じ表を Profiling/compare_<前の時刻>_vs_<後の時刻>.md にも書く（Markdown の表なので計測の記録.md に貼れる）
+      案 B：画面だけ　案 C：案 A ＋ 比べた結果の CSV
+  ★Q4. 「速くなった／遅くなった」をどこで決めるか
+      案 A（おすすめ）：平均の差が 5% 以上 かつ 0.05ms 以上なら印を付け、それ以外は「差なし（ぶれの内）」
+      案 B：印は付けず数字だけ　案 C：統計の検定（U 検定など。ここまでは要らない）
+
+ 15-3. 読む物（今の CSV の形）
+  ・Record CSV を止めると Profiling/<起動時刻>/perf_<時刻>.csv と perf_<時刻>_system.json が書かれる（FrameRecorder::stop）
+  ・CSV の 1 行目は記録した日時（startedAt,…）。列名は 2 行目から。1 行目が startedAt でない古い CSV は飛ばさない
+  ・列：frame, frameMs, cpuMs, presentMs, sleepMs, otherMs, gpuMs, ticks, state, wroteFile, events, 区間の列（Scene.update など）、
+        gpu.<名前> の列、回数の列（PROFILE_COUNT）
+      gpuMs は空のことがある。state が loading / suspended の行はプレイ中の数字に混ぜない。wroteFile = 1 は計測のファイルを書いたフレーム。
+      区間は入れ子（World.player は Scene.update の中）なので足し合わせない
+  ・_system.json：ビルドの種類・VSync・描く大きさ・CPU と GPU の名前・電源・requiredFps(60)・goalFps(144)
+
+ 15-4. 数え方
+  ・数える行：state が playing、wroteFile が 0。始めの --skip フレーム（既定 30。右上の表示がならす数 kAveragedFrames と同じ）も捨てる
+  ・gpuMs が空の行は gpuMs の列だけから外す。区間の列が 0 の行も 0 のまま数える（1 フレームあたりの時間として比べる）
+  ・列ごとに 平均・中央値・p95・p99（Excel の PERCENTILE.INC と同じ線形の補間）・最大
+  ・frameMs だけ 平均の FPS・1% low の FPS（1000 ÷ p99）・予算（_system.json の requiredFps・goalFps。無ければ 60・144）を超えた数と割合
+  ・差：後 − 前（ms）と前に対する割合（%）。マイナスが速くなった方
+  ・AutoPlay の表（8 章）も同じ数え方にする
+
+ 15-5. 出す物
+  ・見出し：前・後のファイル名、数えたフレーム数、捨てたフレーム数（loading / suspended / wroteFile / skip ごと）
+  ・表 1 全体（frameMs・cpuMs・gpuMs・presentMs・sleepMs・otherMs）・表 2 FPS と予算を超えた数・
+    表 3 区間（どちらかの平均が 0.05ms 以上の物を差の大きい順。--all で全部）・印の回数（場面の中身が違わないかの目安）
+  ・片方にしか無い区間は「−」にして、表の下に名前を並べる
+  ・条件が違うときは比べるのを止めず、表の上に注意を出す（比べられないと決めるのはユーザー）：
+      ビルドの種類が違う・VSync が入っている（cpuMs・gpuMs で比べる）・描く大きさが違う・CPU / GPU / ドライバが違う・
+      電源がバッテリー・数えたフレームが 300 未満・前と後のフレーム数が 2 倍以上違う・_system.json が無い
+
+ 15-6. 部品（tools/perf_compare.py 1 つ。関数ごとに役目を 1 つ）
+  find_latest_pair()・read_recording()・summarize()・compare()・check_conditions()・format_tables()・main()
+  定数はファイルの頭に名前を付けて置く：DEFAULT_SKIP_FRAMES = 30、MIN_MEANINGFUL_MS = 0.05、CHANGE_RATIO = 0.05、MIN_FRAMES = 300、
+  FRAME_COUNT_RATIO = 2.0、DEFAULT_REQUIRED_FPS = 60、DEFAULT_GOAL_FPS = 144
+
+ 15-7. 確かめ方と懸念点
+  ・引数なし・2 つ指定・1 つ指定の 3 通りが動く。1 つの列の平均と p99 が Excel の AVERAGE・PERCENTILE.INC と同じ
+  ・同じファイルを前と後に渡すと、差がすべて 0・判定がすべて「差なし」
+  ・場面がそろっていないと、差が変更のせいか場面のせいか分からない（ツールでは直せない。印の回数と注意で気付く。直すのはワールドの状態の保存や AutoPlay）
+  ・区間の名前を後で変えると、前と後で別の区間に見える（「片方にしか無い区間」に出るので気付ける）
+  ・後回し：グラフ・3 つ以上の記録を並べる・load_*.json の比較

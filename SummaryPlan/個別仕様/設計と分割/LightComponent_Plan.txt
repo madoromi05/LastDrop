@@ -2,7 +2,7 @@
  明かりを物の部品にする（LightComponent が自分の光を答える） の計画メモ
  作成日：2026-11-14
  状態：2026-11-14 ユーザー「全部 A で実装」で ★1〜4 すべて A に決定。実装した。
-       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち。9 章）。コミットはしていない
+       Debug・Profile・Release のビルドが警告なしで通過。画面確認済み・コミット済み（8e83257「コンポーネント化」）
        仕様からの違い：
         ・HoldComponent の socket を渡す・外す所は、private の plugLightSockets( socket ) 1 つにまとめた（bindWeapon と onDestroy から呼ぶ）
         ・MuzzleFlashComponent の const の flash()（光を読む口）は、読む所が無くなったので消した（lightSource が代わり）
@@ -11,7 +11,6 @@
         ・LightComponent が socket を持たないとき、向きは TransformComponent の向き（AngleMath::forwardOf）を使う
           （街灯は点光源なので使わない。置き場所を持つ物にスポットを付けたときのため）
         ・コメントも今の形に直した：PropFactory.h・TownMap.h・GameObjectTag.h・WorldBuilder.cpp・SceneLights.h・MuzzleFlashComponent.h
-        ・VS を開いたまま vcxproj と filters へ 4 つ登録した（VS で再読み込みが要る。VS 側で上書き保存しないこと）
        分けた後の行数：SceneLights.cpp 210→214・LightComponent.h 28→36・LightComponent.cpp 66（新）・LightPreset.h 22（新）・
                        LightPreset.cpp 46（新）・ILightSocket.h 16（新）
  依頼：2026-11-13 ユーザー「ポートフォリオの画像のようなコンポーネント指向が理想」→ 部品にした方がよい物を 5 つ挙げ、
@@ -21,7 +20,7 @@
          3. 持ち物（Inventory を自キャラの部品に）
          4. 見ている物を使う（Interactor を自キャラの部品に）
          5. 千切れた部位（1 つずつ物にする）
-       2〜5 は、前の番号が終わってから 1 つずつ仕様書を書く（互いに独立）
+       2〜5 は 1 つずつ仕様書を書いた（互いに独立）。5 つとも 11-14 に実装し、画面確認済み・コミット済み（8e83257）
  前の段階：ComponentSystem3_Plan.txt（awake・共有の棚・必須と任意の部品）
            MidPrioritySplit_Plan.txt 1 章（SceneLights を GameScene から分けた）
  手本のゲームの調査：作り直しで遊び方は変えないので、タルコフの調査は無し

@@ -13,8 +13,12 @@
         ・ZombieCrawler::start の後に通り道を捨てる（今までは捨ててから腕を動かし始めていた。どちらも互いに関わらない）
         ・Zombie.cpp で使わなくなった include（ScalarMath・PlacementMatrix・GameTime）を消した
  依頼：「おすすめの 6 か所（ア〜カ）で 4 回目の分割の仕様案を書いて」
-       （1 回目 ZombieSplit_Plan.txt 988 → 862 行、2 回目 ZombieSplit2_Plan.txt 862 → 736 行、
+       （1 回目 988 → 862 行・2 回目 862 → 736 行。1・2 回目の計画書は消した。中身は git の履歴にある。
         3 回目 ZombieSplit3_Plan.txt 736 → 606 行）
+ 今の形（2026-11-17 の確認）：Zombie クラス（Zombie.h・Zombie.cpp）は 11-01 に部品へ分けて無くなった（ComponentSystem2_Plan.txt ★7）。
+       この計画書で作った ZombieCrawler・ZombieDamageReaction・ZombieUncertaintyParams は今もある
+       （ZombieCrawler は State・Attack・Crawl・Dismember の部品が使い、ZombieDamageReaction.h は ZombieHealthComponent.cpp が include する）。
+       本文の「Zombie に残る物」（11 章）・Zombie.cpp の行数は当時の話
 ================================================================================
 
 目次

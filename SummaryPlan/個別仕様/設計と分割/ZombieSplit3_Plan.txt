@@ -14,7 +14,12 @@
         ・Zombie::canChase は残した（「追ってくる体か」の意味の名前。中身は mAnimations.canWalk()）
         ・アニメが見つからないときの表示は "Zombie: animation not found" のまま
  依頼：「もっと分割したい」
-       （1 回目は ZombieSplit_Plan.txt で 988 → 862 行、2 回目は ZombieSplit2_Plan.txt で 862 → 736 行）
+       （1 回目は 988 → 862 行で ZombieRootMotionSpan・ZombieStagger・ZombieCrawlBody を、2 回目は 862 → 736 行で
+        ZombieLocomotion・ZombieCorpse を分けた。1・2 回目の計画書は消した。中身は git の履歴にある）
+ 今の形（2026-11-17 の確認）：Zombie クラス（Zombie.h・Zombie.cpp）は 11-01 に部品へ分けて無くなった（ComponentSystem2_Plan.txt ★7）。
+       この計画書で作った ZombieAnimationSet・ZombieAttackReach は今もあり、Zombie*Component が持つ
+       （AnimationSet は State・Chase・Attack・Crawl・Health・RootMotion の部品、AttackReach は ZombieAttackComponent）。
+       本文の「Zombie に残る物」（8 章）・Zombie.cpp の行数は当時の話
 ================================================================================
 
 目次

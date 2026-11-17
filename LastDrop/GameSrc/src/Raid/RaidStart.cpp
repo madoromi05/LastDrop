@@ -21,7 +21,6 @@ namespace{
 		DayCondition::Normal,
 		DayCondition::Blackout,
 		DayCondition::Fog,
-		DayCondition::Rain,
 		DayCondition::Horde,
 	};
 	const int kConditionChoiceNumber = sizeof( kConditionChoices ) / sizeof( kConditionChoices[ 0 ] );

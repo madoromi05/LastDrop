@@ -51,7 +51,7 @@ ZombieDirector::ZombieDirector( MeshCache* meshes, GameObjectWorld* objects, con
 	mCollisionWorld( collisionWorld ),
 	mDay( day ),
 	mZombieData( nullptr ),
-	mHearing( objects, day ),
+	mHearing( objects ),
 	mZombieNumber( 0 ) {
 	ASSERT( meshes && objects && hitWorld && collisionWorld && day && "ZombieDirector : an argument is null." );
 	mZombieData = meshes->skinnedMesh( kZombieFile );

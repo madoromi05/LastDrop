@@ -1,7 +1,9 @@
 ================================================================================
  最適化【A】の残り：A-1 インスタンシング・A-2 影の使い回しと間引き・A-4 距離と小さい物のカリング・A-5 画質の設定
 ================================================================================
-状態：仕様案（2026-11-01）。Q1〜Q12 の決定待ち。★ がおすすめ。
+状態：Q1〜Q12 は全部★でユーザーが承認（2026-11-01）。a カリング・b 影の更新の間引き・c インスタンシングは実装済み・「後」計測済み（12-5。計測の記録.md ⑭）。
+      a はユーザーが遊んだビルドで不具合の報告なし。b・c の画面確認は未記録。
+      d 画質の設定（9 章）は未・保留（コードに無い。グラフィック・最適化の新しい段階は、作り直しが遊べるまで止めている）
 元の計画：Optimization_Plan.txt 5-2（インスタンシング）・7-5（影のパス）・2 章（距離・小さい物のカリング）・7-8（画質設定）・8 章の【A】
 関係する仕様：Graphics_Spec.txt 13 章「重いときに落とす順番」・SsaoTranslucent_Plan.txt Q8・SsrDecalMaterial_Plan.txt Q10・
               Taa_Plan.txt Q8（どれも「Options に出すのは画質の設定のタスクでまとめて」と決めてある）
@@ -245,8 +247,9 @@
   ・F6 → Render に「Instancing」の ON/OFF を足す（OFF で今の 1 軒ずつの描き方。見比べと計測用）
 
 ================================================================================
- 9. 画質の設定（A-5。Q8〜Q11）
+ 9. 画質の設定（A-5。Q8〜Q11）【未・保留。描画倍率は OptimizationC_Plan.txt の d と一緒に作る】
 ================================================================================
+  ※ 書いた後に変わった所：設定の画面は音声・感度・操作のタブ（UiTabBar。OptionsTabs_Plan.txt）になった。作るときは「Graphics」をタブに足す形で見直す
  9-1. 設定の中身（GameSettings に足し、settings.xml に保存）
   ・renderScale（50〜100。5 刻み）・shadowQuality（Off / Low / High）・ssao・ssr（On / Off）・antiAliasing（Off / FXAA / TAA）・vsync（On / Off）
  9-2. 画面（Options → Graphics）
@@ -325,7 +328,7 @@
   ・2026-11-01 ComponentSystem2 で StaticProp・Pickup・ItemSource・EscapeCar は StaticModelComponent に、Zombie・PlayerCharacter は部品に
     置き換わった。間引きは GameWorld が HitboxComponent・StaticModelComponent を見て行う（中身は同じ）
 
- 12-3. b 影の更新の間引きの実装（2026-11-01。build 済み・画面確認待ち）
+ 12-3. b 影の更新の間引きの実装（2026-11-01。build 済み・画面確認は未記録）
   ・CascadeRefresh（新規。Render）：月の影の 1 枚を、このフレームに描き直すかを決める。
     (frame + phase) が間隔で割り切れるフレーム・前に描いた時から向きが moonRedrawAngle（10°）以上変わった・目が moonRedrawDistance（2m）以上動いた・
     強制（初回・影を Off から戻した・行列の作り方が変わった）のどれかで描く
@@ -338,9 +341,9 @@
   ・確かめ方：3 構成のビルドは警告なし。CascadeRefresh だけの使い捨てのテスト（400 フレームで 400・200・101 回、2 枚目と 3 枚目は重ならない、
     1 フレームに描くのは最大 2 枚、12° 振り向く・2m 動くとすぐ描く、5° なら待つ）
   ・画面で見てほしいこと：急に振り向いた・走ったときに、遠くの建物の影が欠ける・遅れて付いてくるのが見えるか（見えたら moonRedrawAngle を下げる）。
-    F7 の Shadow.cascades の平均が 3 → 約 1.75 になるか（4 フレームで 2・1・2・2 枚なので、中央値は 2）
+    CSV の Shadow.cascades の平均が 3 → 約 1.75 になるか（4 フレームで 2・1・2・2 枚なので、中央値は 2）
 
- 12-4. c インスタンシングの実装（2026-11-02。Debug・Profile・Release とも警告なしで build・シェーダは fxc でコンパイル確認・画面確認待ち）
+ 12-4. c インスタンシングの実装（2026-11-02。Debug・Profile・Release とも警告なしで build・シェーダは fxc でコンパイル確認・画面確認は未記録）
   ・GameLib：Graphics::Manager::drawIndexedInstanced( offset, primitiveNumber, instanceNumber )。drawIndexed と同じ準備（prepareIndexedDraw：
     定数を送る・形を決める・Gfx.draw の印）を通ってから DrawIndexedInstanced
   ・シェーダ：StaticMeshInstancing.hlsli（b1 に 128 軒 × 3 行の行列・placePoint / placeVector）、StaticMeshInstancedGBuffer.hlsl・StaticMeshInstancedShadow.hlsl。
@@ -353,7 +356,7 @@
   ・WorldRenderer：建物は beginBuildings → addBuilding（描くかは Building::shows。今までと同じ DrawCulling）→ endBuildings。G-Buffer と影の 4 枚の両方。
     Instancing を切った・シェーダが無いときは 1 軒ずつ（今までの描き方）
   ・Building の当たり判定・弾の判定は変えていない（描き方だけ）
-  ・画面で見てほしいこと：建物の見た目と影が今と同じか（F6 の Instancing を切り替えて見比べる）。F7 の Draw.gbuffer・Draw.shadow が減るか、
+  ・画面で見てほしいこと：建物の見た目と影が今と同じか（F6 の Instancing を切り替えて見比べる）。CSV の Draw.gbuffer・Draw.shadow が減るか、
     gpu.Buildings が増えないか（形ごとの順になり Early-Z が少し落ちる可能性。11 章）
 
  12-5. 「後」の計測（a〜c。2026-11-02。どれも Profile・VSync なし・2560×1369・夜・ゾンビを湧かせたまま。起動は別なので場面は揃っていない）

@@ -1,6 +1,7 @@
 一時停止・設定・操作の一覧を RE:2 風に揃える（MenuRestyle_Plan）
-2026-11-10 案。★ は決めてほしい所（おすすめを先に書いた）。承認までコードは変えない。
-コードはユーザーが書く。Claude は段ごとに、どのファイルの何を変えるか（変更前 → 変更後）を渡し、書いた物を読んで確かめる。
+2026-11-10 案。★1〜★5 はおすすめのまま決定。段0〜段5 を実装済み・コミット済み（「■ 決定と実装」）。
+段0〜段3 はユーザーが書き（Claude は変更前 → 変更後を渡して確かめた）、段4 の仕上げと段5 は Claude が編集した。
+この後、設定のページはタブに分け（OptionsTabs_Plan.txt）、操作の一覧は設定の「操作」のタブの中へ移した（PadControls_Plan.txt）。
 
 ■ 目的
 タイトル（TitleScreen_Plan.txt）と同じ見た目に、一時停止・設定・操作の一覧を揃える。
@@ -75,8 +76,8 @@
 
 ■ 影響範囲
 ・タイトル・一時停止・設定・操作の一覧の見た目だけが変わる。押した後の動き・ページの行き来・設定の保存は変えない。
-・UiButton を使う RaidEndScene（ゲームオーバー・脱出成功）は変わらない（揃えるのは別の段）。
-・修正の入口：色は MenuPalette.h、位置は UiScreen.cpp、文言は MenuCatalog.cpp・OptionsPage.cpp・ControlsPage.cpp。
+・UiButton を使う RaidEndScene（ゲームオーバー・脱出成功）は変わらない（揃えるのは ResultScreen_Plan.txt で行った）。
+・修正の入口：色は MenuPalette.h、位置は UiScreen.cpp、文言は MenuCatalog.cpp・OptionsPage.cpp・ControlsTab.cpp（作ったときは ControlsPage.cpp）。
 
 ■ 決めてほしいこと
 ★1 一時停止の右の欄（今回の条件・目的・経過・倒した数。モックにある）
@@ -90,6 +91,17 @@
    おすすめ：今まで通り出さない（キーとマウスの割り当てだけ）。
 ★5 一時停止の後ろのぼかし
    おすすめ：入れない（ぼかしは後処理のシェーダーを足す作業になる。暗くするだけにする）。
+
+■ 決定と実装（2026-11-10〜11-12）
+・決定：★1〜★5 ともおすすめのまま（一時停止の右の欄なし・行の説明なし・操作の一覧は 2 列・パッドのキーは出さない・ぼかしなし）。
+  ★4 は後で PadControls_Plan.txt で変わり、操作のタブの中でキーマウとパッド（PS 表記）を切り替えて見せる形になった。
+・段0〜段5 を実装。今のコードで確かめた形：
+  ・一時停止：MENU_LOOK_SIDE・RESUME / OPTIONS / RETRY / TITLE / QUIT・暗くする板 0.74（PauseMenu.cpp の kDimColor）
+  ・共通の部品：SelectionMarks・KeyCap（GameSrc/UI/Widget/）。UiMenuItem・UiSlider・UiKeyHintRow がこれを使う
+  ・見出し：UI_TEXT_HEADING・MenuLayout::buildSideHeading
+  ・操作の一覧：まとまりごとの部品は UiKeyBindingGroup（計画の UiKeyBindingRow の代わり）。ページは今は設定の中のタブ（ControlsTab.cpp）
+  ・段5 の片付け：MENU_LOOK_CENTER・buildCenter はコードに無い
+・3 構成ビルド済み・コミット済み（UI のまとまり 1002f85・重なりの調整 e4542fd）。
 
 ■ 参考
 ・Component パターン：https://gameprogrammingpatterns.com/component.html

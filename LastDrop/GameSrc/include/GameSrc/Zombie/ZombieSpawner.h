@@ -12,7 +12,7 @@ class BodyFootprint;
 // ゾンビを「いつ・どこに」湧かせるかを決める。自分では作らない（作るのは GameWorld::spawnZombie）
 // ・始め：最初の plan で、目標の数まで湧いてよい場所を選ぶ
 // ・補充：立っている数が目標より少ない間だけ決まった時間を数え、0 になったら湧いてよい場所を 1 か所選ぶ
-// ・目標の数は決まった数（時間・日で増やすのは段階R4。R2_Plan.txt Q15）
+// ・目標の数はその出撃の日の条件で決まる（ZombieDirector が DayConditionEffect::zombieCount を渡す）
 // 湧いてよい場所＝候補のうち、自キャラから離れていて、自キャラから見えず（画面の外か物の陰）、何にも重ならない所
 class ZombieSpawner{
 public:

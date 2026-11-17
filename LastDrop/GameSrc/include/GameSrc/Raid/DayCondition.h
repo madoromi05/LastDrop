@@ -8,19 +8,17 @@
 enum class DayCondition{
 	Normal,
 	Blackout, // 停電：街灯が消える
-	Fog,      // 霧：遠くが見えない（ゾンビの目は段階 D-b）
-	Rain,     // 雨：足音が届きにくい（雨の粒・音・濡れた地面は段階 D-c）
+	Fog,      // 霧：遠くが見えない（ゾンビの目の距離は変えない）
 	Horde,    // 群れ：ゾンビが多い
 	Count,
 };
 
 struct DayConditionEffect{
 	const char* saveName;       // 英字の名前（F6 に出す）
-	const char* title;          // 「霧の日」など（拠点の画面・出撃の始めの知らせ）
-	const char* summary;        // 一言の説明（拠点の画面）
+	const char* title;          // 「霧が濃い」など（ロード画面・出撃の始めの知らせ・脱出成功の画面）
+	const char* summary;        // 一言の説明（今は画面に出す所が無い）
 	float streetLightScale;     // 街灯の明るさに掛ける（停電 0）
 	float fogDistanceScale;     // 霧が半分になる距離に掛ける（霧 0.3 ＝ 40m → 12m。描く距離も一緒に縮む）
-	float footstepHearingScale; // ゾンビが足音を聞く距離に掛ける（雨 0.5）
 	int zombieCount;            // 立っているゾンビの目標と、同時に居られる数（死体も数える）
 };
 

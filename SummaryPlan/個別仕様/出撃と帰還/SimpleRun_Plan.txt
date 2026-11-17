@@ -1,5 +1,7 @@
 SimpleRun_Plan.txt（2026-11-09）
 5 日間の方式をやめ、「スタート → 町でガソリンを探す → 車で脱出したらクリア → タイトルへ」の 1 回勝負にする
+・今のゲームの流れはこの文書が正。RaidLoop_Spec.txt・R2_Plan.txt の 5 日間・拠点・スコア・save.xml・時間制限は、ここで全部やめた。
+・条件（停電・霧など）の中身は DayCondition_Plan.txt の「■ 今の形」。給油の仕方は FuelPort_Plan.txt。
 
 ■ きっかけ
 ・ユーザー「5 日の方式をやめて、スタート → 条件アイテム（ランダム）→ クリアしたら Start 画面に戻る、シンプルな方式にしたい」。
@@ -26,7 +28,8 @@ Q11 使わなくなる物      → 5 日のゲームの仕組みのコードは�
 
 ■ 新しい流れ
   タイトル「Start」
-    → 町（ロード画面 → 始めの数秒に「霧の日」と「脱出の車：北」を出す）
+    → 町（ロード画面 → 始めの数秒に条件（「霧が濃い」など）と目的の文「車にガソリンを運べ！！」を出す。
+         車の場所「脱出の車：北」はカバンの画面の見出しに出す）
     → 箱でガソリン・弾・包帯を探す → 車の給油口へ → そばに 5 秒
        ├ 脱出 → 「クリア」の画面（かかった時間・倒した数）→「タイトルへ」→ タイトル
        └ 死んだ → 暗転 →「死んだ」の画面（かかった時間・倒した数）→「もう一度」→ 町（新しく引き直す）
@@ -35,7 +38,7 @@ Q11 使わなくなる物      → 5 日のゲームの仕組みのコードは�
 
 ■ こちらで決めた所（違えば直します）
 C1 「もう一度」「Retry」は全部を新しく引き直す（条件・ガソリンの箱・車の場所・箱の中身）。同じ回をやり直す形にはしない。
-C2 条件は 5 つ（ふつう・停電・霧・雨・群れ）から等しく 1 つ。「ふつう」も出る。
+C2 条件は 4 つ（ふつう・停電・霧・群れ）から等しく 1 つ。「ふつう」も出る（雨は 2026-11-17 にやめた。DayCondition_Plan.txt）。
    → ふつうを外す・群れを出にくくするなら kConditionChoices の表を直すだけ。
 C3 かかった時間は一時停止・カバン・漁る画面で止まっている間を数えない（今の RaidClock と同じ。世界が止まる間は進まない）。
    町の中には出さない（結果の画面だけ）。
@@ -44,7 +47,8 @@ C5 倉庫のコード：StashScreen（倉庫とカバンの 2 つのマス目の
    RunState に頼っていた所（何日目か・ハイスコア・その日の条件の文字）は外し、2 つの ItemGrid を受け取るだけにする。
    拠点のシーン（BaseScene・SCENE_BASE）は 5 日の流れの物なので消す。倉庫を戻すときは、ItemGrid を持つ所と画面を開くシーンを足す。
 C6 結果の画面は 1 つのシーン（RaidEndScene）で、クリアと死んだの 2 つの形を出し分ける（今の RunEndScene と同じやり方）。
-   見出しは英語のまま「ESCAPED」／「KILLED IN ACTION」（タイトル・一時停止のボタンと同じく英語。中の文字とボタンは日本語）。
+   見出しは英語のまま「ESCAPED」／「GAME OVER」（タイトル・一時停止のボタンと同じく英語。中の文字とボタンは日本語。
+   死んだときの見出しは ResultScreen_Plan.txt ★2 で「KILLED IN ACTION」から「GAME OVER」に変えた）。
 C7 名前：日がなくなるので DayResult は RaidResult に改名する。日の条件（DayCondition）は町の様子の名前としてそのまま使う
    （WorldBuilder・ZombieDirector など触る所が多く、今は未コミットの変更も入っているため）。
 C8 物の点（ItemSpec::scoreValue）とスコアの重み（scorePerDay・scorePerKill・clearBonus）は消す。
@@ -69,7 +73,7 @@ C10 残っている save.xml のファイルは消す。
   ・GameScene：始めに RaidStart で条件を引き、カバンを startBag() にする。終わったら結果を GameResources に置いて SCENE_RAID_END へ
   ・RaidSession／RaidClock：時間切れを外し、経った秒だけ数える
   ・RaidHud：右上の残り時間と「DAY n」を消す（条件と車の場所の知らせは残す）
-  ・LoadingScreen／LoadingPhase：「DAY n」の代わりに条件の名前（「霧の日」）
+  ・LoadingScreen／LoadingPhase：「DAY n」の代わりに条件の名前（「霧が濃い」など）
   ・MenuCatalog：Start → SCENE_GAME。「Retry day」→「Retry」
   ・StashScreen：C5
   ・ItemCatalog：scoreValue の列を消す（C8）
@@ -86,8 +90,8 @@ C10 残っている save.xml のファイルは消す。
 ・ゲーム案_確定条件.md には 2026-11-09 に 1 行足した。
 
 ■ 状態
-・2026-11-09 ユーザー「この案で進める」で C1〜C10 も承認。S-a を実装・3 構成（Debug・Profile・Release）ビルド済み。画面確認待ち・未コミット。
-・VS を開いたまま vcxproj を書き換えたので、VS で「すべて再読み込み」が要る。
+・2026-11-09 ユーザー「この案で進める」で C1〜C10 も承認。S-a を実装・3 構成（Debug・Profile・Release）ビルド済み・コミット済み。S-b の通しの画面確認は記録が無い。
+・結果の画面は、この後 ResultScreen_Plan.txt で RE:2 風に作り直した（見出しは「ESCAPED」／「GAME OVER」）。
 
 ■ 実装メモ（S-a）
 ・新：Raid/RaidStart（始めのカバン・条件の表）・Raid/RaidRecord（最後の結果・F6 の条件の固定。GameResources が持つ）・
@@ -99,20 +103,19 @@ C10 残っている save.xml のファイルは消す。
   GameLib の Random は 0 以下の種を決まった種に置き換えるので、混ぜた後に上の 1 ビットを落として正にする
   （使い捨ての試算：種 1000〜200000 で 5 つが 39799〜39802 回ずつ・1ms 違いで同じ条件が続くのは 200 回中 0 回）
 ・StashScreen は 2 つの ItemGrid を受け取る形にしてビルドは通る（どこからも開かない）。倉庫の大きさ 6 × 8 は StashScreen の定数へ
-・ItemSpec::scoreValue と LootScreen の「（n 点）」を消した。腕時計・ノートパソコンは今は使い道が無い（下の気になる点）
-・dayConditionFromSaveName は呼ぶ所が無くなったが、DayCondition.cpp に未コミットの別の変更があるので消していない
+・ItemSpec::scoreValue と LootScreen の「（n 点）」を消した。腕時計・ノートパソコン（売れる物）は、その後に物の一覧から消えた（今の物はガソリン・弾 2 種・拳銃・ライフル・包帯）
+・dayConditionFromSaveName は呼ぶ所が無いが残している（DayCondition_Plan.txt）
 
 ■ 気になる点（決めていない）
-・腕時計・ノートパソコン（売れる物）は点が無くなり、拾っても使い道が無い。箱から外すか、別の使い道を足すか
 ・タイトルの Start・Retry・もう一度は、前の画面のまま本編を作り始める（拠点のときは押したフレームにロード画面を 1 回描いていた）。
   本編を作る間に止まって見えるなら、押したフレームにロード画面を出す形を足す
 
 ■ 確かめ方（S-b）
-① Start → ロード画面の見出しが条件の名前 → 町の始めに条件と「脱出の車：北／南」。右上の時計が無い
+① Start → ロード画面の見出しが条件の名前 → 町の始めに条件と目的の文。Tab のカバンの見出しに「脱出の車：北／南」。右上の時計が無い
 ② 給油して脱出 → 「ESCAPED」・かかった時間・倒した数 →「タイトルへ」でタイトル
-③ 死ぬ → 暗転 → 「KILLED IN ACTION」→「もう一度」で町（条件・車の場所が変わる）／「タイトルへ」
+③ 死ぬ → 暗転 → 「GAME OVER」→「もう一度」で町（条件・車の場所が変わる）／「タイトルへ」
 ④ ESC →「Retry」で新しく始まる
-⑤ F6 の Raid 欄：Next で条件を固定 → Retry now でその条件・Random で戻る・Extract now で ②
+⑤ F6 の Raid 欄：Condition の一覧で条件を固定 → Retry でその条件・random で戻る・Extract now で ②
 
 ■ 追加（2026-11-09・ユーザー指示「木箱の空は 10%・ライフルは必ず 1 丁・ゾンビからの物はなし」）
 決定（聞き返して選んでもらった）：
@@ -126,6 +129,6 @@ C10 残っている save.xml のファイルは消す。
 ・RaidParams::rifleCount = 1（木箱の数まで。ASSERT）
 ・CombatResolver の makeLootable と死体の中身の乱数を消した。InteractionSystem の死体のマークと、視線が死体に当たったときの漁れる場所も消した
 ・LootTableId::Corpse・SOUND_LOOT_SEARCH_CLOTH の表の行は消した（音そのものは SoundCatalog に残る）
-・3 構成ビルド済み・画面確認待ち・未コミット
+・3 構成ビルド済み・コミット済み
 確かめ方：⑥ どれかの木箱に弾 30 発のライフルが 1 丁（F3 で中身が壁越しに見える）・ほかの箱にライフルは出ない
           ⑦ 倒したゾンビの上にマークが出ず、E で開かない

@@ -3,7 +3,7 @@
  作成日：2026-10-23
  状態：2026-10-23 実装済み（ユーザー「一旦タルコフの仕様で実装してみて」）。☆1〜☆3 はおすすめのとおり
        （タルコフで分からなかった材質の分け方は、今の町にある物から 3 種類にした）。
-       ビルドは Debug・Release・SoundGen とも通過。WAV は SoundGen で書き出し済み。画面と音での確認はまだ
+       ビルドは Debug・Release・SoundGen とも通過。WAV は SoundGen で書き出し済み。画面と音で確認済み
        2026-10-23 跳弾の音は作らない（ユーザー指定）。タルコフの仕様を調べて 1 章に足した（ユーザー依頼）
  依頼：「着弾音の仕様書の案を作って」（SummaryPlan/main.txt ①撃ち心地の残り【未】着弾音）
 ================================================================================
@@ -105,7 +105,7 @@
  ・ゾンビに当たった音は、GameScene が update の後に GameWorld::zombieHitsThisTick() を ZombieHitSounds へ渡して鳴らす
  ・弾を止める物（IRayBlocker）は今 5 種類
        TownGround（地面全体で 1 つ）・Building（建物）・EscapeCar の車体（StaticProp）・
-       ItemSource の車の横のガソリン缶（StaticProp）・Pickup（落ちているガソリン缶・ゾンビが落とした弾）
+       ItemSource の車の横のガソリン缶（StaticProp）・Pickup（落ちているガソリン缶など。ゾンビは物を落とさない）
  ・地面の材質は部品ごとに決まっている（TownGround.cpp の kPieceMaterials）
        車道・交差点・横断歩道・町の外の土 → GROUND_GRAVEL
        歩道・ブロックの内側の床 → GROUND_CONCRETE
@@ -147,7 +147,7 @@
      StaticProp             作るときに受け取った材質（持ち主が決める）
        EscapeCar              GROUND_METAL（車体）
        ItemSource             GROUND_METAL（ガソリン缶）
-     Pickup                 GROUND_METAL（ガソリン缶も、ゾンビが落とした弾も金属）
+     Pickup                 GROUND_METAL（ガソリン缶は金属）
                             木箱など違う物を置くときは、作るときに受け取る形に変える
      ・材質の値（どの物が何でできているか）は、置く側（GameWorld・EscapeCar など）の定数に書く。
        StaticProp・Building は「言われた材質を答える」だけで、何でできているかは知らない

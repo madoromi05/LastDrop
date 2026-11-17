@@ -8,7 +8,7 @@
 //
 // 1 フレームの時間は次のように分けて測る
 //   frame = sleep（フレーム制限の待ち）+ cpu（ゲームの処理と描画命令）+ present（Present で待たされた時間）+ other（窓のメッセージ処理）
-// 画面の右上に数字を出し、F7 で CSV に記録する。書き出し先は Profiling/<起動時刻>/（.gitignore 済み）
+// 画面の右上に数字を出し、F6 の Perf 欄の Record CSV で CSV に記録する。書き出し先は Profiling/<起動時刻>/（.gitignore 済み）
 namespace GameLib{
 namespace Profiling{
 
@@ -97,7 +97,7 @@ private:
 void gpuMark( const char* name );
 
 // ── 記録・表示 ──
-void toggleRecording(); // CSV の記録を始める／止めて書き出す（F7）
+void toggleRecording(); // CSV の記録を始める／止めて書き出す（F6 の Perf 欄の Record CSV）
 void drawOverlay();     // 画面の右上に数字を出す（ImGui。エディタを開いている間と、overlayVisible が false の間は出さない）。Framework::postUpdate で呼ぶ
 bool& overlayVisible(); // 右上の数字を出すか。F6 の Debug タブが書く。起動時はオンで、保存はしない
 void drawPerfPanel();   // エディタの Perf の欄の中身（グラフ・区間・GPU・印・ロード）。EditorWindow が ImGui の窓の中で呼ぶ

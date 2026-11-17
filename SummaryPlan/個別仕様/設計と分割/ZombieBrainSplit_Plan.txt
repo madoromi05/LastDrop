@@ -4,6 +4,8 @@
  状態：2026-11-01 ユーザー「ゾンビだけ分ける」で決定（自キャラ PlayerComponent は今回触らない）。実装した。
        Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）
        行数：ZombieBrainComponent.cpp 524 → 141 行。ほかは State 95・Chase 100・Attack 122・Health 132・Crawl 113・Corpse 66 行
+ 今の形（2026-11-17 の確認）：部品の分け方はこの計画書のまま。Brain の update は 11-09 に段の関数へ分けた（TickOrderSplit_Plan.txt。
+       ZombieBrainComponent.cpp は 211 行）
        仕様からの違い：
         ・這う判断は ZombieDismemberComponent ではなく、新しい ZombieCrawlComponent に置いた
           （Dismember に置くと、State が Dismember の引きずる腕を読み、Dismember が State を読む、で部品どうしが互いを指すため）

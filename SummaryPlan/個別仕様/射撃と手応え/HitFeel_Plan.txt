@@ -1,13 +1,20 @@
 HitFeel_Plan.txt（2026-11-06）
 倒したときの手応えに強弱をつける（ふつうの命中と、部位が飛んだ・頭が弾けた・倒したときの差をはっきりさせる）
 
+■ 今の形（まずここを見る）
+・2026-11-07 に H-a〜H-c を実装・3 構成ビルド済み・画面確認済み。正は下の「■ ユーザーの変更」と「■ 実装」。
+・弾が当たった音は SOUND_HIT_FLESH 1 つだけ（頭の音 SOUND_HIT_HEAD・千切れる音・弾ける音は作らない。音量も重さで変えない）。
+・重さ（HitWeight）で変わるのは血しぶきの大きさと画面の揺れ。倒したら 0.6 秒後に倒れる音 SOUND_ZOMBIE_BODYFALL。
+・「■ 案」の Q1〜Q6 と「■ 作り」は聞いたときの記録。そのうち SOUND_HIT_SEVER・SOUND_HIT_HEADBURST・HitFeelParams（F6）は作っていない。
+
 ■ きっかけ
 ・ユーザー「倒したときの手応えに強弱：ふつうの命中と、頭や脚を吹き飛ばしたときの差をはっきりさせる」を導入したい。
 ・考え方は wadajun の日記「ローグライクゲームを面白くするための3つの心得 1/3」のコントラスト
   （少しずつではなく一気に変える・よく起きる小さな変化と、まれな大きな変化を混ぜる）。
 
-■ 今のコード（2026-11-06 に読んだ所）
-・CombatResolver::ZombieHit は「当たった所・部位」だけ。音の係 ZombieHitSounds は頭なら SOUND_HIT_HEAD、ほかは SOUND_HIT_FLESH。
+■ 作る前のコード（2026-11-06 に読んだ所）
+・CombatResolver::ZombieHit は「当たった所・部位」だけ。音の係 ZombieHitSounds は頭なら SOUND_HIT_HEAD、ほかは SOUND_HIT_FLESH
+  （頭の音はこの計画でやめた）。
 ・部位が切れたかは ZombieDismemberment::severedThisHit、倒したかは CombatResolver の wasAlive → !isAlive で分かる（数えるだけ）。
 ・頭のクリティカル（10% で頭が弾けて倒れる）は ZombieHealth::takeDamage の中で決まるが、外から「今のはクリティカル」は分からない。
 ・血：切れた・頭は血の跡が Large。血しぶきは部位で変わる（EffectManager::spawnBloodHit）。
@@ -56,7 +63,7 @@ Q6 頭が弾けたときの血
   ★A 今の切り口の血しぶき（scale 2）より大きく・上へも飛ばす。血の跡は Large
    B 今と同じ
 
-■ 作り（★の案のとき）
+■ 作り（★の案のとき。後の「■ 差分を書くときの直し」「■ ユーザーの変更」で変わった所がある）
 ・CombatResolver::ZombieHit に「重さ」（enum class HitWeight { Normal, Severed, Killed, HeadBurst }）を足す。
   決めるのは CombatResolver::hitZombie だけ（部位が切れたか・倒したか・頭か、はもうここで分かる）。
   重さの決まりを変えるときは、ここの 1 つの関数（chooseHitWeight）だけを直す。
@@ -88,7 +95,7 @@ H-c 血と画面の揺れ・ふつうを控えめに
 ・H-a の「F6 で重さを文字で見る」はやめた（音と血で分かるため）。
 
 ■ 状態
-・Q1〜Q6 は回答待ち。コードは未着手。
+・Q1〜Q6 は回答済み（下の「■ ユーザーの変更」）。2026-11-07 に実装・画面確認済み。
 
 ■ ユーザーの変更（2026-11-06）
 ・弾が当たった音は SOUND_HIT_FLESH 1 つだけにする（頭の音 SOUND_HIT_HEAD もやめる。千切れる・弾ける音は作らない。音量も重さで変えない）。
@@ -105,4 +112,4 @@ H-c 血と画面の揺れ・ふつうを控えめに
   WAV は zombie_bodyfall_0/1 だけを書き出して入れた（SoundGen は scratchpad へ書き出し、ほかの WAV は触っていない）。hit_head_0.wav は残してある（使わない）。
 ・血：BloodSpray に kBaseDropNumber・kMaxScale（2）と範囲の ASSERT。ふつう 0.8・頭 2.0・部位/倒した 1.2・頭が弾けた 2.0 × 3 方向。
 ・揺れ：FirstPersonControl::shakeOnHeavyHit（部位 0.15・頭 0.25・上限 0.6）。GameScene::shakeOnHeavyHits が命中を読んで呼ぶ。
-・Debug・Release・Profile・SoundGen ビルド済み。画面と音の確認待ち・未コミット。
+・Debug・Release・Profile・SoundGen ビルド済み。画面と音で確認済み。

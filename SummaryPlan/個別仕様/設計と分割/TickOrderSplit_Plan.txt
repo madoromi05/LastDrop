@@ -2,7 +2,7 @@
  指揮役の部品（ZombieBrainComponent・PlayerComponent）の update を分ける の計画メモ
  作成日：2026-11-09
  状態：2026-11-09 ユーザー「全部 A で進めて」で ★1〜4 すべて A に決定。実装した。
-       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）。コミットはしていない
+       Debug・Profile・Release のビルドが警告なしで通過。画面確認済み・コミット済み（11-09「分割」）
        仕様からの違い：
         ・PlayerComponent::fire は、手に持った銃を引数で受け取り、反動を体へ渡す所（setRecoil）まで持つ（前は update に書いてあった 1 行）。
           手に持つ銃が替わるのは HoldComponent::syncWithInventory の中だけなので、update で updateHands の後に読んだ銃は前と同じ銃

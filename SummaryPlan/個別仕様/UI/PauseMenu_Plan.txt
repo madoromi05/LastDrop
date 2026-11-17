@@ -10,6 +10,8 @@
  0. 決定事項
 ================================================================================
  ★ ボタンは上から Resume / Retry / Title / Quit（ユーザー選択。おすすめの 3 つに Quit を足した）
+   今は RESUME / OPTIONS / RETRY / TITLE / QUIT（Options は OptionsMenu_Plan.txt で足し、大文字と RE:2 風の見た目は MenuRestyle_Plan.txt）。
+   RETRY は全部を新しく引き直して町へ（SimpleRun_Plan.txt C1）
  ★ ESC は一時停止に置き換える（ユーザー回答・おすすめ）。ESC で止めてメニューを出し、カーソルを外す。
    もう一度 ESC か Resume で戻ってカーソルをロックする。窓が裏に回ったときも自動で止める
 

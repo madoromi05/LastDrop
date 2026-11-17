@@ -4,13 +4,21 @@
  状態：2026-10-26 ★1〜★4 はすべておすすめのとおりに決定（ユーザー「★1〜★4 はおすすめどおりで、段階1（GameTime）から実装して」）し、
        段階1〜4 を実装した。Debug・Profile・Release のビルドが警告なしで通過。
        使い捨ての単体テストで、tick の値（9 章の 3 つ以外は前と同じ）・角度の折り返し（-720〜720° で前の while と同じ結果）・
-       wrapUnit・clampSigned・smoothStep・FlatMath を確かめた。遊んでの確認はまだ（10 章）
+       wrapUnit・clampSigned・smoothStep・FlatMath を確かめた。画面確認済み
        実装で決めた細かい所：
         ・AngleMath::wrapSigned は floor の後、丸めでちょうど 180 になったときだけ -180 へ戻す（-180.00001 などのため）
         ・ScalarMath::wrapUnit も同じく、丸めでちょうど 1 になったら 0 にする
-        ・Zombie::headingDifferenceTo の「真上なら 0」はそのまま残した（headingOf の 0 は「向きが 0°」なので意味が違う）
         ・WeaponReload の easedProgress の 0〜1 の切り詰めは、今回の範囲外なので min・max のまま
-        ・WeaponStance の tapTicks() は「F6 の値を毎回読む」意味のある関数なので残し、中だけ GameTime::secondsToTicks にした
+ 今の形（2026-11-17 の確認）：
+       ・2 章・4 章・8 章・9 章に出てくる Zombie・PlayerCharacter・AmbienceSystem・StreetGraph は今のコードに無い
+         （Zombie・PlayerCharacter は 11-01 に部品へ分けた。AmbienceSystem は 11-09、StreetGraph は 10-31 に消した）。
+         この 4 つの章は「当時のコード」の記録として読む
+       ・2026-11-12〜13 の「重複・生の数字・長い関数」の見直しで、共通の置き場所に次を足した（記録は C:\AIResorce\GameDev\GameChats\CleanCodeRefactor.md）
+          AngleMath：forwardOf（向き → 前の向き。headingOf の逆）・rightOf・kFullTurnDegree・kHalfTurnDegree
+          ScalarMath：decay（1 ティックごとに割合を掛け、小さくなったら 0）・easeOut
+          OrthoBasis（Math/OrthoBasis.h）：1 本の向きに直交する 2 本の向き（画面に平行な板・面に貼る絵）
+          描画の約束事は Render/ShaderSlots.h・Render/ShaderConstants、マス目の画面の色は Scene/Game/Screen/GridPalette.h
+         新しく小さな計算を書くときは、先に GameSrc/Math のこれらを探す
  依頼：「1（tick変換の丸め）と2（重複した計算の共通化）の仕様案を出して」
        （2026-10-26 のクラス設計・計算方法の見直しで挙げた 1・2）
 ================================================================================
@@ -18,7 +26,7 @@
 目次
   0. 決定事項と未決事項（まずここを見る）
   1. タルコフでは
-  2. 今のコードで分かったこと
+  2. 当時のコードで分かったこと
   3. 秒→ティックの変換（GameTime）
   4. 角度（AngleMath）
   5. 水平の計算（FlatMath）
@@ -79,7 +87,7 @@
  中の作りを整理するだけで、遊びの仕様は変わらない（9 章の 1 ティックの違いだけ）ので、調べる対象が無い。
 
 ================================================================================
- 2. 今のコードで分かったこと
+ 2. 当時のコードで分かったこと（2026-10-26。ここに出てくるクラスには、今は無い物がある）
 ================================================================================
  2-1. 秒→ティックが切り捨て
    static_cast< int >( seconds * GameTime::kTicksPerSecond ) が 22 か所にある
@@ -152,7 +160,7 @@
        static float headingOf( const GameLib::Math::Vector3& direction );
    };
 
- 置き換える所：
+ 置き換える所（当時のコード）：
    ・wrapSignedAngle の 3 つ → AngleMath::wrapSigned
    ・Zombie::headingDifferenceTo・turnToward の「wrapSignedAngle( atan2( x, z ) - mAngleY )」→ AngleMath::difference( AngleMath::headingOf( ... ), mAngleY )
    ・Zombie 617 行・FirstPersonControl 213 行の atan2( x, z ) → AngleMath::headingOf
@@ -205,7 +213,7 @@
  PlacementMatrix の先頭のコメントを「置き場所の行列を作る・読む、ただ 1 か所」に直す。
 
 ================================================================================
- 8. 作るファイルと変えるファイル
+ 8. 作るファイルと変えるファイル（当時のコード）
 ================================================================================
  作る（vcxproj・filters に登録。VS を閉じてから登録する。開いたままだと登録が消えることがある）：
    GameSrc/src/Core/GameTime.cpp
@@ -226,7 +234,7 @@
    段階1 GameTime（★1）→ 段階2 AngleMath（★2・★3）→ 段階3 FlatMath・PlacementMatrix → 段階4 ScalarMath
 
 ================================================================================
- 9. 挙動が変わる所
+ 9. 挙動が変わる所（当時のコード）
 ================================================================================
  ・リロードの音の合図（★1 案A のとき）：弾倉を抜く 21→22、挿す 76→77、槓桿 100→101 ティック目（どれも約 17ms 遅い）。
    リロード全体の長さ（2 秒 = 120 ティック）は変わらない

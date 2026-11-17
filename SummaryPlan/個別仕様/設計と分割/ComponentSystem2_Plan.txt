@@ -8,6 +8,7 @@
         ・段は今使う Input・Think・Late の 3 つだけ（Move・Animate は動かす部品が無いので作らない。要る部品を足すときに足す）
         ・AK47 の部品は WeaponModel・Gun・Light・MuzzleFlash の 4 つ。Item（まだ拾い直さない）・Sound（8 章のとおり後回し）・
           Transform（いつも手に持つので置き場所が要らない）は付けない
+          → 2026-11-14 手に持つ銃と落ちている銃を 1 つの物にした（地面に置くときだけ Pickup・Item・BoxCollider を付ける。WeaponObject_Plan.txt）
         ・部品の置き場所：どの物でも使う部品は GameSrc/Component/（Transform・StaticModel・SkinnedModel・BoxCollider・CharacterCollider・
           Hitbox・Light）、物ごとの部品はその物のフォルダ（Player/・Weapon/・Zombie/・Interaction/・Effect/）
         ・ゾンビの組み立ては ZombieFactory（Unity のプレハブの代わり）。自キャラ・銃・置物は GameWorld の中で組み立てる（短いので）
@@ -15,13 +16,18 @@
             （GameWorld は置く場所と置いた後に読むだけ）。置物は GameWorld のまま（部品が少なく、ゲームループの決まりと結びつくため）
         ・CharacterColliderComponent は、形を答える部品（PlayerComponent・ZombieBrainComponent）が自分の start で setShape する
           （形を答える部品は隣の部品を全部使うので最後に付けたいが、滑る移動を借りる部品より先に Collider を付けるため）
-        ・removeComponentLater は作ってテストで確かめたが、ゲームの中ではまだ使っていない
-        ・死体と落とした弾の組は GameObjectHandle で持つ（どちらかが消えたら使わない。前の forgetCorpseDrop は消した）
+        ・removeComponentLater は作ってテストで確かめた（11-14 から、銃を拾うときに地面の部品を外すのに使っている。WeaponObject_Plan.txt）
         ・F6 のエディタに Objects の欄（名前・タグ・部品の数）を足した（★6）
+ 今の形（2026-11-17 の確認）：
+       ・Zombie・PlayerCharacter の大きなクラスは無い（5 章の 5 で消した）。本文の「今」は 11-01 当時の作り
+       ・ゾンビは弾を落とさない（11-05）。死体も漁れない（11-09）。4 章の "AmmoDrop" と、死体と落とした弾の組は今のコードに無い
+       ・自キャラの部品は 11-09〜11-14 に増えた（ArmPose・PlayerLocomotion・Inventory・Interactor・PlayerFootprint・PlayerGrab・PlayerNoise）。
+         今の組み立ては PlayerFactory::spawn を見る
+       ・段は Input・Think・Late の 3 つのまま（UpdatePhase.h）
  依頼：ポートフォリオの画像のように ComponentSystem として構築し直したい
        （obj = obj_manager.Register("AK47"); obj->AddComponent<ModelComponent>(); … ／
          PlayerComponent::Fire の中で GetComponent<HoldComponent>()）
- 前の段階：ComponentSystem_Plan.txt（2026-10-25。GameObject＋Component の土台。部品は Zombie・Pickup の 2 つだけで、
+ 前の段階：1 回目の計画書（2026-10-25。計画書は消した。git の履歴と GameChats/ComponentSystem.md に残る。GameObject＋Component の土台。部品は Zombie・Pickup の 2 つだけで、
           どちらも大きなクラスを丸ごと 1 部品として載せている）
 ================================================================================
 
@@ -107,7 +113,7 @@
  1. タルコフでは
 ================================================================================
  調べて分かったこと
- ・タルコフは Unity で作られている（前回の ComponentSystem_Plan.txt 1 章）。Unity のふつうの作りは GameObject に Component を付ける形
+ ・タルコフは Unity で作られている。Unity のふつうの作りは GameObject に Component を付ける形
  ・タルコフの銃は、本体に部品（照準器・グリップ・ストック・マズル・ハンドガード・ライト・弾倉…）を付け替えて組み立てるアイテム。
    付けられる部品はレールの種類などで決まる（Weapon mods）
  調べても分からなかったこと（推測で埋めない）
@@ -249,5 +255,5 @@
  ・ECS（ゾンビ数百体で重いと出たとき。前回の案B）
 
  出典
-  ・ComponentSystem_Plan.txt 1 章の出典（タルコフは Unity・Unity の GameObject と ECS）
+  ・タルコフは Unity・Unity の GameObject と ECS の出典は、1 回目の計画書（git の履歴）にある
   ・Escape from Tarkov Wiki「Weapon mods」 https://escapefromtarkov.fandom.com/wiki/Weapon_mods

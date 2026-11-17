@@ -2,14 +2,19 @@
  GameWorld を 5 つに分ける（描画・組み立て・エフェクト・命中・使う物）の計画メモ
  作成日：2026-11-02
  状態：2026-11-02 ユーザー「全部おすすめで」で ★1〜5 すべて A に決定。実装した。
-       Debug・Profile・Release のビルドが警告なしで通過。遊んでの確認はまだ（画面確認待ち）
+       Debug・Profile・Release のビルドが警告なしで通過。画面確認済み
        仕様からの違い：
         ・段1〜5 を分けてビルドせず、全部書いてから 3 構成でビルドした
-        ・弾を落とす乱数は CombatResolver が自分で持つ（前は倒れ方と同じ mZombieRandom。落とすかどうかの並びが変わるだけ）
-        ・落とした弾が上限を超えたら、先に新しい弾を置いてから一番古い物を消す（形の構築に失敗したとき古い物を消さないため）
         ・千切れた部位の切り口は、当たったゾンビの ZombieModelComponent から読む（CombatResolver が ZombieModel を借りない）
         ・WorldRenderer::drawShadowCasters は、自キャラの部位の箱の部品が無ければ自キャラの影を描かない（前は落ちた）
-        ・車に入れるガソリンの数（kRequiredFuel）は WorldBuilder（ゲームループの決まり）、缶 1 つの量・弾の数は PropFactory
+ 今の形（2026-11-17 の確認）：
+       ・ゾンビは弾を落とさない（11-05）。死体も漁れない（11-09）。本文の dropAmmo・spawnAmmoDrop・弾を落とす乱数と確率・
+         死体と弾の組（★1 の CorpseLootComponent）は今のコードに無い
+       ・車に入れるガソリンの数は RaidParams::requiredFuel（PropFactory::spawnEscapeCar の引数）。kRequiredFuel は無い
+       ・PropFactory は漁れる入れ物・消火栓・街灯・落ちている物（spawnDroppedItem・spawnGroundItem）も作る
+       ・千切れた部位は 11-14 に 1 つずつ物にした（SeveredLimbObject_Plan.txt）。EffectManager が持つのは弾痕・砂ぼこり・血しぶき・血の跡
+       ・ゾンビの群れ（7 章）は 11-09 に ZombieDirector へ分けた（HighPrioritySplit_Plan.txt）
+       ・見ている物を探すのは 11-14 から自キャラの InteractorComponent が InteractionSystem を借りて行う（InteractorComponent_Plan.txt）
  依頼：GameWorld から 1 描画（WorldRenderer）2 組み立て（WorldBuilder）3 エフェクト（EffectManager）
        4 命中（CombatResolver）5 使う物（InteractionSystem）を分ける。オブジェクト指向とコンポーネント指向を意識する
  前の段階：ComponentSystem3_Plan.txt（共有の棚・awake/start）・PlayerFactory への分離（GameChats/ComponentSystem.md 11-02）
@@ -91,7 +96,7 @@
 
 3. ★ 決めてほしいこと（おすすめが先）
 
- ★1 死体と、その死体が落とした弾の組をどこに持つか
+ ★1 死体と、その死体が落とした弾の組をどこに持つか（11-09 に死体を漁る仕組みごと消した。今は無い）
    A（おすすめ）死体の物に部品 CorpseLootComponent（落とした弾の GameObjectHandle だけ持つ）を後から付ける
        → 見た死体から getComponent でたどるだけ。並び mCorpseDrops と、毎ティック捨てる掃除が無くなる
        → 10-31 の「ゾンビは落とした物を知らずに済むよう組はここで持つ」は守れる（ゾンビの部品はこの部品を知らない。
