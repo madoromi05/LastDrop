@@ -2,6 +2,8 @@
 
 namespace{
 	const char* kSoundDirectory = "Resource/Sound/";
+	const char* kKindDirectories[] = { "SE/Enemy/", "SE/Player/", "SE/Weapon/", "BGM/" };	// SoundKind の順
+	const char* kVariationSeparator = "_";
 	const char* kSoundExtension = ".wav";
 
 	// ── 揺らぎの数 ──
@@ -18,6 +20,14 @@ namespace{
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）
 	const bool kSynthesized = false;
 	const bool kRecorded = true;
+
+	// ── 音の種類（置くフォルダと読み方）──
+	// 効果音は起動のときに展開しておく（鳴らすたびに読むと、鳴るまでが遅れるため）
+	// 曲は 1 曲 15MB 前後あるので展開しない。鳴らしている間だけ、ファイルから少しずつ読む
+	const SoundKind kEnemy = SOUND_KIND_SE_ENEMY;
+	const SoundKind kPlayer = SOUND_KIND_SE_PLAYER;
+	const SoundKind kWeapon = SOUND_KIND_SE_WEAPON;
+	const SoundKind kBgm = SOUND_KIND_BGM;
 
 	// ── 音程の揺らぎ ──
 	const float kStepPitchJitter = 0.06f;
@@ -55,6 +65,8 @@ namespace{
 	// 脱出の車のエンジン。ゾンビを呼ぶ音なので、遠くまで聞こえる（銃声より近い）
 	const float kEngineMinDistance = 3.f;
 	const float kEngineMaxDistance = 80.f;
+	// BGM は位置なし（2D）で鳴らすので、距離は使わない
+	const float kNoDistance = 0.f;
 
 	// ── 鳴らし始める位置（秒）──
 	const float kFromStart = 0.f;
@@ -66,56 +78,70 @@ namespace{
 
 	// SoundId の順に並べる（static_assert で数を確かめる）
 	const SoundEntry kEntries[] = {
-		{ "footstep_concrete", kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_metal",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_wood",     kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_grass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_gravel",   kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_water",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "footstep_glass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart },
-		{ "cloth_rustle",      kStepVariations, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "footstep_concrete", kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_metal",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_wood",     kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_grass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_gravel",   kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_water",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "footstep_glass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "cloth_rustle",      kStepVariations, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
 		// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Lock 01.wav"
-		{ "gear_weapon",       kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
-		{ "weapon_draw",       kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "weapon_holster",    kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "aim_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "aim_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "gunshot",           kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kGunshotStartSeconds },	// 元の素材名: "GunShot.wav"
+		{ "gear_weapon",       kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },
+		{ "weapon_draw",       kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "weapon_holster",    kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "aim_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "aim_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "gunshot",           kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kGunshotStartSeconds, kWeapon },	// 元の素材名: "GunShot.wav"
 		// 空撃ち・リロードは自分の手元の音なので、装備の音と同じ距離。素材はどれも weapons/Weapons の録音（頭に無音が無い物は頭から）
 		// 元の素材名: "Weapon Gun Rifle M16 Dry Fire 02.wav"
-		{ "dry_fire",          kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },
-		{ "mag_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },	// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Release 01.wav"
-		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart },	// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
+		{ "dry_fire",          kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },
+		{ "mag_out",           kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },	// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Release 01.wav"
+		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },	// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
 		// 元の素材名: "Weapon Gun Rifle M16 Bolt Cock 02.wav"
-		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds },
-		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart },
-		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds },	// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
+		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds, kWeapon },
+		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds, kEnemy },	// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
 		// 合成は BodyFallSynth.cpp
-		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart },
-		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
-		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
-		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart },
-		{ "flashlight_click",  kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart, kEnemy },
+		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
+		{ "flashlight_click",  kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kWeapon },
 		// 聞こえる距離はライフルの銃声と同じ。素材は頭に無音が無い
 		// 元の素材名: "Weapon Gun Pistol 9mm Glock Single Shot Interior Shooting Range Short 01.wav"
-		{ "pistol_shot",       kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kFromStart },
+		{ "pistol_shot",       kSingle, kGunshotPitchJitter, kGunshotMinDistance, kGunshotMaxDistance, kRecorded, kFromStart, kWeapon },
 		// 漁る音。自分の手元の音なので、装備の音と同じ距離。ループはテイク 1 つ（継ぎ目は SoundGen が畳む）
 		// ゾンビに聞かせるかは段階R4 で決める（今は鳴らすだけ）
-		{ "loot_search_metal", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "loot_search_wood",  kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
-		{ "loot_search_cloth", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },
+		{ "loot_search_metal", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "loot_search_wood",  kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "loot_search_cloth", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
 		// 脱出の車。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）
-		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
-		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart },
-		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart },	// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
+		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },
+		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },	// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
+		// BGM。C:\Audio の BGM 自動作曲（Songs/_generator/zombie_fps_songs.js）で書き出したループ用の WAV
+		{ "bgm_title",         kSingle, kNoPitchJitter, kNoDistance, kNoDistance, kRecorded, kFromStart, kBgm },	// 元の曲: "01_灯の消えた町"
+		{ "bgm_gameover",      kSingle, kNoPitchJitter, kNoDistance, kNoDistance, kRecorded, kFromStart, kBgm },	// 元の曲: "02_残された灯"
+		{ "bgm_escaped",       kSingle, kNoPitchJitter, kNoDistance, kNoDistance, kRecorded, kFromStart, kBgm },	// 元の曲: "03_夜明けの国道_車内"（car_interior.js で車内の音を足した物）
 	};
 	static_assert( sizeof( kEntries ) / sizeof( kEntries[ 0 ] ) == SOUND_NUM, "kEntries must list every SoundId" );
+	static_assert( sizeof( kKindDirectories ) / sizeof( kKindDirectories[ 0 ] ) == SOUND_KIND_NUM, "kKindDirectories must list every SoundKind" );
 }
 
 const SoundEntry& soundEntry( SoundId id ) {
 	return kEntries[ id ];
 }
 
+bool soundStreamed( SoundId id ) {
+	return kEntries[ id ].kind == SOUND_KIND_BGM;
+}
+
 std::string soundFilePath( SoundId id, int variation ) {
-	return std::string( kSoundDirectory ) + kEntries[ id ].baseName + "_" + std::to_string( variation ) + kSoundExtension;
+	const SoundEntry& entry = kEntries[ id ];
+	std::string path = std::string( kSoundDirectory ) + kKindDirectories[ entry.kind ] + entry.baseName;
+	if ( entry.variationCount > 1 ) {
+		path += kVariationSeparator + std::to_string( variation );	// 揺らぎが 1 つだけなら番号を付けない（見分ける物が無いため）
+	}
+	return path + kSoundExtension;
 }

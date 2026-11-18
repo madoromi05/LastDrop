@@ -25,6 +25,7 @@ MenuDefinition MenuCatalog::title() {
 	menu.buttons.push_back( { "QUIT", []() { Framework::instance().requestEnd(); } } );
 	menu.backdrop = kTitleBackdrop;
 	menu.backdropAlignX = kTitleBackdropAlignX;
+	menu.music = SOUND_BGM_TITLE;
 	return menu;
 }
 

@@ -1,7 +1,0 @@
-{
-    "output": "Resource/Texture/Weapon/pistol_orm.tga",
-    "size": 1024,
-    "roughness": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Roughness.png",
-    "metallic": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Metallic.png",
-    "ao": "C:/Users/mador/Downloads/はてなぶろぐ記事/拳銃/texture_PBRbase(metal)/texture_PBRbase(metal)/G2-Combat_Ambient occulsion.png"
-}

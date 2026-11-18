@@ -22,8 +22,10 @@ RaidEndScene::RaidEndScene( GameResources* resources ) :
 	ASSERT( result.ending != RaidEnding::None && "RaidEndScene : the raid has not ended." );
 	if ( result.ending == RaidEnding::Escaped ) {
 		EscapedPage::build( &mScreen.canvas(), result, changeTo( SceneManager::SCENE_TITLE ) );
+		resources->music().play( SOUND_BGM_ESCAPED );
 	} else {
 		GameOverPage::build( &mScreen.canvas(), result, changeTo( SceneManager::SCENE_GAME ), changeTo( SceneManager::SCENE_TITLE ) );
+		resources->music().play( SOUND_BGM_GAMEOVER );
 	}
 }
 

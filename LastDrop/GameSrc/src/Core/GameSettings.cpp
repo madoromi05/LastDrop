@@ -18,9 +18,10 @@ namespace{
 	const char* kElementName = "Settings";
 	const char* kAttrMasterVolume = "masterVolume";
 	const char* kAttrEffectVolume = "effectVolume";
+	const char* kAttrMusicVolume = "musicVolume";
 	const char* kAttrMouseSensitivity = "mouseSensitivity";
 	const char* kAttrPadSensitivity = "padSensitivity";
-	const int kAttributeNumber = 4;
+	const int kAttributeNumber = 5;
 	const float kPercent = 100.f;
 
 	int clampValue( int value, int minValue, int maxValue ) {
@@ -38,11 +39,12 @@ namespace{
 GameSettings::GameSettings() :
 	masterVolume( kVolumeMax ),
 	effectVolume( kVolumeMax ),
+	musicVolume( kDefaultMusicVolume ),
 	mouseSensitivity( static_cast< int >( kPercent ) ),
 	padSensitivity( static_cast< int >( kPercent ) ) {
 }
 
-//   <Settings masterVolume="80" effectVolume="100" mouseSensitivity="125" padSensitivity="100"/>
+//   <Settings masterVolume="80" effectVolume="100" musicVolume="70" mouseSensitivity="125" padSensitivity="100"/>
 bool GameSettings::save() const {
 	PseudoXml::Document doc = PseudoXml::Document::create();
 	PseudoXml::Element root = doc.root();
@@ -52,8 +54,9 @@ bool GameSettings::save() const {
 	e.setAttributeNumber( kAttributeNumber );
 	e.attribute( 0 ).set( kAttrMasterVolume, masterVolume );
 	e.attribute( 1 ).set( kAttrEffectVolume, effectVolume );
-	e.attribute( 2 ).set( kAttrMouseSensitivity, mouseSensitivity );
-	e.attribute( 3 ).set( kAttrPadSensitivity, padSensitivity );
+	e.attribute( 2 ).set( kAttrMusicVolume, musicVolume );
+	e.attribute( 3 ).set( kAttrMouseSensitivity, mouseSensitivity );
+	e.attribute( 4 ).set( kAttrPadSensitivity, padSensitivity );
 
 	std::string text;
 	doc.convertToString( &text );
@@ -95,6 +98,8 @@ bool GameSettings::load() {
 				masterVolume = clampValue( a.getIntValue(), kVolumeMin, kVolumeMax );
 			} else if ( std::strcmp( name, kAttrEffectVolume ) == 0 ) {
 				effectVolume = clampValue( a.getIntValue(), kVolumeMin, kVolumeMax );
+			} else if ( std::strcmp( name, kAttrMusicVolume ) == 0 ) {
+				musicVolume = clampValue( a.getIntValue(), kVolumeMin, kVolumeMax );
 			} else if ( std::strcmp( name, kAttrMouseSensitivity ) == 0 ) {
 				mouseSensitivity = clampValue( a.getIntValue(), kSensitivityMin, kSensitivityMax );
 			} else if ( std::strcmp( name, kAttrPadSensitivity ) == 0 ) {
@@ -109,6 +114,7 @@ bool GameSettings::load() {
 void GameSettings::applyAudio( AudioEngine& audio ) const {
 	audio.setMasterVolume( volumeGain( masterVolume ) );
 	audio.setBusVolume( AudioEngine::BUS_EFFECT, volumeGain( effectVolume ) );
+	audio.setBusVolume( AudioEngine::BUS_MUSIC, volumeGain( musicVolume ) );
 }
 
 float GameSettings::mouseSensitivityScale() const {

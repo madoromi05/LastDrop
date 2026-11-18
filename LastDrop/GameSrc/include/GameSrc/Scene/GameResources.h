@@ -3,6 +3,7 @@
 
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Audio/AudioEngine.h"
+#include "GameSrc/Audio/MusicPlayer.h"
 #include "GameSrc/UI/UiRenderer.h"
 #include "GameSrc/Core/GameSettings.h"
 #include "GameSrc/Raid/RaidRecord.h"
@@ -11,6 +12,7 @@
 // シーンをまたいで使い回す、作るのが重い物の持ち主。起動から終了まで1つだけある（SceneManager が持つ）
 // ・MeshCache: メッシュの設計図とテクスチャ、スキニングのシェーダ
 // ・AudioEngine: 音の装置と、読み込んだ全ての音
+// ・MusicPlayer: 画面の BGM。シーンを替えても同じ曲なら鳴り続け、違う曲ならつないで切り替える
 // ・UiRenderer: 画面の文字のフォントと字形
 // ・GameSettings: 遊ぶ人が設定画面で変える値（音量・感度）。重くはないが、タイトルと本編の両方の設定画面で同じ値を使うためここに置く
 // ・RaidRecord: 出撃と結果の画面の間で受け渡す物（最後の結果・F6 で固定した次の条件）。シーンは作り直すと消えるのでここに置く（SimpleRun_Plan.txt）
@@ -30,6 +32,7 @@ public:
 
 	MeshCache& meshes();
 	AudioEngine& audio();
+	MusicPlayer& music();
 	UiRenderer& uiRenderer();
 	GameSettings& settings();
 	RaidRecord& raidRecord();
@@ -38,6 +41,7 @@ public:
 private:
 	MeshCache mMeshes;
 	AudioEngine mAudio;
+	MusicPlayer mMusic;	// mAudio を借りるので、その後に並べる（先に壊れる）
 	UiRenderer mUiRenderer;
 	GameSettings mSettings;
 	RaidRecord mRaidRecord;

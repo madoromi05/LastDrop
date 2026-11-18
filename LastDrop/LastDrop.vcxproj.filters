@@ -1122,6 +1122,9 @@
     <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp">
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Audio\MusicPlayer.cpp">
+      <Filter>GameSrc\Audio</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Audio\SoundCatalog.cpp">
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
@@ -2391,6 +2394,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h">
+      <Filter>GameSrc\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\MusicPlayer.h">
       <Filter>GameSrc\Audio</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\SoundCatalog.h">

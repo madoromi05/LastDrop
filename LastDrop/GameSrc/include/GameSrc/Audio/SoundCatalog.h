@@ -8,7 +8,7 @@
 //
 // 目録はゲーム本体と音の生成ツール（tools/SoundGen）の両方がリンクする
 // ツールはこの目録のファイル名で WAV を書き出し、ゲームは同じ名前で読むので、名前の食い違いが起きない
-// 録音素材に差し替えるときは、目録の名前の WAV を Resource/Sound に置き、目録で recorded にする（SoundGen が上書きしなくなる）
+// 録音素材に差し替えるときは、目録の名前の WAV を Resource/Sound/SE か BGM に置き、目録で recorded にする（SoundGen が上書きしなくなる）
 // ゲームのコードは変わらない
 enum SoundId{
 	// ── 足音（床の材質ごと）──
@@ -54,22 +54,40 @@ enum SoundId{
 	SOUND_CAR_ENGINE_START,		// エンジンを掛ける（セルが回って掛かる。1 回）。車から鳴らす
 	SOUND_CAR_ENGINE_IDLE,		// エンジンのアイドリング（ループ）。車から鳴らす
 	SOUND_REFUEL_POUR,			// 給油している間（ループ）：缶からガソリンを注ぐ水の音（改訂 2）。自分の手元から鳴らす
+	// ── BGM（末尾に足す。理由は上と同じ。MusicPlayer が位置なしのループで鳴らす） ──
+	SOUND_BGM_TITLE,			// タイトル（ダークアンビエント）
+	SOUND_BGM_GAMEOVER,			// ゲームオーバー（遅く重い弦と低いピアノ）
+	SOUND_BGM_ESCAPED,			// 脱出成功（安堵のピアノと弦）
 
 	SOUND_NUM, // 音の種類の数。配列サイズや範囲判定に使う（要素数をマジックナンバーにしないため）
 };
 
+// 音の種類。置くフォルダと読み方が変わる
+enum SoundKind{
+	// 効果音は起動のときに展開しておく。鳴らす元で 3 つに分ける
+	SOUND_KIND_SE_ENEMY,	// 敵（Resource/Sound/SE/Enemy）。ゾンビに当たった・倒れた
+	SOUND_KIND_SE_PLAYER,	// 自キャラ（Resource/Sound/SE/Player）。足音・服・漁る・給油・車・サイレン
+	SOUND_KIND_SE_WEAPON,	// 武器（Resource/Sound/SE/Weapon）。銃声・リロード・構え・懐中電灯・着弾
+	SOUND_KIND_BGM,			// 曲（Resource/Sound/BGM）。1 曲が長いので展開せず、鳴らしている間だけファイルから少しずつ読む
+	SOUND_KIND_NUM,
+};
+
 // 1種類の音の素材の性質
 struct SoundEntry{
-	const char* baseName;	// ファイル名の元（"<baseName>_<揺らぎ番号>.wav"）
+	const char* baseName;	// ファイル名の元。揺らぎが 1 つなら "<baseName>.wav"、2 つ以上なら "<baseName>_<揺らぎ番号>.wav"
 	int variationCount;		// 揺らぎ（同じ音の別テイク）の数。毎回同じ音だと機械的に聞こえるので、鳴らすたびに選び直す
 	float pitchJitter;		// 鳴らすたびに音程をこの割合まで上下させる（0 なら揺らさない）
 	float minDistance;		// この距離（m）までは減衰しない
 	float maxDistance;		// この距離（m）より先は減衰しない（この距離の大きさのまま）
 	bool recorded;			// 録音素材か（true なら SoundGen は書き出さない。上書きを防ぐため）
 	float startSeconds;		// 鳴らし始める位置（秒）。頭に無音がある録音素材で、その分を飛ばすのに使う（0 なら頭から）
+	SoundKind kind;			// 効果音か曲か
 };
 
 const SoundEntry& soundEntry( SoundId id );				// 音の種類の性質を返す。id は SOUND_NUM 未満であること
-std::string soundFilePath( SoundId id, int variation );	// 揺らぎ1つぶんのファイルの、プロジェクトのフォルダからの相対パス（例: "Resource/Sound/footstep_concrete_0.wav"）
+bool soundStreamed( SoundId id );						// 起動のときに展開せず、鳴らしている間だけファイルから読む音か（曲）
+// 揺らぎ1つぶんのファイルの、プロジェクトのフォルダからの相対パス
+// 例: "Resource/Sound/SE/footstep_concrete_0.wav"（揺らぎ 4 つ）・"Resource/Sound/SE/aim_in.wav"（揺らぎ 1 つ）・"Resource/Sound/BGM/bgm_title.wav"
+std::string soundFilePath( SoundId id, int variation );
 
 #endif

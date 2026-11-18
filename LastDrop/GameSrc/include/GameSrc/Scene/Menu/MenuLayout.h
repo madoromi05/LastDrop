@@ -1,6 +1,7 @@
 #ifndef INCLUDED_MENU_LAYOUT_H
 #define INCLUDED_MENU_LAYOUT_H
 
+#include "GameSrc/Audio/SoundCatalog.h"
 #include <functional>
 #include <vector>
 
@@ -27,6 +28,7 @@ struct MenuDefinition{
 	const char* tagline = nullptr;  // 題名の下のひと言（日本語でよい）
 	const char* backdrop = nullptr; // 背景の絵のファイル（幅と高さが 2 の累乗の TGA。UiBackdrop）
 	float backdropAlignX = 0.5f;    // 背景の絵の横がはみ出たとき、どこを合わせるか（UiBackdrop の alignX。絵ごとに主役の位置が違う）
+	SoundId music = SOUND_NUM;      // 画面にいる間ループで鳴らす曲（MenuScene が MusicPlayer へ渡す）。SOUND_NUM なら曲を止める。一時停止の画面は使わない
 };
 
 // メニューの並べ方。RE:2 風で、題名・ひと言・板なしの行を左に寄せる。背景の絵があれば、その左を暗くする

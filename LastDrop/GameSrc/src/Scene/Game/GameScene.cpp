@@ -67,6 +67,7 @@ GameScene::GameScene( GameResources* resources ) :
 	// 漁れる場所・給油（mWorld の脱出の車の候補を使う mSession を借りるので、その後に並べる）
 	mLoot( &mWorld, &resources->audio(), &mModals, &mSession, &resources->uiRenderer() ),
 	mRaidFinished( false ) {
+	resources->music().stop();	// 出撃の中は曲を鳴らさない（足音と銃声で相手の場所を知るため）。ロード画面の間に小さくなって消える
 }
 
 GameScene::~GameScene() {

@@ -440,5 +440,5 @@ FodyWeavers.xsd
 *.msm
 *.msp
 
-# superpowers の brainstorm の作業ファイル
 .superpowers/brainstorm/
+/LastDrop/tools/

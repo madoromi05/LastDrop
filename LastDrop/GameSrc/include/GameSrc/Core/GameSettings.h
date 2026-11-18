@@ -13,16 +13,18 @@ struct GameSettings{
 	static const int kVolumeMin = 0;
 	static const int kVolumeMax = 100;
 	static const int kVolumeStep = 5;
+	static const int kDefaultMusicVolume = 70;	// 曲は UI の音や操作の音より下がっている方が聞きやすいので、始めは少し下げておく
 	static const int kSensitivityMin = 20;  // 0.20 倍
 	static const int kSensitivityMax = 300; // 3.00 倍
 	static const int kSensitivityStep = 5;  // 0.05 倍ずつ
 
 	int masterVolume;     // 全体の音量（0〜100）
 	int effectVolume;     // 効果音の音量（0〜100。AudioEngine::BUS_EFFECT）
+	int musicVolume;      // 音楽の音量（0〜100。AudioEngine::BUS_MUSIC）
 	int mouseSensitivity; // マウスで回す視点の感度（百分率。100 が FirstPersonControl の元の速さ）
 	int padSensitivity;   // パッドの右スティックで回す視点の感度（百分率。100 が LookParams のスティックの速さ）
 
-	GameSettings();	// 既定値（音量はどちらも 100、感度もどちらも 100）
+	GameSettings();	// 既定値（全体と効果音の音量は 100、音楽は kDefaultMusicVolume、感度はどちらも 100）
 
 	bool load();									// 保存したファイルから読む。ファイルが無い・壊れているときは false を返し、値は既定値のまま。読めた値は範囲に収める
 	bool save() const;								// ファイルへ書く。書けなければ false（遊ぶのは続けられるので止めない）

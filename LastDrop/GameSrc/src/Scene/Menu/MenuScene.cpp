@@ -8,6 +8,11 @@
 MenuScene::MenuScene( GameResources* resources, const MenuDefinition& definition ) :
 	mPages( &resources->uiRenderer(), &resources->settings(), &resources->audio(), definition ) {
 	GameLib::Input::Manager::instance().setCursorLocked( false );	// 本編でロックしたカーソルを戻す（ボタンをマウスで押せるように）
+	if ( definition.music == SOUND_NUM ) {
+		resources->music().stop();
+	} else {
+		resources->music().play( definition.music );
+	}
 }
 
 void MenuScene::beginFrame() {

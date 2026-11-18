@@ -22,6 +22,7 @@ namespace{
 	const float kTabWidth = 72.f;	// タブ 1 つの幅（2 文字の名前と、次の名前までの間）
 	const char* kMasterVolumeLabel = "全体の音量";
 	const char* kEffectVolumeLabel = "効果音の音量";
+	const char* kMusicVolumeLabel = "音楽の音量";
 	const char* kMouseSensitivityLabel = "マウス感度";
 	const char* kPadSensitivityLabel = "パッド感度";
 	const char* kBackLabel = "戻る";
@@ -30,6 +31,7 @@ namespace{
 	enum AudioRow{
 		AUDIO_ROW_MASTER,
 		AUDIO_ROW_EFFECT,
+		AUDIO_ROW_MUSIC,
 	};
 	// 感度のタブのスライダーの行（UiScreen::sideSettingRowRect の番号）
 	enum SensitivityRow{
@@ -83,6 +85,7 @@ namespace{
 	void buildAudioTab( UiCanvas* canvas, GameSettings* settings, AudioEngine* audio ) {
 		canvas->add( makeVolumeSlider( AUDIO_ROW_MASTER, kMasterVolumeLabel, &settings->masterVolume, settings, audio ) );
 		canvas->add( makeVolumeSlider( AUDIO_ROW_EFFECT, kEffectVolumeLabel, &settings->effectVolume, settings, audio ) );
+		canvas->add( makeVolumeSlider( AUDIO_ROW_MUSIC, kMusicVolumeLabel, &settings->musicVolume, settings, audio ) );
 	}
 
 	void buildSensitivityTab( UiCanvas* canvas, GameSettings* settings ) {
