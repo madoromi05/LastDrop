@@ -47,6 +47,7 @@ public:
 	// hasDestination が false なら意味が無い
 	const GameLib::Math::Vector3& destination() const;
 	bool wantsToWalk() const;		// 歩いて近づくか（向かう所があって、まだ着いていない）。false なら立ったまま向きだけ変える
+	int wanderStalls() const;		// 作ってから、うろつく先へ近づけずに選び直した回数（引っかかりを調べる記録が、増えたかで見る）
 
 private:
 	void updateSight( const GameLib::Math::Vector3& eye, float angleY, const ChaseTarget* target, const HitWorld& hitWorld );	// 見えているか（mSeesTarget）を決め直す。撃たれていればすぐ、そうでなければ決まった間隔で線を引く
@@ -78,6 +79,7 @@ private:
 	float mWanderBestDistance; // 今のうろつく先へ、これまでで一番近づいた距離（近づけているかを見る）
 	int mWanderStallTicks;    // mWanderBestDistance が縮まないまま過ぎた長さ（ティック）
 	bool mWanderTurnBack;     // 前に選べなかったので、次は後ろ向きを基準に選ぶ
+	int mWanderStalls;        // 作ってから、近づけずに選び直した回数（数え直さない）
 };
 
 #endif

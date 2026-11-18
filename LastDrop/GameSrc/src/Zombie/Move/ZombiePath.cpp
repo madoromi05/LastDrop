@@ -4,6 +4,7 @@
 #include "GameSrc/Map/PathBudget.h"
 #include "GameSrc/Core/GameTime.h"
 #include "GameSrc/Math/FlatMath.h"
+#include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 
@@ -13,19 +14,23 @@ namespace{
 	// まっすぐ通れるかを調べる間隔（秒）。角を曲がった後、これだけ古い向きで歩くことがある
 	const float kProbeIntervalSeconds = 0.5f;
 	const int kProbeIntervalTicks = GameTime::secondsToTicks( kProbeIntervalSeconds );
-	const float kWaypointReachDistance = 1.f;	// 通り道の点にこれより近づいたら、次の点へ（m。水平だけ）
+	// 角の点にこれより近づいたら、二等分線を越えていなくても次の点へ（m。水平だけ）
+	// 折り返す角は二等分線が決まらないので、近さだけで見る
+	const float kCornerReachDistance = 0.3f;
+	const float kSideDegree = 90.f;				// 真横（度。向かう点の向きから）。斜め前へよけられないときに使う
 	const float kReplanDistance = 3.f;			// 行き先が、通り道を探したときからこれより動いたら探し直す（m）。追っている自キャラが歩き回るたびに探さないように
 	const float kDestinationJumpDistance = 1.f;	// 行き先が 1 ティックでこれより動いたら、別の所へ向かい直したとみなす（m）。走る自キャラでも 1 ティックに約 0.05m
 	// 自分が向く点の向きへこの長さ（m）進むたびに「進めている」とみなす（うろつきと同じ値）
 	// 点との距離ではなく自分の動きで見るのは、逃げる自キャラ（ゾンビより速い）を追う間、まっすぐ歩けていても
 	// 距離が縮まらず詰まったとみなされ、横へよけてしまうため。向く点の向きだけを数えるので、壁に沿って滑るだけの動きは数えない
 	const float kProgressDistance = 0.3f;
-	const float kMinDirectionLength = 0.001f;	// 向く点への向きが決まらないほど近いとき（m）。よける向きは前の向きを使えないので、+Z を前とみなす
+	const float kMinDirectionLength = 0.001f;	// これより短い水平の長さは、向きが決まらないとみなす（m）
 }
 
 ZombiePath::ZombiePath( int probePhase, PathBudget* budget ) :
 	mBudget( budget ),
 	mNext( 0 ),
+	mRouteStart( 0.f, 0.f, 0.f ),
 	mRouteGoal( 0.f, 0.f, 0.f ),
 	mLastDestination( 0.f, 0.f, 0.f ),
 	mHasLastDestination( false ),
@@ -36,6 +41,7 @@ ZombiePath::ZombiePath( int probePhase, PathBudget* budget ) :
 	mSidestepPoint( 0.f, 0.f, 0.f ),
 	mSidestepTicks( 0 ),
 	mSidestepCount( 0 ),
+	mSidestepsStarted( 0 ),
 	mStuck( false ) {
 	ASSERT( budget && "ZombiePath : budget is null." );
 }
@@ -44,7 +50,7 @@ ZombiePath::~ZombiePath() {
 	mBudget->cancel( this ); // 待っている間に消えても、列に残らないように
 }
 
-const Vector3& ZombiePath::steer( const Vector3& self, const Vector3& destination, const NavMesh& navMesh,
+Vector3 ZombiePath::steer( const Vector3& self, const Vector3& destination, const NavMesh& navMesh,
 bool walking ) {
 	const ZombieCrowdParams& params = zombieCrowdParams();
 	if ( mHasLastDestination && FlatMath::distance( mLastDestination, destination ) > kDestinationJumpDistance ) {
@@ -71,13 +77,13 @@ bool walking ) {
 	if ( !mRoute.empty() ) {
 		mRoute.back() = destination; // 最後の点は、動いていく行き先（自キャラ）に付いていく
 		int last = static_cast< int >( mRoute.size() ) - 1;
-		while ( mNext < last && FlatMath::distance( self, mRoute[ mNext ] ) <= kWaypointReachDistance ) {
+		while ( mNext < last && hasPassedCorner( self ) ) {
 			++mNext;
 			resetProgress();
 		}
 	}
 
-	const Vector3& point = currentPoint( destination );
+	Vector3 point = aimPoint( self, destination );
 	if ( !walking ) {
 		mProgressStarted = false; // 立ち止まっている間は数えない（歩き出したら、その時の距離から数え直す）
 		return point;
@@ -111,20 +117,22 @@ bool walking ) {
 
 void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const NavMesh& navMesh ) {
 	const ZombieCrowdParams& params = zombieCrowdParams();
-	Vector3 forward( point.x - self.x, 0.f, point.z - self.z );
-	float length = forward.length();
-	if ( length < kMinDirectionLength ) {
-		forward.set( 0.f, 0.f, 1.f );
-	} else {
-		forward *= 1.f / length;
+	float heading = AngleMath::headingOf( Vector3( point.x - self.x, 0.f, point.z - self.z ) ); // 向く点が真上なら +Z を前とみなす
+	if ( !pickSidestep( self, point, heading, params.sidestepAngle, navMesh ) && !pickSidestep( self, point, heading, kSideDegree, navMesh ) ) {
+		mSidestepPoint.setMadd( self, AngleMath::forwardOf( heading ), -params.backstepDistance ); // 左右とも塞がっている。少し下がる
 	}
-	// 前への向きを左右へ 90° 回した 2 つ（水平）。どちらが左かは問わない（通れる方・近い方で選ぶ）
-	Vector3 sideA( forward.z, 0.f, -forward.x );
-	Vector3 sideB( -forward.z, 0.f, forward.x );
+	mSidestepTicks = GameTime::secondsToTicks( params.sidestepSeconds );
+	++mSidestepCount;
+	++mSidestepsStarted;
+	mStallTicks = 0;
+}
+
+bool ZombiePath::pickSidestep( const Vector3& self, const Vector3& point, float heading, float degree, const NavMesh& navMesh ) {
+	float distance = zombieCrowdParams().sidestepDistance;
 	Vector3 pointA;
-	pointA.setMadd( self, sideA, params.sidestepDistance );
+	pointA.setMadd( self, AngleMath::forwardOf( heading + degree ), distance );
 	Vector3 pointB;
-	pointB.setMadd( self, sideB, params.sidestepDistance );
+	pointB.setMadd( self, AngleMath::forwardOf( heading - degree ), distance );
 	bool openA = navMesh.isWalkable( self, pointA );
 	bool openB = navMesh.isWalkable( self, pointB );
 	if ( openA && openB ) {
@@ -134,11 +142,9 @@ void ZombiePath::startSidestep( const Vector3& self, const Vector3& point, const
 	} else if ( openB ) {
 		mSidestepPoint = pointB;
 	} else {
-		mSidestepPoint.setMadd( self, forward, -params.backstepDistance ); // 左右とも塞がっている。少し下がる
+		return false;
 	}
-	mSidestepTicks = GameTime::secondsToTicks( params.sidestepSeconds );
-	++mSidestepCount;
-	mStallTicks = 0;
+	return true;
 }
 
 void ZombiePath::probe( const Vector3& self, const Vector3& destination, const NavMesh& navMesh ) {
@@ -158,6 +164,7 @@ void ZombiePath::probe( const Vector3& self, const Vector3& destination, const N
 		// 見つからなければ（通れる交差点が無い等）空のまま＝まっすぐ向かい、壁に沿って滑る。着けなければ isStuck になる
 		navMesh.findPath( self, destination, &mRoute );
 		mNext = 0;
+		mRouteStart = self;
 		mRouteGoal = destination;
 		resetProgress();
 		return;
@@ -187,6 +194,10 @@ bool ZombiePath::isWaitingForSearch() const {
 	return mBudget->isWaiting( this );
 }
 
+int ZombiePath::sidestepsStarted() const {
+	return mSidestepsStarted;
+}
+
 void ZombiePath::remainingRoute( std::vector< Vector3 >* out ) const {
 	ASSERT( out && "ZombiePath : out is null." );
 	out->clear();
@@ -198,8 +209,56 @@ void ZombiePath::remainingRoute( std::vector< Vector3 >* out ) const {
 	}
 }
 
-const Vector3& ZombiePath::currentPoint( const Vector3& destination ) const {
-	return mRoute.empty() ? destination : mRoute[ mNext ];
+Vector3 ZombiePath::aimPoint( const Vector3& self, const Vector3& destination ) const {
+	if ( mRoute.empty() ) {
+		return destination;
+	}
+	// 自分 → 今の角 → その先の角…と通り道をたどり、決まった長さだけ進んだ所を返す
+	// 角が近づくと点が角の向こうへ回り込むので、手前から曲がり始める
+	float remaining = zombieCrowdParams().lookaheadDistance;
+	Vector3 from = self;
+	for ( int i = mNext; i < static_cast< int >( mRoute.size() ); ++i ) {
+		const Vector3& to = mRoute[ i ];
+		float length = FlatMath::distance( from, to );
+		if ( length > remaining ) {
+			Vector3 step;
+			step.setSub( to, from );
+			Vector3 point;
+			point.setMadd( from, step, remaining / length );
+			return point;
+		}
+		remaining -= length;
+		from = to;
+	}
+	return mRoute.back(); // 通り道が先読みの長さより短い。行き先そのもの
+}
+
+bool ZombiePath::hasPassedCorner( const Vector3& self ) const {
+	const Vector3& corner = mRoute[ mNext ];
+	if ( FlatMath::distance( self, corner ) <= kCornerReachDistance ) {
+		return true;
+	}
+	// 入ってくる向きと出ていく向き（どちらも長さ 1）の和が、角の二等分線の前の向き。角から見てその向きの側に居れば越えた
+	// 近さで決めると、先を向いて角の内側を回る体が角へ近づかないまま、角の手前で次の角を向いて内側へ切り込むため
+	const Vector3& previous = ( mNext > 0 ) ? mRoute[ mNext - 1 ] : mRouteStart;
+	const Vector3& next = mRoute[ mNext + 1 ];
+	Vector3 incoming( corner.x - previous.x, 0.f, corner.z - previous.z );
+	Vector3 outgoing( next.x - corner.x, 0.f, next.z - corner.z );
+	float incomingLength = incoming.length();
+	float outgoingLength = outgoing.length();
+	if ( incomingLength < kMinDirectionLength || outgoingLength < kMinDirectionLength ) {
+		return false;
+	}
+	Vector3 bisector;
+	bisector.setMul( incoming, 1.f / incomingLength );
+	Vector3 outgoingDirection;
+	outgoingDirection.setMul( outgoing, 1.f / outgoingLength );
+	bisector += outgoingDirection;
+	if ( bisector.length() < kMinDirectionLength ) {
+		return false;
+	}
+	Vector3 fromCorner( self.x - corner.x, 0.f, self.z - corner.z );
+	return fromCorner.dot( bisector ) >= 0.f;
 }
 
 void ZombiePath::resetProgress() {

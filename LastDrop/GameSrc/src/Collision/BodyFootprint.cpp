@@ -79,3 +79,9 @@ BoxCollider BodyFootprint::place( const Vector3& position, float angleY, const V
 	box.height = position.y + kDisplayHeight;
 	return box;
 }
+
+float BodyFootprint::reachRadius() const {
+	float x = Math::abs( mLocalCenter.x ) + mHalfWidthX;
+	float z = Math::abs( mLocalCenter.z ) + mHalfWidthZ;
+	return Math::sqrt( x * x + z * z );
+}

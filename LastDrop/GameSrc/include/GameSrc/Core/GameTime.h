@@ -17,6 +17,9 @@ namespace GameTime{
 	// 負の秒は来ない前提（来たら負のティックを返す）
 	int secondsToTicks( float seconds );
 	float ticksToSeconds( int ticks );	// ティック数を秒へ直す
+	// 半分に減るまで halfLifeSeconds 秒かかる減り方で、1 ティックごとに残る割合（はね返らない減り方）
+	// halfLifeSeconds は 0 より大きいこと
+	float remainPerTick( float halfLifeSeconds );
 }
 
 #endif

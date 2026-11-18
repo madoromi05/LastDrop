@@ -67,7 +67,7 @@ void GameWorld::buildTown( int escapeCarSpot ) {
 }
 
 void GameWorld::buildNavMesh() {
-	mObjects.provide( mTown.buildNavMesh( mCollisionWorld ) );
+	mObjects.provide( mTown.buildNavMesh( mCollisionWorld, mZombies.navMeshRadius() ) ); // 床の縁は、ゾンビの体の長方形が壁にこすらない長さだけ離す
 }
 
 void GameWorld::buildVisibility() {

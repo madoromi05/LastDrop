@@ -289,6 +289,8 @@ void GameScene::drawUi( const FirstPersonCamera& camera ) {
 		mDebug.addZombieHealth( mWorld, camera, &mResources->uiRenderer() );
 		mDebug.addPlayerHealth( mWorld, &mResources->uiRenderer() );
 		mDebug.addLootContents( mWorld, camera, &mResources->uiRenderer() );
+		mDebug.addZombieStuckLabels( mWorld, camera, &mResources->uiRenderer() );
+		mDebug.addTownStatus( mWorld, camera );
 #endif
 		mHud.draw( camera, mSession, mWorld.dayCondition(), mLoot.isSearching() ? mLoot.progress() : kNoSearch, mLoot.waitingKind() );	// 遊んでいる間の HUD（マーク・弾数・知らせと棒）。積むだけで、下の UiRenderer::draw がまとめて描く
 	}

@@ -30,9 +30,9 @@ void TownEnvironment::build( CollisionWorld* collisionWorld, HitWorld* hitWorld,
 	objects->provide( &mGround ); // 千切れた部位の部品が、落ちる先の地面として引く（地面だけ。建物・車の上には乗せない）
 }
 
-NavMesh* TownEnvironment::buildNavMesh( const CollisionWorld& collisionWorld ) {
+NavMesh* TownEnvironment::buildNavMesh( const CollisionWorld& collisionWorld, float agentRadius ) {
 	// 建物・車・ゴミ箱・木箱を名簿へ載せ終えた形を材料にする。2 回目からの出撃は作らずに借りる
-	mNavMesh = mTown->navMesh( mEscapeCarSpot, collisionWorld );
+	mNavMesh = mTown->navMesh( mEscapeCarSpot, collisionWorld, agentRadius );
 	return mNavMesh;
 }
 

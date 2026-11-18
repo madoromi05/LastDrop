@@ -28,6 +28,9 @@ public:
 	// 長方形は体の向きに合わせて回るので、範囲もモデルの空間（体の向き基準）で渡す
 	BoxCollider place( const GameLib::Math::Vector3& position, float angleY,
 		const GameLib::Math::Vector3& low, const GameLib::Math::Vector3& high ) const;
+	// 足元を中心に、どの向きを向いても長方形が収まる円の半径（m。足元から一番遠い角までの水平の距離）
+	// ナビメッシュの床の縁を壁から離す長さを、この長方形から決めるのに使う
+	float reachRadius() const;
 
 private:
 	GameLib::Math::Vector3 mLocalCenter; // 長方形の中心（モデルの空間。足元から見た位置。y は使わない）

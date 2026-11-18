@@ -11,8 +11,9 @@ class dtNavMesh;
 class NavMeshBuilder{
 public:
 	// world の動かない形から床の形を作って返す。作れなければ nullptr（理由はログ「NavMesh: failed to …」）
+	// agentRadius: 床の縁を壁から離す長さ（m。0 以上）。ますの大きさの倍数に切り上げて削る（削った幅はログへ出す）
 	// 返した物は呼んだ側が持ち、dtFreeNavMesh で消す。polygonCount: 作った多角形の数を書く（ログ用）。nullptr 不可
-	static dtNavMesh* build( const CollisionWorld& world, int* polygonCount );
+	static dtNavMesh* build( const CollisionWorld& world, float agentRadius, int* polygonCount );
 };
 
 #endif

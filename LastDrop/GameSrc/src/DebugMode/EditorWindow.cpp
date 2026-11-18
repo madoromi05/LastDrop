@@ -349,7 +349,13 @@ namespace{
 		ImGui::TextDisabled( "(boxes through walls)" );
 		ImGui::Checkbox( "Zombie info", &switches.showZombieInfo );
 		ImGui::SameLine();
-		ImGui::TextDisabled( "(health, paths, spawner, PVS, lights, loot)" );
+		ImGui::TextDisabled( "(health, paths, spawner, stuck marks)" );
+		ImGui::Checkbox( "NavMesh", &switches.showNavMesh );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(floor zombies can walk on)" );
+		ImGui::Checkbox( "Town info", &switches.showTownInfo );
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(lights, PVS, loot)" );
 		ImGui::Checkbox( "Perf numbers", &GameLib::Profiling::overlayVisible() );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(top right, while F6 is closed)" );

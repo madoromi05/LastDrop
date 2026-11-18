@@ -13,6 +13,8 @@
 #include "GameSrc/Render/VertexColor.h"
 #include "GameSrc/Interaction/Loot/LootContainerComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Zombie/Component/ZombieChaseComponent.h"
+#include "GameSrc/Zombie/Component/ZombieStateComponent.h"
 #include <string>
 #include <vector>
 #endif
@@ -39,7 +41,7 @@ namespace{
 	const int kDebugTextSize = 128;
 	const int kRayLine = 2;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
 	const int kSpawnerLine = 3; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
-	const int kPvsLine = 4;     // 簡易 PVS の目のいるますと、隠した建物の数（ゾンビの体力の表示中だけ）
+	const int kPvsLine = 4;     // 簡易 PVS の目のいるますと、隠した建物の数（町の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 	// 自キャラの体力の数字と状態（F3）。画面の左上に 1 行（普段の画面には体力を出さないので、確認用にだけ見せる）
 	const float kPlayerHealthLeft = 16.f; // 画面の左端からの間（画素）
@@ -51,6 +53,9 @@ namespace{
 	const char* kLootSeparator = "・";
 	const char* kLootSearchedMark = "[済] "; // 開けた所
 	const unsigned kLootTextColor = VertexColor::pack( 0.95f, 0.85f, 0.3f );
+	// 引っかかったゾンビの番号（ZombiePathDrawer の赤い印の上の端と同じ高さ。m）
+	const float kStuckLabelHeight = 2.9f;
+	const unsigned kStuckTextColor = VertexColor::pack( 1.f, 0.3f, 0.3f );
 #endif
 
 	// 下から line 番目（0 が一番下）の DebugScreen の行。状態表示の一番上の行の上端より上の、まるごと入る行から上へ数える
@@ -111,6 +116,12 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 			spawner->standingCount(), spawner->targetCount(), spawner->secondsUntilNext() );
 		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), text );
 	}
+}
+
+void GameDebugOverlay::addTownStatus( const GameWorld& world, const FirstPersonCamera& camera ) const {
+	if ( !debugSwitches().showTownInfo ) {
+		return;
+	}
 	// 簡易 PVS。ますの外（町の外・建物の足元・高い所）では使わない
 	const TownVisibility& visibility = world.town().visibility();
 	char pvsText[ kDebugTextSize ];
@@ -164,13 +175,16 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 		world.interaction().appendPickupColliders( &mPickupBoxes );
 		mCollisionDrawer.drawSeeThrough( mPickupBoxes, camera.projectionViewMatrix() );
 	}
+	if ( debugSwitches().showNavMesh ) {
+		mNavMeshDrawer.draw( world.town().navMesh(), camera.projectionViewMatrix() );
+	}
 	if ( debugSwitches().showZombieInfo ) {
-		mZombiePathDrawer.draw( world.objects(), world.town().navMesh(), camera.projectionViewMatrix() );
+		mZombiePathDrawer.draw( world.objects(), camera.projectionViewMatrix() );
 	}
 }
 
 void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCamera& camera ) {
-	if ( debugSwitches().showZombieInfo ) {
+	if ( debugSwitches().showTownInfo ) {
 		mLightDrawer.draw( lights, camera.projectionViewMatrix() );
 	}
 }
@@ -192,7 +206,7 @@ void GameDebugOverlay::addPlayerHealth( const GameWorld& world, UiRenderer* rend
 
 void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
 	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
-	if ( !debugSwitches().showZombieInfo ) {
+	if ( !debugSwitches().showTownInfo ) {
 		return;
 	}
 	Matrix44 projectionView = camera.projectionViewMatrix();
@@ -220,6 +234,29 @@ void GameDebugOverlay::addLootContents( const GameWorld& world, const FirstPerso
 			text += itemSpec( stacks[ i ].item ).name;
 		}
 		renderer->addText( text.c_str(), screen, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kLootTextColor );
+	} );
+}
+
+void GameDebugOverlay::addZombieStuckLabels( const GameWorld& world, const FirstPersonCamera& camera, UiRenderer* renderer ) const {
+	ASSERT( renderer && "GameDebugOverlay : renderer is null." );
+	if ( !debugSwitches().showZombieInfo ) {
+		return;
+	}
+	Matrix44 projectionView = camera.projectionViewMatrix();
+	world.objects().forEach< ZombieChaseComponent >( [ & ]( const ZombieChaseComponent& chase ) {
+		const ZombieStateComponent* state = chase.getComponent< ZombieStateComponent >();
+		if ( !state || !chase.locomotion().trace().isMarked() ) {
+			return;
+		}
+		Vector3 position = state->position();
+		position.y += kStuckLabelHeight;
+		Vector2 screen;
+		if ( !ScreenProjection::worldToScreen( projectionView, position, &screen ) ) {
+			return; // カメラの後ろ
+		}
+		char text[ kDebugTextSize ];
+		std::snprintf( text, sizeof( text ), "#%u", chase.gameObject()->id() );
+		renderer->addText( text, screen, UI_TEXT_NORMAL, UI_ALIGN_CENTER, kStuckTextColor );
 	} );
 }
 #endif

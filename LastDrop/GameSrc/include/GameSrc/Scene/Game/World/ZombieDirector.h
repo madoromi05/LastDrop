@@ -44,8 +44,12 @@ public:
 	ZombieDirector& operator=( const ZombieDirector& ) = delete;
 
 	void provideShared();	// ゾンビの部品が共有の棚から引く物（TickContext・PathBudget・ZombieHearing）を置く。物の並びを作った後に 1 回
-	// ゾンビの設計図・組み立て・湧かせる係を作る（GameWorld::placeActors から。ゾンビの形の構築に失敗していれば何もしない）
-	// map: 湧いてよい場所の候補を読む
+	// ナビメッシュの床の縁を壁から離す長さ（m）。ゾンビの移動の長方形が収まる円の半径（BodyFootprint::reachRadius）に、
+	// 壁との余白（ZombieCrowdParams::navMeshClearance）を足す。GameWorld::buildNavMesh から（setup より前）
+	// 長方形を求めるのでゾンビの設計図をここで作る（setup はそれを使う）。ゾンビの形が読めていなければ既定の長さ
+	float navMeshRadius();
+	// ゾンビの組み立て・湧かせる係を作る（GameWorld::placeActors から。ゾンビの形の構築に失敗していれば何もしない）
+	// 設計図がまだ無ければ作る。map: 湧いてよい場所の候補を読む
 	void setup( const TownMap& map );
 
 	// 歩いて追ってくるゾンビを 1 体出す（倒れ方は体ごとにランダム）。update の外（ティックの間）で呼ぶ
@@ -74,6 +78,8 @@ public:
 	const ZombieSpawner* spawner() const;	// ゾンビを湧かせる係（確認用の表示が読む）。setup の前・形が無ければ nullptr
 
 private:
+	bool prepareModel();	// ゾンビの設計図がまだ無ければ作る。ゾンビの形が読めていなければ作らずに false
+
 	GameObjectWorld* mObjects;							// 借りているだけ
 	const HitWorld* mHitWorld;							// 借りているだけ（湧いてよいかの見通し）
 	const CollisionWorld* mCollisionWorld;

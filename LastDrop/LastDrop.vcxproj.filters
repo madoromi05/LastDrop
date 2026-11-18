@@ -960,6 +960,9 @@
     <ClCompile Include="GameSrc\src\DebugMode\ZombiePathDrawer.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\NavMeshDrawer.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
@@ -1228,6 +1231,9 @@
       <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombiePath.cpp">
+      <Filter>GameSrc\Zombie\Move</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Zombie\Move\ZombieMoveTrace.cpp">
       <Filter>GameSrc\Zombie\Move</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Zombie\Move\ZombieCrowd.cpp">
@@ -2165,6 +2171,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\ZombiePathDrawer.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\NavMeshDrawer.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
@@ -2514,6 +2523,9 @@
       <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombiePath.h">
+      <Filter>GameSrc\Zombie\Move</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieMoveTrace.h">
       <Filter>GameSrc\Zombie\Move</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Zombie\Move\ZombieCrowd.h">

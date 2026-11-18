@@ -9,7 +9,9 @@ struct DebugSwitches{
 	// ── 表示の切り替え（起動中ずっと残る。Retry しても消えない）。読むのは GameDebugOverlay ──
 	bool showCollision = false;  // 当たり判定と、画面中央へ撃った確認用の線分
 	bool showPickups = false;    // 落ちている物の箱を、壁を透かして
-	bool showZombieInfo = false; // ゾンビの体力・通り道・湧く様子・PVS・ライト・自キャラの体力・漁れる場所の中身
+	bool showZombieInfo = false; // ゾンビの体力・通り道・湧く様子・引っかかりの印・自キャラの体力
+	bool showNavMesh = false;    // ゾンビが歩ける床（ナビメッシュ）の多角形の辺
+	bool showTownInfo = false;   // 明かり（点光源の置き場所と届く範囲）・PVS・漁れる場所の中身
 
 	// ── 1 回だけの頼み（押したフレームにエディタが立て、読んだ係が下ろす）──
 	// 状態はそれぞれの持ち主が持つ（シーンを作り直すと元に戻る物なので、ここでは持たない）

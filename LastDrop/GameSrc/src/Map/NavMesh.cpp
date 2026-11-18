@@ -26,6 +26,7 @@ namespace{
 	const int kMaxCorners = 64;
 	// 点の近くの床を探す範囲（半分の大きさ。m）。上下は歩道の段差（0.15m）・自キャラの目の高さで呼ばれても床に届く広さ
 	const float kSearchExtents[ 3 ] = { 2.f, 2.f, 2.f };
+	const float kNotBuilt = -1.f;	// まだ build していないときの agentRadius
 	const int kCoordinates = 3;
 	const double kMillisecondsPerSecond = 1000.0;
 
@@ -52,21 +53,23 @@ void NavMesh::QueryDeleter::operator()( dtNavMeshQuery* query ) const {
 	dtFreeNavMeshQuery( query );
 }
 
-NavMesh::NavMesh() {
+NavMesh::NavMesh() :
+	mAgentRadius( kNotBuilt ) {
 }
 
 NavMesh::~NavMesh() {
 }
 
-bool NavMesh::build( const CollisionWorld& world ) {
+bool NavMesh::build( const CollisionWorld& world, float agentRadius ) {
 	mQuery.reset();
 	mNavMesh.reset();
 	mOutline.clear();
+	mAgentRadius = agentRadius; // 失敗しても覚える（同じ長さで毎回作り直して、毎回失敗しないように）
 	auto startTime = std::chrono::steady_clock::now();
 
 	// 床の形を作るのは NavMeshBuilder（Recast）。ここは受け取って、道を探す道具（Detour の query）を付ける
 	int polygonCount = 0;
-	std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh( NavMeshBuilder::build( world, &polygonCount ) );
+	std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh( NavMeshBuilder::build( world, agentRadius, &polygonCount ) );
 	if ( !navMesh ) {
 		return false; // 理由は NavMeshBuilder がログへ出した
 	}
@@ -86,6 +89,10 @@ bool NavMesh::build( const CollisionWorld& world ) {
 
 bool NavMesh::isReady() const {
 	return static_cast< bool >( mNavMesh );
+}
+
+float NavMesh::agentRadius() const {
+	return mAgentRadius;
 }
 
 bool NavMesh::isWalkable( const Vector3& from, const Vector3& to ) const {

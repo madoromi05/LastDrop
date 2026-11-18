@@ -36,7 +36,8 @@ public:
 	void build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot, bool lampsLit );
 	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。build の後
 	// 借りた床を返す（ゾンビの部品が共有の棚から引くので、棚の持ち主が置く）
-	NavMesh* buildNavMesh( const CollisionWorld& collisionWorld );
+	// agentRadius: 床の縁を壁から離す長さ（m。ゾンビの体の大きさから ZombieDirector::navMeshRadius で求める）
+	NavMesh* buildNavMesh( const CollisionWorld& collisionWorld, float agentRadius );
 	void buildVisibility( const HitWorld& hitWorld );	// 建物の隠れの表を TownCache から借りる（同じ）。build の後
 
 	// ── 読み取り口 ──

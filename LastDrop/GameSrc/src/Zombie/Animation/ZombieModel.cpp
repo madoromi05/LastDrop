@@ -1,15 +1,13 @@
 #include "GameSrc/Zombie/Animation/ZombieModel.h"
 #include "GameSrc/Render/SkinnedMesh/SkinnedMeshData.h"
 #include "GameSrc/Render/SkinnedMesh/BoneNamePattern.h"
+#include "GameSrc/Zombie/Move/ZombieCrowdParams.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
 
 namespace{
 	const char* kBoneNamePrefix = "Zombie_";	// 骨の名前の頭の共通部分（Resource/Model/Character/zombie.txt の骨は "Zombie_Head" のような名前）
-	// 移動の当たり判定を体より一回り大きくする幅（m。四辺それぞれ）。体の見た目どうしがめり込む前に止めるため
-	// 部位の当たり判定（HitboxLayout）は変えない（弾は体ぴったりで当てる）
-	const float kFootprintPadding = 0.15f;
 	// 歩くときに地面についているかを比べる足先の骨（ZombieStride）
 	const char* kLeftToeBone = "LeftToeBase";
 	const char* kRightToeBone = "RightToeBase";
@@ -25,7 +23,7 @@ ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation
 const std::vector< const char* >& rootMotionAnimations ) :
 	mData( data ),
 	mHitboxLayout( data, kBoneNamePrefix ),
-	mFootprint( data, kBoneNamePrefix, kFootprintPadding ),
+	mFootprint( data, kBoneNamePrefix, zombieCrowdParams().footprintPadding ),	// 部位の当たり判定（HitboxLayout）には余白を足さない（弾は体ぴったりで当てる）
 	mFlinchLayout( data, kBoneNamePrefix ),
 	mSeverLayout( data, kBoneNamePrefix ),
 	mStride( data, data->animation( walkAnimation ),

@@ -18,12 +18,14 @@ TownCache::TownCache() {
 TownCache::~TownCache() {
 }
 
-NavMesh* TownCache::navMesh( int escapeCarSpot, const CollisionWorld& world ) {
+NavMesh* TownCache::navMesh( int escapeCarSpot, const CollisionWorld& world, float agentRadius ) {
 	std::unique_ptr< NavMesh >& navMesh = mNavMeshes[ escapeCarSpot ];
 	if ( !navMesh ) {
-		LOAD_SCOPE( "town", "NavMesh::build" );
 		navMesh = std::make_unique< NavMesh >();
-		navMesh->build( world ); // 失敗しても持つ（毎回作り直して、毎回失敗しないように）
+	}
+	if ( navMesh->agentRadius() != agentRadius ) {
+		LOAD_SCOPE( "town", "NavMesh::build" );
+		navMesh->build( world, agentRadius ); // 失敗しても持つ（同じ長さで毎回作り直して、毎回失敗しないように）
 	}
 	return navMesh.get();
 }

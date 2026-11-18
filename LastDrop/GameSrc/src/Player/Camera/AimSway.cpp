@@ -25,11 +25,6 @@ namespace{
 		return 1.f / ( seconds * GameTime::kTicksPerSecond );
 	}
 
-	// 半分に戻るまで halfLife 秒のとき、1 ティックごとに残る割合（はね返らない減り方）
-	float remainPerTick( float halfLife ) {
-		return Math::pow( kHalf, perTick( halfLife ) );
-	}
-
 	// 体力の状態に合わせた倍率
 	float conditionScale( bool danger ) {
 		return danger ? gParams.dangerScale : 1.f;
@@ -69,7 +64,7 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 	// アニメの位相をそのまま使うと、A・D を素早く押し替えたときに止まる⇔歩くでアニメが頭から始まり、銃が 1 ティックで跳ぶ
 	mWalkPhase = ScalarMath::wrapUnit( mWalkPhase + target * perTick( gParams.walkCycleSeconds ) );
 	if ( body.gaitCycling ) {
-		float pull = 1.f - remainPerTick( gParams.walkSyncHalfLife );
+		float pull = 1.f - GameTime::remainPerTick( gParams.walkSyncHalfLife );
 		mWalkPhase = ScalarMath::wrapUnit( mWalkPhase + phaseGap( mWalkPhase, body.gaitPhase ) * pull );
 	}
 	// 上下は 1 歩ごとに 1 往復、左右は 1 周（2 歩）で 1 往復（足を着くたびに沈み、体重が左右へ移るのに合わせて振れる）
@@ -77,7 +72,7 @@ void AimSway::update( const AimSwayBody& body, float lookYaw, float lookPitch ) 
 	pitch += gParams.walkPitch * mWalkStrength * Math::sin( AngleMath::kFullTurnDegree * kStepsPerCycle * mWalkPhase );
 
 	// c. 振り向きの遅れ：回した向きと逆へ残し、ばねで 0 へ戻す
-	float remain = remainPerTick( gParams.lagHalfLife );
+	float remain = GameTime::remainPerTick( gParams.lagHalfLife );
 	mLagYaw = ScalarMath::clampSigned( ScalarMath::decay( mLagYaw, remain, kMinLag ) - lookYaw * gParams.lagRate, gParams.lagLimit );
 	mLagPitch = ScalarMath::clampSigned( ScalarMath::decay( mLagPitch, remain, kMinLag ) - lookPitch * gParams.lagRate, gParams.lagLimit );
 	yaw += mLagYaw;

@@ -73,7 +73,8 @@ ZombieChase::ZombieChase( int sightPhase, int randomSeed ) :
 	mWanderWaitTicks( 0 ),
 	mWanderBestDistance( 0.f ),
 	mWanderStallTicks( 0 ),
-	mWanderTurnBack( false ) {
+	mWanderTurnBack( false ),
+	mWanderStalls( 0 ) {
 	startWanderWait(); // 最初は立つ（立つ長さは体ごとにランダムなので、一斉には歩き出さない）
 }
 
@@ -206,6 +207,7 @@ void ZombieChase::updateWander( const Vector3& self, float angleY, const HitWorl
 		// 壁に沿って滑るだけで寄れていない。立たずに、次のティックで今の向きから選び直す
 		mWalking = false;
 		mWanderWaitTicks = 0;
+		++mWanderStalls;
 	}
 }
 
@@ -249,4 +251,8 @@ const Vector3& ZombieChase::destination() const {
 
 bool ZombieChase::wantsToWalk() const {
 	return mWalking;
+}
+
+int ZombieChase::wanderStalls() const {
+	return mWanderStalls;
 }

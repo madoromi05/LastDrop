@@ -15,6 +15,7 @@
 #include "GameSrc/Raid/DayCondition.h"
 
 #include "GameLib/GameLib.h"
+#include "GameLib/Base/DebugStream.h"
 #include "GameLib/Profiling/Profiler.h"
 #include "Framework.h"
 
@@ -42,6 +43,8 @@ namespace{
 	const char* kZombieGrabAnimation = "atack3";	// 両手でつかんで噛む
 	const char* kZombieAttackAnimation =
 		( kZombieAttackStyle == ZombieAttackStyle::Swing ) ? kZombieSwingAnimation : kZombieGrabAnimation;
+	// ゾンビの形が読めないときの、ナビメッシュの床の縁を壁から離す長さ（m）。ゾンビは出ないので床は使われないが、作るのに要る
+	const float kNoZombieNavMeshRadius = 0.4f;
 }
 
 ZombieDirector::ZombieDirector( MeshCache* meshes, GameObjectWorld* objects, const HitWorld* hitWorld, const CollisionWorld* collisionWorld,
@@ -70,15 +73,35 @@ void ZombieDirector::provideShared() {
 	mObjects->provide( &mHearing );
 }
 
-void ZombieDirector::setup( const TownMap& map ) {
+bool ZombieDirector::prepareModel() {
+	if ( mZombieModel ) {
+		return true;
+	}
 	if ( !mZombieData->isReady() ) {
-		return;
+		return false;
 	}
 	// 根の動きを置き場所へ移すのは、1回だけ流すアニメ（攻撃・よろけ・倒れる）
 	std::vector< const char* > rootMotionAnimations( std::begin( kZombieDeathAnimations ), std::end( kZombieDeathAnimations ) );
 	rootMotionAnimations.push_back( kZombieStaggerAnimation );
 	rootMotionAnimations.push_back( kZombieAttackAnimation );
 	mZombieModel = std::make_unique< ZombieModel >( mZombieData, kZombieAnimation, kZombieRunAnimation, rootMotionAnimations );
+	return true;
+}
+
+float ZombieDirector::navMeshRadius() {
+	if ( !prepareModel() ) {
+		return kNoZombieNavMeshRadius;
+	}
+	float reach = mZombieModel->footprint().reachRadius();
+	float radius = reach + zombieCrowdParams().navMeshClearance;
+	GameLib::cout << "ZombieFootprint: reach " << reach << " m -> navmesh radius " << radius << " m" << GameLib::endl;
+	return radius;
+}
+
+void ZombieDirector::setup( const TownMap& map ) {
+	if ( !prepareModel() ) {
+		return;
+	}
 	mFactory = std::make_unique< ZombieFactory >( mZombieModel.get(), kZombieAttackStyle );
 	mRandom = Random::create( static_cast< int >( Framework::instance().time() ) );	// 遊ぶたびに違う倒れ方にする（起動からの時間を種にする。ガソリンの場所と同じ）
 	// 歩くゾンビは、最初の update から ZombieSpawner が見えない所へ湧かせる（自キャラの目とカメラの向きが分かってから選ぶため）

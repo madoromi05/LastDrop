@@ -19,13 +19,13 @@ using namespace GameLib::Math;
 
 namespace{
 	// ── 床の形を作る細かさ（Recast の rcConfig） ──
-	// 床を区切るますの大きさ（m）。体の半径（0.4m）を 2 ますで表せる細かさ。町（約 130m 四方）で 650 ます四方になる
+	// 床を区切るますの大きさ（m）。町（約 130m 四方）で 650 ます四方になる
+	// 床の縁を壁から離す長さ（体の半径）は、このますの数で削る（切り上げ）ので、実際に削る幅はこの倍数になる
 	const float kCellSize = 0.2f;
 	const float kCellHeight = 0.1f;			// 高さのますの大きさ（m）。越えられる段差（0.3m）をちょうど 3 ますで表せる
 	// 体の高さ・越えられる段差は、移動の当たり判定と同じ値にする（床の形と実際の歩き方が食い違わないように）
 	const float kAgentHeight = MoveHeight::kBodyTop;
 	const float kAgentClimb = MoveHeight::kStepOver;
-	const float kAgentRadius = 0.4f;		// 床の縁を壁から離す長さ（m）。ゾンビの体を真上から囲む長方形（幅の半分 約 0.3m）が斜めを向いても壁にこすらない長さ
 	const float kMaxSlopeDegree = 45.f;		// 床は平らなので効かないが、Recast が求める値
 	const int kMinRegionSize = 8;			// 小さすぎる床の切れはし（ます数）は捨てる。建物の柱の間などの、歩いて入れない隙間を残さない
 	const int kMergeRegionSize = 20;		// これより小さい床の切れはしは隣とまとめる（多角形の数を減らし、道探しを軽くする）
@@ -170,14 +170,14 @@ namespace{
 	}
 
 	// Recast の設定（細かさ・体の大きさ・範囲）。値の理由は上の定数
-	rcConfig makeConfig( const Vector3& boundsMin, const Vector3& boundsMax ) {
+	rcConfig makeConfig( const Vector3& boundsMin, const Vector3& boundsMax, float agentRadius ) {
 		rcConfig config{};
 		config.cs = kCellSize;
 		config.ch = kCellHeight;
 		config.walkableSlopeAngle = kMaxSlopeDegree;
 		config.walkableHeight = static_cast< int >( std::ceil( kAgentHeight / kCellHeight ) );
 		config.walkableClimb = static_cast< int >( std::floor( kAgentClimb / kCellHeight ) );
-		config.walkableRadius = static_cast< int >( std::ceil( kAgentRadius / kCellSize ) );
+		config.walkableRadius = static_cast< int >( std::ceil( agentRadius / kCellSize ) );
 		config.maxEdgeLen = static_cast< int >( kEdgeMaxLength / kCellSize );
 		config.maxSimplificationError = kEdgeMaxError;
 		config.minRegionArea = kMinRegionSize * kMinRegionSize;
@@ -259,7 +259,7 @@ namespace{
 		params.detailTris = detail.tris;
 		params.detailTriCount = detail.ntris;
 		params.walkableHeight = kAgentHeight;
-		params.walkableRadius = kAgentRadius;
+		params.walkableRadius = config.walkableRadius * config.cs; // 実際に削った幅（ますの倍数に切り上げた後）
 		params.walkableClimb = kAgentClimb;
 		rcVcopy( params.bmin, polyMesh.bmin );
 		rcVcopy( params.bmax, polyMesh.bmax );
@@ -289,15 +289,17 @@ namespace{
 	}
 }
 
-dtNavMesh* NavMeshBuilder::build( const CollisionWorld& world, int* polygonCount ) {
+dtNavMesh* NavMeshBuilder::build( const CollisionWorld& world, float agentRadius, int* polygonCount ) {
 	ASSERT( polygonCount && "NavMeshBuilder::build : polygonCount is null." );
+	ASSERT( agentRadius >= 0.f && "NavMeshBuilder::build : agentRadius is negative." );
 	TriangleSoup soup;
 	Vector3 boundsMin;
 	Vector3 boundsMax;
 	if ( !gatherTriangles( world, &soup, &boundsMin, &boundsMax ) ) {
 		return nullptr;
 	}
-	const rcConfig config = makeConfig( boundsMin, boundsMax );
+	const rcConfig config = makeConfig( boundsMin, boundsMax, agentRadius );
+	GameLib::cout << "NavMesh: agent radius " << agentRadius << " m -> eroded " << config.walkableRadius * config.cs << " m" << GameLib::endl;
 	std::unique_ptr< rcPolyMesh, PolyMeshDeleter > polyMesh( rcAllocPolyMesh() );
 	if ( !polyMesh ) {
 		logFailure( "build the poly mesh" );

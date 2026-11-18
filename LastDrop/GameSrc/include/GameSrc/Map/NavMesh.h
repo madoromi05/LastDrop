@@ -24,9 +24,11 @@ public:
 	NavMesh& operator=( const NavMesh& ) = delete;
 
 	// world の動かない形（WallMesh・箱）から床の形を作る。前に作った物は捨てる
+	// agentRadius: 床の縁を壁から離す長さ（m）。歩く体の長方形がどの向きでも壁にこすらない長さを渡す（NavMeshBuilder）
 	// 町を置き終えた後に 1 回だけ呼ぶ（数十〜数百 ms かかる。かかった時間はログへ出す）。作れなければ false（isReady も false のまま）
-	bool build( const CollisionWorld& world );
+	bool build( const CollisionWorld& world, float agentRadius );
 	bool isReady() const;	// 床の形ができているか
+	float agentRadius() const;	// 最後に build へ渡した、床の縁を壁から離す長さ（m。まだ作っていなければ負）
 
 	// from から to まで、床の上をまっすぐ歩いて通れるか（体の半径ぶん壁から離れた線が、床の縁を越えないか）
 	// 床ができていなければ true（今までどおりまっすぐ向かい、壁に沿って滑る）
@@ -52,6 +54,7 @@ private:
 	std::unique_ptr< dtNavMesh, NavMeshDeleter > mNavMesh;    // 空なら床ができていない
 	std::unique_ptr< dtNavMeshQuery, QueryDeleter > mQuery;   // mNavMesh を借りて探す
 	std::vector< GameLib::Math::Vector3 > mOutline;
+	float mAgentRadius;                                       // 最後に build へ渡した長さ（TownCache が、変わったら作り直すのに見る）
 };
 
 #endif
