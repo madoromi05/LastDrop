@@ -13,6 +13,7 @@ namespace{
 	// 部位1つの定義。名前は骨の名前の頭の共通部分を除いたもの（末尾の '*' でまとめて引く。BoneNamePattern）
 	struct CutDefinition{
 		const char* jointBone;                 // nullptr なら切れない部位
+		const char* stumpBone;                 // 切り口の手前（体に残る側）の骨。nullptr なら切り口を丸めず1点へ潰す
 		const char* bones[ kMaxBoneNames ];    // 余りは nullptr
 		BodyPart parts[ kMaxParts ];           // 余りは BodyPart::Count
 		bool losesFooting;
@@ -21,20 +22,21 @@ namespace{
 	// 足先（ToeBase）は Foot の子なので、脚と一緒に無くす（"LeftFoot*" では引けない名前のため別に書く）
 	const BodyPart kNone = BodyPart::Count;
 	const CutDefinition kCutDefinitions[] = {
-		{ "Head",         { "Head", "low_jaw*" },                                   { BodyPart::Head, kNone },                         kKeepsFooting },	// Head：首の上で切る（頭が 0 で倒れるときに飛ぶ）
-		{ nullptr,        { nullptr },                                              { kNone, kNone },                                  kKeepsFooting },	// Torso：切れない
+		// Head：首の上で切る（頭が 0 で倒れるときに飛ぶ）。首の切り口は 1 点に潰すと尖るので丸める
+		{ "Head",         "Neck",  { "Head", "low_jaw*" },                                   { BodyPart::Head, kNone },                         kKeepsFooting },
+		{ nullptr,        nullptr, { nullptr },                                              { kNone, kNone },                                  kKeepsFooting },	// Torso：切れない
 		// 上腕：肩から腕ごと
-		{ "LeftArm",      { "LeftArm", "LeftForeArm", "LeftHand*" },                { BodyPart::LeftUpperArm, BodyPart::LeftForeArm },   kKeepsFooting },
-		{ "RightArm",     { "RightArm", "RightForeArm", "RightHand*" },             { BodyPart::RightUpperArm, BodyPart::RightForeArm }, kKeepsFooting },
+		{ "LeftArm",      nullptr, { "LeftArm", "LeftForeArm", "LeftHand*" },                { BodyPart::LeftUpperArm, BodyPart::LeftForeArm },   kKeepsFooting },
+		{ "RightArm",     nullptr, { "RightArm", "RightForeArm", "RightHand*" },             { BodyPart::RightUpperArm, BodyPart::RightForeArm }, kKeepsFooting },
 		// 前腕：肘から先
-		{ "LeftForeArm",  { "LeftForeArm", "LeftHand*" },                           { BodyPart::LeftForeArm, kNone },                  kKeepsFooting },
-		{ "RightForeArm", { "RightForeArm", "RightHand*" },                         { BodyPart::RightForeArm, kNone },                 kKeepsFooting },
+		{ "LeftForeArm",  nullptr, { "LeftForeArm", "LeftHand*" },                           { BodyPart::LeftForeArm, kNone },                  kKeepsFooting },
+		{ "RightForeArm", nullptr, { "RightForeArm", "RightHand*" },                         { BodyPart::RightForeArm, kNone },                 kKeepsFooting },
 		// 太もも：脚の付け根から脚ごと
-		{ "LeftUpLeg",    { "LeftUpLeg", "LeftLeg", "LeftFoot*", "LeftToeBase*" },  { BodyPart::LeftThigh, BodyPart::LeftLowerLeg },   kLosesFooting },
-		{ "RightUpLeg",   { "RightUpLeg", "RightLeg", "RightFoot*", "RightToeBase*" }, { BodyPart::RightThigh, BodyPart::RightLowerLeg }, kLosesFooting },
+		{ "LeftUpLeg",    nullptr, { "LeftUpLeg", "LeftLeg", "LeftFoot*", "LeftToeBase*" },  { BodyPart::LeftThigh, BodyPart::LeftLowerLeg },   kLosesFooting },
+		{ "RightUpLeg",   nullptr, { "RightUpLeg", "RightLeg", "RightFoot*", "RightToeBase*" }, { BodyPart::RightThigh, BodyPart::RightLowerLeg }, kLosesFooting },
 		// すね：膝から先
-		{ "LeftLeg",      { "LeftLeg", "LeftFoot*", "LeftToeBase*" },               { BodyPart::LeftLowerLeg, kNone },                 kLosesFooting },
-		{ "RightLeg",     { "RightLeg", "RightFoot*", "RightToeBase*" },            { BodyPart::RightLowerLeg, kNone },                kLosesFooting },
+		{ "LeftLeg",      nullptr, { "LeftLeg", "LeftFoot*", "LeftToeBase*" },               { BodyPart::LeftLowerLeg, kNone },                 kLosesFooting },
+		{ "RightLeg",     nullptr, { "RightLeg", "RightFoot*", "RightToeBase*" },            { BodyPart::RightLowerLeg, kNone },                kLosesFooting },
 	};
 	static_assert( sizeof( kCutDefinitions ) / sizeof( kCutDefinitions[ 0 ] ) == static_cast< size_t >( BodyPart::Count ),
 		"kCutDefinitions must have one entry per BodyPart." );
@@ -48,6 +50,7 @@ ZombieSeverLayout::ZombieSeverLayout( const SkinnedMeshData* data, const char* b
 		const CutDefinition& definition = kCutDefinitions[ i ];
 		Cut& cut = mCuts[ i ];
 		cut.jointBone = kNoBone;
+		cut.stumpBone = kNoBone;
 		cut.losesFooting = definition.losesFooting;
 		if ( !definition.jointBone ) {
 			continue;
@@ -56,6 +59,12 @@ ZombieSeverLayout::ZombieSeverLayout( const SkinnedMeshData* data, const char* b
 		if ( cut.jointBone < 0 ) {
 			GameLib::cout << "ZombieSeverLayout: bone not found: " << boneNamePrefix << definition.jointBone << GameLib::endl;
 			continue;
+		}
+		if ( definition.stumpBone ) {
+			cut.stumpBone = BoneNamePattern::find( data, boneNamePrefix, definition.stumpBone );
+			if ( cut.stumpBone < 0 ) {
+				GameLib::cout << "ZombieSeverLayout: bone not found: " << boneNamePrefix << definition.stumpBone << GameLib::endl;
+			}
 		}
 		for ( const char* name : definition.bones ) {
 			if ( !name ) {

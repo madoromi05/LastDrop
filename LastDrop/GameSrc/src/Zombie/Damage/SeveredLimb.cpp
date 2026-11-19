@@ -86,8 +86,13 @@ const Vector3& direction, std::mt19937* random ) :
 	mMesh.setPoseModifier( this );
 
 	// 残す骨は切れた瞬間の姿勢のまま、ほかは切り口の1点へ潰す。中心は残す骨の原点の平均
-	Matrix34 collapsed = ZombieDismemberment::collapsedAt( PlacementMatrix::translationOf( worldPose[ cut.jointBone ] ) );
-	mBasePose.assign( worldPose.size(), collapsed );
+	// 切り口を丸める部位（頭）は、手前の骨（首）だけ関節のまわりへ低く縮めて、飛んだ側の切り口も尖らせない
+	Vector3 joint = PlacementMatrix::translationOf( worldPose[ cut.jointBone ] );
+	mBasePose.assign( worldPose.size(), ZombieDismemberment::collapsedAt( joint ) );
+	Vector3 stumpAxis;
+	if ( ZombieDismemberment::stumpAxisOf( cut, worldPose, &stumpAxis ) ) {
+		mBasePose[ cut.stumpBone ] = ZombieDismemberment::roundedAt( joint, stumpAxis, worldPose[ cut.stumpBone ] );
+	}
 	mStartCenter.set( 0.f, 0.f, 0.f );
 	for ( int bone : cut.bones ) {
 		mBasePose[ bone ] = worldPose[ bone ];

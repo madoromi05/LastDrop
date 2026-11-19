@@ -3,11 +3,10 @@
 
 #include "GameSrc/Render/SkinnedMesh/BonePoseModifier.h"
 #include "GameSrc/Hit/BodyPart.h"
+#include "GameSrc/Zombie/Damage/ZombieSeverLayout.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Matrix34.h"
 #include <vector>
-
-class ZombieSeverLayout;
 
 // ゾンビ1体ぶんの「失った部位」。切った部位を覚え、描く直前に、無くなった骨を切り口の関節の1点へ潰す（BonePoseModifier）
 // 骨ごとに自分の原点へ潰すと、手と前腕の間の三角形が線や面として残るので、無くなる骨は全部同じ1点へ集める
@@ -29,6 +28,16 @@ public:
 	virtual void apply( std::vector< GameLib::Math::Matrix34 >* pose ) override;
 
 	static GameLib::Math::Matrix34 collapsedAt( const GameLib::Math::Vector3& point );	// 頂点を全部 point の1点へ集める骨の姿勢（縮尺 0・位置 point）。千切れた部位（SeveredLimb）が、残った体の側を潰すのにも使う
+	// 1点へ潰すと切り口が尖る部位（首）は、代わりに point のまわりへ低く丸めて縮める
+	// stumpAxisOf: 切り口の軸（手前の骨から関節への向き。長さ 1）。丸めない部位・向きが決まらないときは false
+	// roundedAt: 骨の姿勢 bonePose の頂点を、point を中心に軸の向きは短く・横は細く縮める姿勢。axis は長さ 1
+	static bool stumpAxisOf( const ZombieSeverLayout::Cut& cut, const std::vector< GameLib::Math::Matrix34 >& pose, GameLib::Math::Vector3* axis );
+	static GameLib::Math::Matrix34 roundedAt( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& axis, const GameLib::Math::Matrix34& bonePose );
+
+private:
+	// 骨の姿勢 bonePose の頂点を、point を中心に axis の向きは lengthScale 倍・横は widthScale 倍に縮める姿勢。axis は長さ 1
+	static GameLib::Math::Matrix34 scaledAlong( const GameLib::Math::Vector3& point, const GameLib::Math::Vector3& axis,
+		float lengthScale, float widthScale, const GameLib::Math::Matrix34& bonePose );
 
 private:
 	const ZombieSeverLayout* mLayout; // 借りているだけ

@@ -15,6 +15,7 @@ public:
 	// 1つの部位を切るときの決まり
 	struct Cut{
 		int jointBone;               // 切る関節の骨（この骨の原点が切り口）。-1 なら、この部位は切れない
+		int stumpBone;               // 切り口の手前（体に残る側）の骨。-1 なら切り口を 1 点へ潰す。ほかは、この骨から関節への向きを軸に切り口を丸める
 		std::vector< int > bones;    // 無くなる骨（関節の骨を含む）
 		std::vector< BodyPart > parts; // 一緒に無くなる部位（自分を含む。上腕なら前腕も）
 		bool losesFooting;           // 失うと立っていられないか（脚）
