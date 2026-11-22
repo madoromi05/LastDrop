@@ -34,7 +34,6 @@ public:
     // ─────────────────────────────────────────
     bool isOn(GameLib::Input::WorkId work, int playerId) const;						// 押されている間ずっと
     bool isTriggered(GameLib::Input::WorkId work, int playerId) const;				// 押した瞬間だけ
-    bool isWorkRelease(GameLib::Input::WorkId work, int playerId) const;			// 離した瞬間だけ
     AxisStatus getAxisWorkState(GameLib::Input::WorkId work, int playerId) const;	// 軸ワークの今フレームの量
     const std::vector<GameLib::Input::BindingRecord>& bindings(int playerId) const;	// 今の割り当て（設定画面の操作の一覧が、どのキーかを見せるのに使う。キーの名前は GameLib::Input::BindingDisplayName）
 
@@ -75,13 +74,13 @@ private:
 // ────────────────────────────────────────────────
 // ゲームコード向けショートカット（アクション名＝関数名）
 //
-// 文字列も enum も書かずに InputJump() のように入力を問い合わせる
+// 文字列も enum も書かずに InputRun() のように入力を問い合わせる
 // ゲームロジック側は「何の操作か」だけを書けばよく、
 // デバイス・ワーク名・状態種別は一切意識しなくてよい
 //
 // 状態の意味は操作の性質に合わせて固定している：
-//   移動系（Up/Down/Left/Right/Jump） … 押されている間ずっと true
-//   Fire                              … 押した瞬間だけ true（トリガー）
+//   移動系（Up/Down/Left/Right） … 押されている間ずっと true
+//   Fire                         … 押した瞬間だけ true（トリガー）
 //
 // 内部では Pad::instance() に操作の番号（WorkId）を渡しているだけなので、
 // 割り当て変更やデバイス追加の影響はここには波及しない
@@ -90,10 +89,8 @@ bool InputUp   (int playerId = 0);
 bool InputDown (int playerId = 0);
 bool InputLeft (int playerId = 0);
 bool InputRight(int playerId = 0);
-bool InputJump (int playerId = 0);
 bool InputFire (int playerId = 0);
 bool InputFireHeld   (int playerId = 0);   // 撃つ（押されている間。連射用。InputFire と同じ Fire を読む）
-bool InputDodge      (int playerId = 0);   // 回避ステップ（押した瞬間）
 bool InputRun        (int playerId = 0);   // 走る（押されている間）
 AxisStatus InputLook (int playerId = 0);   // 視点操作の量（横=右が正、縦=下が正。マウスなら画素数）
 AxisStatus InputMove (int playerId = 0);   // パッドのスティックの移動（-1〜1。横=右が正、縦=下が正）。キーの InputUp などと別に読む

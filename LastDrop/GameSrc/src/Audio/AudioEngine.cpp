@@ -307,28 +307,12 @@ void AudioEngine::play( SoundId id, Bus bus, const Vector3& position, float volu
 	}
 }
 
-void AudioEngine::play2D( SoundId id, Bus bus, float volume, float pitch ) {
-	Impl::Voice* voice = isReady() ? mImpl->findFreeOneShot() : nullptr;
-	if ( voice ) {
-		mImpl->startVoice( voice, id, bus, nullptr, volume, pitch, false, 0.f );
-	}
-}
-
 AudioEngine::LoopHandle AudioEngine::startLoop( SoundId id, Bus bus, float volume, float fadeInSeconds ) {
 	return mImpl->startLoopVoice( id, bus, nullptr, volume, fadeInSeconds );
 }
 
 AudioEngine::LoopHandle AudioEngine::startLoopAt( SoundId id, Bus bus, const Vector3& position, float volume ) {
 	return mImpl->startLoopVoice( id, bus, &position, volume, 0.f );
-}
-
-void AudioEngine::setLoopPosition( LoopHandle handle, const Vector3& position, const Vector3& velocity ) {
-	if ( handle < 0 || handle >= kMaxLoops || !mImpl->mLoops[ handle ].used ) {
-		return;
-	}
-	ma_sound* sound = &mImpl->mLoops[ handle ].sound;
-	ma_sound_set_position( sound, position.x, position.y, position.z );
-	ma_sound_set_velocity( sound, velocity.x, velocity.y, velocity.z );
 }
 
 void AudioEngine::stopLoop( LoopHandle handle, float fadeOutSeconds ) {

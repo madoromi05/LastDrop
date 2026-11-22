@@ -31,9 +31,7 @@ enum ItemKind{
 // 何個まで持てるかは決めない（カバンの空きのマス目が上限）。SummaryPlan/個別仕様/出撃と帰還/GridInventory_Plan.txt
 struct ItemSpec{
 	const char* name; // 画面に出す名前（日本語。F6 の ImGui は日本語の字を持たないので、そちらは saveName を出す）
-	// 確かめる道具（F6）と、残してある倉庫を保存するときに使う名前（英小文字）。ItemId の番号で書くと、並びを変えたときに古いファイルが別の物になるため
-	// 一度決めたら変えない（変えると、その名前で保存した物が読めなくなる）
-	const char* saveName;
+	const char* saveName; // 確かめる道具（F6）に出す名前（英小文字）
 	ItemKind kind;    // 分類
 	// 地面に落ちた形のファイル（ITEM_KIND_AMMO・MEDICAL が使う。それ以外は nullptr）
 	// ガソリンは携行缶の形（粗い形の段付き）を PropFactory が持ち、銃は銃ごとの表（WeaponSpec::groundFile）にある
@@ -45,7 +43,7 @@ struct ItemSpec{
 	int cellSize;     // 使うマスの数（1 か 2。2 は横に並んだ 2 マス）
 	int stackSize;    // 1 マスに重ねられる数（1 なら重ねない）
 	// カバンに何個まで入れられるか（0 は決めない＝空きが上限）。銃は 1（弾倉は銃の物 GunComponent が 1 つだけ持つため）
-	// 倉庫には決まりが無い（何丁でも置ける）。始めに持っている数は持たない（始めのカバンは RaidStart の表）
+	// 始めに持っている数は持たない（始めのカバンは RaidStart の表）
 	int carryLimit;
 	// カバンの画面で物のマスを塗る色（0〜1）。絵が読めなかった（ファイルが無い）ときに、絵の代わりにマスを塗って物を見分けるため
 	float red;
@@ -54,6 +52,5 @@ struct ItemSpec{
 };
 
 const ItemSpec& itemSpec( ItemId id );				// 種類 id の決まり。id は ITEM_NUMBER 未満であること
-ItemId itemFromSaveName( const char* saveName );	// 保存のファイルの名前 saveName の種類（知らない名前なら ITEM_NONE）
 
 #endif

@@ -27,7 +27,6 @@ public:
 	AnimationPlayer& operator=( const AnimationPlayer& ) = delete;
 
 	// 説明は SkinnedMeshInstance の同じ名前の関数
-	void setAnimation( const char* name, float startTime, PlayMode mode );
 	void setAnimation( GameLib::Scene::Animation animation, float startTime, PlayMode mode );
 	void crossFadeTo( GameLib::Scene::Animation animation, float startTime, float fadeFrames, PlayMode mode );
 	void setPlaybackRate( float rate );

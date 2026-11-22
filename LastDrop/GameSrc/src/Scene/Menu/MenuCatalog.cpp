@@ -35,7 +35,8 @@ MenuDefinition MenuCatalog::pause( std::function< void() > onResume ) {
 	menu.buttons.push_back( { "RESUME", onResume } );
 	menu.buttons.push_back( { "OPTIONS", nullptr, MENU_PAGE_OPTIONS } );
 	// 新しく始め直す（条件・ガソリンの箱・車の場所・箱の中身を全部引き直す）。残る物は無いので、失う物も無い
-	menu.buttons.push_back( { "RETRY", changeTo( SceneManager::SCENE_GAME ) } );
+	// 行き先は今の出撃と同じ種類のシーン（ゾンビの確認用のシーンなら、確認用のシーンのまま）
+	menu.buttons.push_back( { "RETRY", []() { SceneManager::instance().requestRetryRaid(); } } );
 	menu.buttons.push_back( { "TITLE", changeTo( SceneManager::SCENE_TITLE ) } );
 	menu.buttons.push_back( { "QUIT", []() { Framework::instance().requestEnd(); } } );
 	return menu;

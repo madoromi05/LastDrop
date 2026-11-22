@@ -25,7 +25,6 @@ public:
 	// 範囲がますの外なら、端のますの物（外にいる物は端のますに入っている）。items: 出力先。nullptr 不可
 	void collectArea( const GameLib::Math::Vector3& boundsMin, const GameLib::Math::Vector3& boundsMax, std::vector< int >* items ) const;
 	void clearItems();																						// ますの並びはそのままで、入れた物を全部外す（動く物を入れ直す前に呼ぶ。ますの数だけ掛かる）
-	bool isReady() const;																					// reset 済みか
 
 private:
 	void beginQuery() const;													// 問い合わせの番号を 1 つ進める（同じ物を 2 度入れないための印。collect と collectArea の始めに呼ぶ）

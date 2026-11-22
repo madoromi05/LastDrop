@@ -15,10 +15,7 @@ enum SoundId{
 	SOUND_FOOTSTEP_CONCRETE,
 	SOUND_FOOTSTEP_METAL,
 	SOUND_FOOTSTEP_WOOD,
-	SOUND_FOOTSTEP_GRASS,
 	SOUND_FOOTSTEP_GRAVEL,
-	SOUND_FOOTSTEP_WATER,
-	SOUND_FOOTSTEP_GLASS,
 	// ── 装備・動作音（フォーリー）──
 	SOUND_CLOTH_RUSTLE,			// 服の擦れ（銃を手に取る／手放す／覗く／やめるとき）
 	SOUND_GEAR_RATTLE,			// 装備の揺れ（銃を持っている間の一歩ごと）
@@ -32,11 +29,8 @@ enum SoundId{
 	SOUND_MAG_OUT,				// リロード：弾倉を抜く
 	SOUND_MAG_IN,				// リロード：弾倉を挿す
 	SOUND_BOLT_PULL,			// リロード：槓桿を引く
-	// ── 環境音 ──
-	SOUND_SIREN,				// 脱出のサイレン（1回鳴らす）
 	// ── 弾が当たった音 ──
 	SOUND_HIT_FLESH,			// ゾンビに当たった（頭も。弾が当たった音はこれ 1 つ）
-	SOUND_ZOMBIE_BODYFALL,		// 倒れたゾンビの体が地面に着いた（低いドサッ。倒した所から）。やめた SOUND_HIT_HEAD の位置に入れた（後ろの番号を変えないため）
 	// ── 弾が物に当たった音（着弾音。当たった所から鳴らす）
 	SOUND_IMPACT_CONCRETE,		// コンクリート・レンガ（建物・歩道）。高い破裂と細かい破片
 	SOUND_IMPACT_DIRT,			// 土・砂利（車道・町の外）。低く鈍い音と砂の落ちる音
@@ -48,7 +42,6 @@ enum SoundId{
 	// ── 漁る・包帯（段階R3。末尾に足す。理由は上と同じ） ──
 	SOUND_LOOT_SEARCH_METAL,	// 開けている間（ループ）：ゴミ箱（金属を探るガサガサ）
 	SOUND_LOOT_SEARCH_WOOD,		// 開けている間（ループ）：木箱
-	SOUND_LOOT_SEARCH_CLOTH,	// 開けている間（ループ）：死体（服を探る）
 	// 開け終わった音・包帯を巻いた音は作らない（中を見る画面・カバンの画面の間は音の装置ごと止めるので、鳴らしても閉じた後に鳴る）
 	// ── 脱出の車（末尾に足す。理由は上と同じ） ──
 	SOUND_CAR_ENGINE_START,		// エンジンを掛ける（セルが回って掛かる。1 回）。車から鳴らす
@@ -65,8 +58,8 @@ enum SoundId{
 // 音の種類。置くフォルダと読み方が変わる
 enum SoundKind{
 	// 効果音は起動のときに展開しておく。鳴らす元で 3 つに分ける
-	SOUND_KIND_SE_ENEMY,	// 敵（Resource/Sound/SE/Enemy）。ゾンビに当たった・倒れた
-	SOUND_KIND_SE_PLAYER,	// 自キャラ（Resource/Sound/SE/Player）。足音・服・漁る・給油・車・サイレン
+	SOUND_KIND_SE_ENEMY,	// 敵（Resource/Sound/SE/Enemy）。ゾンビに当たった
+	SOUND_KIND_SE_PLAYER,	// 自キャラ（Resource/Sound/SE/Player）。足音・服・漁る・給油・車
 	SOUND_KIND_SE_WEAPON,	// 武器（Resource/Sound/SE/Weapon）。銃声・リロード・構え・懐中電灯・着弾
 	SOUND_KIND_BGM,			// 曲（Resource/Sound/BGM）。1 曲が長いので展開せず、鳴らしている間だけファイルから少しずつ読む
 	SOUND_KIND_NUM,

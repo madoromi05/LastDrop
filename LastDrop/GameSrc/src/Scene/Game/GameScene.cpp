@@ -48,11 +48,11 @@ namespace{
 	const float kNoSearch = -1.f;        // HUD に「探している」の棒を出さない（RaidHud::draw。漁り/給油の本体は LootController）
 }
 
-GameScene::GameScene( GameResources* resources ) :
+GameScene::GameScene( GameResources* resources, ZombieSpawning spawning ) :
 	mResources( resources ),
 	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）
 	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ),
-		RaidStart::startBag() ),														// 毎回同じ始めのカバン（拳銃と 9mm の弾）。自キャラの持ち物になる
+		RaidStart::startBag(), spawning ),												// 毎回同じ始めのカバン（拳銃と 9mm の弾）。自キャラの持ち物になる
 	mSceneRenderer( &mWorld, &resources->settings() ),								// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
 	// キャラの向いている方（その日の車の方）を見始める
@@ -121,18 +121,9 @@ void GameScene::beginFrame() {
 			restoreMagazineRounds( *inventory, mWorld );
 		}
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
-		GameLib::cout << "[PauseProbe] time=" << GameLib::WindowCreator().time() << " load done" << GameLib::endl;	// 一時停止の原因を確かめる間だけ置くログ
-#ifdef ZF_EDITOR
-		mEditor.markReady();
-#endif
 	}
-	{
-		PROFILE_SCOPE( "Game.input" );
-		handleFrameInput();
-	}
-#ifdef ZF_EDITOR
-	mEditor.probeFrame( mWorld, mControl, mModals, isFreeCameraActive() ); // 撃つボタンの記録（FireProbe）
-#endif
+	PROFILE_SCOPE( "Game.input" );
+	handleFrameInput();
 }
 
 void GameScene::handleFrameInput() {
@@ -154,10 +145,6 @@ void GameScene::handleFrameInput() {
 	// ESC か、窓が裏に回ったら止める（裏に回っている間に世界が進んで、戻ったら攻撃されていた、とならないように）
 	// 死んだ後は止めない（一時停止からやめると、その日をやり直せるので、死んでから逃げられないように）
 	if ( ( InputMenu() || !GameLib::WindowCreator().isActive() ) && !mWorld.isPlayerDead() ) {
-		//一時停止が勝手に開く原因を確かめる間だけ置くログ
-		GameLib::cout << "[PauseProbe] time=" << GameLib::WindowCreator().time()
-			<< " pause menu=" << ( InputMenu() ? 1 : 0 )
-			<< " active=" << ( GameLib::WindowCreator().isActive() ? 1 : 0 ) << GameLib::endl;
 		pause();
 		return;
 	}
@@ -211,9 +198,6 @@ void GameScene::update() {
 		return; // 開け終わって中を見る画面を開いた（世界を止めたので、同じ描画の残りのティックも進めない）
 	}
 	PROFILE_SCOPE( "Game.view" ); // ここから update の終わりまで
-#ifdef ZF_EDITOR
-	mEditor.probeTick( mWorld ); // 撃った・空撃ちしたティック（FireProbe）
-#endif
 	mFeedback.syncView( mWorld, &mControl, &mHud );	// 反動とぶれをカメラと体へ・右下の弾数を出すか・体の音（反動・揺れ・ぶれは次のティックの絵から効く）
 #ifdef ZF_EDITOR
 	mFreeCamera.move(); // 使っていなければ何もしない

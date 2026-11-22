@@ -1,7 +1,6 @@
 #ifndef INCLUDED_TOWN_MAP_H
 #define INCLUDED_TOWN_MAP_H
 
-#include "GameSrc/Audio/GroundMaterial.h"
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
@@ -62,17 +61,15 @@ public:
 	const std::vector< TownTile >& groundTiles() const;				// 道路・歩道・床・土（どれも移動は止めない。弾は TownGround が止める）
 	const std::vector< TownPlacement >& buildings() const;			// ブロックの中の建物（向きは、正面がどちらを向くか）
 	const std::vector< TownPlacement >& perimeterBuildings() const;	// 町を囲む建物（足元の板の無い形を置く。向きは同上）
-	// ゾンビが湧くかもしれない場所（交差点と、隣り合う交差点の真ん中。道の中心。向きは使わない）
+	// ゾンビが湧くかもしれない場所（東西・南北の道の中心線に、同じくらいの間隔で並べた所。向きは使わない）
 	// どこに湧かせるかは ZombieSpawner が、この中から選ぶ
 	const std::vector< TownPlacement >& zombieSpawnPoints() const;
-	const TownPlacement& tPoseZombie() const;						// 当たり判定の確認用に T ポーズで立たせる1体
 	// 漁れる場所（置き場所は毎日同じで、中身だけ毎日変わる。中身を決めるのは WorldBuilder）
 	// 地面にはガソリンとライフルを置かない（ガソリンはゴミ箱・木箱の中、ライフルは木箱から出る）
 	const std::vector< TownPlacement >& dumpsters() const;			// ゴミ箱（車道の端。向きは、正面〈+Z〉が道の真ん中を向く）
 	const std::vector< TownPlacement >& crates() const;				// 木箱（同上）
 	const std::vector< TownEscapeCarSpot >& escapeCarSpots() const;	// 脱出の車を置く候補（北と南の外周の道の真ん中の車線）と、その日の自キャラの始めの位置。毎日どれに置くかは RaidSession が選ぶ
 	const std::vector< TownPlacement >& fireHydrants() const;		// 消火栓（見た目の置物。交差点のすぐ先の歩道。足元は歩道の面の高さ。向きは、正面〈+Z〉が車道を向く）
-	const std::vector< GroundZone >& groundZones() const;			// 床の材質を地面の部品と変える所（水たまりなど）。今は置いていない
 	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中
 	// 柱は WorldBuilder が置き、光は柱の物の LightComponent が柱の頭（足元 + LightingParams::streetLightHeight）から出す。届く距離・色・強さも LightingParams
 	const std::vector< TownPlacement >& streetLights() const;
@@ -82,12 +79,10 @@ private:
 	std::vector< TownPlacement > mBuildings;
 	std::vector< TownPlacement > mPerimeterBuildings;
 	std::vector< TownPlacement > mZombieSpawnPoints;
-	TownPlacement mTPoseZombie;
 	std::vector< TownPlacement > mDumpsters;
 	std::vector< TownPlacement > mCrates;
 	std::vector< TownEscapeCarSpot > mEscapeCarSpots;
 	std::vector< TownPlacement > mFireHydrants;
-	std::vector< GroundZone > mGroundZones;
 	std::vector< TownPlacement > mStreetLights;
 };
 

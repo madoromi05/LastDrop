@@ -35,10 +35,6 @@ void GridPairPicker::layout( const Vector2& leftOrigin, const Vector2& rightOrig
 	mRightView.setLayout( rightOrigin, cellSize );
 }
 
-const ItemGridView& GridPairPicker::view( Side side ) const {
-	return ( side == Side::Left ) ? mLeftView : mRightView;
-}
-
 ItemGridView& GridPairPicker::view( Side side ) {
 	return viewOf( side );
 }
@@ -85,14 +81,6 @@ bool GridPairPicker::isMoving() const {
 	return mMoving;
 }
 
-GridPairPicker::Side GridPairPicker::focus() const {
-	return mFocus;
-}
-
-int GridPairPicker::selected() const {
-	return mSelected;
-}
-
 void GridPairPicker::forgetStale( const ItemGrid& left, const ItemGrid& right ) {
 	mSelected = std::min( mSelected, gridOf( left, right, mFocus ).cellCount() - 1 );
 	if ( mMoving ) {
@@ -117,7 +105,7 @@ bool GridPairPicker::point( const ItemGrid& left, const ItemGrid& right, const V
 	return false;
 }
 
-GridPairPicker::Exit GridPairPicker::moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& leftGrid, const ItemGrid& rightGrid ) {
+void GridPairPicker::moveSelection( bool up, bool down, bool left, bool right, const ItemGrid& leftGrid, const ItemGrid& rightGrid ) {
 	const ItemGrid& current = gridOf( leftGrid, rightGrid, mFocus );
 	int row = mSelected / current.columns();
 	int column = mSelected % current.columns();
@@ -125,20 +113,17 @@ GridPairPicker::Exit GridPairPicker::moveSelection( bool up, bool down, bool lef
 		row = std::max( row - 1, 0 );
 	}
 	if ( down ) {
-		if ( mFocus == Side::Right && row == current.rows() - 1 ) {
-			return Exit::BelowRight;
-		}
 		row = std::min( row + 1, current.rows() - 1 );
 	}
 	if ( left && column == 0 && mFocus == Side::Right ) {
 		// 右のマス目の左端から、左のマス目の右端へ（同じ行に収める）
 		select( Side::Left, std::min( row, leftGrid.rows() - 1 ) * leftGrid.columns() + leftGrid.columns() - 1 );
-		return Exit::None;
+		return;
 	}
 	if ( right && column == current.columns() - 1 && mFocus == Side::Left ) {
 		// 左のマス目の右端から、右のマス目の左端へ
 		select( Side::Right, std::min( row, rightGrid.rows() - 1 ) * rightGrid.columns() );
-		return Exit::None;
+		return;
 	}
 	if ( left ) {
 		column = std::max( column - 1, 0 );
@@ -147,7 +132,6 @@ GridPairPicker::Exit GridPairPicker::moveSelection( bool up, bool down, bool lef
 		column = std::min( column + 1, current.columns() - 1 );
 	}
 	mSelected = row * current.columns() + column;
-	return Exit::None;
 }
 
 bool GridPairPicker::isLiftedSpot( const ItemGrid& left, const ItemGrid& right ) const {
@@ -205,12 +189,9 @@ const ItemStack* GridPairPicker::focusedStack( const ItemGrid& left, const ItemG
 	return ( owner == kNone ) ? nullptr : &current.stackAt( owner );
 }
 
-void GridPairPicker::draw( const ItemGrid& left, const ItemGrid& right, bool showSelection ) {
+void GridPairPicker::draw( const ItemGrid& left, const ItemGrid& right ) {
 	mLeftView.drawCells( left, ( mMoving && mMovingSide == Side::Left ) ? mMovingFrom : kNone );
 	mRightView.drawCells( right, ( mMoving && mMovingSide == Side::Right ) ? mMovingFrom : kNone );
-	if ( !showSelection ) {
-		return;
-	}
 	const ItemGrid& current = gridOf( left, right, mFocus );
 	ItemGridView& view = viewOf( mFocus );
 	if ( mMoving ) {

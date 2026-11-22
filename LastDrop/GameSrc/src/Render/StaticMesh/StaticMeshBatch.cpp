@@ -17,10 +17,6 @@ void StaticMeshBatch::clear() {
 	mDrawOrder.clear();
 }
 
-void StaticMeshBatch::add( const StaticMeshInstance& instance ) {
-	add( instance, instance.data() );
-}
-
 void StaticMeshBatch::add( const StaticMeshInstance& instance, const StaticMeshData* shape ) {
 	ASSERT( shape && "StaticMeshBatch : shape is null." );
 	int index = groupIndexOf( shape );

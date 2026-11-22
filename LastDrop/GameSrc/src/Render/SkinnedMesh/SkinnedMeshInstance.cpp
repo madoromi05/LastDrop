@@ -35,10 +35,6 @@ void SkinnedMeshInstance::setAngleY( float degree ) {
 
 // ── アニメの口（中身は AnimationPlayer） ──
 
-void SkinnedMeshInstance::setAnimation( const char* name, float startTime, PlayMode mode ) {
-	mPlayer.setAnimation( name, startTime, mode );
-}
-
 void SkinnedMeshInstance::setAnimation( Scene::Animation animation, float startTime, PlayMode mode ) {
 	mPlayer.setAnimation( animation, startTime, mode );
 }

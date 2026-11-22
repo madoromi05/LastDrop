@@ -62,7 +62,7 @@ public:
 	void returnToLocomotion( GameLib::Math::Vector3* footing );	// 攻撃・よろけの終わり（と振りほどかれたとき）に、歩く・立つのアニメへ戻し、根の動きの区間を閉じる。footing: 足元。nullptr 不可
 
 	// このティックに歩いて（走って）進む長さ（m）。歩き・走りアニメの足の動きの表（ZombieModel::stride / runStride）から引く
-	// 走る間は、アニメを倍率の速さで流すので、進む長さにも同じ倍率を掛ける（足が地面を滑らない）
+	// 歩き・走りのアニメは倍率の速さで流すので、進む長さにも同じ倍率を掛ける（足が地面を滑らない）
 	float walkDistanceThisTick() const;
 	bool hasFinishedDownedFall() const;	// 前へ倒れるアニメ（playDowned）が倒れ終わったか（ここから後は腰が動かない）
 
@@ -76,7 +76,7 @@ public:
 
 private:
 	GameLib::Scene::Animation locomotionAnimation( Gait gait ) const;	// 足の運び gait に合ったアニメ（立つアニメが無ければ歩くアニメ、走るアニメが無ければ歩くアニメ）
-	void applyRunRate();												// 走っているなら、走りのアニメの倍率を掛ける（アニメを繋ぐと速さは 1 に戻るので、繋いだ後に呼ぶ）
+	void applyGaitRate();												// 歩いている・走っているなら、そのアニメの倍率を掛ける（アニメを繋ぐと速さは 1 に戻るので、繋いだ後に呼ぶ）
 
 	const ZombieModel* mModel;           // 借りているだけ
 	SkinnedMeshInstance* mMesh;          // 借りているだけ

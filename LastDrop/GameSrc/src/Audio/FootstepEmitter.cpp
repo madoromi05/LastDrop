@@ -29,10 +29,7 @@ namespace{
 		SOUND_FOOTSTEP_CONCRETE,
 		SOUND_FOOTSTEP_METAL,
 		SOUND_FOOTSTEP_WOOD,
-		SOUND_FOOTSTEP_GRASS,
 		SOUND_FOOTSTEP_GRAVEL,
-		SOUND_FOOTSTEP_WATER,
-		SOUND_FOOTSTEP_GLASS,
 	};
 	static_assert( sizeof( kMaterialSounds ) / sizeof( kMaterialSounds[ 0 ] ) == GROUND_NUM, "kMaterialSounds must list every GroundMaterial" );
 

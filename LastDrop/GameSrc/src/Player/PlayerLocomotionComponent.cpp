@@ -96,7 +96,7 @@ void PlayerLocomotionComponent::awake() {
 void PlayerLocomotionComponent::start() {
 	// Animator は静止状態から始まる（request は同じ状態への遷移を無視する）ので、最初のアニメはここで付ける
 	// 持つ部品があれば、最初から銃を持った静止のアニメにする（1フレーム目から素手→銃のフェードを見せない）
-	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、出撃には銃が要る（StashScreen）ので持つと決めてよい
+	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、始めのカバンに銃がある（RaidStart::startBag）ので持つと決めてよい
 	// 持つ部品は外せる（無ければ素手）
 	bool armed = getComponent< HoldComponent >() != nullptr;
 	mAnimator.request( chooseState( false, false, armed ) );

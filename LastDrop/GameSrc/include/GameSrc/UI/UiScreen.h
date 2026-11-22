@@ -48,7 +48,6 @@ public:
 	static UiRect centerChoiceRect( int index, int count );			// 横に並べる count 個の行のうち、index 番目（0 が一番左）の範囲。並び全体を真ん中に置く
 	static GameLib::Math::Vector2 centerKeyHintPosition();			// 画面の下の操作の案内の真ん中（UiKeyHintRow を UI_ALIGN_CENTER で使う）
 	// ── 本編の HUD ──
-	static GameLib::Math::Vector2 screenCenter();					// 画面の中央（照準。UI_ANCHOR_CENTER）
 	static GameLib::Math::Vector2 statusLinePosition( int index );	// 画面の左下に並べる状態表示の index 行目（0 が一番下）の左上（UI_ANCHOR_LEFT。左揃えで使う）
 
 private:

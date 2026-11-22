@@ -19,7 +19,6 @@ public:
 	float pitch() const;
 	float yaw() const;
 	float roll() const; // 正で右へ傾く（画面が時計回りに回る）
-	float trauma() const;
 
 private:
 	float noise( int channel ) const;	// channel 番目のノイズ（−1〜1）を今の位置で読む

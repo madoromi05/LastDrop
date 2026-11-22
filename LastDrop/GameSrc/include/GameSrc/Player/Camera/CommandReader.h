@@ -23,7 +23,6 @@ public:
 	void consumePressed();	// 押した瞬間の入力を消す。command をキャラへ渡した後（update のたび）に呼ぶ
 
 	const PlayerCommand& command() const;
-	bool isFireSuppressed() const;	// 撃つ入力を止めている最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
 
 private:
 	PlayerCommand mCommand;

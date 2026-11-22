@@ -15,11 +15,9 @@ public:
 	explicit InventoryComponent( const ItemGrid& bag );	// bag: 始めのカバンの中身（RaidStart::startBag。写して持つ）
 
 	Inventory& inventory();
-	const Inventory& inventory() const;
 	// holder（自キャラ）の持ち物。holder が nullptr・この部品が付いていなければ nullptr
 	// 物の外から持ち物を読む所（シーンの HUD・カバンの画面・漁る画面・F6 のエディタ）が、同じ 3 行を書かずに済むようにする
 	static Inventory* inventoryOf( GameObject* holder );
-	static const Inventory* inventoryOf( const GameObject* holder );
 
 private:
 	Inventory mInventory;

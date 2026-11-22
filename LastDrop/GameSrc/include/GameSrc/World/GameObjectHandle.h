@@ -14,7 +14,6 @@ public:
 	explicit GameObjectHandle( const GameObject* object ); // object: nullptr なら何も指さない
 	// 指している物。消えた・何も指していなければ nullptr
 	GameObject* get() const;
-	bool operator==( const GameObjectHandle& other ) const;
 
 private:
 	const GameObjectWorld* mWorld;

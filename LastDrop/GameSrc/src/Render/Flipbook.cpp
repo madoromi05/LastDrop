@@ -12,10 +12,6 @@ Flipbook::Flipbook( int columns, int rows, int frameNumber ) :
 	ASSERT( frameNumber > 0 && frameNumber <= columns * rows && "Flipbook : frameNumber is out of the grid." );
 }
 
-int Flipbook::frameNumber() const {
-	return mFrameNumber;
-}
-
 int Flipbook::frameAt( float progress ) const {
 	// 最後のコマも同じ長さだけ見せる（progress × コマの数 を切り捨て、1 のときだけ最後のコマへ寄せる）
 	int frame = static_cast< int >( progress * static_cast< float >( mFrameNumber ) );

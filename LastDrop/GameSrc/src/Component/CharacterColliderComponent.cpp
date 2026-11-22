@@ -30,10 +30,6 @@ void CharacterColliderComponent::stopBlocking() {
 	}
 }
 
-bool CharacterColliderComponent::isBlocking() const {
-	return mBlockingIn != nullptr;
-}
-
 BoxCollider CharacterColliderComponent::collider() const {
 	ASSERT( mShape && "CharacterColliderComponent : shape is not set." );
 	return mShape->collider();

@@ -166,10 +166,6 @@ bool CollisionWorld::BodyFilter::skips( const ICollisionBody* body ) const {
 	return skipAllBodies || body == self || ( passThrough && body == passThrough );
 }
 
-bool CollisionWorld::sweep( const BoxCollider& moving, const Vector3& delta, const ICollisionBody* ignore, SweepHit* hit ) const {
-	return sweep( moving, delta, BodyFilter{ ignore, nullptr, false }, hit );
-}
-
 bool CollisionWorld::findPenetration( const BoxCollider& moving, const ICollisionBody* ignore, Vector3* push ) const {
 	return findPenetration( moving, BodyFilter{ ignore, nullptr, false }, push );
 }

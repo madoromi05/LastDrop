@@ -25,7 +25,6 @@ public:
 	const CharacterMover& mover() const;	// 当たりながら滑って動く（自分の長方形は除いて調べる）
 	// 移動の名簿から外し、他のキャラの移動を止めなくなる（何回呼んでもよい。もう戻さない）
 	void stopBlocking();
-	bool isBlocking() const;
 
 	void awake() override;					// Component（動くときに壁・他のキャラを聞く名簿を、共有の棚から引いて滑る移動へ渡す）
 	BoxCollider collider() const override;	// ICollisionBody（shape に聞く）

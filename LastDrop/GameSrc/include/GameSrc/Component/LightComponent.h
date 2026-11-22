@@ -18,7 +18,6 @@ public:
 	explicit LightComponent( LightPreset preset );	// 始めに付いているかは種類で決まる（LightPresets::startsOn）
 
 	void update( bool togglePressed );				// 1 ティックに 1 回呼ぶ。togglePressed なら付ける／消す（押した瞬間）
-	bool isOn() const;
 	bool toggledThisTick() const;					// 直前の update で付けた／消したか（スイッチの音を鳴らす側が読む）
 	// 光の出る所を答える相手を渡す（手に持った側が呼ぶ）。nullptr で外す。所有権は受け取らない。外すまで生きていること
 	void setSocket( const ILightSocket* socket );

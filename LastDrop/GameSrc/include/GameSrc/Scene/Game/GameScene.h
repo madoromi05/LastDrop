@@ -53,11 +53,12 @@ class EscapeCarComponent;
 //   画面全体の処理                      … PostProcess
 //   確認用の表示                        … GameDebugOverlay
 //   確認用の観察カメラ（Debug・Profile だけ。F6 の Debug タブ）… FreeCamera
-//   F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe（Debug・Profile だけ）… GameEditorBridge
-// 環境音（脱出のサイレン）は鳴らさない
+//   F6 のエディタ・F6 から頼まれた無敵とゾンビを出す（Debug・Profile だけ）… GameEditorBridge
 class GameScene : public IScene{
 public:
-	explicit GameScene( GameResources* resources );	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
+	// resources: メッシュ・音・UI の道具を借りる。所有権は受け取らない。nullptr 不可。このシーンより長く生きていること
+	// spawning: ゾンビを勝手に湧かせるか（ふつうの出撃は Auto、ゾンビの確認用のシーンは ManualOnly。GameWorld へ渡す）
+	GameScene( GameResources* resources, ZombieSpawning spawning );
 	// 一時停止のまま別のシーンへ移る（Retry・Title）ときに、止めた音を戻す（音の道具は次のシーンも使う）
 	~GameScene() override;
 	void beginFrame() override;
@@ -109,7 +110,7 @@ private:
 	GameDebugOverlay mDebug;
 #ifdef ZF_EDITOR
 	FreeCamera mFreeCamera;
-	GameEditorBridge mEditor; // F6 のエディタ・F6 から頼まれた無敵とゾンビを出す・FireProbe
+	GameEditorBridge mEditor; // F6 のエディタ・F6 から頼まれた無敵とゾンビを出す
 #endif
 	bool mRaidFinished; // 出撃を終えて次のシーンを予約したか（同じ描画の残りのティックで、もう一度終えないように）
 };

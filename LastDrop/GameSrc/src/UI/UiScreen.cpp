@@ -217,10 +217,6 @@ Vector2 UiScreen::centerKeyHintPosition() {
 	return Vector2( 0.f, Framework::instance().height() - kKeyHintBottomMargin );
 }
 
-Vector2 UiScreen::screenCenter() {
-	return Vector2( 0.f, Framework::instance().height() * kHalf );
-}
-
 Vector2 UiScreen::statusLinePosition( int index ) {
 	return Vector2( kStatusMargin, Framework::instance().height() - kStatusMargin - ( index + 1 ) * kStatusLineHeight );
 }

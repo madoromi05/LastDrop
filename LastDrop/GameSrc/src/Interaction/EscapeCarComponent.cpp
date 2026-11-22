@@ -27,10 +27,6 @@ bool EscapeCarComponent::isFueled() const {
 	return mFueled;
 }
 
-const ItemGrid& EscapeCarComponent::tank() const {
-	return mTank;
-}
-
 bool EscapeCarComponent::canInteract( const Inventory& ) const {
 	return !mFueled;
 }

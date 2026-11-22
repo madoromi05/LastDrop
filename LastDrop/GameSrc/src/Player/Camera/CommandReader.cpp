@@ -53,7 +53,3 @@ void CommandReader::consumePressed() {
 const PlayerCommand& CommandReader::command() const {
 	return mCommand;
 }
-
-bool CommandReader::isFireSuppressed() const {
-	return mFireSuppressed;
-}

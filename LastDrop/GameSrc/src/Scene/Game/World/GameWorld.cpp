@@ -36,10 +36,11 @@ namespace{
 	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag ) :
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning ) :
 	mCondition( condition ),
 	mDay( dayConditionEffect( condition ) ),
 	mStartBag( startBag ),
+	mZombieSpawning( spawning ),
 	mPlayerFactory( meshes ),
 	mPropFactory( meshes ),
 	mTown( meshes, town, &mPropFactory ),
@@ -166,8 +167,9 @@ void GameWorld::update( const PlayerCommand& command, float cameraYaw, float cam
 	}
 	{
 		PROFILE_SCOPE( "World.spawn" );
-		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）。ゾンビを止めている間は湧かせない
-		if ( !zombiesFrozen() ) {
+		// 物の並びをたどり終えてから増やす（たどっている最中に spawn すると並びが動く）
+		// 勝手に湧かせない世界（ゾンビの確認用のシーン）と、ゾンビを止めている間は湧かせない
+		if ( autoSpawnsZombies() && !zombiesFrozen() ) {
 			mZombies.spawnFromSpawner( mPlayer, cameraYaw );
 		}
 	}
@@ -195,6 +197,10 @@ const TownEnvironment& GameWorld::town() const {
 
 const ZombieDirector& GameWorld::zombies() const {
 	return mZombies;
+}
+
+bool GameWorld::autoSpawnsZombies() const {
+	return mZombieSpawning == ZombieSpawning::Auto;
 }
 
 void GameWorld::changeDayCondition( DayCondition condition ) {

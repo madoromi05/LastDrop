@@ -142,9 +142,6 @@
     <Filter Include="GameSrc\Raid">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GameSrc\Scene\Base">
-      <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="GameSrc\Scene\Result">
       <UniqueIdentifier>{D1E2F3A4-B5C6-7890-DEF0-0000000000A3}</UniqueIdentifier>
     </Filter>
@@ -852,9 +849,6 @@
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootContainerComponent.cpp">
       <Filter>GameSrc\Interaction\Loot</Filter>
     </ClCompile>
-    <ClCompile Include="GameSrc\src\DebugMode\FireProbe.cpp">
-      <Filter>GameSrc\DebugMode</Filter>
-    </ClCompile>
     <ClCompile Include="GameSrc\src\Map\TownCache.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
@@ -884,9 +878,6 @@
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp">
       <Filter>GameSrc\Scene\Game\Hud</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp">
-      <Filter>GameSrc\Scene\Base</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp">
       <Filter>GameSrc\Scene\Result</Filter>
@@ -2048,9 +2039,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootContainerComponent.h">
       <Filter>GameSrc\Interaction\Loot</Filter>
     </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FireProbe.h">
-      <Filter>GameSrc\DebugMode</Filter>
-    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
@@ -2080,9 +2068,6 @@
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h">
       <Filter>GameSrc\Scene\Game\Hud</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h">
-      <Filter>GameSrc\Scene\Base</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h">
       <Filter>GameSrc\Scene\Result</Filter>

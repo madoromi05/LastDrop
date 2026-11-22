@@ -12,7 +12,8 @@
 
 SceneManager::SceneManager() :
 	mHasRequest( false ),
-	mRequestedId( SCENE_TITLE ) {
+	mRequestedId( SCENE_TITLE ),
+	mLastRaidId( SCENE_GAME ) {
 }
 
 SceneManager::~SceneManager() {
@@ -37,9 +38,11 @@ std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 	case SCENE_TITLE:
 		return std::make_unique< MenuScene >( mResources.get(), MenuCatalog::title() );
 	case SCENE_GAME:
-		return std::make_unique< GameScene >( mResources.get() );
+		return std::make_unique< GameScene >( mResources.get(), ZombieSpawning::Auto );
 	case SCENE_RAID_END:
 		return std::make_unique< RaidEndScene >( mResources.get() );
+	case SCENE_ZOMBIE_TEST:
+		return std::make_unique< GameScene >( mResources.get(), ZombieSpawning::ManualOnly );
 	default:
 		ASSERT( false && "SceneManager::createScene : unknown SceneId." );
 		return nullptr;
@@ -48,11 +51,16 @@ std::unique_ptr< IScene > SceneManager::createScene( SceneId id ) const {
 
 const char* SceneManager::loadName( SceneId id ) {
 	switch ( id ) {
-	case SCENE_TITLE:    return "Title";
-	case SCENE_GAME:     return "Game";
-	case SCENE_RAID_END: return "RaidEnd";
-	default:             return "Unknown";
+	case SCENE_TITLE:       return "Title";
+	case SCENE_GAME:        return "Game";
+	case SCENE_RAID_END:    return "RaidEnd";
+	case SCENE_ZOMBIE_TEST: return "ZombieTest";
+	default:                return "Unknown";
 	}
+}
+
+bool SceneManager::isRaid( SceneId id ) {
+	return id == SCENE_GAME || id == SCENE_ZOMBIE_TEST;
 }
 
 void SceneManager::change( SceneId id ) {
@@ -61,12 +69,19 @@ void SceneManager::change( SceneId id ) {
 	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）
 	std::unique_ptr< IScene > next = createScene( id );
 	mCurrent = std::move( next );
+	if ( isRaid( id ) ) {
+		mLastRaidId = id;
+	}
 	mClock.reset();										// 前のシーンで経った時間を、新しいシーンの更新に持ち込まない
 }
 
 void SceneManager::requestChange( SceneId id ) {
 	mHasRequest = true;
 	mRequestedId = id;
+}
+
+void SceneManager::requestRetryRaid() {
+	requestChange( mLastRaidId );
 }
 
 void SceneManager::update() {

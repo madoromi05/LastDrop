@@ -41,6 +41,7 @@ namespace{
 	const int kDebugTextSize = 128;
 	const int kRayLine = 2;     // 画面中央から撃った確認用の線分が何に当たったか（当たり判定の表示中だけ）
 	const int kSpawnerLine = 3; // ゾンビの立っている数・目標の数・次に湧くまで（ゾンビの体力の表示中だけ）
+	const char* kNoAutoSpawnText = "Zombies: no auto spawn";	// 湧かせる係の行の代わり（ゾンビを勝手に湧かせない世界では、係が動かず数字が止まって見えるため）
 	const int kPvsLine = 4;     // 簡易 PVS の目のいるますと、隠した建物の数（町の表示中だけ）
 	const float kDebugRayLength = 100.f; // 確認用の線分の長さ（m）。通りの先の建物まで届く長さ
 	// 自キャラの体力の数字と状態（F3）。画面の左上に 1 行（普段の画面には体力を出さないので、確認用にだけ見せる）
@@ -109,6 +110,10 @@ void GameDebugOverlay::addZombieHealth( const GameWorld& world, const FirstPerso
 	}
 	mZombieHealthBars.add( world, camera, renderer );
 	// 湧く仕組みの様子（立っている数 / 目標の数・次に湧くまで）。足りている間の秒数は補充の間隔のまま止まっている
+	if ( !world.autoSpawnsZombies() ) {
+		DebugScreen::instance().draw( kHelpColumn, rowFromBottom( kSpawnerLine ), kNoAutoSpawnText );
+		return;
+	}
 	const ZombieSpawner* spawner = world.zombies().spawner();
 	if ( spawner ) {
 		char text[ kDebugTextSize ];

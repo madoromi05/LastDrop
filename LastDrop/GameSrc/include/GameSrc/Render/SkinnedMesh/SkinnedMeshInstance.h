@@ -36,11 +36,10 @@ public:
 
 	void setPosition( const GameLib::Math::Vector3& );											// 置き場所（ワールド座標）
 	void setAngleY( float degree );																// Y軸まわりの向き（度）
-	// 再生するアニメを名前で設定する。見つからなければデバッグ出力してレスト姿勢のまま
+	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる
 	// startTime: 再生開始時刻（フレーム）。同じアニメの複数体をずらして、動きが揃わないようにする
 	// mode: 再生のしかた。省略するとループ
-	void setAnimation( const char* name, float startTime, PlayMode mode = PLAY_LOOP );
-	void setAnimation( GameLib::Scene::Animation, float startTime, PlayMode mode = PLAY_LOOP );	// 取得済みのアニメで即座に切り替える（混ぜない）。空の Animation ならレスト姿勢になる
+	void setAnimation( GameLib::Scene::Animation, float startTime, PlayMode mode = PLAY_LOOP );
 	// 今見えているポーズから、animation へ fadeFrames フレームかけて滑らかに切り替える
 	// フェード中に呼び直してもよい（その時点で見えている混ざったポーズから、改めて混ぜ始める）
 	// startTime: 新しいアニメの再生開始時刻（フレーム）。歩き⇔走りで足の位相を合わせるときに使う

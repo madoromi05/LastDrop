@@ -19,7 +19,7 @@ namespace{
 }
 
 PlayerFeedback::PlayerFeedback( AudioEngine* audio, const TownEnvironment* town ) :
-	mBodySounds( audio, &town->ground(), town->map().groundZones() ),
+	mBodySounds( audio, &town->ground() ),
 	mCombatSounds( audio ) {
 }
 

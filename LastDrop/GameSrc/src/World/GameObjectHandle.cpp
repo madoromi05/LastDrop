@@ -14,7 +14,3 @@ GameObjectHandle::GameObjectHandle( const GameObject* object ) :
 GameObject* GameObjectHandle::get() const {
 	return mWorld ? mWorld->findById( mId ) : nullptr;
 }
-
-bool GameObjectHandle::operator==( const GameObjectHandle& other ) const {
-	return mWorld == other.mWorld && mId == other.mId;
-}

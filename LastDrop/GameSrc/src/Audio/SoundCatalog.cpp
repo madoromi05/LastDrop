@@ -14,7 +14,6 @@ namespace{
 	// 着弾音も連射で続くので、足音と同じ数を持つ。金属は響きが長く聞き分けやすいので少なめ
 	const int kImpactVariations = 4;
 	const int kImpactMetalVariations = 3;
-	const int kBodyFallVariations = 2;	// 倒れる音は続けて倒すと重なるので 2 つ持つ
 
 	// ── 素材の出どころ ──
 	// 録音素材は SoundGen が書き出さない（合成音で上書きしないため）
@@ -52,16 +51,10 @@ namespace{
 	// 当たった音は足音と同じくらい届く。近い間（3m まで）は減衰させず、すぐ横で鳴る銃声に埋もれないようにする
 	const float kHitMinDistance = 3.f;
 	const float kHitMaxDistance = 40.f;
-	// 倒れたゾンビの体の音。自分が倒した手応えの音なので、当たった音より近くまでしか届かなくてよい
-	const float kBodyFallMinDistance = 2.f;
-	const float kBodyFallMaxDistance = 30.f;
 	// 物に当たった音（着弾音）。まずはゾンビに当たった音と同じ距離から始め、耳で直す
 	// タルコフも物への着弾と体への命中の聞こえる距離を別々に調整しているので、定数を分けておく
 	const float kImpactMinDistance = 3.f;
 	const float kImpactMaxDistance = 40.f;
-	// サイレンは遠くから鳴る大きな音。近くでは減衰させず、マップの端からでも聞こえるようにする
-	const float kSirenMinDistance = 30.f;
-	const float kSirenMaxDistance = 800.f;
 	// 脱出の車のエンジン。ゾンビを呼ぶ音なので、遠くまで聞こえる（銃声より近い）
 	const float kEngineMinDistance = 3.f;
 	const float kEngineMaxDistance = 80.f;
@@ -81,10 +74,7 @@ namespace{
 		{ "footstep_concrete", kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "footstep_metal",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "footstep_wood",     kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
-		{ "footstep_grass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "footstep_gravel",   kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
-		{ "footstep_water",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
-		{ "footstep_glass",    kStepVariations, kStepPitchJitter, kStepMinDistance, kStepMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "cloth_rustle",      kStepVariations, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
 		// 元の素材名: "Weapon Gun Machine Gun 9mm Clip Lock 01.wav"
 		{ "gear_weapon",       kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },
@@ -100,10 +90,7 @@ namespace{
 		{ "mag_in",            kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kFromStart, kWeapon },	// 元の素材名: "Weapon Gun Rifle M16 Clip Insertion 01.wav"
 		// 元の素材名: "Weapon Gun Rifle M16 Bolt Cock 02.wav"
 		{ "bolt_pull",         kSingle, kFoleyPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kRecorded, kBoltPullStartSeconds, kWeapon },
-		{ "siren",             kSingle, kNoPitchJitter, kSirenMinDistance, kSirenMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "hit_flesh",         kHitFleshVariations, kHitPitchJitter, kHitMinDistance, kHitMaxDistance, kRecorded, kHitFleshStartSeconds, kEnemy },	// 元の素材名（Adobe Audition の素材集）: "Weapon Staff Hit Body 01.wav" / "Weapon Staff Hit Body Fast 01.wav" / "Weapon Staff Hit Body Fast 02.wav"
-		// 合成は BodyFallSynth.cpp
-		{ "zombie_bodyfall",   kBodyFallVariations, kFoleyPitchJitter, kBodyFallMinDistance, kBodyFallMaxDistance, kSynthesized, kFromStart, kEnemy },
 		{ "impact_concrete",   kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
 		{ "impact_dirt",       kImpactVariations, kImpactPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
 		{ "impact_metal",      kImpactMetalVariations, kImpactMetalPitchJitter, kImpactMinDistance, kImpactMaxDistance, kSynthesized, kFromStart, kWeapon },
@@ -115,7 +102,6 @@ namespace{
 		// ゾンビに聞かせるかは段階R4 で決める（今は鳴らすだけ）
 		{ "loot_search_metal", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "loot_search_wood",  kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
-		{ "loot_search_cloth", kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },
 		// 脱出の車。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）
 		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },

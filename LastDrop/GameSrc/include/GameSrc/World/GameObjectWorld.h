@@ -112,8 +112,6 @@ public:
 		}
 		return nullptr;
 	}
-	int countTagged( GameObjectTag tag ) const;				// tag の、spawn した物の数（消す印が付いていて、まだ flush していない物も数える）
-	GameObject* oldestTagged( GameObjectTag tag ) const;	// tag の、spawn した物のうち一番先に作った物（無ければ nullptr）。数の上限を超えたときに古い物から消すのに使う
 	GameObject* findById( unsigned id ) const;				// 番号の物（消えた・この持ち主の物でなければ nullptr）。GameObjectHandle が使う
 
 private:

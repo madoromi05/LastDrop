@@ -48,10 +48,6 @@ void ZombieSway::update( float targetStrength, float maxDegree ) {
 	mDegree = mLean * maxDegree;
 }
 
-float ZombieSway::lean() const {
-	return mLean;
-}
-
 float ZombieSway::weaveDegree( float maxDegree ) const {
 	return mLean * maxDegree;
 }

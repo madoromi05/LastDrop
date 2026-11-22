@@ -101,20 +101,6 @@ void GameObjectWorld::flush() {
 	}
 }
 
-int GameObjectWorld::countTagged( GameObjectTag tag ) const {
-	return static_cast< int >( std::count_if( mObjects.begin(), mObjects.end(),
-		[ tag ]( const std::unique_ptr< GameObject >& o ) { return o->isSpawned() && o->tag() == tag; } ) );
-}
-
-GameObject* GameObjectWorld::oldestTagged( GameObjectTag tag ) const {
-	for ( const std::unique_ptr< GameObject >& object : mObjects ) {
-		if ( object->isSpawned() && object->tag() == tag ) {
-			return object.get();
-		}
-	}
-	return nullptr;
-}
-
 GameObject* GameObjectWorld::findById( unsigned id ) const {
 	auto it = mObjectsById.find( id );
 	return ( it == mObjectsById.end() ) ? nullptr : it->second;

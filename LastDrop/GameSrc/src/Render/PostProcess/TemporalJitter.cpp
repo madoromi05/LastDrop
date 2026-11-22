@@ -56,14 +56,6 @@ Matrix44 TemporalJitter::apply( const Matrix44& projectionView, int width, int h
 	return jittered;
 }
 
-float TemporalJitter::offsetX() const {
-	return mOffsetX;
-}
-
-float TemporalJitter::offsetY() const {
-	return mOffsetY;
-}
-
 int TemporalJitter::frameIndex() const {
 	return mFrameIndex;
 }

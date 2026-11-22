@@ -84,7 +84,3 @@ float CameraShake::yaw() const {
 float CameraShake::roll() const {
 	return mTrauma * mTrauma * kMaxRoll * noise( CHANNEL_ROLL );
 }
-
-float CameraShake::trauma() const {
-	return mTrauma;
-}

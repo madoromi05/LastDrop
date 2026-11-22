@@ -9,7 +9,7 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 道路と歩道の材質は TownGround が、それと違う材質にする場所（水たまりなど。今は無い）は TownMap が決める
+	// 道路と歩道の材質は TownGround が決める
 	// これは、地面が答えられない場所（地面を並べる前・地面の外）の材質
 	const GroundMaterial kDefaultGround = GROUND_CONCRETE;
 	// 素手のときの銃声（撃たないので鳴らない。FoleyState を埋めるためだけの値）
@@ -18,8 +18,8 @@ namespace{
 	const float kBodySoundHeight = 1.3f;	// 装備の音を鳴らす高さ（足元から。胸のあたり）。足音は足元、装備は体から鳴らして聞こえる高さを分ける
 }
 
-PlayerBodySounds::PlayerBodySounds( AudioEngine* audio, const IGroundSurface* ground, const std::vector< GroundZone >& zones ) :
-	mGround( zones.data(), static_cast< int >( zones.size() ), ground, kDefaultGround ),
+PlayerBodySounds::PlayerBodySounds( AudioEngine* audio, const IGroundSurface* ground ) :
+	mGround( ground, kDefaultGround ),
 	mFootsteps( audio ),
 	mFoley( audio ) {
 }

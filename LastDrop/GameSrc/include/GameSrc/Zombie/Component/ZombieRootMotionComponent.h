@@ -18,9 +18,7 @@ public:
 	~ZombieRootMotionComponent();
 
 	ZombieRootMotionSpan& span();
-	const ZombieRootMotionSpan& span() const;
 	ZombieAnimationSet& animations();
-	const ZombieAnimationSet& animations() const;
 
 	void awake() override;	// Component（ZombieModelComponent・SkinnedModelComponent・CharacterColliderComponent が要る）
 

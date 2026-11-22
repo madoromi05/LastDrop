@@ -40,7 +40,6 @@ public:
 	// どちらも読み込み済み（isReady）であること。projectionView: カメラの射影×ビュー行列
 	// 描き終えたら、変えた設定（混ぜ方・奥行きの判定と書き込み・裏表）を、物を描くときの設定へ戻す
 	void draw( GameLib::Graphics::Texture albedo, GameLib::Graphics::Texture normalMap, const GameLib::Math::Matrix44& projectionView );
-	const char* errorMessage() const;	// シェーダのコンパイルエラー。問題が無ければ空文字列
 
 private:
 	struct Decal{

@@ -15,15 +15,6 @@ UiLabel::UiLabel( const char* text, UiAnchor anchor, const Vector2& offset, UiTe
 	ASSERT( text && "UiLabel : text is null." );
 }
 
-void UiLabel::setText( const char* text ) {
-	ASSERT( text && "UiLabel : text is null." );
-	mText = text;
-}
-
-void UiLabel::setOffset( const Vector2& offset ) {
-	mOffset = offset;
-}
-
 void UiLabel::draw( UiRenderer& renderer ) const {
 	Vector2 position = mOffset;
 	position.x += UiLayout::anchorX( mAnchor );

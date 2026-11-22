@@ -30,14 +30,6 @@ bool StaticMeshInstancing::isReady() const {
 	return !currentShader().isError();
 }
 
-const char* StaticMeshInstancing::errorMessage() const {
-	const char* message = mGBufferShader.errorMessage();
-	if ( message[ 0 ] != '\0' ) {
-		return message;
-	}
-	return mShadowShader.errorMessage();
-}
-
 const Graphics::Shader& StaticMeshInstancing::currentShader() const {
 	return ( RenderPass::current() == RenderPassKind::Shadow ) ? mShadowShader : mGBufferShader;
 }

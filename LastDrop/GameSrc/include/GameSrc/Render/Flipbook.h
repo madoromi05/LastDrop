@@ -11,7 +11,6 @@ class Flipbook{
 public:
 	Flipbook( int columns, int rows, int frameNumber );	// columns / rows: ます目の数（1 以上）。frameNumber: 使うコマの数（1 以上、columns × rows 以下）
 
-	int frameNumber() const;
 	int frameAt( float progress ) const;	// 進み具合 progress（0 で最初のコマ、1 で最後のコマ）のコマの番号。範囲の外は端のコマ
 	QuadUv frameUv( int frame ) const;		// frame 番目のコマの UV の範囲（0〜frameNumber-1。範囲の外は端のコマ）
 

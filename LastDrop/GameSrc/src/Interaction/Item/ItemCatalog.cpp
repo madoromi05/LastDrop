@@ -1,7 +1,6 @@
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 
 #include "GameLib/GameLib.h"
-#include <cstring>
 
 namespace{
 	const int kNoLimit = 0;  // カバンに何個まで、を決めない（空きのマス目が上限）
@@ -27,16 +26,4 @@ namespace{
 const ItemSpec& itemSpec( ItemId id ) {
 	ASSERT( id >= 0 && id < ITEM_NUMBER && "itemSpec : bad ItemId." );
 	return kItemSpecs[ id ];
-}
-
-ItemId itemFromSaveName( const char* saveName ) {
-	if ( !saveName ) {
-		return ITEM_NONE;
-	}
-	for ( int i = 0; i < ITEM_NUMBER; ++i ) {
-		if ( std::strcmp( kItemSpecs[ i ].saveName, saveName ) == 0 ) {
-			return static_cast< ItemId >( i );
-		}
-	}
-	return ITEM_NONE;
 }

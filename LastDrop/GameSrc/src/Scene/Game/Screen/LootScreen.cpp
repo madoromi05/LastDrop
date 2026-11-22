@@ -97,7 +97,7 @@ void LootScreen::draw( const ItemGrid& bag, const ItemGrid& loot, const char* ti
 		Vector2 label( first.left + ItemGridView::width( *shown.grid, kCellSize ) * kHalf, first.top - kGridLabelGap );
 		mRenderer->addText( shown.label, label, UI_TEXT_LARGE, UI_ALIGN_CENTER, GridPalette::HEADING );
 	}
-	mPicker.draw( bag, loot, true );
+	mPicker.draw( bag, loot );
 	mPicker.view( kBag ).drawMark( bag, equipped, kEquippedMark );
 	// 空の場所でも「何も無い」は出さない（空のマス目だけで分かる）
 	drawFooter( bag, loot );

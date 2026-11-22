@@ -9,8 +9,8 @@ class UiRenderer;
 class ItemIcons;
 
 // マス目（ItemGrid）1 つを画面に描く・カーソルがどのマスかを調べる（R2_Plan.txt 5 章）
-// 町のカバンの画面（InventoryScreen）・拠点の画面（StashScreen）・1 日の結果とスコアの画面（持ち帰った物の一覧）の 3 か所で使う
-// どこに・どの大きさで置くかは使う側が setLayout で決める（町のカバンは 64、拠点の 2 つ並びは小さく）
+// 町のカバンの画面（InventoryScreen）と、漁れる場所の画面（LootScreen の GridPairPicker）で使う
+// どこに・どの大きさで置くかは使う側が setLayout で決める（町のカバンは 64、2 つ並べる画面は小さく）
 // 選ぶ・動かすの状態は持たない（それは画面の仕事）。描くのは積むだけで、UiRenderer::draw は使う側が 1 回だけ呼ぶ
 class ItemGridView{
 public:

@@ -24,7 +24,8 @@ RaidEndScene::RaidEndScene( GameResources* resources ) :
 		EscapedPage::build( &mScreen.canvas(), result, changeTo( SceneManager::SCENE_TITLE ) );
 		resources->music().play( SOUND_BGM_ESCAPED );
 	} else {
-		GameOverPage::build( &mScreen.canvas(), result, changeTo( SceneManager::SCENE_GAME ), changeTo( SceneManager::SCENE_TITLE ) );
+		// 「もう一度」は、死んだ出撃と同じ種類のシーンへ（ゾンビの確認用のシーンなら、確認用のシーンのまま）
+		GameOverPage::build( &mScreen.canvas(), result, []() { SceneManager::instance().requestRetryRaid(); }, changeTo( SceneManager::SCENE_TITLE ) );
 		resources->music().play( SOUND_BGM_GAMEOVER );
 	}
 }

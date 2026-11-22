@@ -1,23 +1,17 @@
 #include "GameSrc/Scene/Game/GameEditorBridge.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
-#include "GameSrc/Scene/Game/Screen/ModalController.h"
-#include "GameSrc/Player/Camera/FirstPersonControl.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
-#include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
-#include "GameSrc/Weapon/GunComponent.h"
 #include "GameSrc/World/GameObject.h"
 #include "GameSrc/DebugMode/EditorWindow.h"
 #include "GameSrc/DebugMode/DebugSwitches.h"
-#include "GameSrc/Core/Pad.h"
 #include "GameSrc/Math/AngleMath.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Functions.h"
-#include "GameLib/WindowCreator/WindowCreator.h"
 
 using namespace GameLib;
 using namespace GameLib::Math;
@@ -42,10 +36,6 @@ GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setRaid( nullptr );
 	EditorWindow::setInteraction( nullptr );
 	EditorWindow::setWorld( nullptr );
-}
-
-void GameEditorBridge::markReady() {
-	mFireProbe.markReady();
 }
 
 void GameEditorBridge::publish( GameWorld* world, RaidSession* session, bool freeCamera ) {
@@ -94,36 +84,4 @@ void GameEditorBridge::spawnRequestedZombies( GameWorld* world, const FirstPerso
 			break; // 上限に達した
 		}
 	}
-}
-
-void GameEditorBridge::probeFrame( const GameWorld& world, const FirstPersonControl& control, const ModalController& modals, bool freeCamera ) {
-	FireProbe::FrameState frame;
-	frame.rawFireHeld = InputFireHeld();
-	frame.commandFire = control.command().fireHeld;
-	frame.suppressed = control.isFireSuppressed();
-	frame.cursorLocked = control.isCursorLocked();
-	frame.windowActive = GameLib::WindowCreator().isActive();
-	frame.paused = modals.isPause();
-	frame.bagOpen = modals.isBag();
-	frame.lootOpen = modals.isLoot();
-	frame.freeCamera = freeCamera;
-	frame.dead = world.isPlayerDead();
-	FireProbe::GunState gunState = {};
-	const GameObject* player = world.player();
-	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr;
-	const GunComponent* gun = HoldComponent::heldGun( player );
-	if ( hold && gun ) {
-		gunState.hasGun = true;
-		gunState.inHand = hold->isWeaponInHand();
-		gunState.aiming = hold->isAiming();
-		gunState.reloading = gun->isReloading();
-		gunState.running = control.command().run;
-		gunState.rounds = gun->magazineRounds();
-	}
-	mFireProbe.onFrame( frame, gunState );
-}
-
-void GameEditorBridge::probeTick( const GameWorld& world ) {
-	const GunComponent* gun = HoldComponent::heldGun( world.player() ); // 素手なら nullptr
-	mFireProbe.onTick( gun && gun->firedThisTick(), gun && gun->dryFiredThisTick() );
 }

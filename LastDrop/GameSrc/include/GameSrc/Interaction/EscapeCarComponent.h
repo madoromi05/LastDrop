@@ -17,7 +17,6 @@ public:
 	bool isTankFull() const;		// 給油口に要る数のガソリンが入っているか（閉じたときに給油を始めてよいか）
 	void startEngine();				// 給油口のガソリンを使い切って走れるようにする。isTankFull のときだけ呼ぶこと
 	bool isFueled() const;			// 給油が済んだか
-	const ItemGrid& tank() const;	// 給油口のマス目（見るだけ。画面に描く）
 
 	// IInteractable
 	bool canInteract( const Inventory& inventory ) const override; // 給油が済むまではいつでも開ける（ガソリンが無くても、要る数が見える）

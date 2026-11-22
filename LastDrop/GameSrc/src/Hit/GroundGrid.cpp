@@ -157,10 +157,6 @@ void GroundGrid::clearItems() {
 	}
 }
 
-bool GroundGrid::isReady() const {
-	return !mCells.empty();
-}
-
 void GroundGrid::beginQuery() const {
 	++mQuery;
 	if ( mQuery == 0 ) { // 一周したら印を全部消す（0 は「まだ入れていない」の意味なので使わない）

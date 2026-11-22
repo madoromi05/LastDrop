@@ -306,7 +306,6 @@
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootTable.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootContainerComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootSearch.cpp" />
-    <ClCompile Include="GameSrc\src\DebugMode\FireProbe.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownCache.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameLoader.cpp" />
@@ -318,7 +317,6 @@
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\RaidHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHud.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Hud\AmmoHudVisibility.cpp" />
-    <ClCompile Include="GameSrc\src\Scene\Base\StashScreen.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\RaidEndScene.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\ResultText.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Result\EscapedPage.cpp" />
@@ -956,7 +954,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootTable.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootContainerComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootSearch.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FireProbe.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameLoader.h" />
@@ -968,7 +965,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\RaidHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHud.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Hud\AmmoHudVisibility.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\Scene\Base\StashScreen.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\RaidEndScene.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\ResultText.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Result\EscapedPage.h" />

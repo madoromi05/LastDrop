@@ -55,7 +55,7 @@ void ArmPoseComponent::awake() {
 void ArmPoseComponent::start() {
 	mBody = requireComponent< FirstPersonBodyComponent >();
 	// 持つ部品があれば、両手持ちは効いた所から始める
-	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、出撃には銃が要る（StashScreen）ので持つと決めてよい
+	// 銃を手に持つのは最初の update（HoldComponent::syncWithInventory）だが、始めのカバンに銃がある（RaidStart::startBag）ので持つと決めてよい
 	bool armed = getComponent< HoldComponent >() != nullptr;
 	mHoldWeight = armed ? kFullWeight : kNoWeight;
 }

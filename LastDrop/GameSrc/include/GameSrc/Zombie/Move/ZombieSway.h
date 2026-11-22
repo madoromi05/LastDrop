@@ -22,10 +22,9 @@ public:
 	// 揺らす強さを targetStrength（0〜1）へ少しずつ寄せ、揺れを 1 ティック進める
 	// maxDegree: 強さ 1 で波が一番大きいときに、胴を倒す角度（度）
 	void update( float targetStrength, float maxDegree );
-	// 今の傾き（-1〜1。強さ込み）。正は骨格の根の空間の +X（体の向きを正に回す側）へ倒れている
-	// 歩く向きを揺れに合わせてずらすのに使う
-	float lean() const;
-	float weaveDegree( float maxDegree ) const;										// 今の傾きの分だけ、歩く向きをずらす角度（度。maxDegree × lean。倒れている側へ流れる）
+	// 今の傾き（-1〜1。強さ込み）の分だけ、歩く向きをずらす角度（度。maxDegree × 傾き）。倒れている側へ流れる
+	// 傾きの正は、骨格の根の空間の +X（体の向きを正に回す側）へ倒れている
+	float weaveDegree( float maxDegree ) const;
 	// distance（m）に居る相手を追うときに揺らす強さ（0〜1）。startDistance より遠いと 0、fullDistance より近いと 1、
 	// 間はなめらかに増やす（遠くから頭を狙う楽しさは残す）。幅が 0 以下（F6 で逆にした）なら、fullDistance を境に 0 か 1
 	// どの状態で揺らすか（追っている・よろけていない等）は呼ぶ側が決める

@@ -35,9 +35,8 @@ public:
 	const GameLib::Math::Vector3& boundsMin() const;
 	const GameLib::Math::Vector3& boundsMax() const;
 
-	void draw() const;								// 置き場所・向き・大きさを反映して描く
-	void draw( const StaticMeshData* shape ) const;	// 形だけ shape に替えて、同じ置き場所で描く（細かさの段 LOD。shape は data と同じモデルの空間で作った物）。nullptr 不可
-	// 上と同じだが、囲む箱が frustum（カメラに映る範囲）に少しも入らなければ描かない
+	void draw( const StaticMeshData* shape ) const;	// 置き場所・向き・大きさを反映して、形 shape を描く（細かさの段 LOD。shape は data と同じモデルの空間で作った物）。nullptr 不可
+	// 自分の形（data）を描く。囲む箱が frustum（カメラに映る範囲）に少しも入らなければ描かない
 	// 町のように、置いた物の多くが画面の外にある所で使う
 	void draw( const ViewFrustum& frustum ) const;
 	// ワールドの線分 origin〜origin+delta が一番早く当たる所の時刻（0〜1）と法線（ワールド・長さ1）。当たらなければ false

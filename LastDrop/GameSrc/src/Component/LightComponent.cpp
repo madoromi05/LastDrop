@@ -22,10 +22,6 @@ void LightComponent::update( bool togglePressed ) {
 	}
 }
 
-bool LightComponent::isOn() const {
-	return mOn;
-}
-
 bool LightComponent::toggledThisTick() const {
 	return mToggledThisTick;
 }

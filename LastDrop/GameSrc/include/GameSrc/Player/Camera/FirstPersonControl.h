@@ -36,8 +36,6 @@ public:
 	void lockCursor();				// カーソルをロックして、視点を回せるようにする（世界を並べ終えて操作を始めるときに呼ぶ）
 	// カーソルのロックを外す（一時停止でメニューを出すとき）
 	void unlockCursor();
-	bool isCursorLocked() const;
-	bool isFireSuppressed() const;	// 押しっぱなしの抑止の最中か（離すまで撃たない。1 発目が出ない件の記録 FireProbe が読むだけ）
 
 	// 入力を読む。1回の描画につき1回、Pad::update の後に呼ぶ（update の回数に合わせると、2回進めた描画で視点が2倍回るため）
 	// カーソルロックの切り替え → ロック中ならマウスの移動量で視点を回す → 操作を command へまとめる

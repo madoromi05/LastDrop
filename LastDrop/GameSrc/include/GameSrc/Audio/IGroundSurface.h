@@ -5,7 +5,7 @@
 #include "GameLib/Math/Vector3.h"
 
 // 足元の材質を答えられる地面（町の地面など）
-// GroundMaterialMap が、長方形で上書きしていない場所の材質をここへ聞く
+// GroundMaterialMap が、足元の材質をここへ聞く
 class IGroundSurface{
 public:
 	virtual ~IGroundSurface(){}

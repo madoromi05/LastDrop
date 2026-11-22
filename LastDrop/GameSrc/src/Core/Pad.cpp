@@ -99,7 +99,6 @@ bool Pad::isTriggered(WorkId work, int playerId) const
     return IsWorkPress(m_inputs[playerId], work);
 }
 
-bool Pad::isWorkRelease(WorkId work, int playerId) const { return IsWorkRelease(m_inputs[playerId], work); }
 AxisStatus Pad::getAxisWorkState(WorkId work, int playerId) const { return GetAxisWorkState(m_inputs[playerId], work); }
 const std::vector<BindingRecord>& Pad::bindings(int playerId) const { return m_configs[playerId].records(); }
 
@@ -165,10 +164,8 @@ bool InputUp   (int playerId) { return Pad::instance()->isOn(WorkId::Up, playerI
 bool InputDown (int playerId) { return Pad::instance()->isOn(WorkId::Down, playerId); }
 bool InputLeft (int playerId) { return Pad::instance()->isOn(WorkId::Left, playerId); }
 bool InputRight(int playerId) { return Pad::instance()->isOn(WorkId::Right, playerId); }
-bool InputJump (int playerId) { return Pad::instance()->isOn(WorkId::Jump, playerId); }
 bool InputFire (int playerId) { return Pad::instance()->isTriggered(WorkId::Fire, playerId); }
 bool InputFireHeld   (int playerId) { return Pad::instance()->isOn(WorkId::Fire, playerId); }
-bool InputDodge      (int playerId) { return Pad::instance()->isTriggered(WorkId::Dodge, playerId); }
 bool InputRun        (int playerId) { return Pad::instance()->isOn(WorkId::Run, playerId); }
 AxisStatus InputLook (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Look, playerId); }
 AxisStatus InputMove (int playerId) { return Pad::instance()->getAxisWorkState(WorkId::Move, playerId); }

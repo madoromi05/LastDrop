@@ -22,6 +22,13 @@ class TownCache;
 class StaticMeshData;
 class PlayerComponent;
 
+// 見えない所へゾンビを勝手に湧かせるか（ZombieSpawner）。世界を作るときに決め、出撃の間は変えない
+// ゾンビの確認用のシーン（SceneManager::SCENE_ZOMBIE_TEST）は ManualOnly で、増えるのは F6 の Spawn zombie で出した体だけ
+enum class ZombieSpawning{
+	Auto,       // 始めに目標の数まで置き、減ったら補う（ふつうの出撃）
+	ManualOnly, // 勝手には湧かせない
+};
+
 // 本編の世界（Model）。町（道路・歩道・建物）と、世界に置く物（GameObject。自キャラ・銃・ゾンビ・落ちているガソリンと弾・置物の車）の持ち主、
 // 飛んでいる弾の並び、それらの当たり判定の名簿（移動の CollisionWorld・命中の HitWorld）の持ち主
 // ここが持つ仕事は「今ある状態」と「1 ティックの順番」だけ。中身は係へ任せる
@@ -47,7 +54,8 @@ public:
 	// どちらも所有権は受け取らない。nullptr 不可。この世界より長く生きていること
 	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数）。F6 の changeDayCondition で替わる
 	// startBag: 始めのカバンの中身（RaidStart::startBag）。写して持ち、自キャラを置くときに自キャラの持ち物へ渡す
-	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag );
+	// spawning: ゾンビを勝手に湧かせるか
+	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
@@ -98,6 +106,7 @@ public:
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
 	const TownEnvironment& town() const;			// 町（地図・道路と歩道・建物・歩ける床・隠れの表）
 	const ZombieDirector& zombies() const;			// ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
+	bool autoSpawnsZombies() const;					// ゾンビを勝手に湧かせる世界か（ZombieSpawning::Auto。F6 と確認用の表示が読む）
 	const DayConditionEffect& dayCondition() const;	// 今日の条件の効き目（街灯・霧・HUD はシーンがここから読む）
 	DayCondition dayConditionKind() const;			// 今日の条件がどれか（F6 の Raid の欄が出す・結果の画面へ渡す）
 	const CollisionWorld& collisionWorld() const;	// 移動の当たり判定の名簿
@@ -128,6 +137,7 @@ private:
 	DayCondition mCondition;
 	DayConditionEffect mDay;
 	ItemGrid mStartBag;							// 始めのカバンの中身。自キャラを置くまで預かる（自キャラの持ち物が写して持つ）
+	ZombieSpawning mZombieSpawning;				// ゾンビを勝手に湧かせるか
 	// 自キャラと銃・置物を部品から組み立てる（形は MeshCache から借りる）。作った物より長く生きるよう mObjects より先に宣言する
 	PlayerFactory mPlayerFactory;
 	PropFactory mPropFactory;

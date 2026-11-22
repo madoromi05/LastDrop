@@ -9,7 +9,7 @@
 //
 // ・作ったときに目録（SoundCatalog）の全ての音を読み込む。読めない音はデバッグ出力で知らせ、鳴らしても無音になるだけ（落ちない）
 // ・ただし BGM のように長い音（目録で SOUND_KIND_BGM）は展開せず、鳴らしている間だけファイルから少しずつ読む
-// ・音はバス（まとめて音量を変えられる系統）に流す。効果音と環境音を分けておき、後でダッキングや設定画面の音量につなぐ
+// ・音はバス（まとめて音量を変えられる系統）に流す。効果音と BGM を分けておき、設定画面の音量につなぐ
 // ・位置を渡した音は 3D（リスナーからの向きで左右に振り分け、距離で小さくする）、渡さない音は 2D（頭の中で鳴る）
 // ・揺らぎ（同じ音の別テイク）の選び方と音程の揺らし、鳴らし始める位置（頭の無音を飛ばす）は、目録の値に従ってこのクラスが決める（呼び出し側は気にしない）
 //
@@ -18,7 +18,6 @@ class AudioEngine{
 public:
 	enum Bus{
 		BUS_EFFECT,		// 足音・装備の音など、ゲームの出来事の音
-		BUS_AMBIENCE,	// 環境音（マップのイベント。今は脱出のサイレン）
 		BUS_MUSIC,		// BGM（MusicPlayer が鳴らす画面ごとの曲）。設定画面の「音楽の音量」
 		BUS_NUM,
 	};
@@ -43,13 +42,11 @@ public:
 	// 1回きりの音を position から鳴らす（3D）。volume は 0〜1 目安、pitch は 1 で元の高さ
 	// 同時に鳴らせる数を超えたら鳴らさない（その前の音を止めてまで鳴らすほど大事な音はまだ無いため）
 	void play( SoundId, Bus, const GameLib::Math::Vector3& position, float volume, float pitch = 1.f );
-	void play2D( SoundId, Bus, float volume, float pitch = 1.f );	// 1回きりの音を位置なしで鳴らす（2D）
 
 	// ループの音を位置なしで鳴らし始める（2D）。鳴らせなければ kInvalidLoop
 	// fadeInSeconds が 0 より大きければ、その秒数で無音から volume まで大きくする
 	LoopHandle startLoop( SoundId, Bus, float volume, float fadeInSeconds = 0.f );
 	LoopHandle startLoopAt( SoundId, Bus, const GameLib::Math::Vector3& position, float volume );						// ループの音を position から鳴らし始める（3D）。鳴らせなければ kInvalidLoop
-	void setLoopPosition( LoopHandle, const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& velocity );	// 3D のループを動かす。velocity（m/秒）はドップラー効果（近づくと高く、遠ざかると低く聞こえる）に使う
 	// ループを止めて番号を返す。kInvalidLoop を渡してもよい（何もしない）
 	// fadeOutSeconds が 0 より大きければ、その秒数で小さくしてから止める。番号は呼んだ時点で返したことになる（その後は使わない）
 	void stopLoop( LoopHandle, float fadeOutSeconds = 0.f );

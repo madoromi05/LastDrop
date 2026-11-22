@@ -208,7 +208,7 @@ namespace{
 			ImGui::EndCombo();
 		}
 		if ( gRaid && ImGui::SmallButton( "Retry now" ) ) {
-			SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+			SceneManager::instance().requestRetryRaid();	// 今と同じ種類の出撃（ふつう・ゾンビの確認用）をやり直す
 		}
 	}
 
@@ -292,15 +292,24 @@ namespace{
 	}
 
 	// タブの外（窓の一番上）に、遊びの感触を変えている切り替えだけ赤く出す（どのタブを見ていても見落とさないように）
+	// ゾンビの確認用の出撃（ゾンビを勝手に湧かせない世界）も、ふつうの出撃と見分けが付くようにここへ出す
 	void drawActiveCheats() {
+		bool first = true;
+		auto warn = [ &first ]( const char* text ) {
+			if ( !first ) {
+				ImGui::SameLine();	// 2 つ目からは同じ行に並べる
+			}
+			ImGui::TextColored( kWarningOnColor, "%s", text );
+			first = false;
+		};
 		if ( gPlayerInvincible ) {
-			ImGui::TextColored( kWarningOnColor, "Invincible: ON" );
+			warn( "Invincible: ON" );
 		}
 		if ( zombiesFrozen() ) {
-			if ( gPlayerInvincible ) {
-				ImGui::SameLine();
-			}
-			ImGui::TextColored( kWarningOnColor, "Zombies frozen" );
+			warn( "Zombies frozen" );
+		}
+		if ( gWorld && !gWorld->autoSpawnsZombies() ) {
+			warn( "No auto spawn" );
 		}
 	}
 
@@ -382,6 +391,21 @@ namespace{
 		if ( ImGui::Button( "1x" ) ) {
 			clock.setTimeScale( kNormalTimeScale );
 		}
+	}
+
+	// 出撃を開く（Scene タブ）。タイトル・出撃中・結果画面のどこからでも押せる（結果画面の確認と同じ）
+	// ゾンビの確認用の出撃は、ゾンビを勝手に湧かせない。増えるのは Debug タブの Spawn zombie で出した体だけ
+	void drawRaidScenes() {
+		ImGui::SeparatorText( "Raid" );
+		if ( ImGui::Button( "Normal raid" ) ) {
+			SceneManager::instance().requestChange( SceneManager::SCENE_GAME );
+		}
+		ImGui::SameLine();
+		if ( ImGui::Button( "Zombie test" ) ) {
+			SceneManager::instance().requestChange( SceneManager::SCENE_ZOMBIE_TEST );
+		}
+		ImGui::SameLine();
+		ImGui::TextDisabled( "(no auto spawn; Debug > Spawn zombie)" );
 	}
 
 	// チェックボックスと、その右の薄い字のひと言（何が切り替わるか・どこで見るか）を 1 行に並べる
@@ -586,6 +610,7 @@ void draw() {
 			}
 			if ( ImGui::BeginTabItem( "Scene" ) ) {
 				drawScene();
+				drawRaidScenes();
 				drawResultPreview();
 				ImGui::EndTabItem();
 			}

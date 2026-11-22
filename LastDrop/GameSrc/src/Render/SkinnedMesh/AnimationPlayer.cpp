@@ -34,14 +34,6 @@ AnimationPlayer::AnimationPlayer( const SkinnedMeshData* data ) :
 	mFadeFromPose.resize( mData->boneNumber() );
 }
 
-void AnimationPlayer::setAnimation( const char* name, float startTime, PlayMode mode ) {
-	Scene::Animation animation = mData->animation( name );
-	if ( !animation ) {
-		GameLib::cout << "SkinnedMeshInstance: animation not found: " << name << GameLib::endl;	// 名前違いでもエラーにならず静止したままになるので、ここで知らせる
-	}
-	setAnimation( animation, startTime, mode );
-}
-
 void AnimationPlayer::setAnimation( Scene::Animation animation, float startTime, PlayMode mode ) {
 	mSkeleton.setAnimation( animation );
 	mAnimation = animation;

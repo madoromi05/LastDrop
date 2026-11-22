@@ -16,8 +16,11 @@ public:
 	// シーンの種類の一覧。ここを見れば全シーンが分かる。増やすときはここに1行足し、
 	enum SceneId{
 		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）
-		SCENE_GAME,     // ゲーム本編（1 回の出撃）。タイトルの Start・一時停止の Retry・死んだ画面の「もう一度」の行き先
+		SCENE_GAME,     // ゲーム本編（1 回の出撃）。タイトルの Start の行き先（Retry・「もう一度」は requestRetryRaid で、最後に開いた出撃へ）
 		SCENE_RAID_END, // 出撃の結果（クリア・死んだ。RaidEndScene）
+		// ゾンビの確認用の出撃（SummaryPlan/個別仕様/ゾンビ/ZombieTestScene_Plan.txt）。本編と同じ GameScene で、ゾンビを勝手に湧かせない
+		// 入るのは F6 の Scene タブだけ（F6 があるのは Debug・Profile）
+		SCENE_ZOMBIE_TEST,
 	};
 
 	static SceneManager& instance();
@@ -28,6 +31,9 @@ public:
 	// シーンの中（ボタンを押したときなど）から切り替えるときに使う。その場で切り替えると、
 	// シーンの関数の途中で、実行中のシーン自身が消えてしまうため。何回呼んでも最後の予約だけが使われる
 	void requestChange( SceneId id );
+	// 最後に開いた出撃のシーン（SCENE_GAME か SCENE_ZOMBIE_TEST）をもう一度開く予約をする。まだ開いていなければ SCENE_GAME
+	// 一時停止の Retry・死んだ画面の「もう一度」・F6 の Retry now が使う（ゾンビの確認用のシーンでやり直しても、確認用のシーンのまま）
+	void requestRetryRaid();
 	// 1回の描画ぶん、現在のシーンを動かす（無ければ何もしない）
 	// 入力を読む（Pad::update）→ beginFrame → 経った時間ぶんの update（0回以上） → draw の順に呼ぶ（IScene.h）
 	void update();
@@ -40,6 +46,7 @@ private:
 	void operator=( const SceneManager& );
 	std::unique_ptr< IScene > createScene( SceneId id ) const;	// 種別 id のシーンを作る。作ったシーンは mResources を借りる
 	static const char* loadName( SceneId id );					// ロードの計測で使う、シーンの名前（Profiling/<起動時刻>/load_<名前>_*.json）
+	static bool isRaid( SceneId id );							// 出撃のシーンか（requestRetryRaid がやり直す先として覚える）
 	// 種別 id のシーンへその場で切り替える。新しいシーンを作ってから、前のシーンを消す
 	// シーンの関数の途中では呼ばない（requestChange を使う）
 	void change( SceneId id );
@@ -49,6 +56,7 @@ private:
 	std::unique_ptr< IScene > mCurrent;
 	bool mHasRequest;     // requestChange の予約があるか
 	SceneId mRequestedId; // 予約された切り替え先
+	SceneId mLastRaidId;  // 最後に開いた出撃のシーン（requestRetryRaid の行き先）
 	FixedStepClock mClock; // 1回の描画で update を何回呼ぶか
 };
 

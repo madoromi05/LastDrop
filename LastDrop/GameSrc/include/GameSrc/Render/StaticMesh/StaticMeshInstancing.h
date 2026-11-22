@@ -24,7 +24,6 @@ public:
 	// 今の RenderPass で描けるか（G-Buffer か影の間で、そのシェーダがコンパイルできたか）
 	// 描けなければ、呼び出し側は 1 つずつの描き方（StaticMeshInstance::draw）で描く
 	bool isReady() const;
-	const char* errorMessage() const;	// シェーダ（G-Buffer の方が先）のコンパイルエラー。問題が無ければ空文字列
 
 	void begin();																	// 今の RenderPass のシェーダと置き場所の定数バッファを付け、ワールド行列を単位行列にする（置き場所は b1 から読むため）。isReady() のときだけ呼ぶ
 	void setPlacements( const GameLib::Math::Matrix34* placements, int number );	// 次の描画の置き場所（モデルの空間 → ワールド）。number は 1〜kMaxInstances。begin〜end の間だけ呼ぶ。placements: nullptr 不可

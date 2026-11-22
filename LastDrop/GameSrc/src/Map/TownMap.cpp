@@ -109,9 +109,9 @@ namespace{
 	// ── ゾンビ ──
 	// 自キャラの始めの位置は、その日の脱出の車のそば（下の kEscapeCarSpots）
 	// 歩くゾンビは手で置かない（見えない所へ ZombieSpawner が湧かせる。湧く場所の候補は道の本数から作る＝addZombieSpawnPoints）
-	// ゾンビが湧く場所の候補を、交差点どうしの間のどこに置くか（0.5 で真ん中）
-	const float kSpawnBetweenJunctions = 0.5f;
-	const StreetSpot kTPoseZombie = { 1.5f, 1.f, 5.f, 1.8f, -90.f };	// T ポーズの1体は、町の中央の北側の通りから 5m 前・少し右に、西向きに置く
+	// ゾンビが湧く場所の候補の数。8 本の道の中心線に、同じくらいの間隔で並べる（100 で約 8m おき）
+	// 始めに置くときは 1 か所に 1 体で、近い所・見える所は外すので、目標の数（DayCondition の zombieCount）より十分多くする
+	const int kZombieSpawnPointNumber = 100;
 
 	// 町に置く車は、その日の脱出の車 1 台だけ（下の kEscapeCarSpots）
 	// 乗れない置物の車は置かない（脱出できる車と見分けが付かないため）
@@ -366,21 +366,23 @@ namespace{
 }
 
 namespace{
-	// ゾンビが湧く場所の候補を、交差点と、東西・南北に隣り合う交差点の真ん中に置く（道の本数から作るので、町の形を変えても直さなくてよい）
+	// ゾンビが湧く場所の候補を、東西の道と南北の道の中心線に、合わせて kZombieSpawnPointNumber 個置く（道の本数から作るので、町の形を変えても直さなくてよい）
+	// 道の本数で割り切れない余りは、先の道から 1 個ずつ足す。1 本の中では同じ間隔で並べ、端の交差点からは半分の間隔だけ離す
 	void addZombieSpawnPoints( std::vector< TownPlacement >* points ) {
 		const float kNoOffset = 0.f;
-		const float kNoYaw = 0.f; // 向きは ZombieSpawner が湧かせるときに決める
-		for ( int row = 0; row < kRowNumber; ++row ) {
-			for ( int column = 0; column < kColumnNumber; ++column ) {
-				float x = static_cast< float >( column );
-				float z = static_cast< float >( row );
-				points->push_back( toPlacement( { x, z, kNoOffset, kNoOffset, kNoYaw } ) );
-				if ( column + 1 < kColumnNumber ) {
-					points->push_back( toPlacement( { x + kSpawnBetweenJunctions, z, kNoOffset, kNoOffset, kNoYaw } ) );
-				}
-				if ( row + 1 < kRowNumber ) {
-					points->push_back( toPlacement( { x, z + kSpawnBetweenJunctions, kNoOffset, kNoOffset, kNoYaw } ) );
-				}
+		const float kNoYaw = 0.f;		// 向きは ZombieSpawner が湧かせるときに決める
+		const float kHalfStep = 0.5f;	// 端から最初の候補までは、間隔の半分
+		const int kRoadNumber = kRowNumber + kColumnNumber;	// 先に東西の道（北から）、次に南北の道（西から）
+		for ( int road = 0; road < kRoadNumber; ++road ) {
+			bool eastWest = road < kRowNumber;
+			float length = static_cast< float >( ( eastWest ? kColumnNumber : kRowNumber ) - 1 );	// 端の交差点から端の交差点まで（道の番号の単位）
+			int count = kZombieSpawnPointNumber / kRoadNumber + ( ( road < kZombieSpawnPointNumber % kRoadNumber ) ? 1 : 0 );
+			for ( int i = 0; i < count; ++i ) {
+				float along = ( i + kHalfStep ) * length / static_cast< float >( count );
+				StreetSpot spot = eastWest
+					? StreetSpot{ along, static_cast< float >( road ), kNoOffset, kNoOffset, kNoYaw }
+					: StreetSpot{ static_cast< float >( road - kRowNumber ), along, kNoOffset, kNoOffset, kNoYaw };
+				points->push_back( toPlacement( spot ) );
 			}
 		}
 	}
@@ -473,8 +475,7 @@ GameLib::Math::Vector3 TownPlacement::position() const {
 	return GameLib::Math::Vector3( x, y, z );
 }
 
-TownMap::TownMap() :
-	mTPoseZombie( toPlacement( kTPoseZombie ) ) {
+TownMap::TownMap() {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
 	addStraights( &mGroundTiles );
@@ -514,10 +515,6 @@ const std::vector< TownPlacement >& TownMap::zombieSpawnPoints() const {
 	return mZombieSpawnPoints;
 }
 
-const TownPlacement& TownMap::tPoseZombie() const {
-	return mTPoseZombie;
-}
-
 const std::vector< TownPlacement >& TownMap::dumpsters() const {
 	return mDumpsters;
 }
@@ -532,10 +529,6 @@ const std::vector< TownEscapeCarSpot >& TownMap::escapeCarSpots() const {
 
 const std::vector< TownPlacement >& TownMap::fireHydrants() const {
 	return mFireHydrants;
-}
-
-const std::vector< GroundZone >& TownMap::groundZones() const {
-	return mGroundZones;
 }
 
 const std::vector< TownPlacement >& TownMap::streetLights() const {

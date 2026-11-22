@@ -49,10 +49,6 @@ LightList& SceneLights::lights() {
 	return mLights;
 }
 
-const LightList& SceneLights::lights() const {
-	return mLights;
-}
-
 const char* SceneLights::shadowErrorMessage() const {
 	const char* message = mFlashlightShadow.errorMessage();
 	return ( message[ 0 ] != '\0' ) ? message : mMoonShadow.errorMessage();

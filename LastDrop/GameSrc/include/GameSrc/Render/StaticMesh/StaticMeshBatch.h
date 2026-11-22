@@ -20,8 +20,9 @@ public:
 	StaticMeshBatch& operator=( const StaticMeshBatch& ) = delete;
 
 	void clear();																	// 集めた物を忘れる（形ごとの入れ物は残し、毎フレーム確保し直さない）
-	void add( const StaticMeshInstance& instance );									// instance の形と置き場所を足す。instance の寿命は draw までで足りる（行列は写して持つ）
-	void add( const StaticMeshInstance& instance, const StaticMeshData* shape );	// 形だけ shape に替えて足す（細かさの段 LOD。段ごとに別の形としてまとまる）。shape: nullptr 不可
+	// instance の置き場所に、形 shape を足す（細かさの段 LOD。段ごとに別の形としてまとまる）。shape: nullptr 不可
+	// instance の寿命は draw までで足りる（行列は写して持つ）
+	void add( const StaticMeshInstance& instance, const StaticMeshData* shape );
 	// 集めた物を描く。instancing: 描く道具（begin〜end は中で呼ぶ）。nullptr 不可。isReady() であること
 	// 1 つの形を kMaxInstances より多く置いていれば、分けて描く
 	void draw( StaticMeshInstancing* instancing ) const;

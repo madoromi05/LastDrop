@@ -168,7 +168,3 @@ void DecalBatch::setDecalConstants( const Decal& decal, const Matrix44& inverseP
 	mConstants.set( &constants, sizeof( constants ) );
 	Graphics::Manager::instance().setConstantBuffer( kConstantSlot, mConstants );
 }
-
-const char* DecalBatch::errorMessage() const {
-	return mShader.errorMessage();
-}

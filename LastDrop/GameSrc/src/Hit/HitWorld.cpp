@@ -90,7 +90,3 @@ bool HitWorld::isBlocked( const Vector3& origin, const Vector3& delta ) const {
 const std::vector< const IHittable* >& HitWorld::targets() const {
 	return mTargets;
 }
-
-const std::vector< const IRayBlocker* >& HitWorld::blockers() const {
-	return mBlockers;
-}

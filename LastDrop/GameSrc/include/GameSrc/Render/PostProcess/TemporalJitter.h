@@ -12,9 +12,6 @@ public:
 
 	void advance( bool enabled );																					// 次のフレームへ進む。enabled が false（TAA を使わない）なら、ずらしを 0 にして番号も 0 に止める（今と同じ絵）。1 フレームに 1 回
 	GameLib::Math::Matrix44 apply( const GameLib::Math::Matrix44& projectionView, int width, int height ) const;	// projectionView に今のずらしを足した行列。width・height：描く先の画素数（ずらしは画素で決めるため）
-	// 今のずらし（画素。x は右、y は下が正）
-	float offsetX() const;
-	float offsetY() const;
 	int frameIndex() const;																							// 今のフレームの番号（0〜kSampleNumber−1）。ノイズを毎フレーム動かすのにも使う
 
 	static const int kSampleNumber = 8;

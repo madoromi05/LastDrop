@@ -46,7 +46,6 @@ public:
 
 	// 登録されたものを読む（当たり判定の表示のため）
 	const std::vector< const IHittable* >& targets() const;
-	const std::vector< const IRayBlocker* >& blockers() const;
 
 private:
 	bool findNearerBlocker( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta, bool found, Hit* hit ) const;	// 弾を止める物のうち、hit より手前（found が false なら一番手前）に当たる物があれば hit に書く。何か書いてあれば true

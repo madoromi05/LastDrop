@@ -23,14 +23,6 @@ ZombieRootMotionSpan& ZombieRootMotionComponent::span() {
 	return *mSpan;
 }
 
-const ZombieRootMotionSpan& ZombieRootMotionComponent::span() const {
-	return *mSpan;
-}
-
 ZombieAnimationSet& ZombieRootMotionComponent::animations() {
-	return *mAnimations;
-}
-
-const ZombieAnimationSet& ZombieRootMotionComponent::animations() const {
 	return *mAnimations;
 }

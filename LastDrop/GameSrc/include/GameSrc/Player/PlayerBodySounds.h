@@ -4,7 +4,6 @@
 #include "GameSrc/Audio/GroundMaterial.h"
 #include "GameSrc/Audio/FootstepEmitter.h"
 #include "GameSrc/Audio/PlayerFoley.h"
-#include <vector>
 
 class AudioEngine;
 class IGroundSurface;
@@ -17,15 +16,14 @@ class GameObject;
 class PlayerBodySounds{
 public:
 	// audio: 鳴らす先。ground: 足元の材質を答える地面。どちらも所有権は受け取らない。nullptr 不可。この係より長く生きていること
-	// zones: 床の材質を地面と変える所（水たまりなど）。写して持つ
-	PlayerBodySounds( AudioEngine* audio, const IGroundSurface* ground, const std::vector< GroundZone >& zones );
+	PlayerBodySounds( AudioEngine* audio, const IGroundSurface* ground );
 
 	// 足音・装備の音を鳴らす。1ティックに1回、キャラの更新の後に呼ぶ
 	// player: 自キャラの物（Transform・PlayerLocomotion・Hold の部品を読む。手に持った銃があれば、その GunComponent・LightComponent も）
 	void update( const GameObject& player );
 
 private:
-	GroundMaterialMap mGround; // 足元の床の材質（地面の部品の材質に、zones の長方形を重ねたもの）
+	GroundMaterialMap mGround; // 足元の床の材質（地面の部品の材質）
 	FootstepEmitter mFootsteps;
 	PlayerFoley mFoley;
 };

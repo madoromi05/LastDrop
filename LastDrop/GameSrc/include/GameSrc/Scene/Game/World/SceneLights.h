@@ -30,7 +30,6 @@ public:
 	void drawShadowMaps( const FirstPersonCamera& camera );	// 影のマップを描く（懐中電灯・月の 3 枚）。setup の後、G-Buffer の前。終わったら描く行列を camera へ戻す
 	// 今のフレームのライトの一覧（ライティングのパスと半透明の板が b2 から読む。付け直し・外すのは描く手順の側）
 	LightList& lights();
-	const LightList& lights() const;
 	float fogHalfDistance() const;							// 今日の霧が半分になる距離（調整値 × 今日の条件）。描く距離を霧で縮めるのにも使う
 	const char* shadowErrorMessage() const;					// 影のシェーダの誤り（懐中電灯 → 月の順に、最初に見つけた物。無ければ ""）
 

@@ -16,13 +16,11 @@ enum class DayCondition{
 struct DayConditionEffect{
 	const char* saveName;       // 英字の名前（F6 に出す）
 	const char* title;          // 「霧が濃い」など（ロード画面・出撃の始めの知らせ・脱出成功の画面）
-	const char* summary;        // 一言の説明（今は画面に出す所が無い）
 	float streetLightScale;     // 街灯の明るさに掛ける（停電 0）
 	float fogDistanceScale;     // 霧が半分になる距離に掛ける（霧 0.3 ＝ 40m → 12m。描く距離も一緒に縮む）
 	int zombieCount;            // 立っているゾンビの目標と、同時に居られる数（死体も数える）
 };
 
 const DayConditionEffect& dayConditionEffect( DayCondition condition );	// condition の効き目（表の 1 行。起動中ずっとあるので、参照で持ってよい）
-DayCondition dayConditionFromSaveName( const char* name );				// 英字の名前から引く。知らない名前・nullptr はふつう（日の条件を保存し直すとき用に残す）
 
 #endif

@@ -26,7 +26,10 @@ namespace{
 	const float kRecoverFadeTicks = 10.f;	// よろけ終わりから歩きへ戻す長さ（ティック）。よろけの最後と歩きの始めの姿勢は大きく違う（最大 46°）ので、少し長めに混ぜる
 	const float kMoveRestartTime = 0.f;		// 歩きは頭から再生し直す
 
-	// 歩く速さ（m/ティック）。ふだんは歩きアニメの足の動きから求めた表（ZombieStride）で進み、これは表が作れなかったときだけ使う
+	// 歩きのアニメを流す倍率。等倍で約 1.0m/秒なので、1.5 倍で約 1.5m/秒（自キャラの歩き 1.0m/秒より速く、走り 3.1m/秒より遅い）
+	// 進む長さも足の動きの表 × この倍率なので、足は地面を滑らない
+	const float kWalkPlaybackRate = 1.5f;
+	// 等倍で歩く速さ（m/ティック）。ふだんは歩きアニメの足の動きから求めた表（ZombieStride）で進み、これは表が作れなかったときだけ使う
 	// 接地している足先が 1 周で左 0.45m・右 0.57m 後ろへ動くのを Blender で測った平均（1 周 1 秒で約 1.0m）
 	const float kFallbackWalkSpeed = 1.0f / GameTime::kTicksPerSecond;
 	const float kLocomotionFadeTicks = 10.f;	// 歩く ⇔ 立つ のアニメを繋ぐ長さ（ティック）
@@ -83,7 +86,7 @@ void ZombieAnimationSet::setGait( Gait gait ) {
 			mMesh->crossFadeTo( after, kMoveRestartTime, kLocomotionFadeTicks );
 		}
 	}
-	applyRunRate(); // F6 で倍率を動かしたら、走っている体にもすぐ効く
+	applyGaitRate(); // F6 で走りの倍率を動かしたら、走っている体にもすぐ効く
 }
 
 void ZombieAnimationSet::playAttack( Vector3* footing ) {
@@ -113,7 +116,7 @@ void ZombieAnimationSet::playDowned( Vector3* footing ) {
 void ZombieAnimationSet::returnToLocomotion( Vector3* footing ) {
 	// 攻撃・よろけの最後（元の立ち姿）から戻す。腰は始めた所へ戻っているので、置き場所も絵の根へ戻す
 	mMesh->crossFadeTo( locomotionAnimation( mGait ), kMoveRestartTime, kRecoverFadeTicks );
-	applyRunRate(); // よろけの前に走っていたら、また走る速さで流す
+	applyGaitRate(); // よろけの前に歩いて（走って）いたら、また同じ速さで流す
 	mRootSpan->end( footing );
 }
 
@@ -123,11 +126,12 @@ float ZombieAnimationSet::walkDistanceThisTick() const {
 	}
 	const ZombieStride& stride = mModel->stride();
 	if ( !stride.isValid() ) {
-		return kFallbackWalkSpeed;
+		return kFallbackWalkSpeed * kWalkPlaybackRate;
 	}
 	// 今見えている歩きのフレームから、次の update で見せるフレームまでに、地面についた足が後ろへ動く長さだけ進む
 	// （足が地面を滑らない。歩き方がびっこを引いているので、速さは1歩ごとに波打つ）
-	return stride.distanceAt( mMesh->animationPhase() * mMove.period() );
+	// 歩きのアニメを倍率の速さで流すので、表の 1 フレームぶんに倍率を掛ける（走りと同じ）
+	return stride.distanceAt( mMesh->animationPhase() * mMove.period() ) * kWalkPlaybackRate;
 }
 
 bool ZombieAnimationSet::hasFinishedDownedFall() const {
@@ -167,8 +171,10 @@ Scene::Animation ZombieAnimationSet::locomotionAnimation( Gait gait ) const {
 	return mIdle ? mIdle : mMove;
 }
 
-void ZombieAnimationSet::applyRunRate() {
-	if ( mGait == Gait::Run && canRun() ) {
-		mMesh->setPlaybackRate( zombieRunParams().runPlaybackRate );
+void ZombieAnimationSet::applyGaitRate() {
+	switch ( mGait ) {
+		case Gait::Run:   mMesh->setPlaybackRate( canRun() ? zombieRunParams().runPlaybackRate : kWalkPlaybackRate ); break;	// 走るアニメが無ければ歩くアニメで歩く（walkDistanceThisTick と同じ選び方）
+		case Gait::Walk:  mMesh->setPlaybackRate( kWalkPlaybackRate ); break;
+		case Gait::Stand: break;	// 立つアニメは等倍のまま（攻撃の間に掛けた倍率も触らない）
 	}
 }
