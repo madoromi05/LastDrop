@@ -3,6 +3,12 @@
 夜の町でガソリンを探し、ゾンビから逃げ切って車で脱出する一人称のゾンビシューターです。
 
 
+### ビルドと起動
+
+1. [Releases](https://github.com/madoromi05/LastDrop/releases) から、一番新しい版の `LastDrop_v1.0.zip` をダウンロードします。
+2. zip を展開します
+3. 展開した `LastDrop` フォルダの `LastDrop.exe` を起動します。
+
 ## ゲーム概要
 
 | 項目 | 内容 |
@@ -16,17 +22,9 @@
 
 - ゲームパッド（Xbox 系・DualSense）にも対応しています。割り当ては同じ画面の「パッド」で確認できます。
 
-## ゲームの始め方
-
 ### 必要な物
 - Windows 10 / 11（64 bit）
 - DirectX11 が動く GPU
-
-### ビルドと起動
-
-1. [Releases](https://github.com/madoromi05/LastDrop/releases) から、一番新しい版の `LastDrop_v1.0.zip` をダウンロードします。
-2. zip を展開します
-3. 展開した `LastDrop` フォルダの `LastDrop.exe` を起動します。
 
 ### ソースコードについて
 このリポジトリライセンスにより、素材（モデル・画像・音）は入っていません
