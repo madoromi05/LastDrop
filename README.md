@@ -5,7 +5,7 @@
 
 ### ビルドと起動
 
-1. [Releases](https://github.com/madoromi05/LastDrop/releases) から、一番新しい版の `LastDrop_v1.0.zip` をダウンロードします。
+1. [Releases](https://github.com/madoromi05/LastDrop/releases) から、 `LastDrop.zip` をダウンロードします。
 2. zip を展開します
 3. 展開した `LastDrop` フォルダの `LastDrop.exe` を起動します。
 
