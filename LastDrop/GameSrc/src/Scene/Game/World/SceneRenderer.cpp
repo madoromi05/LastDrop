@@ -1,5 +1,6 @@
 #include "GameSrc/Scene/Game/World/SceneRenderer.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
+#include "GameSrc/Core/GameSettings.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Render/Culling/DrawCulling.h"
 #include "GameSrc/Render/Shadow/ShadowParams.h"
@@ -24,8 +25,9 @@ namespace{
 	const float kNoDrawDistance = 0.f;      // 霧を切っている間は、距離で間引かない（DrawCulling::forCamera）
 }
 
-SceneRenderer::SceneRenderer( GameWorld* world ) :
+SceneRenderer::SceneRenderer( GameWorld* world, const GameSettings* settings ) :
 	mWorld( world ),
+	mSettings( settings ),
 	mRenderer( world, &world->effects() ),
 	mTaaCamera( nullptr ),
 	mLights( world, &mRenderer ) {
@@ -87,6 +89,7 @@ void SceneRenderer::beginScene( const DamagePostEffect& damage ) {
 	mPostProcess.setDamageFlash( damage.flash );
 	mPostProcess.setPain( damage.pain );
 	mPostProcess.setFade( damage.fade );
+	mPostProcess.setBrightnessExponent( mSettings->brightnessExponent() );	// 一時停止の設定画面で動かした値を、後ろの絵にすぐ見せる
 	// SSAO・SSR・ディザのノイズは、TAA のときだけフレームごとに動かす（TAA が均す）。TAA でないときは番号が 0 のまま
 	mPostProcess.setNoiseFrame( mJitter.frameIndex() );
 	mPostProcess.beginScene();

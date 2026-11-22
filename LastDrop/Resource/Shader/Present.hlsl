@@ -64,6 +64,7 @@ float4 PSMain(FullScreenVertex v) : SV_Target
     color = toneMapAces(color * gExposure);
     // ここから先は 0〜1 の色に掛ける（トーンマップの前に掛けると、明るい所ほど効き方が変わるため）
     color = gradeColorWithLut(color);
+    color = pow(saturate(color), gBrightnessExponent); // 設定画面の明るさ。白と黒は動かさず暗い所を持ち上げる。ビネット・赤み・暗転は明るさで変えない演出なので後に掛ける
     float darken = (gVignetteStrength + gPainDarken * gPain) * smoothstep(gVignetteInner, gVignetteOuter, distance);
     color *= 1.0 - darken;
     float flash = gDamageFlash * smoothstep(gFlashInner, gFlashOuter, distance);

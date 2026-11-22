@@ -118,7 +118,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;LASTDROP_PACKED;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -160,7 +160,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;LASTDROP_PACKED;_WINDOWS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)GameSrc\include;$(ProjectDir)GameLib\include;$(ProjectDir)GameLib\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -422,6 +422,7 @@
     <ClCompile Include="GameSrc\src\Effect\MuzzleFlash.cpp" />
     <ClCompile Include="GameSrc\src\Render\LitQuadBatch.cpp" />
     <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp" />
+    <ClCompile Include="GameSrc\src\Audio\AudioFileSystem.cpp" />
     <ClCompile Include="GameSrc\src\Audio\MusicPlayer.cpp" />
     <ClCompile Include="GameSrc\src\Audio\SoundCatalog.cpp" />
     <ClCompile Include="GameSrc\src\Audio\GroundMaterial.cpp" />
@@ -644,6 +645,7 @@
       <ObjectFileName>$(IntDir)GameLib\FileIO\</ObjectFileName>
     </ClCompile>
     <ClCompile Include="GameLib\src\FileIO\OutFile.cpp" />
+    <ClCompile Include="GameLib\src\FileIO\ReadWhole.cpp" />
     <!-- Graphics (DX11) -->
     <ClCompile Include="GameLib\src\Graphics\IndexBuffer.cpp" />
     <ClCompile Include="GameLib\src\Graphics\Manager.cpp">
@@ -814,6 +816,7 @@
     <ClInclude Include="GameLib\include\GameLib\FileIO\InFile.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h" />
     <ClInclude Include="GameLib\include\GameLib\FileIO\OutFile.h" />
+    <ClInclude Include="GameLib\include\GameLib\FileIO\ReadWhole.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\Input.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputBuilder.h" />
     <ClInclude Include="GameLib\include\GameLib\Input\InputCollector.h" />
@@ -1073,6 +1076,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Effect\MuzzleFlash.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\LitQuadBatch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioFileSystem.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\MusicPlayer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\SoundCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Audio\GroundMaterial.h" />

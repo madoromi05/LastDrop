@@ -9,9 +9,10 @@ namespace Graphics{
 
 namespace{
 	// ファイルの並び：頭の印 4 バイト → 形式の番号 → コンパイルの設定 → 頂点のバイトコード → 画素のバイトコード → 読んだファイルの数 →
-	// （パス → 更新時刻の下位 → 上位）× 数。数と長さは 32 ビット。最後のバイトの後に余りがあるファイルは読まない
+	// （パス → 更新時刻の下位 → 上位 → 中身のハッシュの下位 → 上位）× 数。数と長さは 32 ビット。最後のバイトの後に余りがあるファイルは読まない
 	const char kMagic[] = { 'S', 'H', 'D', 'C' };	// 覚えたシェーダのファイルか（違うファイルを読まないため）
-	const std::uint32_t kFormatVersion = 1;			// 並びを変えたら上げる（古い並びのファイルは読まない）
+	const std::uint32_t kFormatVersion = 2;			// 並びを変えたら上げる（古い並びのファイルは読まない）
+	const int kHalfBits = 32;						// 64 ビットのハッシュを 32 ビット 2 つに分けて書く
 	const char* const kExtension = ".bin";
 	const char kNameSeparator = '_';				// シェーダのパスの区切りを、1 つのファイル名にするためにこれへ替える
 	// 壊れたファイルで大きすぎる確保をしないための上限（どれも今のシェーダの 100 倍以上）
@@ -127,11 +128,16 @@ bool ShaderDiskCache::load( const std::string& shaderFile, ShaderDetail::Compile
 		ShaderDetail::FileStamp stamp;
 		std::uint32_t low = 0;
 		std::uint32_t high = 0;
+		std::uint32_t hashLow = 0;
+		std::uint32_t hashHigh = 0;
 		reader.text( &stamp.path, kMaxPathLength );
 		reader.u32( &low );
 		reader.u32( &high );
+		reader.u32( &hashLow );
+		reader.u32( &hashHigh );
 		stamp.writeTime.dwLowDateTime = low;
 		stamp.writeTime.dwHighDateTime = high;
+		stamp.contentHash = ( static_cast< std::uint64_t >( hashHigh ) << kHalfBits ) | hashLow;
 		read.files.push_back( stamp );
 		usable = reader.ok();
 	}
@@ -162,6 +168,8 @@ void ShaderDiskCache::save( const std::string& shaderFile, const ShaderDetail::C
 		writer.text( stamp.path );
 		writer.u32( stamp.writeTime.dwLowDateTime );
 		writer.u32( stamp.writeTime.dwHighDateTime );
+		writer.u32( static_cast< std::uint32_t >( stamp.contentHash ) );
+		writer.u32( static_cast< std::uint32_t >( stamp.contentHash >> kHalfBits ) );
 	}
 	bool written = writer.ok();
 	fclose( fp );

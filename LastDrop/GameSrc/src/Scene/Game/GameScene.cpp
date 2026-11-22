@@ -53,7 +53,7 @@ GameScene::GameScene( GameResources* resources ) :
 	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）
 	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ),
 		RaidStart::startBag() ),														// 毎回同じ始めのカバン（拳銃と 9mm の弾）。自キャラの持ち物になる
-	mSceneRenderer( &mWorld ),														// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
+	mSceneRenderer( &mWorld, &resources->settings() ),								// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
 	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
 	// キャラの向いている方（その日の車の方）を見始める
 	mControl( mWorld.town().map().escapeCarSpots()[ mSession.escapeCarSpot() ].playerStart.yawDegree, &resources->settings() ),

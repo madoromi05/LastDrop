@@ -1,5 +1,6 @@
 #include "GameSrc/Audio/AudioEngine.h"
 
+#include "GameSrc/Audio/AudioFileSystem.h"
 #include "ThirdParty/miniaudio/miniaudio.h"
 #include "GameLib/GameLib.h"
 #include "GameLib/Base/DebugStream.h"
@@ -46,6 +47,7 @@ public:
 	Voice* findFreeOneShot();
 	LoopHandle startLoopVoice( SoundId id, Bus bus, const Vector3* position, float volume, float fadeInSeconds );	// 空いているループの枠で id を鳴らし始め、その枠の番号を返す。position が nullptr なら 2D
 
+	AudioFileSystem mFileSystem;	// 音のファイルを FileIO（Release は .pak）から渡す。mEngine が使うので前に置き、後に消す
 	ma_engine mEngine;
 	bool mEngineReady;
 	ma_sound_group mBuses[ BUS_NUM ];
@@ -77,7 +79,9 @@ AudioEngine::Impl::Impl() : mEngineReady( false ) {
 	ma_result engineResult;
 	{
 		LOAD_SCOPE( "device", "ma_engine_init" );
-		engineResult = ma_engine_init( nullptr, &mEngine );
+		ma_engine_config config = ma_engine_config_init();
+		config.pResourceManagerVFS = mFileSystem.vfs();
+		engineResult = ma_engine_init( &config, &mEngine );
 	}
 	if ( engineResult != MA_SUCCESS ) {
 		GameLib::cout << "AudioEngine: failed to open the audio device (sound is disabled)" << GameLib::endl;

@@ -12,6 +12,7 @@
 #include "GameSrc/Scene/Game/World/SceneLights.h"
 
 class GameWorld;
+struct GameSettings;
 class FirstPersonCamera;
 class DrawCulling;
 #ifdef ZF_EDITOR
@@ -31,7 +32,8 @@ public:
 		float pain;  // 痛みのにじみ
 		float fade;  // 死んだ後の暗転
 	};
-	explicit SceneRenderer( GameWorld* world );	// world: 描く世界。所有しない。nullptr 不可。この描画より長く生きていること
+	// world: 描く世界。settings: 画面の明るさを毎フレーム読む（設定画面で変えるとすぐ効く）。どちらも所有しない。nullptr 不可。この描画より長く生きていること
+	SceneRenderer( GameWorld* world, const GameSettings* settings );
 	// このフレームのディファード描画を全部行う。camera: GameScene が置いた、描くカメラ（観察用カメラの間はそちら）
 	// damage: 画面全体の赤み・痛み・暗さ。debug: 当たり判定・ライトの表示（Debug/Profile だけ。nullptr 可）
 	void render( const FirstPersonCamera& camera, const DamagePostEffect& damage
@@ -60,6 +62,7 @@ private:
 	void drawGBufferView( GBufferView view, const GameLib::Math::Matrix44& projectionView );				// G-Buffer の表示（F6 で選んだときだけ）。画面へ写した後に上から描く
 
 	GameWorld* mWorld;						// 借りているだけ
+	const GameSettings* mSettings;			// 借りているだけ
 	WorldRenderer mRenderer;				// 世界を描く（mWorld を読む）
 	PostProcess mPostProcess;
 	GBuffer mGBuffer;

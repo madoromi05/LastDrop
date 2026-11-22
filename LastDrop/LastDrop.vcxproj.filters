@@ -330,6 +330,9 @@
     <ClCompile Include="GameLib\src\FileIO\InFile.cpp">
       <Filter>GameLib\FileIO</Filter>
     </ClCompile>
+    <ClCompile Include="GameLib\src\FileIO\ReadWhole.cpp">
+      <Filter>GameLib\FileIO</Filter>
+    </ClCompile>
     <ClCompile Include="GameLib\src\FileIO\Manager.cpp">
       <Filter>GameLib\FileIO</Filter>
     </ClCompile>
@@ -1122,6 +1125,9 @@
     <ClCompile Include="GameSrc\src\Audio\AudioEngine.cpp">
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Audio\AudioFileSystem.cpp">
+      <Filter>GameSrc\Audio</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Audio\MusicPlayer.cpp">
       <Filter>GameSrc\Audio</Filter>
     </ClCompile>
@@ -1787,6 +1793,9 @@
     <ClInclude Include="GameLib\include\GameLib\FileIO\Manager.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameLib\include\GameLib\FileIO\ReadWhole.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\FileIO\OutFile.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -2394,6 +2403,9 @@
       <Filter>GameSrc\Render</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioEngine.h">
+      <Filter>GameSrc\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Audio\AudioFileSystem.h">
       <Filter>GameSrc\Audio</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Audio\MusicPlayer.h">

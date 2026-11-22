@@ -63,6 +63,8 @@ namespace{
 		float noiseFrame;                       // ディザのノイズのフレームの番号
 		float highlightsColor[ kColorChannels ];
 		float lutStrength;                      // 色の表を混ぜる強さ（表を読んでいなければ 0）
+		float brightnessExponent;               // 設定画面の明るさのガンマの指数（1 で元のまま）
+		float padding[ 3 ];                     // 16 バイトの区切りまでの余り
 	};
 	static_assert( sizeof( PresentConstants ) % 16 == 0, "PresentConstants : keep the HLSL 16-byte layout." );
 	// ビネット。角が少し暗くなる程度（確認用なので控えめ。見た目の調整はポストプロセスを作り込むときに行う）
@@ -80,6 +82,7 @@ namespace{
 	// 痛み 1 のとき、ビネットの暗さに足す量（角での暗さが 0.35 → 0.85 になる）
 	const float kPainDarken = 0.5f;
 	const float kNoEffect = 0.f;
+	const float kNeutralExponent = 1.f;	// 明るさのガンマで色を変えない指数
 
 	const float kTemperatureScale = 0.2f;							// 色温度 1 のときの、赤と青の倍率の変わり方（1 で赤 ×1.2・青 ×0.8。−1 でその逆）
 	const Vector3 kLuminanceWeights( 0.2126f, 0.7152f, 0.0722f );	// リニアの色の輝度の重み（Rec.709。Present.hlsl の kLuminanceWeights と同じ）
@@ -134,6 +137,7 @@ PostProcess::PostProcess() :
 	mDamageFlash( kNoEffect ),
 	mPain( kNoEffect ),
 	mFade( kNoEffect ),
+	mBrightnessExponent( kNeutralExponent ),
 	mNoiseFrame( 0 ) {
 	mSceneColor = Graphics::RenderTarget::createScreenSized( kSceneScale, Graphics::RENDER_TARGET_RGBA16F );
 	mSceneDepth = Graphics::DepthTarget::createScreenSized( kSceneScale );
@@ -278,12 +282,16 @@ void PostProcess::setFade( float amount ) {
 	mFade = amount;
 }
 
+void PostProcess::setBrightnessExponent( float exponent ) {
+	mBrightnessExponent = exponent;
+}
+
 void PostProcess::setNoiseFrame( int frame ) {
 	mNoiseFrame = frame;
 }
 
 void PostProcess::updateConstants( bool gradingOn ) {
-	PresentConstants constants;
+	PresentConstants constants = {};
 	constants.vignetteStrength = kVignetteStrength;
 	constants.vignetteInner = kVignetteInner;
 	constants.vignetteOuter = kVignetteOuter;
@@ -315,5 +323,6 @@ void PostProcess::updateConstants( bool gradingOn ) {
 	constants.noiseFrame = static_cast< float >( mNoiseFrame );
 	setColor( constants.highlightsColor, grade.highlightsColor );
 	constants.lutStrength = mColorLut.isLoaded() ? postProcessParams().lutStrength : kNoEffect;
+	constants.brightnessExponent = mBrightnessExponent;	// グレーディングを切っても掛ける（遊ぶ人の設定なので）
 	mPresentConstants.set( &constants, sizeof( constants ) );
 }

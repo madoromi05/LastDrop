@@ -3,6 +3,7 @@
 
 #include "GameLib/Base/HashMap.h"
 #include "GameLib/base/Compressor.h"
+#include "FileIO/ArchiveScramble.h"
 #include <fstream>
 #include <algorithm>	//for std::min,max (later VS2013)
 
@@ -69,7 +70,7 @@ public:
 			mStream->read( name, nameLength );
 			name[ nameLength ] = '\0';					//終端NULL
 			//mEntriesはmap< char*, Entry >
-			mEntries.add( name, e );					//mapに格納
+			mEntries.add( entryName( name ), e );		//mapに格納
 			SAFE_DELETE_ARRAY( name );					//情報を吐き出してみよう。正しいか？
 		}
 	}
@@ -92,14 +93,7 @@ public:
 				*entryIndex = -1;
 				*streamOut = 0;
 			}else{
-				//スラッシュとバックスラッシュの両方を受け付けるためにバックスラッシュ化
-				string tName = name;
-				for ( size_t i = 0; i < tName.size(); ++i ){
-					if ( tName[ i ] == '/' ){
-						tName[ i ] = '\\';
-					}
-				}
-				int it = mEntries.find( tName );
+				int it = mEntries.find( entryName( name ) );
 				if ( !mEntries.isEnd( it ) ){
 					*entryIndex = it;
 					*streamOut = mStream;
@@ -112,6 +106,15 @@ public:
 				}
 			}
 		}
+	}
+	// 目次（ダミーならディスク）に name があるか。mStream は読み込みのスレッドが使うので触らない
+	bool contains( const char* name ) const {
+		if ( mDummy ){
+			setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
+			ifstream f( name, ifstream::binary );
+			return f.good();
+		}
+		return mFileNumber > 0 && !mEntries.isEnd( mEntries.find( entryName( name ) ) );
 	}
 	void getFileSize( streamsize* readSize, streamsize* originalSize, int entryIndex, ifstream* stream ) const {
 		if ( mDummy ){
@@ -167,6 +170,9 @@ public:
 			*errorOut = true;
 			return;
 		}
+		if ( !mDummy ){
+			ArchiveScramble::apply( data + readOffset, size );	// tools/release/make_pak.ps1 が書くときにかき混ぜた物を戻す
+		}
 		if ( compressed ){
 			int outSize;
 			Compressor::decompress(
@@ -195,6 +201,22 @@ private:
 		int mOriginalSize;
 		int mNecessaryBufferSize;
 	};
+	// 目次を引く名前にそろえる。/ と \ の両方を受け付けるため \ にし、続いた区切りは 1 つにする
+	// ディスクから読むときは大文字と小文字を区別しないので、目次でも区別しない（コードの書き方とファイル名の大小が違っても .pak で読めるように）
+	static string entryName( const char* name ){
+		string r;
+		for ( const char* p = name; *p; ++p ){
+			char c = ( *p == '/' ) ? '\\' : *p;
+			if ( c == '\\' && !r.empty() && r.back() == '\\' ){
+				continue;
+			}
+			if ( c >= 'A' && c <= 'Z' ){
+				c = static_cast< char >( c - 'A' + 'a' );
+			}
+			r += c;
+		}
+		return r;
+	}
 	unsigned getUnsigned(){
 		unsigned char buffer[ 4 ];
 		mStream->read( reinterpret_cast< char* >( buffer ), 4 );

@@ -220,6 +220,14 @@ public:
 	void enableHaltOnError( bool f ){
 		mHaltOnError = f;
 	}
+	bool exists( const char* filename ) const {	// 目次とディスクを見るだけで読み込みのスレッドの ifstream には触らないので、どのスレッドから呼んでもよい
+		for ( int i = 0; i < mArchiveNumber; ++i ){
+			if ( mArchives[ i ].contains( filename ) ){
+				return true;
+			}
+		}
+		return false;
+	}
 	void update(){
 		using namespace std;
 		//やることないならしばらく寝てから終わる

@@ -3,8 +3,7 @@
 #include "GameLib/GameLib.h"
 #include "GameLib/Graphics/Manager.h"
 #include "GameLib/Graphics/DepthTarget.h"
-
-#include <fstream>
+#include "GameLib/FileIO/Manager.h"
 
 using namespace GameLib;
 
@@ -16,12 +15,6 @@ namespace{
 	const int kStripWidth = ColorLut::kSize * ColorLut::kSize;
 	const int kStripHeight = ColorLut::kSize;
 	const int kPresentConstantSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT;	// LutBake.hlsl は Present.hlsl と同じ番号で定数を読む（b1。PostProcess.cpp の kPresentConstantSlot）
-
-	// FileIO は無いファイルを読もうとすると止まる（halt）ので、先にあるかを見る（lut.tga は無いのが普通）
-	bool fileExists( const char* path ) {
-		std::ifstream ifs( path, std::ios::binary );
-		return ifs.good();
-	}
 }
 
 ColorLut::ColorLut() :
@@ -34,7 +27,7 @@ ColorLut::ColorLut() :
 void ColorLut::reload() {
 	mLoaded = false;
 	mTexture.release();
-	if ( fileExists( kLutFile ) ) {
+	if ( FileIO::Manager().exists( kLutFile ) ) {	// FileIO は無いファイルを読もうとすると止まるので、先にあるかを見る（lut.tga は無いのが普通）
 		mTexture = Graphics::Texture::create( kLutFile, Graphics::TEXTURE_COLOR_SPACE_LINEAR );	// 表の数は画面の色の数のまま引く（_SRGB として読むとリニアに直されてしまう）。TGA のまま（BC7 に縮めると表に誤差が入る）
 	}
 }

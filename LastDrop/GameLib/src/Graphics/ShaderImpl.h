@@ -8,9 +8,9 @@
 #include "GameLib/Profiling/Profiler.h"
 #include "Graphics/CompiledShader.h"
 #include "Graphics/ShaderDiskCache.h"
+#include "GameLib/FileIO/ReadWhole.h"
 
 #include <d3dcompiler.h>
-#include <cstdio>
 #include <list>
 #include <map>
 #include <string>
@@ -34,28 +34,44 @@ namespace ShaderDetail{
 		return true;
 	}
 
-	// path を丸ごと読み、読んだことを files に記録する。開けなければ false
+	// 中身のハッシュ（FNV-1a 64 ビット）。.pak の中のファイルには更新時刻が無いので、変わったかをこれで見る
+	inline std::uint64_t contentHashOf( const std::vector< char >& data ){
+		const std::uint64_t kOffsetBasis = 14695981039346656037ULL;
+		const std::uint64_t kPrime = 1099511628211ULL;
+		std::uint64_t h = kOffsetBasis;
+		for ( char c : data ){
+			h ^= static_cast< unsigned char >( c );
+			h *= kPrime;
+		}
+		return h;
+	}
+
+	// path を FileIO（Release は .pak、ほかはディスク）から丸ごと読み、読んだことを files に記録する。開けなければ false
 	inline bool readFile( const std::string& path, std::vector< char >* out, std::vector< FileStamp >* files ){
-		FILE* fp = nullptr;
-		if ( fopen_s( &fp, path.c_str(), "rb" ) != 0 || !fp ){
+		if ( !FileIO::readWhole( path.c_str(), out ) ){
 			return false;
 		}
-		fseek( fp, 0, SEEK_END );
-		long size = ftell( fp );
-		rewind( fp );
-		out->resize( static_cast< size_t >( size ) );
-		size_t read = ( size > 0 ) ? fread( out->data(), 1, out->size(), fp ) : 0;
-		fclose( fp );
-		if ( read != out->size() ){
-			return false;
-		}
-		FileStamp stamp;
+		FileStamp stamp = {};
 		stamp.path = path;
+		stamp.contentHash = contentHashOf( *out );
+#ifndef LASTDROP_PACKED
 		if ( !readWriteTime( path, &stamp.writeTime ) ){
 			return false;
 		}
+#endif
 		files->push_back( stamp );
 		return true;
+	}
+
+	// 覚えたときから f が変わっていないか
+	inline bool isStampCurrent( const FileStamp& f ){
+#ifdef LASTDROP_PACKED
+		std::vector< char > data;
+		return FileIO::readWhole( f.path.c_str(), &data ) && contentHashOf( data ) == f.contentHash;
+#else
+		FILETIME now;
+		return readWriteTime( f.path, &now ) && CompareFileTime( &now, &f.writeTime ) == 0;
+#endif
 	}
 
 	// path の入っているフォルダ（末尾の区切りまで）。区切りが無ければ空
@@ -149,8 +165,7 @@ namespace ShaderDetail{
 
 	inline bool isUnchanged( const std::vector< FileStamp >& files ){
 		for ( const FileStamp& f : files ){
-			FILETIME now;
-			if ( !readWriteTime( f.path, &now ) || CompareFileTime( &now, &f.writeTime ) != 0 ){
+			if ( !isStampCurrent( f ) ){
 				return false;
 			}
 		}
@@ -185,6 +200,9 @@ public:
 	}
 	// 読んだファイル（#include 含む）のどれかが、前回のコンパイルの後に変わったか
 	bool isSourceChanged() const {
+#ifdef LASTDROP_PACKED
+		return false;	// .pak の中身は遊んでいる間に変わらない
+#else
 		for ( const ShaderDetail::FileStamp& f : mFiles ){
 			FILETIME now;
 			if ( !ShaderDetail::readWriteTime( f.path, &now ) ){
@@ -195,6 +213,7 @@ public:
 			}
 		}
 		return false;
+#endif
 	}
 	// ファイルを読んでコンパイルし、成功したら作ったシェーダに差し替える。失敗したら今のシェーダのまま mError に理由を残す
 	bool compile(){

@@ -5,7 +5,7 @@
 #include "GameLib/Math/Vector3.h"
 #include <memory>
 
-// 音を鳴らす窓口。miniaudio を包み、ゲームコードには SoundId と位置だけを見せる（miniaudio.h はこのクラスの .cpp だけが読む）
+// 音を鳴らす窓口。miniaudio を包み、ゲームコードには SoundId と位置だけを見せる（miniaudio.h は Audio の .cpp だけが読む。ファイルの渡し方は AudioFileSystem）
 //
 // ・作ったときに目録（SoundCatalog）の全ての音を読み込む。読めない音はデバッグ出力で知らせ、鳴らしても無音になるだけ（落ちない）
 // ・ただし BGM のように長い音（目録で SOUND_KIND_BGM）は展開せず、鳴らしている間だけファイルから少しずつ読む

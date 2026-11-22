@@ -5,6 +5,7 @@
 #include "GameLib/PseudoXml/Element.h"
 #include "GameLib/PseudoXml/Attribute.h"
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <fstream>
 #include <sstream>
@@ -21,8 +22,11 @@ namespace{
 	const char* kAttrMusicVolume = "musicVolume";
 	const char* kAttrMouseSensitivity = "mouseSensitivity";
 	const char* kAttrPadSensitivity = "padSensitivity";
-	const int kAttributeNumber = 5;
+	const char* kAttrBrightness = "brightness";
+	const int kAttributeNumber = 6;
 	const float kPercent = 100.f;
+	const int kBrightnessDefault = 0;
+	const float kExponentBase = 2.f;	// 明るさ ±100 でガンマの指数が 1/2 倍・2 倍になる（±50 なら約 0.71〜1.41）
 
 	int clampValue( int value, int minValue, int maxValue ) {
 		return std::min( std::max( value, minValue ), maxValue );
@@ -41,10 +45,11 @@ GameSettings::GameSettings() :
 	effectVolume( kVolumeMax ),
 	musicVolume( kDefaultMusicVolume ),
 	mouseSensitivity( static_cast< int >( kPercent ) ),
-	padSensitivity( static_cast< int >( kPercent ) ) {
+	padSensitivity( static_cast< int >( kPercent ) ),
+	brightness( kBrightnessDefault ) {
 }
 
-//   <Settings masterVolume="80" effectVolume="100" musicVolume="70" mouseSensitivity="125" padSensitivity="100"/>
+//   <Settings masterVolume="80" effectVolume="100" musicVolume="70" mouseSensitivity="125" padSensitivity="100" brightness="10"/>
 bool GameSettings::save() const {
 	PseudoXml::Document doc = PseudoXml::Document::create();
 	PseudoXml::Element root = doc.root();
@@ -57,6 +62,7 @@ bool GameSettings::save() const {
 	e.attribute( 2 ).set( kAttrMusicVolume, musicVolume );
 	e.attribute( 3 ).set( kAttrMouseSensitivity, mouseSensitivity );
 	e.attribute( 4 ).set( kAttrPadSensitivity, padSensitivity );
+	e.attribute( 5 ).set( kAttrBrightness, brightness );
 
 	std::string text;
 	doc.convertToString( &text );
@@ -104,6 +110,8 @@ bool GameSettings::load() {
 				mouseSensitivity = clampValue( a.getIntValue(), kSensitivityMin, kSensitivityMax );
 			} else if ( std::strcmp( name, kAttrPadSensitivity ) == 0 ) {
 				padSensitivity = clampValue( a.getIntValue(), kSensitivityMin, kSensitivityMax );
+			} else if ( std::strcmp( name, kAttrBrightness ) == 0 ) {
+				brightness = clampValue( a.getIntValue(), kBrightnessMin, kBrightnessMax );
 			}
 		}
 		return true;
@@ -123,4 +131,9 @@ float GameSettings::mouseSensitivityScale() const {
 
 float GameSettings::padSensitivityScale() const {
 	return static_cast< float >( padSensitivity ) / kPercent;
+}
+
+// 明るさが大きいほど指数を小さくする。pow( 色, 指数 ) は指数が 1 より小さいと、白と黒はそのままで暗い所ほど持ち上がる
+float GameSettings::brightnessExponent() const {
+	return std::pow( kExponentBase, -static_cast< float >( brightness ) / kPercent );
 }

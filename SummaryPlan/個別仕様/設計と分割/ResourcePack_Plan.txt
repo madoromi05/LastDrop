@@ -1,0 +1,150 @@
+================================================================================
+ 素材を 1 つのファイル（LastDrop.pak）にまとめて配る
+================================================================================
+状態：2026-11-22 ★のとおりで承認・実装。3 構成ビルド済み。tools/release/make_release.ps1 で Release/LastDrop_v1.0.zip（154MB・.pak 310MB・213 ファイル）を作れた。
+      .pak の目次と中身が元のファイルと一致することをスクリプトで確かめた。.pak だけのフォルダから起動し、20 秒落ちずにタイトルが出て、シェーダを .pak から読めた（ShaderCache に 3 本）。
+      出撃から脱出までの通しと音の確認は、まだしていない（画面確認待ち）
+      実装で変えた所：Q1 のまとめるツールは、書籍の Archiver.exe（ビルド済みの物）を動かさず、同じ形式を書く tools/release/make_pak.ps1 にした。
+      縮めずに入れる（Archive.h は元の大きさと同じなら展開しない）。鍵の置き場所は GameLib/src/FileIO/ArchiveScramble.h。
+      目次の名前は大文字と小文字を区別しない（Archive.h の entryName）。すぐに中身が要る所のために FileIO::readWhole を足した
+目的：GitHub の Releases に遊べるフォルダを置く。CGTrader の素材（街灯・車）の条件
+      「第三者が単体で取り出せない形で製品に組み込む」を満たすため、Resource/ をそのまま並べずに 1 つのファイルへまとめる
+関係する記録：Resource/CREDITS.md（素材ごとの条件）・ShaderDiskCache_Plan.txt（シェーダの覚え）
+この仕様に入れない物：出どころ不明の AKM・弾の差し替え、建物のライセンス欄の確認、書籍のサンプルコードの公開条件（別に決める）
+
+ 目次
+  0. 決めること（Q1〜Q6）
+  1. 今のコード
+  2. やること
+  3. 配るフォルダ
+  4. 確かめ方
+  5. 懸念点
+  6. 変えるファイル
+
+================================================================================
+ 0. 決めること（Q1〜Q6）
+================================================================================
+ Q1. まとめる形式
+     ★A：書籍の Archiver の形式（GameLib/src/FileIO/Archive.h がもう読める。書籍の元と比べてコメントしか違わない）
+          ・まとめるツールは書籍の src/Tools/Archiver をコピーして tools/Archiver に置く（tools/ は git に入れない決まりのまま）
+      B：自前の新しい形式（読む側から作り直しになる）
+
+ Q2. かき混ぜ（取り出しにくくする一手間）
+     ★A：入れる。ツールが書くときと Archive.h が読むときに、決まった鍵で XOR する
+          ・書籍の形式とツールは公開されているので、そのままだと書籍のツールを知っている人は取り出せる
+          ・鍵はゲームとツールで同じ値を持つ（ツールは別のプロジェクトなので 2 か所になる。片方を変えたら両方を変える）
+      B：入れない（圧縮だけ。書籍のツールで取り出せる）
+
+ Q3. どのビルドで .pak から読むか
+     ★A：Release だけ。Release の設定に LASTDROP_PACKED を足し、そのときだけ MODE_ARCHIVE_ONLY で LastDrop.pak を開く
+          ・Debug と Profile は今のまま Resource/ から直接読む（F6 のエディタ・シェーダのホットリロードもそのまま）
+      B：全部のビルドで .pak を優先（開発中に毎回まとめ直しが要る）
+
+ Q4. 音（miniaudio）の読み方
+     ★A：miniaudio のファイルの開き方の差し替え（ma_vfs）を FileIO で作る。開くときに InFile でファイル全体を読み、
+          あとはメモリから渡す。ma_sound_init_from_file を呼んでいる 2 か所は変えない
+      B：呼んでいる所ごとに InFile で読んで ma_decoder をメモリから作る（呼ぶ所が増えるたびに直しが要る）
+
+ Q5. シェーダの覚え（ShaderCache/）が古いかの確かめ
+     ★A：読んだファイルごとに、更新時刻に加えて中身のハッシュも覚える。.pak から読むときは更新時刻が無いのでハッシュで比べる
+          ・直接読むとき（Debug・Profile）は今のまま更新時刻で比べる（ホットリロードが毎回ファイルを読まずに済む）
+          ・ShaderCache の形式の番号を 1 つ上げる（古い覚えは読まずにコンパイルし直す）
+      B：Release は覚えを使わず毎回コンパイルする（出撃のロードが 0.8 秒ほど延びる）
+
+ Q6. .pak に入れない物
+     ★A：マウスカーソル Resource/UI/cursor.cur（Windows にファイルの場所を渡して読ませるため）と、
+          遊ぶと書くファイル（settings.xml・save.xml・ShaderCache/・キーの設定）。CREDITS.md は .pak の外に置き、読める形で配る
+
+================================================================================
+ 1. 今のコード
+================================================================================
+ ・FileIO::InFile を通る物（.pak に切り替えれば変えずに読める）
+   ・モデル：Render/MeshCache.cpp → PseudoXml::Document::create → DocumentImpl.h の InFile
+   ・画像：Graphics/TextureImpl.h の InFile
+   ・音（DirectSound の古い物）：Sound/WaveImpl.h の InFile
+ ・自分でファイルを開いている物（.pak を見に行かない）
+   ・音：Audio/AudioEngine.cpp の ma_sound_init_from_file（展開して持つ音と、流して読む BGM の 2 か所）
+   ・シェーダ：Graphics/ShaderImpl.h の fopen_s（本体）と IncludeHandler（#include）。古いかは GetFileAttributesExA の更新時刻で見る
+   ・色の表：Render/PostProcess/ColorLut.cpp の fileExists（ifstream）。FileIO は無いファイルを読むと止まるので先に確かめている
+ ・Framework.cpp：アーカイブの名前と読み方のメンバ（mArchiveNames・mLoadMode）は残っているが、設定する所が無く MODE_DIRECT_FIRST のまま
+ ・遊ぶ人が書く物（GameSettings・InputConfig・ShaderDiskCache・TuningCatalog・Profiling）は ifstream で直接読む。今のまま外に置く
+
+================================================================================
+ 2. やること
+================================================================================
+ a. FileIO にあるかを聞く関数を足す
+    ・FileIO::Manager::exists( filename )：MODE に合わせて .pak の目次かディスクを見る。無くても止まらない
+    ・ColorLut.cpp の fileExists はこれに置き換える
+
+ b. Archive.h にかき混ぜを戻す処理を足す（Q2 が A のとき）
+    ・読んだ生のバイトを XOR で戻してから、今の展開（Compressor）に渡す
+    ・鍵は GameLib/src/FileIO/ArchiveKey.h に 1 つだけ置く
+
+ c. tools/Archiver（書籍のツールのコピー）
+    ・書き出すときに b と同じ鍵で XOR する
+    ・目次の名前は「Resource\Texture\...」の形になるように、Resource の 1 つ上のフォルダを渡して使う
+      （ゲームは "Resource/..." で頼み、Archive.h が / を \ に直して探す）
+
+ d. Framework.cpp：LASTDROP_PACKED のとき LastDrop.pak を MODE_ARCHIVE_ONLY で開く
+    ・.pak が無いときは、窓を出す前に「LastDrop.pak が見つからない」と出して終える
+
+ e. 音：AudioFileSystem（新。GameSrc/Audio）
+    ・責任：miniaudio に FileIO のファイルを渡すこと（ma_vfs の onOpen・onRead・onSeek・onTell・onInfo・onClose）
+    ・AudioEngine は ma_engine_init に渡す設定の pResourceManagerVFS にこれを入れるだけ
+    ・無いファイルは exists で見て MA_DOES_NOT_EXIST を返す（今の「sound not found」の流れのまま）
+
+ f. シェーダ：ShaderImpl.h
+    ・本体と #include を InFile で読む
+    ・FileStamp に中身のハッシュを足す（Q5 が A のとき）。比べ方は LASTDROP_PACKED で更新時刻かハッシュかを選ぶ
+    ・ShaderDiskCache の形式の番号を上げる
+
+ g. 配るフォルダを作るスクリプト tools/release/make_release.ps1
+    ・Release x64 をビルド → 作業フォルダに Resource をコピー（cursor.cur と CREDITS.md を除く）→ Archiver で LastDrop.pak
+      → 3 章の形に並べて zip にする
+    ・出力はソリューション直下の Release/（.gitignore に足す）
+
+================================================================================
+ 3. 配るフォルダ
+================================================================================
+ LastDrop_v1.0.zip
+ └─ LastDrop/
+    ├─ LastDrop.exe
+    ├─ LastDrop.pak            … Resource/ 全部（シェーダの .hlsl も入る）
+    ├─ Resource/UI/cursor.cur  … Q6
+    └─ CREDITS.md              … 表記が要る素材の一覧
+
+================================================================================
+ 4. 確かめ方
+================================================================================
+ ・Release で Resource/ を外した LastDrop.pak だけのフォルダから起動し、タイトル → 出撃 → 脱出まで通す（音・BGM・画像・モデル・ポストプロセス）
+ ・2 回目の起動で ShaderCache が使われ、出撃のロードの shader が数 ms になるか（Profile ではなく Release なので計測は LOAD_SCOPE の出力で見る）
+ ・.pak を書籍の元の Archiver の読み方で開けないこと（Q2 が A のとき）
+ ・Debug・Profile は今と同じに動くこと（F6・ホットリロード）
+
+================================================================================
+ 5. 懸念点
+================================================================================
+ ・ロードの時間：.pak からの展開が増える。Resource は約 310MB（画像 196MB）。今の出撃のロード 0.81 秒と比べて測る
+ ・BGM：今は流して読む（開くのが軽い）が、A の作りだと開くときに 1 曲全体（最大で数十 MB）を読む。
+   タイトルや結果の画面に入るときに引っかかるなら、BGM だけは .pak の中の位置から少しずつ読む形にする
+   （書籍の形式は縮まらない物を縮めずに入れるので、WAV はそのまま入っているはず。作るときに確かめる）
+ ・メモリ：InFile はファイル全体をメモリに読む。今の画像と同じ扱いなので増えるのは音の分だけ
+ ・鍵が 2 か所（ゲームとツール）になる
+ ・.pak は「取り出せない」ではなく「普通には取り出せない」。完全に防ぐことはできない
+
+================================================================================
+ 6. 変えるファイル
+================================================================================
+ GameLib
+  ・include/GameLib/FileIO/Manager.h、src/FileIO/ManagerImpl.h：exists
+  ・src/FileIO/Archive.h、src/FileIO/ArchiveKey.h（新）：かき混ぜを戻す
+  ・src/Graphics/ShaderImpl.h、src/Graphics/CompiledShader.h、src/Graphics/ShaderDiskCache.cpp：InFile で読む・ハッシュ・形式の番号
+ GameSrc
+  ・src/Audio/AudioFileSystem.cpp・include/GameSrc/Audio/AudioFileSystem.h（新）
+  ・src/Audio/AudioEngine.cpp：ma_engine_init に VFS を渡す
+  ・src/Render/PostProcess/ColorLut.cpp：exists に置き換え
+ そのほか
+  ・Framework.cpp：LASTDROP_PACKED のときの .pak の設定
+  ・LastDrop.vcxproj：Release に LASTDROP_PACKED・AudioFileSystem の登録（VS を閉じてから）
+  ・.gitignore：/Release/
+  ・tools/Archiver・tools/release/make_release.ps1（git に入れない）

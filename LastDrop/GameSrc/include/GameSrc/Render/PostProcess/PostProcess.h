@@ -44,6 +44,7 @@ public:
 	void setDamageFlash( float amount );						// 攻撃された瞬間に、画面の周りを赤くする強さ（0 で無し、1 で一番赤い）。次の endScene から効く
 	void setPain( float amount );								// 攻撃された瞬間の痛みの強さ（0 で無し、1 で一番強い）。画面の周りをぼかし、ビネットを濃くする。次の endScene から効く
 	void setFade( float amount );								// 画面全体を暗くする量（0 でそのまま、1 で真っ黒）。死んだ後に暗転するのに使う。次の endScene から効く
+	void setBrightnessExponent( float exponent );				// 設定画面の明るさ（GameSettings::brightnessExponent）。グレーディングの後の色に掛けるガンマの指数。次の endScene から効く
 	void setNoiseFrame( int frame );							// ディザのノイズのフレームの番号（TemporalJitter::frameIndex。TAA でないときは 0）。次の endScene から効く
 	// 中間の描画先を画面へ写す。シーンを描き終わった後に呼ぶ。描画先は画面に戻る
 	// GPU の印を中で打つ：「PostProcess」（ブルームと写すまで）・「FXAA」（FXAA。OFF なら区間はほぼ 0）
@@ -71,6 +72,7 @@ private:
 	float mDamageFlash; // setDamageFlash の値
 	float mPain;        // setPain の値
 	float mFade;        // setFade の値
+	float mBrightnessExponent;	// setBrightnessExponent の値
 	int mNoiseFrame;    // setNoiseFrame の値
 };
 

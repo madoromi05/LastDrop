@@ -19,6 +19,7 @@ public:
 	std::string createListString() const;							///ロードしているものをリストにして吐き出す。デバグ用。開放漏れを調べよう
 	void setLimit( int warning, int error );						///容量限界の指定。warningを超えると警告が、errorを超えるとエラーにする。標準値は両方2GB
 	void enableHaltOnError( bool );									///エラーを起こした時に止まるかどうか。標準はtrue。ツール等止まって困るならfalseを入れよ
+	bool exists( const char* filename ) const;						///読めるファイルがあるか。今の読み方でアーカイブの目次かディスクを見る。無くても止まらない
 
 	//以下ユーザは意識しない
 	static void create( 

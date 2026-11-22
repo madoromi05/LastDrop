@@ -32,6 +32,8 @@ cbuffer PresentConstants : register(b1) // PostProcess.cpp の PresentConstants 
     float gNoiseFrame;       // ディザのノイズのフレームの番号（TAA のとき毎フレーム変わる。それ以外は 0）
     float3 gHighlightsColor; // 明部に掛ける色
     float gLutStrength;      // 色の表（LUT）を混ぜる強さ（0 で引かない。Grading.hlsli の applyLut）
+    float gBrightnessExponent; // 設定画面の明るさのガンマの指数（1 でそのまま。小さいほど暗い所が明るい）。表には焼かない
+    float3 gPadding;         // 16 バイトの区切りまでの余り
 };
 
 #endif

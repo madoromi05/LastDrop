@@ -15,13 +15,29 @@
 
 #include "Framework.h"
 
+#include <windows.h>
 #include <cstdio>
+#include <cstdlib>
+#include <fstream>
 #include <string>
 #include <vector>
 using namespace std;
 
 namespace GameLib{
 namespace {
+
+#ifdef LASTDROP_PACKED
+const char* const kPackFile = "LastDrop.pak";	// exe と同じフォルダに置く（tools/release/make_release.ps1 が並べる）
+
+// .pak が無いと最初の読み込みで止まるので、窓を出す前に知らせて終える
+void exitIfPackMissing(){
+	ifstream pack( kPackFile, ifstream::binary );
+	if ( !pack.good() ){
+		MessageBoxW( nullptr, L"LastDrop.pak が見つかりません。LastDrop.exe と同じフォルダに置いてください。", L"LAST DROP", MB_OK | MB_ICONERROR );	// /utf-8 でコンパイルするので、日本語は W の方で渡す
+		std::exit( EXIT_FAILURE );
+	}
+}
+#endif
 
 class Impl{
 public:
@@ -43,6 +59,13 @@ public:
 	mEndRequested( false ),
 	mStarted( false ){
 		cout.begin();
+#ifdef LASTDROP_PACKED
+		// 配る Release は素材を .pak だけから読む（ResourcePack_Plan.txt）。Resource/ に残った物は読まない
+		mArchiveNames = NEW string[ 1 ];
+		mArchiveNames[ 0 ] = kPackFile;
+		mArchiveNumber = 1;
+		mLoadMode = FileIO::Manager::MODE_ARCHIVE_ONLY;
+#endif
 		unsigned t = time();
 		for ( int i = 0; i < TIME_HISTORY_SIZE; ++i ){
 			mTimeHistory[ i ] = t;
@@ -279,6 +302,9 @@ void Framework::sleep( int ms ) const {
 
 // WindowCreator callbacks
 void WindowCreator::configure( Configuration* config ){
+#ifdef LASTDROP_PACKED
+	exitIfPackMissing();
+#endif
 	Framework::create();
 	Framework f;
 	config->setWidth( f.width() );

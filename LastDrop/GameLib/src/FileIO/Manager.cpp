@@ -46,5 +46,9 @@ void Manager::enableHaltOnError( bool f ){
 	gManagerImpl->enableHaltOnError( f );
 }
 
+bool Manager::exists( const char* filename ) const {
+	return gManagerImpl->exists( filename );
+}
+
 } //namespace Sound
 } //namespace GameLib

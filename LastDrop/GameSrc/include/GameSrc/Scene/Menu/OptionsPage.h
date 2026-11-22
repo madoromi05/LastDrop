@@ -11,6 +11,7 @@ struct GameSettings;
 enum OptionsTab{
 	OPTIONS_TAB_AUDIO,       // 音声（全体の音量・効果音の音量）
 	OPTIONS_TAB_SENSITIVITY, // 感度（マウス・パッド）
+	OPTIONS_TAB_DISPLAY,     // 画面（明るさ）
 	OPTIONS_TAB_CONTROLS,    // 操作の一覧（ControlsTab）
 
 	OPTIONS_TAB_NUMBER,
