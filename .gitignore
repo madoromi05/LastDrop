@@ -442,3 +442,13 @@ FodyWeavers.xsd
 
 .superpowers/brainstorm/
 /LastDrop/tools/
+/tools/
+
+# 非公開のリポジトリにだけ置く物（計画書・教材・その場の設定）
+/SummaryPlan/
+/Learning/
+/LastDrop/settings.xml
+
+# 素材は再配布できないので置かない。シェーダだけ公開する
+/LastDrop/Resource/*
+!/LastDrop/Resource/Shader/
