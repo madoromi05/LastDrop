@@ -1,7 +1,7 @@
 #ifndef INCLUDED_SSAO_PARAMS_H
 #define INCLUDED_SSAO_PARAMS_H
 
-// SSAO（物の隙間の暗がり）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/SsaoTranslucent_Plan.txt の 5-4・8 章
+// SSAO（物の隙間の暗がり）の調整値
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // どれも見た目を確かめる前の初期値。F6 → Render の G-Buffer を「SSAO」にして、白黒の絵で決める
 struct SsaoParams{

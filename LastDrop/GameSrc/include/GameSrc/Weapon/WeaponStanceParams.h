@@ -2,7 +2,7 @@
 #define INCLUDED_WEAPON_STANCE_PARAMS_H
 
 // 覗く操作（WeaponStance）の調整値。単位は秒で持ち、ティックへの換算は WeaponStance が使うときに行う
-// 起動中に F6 のエディタで動かせる（SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 5-5）
+// 起動中に F6 のエディタで動かせる
 struct WeaponStanceParams{
 	float tapSeconds = 0.2f;	// これより短く押して離したら「覗いたまま」にする（秒）。Tarkov の短押し判定に合わせた体感値
 	float aimSeconds = 0.25f;	// 覗き始めてからサイトが目の前に来るまで（秒）。短すぎると銃が瞬間移動して見え、長いと操作が重い

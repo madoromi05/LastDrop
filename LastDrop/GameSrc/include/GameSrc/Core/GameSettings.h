@@ -8,7 +8,6 @@ class AudioEngine;
 //   小数のずれがたまらない。ゲームが使う倍率への直し方は、ここの関数だけに置く
 // ・保存はキーコンフィグ（InputConfig）と同じく、PseudoXml で文字列にして fstream で書く
 //   （FileIO はファイルが無いと止まることがあるため）
-// SummaryPlan/個別仕様/UI/OptionsMenu_Plan.txt
 struct GameSettings{
 	static const int kVolumeMin = 0;
 	static const int kVolumeMax = 100;
@@ -26,7 +25,7 @@ struct GameSettings{
 	int musicVolume;      // 音楽の音量（0〜100。AudioEngine::BUS_MUSIC）
 	int mouseSensitivity; // マウスで回す視点の感度（百分率。100 が FirstPersonControl の元の速さ）
 	int padSensitivity;   // パッドの右スティックで回す視点の感度（百分率。100 が LookParams のスティックの速さ）
-	int brightness;       // 画面の明るさ（-50〜+50。0 で元のまま。Brightness_Plan.txt）
+	int brightness;       // 画面の明るさ（-50〜+50。0 で元のまま）
 
 	GameSettings();	// 既定値（全体と効果音の音量は 100、音楽は kDefaultMusicVolume、感度はどちらも 100、明るさは 0）
 

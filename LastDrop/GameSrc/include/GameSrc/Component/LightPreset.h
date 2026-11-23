@@ -4,7 +4,7 @@
 #include "GameSrc/Render/Lighting/LightList.h"
 #include "GameLib/Math/Vector3.h"
 
-// 物に付ける光の種類（LightComponent へ渡す。SummaryPlan/個別仕様/設計と分割/LightComponent_Plan.txt）
+// 物に付ける光の種類（LightComponent へ渡す）
 // 色・強さ・届く距離は部品へ写さず、光を作るたびに調整値（LightingParams）を読む（F6 で動かした値がすぐ効くように）
 enum class LightPreset{
 	StreetLamp,	// 街灯。柱の足元から決まった高さの点光源。始めから付いている

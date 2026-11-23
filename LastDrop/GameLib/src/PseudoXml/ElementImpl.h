@@ -7,7 +7,6 @@
 #include "PseudoXml/DocumentImpl.h"
 #include "PseudoXml/Tag.h"
 #include <map>
-using namespace std;
 
 namespace GameLib{
 namespace PseudoXml{
@@ -149,8 +148,8 @@ public:
 	void convertToBinary( 
 	OStringStream* out, 
 	OStringStream* stringBuffer,
-	map< RefString, int >* stringMap ) const {
-		typedef map< RefString, int > Map;
+	std::map< RefString, int >* stringMap ) const {
+		typedef std::map< RefString, int > Map;
 		RefString name( mName );
 		Map::iterator it = stringMap->find( name );
 		int pos = 0;
@@ -158,7 +157,7 @@ public:
 			pos = stringBuffer->size();
 			*stringBuffer << name;
 			stringBuffer->write( "\0", 1 );
-			stringMap->insert( make_pair( name, pos ) );
+			stringMap->insert( std::make_pair( name, pos ) );
 		}else{
 			pos = it->second;
 		}
@@ -178,7 +177,7 @@ public:
 				pos = stringBuffer->size();
 				*stringBuffer << aName;
 				stringBuffer->write( "\0", 1 );
-				stringMap->insert( make_pair( aName, pos ) );
+				stringMap->insert( std::make_pair( aName, pos ) );
 			}else{
 				pos = it->second;
 			}
@@ -190,7 +189,7 @@ public:
 				pos = stringBuffer->size();
 				*stringBuffer << aValue;
 				stringBuffer->write( "\0", 1 );
-				stringMap->insert( make_pair( aValue, pos ) );
+				stringMap->insert( std::make_pair( aValue, pos ) );
 			}else{
 				pos = it->second;
 			}

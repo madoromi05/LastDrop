@@ -13,12 +13,12 @@
 // endScene でシェーダ（Resource/Shader/Present.hlsl）を通して画面へ写す
 // 中間の描画先はリニア（光の量に比例した数）で持ち、beginScene〜endScene の間は Graphics::Manager::enableLinearColor を入れておく
 // 写すときに、明るい所のにじみ（ブルーム。Bloom）を足し、露出を掛けて ACES で 0〜1 に収め（トーンマップ）、
-// 周辺を少し暗くして（ビネット）、最後に画面の色（sRGB）へ戻す（LinearToneMap_Plan.txt 6 章）。露出とブルームの値は PostProcessParams
+// 周辺を少し暗くして（ビネット）、最後に画面の色（sRGB）へ戻す。露出とブルームの値は PostProcessParams
 // ビネットの所に赤を足す強さ・周りのぼかしと暗さ（攻撃された瞬間）と、全体を暗くする量（死んだ後）を外から動かせる
 // 値はこのシーンの PostProcess だけが持つので、シーンを作り直せば 0 に戻る（次のシーンへ漏れない）
 // トーンマップの後にカラーグレーディング、画面の色へ戻した後にディザを掛ける
 // アンチエイリアスが FXAA（antiAliasingMode）のときは、写した結果をいったん 8bit の中間（a に輝度）へ置き、Resource/Shader/Fxaa.hlsl で輪郭を
-// なめらかにしながら画面へ写す。OFF のときは今までどおり画面へ直接写す
+// なめらかにしながら画面へ写す。OFF のときは画面へ直接写す
 //
 // 写した後の画面には、文字（DebugScreen）など Framework が後から描く物がそのまま重なる（ポストプロセスは掛からない）
 // 作るのは Graphics::Manager ができた後（シーンの中）

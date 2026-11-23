@@ -1,6 +1,6 @@
-// G-Buffer を読んで画面を作る全画面のパス（DeferredLighting。GBuffer_Plan.txt 7・8 章）。2 つの使い方がある
+// G-Buffer を読んで画面を作る全画面のパス（DeferredLighting）。2 つの使い方がある
 //   表示が Final（0）：ライティング。PBR の式（Pbr.hlsli）で、シーンの色（HDR・リニア）へ描く
-//                    何も描かれていない画素には空を描く（LightList.hlsli の skyColor。7 章）
+//                    何も描かれていない画素には空を描く（LightList.hlsli の skyColor）
 //   それ以外       ：G-Buffer の中身の表示。ToneMap を通さず、PostProcess の後に画面（バックバッファ・ガンマの色）へ直接写す
 // 霧はここでは掛けない（次の霧のパス Fog.hlsl）。霧の量の表示（Fog）だけ同じ式を読む
 #include "GBuffer.hlsli"

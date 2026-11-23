@@ -9,7 +9,7 @@ class UiCanvas;
 // （GameLib::Input::BindingDisplayName・パッドは PlayStation の表記の GamePadBindingDisplayName）
 // ここが持つのは「どの操作を、どの名前で、どの順に見せるか」だけ
 // 遊ぶ操作だけを見せる（開発用の F キーと、今は何も起こらない Jump / Dodge は出さない）
-// 見た目はタイトルと同じ RE:2 風（UiTabBar・UiKeyBindingGroup）。OptionsTabs_Plan.txt
+// 見た目はタイトルと同じ RE:2 風（UiTabBar・UiKeyBindingGroup）
 namespace ControlsTab{
 	void build( UiCanvas* canvas );	// canvas に部品を足す。始めはキーボードとマウスの一覧を見せる。canvas: nullptr 不可
 }

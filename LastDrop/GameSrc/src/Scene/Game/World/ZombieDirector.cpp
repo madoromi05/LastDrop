@@ -98,6 +98,16 @@ float ZombieDirector::navMeshRadius() {
 	return radius;
 }
 
+float ZombieDirector::defaultNavMeshRadius() const {
+	if ( !mZombieData->isReady() ) {
+		return kNoZombieNavMeshRadius; // navMeshRadius が設計図を作れないのと同じ条件
+	}
+	// 設計図の長方形は作ったときの F6 の余白なので使わず、初期値の余白で求め直す。navMeshRadius と同じ足し方にする
+	const ZombieCrowdParams defaults{};
+	const float reach = ZombieModel::makeFootprint( mZombieData, defaults.footprintPadding ).reachRadius();
+	return reach + defaults.navMeshClearance;
+}
+
 void ZombieDirector::setup( const TownMap& map ) {
 	if ( !prepareModel() ) {
 		return;

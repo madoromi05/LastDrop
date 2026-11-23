@@ -25,7 +25,7 @@ class FirstPersonBodyComponent;
 // 自キャラが手に持っている物（画像の HoldComponent。銃）と、武器の構えの段階（持つ／覗く。WeaponStance）
 // 持てる銃（拳銃・ライフル）は作る時に全部受け取り、カバンに入っている銃のうち 1 丁を手に持つ（RE:2 と同じく、持っている銃もカバンの 1 マスを使う）
 // どれを持つかはカバンの画面の Equip（equip）。持っている銃をカバンから捨てたら素手になり、素手のときカバンに銃があればそれを持つ（syncWithInventory）
-// 銃の物（GunComponent）は捨てても消えないので、弾倉の中身は銃ごとに残る（拾い直すと前の弾数のまま）。SummaryPlan/個別仕様/射撃と手応え/Pistol_Plan.txt
+// 銃の物（GunComponent）は捨てても消えないので、弾倉の中身は銃ごとに残る（拾い直すと前の弾数のまま）
 // 持つ物は別の GameObject（銃の部品は GunComponent・WeaponModelComponent・LightComponent・MuzzleFlashComponent）で、ここは借りるだけ
 // 銃は右手の骨に付いて動く（HeldItem）。弾倉は支える手（左手）で抜いて挿す（HeldMagazine）
 // 持ち方（手の骨・持ち方・サイト・支える手・銃の大きさ）を一人称の体（FirstPersonBodyComponent）へ渡す

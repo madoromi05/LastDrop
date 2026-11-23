@@ -28,7 +28,9 @@ SceneManager& SceneManager::instance() {
 void SceneManager::start( SceneId first ) {
 	ASSERT( !mResources && "SceneManager::start : already started." );
 	mResources = std::make_unique< GameResources >();
-	EditorWindow::setRaidRecord( &mResources->raidRecord() );	// F6 の Raid の欄と結果画面の確認が使う。起動から終了まで 1 つなので、どのシーンでも触れるようここで 1 回渡す
+	EditorWindow::setRaidRecord( &mResources->raidRecord() );								// F6 の Raid の欄と結果画面の確認が使う。起動から終了まで 1 つなので、どのシーンでも触れるようここで 1 回渡す
+	EditorWindow::setTownCache( &mResources->town() );										// F6 の Town タブの Bake が使う（同じ）
+	EditorWindow::setTownEdits( &mResources->townEdits(), &mResources->townEditFile() );	// F6 の Town タブが書き換える（同じ）
 	change( first );
 }
 
@@ -68,6 +70,11 @@ void SceneManager::change( SceneId id ) {
 	GameLib::Profiling::beginLoad( loadName( id ) );	// 切り替えからシーンの最初の絵までを、1 回のロードとして測る（起動中なら起動のロードに含める）
 	// 新しいシーンを作り終えてから、前のシーンを消す（作る途中で前のシーンが消えていることが無い）
 	std::unique_ptr< IScene > next = createScene( id );
+#ifdef ZF_EDITOR
+	// F6 の Town タブが次の出撃 1 回だけに決めた条件と車は、出撃（GameScene）が作るときに使って消す
+	// 読み直しの予約が別の切り替え（死んで結果の画面へ など）に置き換わると使われずに残り、後の出撃に効いてしまうので、ここで捨てる
+	mResources->raidRecord().dropNextRaidOverride();
+#endif
 	mCurrent = std::move( next );
 	if ( isRaid( id ) ) {
 		mLastRaidId = id;
@@ -127,5 +134,7 @@ void SceneManager::destroy() {
 	// シーンが借りている物を先に消さないよう、シーン → 使い回す物 の順に消す
 	mCurrent.reset();
 	EditorWindow::setRaidRecord( nullptr );	// 消える RaidRecord を F6 が指し続けないように
+	EditorWindow::setTownCache( nullptr );	// TownCache も同じ
+	EditorWindow::setTownEdits( nullptr, nullptr );
 	mResources.reset();
 }

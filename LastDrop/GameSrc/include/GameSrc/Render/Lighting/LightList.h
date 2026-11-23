@@ -9,7 +9,7 @@
 
 class ViewFrustum;
 
-// ライトの種類（PbrNightLighting_Plan.txt 6 章）。番号は Resource/Shader/LightList.hlsli と揃える
+// ライトの種類。番号は Resource/Shader/LightList.hlsli と揃える
 enum class LightKind{
 	Directional, // 平行光（月・太陽）。向きだけ。減衰しない
 	Point,       // 点光源。距離の 2 乗で弱まり、届く距離でなめらかに 0
@@ -40,7 +40,7 @@ LightSource pointLight( const GameLib::Math::Vector3& position, const GameLib::M
 LightSource spotLight( const GameLib::Math::Vector3& position, const GameLib::Math::Vector3& direction,
 	const GameLib::Math::Vector3& color, float intensity, float range, float innerAngleDegree, float outerAngleDegree );
 
-// 空と環境光と霧（PbrNightLighting_Plan.txt 7 章・NightFinish_Plan.txt 5 章）。色は sRGB（シェーダでリニアへ直す）
+// 空と環境光と霧。色は sRGB（シェーダでリニアへ直す）
 //   空：何も描かれていない所に、地平線の色から天頂の色へのグラデーションを描く（明るさ skyIntensity）
 //   環境光：上からは空の色・下からは地面の色（半球ライト。強さ ambientIntensity）。金属に映る色も同じ
 //   霧：距離の霧（2 乗の指数）＋高さの霧。色は空の地平線の色（明るさ skyIntensity）。初期値は霧なし

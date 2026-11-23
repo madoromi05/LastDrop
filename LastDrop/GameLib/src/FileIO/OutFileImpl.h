@@ -10,11 +10,10 @@
 
 namespace GameLib{
 namespace FileIO{
-using namespace std;
 
 class OutFile::Impl : public ReferenceType{
 public:
-	typedef list< Impl* >::iterator It;
+	typedef std::list< Impl* >::iterator It;
 	Impl( int id ) : 
 	mId( id ),
 	mIsError( false ),

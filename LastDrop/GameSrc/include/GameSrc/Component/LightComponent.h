@@ -6,7 +6,7 @@
 
 class ILightSocket;
 
-// 物に付いた明かり（銃の懐中電灯・街灯。画像の LightComponent。SummaryPlan/個別仕様/設計と分割/LightComponent_Plan.txt）
+// 物に付いた明かり（銃の懐中電灯・街灯。画像の LightComponent）
 // この物の光を 1 つ答える。持つのは、光の種類・付いているか・光の出る所を答える相手だけ
 // 光の出る所は、持つ側が渡した相手（ILightSocket）に聞く。渡されていなければ、同じ物の TransformComponent の位置と向き
 // どちらも無ければ光らない。持たれている間だけ照らす種類（懐中電灯。LightPresets::needsSocket）は、相手が無ければ光らない
@@ -19,6 +19,8 @@ public:
 
 	void update( bool togglePressed );				// 1 ティックに 1 回呼ぶ。togglePressed なら付ける／消す（押した瞬間）
 	bool toggledThisTick() const;					// 直前の update で付けた／消したか（スイッチの音を鳴らす側が読む）
+	bool isOn() const;
+	void setOn( bool on );							// 付ける／消すを直に決める（F6 の Town タブが、消した街灯の光を消す・戻す）。スイッチの音は鳴らさない
 	// 光の出る所を答える相手を渡す（手に持った側が呼ぶ）。nullptr で外す。所有権は受け取らない。外すまで生きていること
 	void setSocket( const ILightSocket* socket );
 	LightPreset preset() const;

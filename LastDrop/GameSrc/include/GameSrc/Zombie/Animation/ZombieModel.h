@@ -33,6 +33,10 @@ public:
 	ZombieModel( const ZombieModel& ) = delete;
 	ZombieModel& operator=( const ZombieModel& ) = delete;
 
+	// data の体を真上から囲む長方形を、四辺を padding（m）ずつ広げて求める。footprint と同じ求め方（骨の名前の決まりはこの .cpp が持つ）
+	// 設計図を作らずに、余白だけ替えた大きさを知るのに使う（ZombieDirector::defaultNavMeshRadius）。data: nullptr 不可、isReady() 済み
+	static BodyFootprint makeFootprint( const SkinnedMeshData* data, float padding );
+
 	const SkinnedMeshData* data() const;
 	const HitboxLayout& hitboxLayout() const;						// 部位の箱の設計図
 	const BodyFootprint& footprint() const;							// 移動の当たり判定の大きさ（体を真上から囲む長方形）

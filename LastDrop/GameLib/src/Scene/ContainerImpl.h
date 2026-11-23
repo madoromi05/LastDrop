@@ -39,7 +39,7 @@ public:
 			RefString tmp( extraDataPath );
 			mExtraDataPath = allocateString( tmp );
 		}else{
-			string t = filename; //一旦ファイル名を入れて
+			std::string t = filename; //一旦ファイル名を入れて
 			// /を\に変換。最後に見つけた場所を記録
 			int slashPos = -1;
 			for ( size_t i = 0; i < t.size(); ++i ){
@@ -53,7 +53,7 @@ public:
 			if ( slashPos == -1 ){	//もし-1なら最後に\を足す
 				t = ""; //ここ
 			}else{
-				t.erase( slashPos + 1, string::npos );
+				t.erase( slashPos + 1, std::string::npos );
 			}
 			mExtraDataPath = allocateString( RefString( t.c_str() ) );
 		}

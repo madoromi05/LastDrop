@@ -1,7 +1,7 @@
 #ifndef INCLUDED_RAID_PARAMS_H
 #define INCLUDED_RAID_PARAMS_H
 
-// 出撃（脱出の車・ガソリン・始めの知らせ）の調整値。仕様は SummaryPlan/個別仕様/出撃と帰還/FuelEscapeLoading_Plan.txt
+// 出撃（脱出の車・ガソリン・始めの知らせ）の調整値
 // （脱出の車とガソリン）。時間制限とスコアは無い
 // 小数の値は起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // どれも遊んで確かめる前の初期値

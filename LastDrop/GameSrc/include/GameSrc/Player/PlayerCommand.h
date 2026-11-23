@@ -8,6 +8,7 @@
 struct PlayerCommand{
 	float forward;       // 前後の移動量（-1〜1。前が正）
 	float strafe;        // 横の移動量（-1〜1。右が正）
+	float rise;          // 上下の移動量（-1〜1。上が正）。飛んでいる間（PlayerFlightComponent）だけ使う
 	bool run;            // 走る（押されている間）
 	bool aimHeld;        // 覗く（押されている間。短押し・長押しの判定は WeaponStance）
 	bool fireHeld;       // 撃つ（押されている間。連射の間隔は FireControl）

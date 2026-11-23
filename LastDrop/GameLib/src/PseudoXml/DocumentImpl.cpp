@@ -59,7 +59,7 @@ void Document::Impl::build( const char* data, int size ){
 }
 
 //単純に一個づつ呼んで行く
-void Document::Impl::convertToString( string* out ) const {
+void Document::Impl::convertToString( std::string* out ) const {
 	OStringStream oss;
 	int childN = mRoot->childNumber();
 	for ( int i = 0; i < childN; ++i ){
@@ -78,7 +78,7 @@ void Document::Impl::convertToBinary( Array< char >* out ) const {
 	int childN = mRoot->childNumber();
 	OStringStream binaryOut;
 	OStringStream stringBuffer;
-	map< RefString, int > stringMap;
+	std::map< RefString, int > stringMap;
 	binaryOut.write( "PXML", 4  ); //マジック
 	binaryOut.write( 0 ); //ストリングバッファオフセットのダミー
 	binaryOut.write( childN ); //エレメント数

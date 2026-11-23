@@ -8,7 +8,7 @@ class GameWorld;
 class MeshCache;
 class UiRenderer;
 
-// 出撃のロード段階（メッシュの組み立て→世界を並べる）を受け持つ。終わるまで draw は世界を描かずロード画面だけ（FuelEscapeLoading_Plan.txt 6 章）
+// 出撃のロード段階（メッシュの組み立て→世界を並べる）を受け持つ。終わるまで draw は世界を描かずロード画面だけ
 // 2 回目以降（もう一度・Retry の出撃）はもう構築済みですぐ ready。完了したフレームに GameScene が後処理（弾倉の復元・カーソルのロック）を 1 回行う
 class LoadingPhase{
 public:

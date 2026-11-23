@@ -2,7 +2,11 @@
 #define INCLUDED_TOWN_MAP_H
 
 #include "GameLib/Math/Vector3.h"
+#include <string>
 #include <vector>
+
+class TownEdits;
+struct TownEditLimits;
 
 // 置き場所と向き
 struct TownPlacement{
@@ -36,7 +40,7 @@ struct TownTile{
 	float scale; // 部品の拡大率（1 で実寸）
 };
 
-// 脱出の車を置く候補 1 つ（FuelEscapeLoading_Plan.txt Q13）。名前は画面に出す（「脱出の車：北」）。向きは車の向き
+// 脱出の車を置く候補 1 つ。名前は画面に出す（「脱出の車：北」）。向きは車の向き
 // 自キャラはその日の車のそばから始める（車の鼻先の前に立ち、車の方を向く）
 struct TownEscapeCarSpot{
 	const char* name;
@@ -56,7 +60,11 @@ struct TownEscapeCarSpot{
 // （段差に乗る仕組みがまだ無いため）
 class TownMap{
 public:
-	TownMap();
+	static const int kNoEscapeCarSpot = -1;	// escapeCarSpots のどれも指していない（番号は 0 から）。まだ決めていない・頼んでいない印
+
+	// edits: 組み立てた並びへ当てる手直し。nullptr なら手直しなし（定数のままの町）。limits: 消しすぎを止める下限
+	// 当てた手直しのうち、使わなかった行の理由は editWarnings に残る
+	TownMap( const TownEdits* edits, const TownEditLimits& limits );
 
 	const std::vector< TownTile >& groundTiles() const;				// 道路・歩道・床・土（どれも移動は止めない。弾は TownGround が止める）
 	const std::vector< TownPlacement >& buildings() const;			// ブロックの中の建物（向きは、正面がどちらを向くか）
@@ -73,6 +81,7 @@ public:
 	// 街灯の柱の置き場所（足元は歩道の面の高さ。向きは道に沿う）。交差点ごとに 1 本と区間の真ん中
 	// 柱は WorldBuilder が置き、光は柱の物の LightComponent が柱の頭（足元 + LightingParams::streetLightHeight）から出す。届く距離・色・強さも LightingParams
 	const std::vector< TownPlacement >& streetLights() const;
+	const std::vector< std::string >& editWarnings() const;			// 手直しのうち使わなかった行の理由（当たらない・2 つ以上当たる・下限を割る など）。無ければ空
 
 private:
 	std::vector< TownTile > mGroundTiles;
@@ -84,6 +93,7 @@ private:
 	std::vector< TownEscapeCarSpot > mEscapeCarSpots;
 	std::vector< TownPlacement > mFireHydrants;
 	std::vector< TownPlacement > mStreetLights;
+	std::vector< std::string > mEditWarnings;
 };
 
 #endif

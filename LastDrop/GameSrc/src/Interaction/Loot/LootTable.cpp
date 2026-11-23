@@ -29,7 +29,7 @@ namespace{
 	// LootTableId の順
 	const LootSpec kSpecs[ static_cast< int >( LootTableId::Count ) ] = {
 		// ガソリンは表から出さない（町のガソリンはちょうど RaidParams::fuelCanCount 個。WorldBuilder が選んだ箱へ必ず入れる）
-		// 車のトランクの表は改訂 2 で消した（車には物を入れない）
+		// 車のトランクの表は置かない（車には物を入れない）
 		{ "ゴミ箱", 1, 3, SOUND_LOOT_SEARCH_METAL, 3, {
 			{ ITEM_AMMO_9MM, 43 }, { ITEM_BANDAGE, 36 }, { ITEM_AMMO_762, 21 } } },
 		// ライフルは表から出さない（町にちょうど RaidParams::rifleCount 丁。WorldBuilder が選んだ木箱へ、弾倉いっぱいで必ず入れる）

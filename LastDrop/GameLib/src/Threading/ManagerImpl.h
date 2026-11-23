@@ -16,7 +16,6 @@
 
 namespace GameLib{
 namespace Threading{
-using namespace std;
 
 class ManagerImpl{
 public:
@@ -121,7 +120,7 @@ private:
 	bool mEndRequest;
 	Semaphore mQueueSemaphore;
 	Mutex mLock;
-	list< Entry > mQueue; //要求待ち行列
+	std::list< Entry > mQueue; //要求待ち行列
 	int mCoreNumber;
 };
 extern ManagerImpl* gManagerImpl;

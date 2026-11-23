@@ -12,7 +12,7 @@
 class CollisionWorld;
 class HitWorld;
 
-// 世界に置く物（GameObject）の持ち主（SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt。画像の obj_manager）
+// 世界に置く物（GameObject）の持ち主（画像の obj_manager）
 // ・provide：世界に 1 つの物を共有の棚へ置く（部品が Component::shared で引く）
 //   載せる名簿（CollisionWorld・HitWorld）は作るときに自分で置く
 // ・create：物を作って持つ（まだ動かない）。部品を addComponent で付ける
@@ -80,15 +80,6 @@ public:
 		}
 		for ( const GameObject* object : *objects ){
 			function( static_cast< const T& >( *object->getComponent< T >() ) );
-		}
-	}
-	// spawn した物を全部、作った順にたどり、function( const GameObject& ) を呼ぶ（F6 のエディタの物の一覧）
-	template< class Function >
-	void forEachObject( Function function ) const {
-		for ( const std::unique_ptr< GameObject >& object : mObjects ){
-			if ( object->isSpawned() ){
-				function( static_cast< const GameObject& >( *object ) );
-			}
 		}
 	}
 	// T の部品を持つ物の数（消す印が付いていて、まだ flush していない物も数える）

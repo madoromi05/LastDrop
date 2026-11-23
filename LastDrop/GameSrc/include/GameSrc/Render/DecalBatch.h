@@ -9,7 +9,7 @@
 #include "GameLib/Graphics/ConstantBuffer.h"
 #include <vector>
 
-// 面に貼る絵（デカール）を、決まった数までためて描く。シェーダは Resource/Shader/Decal.hlsl。仕様は SsrDecalMaterial_Plan.txt 8 章
+// 面に貼る絵（デカール）を、決まった数までためて描く。シェーダは Resource/Shader/Decal.hlsl
 // デカール 1 つは、面の上の点を中心にした薄い箱。箱の中にある G-Buffer の面にだけ、絵の色と凹みの法線をアルファで混ぜて書く
 // （面そのものに書くので、角や窓枠からはみ出さず、面から浮かせる必要も無い）。粗さ・金属・AO（RT2）は面のまま
 // 何を貼るか・いつ消すかは持ち主（BulletHoleList など）が決める。ここは「ためる・描く」だけ（血の跡など別の絵にも使える）
@@ -17,7 +17,7 @@
 class DecalBatch{
 public:
 	// 絵のうち、デカール 1 つに使う所（UV。左上と大きさ）。初期値は絵の全部
-	// 何種類かの絵を 1 枚に並べ、デカールごとに選ぶため（血の跡の 2×2。BloodStain_Plan.txt Q1）
+	// 何種類かの絵を 1 枚に並べ、デカールごとに選ぶため（血の跡の 2×2）
 	struct UvRect{
 		float left = 0.f;
 		float top = 0.f;
@@ -61,7 +61,7 @@ private:
 };
 
 // デカールを描くか（F6 → Render の Decals。見比べと計測用）。false の間は弾痕が描かれない
-// （板の弾痕に戻すのではない）。起動中ずっと 1 つ（DecalBatch.cpp が持つ。初期値 true。Release では true のまま）
+// 起動中ずっと 1 つ（DecalBatch.cpp が持つ。初期値 true。Release では true のまま）
 bool& decalsEnabled();
 
 #endif

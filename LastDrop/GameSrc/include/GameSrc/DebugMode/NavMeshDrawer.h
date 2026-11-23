@@ -6,7 +6,7 @@
 
 class NavMesh;
 
-// ゾンビが歩ける床（NavMesh）の多角形の辺を、地面の少し上に薄い緑の線で描く（開発中の確認用。SummaryPlan/個別仕様/ゾンビ/ZombieNavMesh_Plan.txt）
+// ゾンビが歩ける床（NavMesh）の多角形の辺を、地面の少し上に薄い緑の線で描く（開発中の確認用）
 // 壁・建物の側の縁が、ゾンビの足元が入れる範囲の境目。内側の線は、床を多角形に分けた区切り（壁ではない）
 // 手前の物に隠れない線で描く。描くだけで、床を変えない。ON/OFF はこのクラスを呼ぶか呼ばないか（GameDebugOverlay。F6 の NavMesh）
 class NavMeshDrawer{

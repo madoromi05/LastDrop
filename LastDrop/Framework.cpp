@@ -21,7 +21,6 @@
 #include <fstream>
 #include <string>
 #include <vector>
-using namespace std;
 
 namespace GameLib{
 namespace {
@@ -31,7 +30,7 @@ const char* const kPackFile = "LastDrop.pak";	// exe と同じフォルダに置
 
 // .pak が無いと最初の読み込みで止まるので、窓を出す前に知らせて終える
 void exitIfPackMissing(){
-	ifstream pack( kPackFile, ifstream::binary );
+	std::ifstream pack( kPackFile, std::ifstream::binary );
 	if ( !pack.good() ){
 		MessageBoxW( nullptr, L"LastDrop.pak が見つかりません。LastDrop.exe と同じフォルダに置いてください。", L"LAST DROP", MB_OK | MB_ICONERROR );	// /utf-8 でコンパイルするので、日本語は W の方で渡す
 		std::exit( EXIT_FAILURE );
@@ -60,8 +59,8 @@ public:
 	mStarted( false ){
 		cout.begin();
 #ifdef LASTDROP_PACKED
-		// 配る Release は素材を .pak だけから読む（ResourcePack_Plan.txt）。Resource/ に残った物は読まない
-		mArchiveNames = NEW string[ 1 ];
+		// 配る Release は素材を .pak だけから読む。Resource/ に残った物は読まない
+		mArchiveNames = NEW std::string[ 1 ];
 		mArchiveNames[ 0 ] = kPackFile;
 		mArchiveNumber = 1;
 		mLoadMode = FileIO::Manager::MODE_ARCHIVE_ONLY;
@@ -209,8 +208,8 @@ public:
 	bool mFullScreenForbidden;
 	bool mVSync;
 	bool mAntiAlias;
-	string mTitle;
-	string* mArchiveNames;
+	std::string mTitle;
+	std::string* mArchiveNames;
 	int mArchiveNumber;
 	FileIO::Manager::AccessMode mLoadMode;
 	static const int TIME_HISTORY_SIZE = 60;

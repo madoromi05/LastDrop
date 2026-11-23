@@ -1,5 +1,5 @@
 // 深度からワールドの位置を戻す式。逆行列をどの定数で持つかは使う側が決める
-// （ライティング・霧は DeferredConstants.hlsli の b1、SSAO は Ssao.hlsl の b1。SsaoTranslucent_Plan.txt 5-1）
+// （ライティング・霧は DeferredConstants.hlsli の b1、SSAO は Ssao.hlsl の b1）
 #ifndef INCLUDED_DEPTH_POSITION_HLSLI
 #define INCLUDED_DEPTH_POSITION_HLSLI
 

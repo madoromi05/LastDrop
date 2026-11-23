@@ -28,7 +28,7 @@ class CombatResolver{
 public:
 	// ゾンビに弾が当たった出来事（ヒット音を鳴らすなど、世界の外の係が読む）。死体に当たったときも入る
 	struct ZombieHit{
-		// 命中の重さ（HitFeel_Plan.txt）。血・画面の揺れの係が読む。決めるのは CombatResolver.cpp の chooseHitWeight だけ
+		// 命中の重さ。血・画面の揺れの係が読む。決めるのは CombatResolver.cpp の chooseHitWeight だけ
 		enum class Weight{
 			Normal,    // 胴・腕・脚に当たっただけ（死体に当たったときも）
 			Severed,   // 腕・脚が千切れた（脚を失って倒れた Downed も）

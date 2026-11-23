@@ -1,4 +1,4 @@
-// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に目からの奥行き m）を読む側の共通の式（SsaoTranslucent_Plan.txt 6 章）
+// SSAO の結果（AmbientOcclusion。画面の半分の大きさ・r に AO・g に目からの奥行き m）を読む側の共通の式
 // ぼかし（SsaoBlur.hlsl）と、元の大きさへの拡大（DeferredLighting.hlsl のライティングと表示の SSAO）が同じ「奥行きの近さ」を使う
 #ifndef INCLUDED_SSAO_UPSAMPLE_HLSLI
 #define INCLUDED_SSAO_UPSAMPLE_HLSLI

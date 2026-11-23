@@ -1,7 +1,6 @@
 #include "GameLib/Base/IBinaryStream.h"
 
 namespace GameLib{
-using namespace std;
 
 IBinaryStream::IBinaryStream( const char* s ) : mBuffer( s ), mSize( 0 ), mPosition( 0 ){
 	if ( s ){

@@ -4,7 +4,6 @@
 //#include <string>
 
 namespace GameLib{
-//using namespace std;
 
 //参照型文字列クラス
 /*!

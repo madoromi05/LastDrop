@@ -1,4 +1,4 @@
-// 静的メッシュ（建物）をインスタンシングでまとめて影のマップへ深度だけ描く（StaticMeshInstancing。RenderPass が Shadow の間。OptimizationA_Plan.txt 8 章）
+// 静的メッシュ（建物）をインスタンシングでまとめて影のマップへ深度だけ描く（StaticMeshInstancing。RenderPass が Shadow の間）
 // 1 軒ずつ描く StaticMeshShadow.hlsl との違いは、置き場所を b1 の配列から読むことだけ。色は書かないので、ピクセルシェーダは何もしない
 #include "StaticMeshInstancing.hlsli"
 

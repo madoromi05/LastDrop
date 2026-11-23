@@ -10,7 +10,6 @@
 
 namespace GameLib{
 namespace PseudoXml{
-using namespace std;
 
 Document Document::create(){
 	Document r;
@@ -41,7 +40,7 @@ void Document::write( const char* filename, bool isBinary ) const {
 			&out[ 0 ],
 			out.size() );
 	}else{
-		string out;
+		std::string out;
 		mImpl->convertToString( &out );
 		FileIO::Manager().write( 
 			filename, 
@@ -50,7 +49,7 @@ void Document::write( const char* filename, bool isBinary ) const {
 	}
 }
 
-void Document::convertToString( string* out ) const {
+void Document::convertToString( std::string* out ) const {
 	STRONG_ASSERT( mImpl && "This is Empty Object." );
 	mImpl->convertToString( out );
 }
@@ -103,7 +102,7 @@ bool ConstDocument::isError() const {
 	return mBase.isError();
 }
 
-void ConstDocument::convertToString( string* out ) const {
+void ConstDocument::convertToString( std::string* out ) const {
 	mBase.convertToString( out );
 }
 

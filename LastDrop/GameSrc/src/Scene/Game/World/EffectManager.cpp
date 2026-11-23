@@ -4,7 +4,7 @@ using namespace GameLib::Math;
 
 namespace{
 	// 血しぶきの量と大きさの倍率（1 回は BloodSpray::kMaxScale まで）
-	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す（頭は 1.5 → 上限）
+	// 弾が当たった音は 1 つなので、頭の手応えは血の量で出す（頭は 1.5 → 上限）
 	const float kBodyBloodScale = 0.8f;						// ふつう（少し控えめにして、重い命中との差を作る）
 	const float kHeadBloodScale = BloodSpray::kMaxScale;	// 頭に当たった（倒れていない）
 	const float kHeavyBloodScale = 1.2f;					// 部位が飛んだ・倒した（切り口からは別に kSeverBloodScale が出る）

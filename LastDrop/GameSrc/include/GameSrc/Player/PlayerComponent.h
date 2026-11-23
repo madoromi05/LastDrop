@@ -4,6 +4,7 @@
 #include "GameSrc/World/Component.h"
 #include "GameSrc/Player/PlayerCommand.h"
 #include "GameSrc/Player/Animator.h"
+#include "GameLib/Math/Vector3.h"
 
 class InventoryComponent;
 class HoldComponent;
@@ -17,12 +18,13 @@ class CharacterColliderComponent;
 
 // 一人称(FPS)で操作する自キャラの「操作を読んで隣の部品へ頼む」部品（画像の PlayerComponent）。Input の段で動く
 // 体は常にカメラの水平の向きを向き、WASD はその向き基準の前後・横歩きになる。入力デバイスは読まない（操作は PlayerCommand で受け取る）
-// 自キャラの物の部品（PlayerFactory が付ける。付ける順は自由。SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt）：
+// 自キャラの物の部品（PlayerFactory が付ける。付ける順は自由）：
 //   必須：Transform（足元と向き）・SkinnedModel（見た目）・FirstPersonBody（一人称の体の見せ方）・
 //         PlayerLocomotion（歩き方のアニメと速さ）・CharacterCollider（移動の当たり判定と滑る移動）・Inventory（持ち物）
 //   任意（外すとその振る舞いだけ無くなる。使う所ごとに getComponent で引く）：
 //         Hold（持つ銃と構え。外すと素手）・PlayerHealth（体力。外すと死なない）・Hitbox（部位の命中。外すと撃たれない）・
-//         PlayerGrab（ゾンビにつかまれる。外すと襲われない）・ArmPose（腕の効き具合。外すと腕は体のアニメのまま）
+//         PlayerGrab（ゾンビにつかまれる。外すと襲われない）・ArmPose（腕の効き具合。外すと腕は体のアニメのまま）・
+//         PlayerFlight（確認用に飛ぶ。Debug・Profile だけ付ける）
 // どの部品も自分では動かず、ここが 1 ティックの中で決まった順に頼む（順番に意味があるため。update は段ごとの関数を順に呼ぶ）
 // 撃つ操作からは「撃てる状態で引き金を引いているか」を決めて銃へ伝える（fire）。連射の間隔・弾の数は銃（GunComponent）が決める
 // 弾を出す・銃声を鳴らすのは、それを読む側（GameWorld・PlayerBodySounds）
@@ -49,7 +51,9 @@ private:
 	// 撃てる状態で引き金を引いているかを、手に持った銃へ伝え、反動を体へ渡す（画像の PlayerComponent::Fire）
 	// gun: 手に持った銃（素手なら nullptr。反動 0 を渡すだけ）
 	void fire( GunComponent* gun, bool canFire, bool triggerHeld );
-	void moveBody( Animator::State next, const PlayerHealthComponent* health );				// next の歩き方で体を進める：腕 → 速さ → アニメ → 滑る移動 → 地面 → 部位の箱。health: 体力の部品（外されていれば nullptr）
+	// next の歩き方で体を進める：腕 → 速さ → アニメ → 滑る移動 → 地面 → 部位の箱。health: 体力の部品（外されていれば nullptr）
+	// flightStep: 飛んでいる間のこのティックに進む量（壁と地面を無視してそのまま進む）。飛んでいなければ nullptr
+	void moveBody( Animator::State next, const PlayerHealthComponent* health, const GameLib::Math::Vector3* flightStep );
 
 	PlayerCommand mCommand;
 	float mCameraYaw;

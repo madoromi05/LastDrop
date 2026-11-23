@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// よろけたときに体を押し下げる量を、ティックごとに配る（SummaryPlan/個別仕様/ゾンビ/ZombieStagger_Plan.txt の 9 章）
+// よろけたときに体を押し下げる量を、ティックごとに配る
 // 距離と長さは ZombieStaggerParams（始めたときの値を使う）。初めが速く、だんだん遅くなる（弾を受けた瞬間に一番押される）
 // 量を決めるだけで、体は動かさない（壁・車に当たりながら足元を動かすのは ZombieHealthComponent）
 class ZombieKnockback{

@@ -3,7 +3,7 @@
 
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 
-// マス目ごとの「入れてよい物」の決まり（R2_Plan.txt 5 章）。マス目（ItemGrid）は決まりを知らないので、使う側が渡す
+// マス目ごとの「入れてよい物」の決まり。マス目（ItemGrid）は決まりを知らないので、使う側が渡す
 enum class GridRule{
 	Free,       // 決まり無し（倉庫。銃を何丁でも置ける）
 	CarryLimit, // ItemSpec::carryLimit を守る（カバン。銃は 1 種類 1 丁）

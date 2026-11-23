@@ -29,11 +29,20 @@ public:
 	// 移動の当たり判定を作って world へ渡す（以後は world が持つ）。建物1軒につき1回だけ呼ぶ（呼ぶたびに登録が増える）
 	// world: 所有権は受け取らない。nullptr 不可
 	void addCollidersTo( CollisionWorld* world ) const;
+	// 見た目を position / angleY（度）へ動かす。弾・視線の当たりは見た目の三角形なので一緒に動く
+	// 移動の当たり判定は addCollidersTo で名簿へ渡した物が元の場所に残る（F6 の Town タブの確かめ用。出撃を読み直すと合う）
+	void moveTo( const GameLib::Math::Vector3& position, float angleY );
+	// 見えなくする（描かない・弾と視線が通る）。false で元に戻る。移動の当たり判定は名簿に残る（moveTo と同じ確かめ用）
+	void setHidden( bool hidden );
 	void draw( const DrawCulling& culling ) const;						// culling（映る範囲・描く距離・小ささ。DrawCulling）で描くと決まった時だけ描く
 	bool shows( const DrawCulling& culling ) const;						// culling で描くと決まっているか。決まっていれば mesh() を StaticMeshBatch へ足してまとめて描く
 	const StaticMeshInstance& mesh() const;								// 見た目（元の形と置き場所）。まとめて描く（StaticMeshBatch::add）ために読む
 	const StaticMeshData* shapeFor( const DrawCulling& culling ) const;	// culling で描くときの細かさの段の形（DrawCulling::chooseLod）。目から見る絵なら段を選び直す
 	const GameLib::Math::Vector3& position() const;						// 置き場所（地面の上）。描く順番を目に近い順に並べるのに使う
+	float angleY() const;												// 置いた向き（度）。隠れの表（TownVisibility）が、建物の向きに回った足元を作るのに使う
+	// 同じ形を、置き場所の高さのまま原点に向き 0 で置いた見た目。その箱が、建物の向きで見た足元の長方形になる
+	// 隠れの表（TownVisibility）と、その確かめ（TownVisibilityCheck）が、回った建物の足元を同じ求め方で作るのに使う
+	StaticMeshInstance upright() const;
 	// 弾の当たり判定（見た目の三角形で判定する）
 	bool raycast( const GameLib::Math::Vector3& origin, const GameLib::Math::Vector3& delta,
 		float* time, GameLib::Math::Vector3* normal ) const override;
@@ -45,6 +54,7 @@ private:
 	// 今描く細かさの段。描く側だけが使う状態（ゲームの進行には使わない）なので、const の draw から選び直せるように mutable
 	mutable LodSelector mLod;
 	GroundMaterial mMaterial;
+	bool mHidden;
 };
 
 #endif

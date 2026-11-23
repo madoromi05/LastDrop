@@ -5,7 +5,7 @@
 
 class FirstPersonCamera;
 
-// 視点を決まった時間をかけて、ある所（つかんだゾンビの顔）へ向ける係（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 4 章）
+// 視点を決まった時間をかけて、ある所（つかんだゾンビの顔）へ向ける係
 // 向けている間もマウスで回せる（回した分はそのまま足される。ここはカメラの今の向きへ、残りを足していくだけ）
 class LookPull{
 public:

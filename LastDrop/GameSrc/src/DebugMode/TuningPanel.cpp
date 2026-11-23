@@ -2,6 +2,7 @@
 
 #ifdef ZF_EDITOR
 
+#include "GameSrc/DebugMode/EditorColors.h"
 #include "GameSrc/DebugMode/TuningCatalog.h"
 
 #include "ThirdParty/imgui/imgui.h"
@@ -17,7 +18,6 @@ namespace{
 	const int kNameCapacity = 64;
 	const char* kInvalidNameCharacters = "\\/:*?\"<>|";	// ファイル名に使えない文字（Windows）。打たれたら保存しない
 	const float kNameWidthRatio = 0.5f;					// 名前の欄の幅（欄の幅に対して。Save ボタンを同じ行に残す）
-	const ImVec4 kWarningColor( 1.f, 0.85f, 0.2f, 1.f );
 
 	char gName[ kNameCapacity ] = "tuning"; // 保存する名前（既定は tuning）
 	std::vector< std::string > gFiles;   // Tuning/ にあるプリセットの名前（拡張子なし）
@@ -130,7 +130,7 @@ void draw() {
 		ImGui::TextDisabled( "%s", gStatus.c_str() );
 	}
 	for ( const std::string& warning : gWarnings ) {
-		ImGui::TextColored( kWarningColor, "%s", warning.c_str() );
+		ImGui::TextColored( EditorColors::kWarning, "%s", warning.c_str() );
 	}
 	ImGui::Separator();
 	TuningCatalog::drawAll();

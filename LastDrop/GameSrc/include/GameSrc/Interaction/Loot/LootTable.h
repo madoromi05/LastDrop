@@ -6,7 +6,7 @@
 #include "GameLib/Math/Random.h"
 #include <vector>
 
-// 漁れる場所の種類（SummaryPlan/個別仕様/出撃と帰還/R3_Plan.txt Q1）。種類ごとに、出やすい物・開けるのにかかる秒・開けている音が違う
+// 漁れる場所の種類。種類ごとに、出やすい物・開けるのにかかる秒・開けている音が違う
 // 見た目（ゴミ箱・木箱の形）は種類と関係なく PropFactory が決める。ゾンビの死体の表は無い（死体は漁れない）
 enum class LootTableId{
 	Dumpster, // ゴミ箱（弾・包帯）

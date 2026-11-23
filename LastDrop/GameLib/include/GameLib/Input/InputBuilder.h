@@ -34,7 +34,7 @@ public:
     // ─────────────────────────────────────────
     std::shared_ptr<KeyboardDevice> AddKeyboardDevice();
     std::shared_ptr<MouseDevice>    AddMouseDevice();
-    std::shared_ptr<JoystickDevice> AddJoystickDevice(int a_joystickIndex = 0);
+    std::shared_ptr<JoystickDevice> AddJoystickDevice();
     std::shared_ptr<GamePadDevice> AddGamePadDevice();
 
     // ─────────────────────────────────────────

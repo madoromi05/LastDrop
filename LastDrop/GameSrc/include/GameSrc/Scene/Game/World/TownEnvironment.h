@@ -15,9 +15,9 @@ class TownVisibility;
 class CollisionWorld;
 class HitWorld;
 class GameObjectWorld;
+class GameObject;
 
 // 町（地図・道路と歩道・建物・ゾンビの歩ける床・建物の隠れの表）を作って持つ係
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-1）
 // 出撃の始めのロードで一度だけ作り、その後は読まれるだけ（増えも減りもしない）
 // 当たり判定の名簿 2 つと物の並びは持たない（町だけの物ではないので GameWorld が持ち、作るときに借りる）
 // 置物（車・漁れる場所）は物の並びへ置くので、ここには残らない（持ち主は GameObjectWorld）
@@ -25,7 +25,8 @@ class TownEnvironment{
 public:
 	// 建物・地面の形の読み込みを頼むだけ（非同期）。どれも所有権は受け取らない。nullptr 不可。この係より長く生きていること
 	// meshes: 形を借りる倉庫。town: 町の決まった形（歩ける床・隠れの表）を起動中 1 回だけ作って持つ所。props: 置物を組み立てる
-	TownEnvironment( MeshCache* meshes, TownCache* town, const PropFactory* props );
+	// edits: 町の手直し（TownMap が組み立てた後に当てる）。nullptr なら手直し無し。使わなかった行の理由はログへ出す
+	TownEnvironment( MeshCache* meshes, TownCache* town, const TownEdits* edits, const PropFactory* props );
 	TownEnvironment( const TownEnvironment& ) = delete;
 	TownEnvironment& operator=( const TownEnvironment& ) = delete;
 
@@ -34,11 +35,20 @@ public:
 	// escapeCarSpot: 今日の脱出の車の置き場所（TownMap::escapeCarSpots の番号）。lampsLit: 街灯のガラスが光る形で置くか（停電の日は false）
 	// 組み立てた後、町の地面を objects の共有の棚へ置く（物の部品が、落ちる先の地面として引く）。1 つの世界につき 1 回だけ呼ぶ
 	void build( CollisionWorld* collisionWorld, HitWorld* hitWorld, GameObjectWorld* objects, int escapeCarSpot, bool lampsLit );
-	// ゾンビの歩ける床を TownCache から借りる（その車の置き場所の床がまだ無ければ、町の動かない形から作る）。build の後
+	// ゾンビの歩ける床を TownCache から借りる（この町とその車の置き場所の床がまだ無ければ、書き出したファイルか、町の動かない形から作る）。build の後
 	// 借りた床を返す（ゾンビの部品が共有の棚から引くので、棚の持ち主が置く）
 	// agentRadius: 床の縁を壁から離す長さ（m。ゾンビの体の大きさから ZombieDirector::navMeshRadius で求める）
 	NavMesh* buildNavMesh( const CollisionWorld& collisionWorld, float agentRadius );
 	void buildVisibility( const HitWorld& hitWorld );	// 建物の隠れの表を TownCache から借りる（同じ）。build の後
+
+	// ── F6 の Town タブの確かめ用 ──
+	// index 番の建物（buildings の添字）の見た目を position / angleY（度）へ動かす（Building::moveTo。移動の当たり判定と歩ける床は元のまま）
+	// 隠れの表は手直しする前の建物で作った物なので、一度でも動かす・見えなくしたら、この世界の間は表を使わない（visibilityIfEnabled が nullptr）
+	void moveBuilding( int index, const GameLib::Math::Vector3& position, float angleY );
+	void setBuildingHidden( int index, bool hidden );	// index 番の建物を見えなくする・戻す（Building::setHidden。移動の当たり判定と歩ける床は元のまま）
+	// 足した建物を、建物の並びへは入れずに objects へ見せる物として置く（WorldBuilder::spawnBuildingPreview）。形の構築に失敗していたら nullptr
+	// 隠れの表には無い物なので、表がこの建物の後ろを隠すことは無い（描く数が減らないだけで、見え方は合う）
+	GameObject* spawnBuildingPreview( GameObjectWorld* objects, const TownPlacement& at ) const;
 
 	// ── 読み取り口 ──
 	const TownMap& map() const;							// 町のどこに何を置くか
@@ -46,7 +56,7 @@ public:
 	const std::vector< Building >& buildings() const;	// 建てた建物（build の後は増えない）
 	const NavMesh& navMesh() const;						// 歩ける床（buildNavMesh の後）
 	const TownVisibility& visibility() const;			// 建物・ゾンビの隠れの表（buildVisibility の後）
-	const TownVisibility* visibilityIfEnabled() const;	// 隠れの表を使ってよいなら、その表。F6 の PVS を切っている・まだ無いなら nullptr（描く側・アニメの間引きが同じ決まりで読む）
+	const TownVisibility* visibilityIfEnabled() const;	// 隠れの表を使ってよいなら、その表。F6 の PVS を切っている・まだ無い・建物を手直ししたなら nullptr（描く側・アニメの間引きが同じ決まりで読む）
 
 private:
 	TownMap mMap;
@@ -57,6 +67,7 @@ private:
 	NavMesh* mNavMesh;					// buildNavMesh で mTown から借りる（それまでは nullptr）
 	const TownVisibility* mVisibility;	// buildVisibility で mTown から借りる（それまでは nullptr）
 	int mEscapeCarSpot;					// 今日の脱出の車の置き場所（build で受け取る。歩ける床を選ぶのに使う）
+	bool mBuildingsEdited;				// moveBuilding・setBuildingHidden で建物を手直ししたか（隠れの表が今の建物と合わない）
 };
 
 #endif

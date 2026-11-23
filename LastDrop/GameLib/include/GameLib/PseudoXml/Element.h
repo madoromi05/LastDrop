@@ -4,7 +4,6 @@
 namespace GameLib{
 class OStringStream;
 namespace PseudoXml{
-//using namespace std;
 
 class Attribute;
 class ConstAttribute;

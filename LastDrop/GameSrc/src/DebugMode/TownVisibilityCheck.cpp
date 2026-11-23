@@ -2,9 +2,11 @@
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Map/Building.h"
 #include "GameSrc/Hit/HitWorld.h"
+#include "GameSrc/Render/StaticMesh/StaticMeshInstance.h"
 
 #include "GameLib/GameLib.h"
 #include "GameLib/Math/Vector3.h"
+#include "GameLib/Math/Matrix34.h"
 
 using namespace GameLib::Math;
 
@@ -50,10 +52,14 @@ void TownVisibilityCheck::run( const TownVisibility& visibility, const std::vect
 				continue;
 			}
 			++hiddenPairs;
-			// 見られる長方形と高さ（TownVisibility の足元と同じ。建物の見た目を囲む箱）
-			const Vector3& low = buildings[ b ].mesh().boundsMin();
-			const Vector3& high = buildings[ b ].mesh().boundsMax();
+			// 見られる長方形と高さ（TownVisibility の足元と同じ求め方）
+			// 同じ形を、建物の高さのまま原点に向き 0 で置いた箱を、建物の向きに回した長方形
+			const StaticMeshInstance& placed = buildings[ b ].mesh();
+			const StaticMeshInstance upright = buildings[ b ].upright();
+			const Vector3& low = upright.boundsMin();
+			const Vector3& high = upright.boundsMax();
 			// 箱の 4 面の上の点へ 3D の線を撃ち、何にも当たらないか、最初に当たるのがその建物なら「3D では見えた」
+			// 面の上の点は回す前の箱の上で決め、建物の行列で world へ置く（見た目と同じ回り方になる）
 			bool seen = false;
 			Vector3 seenTarget;
 			for ( float ratio : kVerifyHeightRatios ) {
@@ -65,7 +71,9 @@ void TownVisibilityCheck::run( const TownVisibility& visibility, const std::vect
 					float from = alongX ? low.x : low.z;
 					float to = alongX ? high.x : high.z;
 					for ( float s = from; s <= to && !seen; s += kVerifySpacing ) {
-						Vector3 target = alongX ? Vector3( s, height, fixed ) : Vector3( fixed, height, s );
+						Vector3 target;
+						placed.worldMatrix().mul( &target, alongX ? Vector3( s, 0.f, fixed ) : Vector3( fixed, 0.f, s ) );
+						target.y = height;
 						Vector3 delta;
 						delta.setSub( target, eye );
 						HitWorld::Hit hit;

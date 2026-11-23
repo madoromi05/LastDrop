@@ -8,7 +8,7 @@ class StaticMeshData;
 class StaticMeshInstance;
 class StaticMeshInstancing;
 
-// 置いた静的メッシュを形（StaticMeshData）ごとに集め、パーツごとに 1 回の描画で描く（インスタンシング。OptimizationA_Plan.txt 8-3）
+// 置いた静的メッシュを形（StaticMeshData）ごとに集め、パーツごとに 1 回の描画で描く（インスタンシング）
 // 1 つずつ描く（StaticMeshInstance::draw）のと比べ、描く回数が「置いた数 × パーツ数」から「形の数 × パーツ数」に減り、材質もパーツごとに 1 回だけ付ける
 // 何を置いた物かは問わない（今は建物と置物。WorldRenderer）。描くかどうかの判定（DrawCulling）は足す側が済ませておく
 // 使い方: 1 回描くごとに clear → add（描きたい順）→ draw

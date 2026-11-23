@@ -1,5 +1,5 @@
 // 固定パイプラインの「ピクセルごとのライティング＋法線マップ」（GameLib/src/Graphics/PixelLightingNormalMapPsHlsl.h）と
-// 同じ計算。自作シェーダで描くものも、固定パイプラインで描くものと同じ見た目にするために使う
+// 同じ b0 の並びと、同じ法線マップの掛け方。自作シェーダが、固定パイプラインと同じ材質の値を読むために使う
 // ライト・材質の値は Graphics::Manager の setLight〜 / setSpecular〜 / setNormalMapStrength で決まり、b0 に入る
 // 法線マップを使わないときは、強さ（setNormalMapStrength）を 0 にすれば元の法線のまま（t1 が空でも読まれない値になる）
 #ifndef INCLUDED_LIGHTING_HLSLI
@@ -46,52 +46,6 @@ float3 perturbNormal(float3 normal, float3 worldPosition, float2 uv)
     float3x3 tbn = float3x3(tangent, bitangent, normal);
     float3 r = normalize(mul(mapNormal, tbn));
     return any(isnan(r)) ? normal : r; // 退化（UV面積0など）のときは元の法線へ
-}
-
-// 1 つの面を 4 灯のディフューズ・スペキュラ＋環境光で照らした色（発光は含まない）。今の描き方（shadePixel）が呼ぶ
-// ゲーム本編はディファード＋PBR（Pbr.hlsli）へ移ったので、これを使っていたのはテスト用のシーン（SkinTestScene）だけ
-// SkinnedMesh.hlsl（shadePixel を呼ぶ）を今も描くのに使っているかは確かめていない（使っていた SkinTestScene はもう無い）
-// albedo: 頂点色×ディフューズ色×画像（リニア）  nv: 法線（長さ 1・法線マップ済み）
-// specularColor: (2+鋭さ)/2π を掛けた後のスペキュラの色（b0 の gSpecularColor.xyz と同じ形）  sharpness: 鋭さ
-float3 lightSurface(float3 albedo, float3 nv, float3 worldPosition, float3 specularColor, float sharpness)
-{
-    float3 ev = gEyePosition.xyz - worldPosition;
-    float3 rv = 2.0f * nv * dot(nv, ev) - ev;
-    float4 lvX = gPsLightPosX - worldPosition.xxxx;
-    float4 lvY = gPsLightPosY - worldPosition.yyyy;
-    float4 lvZ = gPsLightPosZ - worldPosition.zzzz;
-    float4 s = lvX * rv.xxxx + lvY * rv.yyyy + lvZ * rv.zzzz;
-    float4 lvL2 = lvX * lvX + lvY * lvY + lvZ * lvZ + 0.0001f;
-    float4 rcpLvL = rsqrt(lvL2);
-    float4 rvL2 = dot(rv, rv);
-    s *= rsqrt(lvL2 * rvL2);
-    s = max(0, s);
-    s = pow(s, sharpness);
-    s *= rcpLvL;
-    float4 d = (lvX * nv.xxxx + lvY * nv.yyyy + lvZ * nv.zzzz) * rcpLvL * rcpLvL;
-    d = max(0, d);
-    float3 dc = gAmbient.xyz;
-    dc += gPsLightColor[0].xyz * d.x;
-    dc += gPsLightColor[1].xyz * d.y;
-    dc += gPsLightColor[2].xyz * d.z;
-    dc += gPsLightColor[3].xyz * d.w;
-    float3 sc = 0;
-    sc += gPsLightColor[0].xyz * s.x;
-    sc += gPsLightColor[1].xyz * s.y;
-    sc += gPsLightColor[2].xyz * s.z;
-    sc += gPsLightColor[3].xyz * s.w;
-    return albedo * dc + sc * specularColor;
-}
-
-// 4灯のディフューズ・スペキュラ＋環境光＋発光で、1画素の色を求める。color: 頂点色×ディフューズ色
-float4 shadePixel(float4 color, float2 uv, float3 worldPosition, float3 worldNormal)
-{
-    float3 nv = normalize(worldNormal);
-    nv = perturbNormal(nv, worldPosition, uv);
-    float4 c = color * gAlbedo.Sample(gWrapSampler, uv);
-    c.xyz = lightSurface(c.xyz, nv, worldPosition, gSpecularColor.xyz, gSpecularColor.w);
-    c.xyz += gEmissionColor.xyz;
-    return c;
 }
 
 #endif

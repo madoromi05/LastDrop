@@ -13,7 +13,6 @@
 #include "GameLib/Base/Utf8.h"
 #include <algorithm>
 #include <string>
-using namespace std;
 
 namespace GameLib{
 namespace Scene{
@@ -138,7 +137,7 @@ public:
 		for ( int i = 0; i < charPosition; ++i ){
 			charPointers[ i ] = &chars[ i ];
 		}
-		sort( &charPointers[ 0 ], &charPointers[ 0 ] + charPosition, PointerLess< Char >() );
+		std::sort( &charPointers[ 0 ], &charPointers[ 0 ] + charPosition, PointerLess< Char >() );
 		//ソートされた順に文字バッファをTriangleBufferにadd
 		Texture lastTexture;
 		for ( int i = 0; i < charPosition; ++i ){
@@ -175,7 +174,7 @@ private:
 	struct Request{
 		Vector2 mPosition;
 		float mDepth;
-		string mString;
+		std::string mString;
 		unsigned mColor;
 		Font mFont;
 		bool mWrap;

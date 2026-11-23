@@ -1,5 +1,5 @@
 // 深度から位置を戻す全画面のパス（DeferredLighting.hlsl・Fog.hlsl）の共通の定数（b1）
-// どちらも DeferredLighting.cpp が DeferredConstants に書いて付ける（GBuffer_Plan.txt 7 章・NightFinish_Plan.txt 5-1）
+// どちらも DeferredLighting.cpp が DeferredConstants に書いて付ける
 #ifndef INCLUDED_DEFERRED_CONSTANTS_HLSLI
 #define INCLUDED_DEFERRED_CONSTANTS_HLSLI
 

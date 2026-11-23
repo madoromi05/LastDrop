@@ -29,7 +29,7 @@ namespace{
 		bool withUpperBody;                         // followers に胴から先（kUpperBodyBones）も足すか
 		const char* followers[ kMaxFollowerNames ]; // 余りは nullptr
 	};
-	// まとまり1つの定義。関節は根に近い順。値は SummaryPlan/個別仕様/ゾンビ/ZombieStagger_Plan.txt の 3 章（見た目を確かめる前の初期値）
+	// まとまり1つの定義。関節は根に近い順。値は見た目を確かめる前の初期値
 	struct GroupDefinition{
 		float kickDegree;
 		JointDefinition joints[ kMaxJointsPerGroup ]; // 余りは bone が nullptr

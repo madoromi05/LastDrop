@@ -21,7 +21,7 @@ class ZombieHealthComponent;
 class ZombieDismemberComponent;
 struct ChaseTarget;
 
-// ゾンビ 1 体の部品を、1 ティックの中で呼ぶ順番を決める部品（Think の段で動く。SummaryPlan/個別仕様/設計と分割/ZombieBrainSplit_Plan.txt）
+// ゾンビ 1 体の部品を、1 ティックの中で呼ぶ順番を決める部品（Think の段で動く）
 // 判断はそれぞれの部品が持ち、ここは順番だけを書く（順番を間違えると 1 ティック遅れの揺れが出るので、1 か所で見えるようにする）
 // ゾンビの物の部品（ZombieFactory が付ける。付ける順は自由）：
 //   必須：Transform（足元と向き）・ZombieModel（設計図）・SkinnedModel（見た目）・Hitbox（部位の命中）・
@@ -85,7 +85,7 @@ private:
 	// のけぞりは外せる体力の部品が持つので毎ティック組み直す（外された部品の書き換えを指したまま姿勢を求めないため）
 	// health: 体力の部品（外されていれば nullptr）
 	void rebuildPoseModifiers( ZombieHealthComponent* health );
-	// アニメを間引いてはいけない間か（攻撃・根の動き・よろけ・のけぞり・体を引きずる間。仕様書 9 章）
+	// アニメを間引いてはいけない間か（攻撃・根の動き・よろけ・のけぞり・体を引きずる間）
 	// 根の動きを置き場所へ移す処理や、アニメの何フレーム目で何かを起こす処理が、飛んだ姿勢だとずれるため
 	// attack / health: 外せる部品（外されていれば nullptr）
 	bool mustPoseEveryTick( const ZombieAttackComponent* attack, const ZombieHealthComponent* health ) const;

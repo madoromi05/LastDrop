@@ -9,7 +9,7 @@ using namespace GameLib::Input;
 // パッド（GamePad）のボタン用フォーマット
 //
 // a_keyCode = GamePad::Button の番号
-// 読むパッドは差し口 0 番（JoystickButtonFormat と同じく、プレイヤーごとの差し口の指定は今後の拡張ポイント）
+// 読むパッドは差し口 0 番（JoystickButtonFormat と同じ）
 // ────────────────────────────────────────────────
 class GamePadButtonFormat : public InputButtonFormatBase<int>
 {

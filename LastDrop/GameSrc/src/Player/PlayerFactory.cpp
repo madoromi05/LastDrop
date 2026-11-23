@@ -9,6 +9,7 @@
 #include "GameSrc/Player/PlayerFootprintComponent.h"
 #include "GameSrc/Player/PlayerNoiseComponent.h"
 #include "GameSrc/Player/PlayerGrabComponent.h"
+#include "GameSrc/Player/PlayerFlightComponent.h"
 #include "GameSrc/Player/Body/FirstPersonBodyComponent.h"
 #include "GameSrc/Player/Body/HoldComponent.h"
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
@@ -74,6 +75,9 @@ GameObject* PlayerFactory::spawn( GameObjectWorld* world, const Vector3& positio
 	obj->addComponent< CharacterColliderComponent >();
 	obj->addComponent< PlayerFootprintComponent >(); // 移動の当たり判定の形
 	obj->addComponent< PlayerGrabComponent >();
+#ifdef ZF_EDITOR
+	obj->addComponent< PlayerFlightComponent >(); // F6 の Fly で飛ぶ（確認用）
+#endif
 	obj->addComponent< PlayerComponent >();
 	obj->addComponent< PlayerNoiseComponent >(); 
 	world->spawn( obj );

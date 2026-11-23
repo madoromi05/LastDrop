@@ -21,6 +21,7 @@ void CommandReader::read( bool cursorLocked ) {
 	AxisStatus move = InputMove();
 	mCommand.forward = ScalarMath::clampSigned( axisValue( InputUp() ) - axisValue( InputDown() ) - move.m_height, kMoveAxisLimit );
 	mCommand.strafe = ScalarMath::clampSigned( axisValue( InputRight() ) - axisValue( InputLeft() ) + move.m_width, kMoveAxisLimit );
+	mCommand.rise = axisValue( InputDebugCameraUp() ) - axisValue( InputDebugCameraDown() );
 	mCommand.run = InputRun();
 	mCommand.reloadPressed = mCommand.reloadPressed || InputReload();
 	mCommand.flashlightPressed = mCommand.flashlightPressed || InputFlashlight();
@@ -35,6 +36,7 @@ void CommandReader::read( bool cursorLocked ) {
 void CommandReader::clear() {
 	mCommand.forward = 0.f;
 	mCommand.strafe = 0.f;
+	mCommand.rise = 0.f;
 	mCommand.run = false;
 	mCommand.aimHeld = false;
 	mCommand.fireHeld = false;

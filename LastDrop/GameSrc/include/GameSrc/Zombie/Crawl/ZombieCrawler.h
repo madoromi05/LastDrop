@@ -10,7 +10,7 @@ class ZombieDismemberment;
 class SkinnedMeshInstance;
 class CharacterMover;
 
-// 脚を失って倒れ、腕で体を引きずるゾンビの「引きずる体」（1 体ぶん。SummaryPlan/個別仕様/設計と分割/ZombieSplit4_Plan.txt の 8 章）
+// 脚を失って倒れ、腕で体を引きずるゾンビの「引きずる体」（1 体ぶん）
 // 腕の骨の動き（ZombieCrawl。姿勢の書き換え）と、胸の置き場所（ZombieCrawlBody）を持ち、腕の往復の速さの段階・目の高さ・
 // 腕が残っているかを知る（這う速さ・腕で引く長さ・胸の置き場所の修正の入口）
 // いつ引きずり始めるか・どう追うか・攻撃を始めるか・誰に顔を向けるかは持ち主（Zombie）が決める

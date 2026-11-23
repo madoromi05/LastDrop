@@ -1,5 +1,5 @@
 // カラーグレーディング（夜の色）と色の表（LUT）。Present.hlsl が画面へ写すときに、LutBake.hlsl が表を焼くときに使う
-// 値は PresentConstants.hlsli（PostProcessParams）。順番と理由は NightFinish_Plan.txt 6 章・MoonStarsLut_Plan.txt 6 章
+// 値は PresentConstants.hlsli（PostProcessParams）
 #ifndef INCLUDED_GRADING_HLSLI
 #define INCLUDED_GRADING_HLSLI
 

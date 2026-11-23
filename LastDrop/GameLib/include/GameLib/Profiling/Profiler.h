@@ -1,7 +1,7 @@
 #ifndef INCLUDED_GAMELIB_PROFILING_PROFILER_H
 #define INCLUDED_GAMELIB_PROFILING_PROFILER_H
 
-// 性能の計測（フレーム時間・区間・ロード）の窓口。計画書は SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 6 章
+// 性能の計測（フレーム時間・区間・ロード）の窓口
 // Debug と Profile ビルド（ZF_EDITOR）だけで動く。Release ではすべて何もしない関数とマクロになるので、
 // 呼ぶ側に #ifdef を書かなくてよい
 // メインスレッドからだけ使う（ほかのスレッドから呼んだ区間は記録しない。区間の入れ子が崩れるため）

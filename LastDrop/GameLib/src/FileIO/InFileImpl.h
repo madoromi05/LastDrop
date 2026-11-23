@@ -10,11 +10,10 @@
 
 namespace GameLib{
 namespace FileIO{
-using namespace std;
 
 class InFile::Impl : public ReferenceType{
 public:
-	typedef map< string, Impl* >::iterator It;
+	typedef std::map< std::string, Impl* >::iterator It;
 	Impl() : 
 	mData( 0 ),
 	mSize( 0 ),

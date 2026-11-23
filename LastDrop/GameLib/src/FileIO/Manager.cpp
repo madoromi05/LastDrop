@@ -6,7 +6,6 @@
 
 namespace GameLib{
 namespace FileIO{
-using namespace std;
 
 ManagerImpl* gManagerImpl = 0;
 
@@ -34,7 +33,7 @@ int size ){
 	gManagerImpl->writeFile( filename, data, size );
 }
 
-string Manager::createListString() const {
+std::string Manager::createListString() const {
 	return gManagerImpl->createListString();
 }
 

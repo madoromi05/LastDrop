@@ -1,4 +1,4 @@
-// 画素の位置だけで決まるノイズ（テクスチャ不要）。ディザ（Present.hlsl。NightFinish_Plan.txt 7 章）と
+// 画素の位置だけで決まるノイズ（テクスチャ不要）。ディザ（Present.hlsl）と
 // SSAO の点の並びを画素ごとに回す角度（Ssao.hlsl）が同じ物を使う
 #ifndef INCLUDED_NOISE_HLSLI
 #define INCLUDED_NOISE_HLSLI

@@ -5,7 +5,7 @@
 #include "GameLib/Graphics/Shader.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
 
-// 明るい所をにじませる（ブルーム）ための絵を作る。仕様は SummaryPlan/個別仕様/グラフィック/Bloom_Plan.txt
+// 明るい所をにじませる（ブルーム）ための絵を作る
 // シーンの色から明るさ 1 を超えた分だけを取り出し、1/2 → 1/4 → 1/8 → 1/16 と縮めながらぼかし、
 // 1/16 → 1/2 へ広げながら足し戻す。できた絵をシーンに足すのは呼んだ側（PostProcess / Present.hlsl）
 // 1 を超える明るさを持てる描画先（RGBA16F）に描いたシーンでないと、何も取り出せない

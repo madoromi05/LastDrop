@@ -2,6 +2,7 @@
 #include "GameSrc/Render/MeshCache.h"
 #include "GameSrc/Map/TownCache.h"
 #include "GameSrc/Component/TransformComponent.h"
+#include "GameSrc/Component/StaticModelComponent.h"
 #include "GameSrc/Component/HitboxComponent.h"
 #include "GameSrc/Component/CharacterColliderComponent.h"
 #include "GameSrc/Player/PlayerComponent.h"
@@ -36,14 +37,14 @@ namespace{
 	}
 }
 
-GameWorld::GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning ) :
+GameWorld::GameWorld( MeshCache* meshes, TownCache* town, const TownEdits* townEdits, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning ) :
 	mCondition( condition ),
 	mDay( dayConditionEffect( condition ) ),
 	mStartBag( startBag ),
 	mZombieSpawning( spawning ),
 	mPlayerFactory( meshes ),
 	mPropFactory( meshes ),
-	mTown( meshes, town, &mPropFactory ),
+	mTown( meshes, town, townEdits, &mPropFactory ),
 	mBulletData( meshes->staticMesh( kBulletFile ) ), // mBullets が借りるので、ここで頼む
 	mBullets( mBulletData ),
 	mZombies( meshes, &mObjects, &mHitWorld, &mCollisionWorld, &mDay ), // mObjects は覚えるだけ（使うのは provideShared から）
@@ -195,6 +196,10 @@ const TownEnvironment& GameWorld::town() const {
 	return mTown;
 }
 
+TownEnvironment& GameWorld::town() {
+	return mTown;
+}
+
 const ZombieDirector& GameWorld::zombies() const {
 	return mZombies;
 }
@@ -208,6 +213,19 @@ void GameWorld::changeDayCondition( DayCondition condition ) {
 	mDay = dayConditionEffect( condition ); // 街灯の光・霧（SceneLights）・足音（ZombieHearing）・同時に居られる数は、ここを毎回読む
 	mZombies.onDayConditionChanged();       // 湧かせる係が作るときに受け取った目標の数を合わせる
 	mPropFactory.relightStreetLamps( &mObjects, lampsLit( mDay ) );
+}
+
+GameObject* GameWorld::spawnTownEditPreview( TownEditKind kind, const TownPlacement& at ) {
+	if ( kind == TownEditKind::Building || kind == TownEditKind::PerimeterBuilding ) {
+		return mTown.spawnBuildingPreview( &mObjects, at );	// 建物の形と材質は町を組み立てる係が持つ（ブロックの中も囲いも同じ形）
+	}
+	return mPropFactory.spawnEditPreview( &mObjects, kind, at.position(), at.yawDegree, lampsLit( mDay ) );
+}
+
+void GameWorld::removeTownEditPreview( GameObject* preview ) {
+	ASSERT( preview && "GameWorld::removeTownEditPreview : preview is null." );
+	mEffects.detach( preview->getComponent< StaticModelComponent >() );	// 見た目が消える前に、付いた弾痕・血の跡を外す（拾われた物と同じ）
+	mObjects.destroyLater( preview );
 }
 
 const DayConditionEffect& GameWorld::dayCondition() const {

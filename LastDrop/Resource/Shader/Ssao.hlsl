@@ -1,8 +1,8 @@
-// SSAO（物の隙間の暗がり）を、画面の半分の大きさの描画先（RG16F）へ作る（AmbientOcclusion::draw。SsaoTranslucent_Plan.txt 5 章）
+// SSAO（物の隙間の暗がり）を、画面の半分の大きさの描画先（RG16F）へ作る（AmbientOcclusion::draw）
 // 式は法線の向きの半球で調べる SSAO（Crytek の SSAO を法線の半球にした物。John Chapman・LearnOpenGL の形）
 //   画素の位置から法線の側の半球に点をいくつか置き、その点が深度より奥（物の中）に入っていれば「遮られた」と数える
 // 出力：r に AO（1 で遮られていない）、g に目からの奥行き（m。カメラの向きに沿った距離）。g は後のぼかしと拡大が、
-// 輪郭（奥行きが大きく違う所）をまたいで混ぜないために使う（6 章）
+// 輪郭（奥行きが大きく違う所）をまたいで混ぜないために使う
 // 半分の大きさの 1 画素は、元の画面の 2×2 の左上の画素の深度と法線で代表する
 #include "GBuffer.hlsli"
 #include "DepthPosition.hlsli"
@@ -48,7 +48,7 @@ float viewDepthOf(float3 world)
 }
 
 // 位置 p・法線 n の面が、周りの物にどれだけ遮られているか（0〜1。1 で全部遮られた）
-// angle：点の並びを法線の周りに回す角度（画素ごとに違う。ざらつきは 6 章のぼかしで均す）
+// angle：点の並びを法線の周りに回す角度（画素ごとに違う。ざらつきは SsaoBlur.hlsl のぼかしで均す）
 // 式を替えるとき（GTAO など）は、この関数だけを差し替える
 float occlusionAt(float3 p, float3 n, float angle, uint2 depthSize)
 {

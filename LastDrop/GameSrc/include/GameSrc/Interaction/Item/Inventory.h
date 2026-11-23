@@ -4,7 +4,7 @@
 #include "GameSrc/Interaction/Item/ItemCatalog.h"
 #include "GameSrc/Interaction/Item/ItemGrid.h"
 
-// 持ち物（カバン）。中身は 2 列のマス目（ItemGrid）。SummaryPlan/個別仕様/出撃と帰還/GridInventory_Plan.txt
+// 持ち物（カバン）。中身は 2 列のマス目（ItemGrid）
 // 拾う物（Pickup）・銃（リロード）が使う入口は canAdd / add / remove / count の4つだけにしてある
 // マス目にしてもこの4つは変えていないので、使う側は変わらない
 // 何マス使うか・何個重ねるかの決まりは ItemCatalog が持つ（ここには書かない）

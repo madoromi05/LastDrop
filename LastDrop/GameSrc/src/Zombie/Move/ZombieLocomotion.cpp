@@ -114,7 +114,7 @@ const HitWorld& hitWorld, float* angleY ) {
 	}
 	intent.facing = turnToward( center, steerAlongPath( center, mChase.wantsToWalk() ), Posture::Crawling, angleY );
 	giveUpIfStuck();
-	// 歩きたいかは、あきらめた後で読む（今までの這う追い方と同じ順）
+	// 歩きたいかは、あきらめた後で読む（あきらめると答えが変わるため）
 	intent.walking = mChase.wantsToWalk();
 	mTrace.noteIntent( intent.walking, intent.facing );
 	return intent;

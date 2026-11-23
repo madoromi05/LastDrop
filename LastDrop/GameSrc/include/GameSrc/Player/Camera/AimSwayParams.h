@@ -1,7 +1,7 @@
 #ifndef INCLUDED_AIM_SWAY_PARAMS_H
 #define INCLUDED_AIM_SWAY_PARAMS_H
 
-// 照準のぶれ（AimSway）の調整値。仕様は SummaryPlan/個別仕様/射撃と手応え/AimSway_Plan.txt の 3・6 章
+// 照準のぶれ（AimSway）の調整値
 // 角度は「覗いているとき」の大きさ（腰だめは hipScale 倍）。起動中に F6 のエディタで動かせる
 // どれも見た目を確かめる前の初期値。小さめから始めて、画面で見ながら上げる
 struct AimSwayParams{
@@ -29,7 +29,7 @@ struct AimSwayParams{
 
 	// ── 全体に掛ける倍率 ──
 	float hipScale = 2.0f;          // 腰だめ（覗き具合 0）のとき。覗き具合に合わせて 1 倍との間を取る
-	float dangerScale = 1.8f;       // 体力が Danger のとき（タルコフ式だった頃の片腕の骨折と同じ量）
+	float dangerScale = 1.8f;       // 体力が Danger のとき
 
 	// ── 銃を回す中心 ──
 	// 目のこれだけ後ろ（肩の付け根あたり。銃床を当てている所）を中心に、両腕と銃を回す（m）

@@ -1,4 +1,4 @@
-// FXAA（PostProcess::drawFxaa。SummaryPlan/個別仕様/グラフィック/NightFinish_Plan.txt 8 章）。写した結果（8bit の中間。a に輝度）を読み、
+// FXAA（PostProcess::drawFxaa）。写した結果（8bit の中間。a に輝度）を読み、
 // 輪郭のギザギザを、輪郭を横切る向きに隣の画素と混ぜてなめらかにしながら画面へ写す
 // 手順は FXAA 3.11 の Quality 版（Timothy Lottes, NVIDIA）と同じ。探す回数は Quality の 12 番（5 回）にした
 //   1) 真ん中と上下左右の輝度の差が小さければ、そのまま返す（平らな所。画面の大半はここで終わる）

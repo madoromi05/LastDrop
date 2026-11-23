@@ -20,7 +20,7 @@ enum OptionsTab{
 // 設定のページ（左上の見出し「設定」・その下のタブの行・今のタブの中身・「戻る」の行・下の操作の案内）
 // タブを変えたらページを作り直す（タブごとに並べる部品が違い、UiCanvas は部品を外せないため。作り直すのは MenuPages）
 // 何を並べるか（文言・範囲・並び）はここだけに書く（MenuCatalog と同じ考え方）。操作のタブの中身は ControlsTab
-// 見た目はタイトルと同じ RE:2 風（MenuLayout::buildSideHeading・UiTabBar・UiSlider・UiMenuItem）。OptionsTabs_Plan.txt
+// 見た目はタイトルと同じ RE:2 風（MenuLayout::buildSideHeading・UiTabBar・UiSlider・UiMenuItem）
 namespace OptionsPage{
 	// canvas に部品を足す。canvas / settings / audio: 借りる。nullptr 不可。canvas より長く生きていること
 	// スライダーを動かすと settings の値を書き換え、音量はすぐ audio へ流す（保存は MenuPages がページを閉じるとき）

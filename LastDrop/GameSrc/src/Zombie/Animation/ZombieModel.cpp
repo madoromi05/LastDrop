@@ -23,7 +23,7 @@ ZombieModel::ZombieModel( const SkinnedMeshData* data, const char* walkAnimation
 const std::vector< const char* >& rootMotionAnimations ) :
 	mData( data ),
 	mHitboxLayout( data, kBoneNamePrefix ),
-	mFootprint( data, kBoneNamePrefix, zombieCrowdParams().footprintPadding ),	// 部位の当たり判定（HitboxLayout）には余白を足さない（弾は体ぴったりで当てる）
+	mFootprint( makeFootprint( data, zombieCrowdParams().footprintPadding ) ),	// 部位の当たり判定（HitboxLayout）には余白を足さない（弾は体ぴったりで当てる）
 	mFlinchLayout( data, kBoneNamePrefix ),
 	mSeverLayout( data, kBoneNamePrefix ),
 	mStride( data, data->animation( walkAnimation ),
@@ -55,6 +55,10 @@ const ZombieRootMotion* ZombieModel::rootMotion( const char* name ) const {
 		}
 	}
 	return nullptr;
+}
+
+BodyFootprint ZombieModel::makeFootprint( const SkinnedMeshData* data, float padding ) {
+	return BodyFootprint( data, kBoneNamePrefix, padding );
 }
 
 const SkinnedMeshData* ZombieModel::data() const {

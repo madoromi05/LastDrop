@@ -105,7 +105,7 @@ namespace{
 		// 脱出の車。手元に車の録音が無いので合成（tools/SoundGen/EngineSynth.cpp）
 		{ "car_engine_start",  kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },
 		{ "car_engine_idle",   kSingle, kNoPitchJitter, kEngineMinDistance, kEngineMaxDistance, kSynthesized, kFromStart, kPlayer },
-		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },	// 給油している間（改訂 2）。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
+		{ "refuel_pour",       kSingle, kNoPitchJitter, kFoleyMinDistance, kFoleyMaxDistance, kSynthesized, kFromStart, kPlayer },	// 給油している間。自分の手元の音なので、漁る音と同じ距離（tools/SoundGen/PourSynth.cpp）
 		// BGM。C:\Audio の BGM 自動作曲（Songs/_generator/zombie_fps_songs.js）で書き出したループ用の WAV
 		{ "bgm_title",         kSingle, kNoPitchJitter, kNoDistance, kNoDistance, kRecorded, kFromStart, kBgm },	// 元の曲: "01_灯の消えた町"
 		{ "bgm_gameover",      kSingle, kNoPitchJitter, kNoDistance, kNoDistance, kRecorded, kFromStart, kBgm },	// 元の曲: "02_残された灯"

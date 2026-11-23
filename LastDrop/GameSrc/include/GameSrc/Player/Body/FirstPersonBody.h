@@ -17,7 +17,6 @@ class SkinnedMeshData;
 
 // 一人称（Escape from Tarkov のような「自分の体が見える」FPS）用に、全身のポーズを書き換える
 // 書き換えは小さな段（Player/Body/Pose/ の BonePoseModifier）に分けてあり、BonePoseModifierChain でこの順につなぐ
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 5 章）：
 //   0. ArmOverridePose … リロード中・拳銃の構えで、両腕だけを別のアニメのポーズに差し替える（胸に付けて写す）
 //   1. SpineBendPose   … 視点の上下（ピッチ）ぶん背骨 3 本を曲げる（腕と銃が視線に付いてくる）
 //   2. EyePoint        … 曲げた後の頭から目の位置（カメラの視点）を決める（測るだけ）

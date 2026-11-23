@@ -3,7 +3,7 @@
 
 #include "GameSrc/Player/PlayerCommand.h"
 
-// キー・パッドの入力を、自キャラへの操作（PlayerCommand）にまとめる係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章）
+// キー・パッドの入力を、自キャラへの操作（PlayerCommand）にまとめる係
 // 視点は回さない（それは FirstPersonControl）
 // 押した瞬間の入力（reloadPressed など）は、consumePressed で消すまで貯める
 // 1回の描画の間に update が0回でも入力が消えず、2回あっても2回反応しないようにするため

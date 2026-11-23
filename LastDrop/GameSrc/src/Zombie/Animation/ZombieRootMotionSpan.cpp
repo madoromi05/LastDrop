@@ -60,7 +60,7 @@ void ZombieRootMotionSpan::apply( const ICollisionBody* passThrough, Vector3* fo
 		}
 		footing->x = mAnchor.x + moved.x;
 		footing->z = mAnchor.z + moved.z;
-		// 絵の根は、足元から根の動きの分だけ戻した所。当たらなければアンカーのまま（今までと同じ見た目）で、
+		// 絵の根は、足元から根の動きの分だけ戻した所。当たらなければアンカーのままで、
 		// 当たって進めなかった分だけ手前へ戻る
 		mMeshOffset.set( -wanted.x, 0.f, -wanted.z );
 		mLastTime = time;

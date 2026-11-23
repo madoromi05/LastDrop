@@ -35,7 +35,7 @@ namespace{
 	// 読み終えた文書からデータを構築し、貼るテクスチャの展開を進める。構築済み・読み込み中なら構築はしない
 	// 構築もテクスチャの展開も全部終わっていれば true（失敗も終わりに含める。ずっと待ち続けないように）
 	// テクスチャまで待つのは、展開（大きい絵で 1 枚 約 40ms）をロードの中で済ませ、
-	// ゲームが始まった最初の描画にまとめて来させないため（計測で 243ms のひっかかりが出ていた）
+	// ゲームが始まった最初の描画にまとめて来させないため（まとめて来ると 243ms のひっかかりになる）
 	template< class TEntry, class TLoad >
 	bool buildLoaded( std::map< std::string, std::unique_ptr< TEntry > >* entries, TLoad load, TextureCache* textures,
 	const BuildClock::time_point& deadline, bool* builtOne ) {

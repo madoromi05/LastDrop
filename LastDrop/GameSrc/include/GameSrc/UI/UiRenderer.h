@@ -48,7 +48,7 @@ public:
 	// 絵が変わるたびに描く回数が 1 つ増えるので、長方形と絵を交互に積まず、絵はまとめて積む
 	void addImage( const UiRect& rect, const GameLib::Graphics::Texture& texture, unsigned color );
 	// 文字を積む（UTF-8。日本語も書ける）。color: VertexColor::pack の並び
-	// letterSpacing: 字と字の間に足す幅（画素）。0 なら字の間を詰めずにまとめて積む（今までと同じ）
+	// letterSpacing: 字と字の間に足す幅（画素）。0 なら字の間を詰めずにまとめて積む
 	// 0 より大きいときは 1 字ずつ置く（StringRenderer は字の間を広げられないため）。最後の字の後には足さない（中央揃えがずれないように）
 	void addText( const char* text, const GameLib::Math::Vector2& position, UiTextSize size, UiAlign align, unsigned color, float letterSpacing = 0.f );
 	float textWidth( const char* text, UiTextSize size, float letterSpacing = 0.f );									// text を size の文字・字の間 letterSpacing で書いたときの幅（画素）。右揃え・枠の大きさを決めるのに使う

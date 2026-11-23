@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Matrix44.h"
 
-// TAA のための画面のずらし（SummaryPlan/個別仕様/グラフィック/Taa_Plan.txt 5 章・Q2）。毎フレーム、カメラを 1 画素より細かく少しずつずらす
+// TAA のための画面のずらし。毎フレーム、カメラを 1 画素より細かく少しずつずらす
 // ずらす量は Halton 列（底 2 と 3）の 8 個を繰り返す（−0.5〜0.5 画素）。TAA が何フレームかの色を混ぜると、1 画素の中を細かく調べたのと同じになる
 // 射影×ビューの行列に足すだけなので、カメラ（FirstPersonCamera）は知らない。GameScene が毎フレーム advance し、描く物すべてに apply した行列を渡す
 class TemporalJitter{

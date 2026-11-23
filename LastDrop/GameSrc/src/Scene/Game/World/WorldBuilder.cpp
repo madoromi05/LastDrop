@@ -73,6 +73,10 @@ void WorldBuilder::build( const WorldBuildTarget& target, int escapeCarSpot, boo
 	placeEscapeCar( target.objects, escapeCarSpot ); // 町に置く車はこの 1 台だけ（乗れない置物の車は置かない）
 }
 
+GameObject* WorldBuilder::spawnBuildingPreview( GameObjectWorld* objects, const TownPlacement& at ) const {
+	return mProps->spawnBuildingPreview( objects, mBuildingShapes, kBuildingMaterial, at.position(), at.yawDegree );
+}
+
 void WorldBuilder::placeBuildings( const WorldBuildTarget& target, const StaticMeshLods& shapes,
 const std::vector< TownPlacement >& placements ) const {
 	// 当たり判定を三角形から作るので、構築に失敗した建物は置かない
@@ -92,7 +96,7 @@ void WorldBuilder::placeLootSpots( GameObjectWorld* objects ) const {
 	// 置けなくても（形の構築の失敗）その場所が無いだけで遊べる
 	Random random = Random::create( static_cast< int >( Framework::instance().time() ) );
 	// ガソリンを入れる箱を、漁れる場所（ゴミ箱 → 木箱の通し番号）から fuelCanCount か所選ぶ
-	// 置物の車には物を入れない（改訂 2）
+	// 置物の車には物を入れない
 	// 1 か所に 1 個。選ぶのは場所の番号なので、形の構築に失敗して置けなかった場所に当たると、その分だけ町のガソリンが減る
 	// ライフルは木箱の中から rifleCount か所。ガソリンと同じ木箱に当たったら両方入れる（2 × 3 に入る）
 	const int dumpsterCount = static_cast< int >( mMap->dumpsters().size() );

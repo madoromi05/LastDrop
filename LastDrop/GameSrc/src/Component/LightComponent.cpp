@@ -26,6 +26,14 @@ bool LightComponent::toggledThisTick() const {
 	return mToggledThisTick;
 }
 
+bool LightComponent::isOn() const {
+	return mOn;
+}
+
+void LightComponent::setOn( bool on ) {
+	mOn = on;
+}
+
 void LightComponent::setSocket( const ILightSocket* socket ) {
 	mSocket = socket;
 }

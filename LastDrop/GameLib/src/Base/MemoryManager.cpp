@@ -25,7 +25,6 @@ namespace GameLib{
 
 namespace{ //ある程度安定動作するまではずしておく。デバグしにくくて仕方ない
 
-using namespace std;
 
 //型別名。コードを短くしたい
 typedef unsigned U4; //バイト無符号別名

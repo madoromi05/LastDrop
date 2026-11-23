@@ -18,7 +18,6 @@
 
 namespace GameLib{
 namespace FileIO{
-using namespace std;
 using namespace GameLib::Threading;
 
 class ManagerImpl{
@@ -61,7 +60,7 @@ public:
 		int id() const {
 			return mId;
 		}
-		string mFileName;
+		std::string mFileName;
 		char* mData;
 		int mSize;
 		int mId;
@@ -84,16 +83,16 @@ public:
 		}
 		ManagerImpl* mManager;
 	};
-	typedef map< string, InFile::Impl* > InMap;
+	typedef std::map< std::string, InFile::Impl* > InMap;
 	typedef InMap::iterator InIt;
 	typedef InMap::const_iterator CInIt;
 
-	typedef map< int, OutFile::Impl* > OutMap;
+	typedef std::map< int, OutFile::Impl* > OutMap;
 	typedef OutMap::iterator OutIt;
 	typedef OutMap::const_iterator COutIt;
 
-	typedef list< string > InList;
-	typedef list< OutRequest* > OutList;
+	typedef std::list< std::string > InList;
+	typedef std::list< OutRequest* > OutList;
 
 	ManagerImpl(
 	const char** archiveNames,
@@ -155,13 +154,13 @@ public:
 		OPERATOR_DELETE( mArchives );
 	}
 	InFile::Impl* createInFile( const char* filename ){
-		string fn( filename ); //stringへ移植
+		std::string fn( filename ); //stringへ移植
 
 		mMutex.lock();
 		InIt it = mInFiles.find( fn );	//まずmapにあるか確認
 		if ( it == mInFiles.end() ){	//ないので作る
 			InFile::Impl* f = NEW InFile::Impl();
-			it = mInFiles.insert( make_pair( fn, f ) ).first;
+			it = mInFiles.insert( std::make_pair( fn, f ) ).first;
 			f->setIterator( it );
 			mInRequests.push_back( fn );	//ロード要求
 		}else{
@@ -187,7 +186,7 @@ public:
 
 		OutRequest* req = NEW OutRequest( filename, data, size, mOutRequestId, false );	//リクエスト生成
 		//ハンドル、リクエスト追加
-		mOutFiles.insert( make_pair( mOutRequestId, f ) );
+		mOutFiles.insert( std::make_pair( mOutRequestId, f ) );
 		mOutRequests.push_back( req );
 		++mOutRequestId;																//次に備えてインクリメント
 		mMutex.unlock();
@@ -229,7 +228,6 @@ public:
 		return false;
 	}
 	void update(){
-		using namespace std;
 		//やることないならしばらく寝てから終わる
 		if ( mInRequests.size() == 0 && mOutRequests.size() == 0 ){
 			Threading::sleep( 10 );
@@ -239,14 +237,14 @@ public:
 		write();
 	}
 	void read(){
-		ostringstream oss;
+		std::ostringstream oss;
 		//ロード要求取り出し
 		mMutex.lock();
 		if ( mInRequests.size() == 0 ){ //ここで調べないとダメ
 			mMutex.unlock();
 			return;
 		}
-		string fn = mInRequests.front(); //現物コピー。すぐリストから消したいので
+		std::string fn = mInRequests.front(); //現物コピー。すぐリストから消したいので
 		mInRequests.pop_front();
 		mMutex.unlock();
 
@@ -256,7 +254,7 @@ public:
 		//ファイルオープン
 		int archiveIndex = -1;
 		int entryIndex = -1;
-		ifstream* stream = 0;
+		std::ifstream* stream = 0;
 		open( &archiveIndex, &stream, &entryIndex, fn.c_str() );
 
 		char* buffer = 0;
@@ -272,8 +270,8 @@ public:
 			error = notification = true;
 		}else{
 			//次の段階。サイズが正常か計測します
-			streamsize readSize;
-			streamsize originalSize;
+			std::streamsize readSize;
+			std::streamsize originalSize;
 			mArchives[ archiveIndex ].getFileSize( &readSize, &originalSize, entryIndex, stream );
 			if ( originalSize >= 0x80000000 ){ //intじゃ格納しきれねえ！
 				oss.str( "" );
@@ -358,7 +356,7 @@ public:
 		mMutex.unlock();
 	}
 	void write(){
-		ostringstream oss;
+		std::ostringstream oss;
 		//リクエスト取り出し
 		mMutex.lock();
 		if ( mOutRequests.size() == 0 ){ //ここで調べないとダメ
@@ -373,7 +371,7 @@ public:
 		int id = req->id();
 		const char* fileName = req->fileName();	//ファイルオープン
 		setlocale( LC_ALL, "" );				//これがないと日本語ファイル名を受け付けない
-		ofstream out( fileName, ofstream::binary );
+		std::ofstream out( fileName, std::ofstream::binary );
 		bool error = false;
 		if ( !out ){
 			oss.str( "" );
@@ -391,7 +389,7 @@ public:
 			static const int WRITE_UNIT = 1024 * 1024; //1MB
 			int rest = size;
 			while ( !error ){
-				int writeSize = min( rest, WRITE_UNIT );
+				int writeSize = std::min( rest, WRITE_UNIT );
 				out.write( readPos, writeSize );
 				readPos += writeSize;
 				rest -= writeSize;
@@ -400,7 +398,7 @@ public:
 					break; //正常終了
 				}
 				//本当に書けてる？
-				streamsize wroteSize = out.tellp();
+				std::streamsize wroteSize = out.tellp();
 				if ( wroteSize != ( size - rest ) ){
 					oss.str( "" );
 					oss << "FileIO : write error! can't write entire file! ( " << fileName << " )";
@@ -439,8 +437,8 @@ public:
 	bool isEndRequested() const {
 		return mEndFlag.isSet();
 	}
-	string createListString() const {
-		ostringstream oss;
+	std::string createListString() const {
+		std::ostringstream oss;
 		CInIt i = mInFiles.begin();
 		while ( i != mInFiles.end() ){
 			oss << i->first;
@@ -448,10 +446,10 @@ public:
 			oss << '\t' << i->second->referenceCount() << '\n';
 			++i;
 		}
-		string ret = oss.str();
+		std::string ret = oss.str();
 		return ret;
 	}
-	void open( int* archiveIndex, ifstream** streamOut, int* entryIndex, const char* name ){
+	void open( int* archiveIndex, std::ifstream** streamOut, int* entryIndex, const char* name ){
 		for ( int i = 0; i < mArchiveNumber; ++i ){
 			*archiveIndex = i;
 			mArchives[ i ].open( streamOut, entryIndex, name );

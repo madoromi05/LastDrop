@@ -9,7 +9,6 @@ using namespace GameLib;
 using namespace GameLib::Math;
 
 namespace{
-	const char* kShaderFile = "Resource/Shader/SkinnedMesh.hlsl";
 	const char* kGBufferShaderFile = "Resource/Shader/SkinnedMeshGBuffer.hlsl";
 	const char* kShadowShaderFile = "Resource/Shader/SkinnedMeshShadow.hlsl";
 	const int kBonePaletteSlot = Graphics::Manager::FIRST_USER_CONSTANT_SLOT; // Skinning.hlsli の b1
@@ -29,7 +28,6 @@ namespace{
 
 SkinningPipeline::SkinningPipeline() :
 	mBoneRows( kMaxBones * kFloatsPerBone, 0.f ) {
-	mShader = Graphics::Shader::create( kShaderFile, vertexFormat() );
 	mGBufferShader = Graphics::Shader::create( kGBufferShaderFile, vertexFormat() );
 	mShadowShader = Graphics::Shader::create( kShadowShaderFile, vertexFormat() );
 	mBonePalette = Graphics::ConstantBuffer::create( static_cast< int >( mBoneRows.size() * sizeof( float ) ) );
@@ -41,15 +39,15 @@ const Graphics::VertexFormat& SkinningPipeline::vertexFormat() {
 }
 
 bool SkinningPipeline::isReady() const {
+	RenderPassKind pass = RenderPass::current();
+	if ( pass != RenderPassKind::GBuffer && pass != RenderPassKind::Shadow ) {
+		return false;
+	}
 	return !currentShader().isError();
 }
 
 const char* SkinningPipeline::errorMessage() const {
-	const char* message = mShader.errorMessage();
-	if ( message[ 0 ] != '\0' ) {
-		return message;
-	}
-	message = mGBufferShader.errorMessage();
+	const char* message = mGBufferShader.errorMessage();
 	if ( message[ 0 ] != '\0' ) {
 		return message;
 	}
@@ -57,14 +55,11 @@ const char* SkinningPipeline::errorMessage() const {
 }
 
 const Graphics::Shader& SkinningPipeline::currentShader() const {
-	switch ( RenderPass::current() ) {
-	case RenderPassKind::GBuffer: return mGBufferShader;
-	case RenderPassKind::Shadow:  return mShadowShader;
-	default:                      return mShader;
-	}
+	return ( RenderPass::current() == RenderPassKind::Shadow ) ? mShadowShader : mGBufferShader;
 }
 
 void SkinningPipeline::begin( const std::vector< Matrix34 >& skinMatrices ) {
+	ASSERT( isReady() && "SkinningPipeline : begin is called while not ready." );
 	int boneNumber = static_cast< int >( skinMatrices.size() );
 	ASSERT( boneNumber <= kMaxBones && "SkinningPipeline : too many bones." );
 	for ( int b = 0; b < boneNumber; ++b ) {

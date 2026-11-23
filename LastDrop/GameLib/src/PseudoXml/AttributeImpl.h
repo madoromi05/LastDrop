@@ -37,10 +37,10 @@ public:
 	void setValue( const char* value ){
 		mValue = mDocument->allocateString( value );
 	}
-	void setName( const string& name ){
+	void setName( const std::string& name ){
 		mName = mDocument->allocateString( name );
 	}
-	void setValue( const string& value ){
+	void setValue( const std::string& value ){
 		mValue = mDocument->allocateString( value );
 	}
 	void setName( const char* name, int size ){

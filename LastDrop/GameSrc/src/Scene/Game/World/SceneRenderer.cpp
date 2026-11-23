@@ -49,7 +49,7 @@ void SceneRenderer::render( const FirstPersonCamera& camera, const DamagePostEff
 	mLights.setup( camera ); // ライトの一覧と影の行列（SceneLights）
 	mLights.drawShadowMaps( camera );
 	// 不透明な物は G-Buffer へ描き、全画面 1 回でライティングする
-	// フォワードへの切り替えは段階 3 の始めに消した（PBR の式とライトを 2 か所に書かない）
+	// フォワードへの切り替えは置かない（PBR の式とライトを 2 か所に書かないため）
 	const GBufferView view = gbufferView();
 	const bool showsGBuffer = ( view != GBufferView::Final );
 	// 映り込みの表示（SSR・SSR color）は、照らした後の色を映すので、表示中もライティングまで描く（表示は endScene の後に上から写す）
@@ -153,7 +153,7 @@ void SceneRenderer::drawFog( const Matrix44& projectionView ) {
 
 void SceneRenderer::resolveTaa( const FirstPersonCamera& camera, const Matrix44& projectionView ) {
 	// TAA は霧の後・半透明の板の前（板は動きが取れず、マズルフラッシュに光の尾が出るため）
-	// 見ているカメラが替わった（観察用カメラの切り替え。F6 の Debug タブ）フレームは、前の履歴が別の場所の絵なので捨てる
+	// 見ているカメラが替わったフレーム（初めて描くとき）は、前の履歴が別の場所の絵なので捨てる
 	if ( &camera != mTaaCamera ) {
 		mTaa.invalidate();
 	}
@@ -211,7 +211,6 @@ DrawCulling SceneRenderer::cameraCulling( const FirstPersonCamera& camera ) cons
 	float drawDistance = fogEnabled() ? DrawCulling::drawDistanceForFog( mLights.fogHalfDistance() ) : kNoDrawDistance; // 霧の日は描く距離も縮む
 	// 小ささの画素は、G-Buffer へ描く絵（シーンの深度）の高さで数える
 	// 隠れ（PVS）は目から見る絵だけ（影の culling には渡さない）
-	const TownVisibility* visibility = pvsEnabled() ? &mWorld->town().visibility() : nullptr;
 	return DrawCulling::forCamera( camera.projectionViewMatrix(), camera.eyePosition(), drawDistance, camera.fieldOfView(),
-		mPostProcess.sceneDepth().height(), visibility );
+		mPostProcess.sceneDepth().height(), mWorld->town().visibilityIfEnabled() );
 }

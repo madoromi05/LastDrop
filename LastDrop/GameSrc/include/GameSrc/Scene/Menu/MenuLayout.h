@@ -32,7 +32,7 @@ struct MenuDefinition{
 };
 
 // メニューの並べ方。RE:2 風で、題名・ひと言・板なしの行を左に寄せる。背景の絵があれば、その左を暗くする
-// メニュー画面（MenuScene）と本編の一時停止（PauseMenu）で共有し、並べ方を 1 か所にする。TitleScreen_Plan.txt
+// メニュー画面（MenuScene）と本編の一時停止（PauseMenu）で共有し、並べ方を 1 か所にする
 namespace MenuLayout{
 	// definition の見出しとボタンを canvas に足す。canvas: nullptr 不可
 	// openPage: ページを開くボタン（opens が MENU_PAGE_NONE 以外）が押されたときに呼ぶ。そのボタンがあるなら空は不可

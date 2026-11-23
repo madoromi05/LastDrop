@@ -13,7 +13,6 @@
 
 namespace GameLib{
 namespace PseudoXml{
-using namespace std;
 
 class Document::Impl : public ReferenceType{
 public:
@@ -31,7 +30,7 @@ public:
 		p[ name.size() ] = '\0';
 		return p;
 	}
-	const char* allocateString( const string& name ){
+	const char* allocateString( const std::string& name ){
 		return mStringPool.allocate( name.c_str(), static_cast< int >( name.size() ) + 1 );
 	}
 	const char* allocateString( const char* name, int size ){
@@ -47,7 +46,7 @@ public:
 	Element::Impl* root();
 	bool isReady();
 	void build( const char* data, int size );
-	void convertToString( string* out ) const;
+	void convertToString( std::string* out ) const;
 	void convertToBinary( Array< char >* out ) const;
 private:
 	Pool< char > mStringPool;

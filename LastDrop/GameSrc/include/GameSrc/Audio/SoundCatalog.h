@@ -46,7 +46,7 @@ enum SoundId{
 	// ── 脱出の車（末尾に足す。理由は上と同じ） ──
 	SOUND_CAR_ENGINE_START,		// エンジンを掛ける（セルが回って掛かる。1 回）。車から鳴らす
 	SOUND_CAR_ENGINE_IDLE,		// エンジンのアイドリング（ループ）。車から鳴らす
-	SOUND_REFUEL_POUR,			// 給油している間（ループ）：缶からガソリンを注ぐ水の音（改訂 2）。自分の手元から鳴らす
+	SOUND_REFUEL_POUR,			// 給油している間（ループ）：缶からガソリンを注ぐ水の音。自分の手元から鳴らす
 	// ── BGM（末尾に足す。理由は上と同じ。MusicPlayer が位置なしのループで鳴らす） ──
 	SOUND_BGM_TITLE,			// タイトル（ダークアンビエント）
 	SOUND_BGM_GAMEOVER,			// ゲームオーバー（遅く重い弦と低いピアノ）

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_ZOMBIE_CROWD_PARAMS_H
 #define INCLUDED_ZOMBIE_CROWD_PARAMS_H
 
-// ゾンビどうしの押し合い・物への引っかかり・角の曲がり方を直す値（仕様は SummaryPlan/個別仕様/ゾンビ/ZombieCrowd_Plan.txt の 3〜5 章・8 章・10 章）
+// ゾンビどうしの押し合い・物への引っかかり・角の曲がり方を直す値
 // 起動中に F6 のエディタで動かせる。どれも画面で確かめる前の初期値
 struct ZombieCrowdParams{
 	// ── 分離（近くのゾンビから離れる向きを、歩く向きに混ぜる）──

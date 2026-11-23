@@ -10,10 +10,10 @@ enum class PlayerCondition{
 
 const char* playerConditionName( PlayerCondition condition );	// 状態の名前（確認用の表示）
 
-// 自キャラの体力。バイオハザードと同じく、体全体で 1 つだけ持つ（それまではタルコフの 7 部位）
+// 自キャラの体力。バイオハザードと同じく、体全体で 1 つだけ持つ
 // ・0 になったら死ぬ
 // ・残りの割合で状態（PlayerCondition）が変わり、状態で歩く・走る速さが落ちる（読むのは PlayerCharacter）
-// ・包帯で戻る（heal。R3_Plan.txt Q11・Q12）
+// ・包帯で戻る（heal）
 // 最大の体力・状態の境目・速さの倍率は、この .cpp だけが知っている
 class PlayerHealth{
 public:

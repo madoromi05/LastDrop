@@ -4,7 +4,6 @@
 
 #include "GameSrc/DebugMode/TuningVisitors.h"
 #include "GameSrc/Player/Body/WeaponPoseParams.h"
-#include "GameSrc/Player/Camera/LookParams.h"
 #include "GameSrc/Player/Camera/AimSwayParams.h"
 #include "GameSrc/Weapon/WeaponStanceParams.h"
 #include "GameSrc/Zombie/Move/ZombieCrowdParams.h"
@@ -81,8 +80,6 @@ namespace{
 			"WeaponPose", "WeaponPoseParams", "GameSrc/Player/WeaponPoseParams.h", &weaponPoseParams ) );
 		groups.push_back( std::make_unique< TuningGroup< WeaponStanceParams > >(
 			"WeaponStance", "WeaponStanceParams", "GameSrc/Weapon/WeaponStanceParams.h", &weaponStanceParams ) );
-		groups.push_back( std::make_unique< TuningGroup< LookParams > >(
-			"Look", "LookParams", "GameSrc/Player/LookParams.h", &lookParams ) );
 		groups.push_back( std::make_unique< TuningGroup< AimSwayParams > >(
 			"AimSway", "AimSwayParams", "GameSrc/Player/AimSwayParams.h", &aimSwayParams ) );
 		// 1 日の時間・脱出点・スコアの重み（遊んで決める値）

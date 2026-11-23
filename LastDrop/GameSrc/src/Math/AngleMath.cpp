@@ -29,3 +29,10 @@ Vector3 AngleMath::forwardOf( float degree ) {
 Vector3 AngleMath::rightOf( float degree ) {
 	return Vector3( -Math::cos( degree ), 0.f, Math::sin( degree ) );
 }
+
+Vector3 AngleMath::directionOf( float yawDegree, float pitchDegree ) {
+	return Vector3(
+		Math::sin( yawDegree ) * Math::cos( pitchDegree ),
+		-Math::sin( pitchDegree ),
+		Math::cos( yawDegree ) * Math::cos( pitchDegree ) );
+}

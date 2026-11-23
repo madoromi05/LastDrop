@@ -50,11 +50,12 @@ namespace{
 
 GameScene::GameScene( GameResources* resources, ZombieSpawning spawning ) :
 	mResources( resources ),
-	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）。世界が持つ（F6 で今の出撃のまま替えられる）
-	mWorld( &resources->meshes(), &resources->town(), resources->raidRecord().chooseCondition( Framework::instance().time() ),
+	// 今回の条件（出撃のたびにランダム。F6 で固定していればそれ）と脱出の車の置き場所。F6 の Town タブが読み直しに決めた物があれば、それを使って消す
+	mChoice( resources->raidRecord().takeRaidChoice( Framework::instance().time() ) ),
+	mWorld( &resources->meshes(), &resources->town(), &resources->townEdits(), mChoice.condition,	// 条件は世界が持つ（F6 で今の出撃のまま替えられる）
 		RaidStart::startBag(), spawning ),												// 毎回同じ始めのカバン（拳銃と 9mm の弾）。自キャラの持ち物になる
 	mSceneRenderer( &mWorld, &resources->settings() ),								// 世界を画面へ写すディファードのパイプライン一式（mWorld を読むので、その後に並べる）
-	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time() ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）
+	mSession( mWorld.town().map().escapeCarSpots(), Framework::instance().time(), mChoice.escapeCarSpot ),	// 脱出の車の置き場所は出撃のたびに変える（起動からの時間を種にする。ガソリンを入れる箱と同じ）。mChoice で決めてあればその置き場所
 	// キャラの向いている方（その日の車の方）を見始める
 	mControl( mWorld.town().map().escapeCarSpots()[ mSession.escapeCarSpot() ].playerStart.yawDegree, &resources->settings() ),
 	mFeedback( &resources->audio(), &mWorld.town() ),								// 出来事を自キャラの視点・音・画面へ返す
@@ -122,6 +123,9 @@ void GameScene::beginFrame() {
 		}
 		mControl.lockCursor(); // 始めから視点を回せるようにロックしておく
 	}
+#ifdef ZF_EDITOR
+	mEditor.followTownEdits( &mWorld, mResources->townEdits() ); // F6 の Town タブの手直しを町の見た目へ写す（止めている・カバンを開いている間も）
+#endif
 	PROFILE_SCOPE( "Game.input" );
 	handleFrameInput();
 }
@@ -148,27 +152,23 @@ void GameScene::handleFrameInput() {
 		pause();
 		return;
 	}
-	// カバンは自キャラが生きていて、観察用カメラを使っていない間だけ開く（canOpen は生存だけ見るので、ここで free-cam を足す）
-	if ( InputInventory() && !isFreeCameraActive() && mBag.canOpen() ) {
+	// カバンは自キャラが生きている間だけ開く
+	if ( InputInventory() && mBag.canOpen() ) {
 		mLoot.cancelSearch(); // 開けている途中にカバンを開いたら、開けるのはやめる（閉じた後に勝手に開かないように）
 		mBag.open();
 		return;
 	}
 #ifdef ZF_EDITOR
-	mFreeCamera.handleToggle( mControl.camera() );															// 観察用カメラの切り替え（F6 の頼み）を先に行う（この描画のマウスとキーを、自キャラと観察用カメラのどちらが使うか決めるため）
-	mEditor.publish( &mWorld, &mSession, isFreeCameraActive() );	// F6 で頼まれた無敵の切り替えを行い、F6 のエディタへ今の物を渡す
+	mEditor.publish( &mWorld, &mSession, mControl.camera() ); // F6 で頼まれた無敵・飛ぶの切り替えを行い、F6 のエディタへ今の物を渡す
 #endif
 	// 視点はマウスが動いた分だけ回す。update の回数に合わせると、2回進めた描画で2倍回ってしまう
-	if ( isFreeCameraActive() ) {
-		mControl.readInputIdle(); // 自キャラはその場で立ち止まる（マウスとキーは観察用カメラが使う）
-	} else if ( mWorld.isPlayerDead() ) {
+	if ( mWorld.isPlayerDead() ) {
 		mControl.readInputIdle(); // 死んだ後は視点も回さない（崩れて暗くなるのを見せる）
 	} else {
 		mControl.readInput( aimWeight() );
 	}
 	updateInteraction();
 #ifdef ZF_EDITOR
-	mFreeCamera.look(); // 使っていなければ何もしない。カーソルロックの切り替え（readInputIdle）の後に読む
 	mEditor.spawnRequestedZombies( &mWorld, mControl.camera() ); // F6 の Spawn zombie
 #endif
 }
@@ -199,9 +199,6 @@ void GameScene::update() {
 	}
 	PROFILE_SCOPE( "Game.view" ); // ここから update の終わりまで
 	mFeedback.syncView( mWorld, &mControl, &mHud );	// 反動とぶれをカメラと体へ・右下の弾数を出すか・体の音（反動・揺れ・ぶれは次のティックの絵から効く）
-#ifdef ZF_EDITOR
-	mFreeCamera.move(); // 使っていなければ何もしない
-#endif
 }
 
 bool GameScene::isLoading() const {
@@ -215,8 +212,8 @@ void GameScene::draw() {
 		return;
 	}
 	placeViewCamera();
-	const FirstPersonCamera& camera = viewCamera();
-	// このフレームで描くカメラ（観察用カメラの間はそちら）を、次のティックのゾンビのアニメの間引きのために渡す
+	const FirstPersonCamera& camera = mControl.camera();
+	// このフレームで描くカメラを、次のティックのゾンビのアニメの間引きのために渡す
 	mWorld.setAnimationView( camera.projectionViewMatrix(), camera.eyePosition() );
 	{
 		PROFILE_SCOPE( "Audio" );
@@ -249,13 +246,6 @@ void GameScene::placeViewCamera() {
 	} else {
 		mControl.placeCamera( nullptr, aimWeight() );
 	}
-#ifdef ZF_EDITOR
-	// 自キャラの視点は、観察用カメラの間も目へ置き続ける（見ている物を使う視線と、戻ったときの位置のため）
-	// 描くのは観察用カメラから（自キャラの視点で設定した描画ステートを上書きする）
-	if ( mFreeCamera.isActive() ) {
-		mFreeCamera.apply();
-	}
-#endif
 }
 
 void GameScene::drawUi( const FirstPersonCamera& camera ) {
@@ -289,8 +279,7 @@ void GameScene::updateInteraction() {
 		return;
 	}
 	const FirstPersonCamera& camera = mControl.camera();	// 視線は前回の描画で置いたカメラから撃つ（目の位置・向きは draw で決まるため）
-	// 観察用カメラの間は E で使わない（自キャラの見ている物が、観察している画面からは分からないため）。マークは今まで通り出す
-	bool interactPressed = InputInteract() && !isFreeCameraActive() && !mWorld.isPlayerDead();
+	bool interactPressed = InputInteract() && !mWorld.isPlayerDead();
 	if ( interactPressed && mLoot.isSearching() ) {
 		mLoot.cancelSearch(); // 開けている途中に E をもう一度押したら取りやめ
 		interactPressed = false;
@@ -314,8 +303,8 @@ void GameScene::updateInteraction() {
 }
 
 void GameScene::updateListener() {
-	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる。観察用カメラの間はそのカメラで聞く（近づいたゾンビの音を確かめるため）
-	const FirstPersonCamera& camera = viewCamera();
+	// 聞き手は目の位置と視線の向き。首を振ると音の左右が入れ替わる
+	const FirstPersonCamera& camera = mControl.camera();
 	AudioEngine& audio = mResources->audio();
 	audio.setListener( camera.eyePosition(), camera.viewDirection() );
 	audio.update();
@@ -325,23 +314,6 @@ float GameScene::aimWeight() const {
 	const GameObject* player = mWorld.player();
 	const HoldComponent* hold = player ? player->getComponent< HoldComponent >() : nullptr; // 外せる部品（無ければ素手）
 	return hold ? hold->aimWeight() : 0.f;
-}
-
-const FirstPersonCamera& GameScene::viewCamera() const {
-#ifdef ZF_EDITOR
-	if ( mFreeCamera.isActive() ) {
-		return mFreeCamera.camera();
-	}
-#endif
-	return mControl.camera();
-}
-
-bool GameScene::isFreeCameraActive() const {
-#ifdef ZF_EDITOR
-	return mFreeCamera.isActive();
-#else
-	return false;
-#endif
 }
 
 void GameScene::updateRaid() {

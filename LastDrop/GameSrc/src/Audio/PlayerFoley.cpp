@@ -33,7 +33,7 @@ namespace{
 
 	// ── 一歩ごとの音の大きさ（Gait の順）──
 	// 装備（銃を持っている間だけ）は走ると大きく揺れる
-	// 服の擦れは足音に被って邪魔だったので一歩ごとには鳴らさない（状態の切り替わりでだけ鳴らす）
+	// 服の擦れは足音に被って邪魔なので一歩ごとには鳴らさない（状態の切り替わりでだけ鳴らす）
 	const float kGearVolumes[]  = { 0.f, 0.06f, 0.175f };
 	static_assert( sizeof( kGearVolumes ) / sizeof( kGearVolumes[ 0 ] ) == GAIT_NUM, "kGearVolumes must list every Gait" );
 }

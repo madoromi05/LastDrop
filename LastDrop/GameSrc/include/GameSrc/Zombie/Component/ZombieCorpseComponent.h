@@ -16,7 +16,6 @@ class ZombieCorpseComponent : public Component{
 public:
 	ZombieCorpseComponent();
 
-	const ZombieCorpse& corpse() const { return mCorpse; }
 	void update();					// 倒れ始めた後、毎ティック（死亡アニメを進めた後に呼ぶ）
 	bool isGone() const;			// 沈み終わって、消してよいか（そうなった update で、自分の物に destroyLater する）
 	float secondsUntilGone() const;	// 消えるまでの残り秒（死体・沈んでいる間だけ。それ以外は 0）。確認用の表示に使う

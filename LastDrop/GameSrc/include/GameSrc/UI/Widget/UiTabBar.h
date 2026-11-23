@@ -13,7 +13,7 @@
 // タブの名前を横に並べた 1 行（設定のページの「音声・感度・操作」と、操作のタブの中の「キーボード・マウス／パッド」）
 // 今のタブの名前は明るくして下に赤い線を引き、ほかは暗くする。行が選ばれている間は、ほかの行と同じ印（SelectionMarks）を出す
 // タブは値と同じように動かす（IUiAdjustable）。選ばれている間は左右で 1 つずつ（端で反対側へ回る）、クリックした所の名前のタブにする
-// タブが変わったときの処理（ページを作り直す・一覧の行を差し替える）は作る側が onChange で渡す。OptionsTabs_Plan.txt
+// タブが変わったときの処理（ページを作り直す・一覧の行を差し替える）は作る側が onChange で渡す
 class UiTabBar : public IUiElement, public IUiSelectable, public IUiAdjustable{
 public:
 	// rect: 行の範囲（画素。左上が原点。マウスで選べる範囲もこれ）。labels: 左から並べるタブの名前。空は不可

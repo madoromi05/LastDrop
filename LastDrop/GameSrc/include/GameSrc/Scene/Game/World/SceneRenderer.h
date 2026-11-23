@@ -21,7 +21,7 @@ class GameDebugOverlay;
 
 // 1 回の描画の、世界を画面へ写すところ（ディファードのパイプライン）を受け持つ
 // GameScene は「どのカメラで描くか」を決めてここへ渡すだけ。UI・HUD・状態（一時停止/カバン/漁り）は GameScene に残る
-// 中でやること（GBuffer_Plan.txt〜Taa_Plan.txt）: ライトと影のマップを作る → 不透明を G-Buffer へ → SSAO → ライティング →
+// 中でやること: ライトと影のマップを作る → 不透明を G-Buffer へ → SSAO → ライティング →
 //   映り込み（SSR）→ 霧 → TAA → 砂ぼこり・血・マズルフラッシュ → （Debug の当たり判定）→ 画面へ写す → G-Buffer の表示
 // レンダ系の部品（PostProcess・G-Buffer・ライティング・SSAO・SSR・TAA）と WorldRenderer、ライトと影の係（SceneLights）を所有する
 class SceneRenderer{
@@ -34,7 +34,7 @@ public:
 	};
 	// world: 描く世界。settings: 画面の明るさを毎フレーム読む（設定画面で変えるとすぐ効く）。どちらも所有しない。nullptr 不可。この描画より長く生きていること
 	SceneRenderer( GameWorld* world, const GameSettings* settings );
-	// このフレームのディファード描画を全部行う。camera: GameScene が置いた、描くカメラ（観察用カメラの間はそちら）
+	// このフレームのディファード描画を全部行う。camera: GameScene が置いた、描くカメラ（自キャラの視点）
 	// damage: 画面全体の赤み・痛み・暗さ。debug: 当たり判定・ライトの表示（Debug/Profile だけ。nullptr 可）
 	void render( const FirstPersonCamera& camera, const DamagePostEffect& damage
 #ifdef ZF_EDITOR

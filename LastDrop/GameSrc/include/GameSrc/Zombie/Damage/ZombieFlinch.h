@@ -33,7 +33,7 @@ private:
 	void kick( BodyPart part, const GameLib::Math::Vector3& direction, float degree );	// part のまとまりを direction へ degree だけ足して押す（足した角度は上限で切る）
 
 	const ZombieFlinchLayout* mLayout;				// 借りているだけ
-	std::vector< GameLib::Math::Vector3 > mPushes;	// まとまりごとの押す量（骨格の根の空間。向き＝押す向き、長さ＝角度（度））。並びは ZombieFlinchLayout::groups と同じ
+	std::vector< GameLib::Math::Vector3 > mPushes;	// まとまりごとの押す量（骨格の根の空間。向き＝押す向き、長さ＝度で表した角度）。並びは ZombieFlinchLayout::groups と同じ
 };
 
 #endif

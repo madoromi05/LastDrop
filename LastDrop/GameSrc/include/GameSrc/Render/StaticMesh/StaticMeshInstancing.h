@@ -6,7 +6,7 @@
 #include "GameLib/Math/Matrix34.h"
 #include <vector>
 
-// 静的メッシュをインスタンシングで描く道具一式（シェーダと、置き場所の行列を渡す定数バッファ。OptimizationA_Plan.txt 8 章）
+// 静的メッシュをインスタンシングで描く道具一式（シェーダと、置き場所の行列を渡す定数バッファ）
 // 作りはゾンビの骨の行列（SkinningPipeline）と同じ：行列を b1 に並べ、シェーダが SV_InstanceID で何軒目かを読む
 // シェーダは 2 つ：G-Buffer へ描く Resource/Shader/StaticMeshInstancedGBuffer.hlsl、影のマップへ深度だけ描く StaticMeshInstancedShadow.hlsl
 // どちらで描くかは begin のときの RenderPass で選ぶ（Forward では使えない）

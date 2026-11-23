@@ -2,7 +2,6 @@
 #define INCLUDED_GAMELIB_DEBUGSTREAM_H
 
 //#include <string>
-//using namespace std;
 
 namespace GameLib{
 

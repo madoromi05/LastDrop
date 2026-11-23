@@ -131,7 +131,7 @@ public:
 			++a;
 		}
 	}
-	void add( const string& a ){
+	void add( const std::string& a ){
 		add( a.c_str() );
 	}
 	void add( const char* s, int n ){
@@ -203,7 +203,7 @@ OStringStream& OStringStream::operator<<( double a ){
 	return *this;
 }
 
-OStringStream& OStringStream::operator<<( const string& a ){
+OStringStream& OStringStream::operator<<( const std::string& a ){
 	mImpl->add( a );
 	return *this;
 }
@@ -256,11 +256,11 @@ void OStringStream::get( Array< char >* a ) const {
 	mImpl->get( a );
 }
 
-void OStringStream::get( string* a ) const {
+void OStringStream::get( std::string* a ) const {
 	if ( mImpl->size() > 0 ){
 		Array< char > t;
 		mImpl->get( &t );
-		*a = string( &t[ 0 ], t.size() - 1 ); //ArraySizeはNULL終端分多いので引いてやる
+		*a = std::string( &t[ 0 ], t.size() - 1 ); //ArraySizeはNULL終端分多いので引いてやる
 	}
 }
 

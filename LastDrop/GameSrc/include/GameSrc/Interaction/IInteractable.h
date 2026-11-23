@@ -8,7 +8,6 @@ class Inventory;
 // 見て操作キー（E）で使える物（落ちている物を拾う など）
 // 使う処理は、InteractorComponent がこの同じ入口から呼ぶ（新しい「使える物」を足しても InteractorComponent は変わらない）
 // 拾う物は、すぐ使わずに「差し出す」（offeredStack）。どのマスへ入れるかを遊ぶ人がカバンの画面で選び、入れた分だけ takeOffered で受け取る
-// （InventoryPickup_Plan.txt Q3）
 // 漁れる場所（ゴミ箱・木箱）は、中のマス目（lootGrid）を見せる。開けるまでの時間と中を見る画面は呼ぶ側
 // （LootSearch・LootScreen）
 // 画面には文字の案内を出さず、物の上にマークだけを出す（InteractMarkers）

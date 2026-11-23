@@ -1,4 +1,4 @@
-// 静的メッシュ（建物）をインスタンシングでまとめて G-Buffer へ描く（StaticMeshInstancing。RenderPass が GBuffer の間。OptimizationA_Plan.txt 8 章）
+// 静的メッシュ（建物）をインスタンシングでまとめて G-Buffer へ描く（StaticMeshInstancing。RenderPass が GBuffer の間）
 // 1 軒ずつ描く StaticMeshGBuffer.hlsl との違いは、置き場所を b0 のワールド行列ではなく b1 の配列から読むことだけ
 // G-Buffer へ書く中身は同じ writeGBuffer（GBuffer.hlsli）を使う
 #include "GBuffer.hlsli"

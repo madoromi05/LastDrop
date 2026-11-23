@@ -5,10 +5,10 @@
 using namespace GameLib::Math;
 
 namespace{
-	// 昼の値。段階 3-b までの GameScene の値と同じ明るさになるようにした
+	// 昼の値
 	//   太陽：(300, 500, 400) の方から → 高さ 45°・方位 36.9°
 	//   補助光：(-300, 200, -400) の方から → 高さ 21.8°・方位 -143.1°（夜と同じ向き）
-	//   環境光：一様な 0.4（灰色）だったので、空の平均と地面をどちらも 0.4 前後にする
+	//   環境光：空の平均と地面をどちらも 0.4 前後にする（一様な灰色 0.4 と同じ明るさ）
 	const float kDaySunElevation = 45.f;
 	const float kDaySunAzimuth = 36.9f;
 	const Vector3 kDaySunColor( 1.f, 0.95f, 0.9f );

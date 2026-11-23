@@ -3,10 +3,9 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// 画面へ写す処理（PostProcess・Bloom・Present.hlsl）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 6・7 章、
-// カラーグレーディングは NightFinish_Plan.txt 6 章、FXAA は 8 章
+// 画面へ写す処理（PostProcess・Bloom・Present.hlsl）の調整値
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
-// どれもリニア化の直後の初期値。画面で見ながら、今までの絵より暗い所がつぶれないように合わせる
+// 暗い所がつぶれないように、画面で見ながら合わせる
 struct PostProcessParams{
 	float exposure = 1.0f;			// シーンの色に掛けてから ACES に通す（固定値。自動露出は入れない：暗い所で勝手に明るくなり、夜の暗さが消えるため）
 	float bloomThreshold = 1.0f;	// 明るさ（r, g, b の一番大きい値。リニア）がこれを超えた分だけをにじませる
@@ -59,7 +58,7 @@ PostProcessParams& postProcessParams();	// 起動中ずっと 1 つだけの調�
 // false の間は「何も変えない」値をシェーダへ渡す。起動中ずっと 1 つ（PostProcess.cpp が持つ。初期値 true。Release では true のまま）
 bool& colorGradingEnabled();
 bool& ditherEnabled();
-// 色の表（LUT）の F6 のボタンと表示（MoonStarsLut_Plan.txt 7・8 章）。ボタンが要求を立て、PostProcess が次の endScene で行って下ろす
+// 色の表（LUT）の F6 のボタンと表示。ボタンが要求を立て、PostProcess が次の endScene で行って下ろす
 // 起動中ずっと 1 つ（PostProcess.cpp が持つ）
 struct ColorLutControl{
 	bool exportRequested = false; // 今の色の調整を Resource/UI/lut_export.tga に書き出す
@@ -67,10 +66,10 @@ struct ColorLutControl{
 	bool loaded = false;          // 今 lut.tga を引けるか（PostProcess が毎フレーム書く。F6 の表示用）
 };
 ColorLutControl& colorLutControl();
-// アンチエイリアスの方式（F6 → Render。タルコフと同じく 1 つから選ぶ。Taa_Plan.txt Q4）
+// アンチエイリアスの方式（F6 → Render。タルコフと同じく 1 つから選ぶ）
 //   Off  … 何も掛けない
 //   Fxaa … 写した後に FXAA。Fxaa 以外の間は 8bit の中間を通さず、画面へ直接写す（gpu.FXAA はほぼ 0 になる）
-//   Taa  … 描く行列を毎フレームずらし（TemporalJitter）、TAA で混ぜる（Taa_Plan.txt）。FXAA は通さない（ぼけが重なるため）
+//   Taa  … 描く行列を毎フレームずらし（TemporalJitter）、TAA で混ぜる。FXAA は通さない（ぼけが重なるため）
 enum class AntiAliasing{
 	Off,
 	Fxaa,

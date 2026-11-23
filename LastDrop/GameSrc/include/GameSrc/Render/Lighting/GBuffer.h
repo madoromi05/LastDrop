@@ -7,14 +7,14 @@
 #include "GameLib/Graphics/ConstantBuffer.h"
 #include "GameLib/Graphics/Texture.h"
 
-// G-Buffer に描く物の動きの種類（Taa_Plan.txt 6 章）。RT1 の a に書き、TAA が前のフレームのどこを読むかを分ける
+// G-Buffer に描く物の動きの種類。RT1 の a に書き、TAA が前のフレームのどこを読むかを分ける
 enum class MotionKind{
 	Static,      // 動かない物（建物・車・置物・地面）。深度と前のフレームのカメラから前の位置を出す
 	Moving,      // 動く物（ゾンビ・千切れた手足）。同じく深度から出し、近傍の色で強めに抑える
 	FirstPerson, // 手元（自キャラの体・腕・銃・弾）。カメラと一緒に動くので、画面の上ではほぼ止まっている
 };
 
-// G-Buffer（ディファードで、色を出す前の面の情報を画面ぶん持つ描画先）。仕様は SummaryPlan/個別仕様/グラフィック/GBuffer_Plan.txt 4・6 章
+// G-Buffer（ディファードで、色を出す前の面の情報を画面ぶん持つ描画先）
 // 3 枚の並び（何をどの形式で持つか）は Resource/Shader/GBuffer.hlsli に書いてあり、形式はここと揃える
 // 深度は持たず、PostProcess の深度を借りて一緒に描く（後から描く半透明の板も同じ深度で隠れるように）
 //

@@ -15,7 +15,7 @@
 //   脚：腕と反対の側の脚を、地面に沿って（真上の軸のまわりで）外へ開いて膝を曲げ、腕で引く間に伸ばす（地面を蹴る）
 // 決めるのは「腕を今どこまで伸ばしているか」と「このティックに腕で引いた長さ」だけ。体を動かす・向きを変えるのは持ち主（Zombie）
 // 骨格の根の空間の高さ 0 を地面とみなす（足元が地面の高さにあるため）
-// どの骨で曲げるかは ZombieCrawlLayout（種類ごとに共有）を借りる。値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieCrawl_Plan.txt の 3・4 章
+// どの骨で曲げるかは ZombieCrawlLayout（種類ごとに共有）を借りる
 class ZombieCrawl : public BonePoseModifier{
 public:
 	explicit ZombieCrawl( const ZombieCrawlLayout* layout );	// layout: 曲げる骨の設計図。所有権は受け取らない。nullptr 不可。この体より長く生きていること（ZombieModel が持つ）

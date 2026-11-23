@@ -10,7 +10,7 @@
 
 class GBuffer;
 
-// G-Buffer に描いた中身のどれを画面に出すか（GBuffer_Plan.txt 8-2）。番号は Resource/Shader/DeferredLighting.hlsl と揃える
+// G-Buffer に描いた中身のどれを画面に出すか。番号は Resource/Shader/DeferredLighting.hlsl と揃える
 enum class GBufferView{
 	Final,     // いつもの絵（ライティングした色）
 	Albedo,    // RT0 の色
@@ -34,7 +34,6 @@ const char* gbufferViewName( GBufferView );	// エディタ（F6 の Render）�
 GBufferView& gbufferView();					// 起動中ずっと 1 つの表示の選択（F6 で書き換える。Release では Final のまま）
 
 // G-Buffer と深度を読んで画面を作る全画面のパス（シェーダは Resource/Shader/DeferredLighting.hlsl・Fog.hlsl）
-// 仕様は GBuffer_Plan.txt 7・8 章、PBR の式は PbrNightLighting_Plan.txt 4 章、霧は NightFinish_Plan.txt 5 章
 // ライティング（drawLighting。PBR の式でシーンの色を出す）・映り込みを混ぜる（drawReflection）・霧（drawFog）・
 // G-Buffer の中身の表示（drawView）の 4 つ
 // 霧と映り込みを混ぜるパスもここに置くのは、深度から位置を戻す定数（射影×ビューの逆）と G-Buffer・深度の番号がライティングと同じだから

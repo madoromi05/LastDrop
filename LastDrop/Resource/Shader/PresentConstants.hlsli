@@ -1,5 +1,5 @@
 // 画面へ写す処理の定数（PostProcess.cpp の PresentConstants と同じ並び）。Present.hlsl と、色の表を焼く LutBake.hlsl が読む
-// 色の調整の値を両方が同じ所から読むので、焼いた表と画面の色がずれない（MoonStarsLut_Plan.txt Q4）
+// 色の調整の値を両方が同じ所から読むので、焼いた表と画面の色がずれない
 #ifndef INCLUDED_PRESENT_CONSTANTS_HLSLI
 #define INCLUDED_PRESENT_CONSTANTS_HLSLI
 

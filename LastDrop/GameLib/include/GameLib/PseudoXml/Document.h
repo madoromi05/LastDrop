@@ -6,7 +6,6 @@
 namespace GameLib{
 template< class T > class Array;
 namespace PseudoXml{
-using namespace std;
 
 class Element;
 class ConstElement;
@@ -21,7 +20,7 @@ public:
 	ConstElement root() const;											///根Elementゲット
 	bool isReady();														///ロード済みか否か
 	bool isError() const;												///読み込み中エラーが発生したか
-	void convertToString( string* out ) const;							///ニセxmlテキストを生成
+	void convertToString( std::string* out ) const;							///ニセxmlテキストを生成
 	void convertToBinary( Array< char >* out ) const;					///ニセxmlバイナリを生成
 	void write( const char* filename, bool isBinary = false ) const;	///ニセxmlファイルを生成(要FileIO初期化)
 	int childNumber() const;											///子の数ゲット
@@ -48,7 +47,7 @@ class ConstDocument{
 public:
 	ConstElement root() const;											///根Elementゲット
 	bool isError() const;												///読み込み中エラーが発生したか
-	void convertToString( string* out ) const;							///ニセxmlテキストを生成
+	void convertToString( std::string* out ) const;							///ニセxmlテキストを生成
 	void convertToBinary( Array< char >* out ) const;					///ニセxmlバイナリを生成
 	void write( const char* filename, bool isBinary = false ) const;	///ニセxmlファイルを生成(要FileIO初期化)
 	int childNumber() const;											///子の数ゲット

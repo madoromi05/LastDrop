@@ -4,13 +4,13 @@
 #include "GameLib/Math/Vector3.h"
 #include <vector>
 
-// 脱出できる所 1 つ（FuelEscapeLoading_Plan.txt）。name は画面に出す名前（TownMap の表の文字列を借りる）
+// 脱出できる所 1 つ。name は画面に出す名前（TownMap の表の文字列を借りる）
 struct ExtractZone{
 	const char* name;
 	GameLib::Math::Vector3 position; // 円の中心（車の足元の中心）
 };
 
-// 脱出できる所の円の中に、何秒居続けたかを数える（R2_Plan.txt Q11）
+// 脱出できる所の円の中に、何秒居続けたかを数える
 // 始めは閉じていて、open（脱出の車へ要る数のガソリンを入れ終えた）の後だけ数える
 // 円を出たら 0 に戻す。攻撃されても止めない（タルコフと同じ）。決まった秒に届いたら脱出した、と答えるだけで、物には触らない
 // 円の大きさと何秒かは作るときに受け取る（RaidParams）。どこにするかは知らない（RaidSession が選んで渡す）

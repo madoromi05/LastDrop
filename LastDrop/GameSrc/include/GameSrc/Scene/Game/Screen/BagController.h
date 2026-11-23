@@ -17,7 +17,7 @@ enum class PlayerCondition;
 class BagController{
 public:
 	BagController( GameWorld* world, FirstPersonControl* control, ModalController* modals, UiRenderer* ui );	// world/control/modals: 借りるだけ（所有しない）。ui: 画面の描画に使う。どれも nullptr 不可・この Controller より長く生きていること
-	// 開けるか（自キャラの持ち物があって、生きている）。観察用カメラ中・死亡の最終判断は呼び出し側で足す
+	// 開けるか（自キャラの持ち物があって、生きている）。死亡の最終判断は呼び出し側で足す
 	bool canOpen() const;
 	void open();
 	void close();

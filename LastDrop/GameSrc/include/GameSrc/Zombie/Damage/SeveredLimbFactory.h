@@ -11,7 +11,7 @@ class SkinnedMeshData;
 class GameObject;
 class GameObjectWorld;
 
-// 千切れた部位の物を部品から組み立てる（Unity のプレハブの代わり。SummaryPlan/個別仕様/設計と分割/SeveredLimbObject_Plan.txt）
+// 千切れた部位の物を部品から組み立てる（Unity のプレハブの代わり）
 // 同時に出しておける数の上限と、回る軸と速さのばらつきの乱数を持つ
 // 上限を超える分は、古い物から消す（1 つにつきゾンビ 1 体ぶんの頂点を変形するため）
 // どこで出すか（ゾンビの部位が 0 になったら）は頼む側（CombatResolver）が決める

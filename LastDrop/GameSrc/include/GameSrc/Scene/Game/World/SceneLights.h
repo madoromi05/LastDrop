@@ -12,11 +12,11 @@ class WorldRenderer;
 class FirstPersonCamera;
 class LightComponent;
 
-// 1 回の描画の、ライトの一覧と影のマップを作る係（SummaryPlan/個別仕様/設計と分割/MidPrioritySplit_Plan.txt 1 章）
+// 1 回の描画の、ライトの一覧と影のマップを作る係
 // 一覧に足すのは：月（平行光。CSM の影 3 枚）・補助光・物の光（懐中電灯〈スポット。影 1 枚〉・銃口の光・街灯）・空と環境光と霧と月の絵
 // 月・補助光・空は調整値（LightingParams。初期値は夜）から毎フレーム作る（F6 ですぐ効くように）
 // 物の光は、世界の物に付いた部品（LightComponent・MuzzleFlashComponent）を全部たどって集める
-// どの物が光るかは知らない。光る物を足すときは、物を組み立てる所で部品を付ける（SummaryPlan/個別仕様/設計と分割/LightComponent_Plan.txt）
+// どの物が光るかは知らない。光る物を足すときは、物を組み立てる所で部品を付ける
 // 今日の条件（停電・霧の日）は世界から読む。描く手順（G-Buffer → ライティング → …）は知らない（SceneRenderer が lights() を渡して進める）
 class SceneLights{
 public:

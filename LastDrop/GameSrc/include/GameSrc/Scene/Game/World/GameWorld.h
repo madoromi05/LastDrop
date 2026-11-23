@@ -19,6 +19,7 @@
 
 class MeshCache;
 class TownCache;
+class TownEdits;
 class StaticMeshData;
 class PlayerComponent;
 
@@ -55,7 +56,7 @@ public:
 	// condition: 今日の条件（街灯・霧・足音の届く距離・ゾンビの数）。F6 の changeDayCondition で替わる
 	// startBag: 始めのカバンの中身（RaidStart::startBag）。写して持ち、自キャラを置くときに自キャラの持ち物へ渡す
 	// spawning: ゾンビを勝手に湧かせるか
-	GameWorld( MeshCache* meshes, TownCache* town, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning );
+	GameWorld( MeshCache* meshes, TownCache* town, const TownEdits* townEdits, DayCondition condition, const ItemGrid& startBag, ZombieSpawning spawning );
 	~GameWorld();
 	GameWorld( const GameWorld& ) = delete;
 	GameWorld& operator=( const GameWorld& ) = delete;
@@ -94,6 +95,12 @@ public:
 	// 街灯の光・霧・足音は次の読み取りから、ゾンビの目標の数は次の補充から、街灯のガラスはすぐ替わる
 	// 多い分のゾンビは消さない（群れ → ふつうでも、居るゾンビはそのまま）。出撃の始めの知らせは出し直さない
 	void changeDayCondition( DayCondition condition );
+	// F6 の Town タブで足した町の物を、出撃を読み直す前に at へ見せる
+	// 建物は TownEnvironment::spawnBuildingPreview、置物は PropFactory::spawnEditPreview（街灯のガラスは今日の条件）
+	// update の外で呼ぶ。見せられない種類・形の構築に失敗したなら nullptr
+	GameObject* spawnTownEditPreview( TownEditKind kind, const TownPlacement& at );
+	// spawnTownEditPreview で見せた物を、付いた弾痕・血の跡ごと消す（消えるのは次の flush）。update の外で呼ぶ。preview: nullptr 不可
+	void removeTownEditPreview( GameObject* preview );
 
 	void setAnimationView( const GameLib::Math::Matrix44& projectionView, const GameLib::Math::Vector3& eye );	// 今のフレームで絵を描いたカメラを覚える。次の update でゾンビが、アニメを間引く段（映っているか・遠いか）を決めるのに読む
 
@@ -105,6 +112,7 @@ public:
 
 	// ── 読み取り口（描く・確認用の表示・音が読む）──
 	const TownEnvironment& town() const;			// 町（地図・道路と歩道・建物・歩ける床・隠れの表）
+	TownEnvironment& town();						// 書ける方は、F6 の Town タブの手直しを建物の見た目へ写す係（TownEditModelMover）だけが使う
 	const ZombieDirector& zombies() const;			// ゾンビの数と周り（確認用の表示が、湧かせる係を読む）
 	bool autoSpawnsZombies() const;					// ゾンビを勝手に湧かせる世界か（ZombieSpawning::Auto。F6 と確認用の表示が読む）
 	const DayConditionEffect& dayCondition() const;	// 今日の条件の効き目（街灯・霧・HUD はシーンがここから読む）

@@ -1,7 +1,7 @@
 #ifndef INCLUDED_DAY_CONDITION_H
 #define INCLUDED_DAY_CONDITION_H
 
-// 日ごとの条件（SummaryPlan/個別仕様/出撃と帰還/DayCondition_Plan.txt）。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる
+// 日ごとの条件。何が変わるかは、この表（DayCondition.cpp の kEffects）だけを見れば分かる
 // 調整値（LightingParams など）は書き換えず、使う所でこの倍率を掛ける（F6 の値が正のまま）
 // どれが出るかは RaidStart（出撃のたびにランダム）、F6 で固定したのは RaidRecord
 // 今の出撃のまま替える（F6 の Raid の欄）のは GameWorld::changeDayCondition

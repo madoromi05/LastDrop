@@ -1,4 +1,4 @@
-// 映り込み（SSR。SsrDecalMaterial_Plan.txt 7 章）の作る・ぼかす・混ぜるパスの共通の式
+// 映り込み（SSR）の作る・ぼかす・混ぜるパスの共通の式
 // SSR の結果は画面の半分の大きさ（RGBA16F）で、rgb は「映る色 × 確からしさ」、a は確からしさ（ぼかしても色と確からしさがずれないよう、
 // 確からしさを掛けた色で持つ）。半分の大きさの画素 i は、元の画面の画素 2i の値（SSAO と同じ。Ssao.hlsl）
 // 行列はパスごとに別の定数に入っているので、ここの関数は行（float4 × 4）を引数で受ける
@@ -10,7 +10,7 @@
 
 static const float kSsrSkyDepth = 10000.0;  // 空の画素の奥行き（どの物とも近くないと分かる大きさ。Ssao.hlsl の kSkyDistance と同じ）
 static const uint kSsrHalfStep = 2;         // 半分の大きさの 1 画素 = 元の画面の 2 画素
-// ぼけた映り込み：この粗さまでは今までのくっきりした映り込み（段階 7 の上限）。ここから kSsrRoughRange の幅で、
+// ぼけた映り込み：この粗さまではくっきりした映り込み。ここから kSsrRoughRange の幅で、
 // 確からしさを下げ（Ssr.hlsl）、ぼかしの読む間隔を広げる（SsrBlur.hlsl）。0.4 + 0.3 = 0.7 が SsrParams::maxRoughness の初期値
 static const float kSsrSharpRoughness = 0.4;
 static const float kSsrRoughRange = 0.3;

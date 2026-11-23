@@ -27,8 +27,8 @@ struct QuadUv{
 //            明るさは 絵の色×頂点の色×アルファ×明るさの倍率（setBrightness）。足すだけなので、黒は透明と同じになり、
 //            板どうしの描く順番も気にしなくてよい。シェーダは Resource/Shader/GlowQuad.hlsl（固定パイプラインのライト無しと同じ色）
 // どちらも奥行きは読むが書かない。PrimitiveRenderer はライトを必ず切って描くので、照らす板には使えない（光る板もここで揃える）
-// 作るときに「薄くし始める奥行きの差」（softDistance）を決めると、壁・地面に刺さった所で板を薄くする（ソフトパーティクル
-// SsaoTranslucent_Plan.txt 7 章）。そのときは PostProcess::resumeSceneReadOnlyDepth の間に描くこと（深度を読むため）
+// 作るときに「薄くし始める奥行きの差」（softDistance）を決めると、壁・地面に刺さった所で板を薄くする（ソフトパーティクル）
+// そのときは PostProcess::resumeSceneReadOnlyDepth の間に描くこと（深度を読むため）
 // 面に貼る板（弾痕）は 0（薄くしない。薄くすると貼った面で消える）
 // ライトの値は持たない。シーンが先に付けたライトの一覧（GameScene::setupLights → LightList::bind）でそのまま照らされる
 // 半透明の板は、目の位置を渡して描くと奥から順に並べ替えて描く（Z ソート）

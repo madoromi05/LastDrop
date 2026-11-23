@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// ゾンビ1体が引っかかったかを、画面に出すための動きの記録（SummaryPlan/個別仕様/ゾンビ/ZombieCrowd_Plan.txt 9 章）
+// ゾンビ1体が引っかかったかを、画面に出すための動きの記録
 // ZombieLocomotion が書き、ZombiePathDrawer・GameDebugOverlay（F6 の Zombie info の赤い印と番号・紫の線）が読む
 // ゲームの判断には使わない
 // 印を出すのは、ZombieLocomotion が mark を呼んだとき（よけ始めた・探すのをあきらめた・うろつく先を選び直した）と、

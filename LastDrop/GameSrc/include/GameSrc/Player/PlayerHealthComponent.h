@@ -23,7 +23,7 @@ public:
 	bool canBeAttacked() const { return !isDead(); } // ゾンビが攻撃してよいか（生きている）
 	bool isDead() const { return mHealth.isDead(); }
 	const PlayerHealth& health() const { return mHealth; }
-	void toggleInvincible(){ mInvincible = !mInvincible; } // デバッグ用（F5）。無敵の間は体力が減らない
+	void toggleInvincible(){ mInvincible = !mInvincible; } // デバッグ用（F6 のエディタ）。無敵の間は体力が減らない
 	bool isInvincible() const { return mInvincible; }     // F6 のエディタに出すため
 
 private:

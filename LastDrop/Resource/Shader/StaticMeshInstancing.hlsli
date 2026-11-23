@@ -1,4 +1,4 @@
-// 静的メッシュ（建物）をインスタンシングで描くときの置き場所（StaticMeshInstancing。OptimizationA_Plan.txt 8 章）
+// 静的メッシュ（建物）をインスタンシングで描くときの置き場所（StaticMeshInstancing）
 // 1 回の描画で同じ形を何軒も描き、何軒目かを SV_InstanceID で受け取って、置き場所の行列を b1 の配列から読む
 // ゾンビの骨の行列（Skinning.hlsli）と同じ作りで、b0 のワールド行列は単位行列にしてある（gTransform = 射影×ビュー）
 #ifndef INCLUDED_STATIC_MESH_INSTANCING_HLSLI

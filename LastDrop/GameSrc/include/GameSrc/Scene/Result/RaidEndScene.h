@@ -6,9 +6,9 @@
 
 class GameResources;
 
-// 1 回の出撃の結果の画面（SummaryPlan/個別仕様/出撃と帰還/SimpleRun_Plan.txt Q8・Q9・C6）。クリアと死んだの両方を、この 1 つで出し分ける
+// 1 回の出撃の結果の画面。クリアと死んだの両方を、この 1 つで出し分ける
 // ・クリア：EscapedPage が並べる（ESCAPED・かかった時間・倒した数・今回の条件・「タイトルへ」）
-// ・死んだ：GameOverPage が並べる（GAME OVER・経過と倒した数・「もう一度」（新しく引き直して町へ）と「タイトルへ」）
+// ・死んだ：GameOverPage が並べる（GAME OVER・経過と倒した数・新しく引き直して町へ行く「もう一度」・「タイトルへ」）
 // 中身は RaidRecord の最後の結果（GameScene が置いた物）を読み、どちらのページを並べるかを選ぶだけ
 class RaidEndScene : public IScene{
 public:

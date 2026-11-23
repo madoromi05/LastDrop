@@ -7,6 +7,7 @@
 #include "GameSrc/DebugMode/ZombiePathDrawer.h"
 #include "GameSrc/DebugMode/NavMeshDrawer.h"
 #include "GameSrc/DebugMode/LightDebugDrawer.h"
+#include "GameSrc/DebugMode/TownEditPreview.h"
 #include "GameSrc/Scene/Game/Hud/ZombieHealthBars.h"
 #endif
 
@@ -28,6 +29,7 @@ class UiRenderer;
 //   表示中は、左上の体の図の右に、自キャラの部位ごとの体力の数字も出す
 //   showTownInfo: 街灯などの点光源の置き場所と届く範囲を描く（LightDebugDrawer。照らしている物は黄色、上限に入らず消えている物は灰色）
 //   表示中は左下の文字に簡易 PVS の様子を、漁れる場所の上に中身の名前を出す
+//   F6 の Town タブで選んでいる物は、切り替えに関係なく枠で示す（TownEditPreview。F6 を開いている間だけ）
 //   Release には描画を残さない（関数ごと無い）
 // 世界は読むだけで、変えない
 class GameDebugOverlay{
@@ -39,7 +41,7 @@ public:
 	void drawShaderError( const char* shaderError ) const;
 
 #ifdef ZF_EDITOR
-	void drawCollision( const GameWorld& world, const FirstPersonCamera& camera );									// 表示中のもの（当たり判定・落ちている物の箱・ゾンビの通り道）を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ
+	void drawCollision( const GameWorld& world, const FirstPersonCamera& camera );									// 表示中のもの（当たり判定・落ちている物の箱・ゾンビの通り道）と、Town タブで選んでいる物の枠を描く。他を全部描いた後、同じ描画先（PostProcess の beginScene〜endScene の間）で呼ぶ
 	void drawLights( const LightList& lights, const FirstPersonCamera& camera );									// 町の表示中なら、点光源の置き場所と届く範囲を描く。lights：このフレームに bind した一覧。呼ぶ場所の決まりは drawCollision と同じ
 	// 表示中なら（F3）、ゾンビの体力を renderer に積む。PostProcess::endScene の後、HUD を描く前に呼ぶ
 	// （積むだけ。HUD の描画の UiRenderer::draw でまとめて描かれ、HUD の文字の下になる）。renderer: nullptr 不可
@@ -61,6 +63,7 @@ private:
 	ZombiePathDrawer mZombiePathDrawer;
 	NavMeshDrawer mNavMeshDrawer;
 	LightDebugDrawer mLightDrawer;
+	TownEditPreview mTownEditPreview;
 	ZombieHealthBars mZombieHealthBars;
 	std::vector< BoxCollider > mPickupBoxes; // 描く箱を世界から受け取る作業領域（毎回の描画で確保し直さないために持つ）
 #endif

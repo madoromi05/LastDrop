@@ -11,7 +11,7 @@ class Inventory;
 class FirstPersonCamera;
 class UiRenderer;
 
-// 使える物（落ちている物・漁れる場所・脱出の車）の上に出すマーク（SummaryPlan/個別仕様/UI/InteractMarker_Plan.txt。文字の案内の代わり）
+// 使える物（落ちている物・漁れる場所・脱出の車）の上に出すマーク（文字の案内の代わり）
 // ・近く（kMarkDistance 以内）で、壁などに隠れていない物の上に、小さな白いひし形
 // ・見ている物（E で使う物。InteractorComponent::target）は、ひし形を大きくして真ん中に「E」
 // ・今の持ち物で使えない物（カバンが一杯・ガソリンを持っていない・満タン）は灰色

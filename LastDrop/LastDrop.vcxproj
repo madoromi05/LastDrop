@@ -268,6 +268,7 @@
     <ClCompile Include="GameSrc\src\Interaction\Item\InventoryComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Item\MagazineSync.cpp" />
     <ClCompile Include="GameSrc\src\Player\PlayerGrabComponent.cpp" />
+    <ClCompile Include="GameSrc\src\Player\PlayerFlightComponent.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryCursor.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\AnimationPlayer.cpp" />
     <ClCompile Include="GameSrc\src\Render\SkinnedMesh\SkinnedMeshShape.cpp" />
@@ -307,6 +308,11 @@
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootContainerComponent.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\Loot\LootSearch.cpp" />
     <ClCompile Include="GameSrc\src\Map\TownCache.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownEdits.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownEditFile.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownEditFileState.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownFingerprint.cpp" />
+    <ClCompile Include="GameSrc\src\Map\TownBakeFile.cpp" />
     <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\GameLoader.cpp" />
     <ClCompile Include="GameSrc\src\Scene\Game\LoadingPhase.cpp" />
@@ -345,11 +351,20 @@
     <ClCompile Include="GameSrc\src\DebugMode\NavMeshDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\LightDebugDrawer.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\DebugSwitches.cpp" />
-    <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\EditorWindow.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\TuningVisitors.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\TuningCatalog.cpp" />
     <ClCompile Include="GameSrc\src\DebugMode\TuningPanel.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditPanel.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditPreview.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditOriginals.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditModelMover.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditFrame.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditReload.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeChain.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeReport.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeStatus.cpp" />
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakePanel.cpp" />
     <ClCompile Include="GameLib\src\DebugUi\DebugUi.cpp" />
     <!-- Dear ImGui v1.92.9b（MIT。開発用のエディタだけが使うので、Release ではビルドしない） -->
     <ClCompile Include="GameLib\src\ThirdParty\imgui\imgui.cpp">
@@ -844,6 +859,17 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningVisitors.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningPanel.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditPanel.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditPreview.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditOriginals.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditModelMover.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditFrame.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditReload.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeChain.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeReport.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeStatus.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakePanel.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\EditorColors.h" />
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imconfig.h" />
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui.h" />
     <ClInclude Include="GameLib\src\ThirdParty\imgui\imgui_impl_dx11.h" />
@@ -913,6 +939,7 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\Inventory.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Item\MagazineSync.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerGrabComponent.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFlightComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\InventoryCursor.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\AnimationPlayer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\SkinnedMesh\SkinnedMeshShape.h" />
@@ -955,6 +982,11 @@
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootContainerComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\Loot\LootSearch.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEdits.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEditFile.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEditFileState.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownFingerprint.h" />
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownBakeFile.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\GameLoader.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\LoadingPhase.h" />
@@ -1001,7 +1033,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\NavMeshDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\LightDebugDrawer.h" />
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\DebugSwitches.h" />
-    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitMath.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Hit\HitboxSet.h" />
@@ -1180,7 +1211,6 @@
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuPages.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Menu\MenuCatalog.h" />
     <ClInclude Include="GameSrc\include\GameSrc\Render\StaticMesh\StaticMeshMerger.h" />
-    <ClInclude Include="GameLib\include\GameLib\Framework.h" />
     <ClInclude Include="GameLib\include\GameLib\DebugScreen.h" />
     <ClInclude Include="GameLib\include\GameLib\GameLib.h" />
     <ClInclude Include="GameLib\include\GameLib\Graphics\Manager.h" />
@@ -1247,7 +1277,6 @@
     <None Include="Resource\Shader\BloomDown.hlsl" />
     <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
-    <None Include="Resource\Shader\SkinnedMesh.hlsl" />
     <None Include="Resource\Shader\Skinning.hlsli" />
     <None Include="Resource\Shader\GBuffer.hlsli" />
     <None Include="Resource\Shader\Pbr.hlsli" />

@@ -23,22 +23,9 @@ namespace{
 	const float kFarClip      = 1000.f;
 
 	const Vector3 kUp( 0.f, 1.f, 0.f );
-
-	// ヨー・ピッチ（度）から向き（長さ1）。ヨー0で +Z、ピッチは正で見下ろす
-	Vector3 directionOf( float yaw, float pitch ) {
-		return Vector3(
-			Math::sin( yaw ) * Math::cos( pitch ),
-			-Math::sin( pitch ),
-			Math::cos( yaw ) * Math::cos( pitch ) );
-	}
 }
 
 FirstPersonCamera::FirstPersonCamera() :
-	FirstPersonCamera( kBodyPitchLimit ) {
-}
-
-FirstPersonCamera::FirstPersonCamera( float pitchLimit ) :
-	mPitchLimit( pitchLimit ),
 	mYaw( 0.f ),
 	mPitch( 0.f ),
 	mYawOffset( 0.f ),
@@ -60,7 +47,7 @@ void FirstPersonCamera::rotate( float yawDelta, float pitchDelta ) {
 	} else if ( mYaw < 0.f ) {
 		mYaw += AngleMath::kFullTurnDegree;
 	}
-	mPitch = ScalarMath::clampSigned( mPitch + pitchDelta, mPitchLimit );
+	mPitch = ScalarMath::clampSigned( mPitch + pitchDelta, kBodyPitchLimit );
 }
 
 void FirstPersonCamera::setAimOffset( float yawDegree, float pitchDegree ) {
@@ -97,7 +84,7 @@ Matrix44 FirstPersonCamera::projectionViewMatrix() const {
 	// 揺れは描く行列にだけ入れる（狙いの向き viewDirection は揺らさない）
 	// 揺れたピッチは上下限で止めない（限界の所で撃っても揺れが消えないように。揺れは 1° 程度なので体には影響しない）
 	Vector3 lookAt;
-	lookAt.setAdd( mEyePosition, directionOf( yaw() + mShakeYaw, pitch() + mShakePitch ) );
+	lookAt.setAdd( mEyePosition, AngleMath::directionOf( yaw() + mShakeYaw, pitch() + mShakePitch ) );
 
 	Graphics::Manager gm = Graphics::Manager::instance();
 	Matrix44 projectionView;
@@ -121,15 +108,15 @@ float FirstPersonCamera::yaw() const {
 }
 
 float FirstPersonCamera::pitch() const {
-	return ScalarMath::clampSigned( mPitch + mPitchOffset, mPitchLimit );	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
+	return ScalarMath::clampSigned( mPitch + mPitchOffset, kBodyPitchLimit );	// 足した後も上下限で止める（真上近くで撃って、背骨が曲げられる範囲を越えないように）
 }
 
 Vector3 FirstPersonCamera::viewDirection() const {
-	return directionOf( yaw(), pitch() ); // 反動・怯みを足した向き
+	return AngleMath::directionOf( yaw(), pitch() ); // 反動・怯みを足した向き
 }
 
 Vector3 FirstPersonCamera::weaponDirection() const {
-	return directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）
+	return AngleMath::directionOf( yaw() + mSwayYaw, pitch() + mSwayPitch );	// ぶれたピッチは上下限で止めない（銃の見た目は FirstPersonBody が同じ角度で回していて、そちらも止めていないため）
 }
 
 float FirstPersonCamera::weaponSwayYaw() const {

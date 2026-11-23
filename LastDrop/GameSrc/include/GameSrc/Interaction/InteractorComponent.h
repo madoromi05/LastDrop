@@ -8,7 +8,7 @@ class IInteractable;
 class IInteractFinder;
 class InventoryComponent;
 
-// 自キャラの「見ている物を使う」部品（SummaryPlan/個別仕様/設計と分割/InteractorComponent_Plan.txt）
+// 自キャラの「見ている物を使う」部品
 // 視線の先にある「使える物」（IInteractable）を探し、操作キーが押されたら使う
 // 視線の先のどれが「使える物」かは、共有の棚の IInteractFinder が探す。壁の向こうは見えない、といった見え方の決まりと
 // 名簿に載る物の種類をここが知らずに済み、使える物の種類を増やしてもここは変わらない

@@ -15,7 +15,6 @@
 #include "GameLib/Threading/Functions.h"
 #include "GameLib/DebugUi/DebugUi.h"
 
-using namespace std;
 using namespace GameLib;
 
 //WindowCreatorのメンバ関数
@@ -129,8 +128,8 @@ public:
 	bool mFullScreen;
 	bool mMinimized;
 	bool mActive;
-	string mTitle;
-	string mCommandLine;
+	std::string mTitle;
+	std::string mCommandLine;
 	bool mEndRequested;
 	bool mEnded;
 	bool mStarted;
@@ -140,10 +139,10 @@ public:
 	unsigned mMouseButtonPresses; //前に読んでから押されたマウスのボタン（ビット 0 左・1 右・2 中。Input::Manager が読んで 0 に戻す）
 	unsigned mTimeBias; //timeGetTime()にはこれを加算
 	unsigned mThreadId;
-	Array< string > mDroppedItems;
+	Array< std::string > mDroppedItems;
 	HWND mWindowHandle;
 	WINDOWPLACEMENT mWindowPlacement; //フルスクリーンからウィンドウへ戻すときの位置・大きさ・最大化の有無
-	string mCursorFile;
+	std::string mCursorFile;
 	HCURSOR mCursor; //ファイルから読んだカーソル。標準の矢印のときは NULL（共有の物なので消さない）
 };
 
@@ -303,7 +302,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
- 	// TODO: ここにコードを挿入してください
 	MSG msg;
 	HACCEL hAccelTable;
 
@@ -405,16 +403,6 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 }
 
 
-//  関数: MyRegisterClass()
-//
-//  目的: ウィンドウ クラスを登録します
-//
-//    この関数およびその使用方法は、'RegisterClassEx' 関数が追加された
-//    Windows 95 より前の Win32 システムと互換性を保つ場合にのみ必要です
-//    アプリケーションに、関連付けられた
-//    正しい形式のウィンドウ クラスとアイコンを取得できるようにするには、
-//    この関数を呼び出してください
-//
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEX wcex;
@@ -436,21 +424,11 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
-//
-//   関数: InitInstance(HINSTANCE, int)
-//
-//   目的: インスタンス ハンドルを保存して、メイン ウィンドウを作成します
-//
-//   コメント:
-//
-//        この関数で、グローバル変数にインスタンス ハンドルを保存し、
-//        メイン プログラム ウィンドウを作成および表示します
-//
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	HWND hWnd;
 
-	hInst = hInstance; // グローバル変数にインスタンスを格納します
+	hInst = hInstance;
 //----
 	DWORD style = gImpl->mFullScreen ? kFullScreenStyle : kWindowedStyle;
 	RECT rect = {0, 0,gImpl->mWidth,gImpl->mHeight};

@@ -5,7 +5,7 @@
 
 class GameObject;
 
-// 物（GameObject）に付ける部品の元（Unity の Component と同じ考え方。SummaryPlan/個別仕様/設計と分割/ComponentSystem2_Plan.txt・ComponentSystem3_Plan.txt）
+// 物（GameObject）に付ける部品の元（Unity の Component と同じ考え方）
 // 物は部品を組み合わせて作る（自キャラ＝Transform・SkinnedModel・CharacterCollider・Hitbox・Hold・Player …）
 // 振る舞いとデータは部品の側が持つ。付ける順には意味を持たせない（awake と start の 2 段で、どの順に付けても同じに動く）
 // 隣の部品の借り方：

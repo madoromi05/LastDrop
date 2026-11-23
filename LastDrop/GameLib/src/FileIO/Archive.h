@@ -9,7 +9,6 @@
 
 namespace GameLib{
 namespace FileIO{
-using namespace std;
 
 class Archive{
 public:
@@ -24,7 +23,7 @@ public:
 		}
 		//ファイルを開けてメンバに持っておく
 		setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
-		mStream = NEW ifstream( name, ifstream::binary );
+		mStream = NEW std::ifstream( name, std::ifstream::binary );
 		if ( !mStream->good() ){
 			cout << "can't open archive: " << name << endl;
 			SAFE_DELETE( mStream );
@@ -32,23 +31,23 @@ public:
 		}
 		//末尾から4バイト前へ移動
 		//ファイルサイズを一回測ろうか。エラーチェックのためにな
-		mStream->seekg( 0, ifstream::end );
-		streamsize fileSize = mStream->tellg();
+		mStream->seekg( 0, std::ifstream::end );
+		std::streamsize fileSize = mStream->tellg();
 		if ( fileSize < 8 ){ //まずありえん
 			cout << "archive size is illegal ( too small ): " << name << endl;
 			SAFE_DELETE( mStream );
 			return;
 		}
-		mStream->seekg( -8, ifstream::end );
+		mStream->seekg( -8, std::ifstream::end );
 		mBlockSize = getUnsigned();
-		streamsize tableBegin = getUnsigned() * mBlockSize;
+		std::streamsize tableBegin = getUnsigned() * mBlockSize;
 		//テーブル先頭へ移動
 		if ( tableBegin + 12 >= fileSize ){ //ありえん
 			cout << "archive size is illegal ( wrong table ): " << name << endl;
 			SAFE_DELETE( mStream );
 			return;
 		}
-		mStream->seekg( tableBegin, ifstream::beg );
+		mStream->seekg( tableBegin, std::ifstream::beg );
 		//4バイト読むとファイル数
 		mFileNumber = getUnsigned();
 		if ( fileSize < mFileNumber * 16 ){ //ありえん
@@ -78,13 +77,13 @@ public:
 		SAFE_DELETE( mStream );
 	}
 	void open( 
-	ifstream** streamOut,
+	std::ifstream** streamOut,
 	int* entryIndex,
 	const char* name ){
 		if ( mDummy ){
 			*entryIndex = -1;
 			setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
-			*streamOut = NEW ifstream( name, ifstream::binary );
+			*streamOut = NEW std::ifstream( name, std::ifstream::binary );
 			if ( !( ( *streamOut )->good() ) ){
 				SAFE_DELETE( *streamOut ); //ない
 			}
@@ -98,8 +97,8 @@ public:
 					*entryIndex = it;
 					*streamOut = mStream;
 					const Entry& e = *mEntries.value( *entryIndex );
-					streamsize pos = e.mPosition * mBlockSize;
-					mStream->seekg( pos, ifstream::beg );
+					std::streamsize pos = e.mPosition * mBlockSize;
+					mStream->seekg( pos, std::ifstream::beg );
 				}else{
 					*entryIndex = -1;
 					*streamOut = 0;
@@ -111,16 +110,16 @@ public:
 	bool contains( const char* name ) const {
 		if ( mDummy ){
 			setlocale( LC_ALL, "" ); //これがないと日本語ファイル名を受け付けない
-			ifstream f( name, ifstream::binary );
+			std::ifstream f( name, std::ifstream::binary );
 			return f.good();
 		}
 		return mFileNumber > 0 && !mEntries.isEnd( mEntries.find( entryName( name ) ) );
 	}
-	void getFileSize( streamsize* readSize, streamsize* originalSize, int entryIndex, ifstream* stream ) const {
+	void getFileSize( std::streamsize* readSize, std::streamsize* originalSize, int entryIndex, std::ifstream* stream ) const {
 		if ( mDummy ){
-			stream->seekg( 0, ifstream::end );
-			streamsize r = stream->tellg();
-			stream->seekg( 0, ifstream::beg );
+			stream->seekg( 0, std::ifstream::end );
+			std::streamsize r = stream->tellg();
+			stream->seekg( 0, std::ifstream::beg );
 			*readSize = *originalSize = r;
 		}else{
 			STRONG_ASSERT( entryIndex >= 0 );
@@ -137,7 +136,7 @@ public:
 		}else{
 			STRONG_ASSERT( entryIndex >= 0 );
 			const Entry& e = *mEntries.value( entryIndex );
-			int allocSize = max( e.mNecessaryBufferSize, e.mOriginalSize + 1 ); //展開に必要なバッファサイズがあるならそれも書く
+			int allocSize = std::max( e.mNecessaryBufferSize, e.mOriginalSize + 1 ); //展開に必要なバッファサイズがあるならそれも書く
 			*dataOut = NEW char[ allocSize ];
 		}
 	}
@@ -146,7 +145,7 @@ public:
 	char* data,
 	int size,
 	int entryIndex, 
-	ifstream* stream ){
+	std::ifstream* stream ){
 		bool compressed = false;
 		int originalSize = size;
 		int necessaryBufferSize = size;
@@ -186,7 +185,7 @@ public:
 			}
 		}
 	}
-	void close(	ifstream** stream ){
+	void close(	std::ifstream** stream ){
 		if ( mDummy ){
 			SAFE_DELETE( *stream );
 		}else{
@@ -203,8 +202,8 @@ private:
 	};
 	// 目次を引く名前にそろえる。/ と \ の両方を受け付けるため \ にし、続いた区切りは 1 つにする
 	// ディスクから読むときは大文字と小文字を区別しないので、目次でも区別しない（コードの書き方とファイル名の大小が違っても .pak で読めるように）
-	static string entryName( const char* name ){
-		string r;
+	static std::string entryName( const char* name ){
+		std::string r;
 		for ( const char* p = name; *p; ++p ){
 			char c = ( *p == '/' ) ? '\\' : *p;
 			if ( c == '\\' && !r.empty() && r.back() == '\\' ){
@@ -228,8 +227,8 @@ private:
 	}
 	int mFileNumber;
 	unsigned mBlockSize;
-	ifstream* mStream;
-	HashMap< string, Entry > mEntries;
+	std::ifstream* mStream;
+	HashMap< std::string, Entry > mEntries;
 	bool mDummy;
 };
 

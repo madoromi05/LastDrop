@@ -2,7 +2,7 @@
 #define INCLUDED_LOOK_PARAMS_H
 
 // 視点の回し方とズーム（FirstPersonControl）の調整値。設定画面の感度（GameSettings）は、この上から掛ける倍率
-// 起動中に F6 のエディタで動かせる（SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 5-5）
+// 起動中に F6 のエディタで動かせる
 struct LookParams{
 	float lookDegreesPerPixel = 0.15f;	// マウス1画素あたりの回転（度）。横に動かすと左右、縦に動かすと上下に回る
 	// 縦の視野角（度）。覗いている間は狭めて少しズームする（アイアンサイトなので控えめ）

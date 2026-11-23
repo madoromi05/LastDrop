@@ -26,7 +26,7 @@ class GameObject;
 class GameObjectWorld;
 struct DayConditionEffect;
 
-// ゾンビの数と、ゾンビ全員の周りを受け持つ係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-2）
+// ゾンビの数と、ゾンビ全員の周りを受け持つ係
 //   数     … 設計図（ZombieModel）・組み立て（ZombieFactory）・見えない所へ湧かせる（ZombieSpawner）・同時に居られる数（今日の条件）
 //   周り   … Think の段で全員が読む物（追う先・群れ・攻撃に行っている体・アニメの間引きの視点・道探しの回数）
 //   音     … 音をゾンビ全員へ知らせる ZombieHearing（共有の棚に置き、音を立てる部品が引く）
@@ -48,6 +48,11 @@ public:
 	// 壁との余白（ZombieCrowdParams::navMeshClearance）を足す。GameWorld::buildNavMesh から（setup より前）
 	// 長方形を求めるのでゾンビの設計図をここで作る（setup はそれを使う）。ゾンビの形が読めていなければ既定の長さ
 	float navMeshRadius();
+	// 上と同じ求め方で、体の余白（footprintPadding）と壁との余白（navMeshClearance）だけを、F6・プリセットの今の値ではなく
+	// コードの既定値（ZombieCrowdParams の初期値）にした長さ。Release が出撃のロードで求める長さと同じになる
+	// 事前に書き出す床（TownCache::bake）はこの長さで作る。体の頂点を全部調べ直すので、毎フレームは呼ばない（ボタンを押したときなど）
+	// ゾンビの形が読めていなければ既定の長さ
+	float defaultNavMeshRadius() const;
 	// ゾンビの組み立て・湧かせる係を作る（GameWorld::placeActors から。ゾンビの形の構築に失敗していれば何もしない）
 	// 設計図がまだ無ければ作る。map: 湧いてよい場所の候補を読む
 	void setup( const TownMap& map );

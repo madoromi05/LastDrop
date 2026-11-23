@@ -7,7 +7,6 @@
 
 
 namespace GameLib{
-using namespace std;
 
 //標準版
 template< class T > inline unsigned Hash< T >::value( const T& v, unsigned m ) const {
@@ -40,7 +39,7 @@ template<> inline bool Hash< const char* >::isEqual( const char* const& a, const
 	return false;
 }
 
-template<> inline bool Hash< const string* >::isEqual( const string* const& a, const string* const& b ) const {
+template<> inline bool Hash< const std::string* >::isEqual( const std::string* const& a, const std::string* const& b ) const {
 	if ( a->size() != b->size() ){ //なくてもいいが、これで早く終われる可能性は高い
 		return false;
 	}
@@ -132,7 +131,7 @@ template<> inline unsigned Hash< const char* >::value( const char* const& v, uns
 	return h;
 }
 
-template<> inline unsigned Hash< string >::value( const string& v, unsigned m ) const {
+template<> inline unsigned Hash< std::string >::value( const std::string& v, unsigned m ) const {
 	const unsigned char* p = reinterpret_cast< const unsigned char* >( v.c_str() );
 	unsigned h = 0;
 	for ( int i = 0; p[ i ] != '\0'; ++i ){
@@ -143,7 +142,7 @@ template<> inline unsigned Hash< string >::value( const string& v, unsigned m ) 
 	return h;
 }
 
-template<> inline unsigned Hash< const string* >::value( const string* const& v, unsigned m ) const {
+template<> inline unsigned Hash< const std::string* >::value( const std::string* const& v, unsigned m ) const {
 	const unsigned char* p = reinterpret_cast< const unsigned char* >( v->c_str() );
 	unsigned h = 0;
 	for ( int i = 0; p[ i ] != '\0'; ++i ){

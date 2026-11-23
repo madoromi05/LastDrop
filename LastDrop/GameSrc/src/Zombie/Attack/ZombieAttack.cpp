@@ -12,7 +12,7 @@ namespace{
 	const float kHoldPlaybackRate = ( kBiteTime - kGrabTime ) / ( kHoldSeconds * GameTime::kTicksPerSecond );
 	const float kNormalPlaybackRate = 1.f;
 
-	// ── 腕振り：atack1 の時刻（フレーム。Blender で右手の位置を測った。8 章）──
+	// ── 腕振り：atack1 の時刻（フレーム。Blender で右手の位置を測った）──
 	// 立っている体は atack1 の見えている時刻、体を引きずる体はアニメの代わりの時計の時刻で、同じ時間割を使う
 	// 腕が当たる時刻（Blender の 30 フレーム目に足元から前へ 0.86m まで振り下ろす。始めてから約 0.47 秒。この間に離れれば避けられる）と、
 	// 腕を戻し終える時刻（約 1 秒。体を引きずる体の時計だけが使う。立っている体はアニメの終わりで戻し終える）

@@ -126,7 +126,7 @@ public:
 		mEmissionColor.set( 0.f, 0.f, 0.f, 0.f );
 		mAmbientColor.set( 1.f, 1.f, 1.f, 1.f );
 		mNormalMapStrength = 1.f; // 標準の凹凸。モデルごとの値は MeshMaterial 側から渡す
-		mLinearColor = false;     // 今までどおり、選んだ色のまま計算する
+		mLinearColor = false;     // 選んだ色のまま計算する
 		ZeroMemory( &mViewport, sizeof( mViewport ) );
 		ZeroMemory( mRSStates,   sizeof( mRSStates ) );
 		ZeroMemory( mDSSStates,  sizeof( mDSSStates ) );
@@ -1197,7 +1197,7 @@ public:
 		}
 	}
 
-	// ---- 描画先・自作シェーダ（A-1 で追加）----
+	// ---- 描画先・自作シェーダ ----
 
 	// バックバッファへ描く状態に戻す（描画範囲の写し先もバックバッファの大きさにする）
 	void bindBackBuffer(){

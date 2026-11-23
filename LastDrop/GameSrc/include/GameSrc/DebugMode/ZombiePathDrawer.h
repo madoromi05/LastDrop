@@ -12,7 +12,6 @@ class GameObjectWorld;
 // 建物の向こうへ回り込む道を見るため、手前の物に隠れない線で描く。まっすぐ向かっているゾンビは描かない
 // あわせて、仲間を避けて歩く向き（分離）を体から伸びる橙色の線で、通り道に沿って先読みで向いている点を紫の線で、
 // 引っかかった体（ZombieMoveTrace の印が出ている間）を頭の上の赤い印で描く。歩ける床の辺は NavMeshDrawer が描く
-// （SummaryPlan/個別仕様/ゾンビ/ZombieCrowd_Plan.txt）
 // 描くだけで、ゾンビを変えない。ON/OFF はこのクラスを呼ぶか呼ばないか（GameDebugOverlay。F6 の Zombie info）
 class ZombiePathDrawer{
 public:

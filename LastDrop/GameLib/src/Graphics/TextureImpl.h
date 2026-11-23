@@ -16,7 +16,6 @@
 #include <algorithm>
 
 namespace GameLib{
-using namespace std;
 using namespace GameLib::PseudoXml;
 namespace Graphics{
 
@@ -25,7 +24,7 @@ public:
 	enum Extension{ EXT_TGA, EXT_DDS, EXT_UNKNOWN };
 
 	struct MipLevel{
-		vector< unsigned > pixels;
+		std::vector< unsigned > pixels;
 		int width;
 		int height;
 	};
@@ -57,7 +56,7 @@ public:
 			}else if ( name == "filename" ){
 				mExtension = getExtension( a.value() );
 				if ( mExtension != EXT_UNKNOWN ){
-					string filename = ( path ) ? path : "";
+					std::string filename = ( path ) ? path : "";
 					if ( filename.size() > 0 ){
 						char last = filename[ filename.size() - 1 ];
 						if ( last != '\\' && last != '/' ) filename += '/';
@@ -179,7 +178,7 @@ public:
 		// 送る中身は、圧縮した DDS（ブロックのまま）か、CPU で展開した画素（TGA・古い形の DDS・lock で書いた物）のどちらか
 		const bool compressed = !mCompressed.levels.empty();
 		int mipLevels = static_cast< int >( compressed ? mCompressed.levels.size() : mMips.size() );
-		vector< D3D11_SUBRESOURCE_DATA > initData( mipLevels );
+		std::vector< D3D11_SUBRESOURCE_DATA > initData( mipLevels );
 		for ( int i = 0; i < mipLevels; ++i ){
 			if ( compressed ){
 				initData[ i ].pSysMem     = mCompressed.levels[ i ].bytes.data();
@@ -224,7 +223,7 @@ public:
 		hr = mDevice->CreateShaderResourceView( mGpuTexture, &srvDesc, &mSRV );
 		ASSERT( SUCCEEDED( hr ) && "CreateShaderResourceView failed" );
 
-		// 画像ごとの GPU の大きさと、ここまでの合計を出す（1-b の前後で比べる）
+		// 画像ごとの GPU の大きさと、ここまでの合計を出す
 		// 名前のある画像（ファイルから読んだ物）だけ。lock で書く画像は書き直すたびに来るので数えない
 		if ( !mProfileName.empty() ){
 			size_t bytes = 0;
@@ -740,7 +739,7 @@ public:
 	ID3D11ShaderResourceView* mSRV;
 	ID3D11Device*             mDevice;
 	ID3D11DeviceContext*      mContext;
-	vector< MipLevel >        mMips;
+	std::vector< MipLevel >        mMips;
 	FileIO::InFile            mFile;
 	bool                      mIsError;
 	int                       mWidth;
@@ -752,7 +751,7 @@ public:
 	char*                     mName;
 	// ロードの計測用。読み込みを頼んだ時刻と、ファイル名（ファイルから読むときだけ）
 	long long                 mRequestedAt;
-	string                    mProfileName;
+	std::string                    mProfileName;
 	TextureColorSpace         mColorSpace;				// 色の画像か（ファイル名から作るときだけ指定できる。ほかは LINEAR）
 	DdsReader::Image          mCompressed;				// 圧縮した DDS の中身（GPU へ送るまで。送った後は空）。levels が空なら圧縮していない（mMips を使う）
 	bool                      mKeepsCpuPixels = false;	// GPU へ送った後も CPU 側の画素を残すか（Texture::createWritable の物だけ true）。true なら lock をいつでも呼べる

@@ -8,8 +8,7 @@
 
 // ブロック圧縮（BC1 / BC5 / BC7）の DDS を、GPU へそのまま送れる形に読み分ける（ファイルを読むだけ。D3D は触らない）
 // tools/convert/texture_to_dds.ps1（texconv -dx10）が書く「DX10 の追加の頭」付きの DDS だけを読む
-// 仕様は SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt の 8-4
-// 古い形の DDS（追加の頭が無い・圧縮していない。Texture::write が書く物）は読まない（TextureImpl の readDDS が今までどおり読む）
+// 古い形の DDS（追加の頭が無い・圧縮していない。Texture::write が書く物）は読まない（TextureImpl の readDDS が読む）
 //
 // ファイルの並び（https://learn.microsoft.com/ja-jp/windows/win32/direct3ddds/dx-graphics-dds-pguide）
 //   "DDS "（4）＋ DDS_HEADER（124）＋ DDS_HEADER_DXT10（20）＋ ミップ 0 → 1 → … の中身

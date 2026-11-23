@@ -8,7 +8,6 @@
 // 作った時に全種類の読み込みを始める（本編を始めるときに作れば、カバンを開く前に読み終わる）
 // どの物の絵を使うかの表は ItemCatalog にあり、ここは読んで持つだけ。描くのは InventoryScreen
 // 画面（バックバッファ）は sRGB ではなく、UI は ToneMap の後にそのまま描くので、絵は色の変換をせずに読む（TEXTURE_COLOR_SPACE_LINEAR）
-// SummaryPlan/個別仕様/UI/ItemIcon_Plan.txt
 class ItemIcons{
 public:
 	ItemIcons();

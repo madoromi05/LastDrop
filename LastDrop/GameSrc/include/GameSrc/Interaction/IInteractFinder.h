@@ -6,7 +6,7 @@
 class IInteractable;
 class IHittable;
 
-// 視線の先の「使える物」を探す（SummaryPlan/個別仕様/設計と分割/InteractorComponent_Plan.txt）
+// 視線の先の「使える物」を探す
 // 実装するのは世界の係（InteractionSystem）。世界が共有の棚へ置き、自キャラの InteractorComponent が引く
 // 見る側の部品は、どの名簿をどう調べるか（壁の向こうは見えない・落ちている物は一回り大きい箱で見る）を知らずに済む
 class IInteractFinder{

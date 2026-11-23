@@ -10,7 +10,7 @@ enum ItemId{
 	ITEM_PISTOL,
 	ITEM_RIFLE,
 	ITEM_AMMO_9MM, // 拳銃の予備の弾（9mm。1 つが 1 発）
-	// 段階R3 で足した物（町の漁れる場所から出る）。保存は saveName で書くので、後ろに足しても古い保存は読める
+	// 町の漁れる場所から出る物。保存は saveName で書くので、後ろに足しても古い保存は読める
 	ITEM_BANDAGE,  // 包帯（カバンの画面の「使う」で体力が戻る）
 
 	ITEM_NUMBER,
@@ -28,7 +28,7 @@ enum ItemKind{
 
 // アイテム1種類の決まり。持ち方の決まり（何マス使うか・1 マスに何個重ねるか）はここにデータで持ち、Inventory・ItemGrid の処理には書かない
 // 種類を足しても、マス目の処理は変えずにこの表へ 1 行足すだけで済むようにするため
-// 何個まで持てるかは決めない（カバンの空きのマス目が上限）。SummaryPlan/個別仕様/出撃と帰還/GridInventory_Plan.txt
+// 何個まで持てるかは決めない（カバンの空きのマス目が上限）
 struct ItemSpec{
 	const char* name; // 画面に出す名前（日本語。F6 の ImGui は日本語の字を持たないので、そちらは saveName を出す）
 	const char* saveName; // 確かめる道具（F6）に出す名前（英小文字）

@@ -11,7 +11,6 @@
 class IRayBlocker;
 
 // 弾が当たった後に出る、見せるだけの物（弾痕・砂ぼこり・血しぶき・血の跡）の持ち主
-// （SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-3）
 // 頼む側（CombatResolver）は「ここに出して」と言うだけで、いつ消えるか・どれだけ出すか（頭なら多く）はここが決める
 // どれも GameObject にしない（数が多く、まとめて描く・詰めて持つ方が速いため）
 // 千切れた部位は数が少なく、1 つずつ寿命を持つので、ここではなく物にする（SeveredLimbComponent）
@@ -23,8 +22,8 @@ public:
 		Normal,
 		Large,
 	};
-	// 弾が当たったときの血しぶきの大きさ（HitFeel_Plan.txt。どれにするかは CombatResolver が命中の重さで決める）
-	// 弾が当たった音を 1 つにしたので、頭の手応えは血の量で出す
+	// 弾が当たったときの血しぶきの大きさ（どれにするかは CombatResolver が命中の重さで決める）
+	// 弾が当たった音は 1 つなので、頭の手応えは血の量で出す
 	enum class BloodHitSize{
 		Body,  // 胴・腕・脚（ふつう）
 		Head,  // 頭に当たったが倒れていない（1 回に出せる上限まで多く）

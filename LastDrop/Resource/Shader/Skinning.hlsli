@@ -1,7 +1,7 @@
-// スキンメッシュ（キャラ）を GPU で変形する頂点シェーダ（SkinningPipeline）。色を出す SkinnedMesh.hlsl と、
-// G-Buffer へ描く SkinnedMeshGBuffer.hlsl が同じ VSMain を使う（ピクセルシェーダだけが違う）
+// スキンメッシュ（キャラ）を GPU で変形する頂点シェーダ（SkinningPipeline）。G-Buffer へ描く SkinnedMeshGBuffer.hlsl と、
+// 影のマップへ描く SkinnedMeshShadow.hlsl が同じ VSMain を使う（ピクセルシェーダだけが違う）
 // 頂点は1体ぶんを全キャラで共有し、骨の行列（置き場所×ポーズ×bindInverse）だけを体ごとに b1 で渡す
-// 変形の式は以前の CPU スキニング（SkinnedMeshData::deform）と同じ：位置・法線を4本の骨で重み付きに合成する
+// 変形の式：位置・法線を4本の骨で重み付きに合成する
 #ifndef INCLUDED_SKINNING_HLSLI
 #define INCLUDED_SKINNING_HLSLI
 

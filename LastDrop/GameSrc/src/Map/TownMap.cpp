@@ -1,4 +1,5 @@
 #include "GameSrc/Map/TownMap.h"
+#include "GameSrc/Map/TownEdits.h"
 
 #include <cmath>
 
@@ -14,7 +15,7 @@ namespace{
 	const int kColumnNumber = 4; // 南北に走る道の本数（両端は町の外周）
 	const int kRowNumber = 4;    // 東西に走る道の本数（同上）
 	// ブロック（歩道の帯に囲まれた内側）の1辺が部品何枚ぶんか。交差点と交差点の間に並べる直線の枚数でもある
-	// 建物の元の足元の板（11.16m 四方。今は消した形を置く）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒
+	// 建物 1 軒ぶんの区画（11.16m 四方。足元の板の無い形を置く）が部品2枚ぶん（11.40m）に収まるので、4枚で建物 2×2 軒
 	const int kBlockTileNumber = 4;
 	const float kBlockSize = kBlockTileNumber * kTileLength;
 	const float kRoadPitch = kStreetWidth + kBlockSize; // 隣の道までの間隔
@@ -59,7 +60,7 @@ namespace{
 		{  0.f,  1.f, kFaceSouth, kAsBuilt     },
 		{ -1.f,  0.f, kFaceWest,  kQuarterTurn },
 	};
-	// 角のます。はさむ2辺と、丸い歩道の向き（部品は、丸い側が -X・-Z（北西）を向く形で出来ている＝南東の角の向き）
+	// 角のます。はさむ2辺と、丸い歩道の向き（部品は、丸い側が北西の -X・-Z を向く形で出来ている＝南東の角の向き）
 	struct CornerLayout{
 		JunctionSide sideA;
 		JunctionSide sideB;
@@ -173,7 +174,7 @@ namespace{
 	const float kLampAlongEastWest = kAsBuilt;
 	const float kLampAlongNorthSouth = kQuarterTurn;
 
-	// 脱出の車の置き場所の候補（FuelEscapeLoading_Plan.txt Q13）
+	// 脱出の車の置き場所の候補
 	// 町の反対側どうし＝北と南の外周の道の真ん中（交差点 1 番と 2 番の間）。毎日このうち 1 か所にだけ車を置く（RaidSession が選ぶ）
 	// 車は道に沿わせて、町の内側の車線へ寄せる（道の中心はゾンビの湧く場所の候補なので、車体を掛けない）
 	// 名前は画面に出す（「脱出の車：北」）。北は -Z（TownMap の向きの決まり）
@@ -424,9 +425,8 @@ namespace{
 		return lamp;
 	}
 
-	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び。cars: 脱出の車の置き場所（近くの区間には立てない）
-	void addStreetLamps( std::vector< TownPlacement >* lamps, const std::vector< const std::vector< TownPlacement >* >& props,
-	const std::vector< TownEscapeCarSpot >& cars ) {
+	// 街灯の柱を並べる（足元は歩道の面の高さ）。props: 避ける置物の並び
+	void addStreetLamps( std::vector< TownPlacement >* lamps, const std::vector< const std::vector< TownPlacement >* >& props ) {
 		const float curbToLamp = 0.5f * kRoadWidth + kLampFromCurb;           // 道の中心から柱まで（道を横切る向き）
 		const float junctionToLamp = 0.5f * kStreetWidth + kLampPastJunction; // 交差点の中心から柱まで（道に沿う向き）
 		const float kEast = 1.f;
@@ -475,7 +475,7 @@ GameLib::Math::Vector3 TownPlacement::position() const {
 	return GameLib::Math::Vector3( x, y, z );
 }
 
-TownMap::TownMap() {
+TownMap::TownMap( const TownEdits* edits, const TownEditLimits& limits ) {
 	addTile( &mGroundTiles, TOWN_PIECE_EARTH, 0.f, -kEarthDrop, 0.f, kAsBuilt, kEarthSize );
 	addJunctions( &mGroundTiles );
 	addStraights( &mGroundTiles );
@@ -496,7 +496,14 @@ TownMap::TownMap() {
 	for ( const HydrantSpot& spot : kHydrants ) {
 		mFireHydrants.push_back( hydrantPlacement( spot ) );
 	}
-	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants }, mEscapeCarSpots );	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）と脱出の車の置き場所を並べ終えてから
+	addStreetLamps( &mStreetLights, { &mDumpsters, &mCrates, &mFireHydrants } );	// 街灯は、避ける置物（ゴミ箱・木箱・消火栓）を並べ終えてから
+
+	if ( edits ) {	// 手直しは組み立ての最後に当てる。街灯が置物をよける計算は、手直し前の並びで済んでいる
+		TownMapLists lists = {
+			&mBuildings, &mPerimeterBuildings, &mDumpsters, &mCrates, &mFireHydrants, &mStreetLights, &mZombieSpawnPoints, &mEscapeCarSpots,
+		};
+		mEditWarnings = edits->apply( &lists, limits );
+	}
 }
 
 const std::vector< TownTile >& TownMap::groundTiles() const {
@@ -533,4 +540,8 @@ const std::vector< TownPlacement >& TownMap::fireHydrants() const {
 
 const std::vector< TownPlacement >& TownMap::streetLights() const {
 	return mStreetLights;
+}
+
+const std::vector< std::string >& TownMap::editWarnings() const {
+	return mEditWarnings;
 }

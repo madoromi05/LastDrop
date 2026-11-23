@@ -9,7 +9,7 @@ class AudioEngine;
 // ゾンビが自キャラをつかんだ・噛んだ音を鳴らす係。世界（GameWorld）は音を知らないので、世界が出した
 // 「このティックの攻撃の出来事」を読んで鳴らす（弾が当たった音の ZombieHitSounds と同じ立場）
 // ゾンビの頭の所から 3D で鳴らす。素材に噛む音・ゾンビの声が無いので、今ある音を仮に使う
-// （つかむ＝服の擦れ、噛む＝肉に当たった音を低くしたもの。空振りは鳴らさない。SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 5 章）
+// （つかむ＝服の擦れ、噛む＝肉に当たった音を低くしたもの。空振りは鳴らさない）
 class ZombieAttackSounds{
 public:
 	explicit ZombieAttackSounds( AudioEngine* audio );	// audio: 鳴らす先。所有権は受け取らない。nullptr 不可。この係より長く生きていること

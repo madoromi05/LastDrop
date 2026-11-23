@@ -7,17 +7,17 @@ namespace GameLib{
 	}
 }
 
-// ゾンビの「倒れるまでが読めない」「狙いにくい」ための値（仕様は SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt）
+// ゾンビの「倒れるまでが読めない」「狙いにくい」ための値
 // 起動中に F6 のエディタで動かせる。どれも画面で確かめる前の初期値
 // 湧く体ごとの値（丈夫さ・揺れの長さ）を、この幅から選ぶ関数も持つ
 struct ZombieUncertaintyParams{
-	// ── 体力の個体差（3 章）──
+	// ── 体力の個体差 ──
 	// 湧くときに、この間から一様に丈夫さを選び、全体と全部の部位の最大体力に掛ける
 	// 胴だけなら 5〜9 発、頭だけなら 3〜4 発（弾1発 20）。湧いた時に選ぶので、変えたら次に湧く体から効く
 	float toughnessMin = 0.8f;
 	float toughnessMax = 1.4f;
 
-	// ── フラつき歩き（6 章）──
+	// ── フラつき歩き ──
 	// 自キャラを追っている間、これより近いと揺れ始め（m）、fullDistance より近いと一番大きく揺れる（間はなめらかに増やす）
 	float swayStartDistance = 12.f;
 	float swayFullDistance = 6.f;

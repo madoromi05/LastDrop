@@ -14,7 +14,7 @@ class IHittable;
 class LootContainerComponent;
 class EscapeCarComponent;
 
-// 見て E で使える物を探す・拾われた物を消す係（SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt 2-5）
+// 見て E で使える物を探す・拾われた物を消す係
 // 使える物：落ちている物（カバンから捨てた物）、漁れる場所（ゴミ箱・木箱
 // どれも LootContainerComponent を持つ）。「何を見たら何を使うか」の決まりを足すときは、ここだけを直す
 // 何を使うと何が起きるか（持ち物が増える）は、使える部品（IInteractable）が決める

@@ -13,7 +13,7 @@ struct GameSettings;
 
 // 一人称の操作の窓口。入力（Pad・マウス）を読んで、視点（FirstPersonCamera）を回し、自キャラへの操作（PlayerCommand）を作る
 // キー割り当てと「キャラの動き・カメラの向き」をつなぐのはここだけ（PlayerCharacter も FirstPersonCamera も入力デバイスを知らない）
-// 中身は係へ任せる（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章。外から呼ぶ口は前のまま）：
+// 中身は係へ任せる：
 //   操作を作る … CommandReader　／　反動・揺れ・照準のぶれ … ViewEffects　／　相手の顔へ向ける … LookPull
 //   ここに残るのは、視点を回す（感度）・カーソルの固定・カメラを置く、と係を呼ぶ順番
 //
@@ -41,9 +41,9 @@ public:
 	// カーソルロックの切り替え → ロック中ならマウスの移動量で視点を回す → 操作を command へまとめる
 	// aimWeight: 覗き具合（0〜1。PlayerCharacter::aimWeight）。ズーム中は視野角の比で感度を下げるのに使う
 	void readInput( float aimWeight );
-	// 自キャラを操作しない間（確認用の FreeCamera を使っている間）に、readInput の代わりに呼ぶ
+	// 自キャラを操作しない間（死んだ後）に、readInput の代わりに呼ぶ
 	// カーソルロックの切り替えだけ行い、視点は回さず、command は「何もしない」（その場で立ち止まる・撃たない・覗かない）にする
-	// 撃つ入力は一度離すまで止める（観察用カメラから戻った瞬間に、押していたクリックで撃ち出さないように）
+	// 撃つ入力は一度離すまで止める
 	void readInputIdle();
 	// command を「何もしない」にし、撃つ入力を一度離すまで止める（readInputIdle の後半。カーソルロックには触らない）
 	// 一時停止した瞬間に呼ぶ（メニューを押したクリックで、戻った瞬間に撃ち出さないように）

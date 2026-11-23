@@ -8,7 +8,7 @@
 #include <vector>
 
 // 名前と値の表（結果の画面の「かかった時間　14:07」など）。行ごとに、左に名前・右に寄せた値を書く
-// 行の上に細い線を引き、最後の行は下にも引く。描くだけで、選べない。ResultScreen_Plan.txt
+// 行の上に細い線を引き、最後の行は下にも引く。描くだけで、選べない
 class UiStatTable : public IUiElement{
 public:
 	// 行 1 つ

@@ -6,7 +6,7 @@
 #include <vector>
 
 // 世界に 1 つの物（当たり判定の名簿・町の床の形・ゾンビ全員で共有するティックの周り）を置いておく棚
-// （SummaryPlan/個別仕様/設計と分割/ComponentSystem3_Plan.txt の B。Game Programming Patterns の Service Locator）
+// （Game Programming Patterns の Service Locator）
 // 部品がそれを付けるときの引数で受け取らなくてよくするため（付ける人が手元に持っていなくても付けられる）
 // 持つのは GameObjectWorld、置くのはシーン（GameWorld）、引くのは部品（Component::shared）
 // ・型ごとに 1 つだけ置ける。所有権は受け取らない（置いた人が、棚より長く生かす）

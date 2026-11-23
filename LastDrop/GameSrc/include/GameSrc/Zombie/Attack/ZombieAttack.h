@@ -15,7 +15,6 @@
 // 腕振りは 1 回当てるだけ（startSwing。つかまない）。立っている体は atack1 の時刻で、
 // 体を引きずる体はアニメの代わりに自分の時計で進める（updateWithoutAnimation）
 //   Swing   ：腕を振っている。決まった時刻に、届く所に相手が居れば当たる（居なければ空振り）。その後 Recover
-// 値の理由は SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 3 章・8 章・9 章・11 章
 class ZombieAttack{
 public:
 	enum class Phase{

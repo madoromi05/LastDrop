@@ -13,7 +13,7 @@ class ZombieRootMotionSpan;
 class ZombieAnimationSet;
 
 // ゾンビ 1 体が今どの状態か（立っている・倒れている・死体）と、体のどこに居るか（足元・体の中心・頭・目）を答える部品
-// （SummaryPlan/個別仕様/設計と分割/ZombieBrainSplit_Plan.txt）。ゾンビの判断の部品（Chase・Attack・Health・Crawl・Corpse）はみなここを読む
+// ゾンビの判断の部品（Chase・Attack・Health・Crawl・Corpse）はみなここを読む
 // ここはほかの判断の部品を知らない（読むのは Transform・Hitbox・ZombieDismember・ZombieRootMotion だけ）
 // 状態を変えるのは ZombieHealthComponent（Alive → Downed / Falling）と ZombieCorpseComponent（Falling → Corpse → Sinking）だけ
 // 移動の当たり判定の形（体を引きずっている間は胸に置く）を答えるのもここ（ICollisionBody。名簿に載るのは CharacterColliderComponent）

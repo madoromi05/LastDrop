@@ -1,8 +1,8 @@
-// 映り込み（SSR）を、画面の半分の大きさの描画先（RGBA16F）へ作る（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-2）
+// 映り込み（SSR）を、画面の半分の大きさの描画先（RGBA16F）へ作る（ScreenSpaceReflection::draw）
 // 画素の位置から、目からの向きを法線で反射した向きへ進み、深度より奥へ入った所（物に当たった所）を探して、
 // その画素の「照らした後のシーンの色」を持ってくる。進み方は 2 つ（F6 → Render の Hi-Z で切り替える）：
 //   Hi-Z（Uludag 2014）… 深度の縮小の段で、何も無い所を大きく飛ばして進む
-//   直線 ＋ 二分探索（SsrDecalMaterial_Plan.txt Q5 の A）… 段階12 の計測が終わったら消す
+//   直線 ＋ 二分探索 … まっすぐ進み、当たった所を詰める
 // 粗い面（Stachowiak 2015）は、反射の向きを GGX の見える法線の分布から画素ごとに 1 本選んでばらし、
 // ぼかし（SsrBlur.hlsl）と TAA が均す（F6 → Render の Stochastic SSR。切ると鏡の向きだけ）
 // 出力：rgb は「映る色 × 確からしさ」、a は確からしさ（SsrCommon.hlsli）。当たらなかった・粗い面・空は 0（混ぜるパスで空の色のまま）
@@ -101,7 +101,7 @@ bool isOnScreen(float3 screen)
     return screen.z > 0.0 && all(screen.xy >= 0.0) && all(screen.xy < 1.0);
 }
 
-// 直線で進み、当たった所を二分探索で詰める（今までの進み方）。当たった所までの長さ（m）。当たらなければ kNoHit
+// 直線で進み、当たった所を二分探索で詰める。当たった所までの長さ（m）。当たらなければ kNoHit
 float marchLinear(float3 position, float3 r, uint2 halfPixel, uint2 depthSize)
 {
     uint steps = max((uint)gSsrMarch.y, 1u);

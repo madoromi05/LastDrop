@@ -23,7 +23,6 @@ class ZombieAnimationSet;
 class ZombieRootMotionSpan;
 
 // ゾンビの体力と、撃たれたときの反応（IDamageable）。体力の最大は体ごとに違う（作るときに丈夫さを選ぶ
-// SummaryPlan/個別仕様/ゾンビ/ZombieUncertainty_Plan.txt）
 // 生きている間に撃たれると体力が減り、当たった部位がのけぞり（ZombieFlinch）、部位が 0 になったら切り、ときどきよろける（ZombieStagger）
 // よろけたときは、弾の向きへ体を押し下げる（ZombieKnockback。壁・車・ほかの体に当たって止まる）
 // 頭に当たると、確率で頭が弾けて倒れる（クリティカル。確率は ZombieHealth の表、乱数を引くのはここ）

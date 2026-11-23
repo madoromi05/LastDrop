@@ -3,6 +3,8 @@
 #ifdef ZF_EDITOR
 
 #include "GameSrc/DebugMode/TuningPanel.h"
+#include "GameSrc/DebugMode/TownEditPanel.h"
+#include "GameSrc/DebugMode/EditorColors.h"
 #include "GameSrc/DebugMode/DebugSwitches.h"
 #include "GameSrc/Scene/Game/World/ZombieDirector.h"
 #include "GameSrc/Scene/SceneManager.h"
@@ -20,7 +22,6 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshInstancing.h"
 #include "GameSrc/Map/TownVisibility.h"
 #include "GameSrc/Render/Culling/LodSelector.h"
-#include "GameSrc/World/GameObjectWorld.h"
 #include "GameSrc/Interaction/Item/Inventory.h"
 #include "GameSrc/Scene/Game/World/InteractionSystem.h"
 #include "GameSrc/Scene/Game/World/GameWorld.h"
@@ -54,13 +55,15 @@ namespace{
 	const int kShownGamePad = 0;							// Pad の欄に出すパッド（自キャラを動かすのは 0 番だけ）
 
 	bool gPlayerInvincible = false; // GameScene から受け取った、自キャラが無敵か
-	bool gFreeCameraActive = false; // GameScene から受け取った、観察用カメラを使っているか
-	const GameObjectWorld* gObjects = nullptr; // GameScene から受け取った、世界に置いた物の持ち主（無ければ nullptr）
+	const FirstPersonCamera* gFlightCamera = nullptr; // GameScene から受け取った、飛んでいる自キャラの視点（飛んでいなければ nullptr）
 	Inventory* gInventory = nullptr; // GameScene から受け取った、自キャラのカバン（無ければ nullptr）
 	RaidSession* gRaid = nullptr;    // GameScene から受け取った、1 回の出撃（無ければ nullptr）
 	RaidRecord* gRaidRecord = nullptr; // SceneManager::start から受け取った、出撃の間で受け渡す物（起動の後はどのシーンでもある）
 	InteractionSystem* gInteraction = nullptr; // GameScene から受け取った、漁れる場所を探す係（無ければ nullptr）
 	GameWorld* gWorld = nullptr;     // GameScene から受け取った、今の出撃の世界（今日の条件を切り替える。無ければ nullptr）
+	TownCache* gTownCache = nullptr; // SceneManager::start から受け取った、Town タブの Bake が床と表を書き出す所（起動の後はどのシーンでもある）
+	TownEdits* gTownEdits = nullptr; // SceneManager::start から受け取った、町の手直し（起動の後はどのシーンでもある）
+	TownEditFileState* gTownEditFile = nullptr; // SceneManager::start から受け取った、手直しと TownEdit.xml の間の様子（同じ）
 	const char* const kRandomConditionName = "random"; // 日の条件の一覧の、固定しない（次の出撃から毎回ランダム）の行
 
 	// F6 で出し入れする物（銃とその弾を並べて置く）
@@ -70,7 +73,6 @@ namespace{
 	const int kMinItemAmount = 1;
 	const int kMaxItemAmount = 999;
 	const int kWeaponLimit = 1;   // 銃は 1 種類 1 丁（ItemCatalog.h の ITEM_PISTOL の説明）
-	const ImVec4 kBagFullColor( 1.f, 0.85f, 0.2f, 1.f ); // 入りきらなかった知らせ（見落とさないよう黄色）
 
 	int gItemAmount = kMinItemAmount; // Amount の欄の値
 	// 最後に押した Add が入りきらなかったときの結果（入った数・入れたかった数）。全部入ったら wanted を 0 にして消す
@@ -161,7 +163,7 @@ namespace{
 			drawItemRow( id );
 		}
 		if ( gLastAdd.wanted > 0 ) {
-			ImGui::TextColored( kBagFullColor, "Bag full: %s added %d / %d", itemSpec( gLastAdd.item ).saveName, gLastAdd.added, gLastAdd.wanted );
+			ImGui::TextColored( EditorColors::kWarning, "Bag full: %s added %d / %d", itemSpec( gLastAdd.item ).saveName, gLastAdd.added, gLastAdd.wanted );
 		}
 	}
 
@@ -228,50 +230,6 @@ namespace{
 		ImGui::TextDisabled( "(Debug > Zombie info shows contents above each spot)" );
 	}
 
-	const char* tagName( GameObjectTag tag ) {
-		switch ( tag ) {
-			case GameObjectTag::Player: return "Player";
-			case GameObjectTag::Weapon: return "Weapon";
-			case GameObjectTag::Zombie: return "Zombie";
-			case GameObjectTag::Fuel: return "Fuel";
-			case GameObjectTag::AmmoDrop: return "AmmoDrop";
-			case GameObjectTag::ItemDrop: return "ItemDrop";
-			case GameObjectTag::LootContainer: return "LootContainer";
-			case GameObjectTag::EscapeCar: return "EscapeCar";
-			case GameObjectTag::FireHydrant: return "FireHydrant";
-			case GameObjectTag::StreetLamp: return "StreetLamp";
-			case GameObjectTag::SeveredLimb: return "SeveredLimb";
-		}
-		return "?";
-	}
-
-	// 世界に置いた物を作った順に 1 行ずつ（名前・タグ・付いている部品の数）。ゾンビが 30 体いても読めるよう、表にして縦に流す
-	void drawObjects() {
-		if ( !gObjects ) {
-			ImGui::TextDisabled( "No world." );
-			return;
-		}
-		const ImGuiTableFlags kTableFlags = ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingStretchProp;
-		const int kColumnNumber = 3;
-		if ( !ImGui::BeginTable( "Objects", kColumnNumber, kTableFlags ) ) {
-			return;
-		}
-		ImGui::TableSetupColumn( "Name" );
-		ImGui::TableSetupColumn( "Tag" );
-		ImGui::TableSetupColumn( "Parts" );
-		ImGui::TableHeadersRow();
-		gObjects->forEachObject( []( const GameObject& object ) {
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted( object.name().c_str() );
-			ImGui::TableNextColumn();
-			ImGui::TextUnformatted( tagName( object.tag() ) );
-			ImGui::TableNextColumn();
-			ImGui::Text( "%d", object.componentNumber() );
-		} );
-		ImGui::EndTable();
-	}
-
 	// パッドの 0 番の今の入力（どこから読んでいるか・押しているボタン・スティック）
 	// DualSense などを対応表（GameLib の GamePadMapping）で Xbox の並びに置き換えているので、押したボタンが正しい名前で出るかを見る
 	void drawGamePad() {
@@ -314,7 +272,7 @@ namespace{
 	}
 
 	// 確認用の切り替え。本編へは DebugSwitches・zombiesFrozen を通して頼む
-	// 頼み事（無敵・観察用カメラ・ゾンビを出す）は出撃の世界があるときだけ押せる（ロード中・タイトルで押した頼みが、後の出撃で急に効かないように）
+	// 頼み事（無敵・飛ぶ・ゾンビを出す）は出撃の世界があるときだけ押せる（ロード中・タイトルで押した頼みが、後の出撃で急に効かないように）
 	void drawDebug() {
 		DebugSwitches& switches = debugSwitches();
 		bool inRaid = ( gWorld != nullptr );
@@ -323,17 +281,17 @@ namespace{
 		}
 		ImGui::SeparatorText( "Player" );
 		ImGui::BeginDisabled( !inRaid );
-		// チェックは今の状態を映すだけ。押したら切り替えを頼み、持ち主（自キャラの体力・観察用カメラ）が次の描画で切り替える
+		// チェックは今の状態を映すだけ。押したら切り替えを頼み、持ち主（自キャラの体力・飛ぶ部品）が次の描画で切り替える
 		bool invincible = gPlayerInvincible;
 		if ( ImGui::Checkbox( "Invincible", &invincible ) ) {
 			switches.toggleInvincible = true;
 		}
-		bool freeCamera = gFreeCameraActive;
-		if ( ImGui::Checkbox( "Free camera", &freeCamera ) ) {
-			switches.toggleFreeCamera = true;
+		bool flying = ( gFlightCamera != nullptr );
+		if ( ImGui::Checkbox( "Fly", &flying ) ) {
+			switches.toggleFlight = true;
 		}
 		ImGui::SameLine();
-		ImGui::TextDisabled( "(WASD, Space up, Ctrl down, Shift fast)" );
+		ImGui::TextDisabled( "(WASD, Space up, Ctrl down, Shift fast, no collision)" );
 		ImGui::EndDisabled();
 
 		ImGui::SeparatorText( "Zombies" );
@@ -509,7 +467,7 @@ namespace{
 	void drawEffectToggles() {
 		toggleWithHint( "Fog", &fogEnabled(), "(distance + height)" );	// 霧を掛けるか。時間は gpu.Fog
 		// 空の月の絵。値は Tuning の LightingParams（moonRadius〜moonHaloFalloff）
-		// 切ると今までのグラデーションだけの空（水たまりの月も消える）。時間は gpu.Lighting
+		// 切るとグラデーションだけの空（水たまりの月も消える）。時間は gpu.Lighting
 		toggleWithHint( "Sky detail", &skyDetailEnabled(), "(moon)" );
 		// SSAO を作るか。絵は G-Buffer の表示の SSAO で見る。時間は gpu.SSAO
 		ImGui::Checkbox( "SSAO", &ssaoEnabled() );
@@ -517,14 +475,14 @@ namespace{
 		toggleWithHint( "SSAO blur", &ssaoBlurEnabled(), "(view: G-Buffer > SSAO)" );	// ぼかしを切ると、点の並びを回したざらつきがそのまま見える（調整用）
 		// 映り込み。値は Tuning の SSR。切ると空と地面の色の映り込みに戻る。時間は gpu.SSR・gpu.SSR composite
 		toggleWithHint( "SSR", &ssrEnabled(), "(view: G-Buffer > SSR / SSR color)" );
-		// Hi-Z。切ると今までの直線の進み方（段階12 の計測が終わったら直線は消す）。時間は gpu.Hi-Z・gpu.SSR
+		// Hi-Z。切ると直線の進み方。時間は gpu.Hi-Z・gpu.SSR
 		ImGui::Checkbox( "Hi-Z", &hiZEnabled() );
 		ImGui::SameLine();
 		ImGui::SetNextItemWidth( kHiZLevelSliderWidth );
 		ImGui::SliderInt( "Hi-Z view level", &hiZViewLevel(), 0, kMaxHiZViewLevel );
 		ImGui::SameLine();
 		ImGui::TextDisabled( "(view: G-Buffer > Hi-Z)" );
-		// 粗い面のぼけた映り込み。切ると鏡の向きだけ・ぼかしも今までのまま。TAA を切るとざらつくのが正しい
+		// 粗い面のぼけた映り込み。切ると鏡の向きだけ・ぼかしの間隔も広げない。TAA を切るとざらつくのが正しい
 		toggleWithHint( "Stochastic SSR", &ssrStochasticEnabled(), "(roughness 0.4-0.7, Tuning > SSR maxRoughness)" );
 		// 雨上がりの水たまり。値は Tuning の Puddle。G-Buffer の表示 Roughness で黒い形に見える
 		toggleWithHint( "Puddles", &puddlesEnabled(), "(road only, view: G-Buffer > Roughness)" );
@@ -570,11 +528,8 @@ namespace{
 		drawViewSelectors();
 	}
 
-	// World タブ（世界の中身を触る 4 つの欄。どれも長くなるので、タブの中では見出しで開け閉めする）
+	// World タブ（世界の中身を触る 3 つの欄。どれも長くなるので、タブの中では見出しで開け閉めする）
 	void drawWorld() {
-		if ( ImGui::CollapsingHeader( "Objects" ) ) {
-			drawObjects();
-		}
 		if ( ImGui::CollapsingHeader( "Inventory", ImGuiTreeNodeFlags_DefaultOpen ) ) {
 			drawInventory();
 		}
@@ -585,11 +540,30 @@ namespace{
 			drawLoot();
 		}
 	}
+
+	TownEditPanel::Context townContext() {	// Town タブが読む・触る物。町・車の置き場所・日の条件・Bake の材料は、出撃の世界があるときだけ入れる
+		TownEditPanel::Context context = {};
+		context.edits = gTownEdits;
+		context.file = gTownEditFile;
+		context.record = gRaidRecord;
+		context.flightCamera = gFlightCamera;
+		context.cache = gTownCache;
+		if ( gWorld && gRaid ) {
+			context.town = &gWorld->town();
+			context.collisionWorld = &gWorld->collisionWorld();
+			context.zombies = &gWorld->zombies();
+			context.escapeCarSpot = gRaid->escapeCarSpot();
+			context.today = gWorld->dayConditionKind();
+		}
+		return context;
+	}
 }
 
 namespace EditorWindow{
 
 void draw() {
+	const TownEditPanel::Context town = townContext();
+	TownEditPanel::update( town );	// 出撃の読み直しの待ちと Bake は、Town タブを出していなくても進める
 	const ImGuiViewport* viewport = ImGui::GetMainViewport();
 	float width = viewport->WorkSize.x * kWindowWidthRatio;
 	width = ScalarMath::clamp( width, kMinWindowWidth, kMaxWindowWidth );
@@ -601,7 +575,7 @@ void draw() {
 	if ( ImGui::Begin( "Editor (F6)", nullptr, kFlags ) ) {
 		ImGui::TextDisabled( "Hold Alt to use the mouse here." );	// 開いたままでも遊べるので、窓を触る方法を一番上に出す（GameLib/DebugUi の入力の受け渡し）
 		drawActiveCheats();											// どのタブを見ていても見えるよう、タブの外に置く
-		// タブで欄を切り替える。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → パッド）
+		// タブで欄を切り替える。並びは使う回数の多い順（確認用の切り替え → 時間 → 絵 → 計測 → 調整値 → 世界の中身 → 町の手直し → パッド）
 		// 窓は毎回同じ名前で作るので、ImGui が選んでいるタブを覚えている（imgui.ini は書かないので、起動し直すと Debug に戻る）
 		if ( ImGui::BeginTabBar( "EditorTabs", ImGuiTabBarFlags_FittingPolicyScroll ) ) {
 			if ( ImGui::BeginTabItem( "Debug" ) ) {
@@ -631,6 +605,10 @@ void draw() {
 				drawWorld();
 				ImGui::EndTabItem();
 			}
+			if ( ImGui::BeginTabItem( "Town" ) ) {
+				TownEditPanel::draw( town );
+				ImGui::EndTabItem();
+			}
 			if ( ImGui::BeginTabItem( "Pad" ) ) {
 				drawGamePad();
 				ImGui::EndTabItem();
@@ -645,12 +623,8 @@ void setPlayerInvincible( bool invincible ) {
 	gPlayerInvincible = invincible;
 }
 
-void setFreeCameraActive( bool active ) {
-	gFreeCameraActive = active;
-}
-
-void setObjects( const GameObjectWorld* objects ) {
-	gObjects = objects;
+void setFlightCamera( const FirstPersonCamera* camera ) {
+	gFlightCamera = camera;
 }
 
 void setInventory( Inventory* inventory ) {
@@ -673,6 +647,15 @@ void setWorld( GameWorld* world ) {
 	gWorld = world;
 }
 
+void setTownCache( TownCache* cache ) {
+	gTownCache = cache;
+}
+
+void setTownEdits( TownEdits* edits, TownEditFileState* file ) {
+	gTownEdits = edits;
+	gTownEditFile = file;
+}
+
 } //namespace EditorWindow
 
 #else // ZF_EDITOR
@@ -685,10 +668,7 @@ void draw() {
 void setPlayerInvincible( bool ) {
 }
 
-void setFreeCameraActive( bool ) {
-}
-
-void setObjects( const GameObjectWorld* ) {
+void setFlightCamera( const FirstPersonCamera* ) {
 }
 
 void setInventory( Inventory* ) {
@@ -704,6 +684,12 @@ void setInteraction( InteractionSystem* ) {
 }
 
 void setWorld( GameWorld* ) {
+}
+
+void setTownCache( TownCache* ) {
+}
+
+void setTownEdits( TownEdits*, TownEditFileState* ) {
 }
 
 } //namespace EditorWindow

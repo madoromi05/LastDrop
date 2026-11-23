@@ -6,7 +6,7 @@
 namespace{
 	const float kVolume = 1.f;		// 音量。ほかの 3D の音と同じく素材そのままの大きさで鳴らし、遠さによる小ささは目録の聞こえる距離に任せる
 	const float kGrabPitch = 1.f;	// つかんだ音は、服の擦れをそのままの高さで
-	const float kHitPitch = 0.8f;	// 噛む音は、弾が肉に当たった音を低くして、重く湿った音に寄せる（仮。噛む音の素材が来たら差し替える）
+	const float kHitPitch = 0.8f;	// 噛む音は、弾が肉に当たった音を低くして、重く湿った音に寄せる
 }
 
 ZombieAttackSounds::ZombieAttackSounds( AudioEngine* audio ) :

@@ -5,6 +5,7 @@
 #include "GameSrc/Player/Body/ArmPoseComponent.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
 #include "GameSrc/Player/PlayerGrabComponent.h"
+#include "GameSrc/Player/PlayerFlightComponent.h"
 #include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/Component/SkinnedModelComponent.h"
@@ -60,9 +61,12 @@ void PlayerComponent::update() {
 	HoldComponent* hold = getComponent< HoldComponent >();
 	PlayerCommand command = allowedCommand( mCommand );
 	faceCamera();
+	const PlayerFlightComponent* flight = getComponent< PlayerFlightComponent >(); // 確認用の外せる部品（Release では付けない）
+	bool flying = flight && flight->isFlying();
 
+	// 飛んでいる間は歩かない（脚は止まった姿のまま。Shift は飛ぶ速さにだけ使い、銃を胸元へ抱えない）
 	Vector3 direction;
-	bool moving = mLocomotion->readMoveDirection( command, mCameraYaw, &direction );
+	bool moving = !flying && mLocomotion->readMoveDirection( command, mCameraYaw, &direction );
 	bool wantsRun = moving && command.run;
 	if ( moving ) {
 		mLocomotion->setMoveDirection( direction );
@@ -77,7 +81,8 @@ void PlayerComponent::update() {
 	// 撃てるのは、銃を手に持っていて、走っていない間だけ（走りでは銃口を下げて胸元に抱えている）
 	// リロード中も撃てない（銃を下げて弾倉を替えている）
 	fire( gun, hold && hold->isWeaponInHand() && !running && !reloading, command.fireHeld );
-	moveBody( next, getComponent< PlayerHealthComponent >() );
+	Vector3 flightStep = flying ? flight->step( command, mCameraYaw, mCameraPitch ) : Vector3( 0.f, 0.f, 0.f );
+	moveBody( next, getComponent< PlayerHealthComponent >(), flying ? &flightStep : nullptr );
 	if ( hold ) {
 		hold->takeOutMagazineIfCued();
 	}
@@ -116,7 +121,7 @@ void PlayerComponent::fire( GunComponent* gun, bool canFire, bool triggerHeld ) 
 	mBody->body().setRecoil( gun ? gun->recoilKick() : kNoRecoil );
 }
 
-void PlayerComponent::moveBody( Animator::State next, const PlayerHealthComponent* health ) {
+void PlayerComponent::moveBody( Animator::State next, const PlayerHealthComponent* health, const Vector3* flightStep ) {
 	// 腕の効き具合（両手持ち・胸元への寄せ・リロードの腕）。外せる部品（無ければ腕は体のアニメのまま）
 	if ( ArmPoseComponent* arms = getComponent< ArmPoseComponent >() ) {
 		arms->update( next );
@@ -134,8 +139,12 @@ void PlayerComponent::moveBody( Animator::State next, const PlayerHealthComponen
 	mesh.update();
 	// 向きは faceCamera で変えてある。変えた向き・伸びた当たり判定で壁にめり込んだ分も、ここで外へ出す
 	Vector3& position = mTransform->position();
-	position += mCollider->mover().move( step );
-	position.y = mCollider->mover().followGround( position ); // 歩道の段差に乗る
+	if ( flightStep ) {
+		position += *flightStep; // 飛んでいる間は壁も地面もすり抜ける
+	} else {
+		position += mCollider->mover().move( step );
+		position.y = mCollider->mover().followGround( position ); // 歩道の段差に乗る
+	}
 	mesh.setPosition( position );
 	if ( HitboxComponent* hitbox = getComponent< HitboxComponent >() ) {
 		hitbox->boxes().update( mesh );
@@ -149,6 +158,7 @@ PlayerCommand PlayerComponent::allowedCommand( const PlayerCommand& command ) co
 		// 死んだら、その場で止まって何もしない（押した瞬間の入力も捨てる）
 		allowed.forward = 0.f;
 		allowed.strafe = 0.f;
+		allowed.rise = 0.f;
 		allowed.run = false;
 		allowed.aimHeld = false;
 		allowed.fireHeld = false;
@@ -160,6 +170,7 @@ PlayerCommand PlayerComponent::allowedCommand( const PlayerCommand& command ) co
 	if ( grab && grab->isHeld() ) {
 		allowed.forward = 0.f; // つかまれている間は動けない（撃って振りほどく）
 		allowed.strafe = 0.f;
+		allowed.rise = 0.f;
 		allowed.run = false;
 	}
 	return allowed;

@@ -15,7 +15,6 @@
 
 namespace GameLib{
 namespace Scene{
-using namespace std;
 
 using namespace GameLib::Graphics;
 using namespace GameLib::Math;
@@ -49,7 +48,7 @@ public:
 		//テクスチャ生成。とりあえず一枚
 		//途中から初めて出る字を描き足すので、GPU へ送った後も書ける画像にする（DX11 版の普通の画像は送った後に CPU 側の画素を捨てる）
 		Texture t = Texture::createWritable( mTextureWidth, mTextureHeight );
-		mTextures.insert( make_pair( 0, t ) );	//マップに格納
+		mTextures.insert( std::make_pair( 0, t ) );	//マップに格納
 
 		DWORD pitch = ( proportional ) ? VARIABLE_PITCH : FIXED_PITCH;	//フォント名をUNICODE変換
 
@@ -164,7 +163,7 @@ public:
 				mCurrentY = 0;
 				++mCurrentPage;
 				Texture t = Texture::createWritable( mTextureWidth, mTextureHeight );
-				mTextures.insert( make_pair( mCurrentPage, t ) );	//マップに格納
+				mTextures.insert( std::make_pair( mCurrentPage, t ) );	//マップに格納
 				//テクスチャ取り直し
 				TextureIt tit = mTextures.find( mCurrentPage );
 				ASSERT( tit != mTextures.end() );
@@ -275,7 +274,7 @@ public:
 			mCurrentLineHeight = cellH;
 		}
 
-		CharIt it = mChars.insert( make_pair( code, c ) ).first;
+		CharIt it = mChars.insert( std::make_pair( code, c ) ).first;
 		return &( it->second );
 	}
 	int charHeight() const override {
@@ -291,9 +290,9 @@ private:
 		unsigned short mX; //左端
 		unsigned short mY; //上端
 	};
-	typedef map< int, Char > CharMap; //キーは Unicode のコードポイント（U+FFFF より上も入るよう int）
+	typedef std::map< int, Char > CharMap; //キーは Unicode のコードポイント（U+FFFF より上も入るよう int）
 	typedef CharMap::iterator CharIt;
-	typedef map< int, Texture > TextureMap;
+	typedef std::map< int, Texture > TextureMap;
 	typedef TextureMap::iterator TextureIt;
 
 	int mCharHeight;

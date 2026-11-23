@@ -82,7 +82,7 @@ void SceneLights::setup( const FirstPersonCamera& camera ) {
 		environment.fogGroundDensity = params.fogGroundDensity;
 		environment.fogHeightHalf = params.fogHeightHalf;
 	}
-	// 月の絵。切っている間は 0 のまま（今までの空）。月が地平線より下なら月は描かない
+	// 月の絵。切っている間は 0 のまま（グラデーションだけの空）。月が地平線より下なら月は描かない
 	if ( skyDetailEnabled() ) {
 		environment.moonDirection.setNeg( lightDirectionFrom( params.moonElevation, params.moonAzimuth ) ); // 光の進む向きの逆が、月のある方
 		environment.moonColor = params.moonColor;
@@ -197,7 +197,7 @@ void SceneLights::drawShadowMaps( const FirstPersonCamera& camera ) {
 			mRenderer->drawShadowCasters( DrawCulling::forOrthographicShadow( matrix, mMoonShadow.texelSize( i ), i >= kFirstCoarseLodCascade ),
 				kWithPlayer );
 			mMoonShadow.map( i ).end();
-			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（間引く前は毎フレーム 3、間引いた後はふだん 1〜2）
+			PROFILE_COUNT( "Shadow.cascades", 1 ); // 描き直した月の影の枚数（間引かなければ毎フレーム 3、間引くとふだん 1〜2）
 		}
 	}
 	Graphics::Manager::instance().setProjectionViewMatrix( camera.projectionViewMatrix() );	// 影のマップは光の側の行列で描いたので、G-Buffer へ描く前にカメラの行列へ戻す

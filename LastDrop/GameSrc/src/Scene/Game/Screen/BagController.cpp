@@ -84,7 +84,7 @@ void BagController::quickPlaceOffered() {
 	if ( !mOffer->canInteract( *inventory() ) ) {
 		return; // どこにも入らない（捨てる・並べ替えるで空けてから）
 	}
-	mOffer->interact( inventory() );              // 今までの自動の入れ方（重ねられるマス → 上の行・左の列の空き）
+	mOffer->interact( inventory() );              // 自動の入れ方（重ねられるマス → 上の行・左の列の空き）
 	storeMagazineRounds( *inventory(), *mWorld ); // 拾った銃のマスにも弾倉の数を出す
 	finishPlacingIfDone();
 }

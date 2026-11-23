@@ -6,7 +6,6 @@
 #include <vector>
 
 // 一人称の体の書き換えの段（Player/Body/Pose/）が共通に使う、骨の並びを動かす計算
-// （HighPrioritySplit_Plan.txt 5-2）
 // 座標はすべて骨格の根の空間
 class PoseMath{
 public:

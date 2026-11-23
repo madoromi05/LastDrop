@@ -182,7 +182,7 @@ Graphics::DepthTarget PostProcess::sceneDepth() const {
 
 void PostProcess::endScene() {
 	Graphics::Manager gm = Graphics::Manager::instance();
-	// この後に画面へ直接描く HUD・文字は、画像の色のまま出す（今までと同じ色）
+	// この後に画面へ直接描く HUD・文字は、画像の色のまま出す
 	gm.enableLinearColor( false );
 	updateColorLut();
 	const Graphics::RenderTarget& bloom = mBloom.apply( mSceneColor );	// 画面へ戻す前に作る（ブルームは描画先を切り替えながら描くため）

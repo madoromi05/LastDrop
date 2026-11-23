@@ -16,7 +16,6 @@ struct GameSettings;
 // ・切り替えは予約にして、次の handleInput の頭で行う。押したボタンを持っている画面を、その処理の途中で消さないため
 //   （SceneManager::requestChange と同じ考え方）
 // ・設定のページを閉じて最初のページへ戻るとき、設定をファイルへ書く
-// SummaryPlan/個別仕様/UI/OptionsMenu_Plan.txt
 class MenuPages{
 public:
 	// renderer / settings / audio: 借りる。所有権は受け取らない。nullptr 不可。これより長く生きていること

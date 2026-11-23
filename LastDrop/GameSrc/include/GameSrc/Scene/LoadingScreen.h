@@ -3,7 +3,7 @@
 
 class UiRenderer;
 
-// 出撃のロード画面（FuelEscapeLoading_Plan.txt 6 章・Q12）。黒い背景の真ん中に見出し（今回の条件「霧が濃い」）、その下に目的の文（黄）、下に進み具合の棒
+// 出撃のロード画面。黒い背景の真ん中に見出し（今回の条件「霧が濃い」）、その下に目的の文（黄）、下に進み具合の棒
 // GameScene のロードが終わるまで出す。描くだけで、何を読むかも何を出すかも知らない（読むのは GameLoader、文は呼ぶ側が渡す）
 class LoadingScreen{
 public:

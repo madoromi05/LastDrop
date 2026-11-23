@@ -8,21 +8,31 @@
 
 using namespace GameLib::Math;
 
-StaticModelComponent::StaticModelComponent( const StaticMeshData* data, GroundMaterial material, DrawCulling::Target cullTarget ) :
-	StaticModelComponent( StaticMeshLods( data ), material, cullTarget ) {
-}
-
 StaticModelComponent::StaticModelComponent( const StaticMeshLods& shapes, GroundMaterial material, DrawCulling::Target cullTarget ) :
 	mMesh( shapes.full() ),
 	mShapes( shapes ),
 	mMaterial( material ),
-	mCullTarget( cullTarget ) {
+	mCullTarget( cullTarget ),
+	mTransform( nullptr ),
+	mHidden( false ) {
 }
 
 void StaticModelComponent::awake() {
-	const TransformComponent* transform = requireComponent< TransformComponent >();
-	mMesh.setPosition( transform->position() );
-	mMesh.setAngleY( transform->angleY() );
+	mTransform = requireComponent< TransformComponent >();
+	followTransform();
+}
+
+void StaticModelComponent::followTransform() {
+	mMesh.setPosition( mTransform->position() );
+	mMesh.setAngleY( mTransform->angleY() );
+}
+
+void StaticModelComponent::setHidden( bool hidden ) {
+	mHidden = hidden;
+}
+
+bool StaticModelComponent::isHidden() const {
+	return mHidden;
 }
 
 void StaticModelComponent::draw( const DrawCulling& culling ) const {
@@ -32,7 +42,7 @@ void StaticModelComponent::draw( const DrawCulling& culling ) const {
 }
 
 bool StaticModelComponent::shows( const DrawCulling& culling ) const {
-	return culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), mCullTarget );
+	return !mHidden && culling.shows( mMesh.boundsMin(), mMesh.boundsMax(), mCullTarget );
 }
 
 const StaticMeshData* StaticModelComponent::shapeFor( const DrawCulling& culling ) const {
@@ -49,7 +59,7 @@ void StaticModelComponent::setShapes( const StaticMeshLods& shapes ) {
 }
 
 bool StaticModelComponent::raycast( const Vector3& origin, const Vector3& delta, float* time, Vector3* normal ) const {
-	return mMesh.raycast( origin, delta, time, normal );
+	return !mHidden && mMesh.raycast( origin, delta, time, normal );
 }
 
 GroundMaterial StaticModelComponent::surfaceMaterial( const Vector3& ) const {

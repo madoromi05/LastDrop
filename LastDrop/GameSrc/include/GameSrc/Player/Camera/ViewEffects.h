@@ -10,7 +10,6 @@
 class FirstPersonCamera;
 
 // 視点の手触り（撃った反動・揺れ・照準のぶれ）をまとめて進め、カメラへ渡す係
-// （SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 6 章）
 //   狙いのずれ … 1 発ごとに跳ねて戻る反動（ViewRecoil）・連射でたまる弾道のずれ（AimRecoil）・攻撃された怯み（AimPunch）。カメラごと動き、弾の向きに入る
 //   見える絵の揺れ … CameraShake（描く行列だけ）
 //   照準のぶれ … AimSway（銃と弾の向きだけ。画面の中央は動かさない）

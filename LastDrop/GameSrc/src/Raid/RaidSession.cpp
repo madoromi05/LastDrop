@@ -10,16 +10,20 @@ namespace{
 	const int kOneCar = 1; // 脱出の車は出撃ごとに 1 台
 }
 
-RaidSession::RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) :
-	mEscapeCarSpot( pickCarSpot( carSpots, seed ) ),
+RaidSession::RaidSession( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed, int forcedCarSpot ) :
+	mEscapeCarSpot( pickCarSpot( carSpots, seed, forcedCarSpot ) ),
 	mClock(),
 	mExtraction( zoneAt( carSpots, mEscapeCarSpot ), raidParams().extractRadius, raidParams().extractSeconds ),
 	mKills( 0 ),
 	mEnding( RaidEnding::None ) {
 }
 
-int RaidSession::pickCarSpot( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed ) {
+int RaidSession::pickCarSpot( const std::vector< TownEscapeCarSpot >& carSpots, unsigned seed, int forcedCarSpot ) {
 	ASSERT( !carSpots.empty() && "RaidSession : no escape car spot." );
+	if ( forcedCarSpot >= 0 ) {
+		ASSERT( forcedCarSpot < static_cast< int >( carSpots.size() ) && "RaidSession : forced car spot is out of range." );
+		return forcedCarSpot;
+	}
 	return SpawnPicker::pick( static_cast< int >( carSpots.size() ), kOneCar, seed ).front();
 }
 

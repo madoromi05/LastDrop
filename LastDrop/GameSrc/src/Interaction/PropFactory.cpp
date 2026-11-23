@@ -36,6 +36,7 @@ namespace{
 	const char* kCrateName = "Crate";
 	const char* kFireHydrantName = "FireHydrant";
 	const char* kStreetLampName = "StreetLamp";
+	const char* kBuildingPreviewName = "BuildingPreview";
 
 	const int kFuelPerCan = 1;
 	// 置物の表面の材質（着弾音）。車・缶・弾・ゴミ箱は金属、木箱は木、包帯は小さいので金属のまま（ほぼ当たらない）
@@ -207,6 +208,48 @@ GameObject* PropFactory::spawnDroppedItem( GameObjectWorld* world, const ItemSta
 		ASSERT( false && "PropFactory::spawnDroppedItem : no shape for this item." );
 		return nullptr;
 	}
+}
+
+GameObject* PropFactory::spawnEditPreview( GameObjectWorld* world, TownEditKind kind, const Vector3& position, float yawDegree, bool lampLit ) const {
+	ASSERT( world && "PropFactory::spawnEditPreview : world is null." );
+	// 形・間引き方・材質は、町に置くときの spawn と同じ
+	struct Look{
+		GameObjectTag tag;
+		const char* name;
+		const StaticMeshLods* shapes;
+		DrawCulling::Target cullTarget;
+		GroundMaterial material;
+	};
+	Look look;
+	switch ( kind ) {
+		case TownEditKind::Dumpster:	look = { GameObjectTag::LootContainer, kDumpsterName, &mDumpsterShapes, DrawCulling::Target::Large, kMetalMaterial }; break;
+		case TownEditKind::Crate:		look = { GameObjectTag::LootContainer, kCrateName, &mCrateShapes, DrawCulling::Target::Large, kWoodMaterial }; break;
+		case TownEditKind::FireHydrant:	look = { GameObjectTag::FireHydrant, kFireHydrantName, &mFireHydrantShapes, DrawCulling::Target::Small, kMetalMaterial }; break;
+		case TownEditKind::StreetLight:	look = { GameObjectTag::StreetLamp, kStreetLampName, &streetLampShapes( lampLit ), DrawCulling::Target::Large, kMetalMaterial }; break;
+		default:						return nullptr;
+	}
+	if ( !look.shapes->full()->isReady() ) {
+		return nullptr;
+	}
+	GameObject* obj = createProp( world, look.tag, look.name, *look.shapes, position, yawDegree, look.cullTarget,
+		BoxColliderComponent::Mode::WalkThrough, look.material );
+	if ( kind == TownEditKind::StreetLight ) {
+		obj->addComponent< LightComponent >( LightPreset::StreetLamp );
+	}
+	world->spawn( obj );
+	return obj;
+}
+
+GameObject* PropFactory::spawnBuildingPreview( GameObjectWorld* world, const StaticMeshLods& shapes, GroundMaterial material,
+const Vector3& position, float yawDegree ) const {
+	ASSERT( world && "PropFactory::spawnBuildingPreview : world is null." );
+	if ( !shapes.full()->isReady() ) {
+		return nullptr;
+	}
+	GameObject* obj = createProp( world, GameObjectTag::BuildingPreview, kBuildingPreviewName, shapes, position, yawDegree,
+		DrawCulling::Target::Large, BoxColliderComponent::Mode::WalkThrough, material );	// 間引き方は町の建物と同じ
+	world->spawn( obj );
+	return obj;
 }
 
 const StaticMeshLods& PropFactory::groundShapes( ItemId item ) const {

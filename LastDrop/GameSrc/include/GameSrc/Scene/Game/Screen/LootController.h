@@ -20,7 +20,7 @@ struct PlayerCommand;
 
 // 漁れる場所（ゴミ箱・木箱）と脱出の車の給油を受け持つ
 // E で選んだら開け始め（探る音・動く/撃つ/攻撃されたら取りやめ）、開け終わったら中を見る画面（世界は止まる）
-// 給油口は待たずに開き、要る数を入れて閉じたら給油→エンジン始動（脱出の円を開く）。R3_Plan.txt・FuelEscapeLoading_Plan.txt
+// 給油口は待たずに開き、要る数を入れて閉じたら給油→エンジン始動（脱出の円を開く）
 // 開閉の共通遷移は ModalController、弾倉同期は MagazineSync、見た目は LootScreen。HUD の棒と見出しは GameScene が本クラスへ問い合わせて描く
 class LootController{
 public:

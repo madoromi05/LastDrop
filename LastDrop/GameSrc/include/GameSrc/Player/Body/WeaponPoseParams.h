@@ -4,7 +4,7 @@
 #include "GameLib/Math/Vector3.h"
 
 // 一人称の銃の構え（走るときの抱え方・撃った反動の見た目・目の位置）の調整値。使うのは FirstPersonBody
-// 起動中に F6 のエディタで動かせる（SummaryPlan/個別仕様/最適化と計測/DebugTools_Profiling_Plan.txt の 5-5）。毎フレーム読むので、変えればすぐ効く
+// 起動中に F6 のエディタで動かせる。毎フレーム読むので、変えればすぐ効く
 // 既定値を直すときはここだけを直す（エディタの Copy as C++ で、変えた項目がこの形で出てくる）
 struct WeaponPoseParams{
 	// ── 走るときの抱え方（胸元へ寄せる）──

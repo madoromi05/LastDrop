@@ -13,7 +13,7 @@
 // 同時に出しておけるのは決まった回数まで。超えたら一番古い物から消す
 // どこで・どれだけ出すか（ゾンビに当たったら、頭なら多く）は頼む側（CombatResolver。EffectManager を通す）が決める
 // 滴は画面に平行な板で描き、壁や地面と同じライトで照らす（LitQuadBatch。ImpactDustList と同じく、カメラの方を向いた面として）
-// 滴は目から遠い順に並べ替えて描く（Z ソート。EffectFlipbook_Plan.txt の 3 章）。砂ぼこりとの間は並べ替えない（別の絵なので別に描く）
+// 滴は目から遠い順に並べ替えて描く（Z ソート）。砂ぼこりとの間は並べ替えない（別の絵なので別に描く）
 class BloodSprayList{
 public:
 	BloodSprayList();

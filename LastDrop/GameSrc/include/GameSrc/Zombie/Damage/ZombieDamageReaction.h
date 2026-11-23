@@ -4,7 +4,6 @@
 // ゾンビが撃たれたときに、どう反応するか（倒れる・脚を失って倒れる・手を放してよろける・よろける）を選ぶ。状態は持たない
 // （ZombieAttackReach と同じ形）。選ぶだけで、アニメを流す・状態を変えるのは持ち主（ZombieHealthComponent::applyDamage）
 // 優先順位：倒れる → 脚を失って倒れる → 振りほどかれる → よろける（撃たれた反応の優先順位の修正の入口
-// SummaryPlan/個別仕様/設計と分割/ZombieSplit4_Plan.txt の 9 章）
 // 振りほどきの数え方（ZombieAttack::takeShakeDamage）は値を変えるので、倒れないときだけ数えられるよう、選ぶ関数を 2 つに分ける
 class ZombieDamageReaction{
 public:

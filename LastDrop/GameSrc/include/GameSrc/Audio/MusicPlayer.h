@@ -4,7 +4,7 @@
 #include "GameSrc/Audio/AudioEngine.h"
 #include "GameSrc/Audio/SoundCatalog.h"
 
-// 画面の BGM を 1 曲だけ、位置なしのループで鳴らす係（SummaryPlan/個別仕様/UI/Bgm_Plan.txt）
+// 画面の BGM を 1 曲だけ、位置なしのループで鳴らす係
 // ・曲を替えると、前の曲を小さくしながら止め、新しい曲を無音から大きくしながら鳴らし始める（2 曲は少しの間だけ重なる）
 // ・同じ曲を続けて頼まれたら何もしない。タイトルから設定のページへ行っても、曲が頭に戻らない
 // シーンをまたいで鳴り続けるので、持ち主はシーンではなく GameResources

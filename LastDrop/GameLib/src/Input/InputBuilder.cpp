@@ -366,12 +366,11 @@ std::shared_ptr<MouseDevice> InputBuilder::AddMouseDevice()
     return device;
 }
 
-std::shared_ptr<JoystickDevice> InputBuilder::AddJoystickDevice(int a_joystickIndex)
+std::shared_ptr<JoystickDevice> InputBuilder::AddJoystickDevice()
 {
     auto device = m_input.AddDevice<JoystickDevice>(DeviceKindName(DeviceKind::Joystick));
     m_joystickButtons = device->AddInputButtonFormat<JoystickButtonFormat>(kFormatButtons);
     m_joystickAxes = device->AddInputAxisFormat<JoystickAxisFormat>(kFormatAxes);
-    (void)a_joystickIndex; // JoystickButtonFormat/JoystickAxisFormat のプレイヤーID指定は今後の拡張ポイント
     return device;
 }
 
@@ -474,7 +473,7 @@ std::shared_ptr<InputCollector> InputBuilder::ensureCollector(CollectorId a_coll
 
 void InputBuilder::BindKeyboard(CollectorId a_collector, WorkId a_work, char a_asciiKey)
 {
-    // ① デバイス生成と物理キー登録をこの中で完結させる（二重宣言を撤廃）
+    // デバイス生成と物理キー登録をこの中で完結させる
     ensureKeyboardFormat()->AddButton(KeyboardKeyName(a_asciiKey), KeyboardKeyCode(a_asciiKey));
     ensureCollector(a_collector)->AddButtonToButtonWork(
         WorkName(a_work), DeviceKindName(DeviceKind::Keyboard), KeyboardKeyName(a_asciiKey));

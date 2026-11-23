@@ -5,7 +5,7 @@
 #include "GameSrc/Math/AngleMath.h"
 #include "GameLib/Math/Vector3.h"
 
-// 物の置き場所（足元の位置）と向き（Y 軸まわりの度。0 は +Z）。ほかの部品はこれを読み・書きする（ComponentSystem2_Plan.txt の決まりごと）
+// 物の置き場所（足元の位置）と向き（Y 軸まわりの度。0 は +Z）。ほかの部品はこれを読み・書きする
 // 親子（Unity の Transform の親子）は持たない。手に持つ銃は、持つ側（HoldComponent）が手の骨から置き場所を求める
 // 見た目の部品（StaticModelComponent・SkinnedModelComponent）へ写すのは、動かした部品の役目（いつ写すかで絵の遅れが決まるため）
 class TransformComponent : public Component{

@@ -9,8 +9,9 @@ class CollisionWorld;
 class dtNavMesh;
 class dtNavMeshQuery;
 
-// 町の歩ける床の形（ナビメッシュ）と、その上の道探し。Recast で作り、Detour で探す（SummaryPlan/個別仕様/ゾンビ/ZombieNavMesh_Plan.txt）
+// 町の歩ける床の形（ナビメッシュ）と、その上の道探し。Recast で作り、Detour で探す
 // 作るのは NavMeshBuilder。ここは作った形を持ち、道を探す・確認用の縁を出す
+// 作った形はバイト列にして書き出せ、そのバイト列から作り直せる（事前に作ったファイルを読む。どのファイルを読むかは TownCache）
 // 材料は移動の当たり判定の動かない形（建物の WallMesh・車などの箱）なので、物を置けば床の形に勝手に穴が開く（手で図を直す所が無い）
 // 途中で消える物（落ちているガソリン缶）・キャラは入れない（歩く側が壁に沿って滑り、詰まったら横へよける）
 // 床は高さ 0 の平らな 1 枚として作る（歩道の段差はキャラの足元だけで扱うため。問い合わせは上下に余裕を持って床を探す）
@@ -27,18 +28,26 @@ public:
 	// agentRadius: 床の縁を壁から離す長さ（m）。歩く体の長方形がどの向きでも壁にこすらない長さを渡す（NavMeshBuilder）
 	// 町を置き終えた後に 1 回だけ呼ぶ（数十〜数百 ms かかる。かかった時間はログへ出す）。作れなければ false（isReady も false のまま）
 	bool build( const CollisionWorld& world, float agentRadius );
-	bool isReady() const;	// 床の形ができているか
-	float agentRadius() const;	// 最後に build へ渡した、床の縁を壁から離す長さ（m。まだ作っていなければ負）
+	// 床の形のバイト列（Detour の dtNavMesh::init に渡す形のまま）を out に書く（前の中身は捨てる）。床ができていなければ false
+	// 中身は Detour の版と、この PC と同じ数の並び（x64）でだけ読める。ファイルへ書くのは TownBakeFile
+	bool saveData( std::vector< unsigned char >* out ) const;
+	// saveData で書いたバイト列から床の形を作る。前に作った物は捨てる。かかった時間はログへ出す
+	// agentRadius: そのバイト列を作ったときの、床の縁を壁から離す長さ（m。agentRadius() が返す）
+	// 読めなければ false（isReady も false のまま。Detour の版が違う・長さが頭と合わない など）
+	bool load( const std::vector< unsigned char >& data, float agentRadius );
+	bool isReady() const;		// 床の形ができているか
+	float agentRadius() const;	// 最後に build か load へ渡した、床の縁を壁から離す長さ（m。まだ作っていなければ負）
+	int polygonCount() const;	// 床の多角形の数（ログ・確かめ用。床ができていなければ 0）
 
 	// from から to まで、床の上をまっすぐ歩いて通れるか（体の半径ぶん壁から離れた線が、床の縁を越えないか）
-	// 床ができていなければ true（今までどおりまっすぐ向かい、壁に沿って滑る）
+	// 床ができていなければ true（まっすぐ向かい、壁に沿って滑る）
 	bool isWalkable( const GameLib::Math::Vector3& from, const GameLib::Math::Vector3& to ) const;
 	// start から goal までの通り道を out に書く（曲がる角を順に並べ、最後に goal）。前の中身は捨てる
 	// goal へ着けない（建物の中など）ときは、着ける一番近い所までの角のあとに goal を置く（そこから先は壁に沿って滑る）
 	// start・goal の近くに床が無い・床ができていなければ false（out は空）。out: nullptr 不可
 	bool findPath( const GameLib::Math::Vector3& start, const GameLib::Math::Vector3& goal,
 		std::vector< GameLib::Math::Vector3 >* out ) const;
-	const std::vector< GameLib::Math::Vector3 >& outline() const;	// 床の多角形の縁（2 点ずつで 1 本の線。確認用の表示に使う）。build のときに 1 回だけ作る
+	const std::vector< GameLib::Math::Vector3 >& outline() const;	// 床の多角形の縁（2 点ずつで 1 本の線。確認用の表示に使う）。build か load のときに 1 回だけ作る
 
 private:
 	// Detour の物は Detour の関数で消す（delete では消せない）
@@ -49,12 +58,14 @@ private:
 		void operator()( dtNavMeshQuery* query ) const;
 	};
 
+	// navMesh に道を探す道具を付けて持つ（build と load の共通の後半）。道具を作れなければ false で、何も持たない
+	bool adopt( std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh );
 	void buildOutline();	// 床の多角形の縁を mOutline に書く（隣の多角形と共有する辺は 1 本だけ）
 
 	std::unique_ptr< dtNavMesh, NavMeshDeleter > mNavMesh;    // 空なら床ができていない
 	std::unique_ptr< dtNavMeshQuery, QueryDeleter > mQuery;   // mNavMesh を借りて探す
 	std::vector< GameLib::Math::Vector3 > mOutline;
-	float mAgentRadius;                                       // 最後に build へ渡した長さ（TownCache が、変わったら作り直すのに見る）
+	float mAgentRadius;                                       // 最後に build か load へ渡した長さ
 };
 
 #endif

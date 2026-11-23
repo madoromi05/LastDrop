@@ -61,7 +61,7 @@ void InteractionSystem::collectNearby( const Vector3& eye, float radius, std::ve
 	mObjects->forEach< StaticModelComponent >( [ this, &eye, radius, out ]( StaticModelComponent& model ) {
 		const IInteractable* interactable = interactableOf( model.gameObject() );
 		const PickupComponent* pickup = model.getComponent< PickupComponent >();
-		if ( !interactable || ( pickup && pickup->isTaken() ) ) {
+		if ( !interactable || model.isHidden() || ( pickup && pickup->isTaken() ) ) {	// 見えなくした物（F6 の Town タブで消した物）は使えない
 			return;
 		}
 		// 箱は見た目の頂点から作る（移動の当たり判定と同じ箱。高さは地面 Y=0 から）

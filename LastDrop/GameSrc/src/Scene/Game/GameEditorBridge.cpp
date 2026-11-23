@@ -2,6 +2,7 @@
 #include "GameSrc/Scene/Game/World/GameWorld.h"
 #include "GameSrc/Player/Camera/FirstPersonCamera.h"
 #include "GameSrc/Player/PlayerHealthComponent.h"
+#include "GameSrc/Player/PlayerFlightComponent.h"
 #include "GameSrc/Interaction/Item/InventoryComponent.h"
 #include "GameSrc/Component/TransformComponent.h"
 #include "GameSrc/World/GameObject.h"
@@ -30,33 +31,42 @@ GameEditorBridge::GameEditorBridge() {
 
 GameEditorBridge::~GameEditorBridge() {
 	EditorWindow::setPlayerInvincible( false ); // 自キャラがいなくなるので、ON のまま残さない
-	EditorWindow::setFreeCameraActive( false ); // 観察用カメラもシーンと一緒に無くなる
-	EditorWindow::setObjects( nullptr ); // 世界が消えるので、消えた物を指し続けないように
-	EditorWindow::setInventory( nullptr ); // カバンも同じ
+	EditorWindow::setFlightCamera( nullptr ); // 自キャラの視点もシーンと一緒に無くなる
+	EditorWindow::setInventory( nullptr ); // カバンが消えるので、消えた物を指し続けないように
 	EditorWindow::setRaid( nullptr );
 	EditorWindow::setInteraction( nullptr );
 	EditorWindow::setWorld( nullptr );
 }
 
-void GameEditorBridge::publish( GameWorld* world, RaidSession* session, bool freeCamera ) {
-	// F6 の Debug タブで頼まれていたら、自キャラの無敵を切り替える（Debug と Profile ビルドだけで効く）
+void GameEditorBridge::publish( GameWorld* world, RaidSession* session, const FirstPersonCamera& view ) {
+	// F6 の Debug タブで頼まれていたら、自キャラの無敵・飛ぶを切り替える（Debug と Profile ビルドだけで効く）
 	GameObject* player = world->player();
-	bool& invincibleRequested = debugSwitches().toggleInvincible;
-	if ( invincibleRequested && player ) {
-		invincibleRequested = false; // 読んだので下ろす（自キャラが居ない間＝ロード中は、置かれるまで残す）
+	DebugSwitches& switches = debugSwitches();
+	if ( switches.toggleInvincible && player ) {
+		switches.toggleInvincible = false; // 読んだので下ろす（自キャラが居ない間＝ロード中は、置かれるまで残す）
 		if ( PlayerHealthComponent* health = player->getComponent< PlayerHealthComponent >() ) { // 外せる部品（無ければ元から死なない）
 			health->toggleInvincible();
 		}
 	}
+	if ( switches.toggleFlight && player ) {
+		switches.toggleFlight = false; // 無敵と同じく、自キャラが置かれるまで残す
+		if ( PlayerFlightComponent* flight = player->getComponent< PlayerFlightComponent >() ) {
+			flight->toggle();
+		}
+	}
 	// F6 の Debug タブに今の状態を出す
 	const PlayerHealthComponent* playerHealth = player ? player->getComponent< PlayerHealthComponent >() : nullptr;
+	const PlayerFlightComponent* playerFlight = player ? player->getComponent< PlayerFlightComponent >() : nullptr;
 	EditorWindow::setPlayerInvincible( playerHealth && playerHealth->isInvincible() );
-	EditorWindow::setFreeCameraActive( freeCamera );
-	EditorWindow::setObjects( &world->objects() ); // F6 の Objects の欄（世界に置いた物の一覧）
+	EditorWindow::setFlightCamera( playerFlight && playerFlight->isFlying() ? &view : nullptr );
 	EditorWindow::setInventory( InventoryComponent::inventoryOf( player ) ); // F6 の Inventory の欄（物を足す・行を増やす）。自キャラが居なければ出さない
 	EditorWindow::setRaid( session );              // F6 の Raid の欄（経った時間・すぐ脱出）
 	EditorWindow::setWorld( world );               // 同じ欄の、今の出撃の条件を切り替える
 	EditorWindow::setInteraction( &world->interaction() ); // F6 の Loot の欄（中身を振り直す・全部開けたことにする）
+}
+
+void GameEditorBridge::followTownEdits( GameWorld* world, const TownEdits& edits ) {
+	mTownModels.follow( edits, world );
 }
 
 void GameEditorBridge::spawnRequestedZombies( GameWorld* world, const FirstPersonCamera& camera ) {

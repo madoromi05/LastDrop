@@ -5,7 +5,7 @@
 
 class GameObjectWorld;
 
-// 音を、届く距離の内のゾンビ全員へ知らせる係（SummaryPlan/個別仕様/設計と分割/HighPrioritySplit_Plan.txt 3-3）
+// 音を、届く距離の内のゾンビ全員へ知らせる係
 // 何体ものゾンビをまとめて扱うので部品にはしない。持ち主は ZombieDirector で、共有の棚（provide / shared）に置く
 // 音を立てる側（自キャラの PlayerNoiseComponent・脱出の車のエンジン）は、ここへ「どこで鳴ったか」を言うだけ
 // 聞くかどうか（倒れている・よろけている等）はゾンビ（ZombieBrainComponent）が決める

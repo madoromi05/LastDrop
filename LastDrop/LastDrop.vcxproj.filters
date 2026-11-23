@@ -664,6 +664,36 @@
     <ClCompile Include="GameSrc\src\DebugMode\TuningPanel.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditPanel.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditPreview.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditOriginals.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditModelMover.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditFrame.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownEditReload.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeChain.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeReport.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakeStatus.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\DebugMode\TownBakePanel.cpp">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClCompile>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\EditorWindow.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
@@ -674,6 +704,39 @@
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TuningPanel.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditPanel.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditPreview.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditOriginals.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditModelMover.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditFrame.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownEditReload.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeChain.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeReport.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakeStatus.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\TownBakePanel.h">
+      <Filter>GameSrc\DebugMode</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\EditorColors.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\src\Profiling\FrameRecorder.h">
@@ -852,6 +915,21 @@
     <ClCompile Include="GameSrc\src\Map\TownCache.cpp">
       <Filter>GameSrc\Map</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownEdits.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownEditFile.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownEditFileState.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownFingerprint.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSrc\src\Map\TownBakeFile.cpp">
+      <Filter>GameSrc\Map</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Interaction\EscapeCarComponent.cpp">
       <Filter>GameSrc\Interaction</Filter>
     </ClCompile>
@@ -961,9 +1039,6 @@
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\DebugMode\DebugSwitches.cpp">
-      <Filter>GameSrc\DebugMode</Filter>
-    </ClCompile>
-    <ClCompile Include="GameSrc\src\DebugMode\FreeCamera.cpp">
       <Filter>GameSrc\DebugMode</Filter>
     </ClCompile>
     <ClCompile Include="GameSrc\src\Hit\HitMath.cpp">
@@ -1461,6 +1536,9 @@
     <ClCompile Include="GameSrc\src\Player\PlayerGrabComponent.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="GameSrc\src\Player\PlayerFlightComponent.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
     <ClCompile Include="GameSrc\src\Scene\Game\Screen\InventoryCursor.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -1566,9 +1644,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Framework.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="GameLib\include\GameLib\Framework.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="GameLib\include\GameLib\DebugScreen.h">
@@ -2042,6 +2117,21 @@
     <ClInclude Include="GameSrc\include\GameSrc\Map\TownCache.h">
       <Filter>GameSrc\Map</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEdits.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEditFile.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownEditFileState.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownFingerprint.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Map\TownBakeFile.h">
+      <Filter>GameSrc\Map</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Interaction\EscapeCarComponent.h">
       <Filter>GameSrc\Interaction</Filter>
     </ClInclude>
@@ -2175,9 +2265,6 @@
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\DebugMode\DebugSwitches.h">
-      <Filter>GameSrc\DebugMode</Filter>
-    </ClInclude>
-    <ClInclude Include="GameSrc\include\GameSrc\DebugMode\FreeCamera.h">
       <Filter>GameSrc\DebugMode</Filter>
     </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Hit\BodyPart.h">
@@ -2807,6 +2894,9 @@
     <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerGrabComponent.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
+    <ClInclude Include="GameSrc\include\GameSrc\Player\PlayerFlightComponent.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
     <ClInclude Include="GameSrc\include\GameSrc\Scene\Game\Screen\InventoryCursor.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -2918,7 +3008,6 @@
     <None Include="Resource\Shader\BloomDown.hlsl" />
     <None Include="Resource\Shader\BloomUp.hlsl" />
     <None Include="Resource\Shader\Lighting.hlsli" />
-    <None Include="Resource\Shader\SkinnedMesh.hlsl" />
     <None Include="Resource\Shader\Skinning.hlsli" />
     <None Include="Resource\Shader\GBuffer.hlsli" />
     <None Include="Resource\Shader\Pbr.hlsli" />

@@ -3,7 +3,7 @@
 
 #include "GameSrc/Raid/DayCondition.h"
 
-// 1 回の出撃の終わり方（SummaryPlan/個別仕様/出撃と帰還/SimpleRun_Plan.txt）
+// 1 回の出撃の終わり方
 // 時間制限が無いので、時間切れ（行方不明）の終わり方は無い
 enum class RaidEnding{
 	None,    // まだ終わっていない

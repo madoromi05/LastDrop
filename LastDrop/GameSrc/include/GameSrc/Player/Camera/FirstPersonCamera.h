@@ -16,9 +16,6 @@
 class FirstPersonCamera{
 public:
 	FirstPersonCamera();	// 上下の向きは、自キャラの背骨の曲げで体が付いてこられる範囲で止める
-	// pitchLimit: 上下の向きを止める角度（度。正の値で、上下とも同じだけ）
-	// 体の付いていないカメラ（確認用の FreeCamera）が、真下近くまで見下ろせるようにするために使う
-	explicit FirstPersonCamera( float pitchLimit );
 
 	void rotate( float yawDelta, float pitchDelta );		// 向きを変える（度）。ピッチは真上・真下へ回り込まないよう上下限で止める
 	// rotate で決めた向きへ足す角度（度。ヨーは正で左、ピッチは負で見上げる側）。撃った反動・攻撃された怯みのように、
@@ -46,7 +43,6 @@ public:
 	const GameLib::Math::Vector3& eyePosition() const;	// 視点（setEyePosition で渡したもの）
 
 private:
-	float mPitchLimit;  // 上下の向きを止める角度（度。-mPitchLimit〜+mPitchLimit）
 	float mYaw;
 	float mPitch;       // rotate で決めた上下の向き（mPitchOffset を足す前）
 	float mYawOffset;   // 一時的に狙いへ足す角度（反動・怯み）

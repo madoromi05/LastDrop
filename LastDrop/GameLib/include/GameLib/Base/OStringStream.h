@@ -4,7 +4,6 @@
 #include <string>
 
 namespace GameLib{
-using namespace std;
 
 class RefString;
 
@@ -28,7 +27,7 @@ public:
 	OStringStream& operator<<( unsigned short );
 	OStringStream& operator<<( float );
 	OStringStream& operator<<( double );
-	OStringStream& operator<<( const string& );
+	OStringStream& operator<<( const std::string& );
 	OStringStream& operator<<( const char* );
 	OStringStream& operator<<( char* );
 	OStringStream& operator<<( const RefString& );
@@ -40,7 +39,7 @@ public:
 	OStringStream& dec();
 
 	void get( Array< char >* ) const;
-	void get( string* ) const;
+	void get( std::string* ) const;
 	int size() const;
 	void clear();
 private:

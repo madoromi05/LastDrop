@@ -142,8 +142,8 @@ namespace ShaderDetail{
 		if ( p ){ p->Release(); p = 0; }
 	}
 
-	// コンパイルした結果（バイトコード）を、起動中はファイル名ごとに覚えておく（FuelEscapeLoading_Plan.txt 5 章 L4）
-	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす（Profile のロードの半分がコンパイルだった）
+	// コンパイルした結果（バイトコード）を、起動中はファイル名ごとに覚えておく
+	// 出撃のたびにシーンが同じシェーダを作り直すので、2 回目からはコンパイルを飛ばす
 	// 読んだファイル（#include も）の更新時刻を一緒に覚え、どれかが変わっていたら使わずにコンパイルし直す（ホットリロードはそのまま効く）
 	// 入口・ターゲット・フラグはどのシェーダも同じ（kVertexEntry など）なので、ファイル名だけで引ける
 	inline std::map< std::string, CompiledShader >& compiledShaders(){
@@ -151,7 +151,7 @@ namespace ShaderDetail{
 		return sCompiled;
 	}
 
-	// 起動をまたいで覚える所（ShaderDiskCache_Plan.txt）。起動するたびの最初のロードでも、変わっていないシェーダはコンパイルしない
+	// 起動をまたいで覚える所。起動するたびの最初のロードでも、変わっていないシェーダはコンパイルしない
 	// コンパイルの設定（compileFlags）が同じ構成どうし（Profile と Release）は同じ所を使い、Debug とは書き換え合わない
 #ifdef _DEBUG
 	const char* const kDiskCacheDirectory = "ShaderCache/Debug/";

@@ -1,4 +1,4 @@
-// 1 フレームのライトの一覧（PbrNightLighting_Plan.txt 6 章）。GameSrc/Render/LightList.cpp の LightConstants と同じ並び
+// 1 フレームのライトの一覧。GameSrc/Render/LightList.cpp の LightConstants と同じ並び
 // 読むのはライティングのパス（DeferredLighting.hlsl）と半透明の板（LitQuad.hlsl）。どちらも Pbr.hlsli の shadeSurface から
 #ifndef INCLUDED_LIGHT_LIST_HLSLI
 #define INCLUDED_LIGHT_LIST_HLSLI
@@ -41,7 +41,7 @@ cbuffer LightConstants : register(b2)
     LightData gLights[kMaxLights];
 };
 
-// 影のマップ（LightList::bindShadowMaps）。番号 0 は懐中電灯、1〜3 は月（段階 4-b）
+// 影のマップ（LightList::bindShadowMaps）。番号 0 は懐中電灯、1〜3 は月
 // 付いていない番号は、ライトの shadowMap がその番号を指さないので読まれない
 Texture2D<float> gShadowMap0 : register(t6);
 Texture2D<float> gShadowMap1 : register(t7);

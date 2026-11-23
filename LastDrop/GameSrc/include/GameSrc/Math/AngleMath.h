@@ -16,6 +16,7 @@ public:
 	static float headingOf( const GameLib::Math::Vector3& direction );	// direction の水平の向き（x・z だけを見る）を度で返す。x・z が両方 0 なら 0（向きが無い）
 	static GameLib::Math::Vector3 forwardOf( float degree );			// 水平の向き degree（度）の前の向き（長さ 1。y は 0）。headingOf の逆
 	static GameLib::Math::Vector3 rightOf( float degree );				// 水平の向き degree（度）を向いたときの右の向き（長さ 1。y は 0）。前×上
+	static GameLib::Math::Vector3 directionOf( float yawDegree, float pitchDegree );	// 水平の向き yawDegree・上下の向き pitchDegree（度。正で見下ろす）の向き（長さ 1）。カメラの視線と同じ約束
 };
 
 #endif

@@ -14,7 +14,7 @@ class ZombieAnimationSet;
 struct ChaseTarget;
 
 // ゾンビがどこへ行き・どちらを向いて・どう進むか（ZombieLocomotion。中で ZombieChase が行き先を決め、ZombiePath が建物を回り込む
-// 通り道を出す。SummaryPlan/個別仕様/ゾンビ/ZombieChase_Plan.txt・ZombiePath_Plan.txt）と、近づくと胴を左右に揺らすフラつき（ZombieSway）
+// 通り道を出す）と、近づくと胴を左右に揺らすフラつき（ZombieSway）
 // 立っている体が考えて（見て・行き先を決め・向きを変え）歩く・追いついたら横へよける、と揺れの強さを決めるのもここ
 // 歩く・滑るのは同じ物の CharacterColliderComponent の移動を借りる。攻撃のことは知らない
 // （「考える → 攻撃を始めるか → 歩く」の順に呼ぶのは ZombieBrainComponent）

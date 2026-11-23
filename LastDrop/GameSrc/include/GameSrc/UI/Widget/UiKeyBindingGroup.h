@@ -9,7 +9,7 @@
 
 // 操作の一覧のまとまり 1 つ（「移動」など）。まとまりの名前を小さく書き、その下に行を並べる
 // 行は、上に細い線・左に操作の名前・右に寄せたキーの枠（KeyCap）。描くだけで、選べない
-// 横の位置と幅は列（UiColumn）で持ち、描くたびに今の画面の幅から求める。MenuRestyle_Plan.txt
+// 横の位置と幅は列（UiColumn）で持ち、描くたびに今の画面の幅から求める
 class UiKeyBindingGroup : public IUiElement {
 public:
 	// 行 1 つ

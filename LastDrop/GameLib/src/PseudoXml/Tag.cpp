@@ -3,7 +3,6 @@
 #include "PseudoXml/AttributeImpl.h"
 #include "PseudoXml/DocumentImpl.h"
 #include "GameLib/Base/RefString.h"
-using namespace std;
 
 namespace GameLib{
 namespace PseudoXml{

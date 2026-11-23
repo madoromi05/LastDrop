@@ -6,7 +6,7 @@
 #include "GameLib/Graphics/Shader.h"
 #include "GameLib/Graphics/ConstantBuffer.h"
 
-// Hi-Z：シーンの深度を段ごとに半分へ縮めた物。どの段の 1 画素も「重なる所の一番手前の深度」を持つ（HiZSsr_Plan.txt 5 章。Uludag 2014）
+// Hi-Z：シーンの深度を段ごとに半分へ縮めた物。どの段の 1 画素も「重なる所の一番手前の深度」を持つ（Uludag 2014）
 // 映り込み（Ssr.hlsl）が、何も無い所を粗い段で大きく飛ばして進むのに使う。シェーダは Resource/Shader/HiZBuild.hlsl
 // 描画先は画面の半分の大きさ（SSR と同じ）・R32F・1 画素までの全部の段（1920×1080 なら 960×540 から 10 段）
 // 作るのは Graphics::Manager ができた後（シーンの中）。持ち主は ScreenSpaceReflection
@@ -29,8 +29,8 @@ private:
 	GameLib::Graphics::ConstantBuffer mConstants; // 描く先の段の大きさ（段ごとに書き換える）
 };
 
-// Hi-Z で進むか（F6 → Render の Hi-Z）。false の間は Hi-Z を作らず、映り込みは今までの直線の進み方
-// 起動中ずっと 1 つ（HiZBuffer.cpp が持つ。初期値 true。Release では true のまま）。段階12 の計測が終わったら直線の進み方と一緒に消す
+// Hi-Z で進むか（F6 → Render の Hi-Z）。false の間は Hi-Z を作らず、映り込みは直線の進み方
+// 起動中ずっと 1 つ（HiZBuffer.cpp が持つ。初期値 true。Release では true のまま）
 bool& hiZEnabled();
 // G-Buffer の表示の Hi-Z で見る段（F6 → Render の Hi-Z view level。0 が一番細かい。段の数を超えたら一番粗い段）
 // 起動中ずっと 1 つ（HiZBuffer.cpp が持つ。初期値 0）

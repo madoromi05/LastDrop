@@ -4,7 +4,7 @@
 namespace GameLib{
 namespace FileIO{
 
-// アーカイブに入れたファイルの中身のかき混ぜ（ResourcePack_Plan.txt）
+// アーカイブに入れたファイルの中身のかき混ぜ
 // 書籍の Archiver の形式は公開されていて、そのままだと誰でも取り出せる。配る素材を「普通には取り出せない形」にするため、決まった鍵で XOR する
 // 同じ鍵を .pak を作る tools/release/make_pak.ps1 も持つ（ゲームの外のスクリプトなので 2 か所）。片方を変えたら両方を変える
 namespace ArchiveScramble{

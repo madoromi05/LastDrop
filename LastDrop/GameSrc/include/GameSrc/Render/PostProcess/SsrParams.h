@@ -1,12 +1,12 @@
 #ifndef INCLUDED_SSR_PARAMS_H
 #define INCLUDED_SSR_PARAMS_H
 
-// 映り込み（SSR）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/SsrDecalMaterial_Plan.txt の 7-5・9 章
+// 映り込み（SSR）の調整値
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // どれも見た目を確かめる前の初期値。F6 → Render の G-Buffer を「SSR」にすると、映り込みの確からしさが白黒で見える
 struct SsrParams{
 	// これより粗い面は計算しない（空と地面の色の映り込みのまま）。水たまり 0.05・車 は画像の値・道路 0.6〜0.7
-	// 0.4 より粗い面は向きをばらしたぼけた映り込み（段階12-b で 0.4 → 0.7）
+	// 0.4 より粗い面は向きをばらしたぼけた映り込み
 	float maxRoughness = 0.7f;
 	float steps = 24.f;				// 反射の向きへ進む歩数（整数に丸めて使う）。多いほど細い物も当たるが、その分だけ重い
 	float maxDistance = 30.f;		// 一番遠くまで進む長さ（m）。町の交差点の間は 33m
@@ -31,7 +31,7 @@ SsrParams& ssrParams();	// 起動中ずっと 1 つだけの調整値（ScreenSp
 // 映り込みを作るか（F6 → Render の SSR。見比べと計測用）。false の間は作らず、混ぜるパスも描かない（空と地面の色の映り込みのまま）
 // 起動中ずっと 1 つ（ScreenSpaceReflection.cpp が持つ。初期値 true。Release では true のまま）
 bool& ssrEnabled();
-// 粗い面の反射の向きを GGX でばらすか（F6 → Render の Stochastic SSR）。false の間は鏡の向きだけで、ぼかしも今までのまま
+// 粗い面の反射の向きを GGX でばらすか（F6 → Render の Stochastic SSR）。false の間は鏡の向きだけで、ぼかしの間隔も広げない
 // 起動中ずっと 1 つ（ScreenSpaceReflection.cpp が持つ。初期値 true。Release では true のまま）
 bool& ssrStochasticEnabled();
 

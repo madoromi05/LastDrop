@@ -14,6 +14,7 @@
 #include <cfloat>
 #include <chrono>
 #include <cmath>
+#include <cstring>
 
 using namespace GameLib::Math;
 
@@ -29,6 +30,8 @@ namespace{
 	const float kNotBuilt = -1.f;	// まだ build していないときの agentRadius
 	const int kCoordinates = 3;
 	const double kMillisecondsPerSecond = 1000.0;
+	const int kOnlyTile = 0;			// 町全体を 1 枚のタイルにしてある（NavMeshBuilder）ので、タイルは 0 番だけ
+	const int kDetailTriangleBytes = 4;	// 細かい高さの三角形 1 つのバイト数（頂点の番号 3 つと、縁の印 1 つ）
 
 	void toArray( const Vector3& v, float* out ) {
 		out[ 0 ] = v.x;
@@ -42,6 +45,28 @@ namespace{
 
 	void logFailure( const char* step ) {
 		GameLib::cout << "NavMesh: failed to " << step << GameLib::endl;
+	}
+
+	// タイル 1 枚のバイト数を、頭の数から求める（dtCreateNavMeshData が詰める並びと同じ。どの部分も 4 バイトにそろえる）
+	// 頭の数が負なら -1（どの長さとも合わない）
+	long long tileDataSize( const dtMeshHeader& header ) {
+		const int counts[] = { header.vertCount, header.polyCount, header.maxLinkCount, header.detailMeshCount,
+			header.detailVertCount, header.detailTriCount, header.bvNodeCount, header.offMeshConCount };
+		for ( int count : counts ) {
+			if ( count < 0 ) {
+				return -1;
+			}
+		}
+		const int kVertexBytes = static_cast< int >( sizeof( float ) ) * kCoordinates;
+		return static_cast< long long >( dtAlign4( static_cast< int >( sizeof( dtMeshHeader ) ) ) ) +
+			dtAlign4( kVertexBytes * header.vertCount ) +
+			dtAlign4( static_cast< int >( sizeof( dtPoly ) ) * header.polyCount ) +
+			dtAlign4( static_cast< int >( sizeof( dtLink ) ) * header.maxLinkCount ) +
+			dtAlign4( static_cast< int >( sizeof( dtPolyDetail ) ) * header.detailMeshCount ) +
+			dtAlign4( kVertexBytes * header.detailVertCount ) +
+			dtAlign4( kDetailTriangleBytes * header.detailTriCount ) +
+			dtAlign4( static_cast< int >( sizeof( dtBVNode ) ) * header.bvNodeCount ) +
+			dtAlign4( static_cast< int >( sizeof( dtOffMeshConnection ) ) * header.offMeshConCount );
 	}
 }
 
@@ -69,9 +94,79 @@ bool NavMesh::build( const CollisionWorld& world, float agentRadius ) {
 
 	// 床の形を作るのは NavMeshBuilder（Recast）。ここは受け取って、道を探す道具（Detour の query）を付ける
 	int polygonCount = 0;
-	std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh( NavMeshBuilder::build( world, agentRadius, &polygonCount ) );
+	if ( !adopt( std::unique_ptr< dtNavMesh, NavMeshDeleter >( NavMeshBuilder::build( world, agentRadius, &polygonCount ) ) ) ) {
+		return false; // 理由は NavMeshBuilder か adopt がログへ出した
+	}
+	double milliseconds = std::chrono::duration< double >( std::chrono::steady_clock::now() - startTime ).count() * kMillisecondsPerSecond;
+	GameLib::cout << "NavMesh: built " << polygonCount << " polygons in " << milliseconds << " ms" << GameLib::endl;
+	return true;
+}
+
+bool NavMesh::saveData( std::vector< unsigned char >* out ) const {
+	ASSERT( out && "NavMesh::saveData : out is null." );
+	out->clear();
+	if ( !isReady() ) {
+		return false;
+	}
+	const dtNavMesh& navMesh = *mNavMesh;
+	const dtMeshTile* tile = navMesh.getTile( kOnlyTile );
+	if ( !tile || !tile->data || tile->dataSize <= 0 ) {
+		return false;
+	}
+	out->assign( tile->data, tile->data + tile->dataSize );
+	return true;
+}
+
+bool NavMesh::load( const std::vector< unsigned char >& data, float agentRadius ) {
+	mQuery.reset();
+	mNavMesh.reset();
+	mOutline.clear();
+	mAgentRadius = agentRadius;
+	auto startTime = std::chrono::steady_clock::now();
+
+	// 頭を読む前に、頭が入る長さと、頭の数から求めた長さを確かめる（Detour の init は長さを見ずに頭を読むため）
+	if ( data.size() < sizeof( dtMeshHeader ) ) {
+		logFailure( "load the data (shorter than the header)" );
+		return false;
+	}
+	dtMeshHeader header;
+	std::memcpy( &header, data.data(), sizeof( dtMeshHeader ) );
+	if ( header.magic != DT_NAVMESH_MAGIC || header.version != DT_NAVMESH_VERSION ) {
+		logFailure( "load the data (another Detour version)" );
+		return false;
+	}
+	if ( tileDataSize( header ) != static_cast< long long >( data.size() ) ) {
+		logFailure( "load the data (size does not match the header)" );
+		return false;
+	}
+	unsigned char* copy = static_cast< unsigned char* >( dtAlloc( data.size(), DT_ALLOC_PERM ) );
+	if ( !copy ) {
+		logFailure( "allocate the data" );
+		return false;
+	}
+	std::memcpy( copy, data.data(), data.size() );
+	std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh( dtAllocNavMesh() );
 	if ( !navMesh ) {
-		return false; // 理由は NavMeshBuilder がログへ出した
+		dtFree( copy );
+		logFailure( "allocate the detour mesh" );
+		return false;
+	}
+	if ( dtStatusFailed( navMesh->init( copy, static_cast< int >( data.size() ), DT_TILE_FREE_DATA ) ) ) {	// DT_TILE_FREE_DATA: 写しは navMesh が持ち、navMesh と一緒に消える
+		dtFree( copy ); // 失敗した init はタイルを持たないので、写しは自分で消す
+		logFailure( "init the detour mesh" );
+		return false;
+	}
+	if ( !adopt( std::move( navMesh ) ) ) {
+		return false;
+	}
+	double milliseconds = std::chrono::duration< double >( std::chrono::steady_clock::now() - startTime ).count() * kMillisecondsPerSecond;
+	GameLib::cout << "NavMesh: loaded " << polygonCount() << " polygons in " << milliseconds << " ms" << GameLib::endl;
+	return true;
+}
+
+bool NavMesh::adopt( std::unique_ptr< dtNavMesh, NavMeshDeleter > navMesh ) {
+	if ( !navMesh ) {
+		return false;
 	}
 	std::unique_ptr< dtNavMeshQuery, QueryDeleter > query( dtAllocNavMeshQuery() );
 	if ( !query || dtStatusFailed( query->init( navMesh.get(), kMaxSearchNodes ) ) ) {
@@ -81,9 +176,6 @@ bool NavMesh::build( const CollisionWorld& world, float agentRadius ) {
 	mNavMesh = std::move( navMesh );
 	mQuery = std::move( query );
 	buildOutline();
-
-	double milliseconds = std::chrono::duration< double >( std::chrono::steady_clock::now() - startTime ).count() * kMillisecondsPerSecond;
-	GameLib::cout << "NavMesh: built " << polygonCount << " polygons in " << milliseconds << " ms" << GameLib::endl;
 	return true;
 }
 
@@ -93,6 +185,15 @@ bool NavMesh::isReady() const {
 
 float NavMesh::agentRadius() const {
 	return mAgentRadius;
+}
+
+int NavMesh::polygonCount() const {
+	if ( !isReady() ) {
+		return 0;
+	}
+	const dtNavMesh& navMesh = *mNavMesh;
+	const dtMeshTile* tile = navMesh.getTile( kOnlyTile );
+	return ( tile && tile->header ) ? tile->header->polyCount : 0;
 }
 
 bool NavMesh::isWalkable( const Vector3& from, const Vector3& to ) const {

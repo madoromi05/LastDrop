@@ -9,6 +9,7 @@
 #include "GameSrc/Render/StaticMesh/StaticMeshLods.h"
 #include "GameSrc/Weapon/WeaponCatalog.h"
 #include "GameSrc/Audio/GroundMaterial.h"
+#include "GameSrc/Map/TownEdits.h"
 #include "GameLib/Math/Vector3.h"
 #include "GameLib/Math/Random.h"
 #include <map>
@@ -20,10 +21,9 @@ class GameObject;
 class GameObjectWorld;
 
 // 置物（置物の車・漁れるゴミ箱と木箱・落ちているガソリン・落ちた弾・落ちている包帯）を部品から組み立てる
-// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役。SummaryPlan/個別仕様/設計と分割/GameWorldSplit_Plan.txt）
+// （Unity のプレハブの代わり。PlayerFactory・ZombieFactory と同じ役）
 // 部品の並び・形のファイル・名前・材質・中身の量を 1 か所で決める（「何で出来ているか」）
 // 銃だけは新しい物を作らない。捨てた銃は、銃の物そのものへ地面に置くための部品を付け、拾われたら外す
-// （SummaryPlan/個別仕様/設計と分割/WeaponObject_Plan.txt）
 // どこに置くか・何個置くかは使う側（WorldBuilder：最初に置く物、GameWorld：カバンから捨てた物）が決める
 // 形の構築に失敗していたら、どの spawn も置かずに nullptr を返す（理由は MeshCache がデバッグ出力済み
 // 置けなくても他の確認はできる）
@@ -60,6 +60,15 @@ public:
 	// カバンから捨てた物。落ちているガソリン・落ちた弾・落ちている銃・落ちている包帯になり、拾い直せる
 	// stack: 捨てた物と数（弾・包帯は数をそのまま持つ。ガソリン・銃は 1 つ）。銃は layWeaponOnGround と同じ（新しい物は作らない）
 	GameObject* spawnDroppedItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;
+	// F6 の Town タブで足した町の置物を、出撃を読み直す前に見せる形（ゴミ箱・木箱・消火栓・街灯。ほかの種類は nullptr）
+	// 町に置く物と同じ形と光。移動の名簿には載らない（上を通れる）。ゴミ箱・木箱は中身を持たず漁れない（中身は出撃を読み直すときに決める）
+	// lampLit: 街灯のガラスが光る形か。update の外で呼ぶ
+	GameObject* spawnEditPreview( GameObjectWorld* world, TownEditKind kind, const GameLib::Math::Vector3& position, float yawDegree, bool lampLit ) const;
+	// F6 の Town タブで足した建物を、出撃を読み直す前に見せる物（GameObjectTag::BuildingPreview）
+	// 建物の並び（TownEnvironment）には入れず、置物と同じ部品で置く（並びを増やすと、弾の名簿と隠れの表の番号が古い場所を指すため）
+	// shapes / material: 町の建物と同じ形と壁の材質（WorldBuilder が持つ）。移動の名簿には載らない。update の外で呼ぶ。形の構築に失敗していたら nullptr
+	GameObject* spawnBuildingPreview( GameObjectWorld* world, const StaticMeshLods& shapes, GroundMaterial material,
+		const GameLib::Math::Vector3& position, float yawDegree ) const;
 
 private:
 	GameObject* spawnGroundItem( GameObjectWorld* world, const ItemStack& stack, const GameLib::Math::Vector3& position, float yawDegree ) const;	// 落ちている物（ItemSpec::groundFile の形で、上を歩ける）。弾・包帯。stack の数をそのまま持つ

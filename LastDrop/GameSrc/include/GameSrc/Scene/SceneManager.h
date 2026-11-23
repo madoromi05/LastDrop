@@ -18,7 +18,7 @@ public:
 		SCENE_TITLE,    // タイトル画面（MenuScene に MenuCatalog::title の中身を載せたもの）
 		SCENE_GAME,     // ゲーム本編（1 回の出撃）。タイトルの Start の行き先（Retry・「もう一度」は requestRetryRaid で、最後に開いた出撃へ）
 		SCENE_RAID_END, // 出撃の結果（クリア・死んだ。RaidEndScene）
-		// ゾンビの確認用の出撃（SummaryPlan/個別仕様/ゾンビ/ZombieTestScene_Plan.txt）。本編と同じ GameScene で、ゾンビを勝手に湧かせない
+		// ゾンビの確認用の出撃。本編と同じ GameScene で、ゾンビを勝手に湧かせない
 		// 入るのは F6 の Scene タブだけ（F6 があるのは Debug・Profile）
 		SCENE_ZOMBIE_TEST,
 	};

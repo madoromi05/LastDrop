@@ -1,7 +1,7 @@
 #ifndef INCLUDED_PLAYER_DAMAGE_VIEW_H
 #define INCLUDED_PLAYER_DAMAGE_VIEW_H
 
-// 自キャラが傷ついたときの見せ方の量を、時間で決める（SummaryPlan/個別仕様/ゾンビ/ZombieAttack_Plan.txt の 5 章）
+// 自キャラが傷ついたときの見せ方の量を、時間で決める
 // ・攻撃された瞬間：画面の周りを赤くし、少しずつ消す（PostProcess::setDamageFlash へ渡す量）
 //                 痛みで周りをぼかし・暗くし、少しずつ消す（PostProcess::setPain へ渡す量）
 // ・体力が半分以下：画面の周りを赤くし続け、減るほど濃くする（攻撃された赤みと濃い方を渡す）

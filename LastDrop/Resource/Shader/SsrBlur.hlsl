@@ -1,4 +1,4 @@
-// 映り込み（SSR）のぼかし（ScreenSpaceReflection::draw。SsrDecalMaterial_Plan.txt 7-4）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く
+// 映り込み（SSR）のぼかし（ScreenSpaceReflection::draw）。横 → 縦の 2 回、半分の大きさの描画先どうしで描く
 // 歩き始めを画素ごとにずらした（Ssr.hlsl）ざらつきを均す。重みはガウス × 奥行きの近さ（SSAO のぼかしと同じ考え）
 // SSR の結果は奥行きを持たないので、奥行きはシーンの深度から読む（半分の大きさの画素 i は元の画面の画素 2i）
 // 色は確からしさを掛けた物（SsrCommon.hlsli）なので、そのまま 4 つとも同じ重みで混ぜてよい

@@ -3,7 +3,7 @@
 
 #include "GameLib/Math/Vector3.h"
 
-// 夜の光（月・補助光・空・環境光・街灯・懐中電灯）の調整値。仕様は SummaryPlan/個別仕様/グラフィック/PbrNightLighting_Plan.txt の 7・8・9・11 章
+// 夜の光（月・補助光・空・環境光・街灯・懐中電灯）の調整値
 // 起動中に F6 のエディタ（Tuning）で動かせる。決まった値は Copy as C++ でここの初期値へ戻す（コードの値が正）
 // 初期値は夜（遊びの値）。昼の値は dayLightingParams()（見比べ・不具合探し用。F6 → Render の Day ボタン）
 // 色はどれも画像の色と同じ数（sRGB）。シェーダでリニアへ直してから強さを掛ける
@@ -50,7 +50,7 @@ struct LightingParams{
 	GameLib::Math::Vector3 streetLightColor = GameLib::Math::Vector3( 1.f, 0.72f, 0.42f );
 	float streetLightIntensity = 12.f;
 
-	// ── 懐中電灯（スポット。銃に付けて T で付ける） ── 夜の FPS で一番効く光（段階 4 で影も付ける）
+	// ── 懐中電灯（スポット。銃に付けて T で付ける） ── 夜の FPS で一番効く光
 	// 光は銃口の少し前に置き、銃口の向きへ照らす（照準のぶれで銃が揺れると光も揺れる）。銃より前に置くので、銃そのものは照らさない
 	float flashlightOffset = 0.05f;   // 銃口から前へ（m。後ろに置くと、点光源の近くの明るさで銃身が白く飛ぶ）
 	float flashlightRange = 25.f;     // 届く距離（m）
@@ -99,11 +99,11 @@ struct LightingParams{
 };
 
 LightingParams& lightingParams();															// 起動中ずっと 1 つだけの調整値（LightingParams.cpp が持つ。初期値は夜）
-LightingParams dayLightingParams();															// 昼の値（段階 3-b までの太陽・補助光・環境光 0.4 と同じ明るさ。空は青）。見比べ用で、遊びの中では使わない
+LightingParams dayLightingParams();															// 昼の値（太陽・補助光・環境光 0.4。空は青）。見比べ用で、遊びの中では使わない
 // 霧を掛けるか（F6 → Render の Fog。見比べと計測用）。false の間は霧のパスを描かず、半透明の板にも掛けない
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
 bool& fogEnabled();
-// 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用）。false の間は今までの空のグラデーションだけ
+// 月の絵を空に描くか（F6 → Render の Sky detail。見比べと計測用）。false の間は空のグラデーションだけ
 // 起動中ずっと 1 つ（LightingParams.cpp が持つ。初期値 true。Release では true のまま）
 bool& skyDetailEnabled();
 // 画面に届かないライトを一覧から外し、届く距離の外の画素でライトを計算しないか（F6 → Render の Light culling。見比べと計測用）

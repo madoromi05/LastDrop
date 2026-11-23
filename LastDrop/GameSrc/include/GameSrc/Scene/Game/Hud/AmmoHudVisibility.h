@@ -1,7 +1,7 @@
 #ifndef INCLUDED_AMMO_HUD_VISIBILITY_H
 #define INCLUDED_AMMO_HUD_VISIBILITY_H
 
-// 右下の弾数（AmmoHud）を、いつ・どれだけの濃さで出すかを決める。SummaryPlan/個別仕様/UI/AmmoHud_Plan.txt
+// 右下の弾数（AmmoHud）を、いつ・どれだけの濃さで出すかを決める
 // 決めるのは「出す条件が切れてから何ティック残すか」と「濃さ（0〜1）」だけ。何を出すか・どこに描くかは AmmoHud
 // 出す条件（覗いている・リロード中）を決めるのは呼ぶ側（GameScene）なので、条件を変えてもこのクラスは変わらない
 // 秒はティックに直して数える（ゲームの更新から呼ぶので、一時停止・カバンを開いている間は進まない）

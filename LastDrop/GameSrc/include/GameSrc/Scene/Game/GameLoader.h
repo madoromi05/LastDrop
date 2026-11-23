@@ -4,7 +4,7 @@
 class GameWorld;
 class MeshCache;
 
-// 出撃のロードを段階に分けて、1 回の描画に 1 段階ずつ進める（FuelEscapeLoading_Plan.txt 6 章）
+// 出撃のロードを段階に分けて、1 回の描画に 1 段階ずつ進める
 // 1 つの描画で全部を済ませると、Debug では 1 フレームが 9 秒を超えて Windows が窓を「応答なし」にし、画面も止まって見えた
 // 段階に分ければ、段階の間に窓のメッセージが回り、ロード画面（LoadingScreen）も描き直せる
 // ここが持つのは段階の順番と「どこまで済んだか」だけ。中身は GameWorld と MeshCache、描くのは LoadingScreen

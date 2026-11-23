@@ -17,6 +17,7 @@ enum class GameObjectTag{
 	FireHydrant, // 消火栓（見た目の置物。動かない箱で移動を止める。使えない）
 	StreetLamp,  // 街灯の柱（動かない箱。LightComponent が柱の頭から照らす）
 	SeveredLimb, // ゾンビから千切れた部位（飛んで地面で止まり、沈み終えたら自分で消える。同時に出しておける数に上限がある）
+	BuildingPreview, // F6 の Town タブで足した建物を、出撃を読み直すまで見せる物（建物と同じ形。上を通れる。読み直すと本物の建物になる）
 };
 
 #endif

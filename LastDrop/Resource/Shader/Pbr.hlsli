@@ -1,11 +1,11 @@
-// PBR の式（SummaryPlan/個別仕様/グラフィック/PbrNightLighting_Plan.txt 4 章）。ディファードのライティングのパス（DeferredLighting.hlsl）と半透明の板（LitQuad.hlsl）が使う
+// PBR の式。ディファードのライティングのパス（DeferredLighting.hlsl）と半透明の板（LitQuad.hlsl）が使う
 //   拡散反射：Lambert   鏡面反射：Cook-Torrance（D：GGX  G：Smith の Schlick-GGX 近似  F：Schlick）
 //   材質：メタリック・ラフネス（粗さ・金属。Blender・glTF・Unreal と同じ）
 // 式は「面の BRDF（surfaceBrdf）」と「ライトの向きと届く光（evaluateLight。種類は LightList.hlsli）」に分ける
 // ライトの種類を増やすときは、ライトの側だけ足す（BRDF は 1 か所のまま）
 //
 // 光の強さの単位：ライトの値は「π を掛け済み」として扱う（拡散を albedo / π ではなく albedo で計算し、鏡面には π を掛ける）
-// こうすると拡散の明るさが段階 2 までの式（albedo × ライトの色 × N・L）と同じになり、3-a で変わるのはツヤの出方だけになる
+// こうすると拡散の明るさが albedo × ライトの色 × N・L になる
 #ifndef INCLUDED_PBR_HLSLI
 #define INCLUDED_PBR_HLSLI
 
@@ -170,7 +170,7 @@ float3 evaluateLight(Surface s, float3 v, LightData light)
         }
     }
     // 影。影のマップを持つライトだけ、光が届いている所で影のマップを読む
-    // 影のマップが 2 枚以上のライト（月の CSM）は、カメラからの奥行きで枚を選ぶ（6 章）
+    // 影のマップが 2 枚以上のライト（月の CSM）は、カメラからの奥行きで枚を選ぶ
     int shadowMap = (int)light.spotScaleOffset.z;
     int shadowMapCount = (int)light.spotScaleOffset.w;
     if (shadowMap >= 0 && attenuation > 0.0)

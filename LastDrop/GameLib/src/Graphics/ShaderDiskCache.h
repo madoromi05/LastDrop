@@ -7,7 +7,7 @@
 namespace GameLib{
 namespace Graphics{
 
-// コンパイルしたシェーダ（CompiledShader）を、起動をまたいで使えるようにファイルへ書く・ファイルから読む係（ShaderDiskCache_Plan.txt）
+// コンパイルしたシェーダ（CompiledShader）を、起動をまたいで使えるようにファイルへ書く・ファイルから読む係
 // 1 本のシェーダにつき 1 ファイル（覚える所 + シェーダのパスの区切りを _ にした名前 + .bin）
 // 読んだ物が今のファイルと同じか（更新時刻）は見ない。使う側（ShaderImpl::compile）が ShaderDetail::isUnchanged で見る
 class ShaderDiskCache{

@@ -15,7 +15,7 @@ struct DebugSwitches{
 
 	// ── 1 回だけの頼み（押したフレームにエディタが立て、読んだ係が下ろす）──
 	// 状態はそれぞれの持ち主が持つ（シーンを作り直すと元に戻る物なので、ここでは持たない）
-	bool toggleFreeCamera = false; // 観察用カメラを使う／やめる（FreeCamera が読む）
+	bool toggleFlight = false;     // 自キャラを飛ばす／やめる（GameEditorBridge が読む）
 	bool toggleInvincible = false; // 自キャラの無敵を切り替える（GameEditorBridge が読む）
 	bool spawnZombies = false;     // 自キャラの前にゾンビを出す（GameEditorBridge が読む）
 };

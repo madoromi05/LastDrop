@@ -5,7 +5,7 @@
 #include <cmath>
 
 // 画像の色（sRGB。ガンマが掛かった数）と、光の量に比例した数（リニア）の変換（CPU 側）
-// 3D の絵をリニアで計算するために使う（SummaryPlan/個別仕様/グラフィック/LinearToneMap_Plan.txt 4・5 章）
+// 3D の絵をリニアで計算するために使う
 // pow 2.2 の近似ではなく sRGB の正しい式にする（GPU が _SRGB のテクスチャを読むときの式と同じにするため）
 // シェーダ側の同じ式は ColorSpaceHlsl.h（固定パイプライン）と Resource/Shader/Common.hlsli（自作シェーダ）
 namespace GameLib{

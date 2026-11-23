@@ -20,7 +20,6 @@
 #endif
 
 #include "GameLib/GameLib.h"
-#include "Framework.h" // DebugScreen.h が使う Framework の宣言
 #include "GameLib/DebugScreen.h"
 #include "GameLib/Math/Vector3.h"
 
@@ -186,6 +185,7 @@ void GameDebugOverlay::drawCollision( const GameWorld& world, const FirstPersonC
 	if ( debugSwitches().showZombieInfo ) {
 		mZombiePathDrawer.draw( world.objects(), camera.projectionViewMatrix() );
 	}
+	mTownEditPreview.draw( camera );	// 選んでいなければ何もしない
 }
 
 void GameDebugOverlay::drawLights( const LightList& lights, const FirstPersonCamera& camera ) {
